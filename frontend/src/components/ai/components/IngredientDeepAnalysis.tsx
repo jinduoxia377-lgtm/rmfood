@@ -93,7 +93,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Zap, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#007AFF',
+    color: 'var(--color-secondary-500)',
     description: '基于功效标签的综合评分',
     details: []
   },
@@ -103,7 +103,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Shield, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#34C759',
+    color: 'var(--color-primary-400)',
     description: '基于注意事项和用量的安全评估',
     details: []
   },
@@ -113,7 +113,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Activity, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#AF52DE',
+    color: 'var(--color-accent-500)',
     description: '成分在体内的吸收效率预估',
     details: []
   },
@@ -143,7 +143,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Microscope, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#0891B2',
+    color: 'var(--color-info-600)',
     description: '现代科学研究支持程度',
     details: []
   }

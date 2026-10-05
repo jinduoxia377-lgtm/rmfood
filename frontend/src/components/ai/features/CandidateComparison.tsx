@@ -375,8 +375,8 @@ export function CandidateComparison({
                       <RechartsRadar
                         name={candidate.name}
                         dataKey="efficacy"
-                        stroke="#34C759"
-                        fill="#34C759"
+                        stroke="var(--color-primary-400)"
+                        fill="var(--color-primary-400)"
                         fillOpacity={0.3}
                       />
                     </RechartsRadarChart>
@@ -454,8 +454,8 @@ export function CandidateComparison({
                       key={dim.key}
                       name={dim.label}
                       dataKey={dim.key}
-                      stroke="#34C759"
-                      fill="#34C759"
+                      stroke="var(--color-primary-400)"
+                      fill="var(--color-primary-400)"
                       fillOpacity={0.15}
                     />
                   ))}
@@ -624,9 +624,9 @@ export function CandidateComparison({
                     {paretoData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.isSelected ? '#34C759' : '#007AFF'}
+                        fill={entry.isSelected ? 'var(--color-primary-400)' : 'var(--color-secondary-500)'}
                         fillOpacity={entry.isSelected ? 1 : 0.6}
-                        stroke={entry.isSelected ? '#28A745' : '#007AFF'}
+                        stroke={entry.isSelected ? 'var(--color-primary-500)' : 'var(--color-secondary-500)'}
                         strokeWidth={entry.isSelected ? 2 : 1}
                       />
                     ))}

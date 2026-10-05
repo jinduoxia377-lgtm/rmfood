@@ -39,7 +39,7 @@ type SortDir = 'asc' | 'desc';
 type ViewMode = 'table' | 'card';
 type DataSource = 'tcmsp' | 'symmap';
 
-const CHART_PRIMARY = 'var(--color-primary, #34C759)';
+const CHART_PRIMARY = 'var(--color-primary, var(--color-primary-400))';
 
 // 排序图标组件
 function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField; sortDir: SortDir }) {
@@ -431,7 +431,7 @@ export default function HerbsTab({
                           <StarOff className="w-4 h-4 text-[var(--text-muted,#9A9A9F)] opacity-0 group-hover:opacity-100 transition-opacity" />
                         )}
                       </td>
-                      <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">
+                      <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                         <span className="group-hover:text-primary-600 transition-colors">
                           <Highlight text={item.name_cn || item.nameCn} keyword={keyword} />
                         </span>
@@ -541,7 +541,7 @@ export default function HerbsTab({
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] group-hover:text-primary-600 transition-colors truncate">
+                      <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] group-hover:text-primary-600 transition-colors truncate">
                         <Highlight text={item.name_cn || item.nameCn} keyword={keyword} />
                       </h3>
                       <p className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono italic truncate">{item.name_latin || item.nameLatin || '-'}</p>
@@ -691,7 +691,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
               <div className="flex flex-wrap gap-2">
                 {compounds.slice(0, 8).map((c: any, i: number) => (
                   <div key={i} className="bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-lg text-xs border border-blue-100 dark:border-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] truncate max-w-[140px]" title={c.name}>{c.name}</div>
+                    <div className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] truncate max-w-[140px]" title={c.name}>{c.name}</div>
                     <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono mt-0.5">
                       <span className="text-primary-600 dark:text-primary-400">OB {Number(c.ob).toFixed(1)}</span>
                       <span className="text-secondary-600 dark:text-secondary-400 ml-2">DL {Number(c.dl).toFixed(2)}</span>
@@ -769,7 +769,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
             <tbody className="divide-y divide-[rgba(148,163,184,0.08)]">
               {compounds.map((c: any, i: number) => (
                 <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-blue-950/10 transition-colors">
-                  <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{c.name}</td>
+                  <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{c.name}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.ob != null ? Number(c.ob).toFixed(1) : '-'}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.dl != null ? Number(c.dl).toFixed(3) : '-'}</td>
                   <td className="px-3 py-2.5 text-center text-[var(--text-secondary,#6E6E73)]">{c.target_count ?? '-'}</td>
@@ -906,7 +906,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
         <div className="flex items-start gap-3 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{herb.name_cn || herb.nameCn}</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{herb.name_cn || herb.nameCn}</h3>
               {herb.symmap_id && (
                 <Badge variant="neutral" size="sm" className="font-mono text-[10px]">
                   SymMap #{herb.symmap_id}
@@ -927,37 +927,37 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
           {herb.nature_cn || herb.natureCn ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">性味</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.nature_cn || herb.natureCn}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.nature_cn || herb.natureCn}</div>
             </div>
           ) : null}
           {herb.meridians_cn || herb.meridiansCn ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">归经</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.meridians_cn || herb.meridiansCn}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.meridians_cn || herb.meridiansCn}</div>
             </div>
           ) : null}
           {herb.category_cn || herb.categoryCn ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.category_cn || herb.categoryCn}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.category_cn || herb.categoryCn}</div>
             </div>
           ) : null}
           {herb.use_part ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">药用部位</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.use_part}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.use_part}</div>
             </div>
           ) : null}
           {herb.category_eng ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类(英)</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.category_eng}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.category_eng}</div>
             </div>
           ) : null}
           {herb.alias ? (
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20 sm:col-span-2">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">别名</div>
-              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.alias}</div>
+              <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.alias}</div>
             </div>
           ) : null}
         </div>
@@ -1006,7 +1006,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-teal-400 to-teal-600"></span>
             功效
           </h4>
-          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] leading-relaxed">{herb.function_cn || herb.functionCn}</p>
+          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.function_cn || herb.functionCn}</p>
           {herb.function_en || herb.functionEn ? (
             <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1 italic">{herb.function_en || herb.functionEn}</p>
           ) : null}
@@ -1020,7 +1020,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></span>
             四气五味
           </h4>
-          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] leading-relaxed">{herb.nature_cn || herb.natureCn}</p>
+          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.nature_cn || herb.natureCn}</p>
           {herb.nature_eng || herb.natureEng ? (
             <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1 italic">{herb.nature_eng || herb.natureEng}</p>
           ) : null}
@@ -1034,7 +1034,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-blue-400 to-blue-600"></span>
             归经
           </h4>
-          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] leading-relaxed">{herb.meridians_cn || herb.meridiansCn}</p>
+          <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.meridians_cn || herb.meridiansCn}</p>
           {herb.meridians_eng || herb.meridiansEng ? (
             <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1 italic">{herb.meridians_eng || herb.meridiansEng}</p>
           ) : null}

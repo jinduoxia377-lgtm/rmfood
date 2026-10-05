@@ -36,7 +36,7 @@ export function RiskIndicator({
   const [isHovered, setIsHovered] = useState(false)
 
   const riskLevel = useMemo(() => {
-    if (score >= thresholds.low) return { level: 'low', color: '#34C759', label: '低风险', bgClass: 'bg-success-500' }
+    if (score >= thresholds.low) return { level: 'low', color: 'var(--color-primary-400)', label: '低风险', bgClass: 'bg-success-500' }
     if (score >= thresholds.medium) return { level: 'medium', color: '#D97706', label: '中风险', bgClass: 'bg-yellow-500' }
     return { level: 'high', color: '#FF3B30', label: '高风险', bgClass: 'bg-error-500' }
   }, [score, thresholds])

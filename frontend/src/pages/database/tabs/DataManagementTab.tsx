@@ -250,7 +250,7 @@ const LOG_TYPE_FILTERS: { value: LogType | 'all'; label: string }[] = [
 ];
 
 const QUALITY_METRICS = [
-  { key: 'completeness', label: '完整性', desc: '必填字段填充率', color: 'var(--color-primary, #34C759)' },
+  { key: 'completeness', label: '完整性', desc: '必填字段填充率', color: 'var(--color-primary, var(--color-primary-400))' },
   { key: 'accuracy', label: '准确性', desc: '数据格式校验通过率', color: 'var(--color-violet-500, #6366F1)' },
   { key: 'consistency', label: '一致性', desc: '关联数据匹配度', color: 'var(--color-warning, #FF9F0A)' },
   { key: 'timeliness', label: '时效性', desc: '数据更新频率', color: 'var(--color-error, #FF3B30)' },

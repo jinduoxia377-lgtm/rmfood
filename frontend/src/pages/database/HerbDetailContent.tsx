@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui'
 import { ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts'
 
-const CHART_COLORS = { primary: 'var(--color-primary, #34C759)', blue: 'var(--color-secondary, #0A84FF)', amber: 'var(--color-warning, #FF9F0A)', accent: 'var(--color-tertiary, #AF52DE)' }
+const CHART_COLORS = { primary: 'var(--color-primary, var(--color-primary-400))', blue: 'var(--color-secondary, #0A84FF)', amber: 'var(--color-warning, #FF9F0A)', accent: 'var(--color-tertiary, var(--color-accent-500))' }
 
 export function HerbDetailContent({ herb }: { herb: any }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'compounds' | 'targets' | 'diseases'>('overview')
@@ -137,7 +137,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
             <tbody className="divide-y divide-[rgba(148,163,184,0.08)]">
               {compounds.map((c: any, i: number) => (
                 <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-blue-950/10 transition-colors">
-                  <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{c.name}</td>
+                  <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{c.name}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.ob != null ? Number(c.ob).toFixed(1) : '-'}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.dl != null ? Number(c.dl).toFixed(3) : '-'}</td>
                   <td className="px-3 py-2.5 text-center text-[var(--text-secondary,#6E6E73)]">{c.target_count ?? '-'}</td>

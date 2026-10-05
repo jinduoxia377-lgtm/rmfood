@@ -139,7 +139,7 @@ export function AnalyticsDashboard() {
     errorContainer: theme.colors.errorContainer || '#FFE0E0',
     outline: theme.colors.border?.default || '#E5E7EB',
     outlineVariant: theme.colors.outlineVariant || '#E5E7EB',
-    tertiary: theme.colors.tertiary?.main || '#AF52DE',
+    tertiary: theme.colors.tertiary?.main || 'var(--color-accent-500)',
   }) as unknown as Record<string, string>, [theme])
 
   const [data, setData] = useState<DashboardData | null>(null)

@@ -110,7 +110,7 @@ export const useTemplateStore = create<TemplateState>()(
             },
             styles: {
               fonts: { heading: 'SimHei', body: 'SimSun', caption: 'SimSun', title: 'SimHei' },
-              colors: { primary: '#1f2937', secondary: '#4b5563', accent: '#007AFF' },
+              colors: { primary: '#1f2937', secondary: '#4b5563', accent: 'var(--color-secondary-500)' },
               spacing: { lineHeight: 1.8, paragraphSpacing: 15, marginTop: 24, marginBottom: 15, headingSpacing: 24 },
               headings: {
                 h1: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
@@ -149,12 +149,12 @@ export const useTemplateStore = create<TemplateState>()(
             },
             styles: {
               fonts: { heading: 'SimHei', body: 'SimSun', caption: 'SimSun', title: 'SimHei' },
-              colors: { primary: '#065f46', secondary: '#3f6212', accent: '#34C759' },
+              colors: { primary: '#065f46', secondary: '#3f6212', accent: 'var(--color-primary-400)' },
               spacing: { lineHeight: 1.6, paragraphSpacing: 12, marginTop: 20, marginBottom: 12, headingSpacing: 20 },
               headings: {
                 h1: { fontSize: 18, fontWeight: 'bold', color: '#065f46' },
                 h2: { fontSize: 15, fontWeight: 'bold', color: '#1E8E3E' },
-                h3: { fontSize: 13, fontWeight: 'bold', color: '#28A745' },
+                h3: { fontSize: 13, fontWeight: 'bold', color: 'var(--color-primary-500)' },
               },
             },
             variables: [],

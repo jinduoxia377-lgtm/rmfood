@@ -168,11 +168,11 @@ const NODE_STYLES = {
     width: 140,
     height: 50,
     radius: 25,
-    fill: 'var(--color-primary, #34C759)',
-    stroke: 'var(--color-primary-hover, #28A745)',
+    fill: 'var(--color-primary, var(--color-primary-400))',
+    stroke: 'var(--color-primary-hover, var(--color-primary-500))',
     textColor: 'var(--card-bg-solid, #FFFFFF)',
-    darkFill: 'var(--color-primary, #34C759)',
-    darkStroke: 'var(--color-primary-hover, #28A745)',
+    darkFill: 'var(--color-primary, var(--color-primary-400))',
+    darkStroke: 'var(--color-primary-hover, var(--color-primary-500))',
     darkTextColor: 'var(--card-bg-solid, #FFFFFF)',
   },
   end: {
@@ -193,9 +193,9 @@ const NODE_STYLES = {
     fill: 'var(--card-bg-solid, #FFFFFF)',
     stroke: 'var(--color-secondary, #0A84FF)',
     textColor: 'var(--text-primary, #1D1D1F)',
-    darkFill: 'var(--bg-surface, #1C1C1E)',
+    darkFill: 'var(--bg-surface, var(--bg-surface-container))',
     darkStroke: 'var(--color-blue-400, #6ECAFF)',
-    darkTextColor: 'var(--text-primary, #F5F5F7)',
+    darkTextColor: 'var(--text-primary, var(--bg-canvas))',
   },
   condition: {
     width: 100,
@@ -213,19 +213,19 @@ const NODE_STYLES = {
     width: 160,
     height: 60,
     radius: 4,
-    fill: 'var(--color-tertiary, #AF52DE)',
+    fill: 'var(--color-tertiary, var(--color-accent-500))',
     stroke: 'var(--color-tertiary-hover, #8B5CF6)',
     textColor: 'var(--card-bg-solid, #FFFFFF)',
-    darkFill: 'var(--color-tertiary, #AF52DE)',
+    darkFill: 'var(--color-tertiary, var(--color-accent-500))',
     darkStroke: 'var(--color-tertiary-hover, #8B5CF6)',
     darkTextColor: 'var(--card-bg-solid, #FFFFFF)',
   },
 }
 
 const STATUS_COLORS = {
-  pending: { bg: 'var(--bg-tertiary, #F5F5F7)', border: 'var(--text-muted, #9A9A9F)', text: 'var(--text-secondary, #6E6E73)' },
+  pending: { bg: 'var(--bg-tertiary, var(--bg-canvas))', border: 'var(--text-muted, #9A9A9F)', text: 'var(--text-secondary, #6E6E73)' },
   in_progress: { bg: 'var(--color-secondary-container, #E8F4FD)', border: 'var(--color-secondary, #0A84FF)', text: 'var(--color-blue-700, #0052AE)' },
-  completed: { bg: 'var(--color-success-container, #DCFCE7)', border: 'var(--color-primary, #34C759)', text: 'var(--color-primary-800, #065F46)' },
+  completed: { bg: 'var(--color-success-container, #DCFCE7)', border: 'var(--color-primary, var(--color-primary-400))', text: 'var(--color-primary-800, #065F46)' },
   failed: { bg: 'var(--color-error-container, #FFE0E0)', border: 'var(--color-error, #FF3B30)', text: 'var(--color-danger-900, #7F1D1D)' },
 }
 

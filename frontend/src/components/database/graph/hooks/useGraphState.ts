@@ -814,7 +814,7 @@ function createInitialState(initialLayout: LayoutType): GraphState {
       panelBg: 'rgba(255,255,255,0.95)',
       textPrimary: '#1F2937',
       textSecondary: '#6B7280',
-      accentColor: '#007AFF',
+      accentColor: 'var(--color-secondary-500)',
     },
     showThemePanel: false,
     animationPreset: 'fadeIn',

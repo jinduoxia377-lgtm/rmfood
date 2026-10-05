@@ -446,7 +446,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           alignItems: 'center',
           justifyContent: 'center',
           padding: '20px',
-          background: 'linear-gradient(135deg, #AF52DE 0%, #7C3AED 100%)',
+          background: 'linear-gradient(135deg, var(--color-accent-500) 0%, #7C3AED 100%)',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif',
         }}
       >
@@ -518,7 +518,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        background: 'linear-gradient(135deg, var(--color-tertiary, #AF52DE) 0%, #7C3AED 100%)',
+        background: 'linear-gradient(135deg, var(--color-tertiary, var(--color-accent-500)) 0%, #7C3AED 100%)',
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif',
       }}
@@ -600,7 +600,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
             onClick={resetErrorBoundary}
             style={{
               padding: '10px 24px',
-              background: 'var(--color-secondary, #007AFF)',
+              background: 'var(--color-secondary, var(--color-secondary-500))',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -640,7 +640,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
           style={{
             background: 'transparent',
             border: 'none',
-            color: 'var(--color-secondary, #007AFF)',
+            color: 'var(--color-secondary, var(--color-secondary-500))',
             fontSize: '12px',
             cursor: 'pointer',
             textDecoration: 'underline',

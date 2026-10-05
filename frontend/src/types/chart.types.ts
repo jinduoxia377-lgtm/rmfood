@@ -126,8 +126,8 @@ export enum ColorSchemeType {
 }
 
 export const COLOR_SCHEMES: Record<ColorSchemeType, string[]> = {
-  [ColorSchemeType.DEFAULT]: ['#003E87', '#007AFF', '#0891B2', '#34C759', '#D97706', '#FF3B30', '#AF52DE', '#D946EF'],
-  [ColorSchemeType.BRAND]: ['#007AFF', '#0052AE', '#007AFF', '#6ECAFF', '#A8DFFF', '#D2EFFF', '#E8F4FD', '#F0F7FF'],
+  [ColorSchemeType.DEFAULT]: ['#003E87', 'var(--color-secondary-500)', 'var(--color-info-600)', 'var(--color-primary-400)', '#D97706', '#FF3B30', 'var(--color-accent-500)', '#D946EF'],
+  [ColorSchemeType.BRAND]: ['var(--color-secondary-500)', '#0052AE', 'var(--color-secondary-500)', '#6ECAFF', '#A8DFFF', '#D2EFFF', '#E8F4FD', '#F0F7FF'],
   [ColorSchemeType.PASTEL]: ['#FFD0D0', '#fed7aa', '#fef08a', '#bbf7d0', '#CFFAFE', '#c7d2fe', '#E8D5FF', '#F9A8D4'],
   [ColorSchemeType.VIBRANT]: ['#ff006e', '#fb5607', '#ffbe0b', '#8338ec', '#3a86ff', '#06d6a0', '#ef476f', '#ffd166'],
   [ColorSchemeType.MONOCHROME]: ['#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6'],

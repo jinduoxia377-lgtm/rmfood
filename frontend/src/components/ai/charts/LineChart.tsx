@@ -56,9 +56,9 @@ export function LineChart({ data }: LineChartProps) {
           <Legend />
           <ReferenceLine
             y={stableThreshold}
-            stroke="var(--color-primary, #34C759)"
+            stroke="var(--color-primary, var(--color-primary-400))"
             strokeDasharray="3 3"
-            label={{ value: '稳定阈值', position: 'right', fill: 'var(--color-primary, #34C759)' }}
+            label={{ value: '稳定阈值', position: 'right', fill: 'var(--color-primary, var(--color-primary-400))' }}
           />
           <ReferenceLine
             y={warningThreshold}
@@ -80,10 +80,10 @@ export function LineChart({ data }: LineChartProps) {
               name="预测趋势"
               type="monotone"
               dataKey="prediction"
-              stroke="var(--color-tertiary, #AF52DE)"
+              stroke="var(--color-tertiary, var(--color-accent-500))"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ r: 3, stroke: 'var(--color-tertiary, #AF52DE)' }}
+              dot={{ r: 3, stroke: 'var(--color-tertiary, var(--color-accent-500))' }}
             />
           )}
         </RechartsLineChart>

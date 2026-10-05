@@ -356,7 +356,7 @@ function buildIngredientAnalysis(
   // 用量分布统计
   const distributionRanges = [
     { range: '>30%', min: 30, max: Infinity, color: '#003E87' },
-    { range: '10-30%', min: 10, max: 30, color: '#007AFF' },
+    { range: '10-30%', min: 10, max: 30, color: 'var(--color-secondary-500)' },
     { range: '5-10%', min: 5, max: 10, color: '#6ECAFF' },
     { range: '1-5%', min: 1, max: 5, color: '#A8DFFF' },
     { range: '<1%', min: 0, max: 1, color: '#d1d5db' },
@@ -510,7 +510,7 @@ function buildSafetyAssessment(ingredients: EnhancedIngredientForReport[]): Safe
   const precautionGroups: PrecautionGroup[] = [
     { severity: 'high' as PrecautionSeverity, label: '危险警示', color: '#B91C1C', items: dangerList },
     { severity: 'medium' as PrecautionSeverity, label: '警告提醒', color: '#B45309', items: warningList },
-    { severity: 'low' as PrecautionSeverity, label: '温馨提示', color: '#007AFF', items: infoList },
+    { severity: 'low' as PrecautionSeverity, label: '温馨提示', color: 'var(--color-secondary-500)', items: infoList },
     { severity: 'low' as PrecautionSeverity, label: '建议', color: '#16a34a', items: tipList },
   ].filter((g) => g.items.length > 0)
 

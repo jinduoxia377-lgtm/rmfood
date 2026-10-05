@@ -58,8 +58,8 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected getCompatibilityLevelColor(level: string): string {
     const colorMap: Record<string, string> = {
-      excellent: '#34C759',
-      good: '#34C759',
+      excellent: 'var(--color-primary-400)',
+      good: 'var(--color-primary-400)',
       moderate: '#D97706',
       poor: '#EA580C',
       contraindicated: '#FF3B30',
@@ -69,7 +69,7 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected getSeverityColor(severity: string): string {
     const colorMap: Record<string, string> = {
-      info: '#007AFF',
+      info: 'var(--color-secondary-500)',
       warning: '#D97706',
       critical: '#FF3B30',
     };
@@ -78,13 +78,13 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected getBioactivityColor(bioactivity: string): string {
     const colorMap: Record<string, string> = {
-      antioxidant: '#AF52DE',
+      antioxidant: 'var(--color-accent-500)',
       'anti-inflammatory': '#D946EF',
       antimicrobial: '#14b8a6',
-      antihypertensive: '#0891B2',
+      antihypertensive: 'var(--color-info-600)',
       antidiabetic: '#D97706',
       anticancer: '#FF3B30',
-      immunomodulatory: '#34C759',
+      immunomodulatory: 'var(--color-primary-400)',
       neuroprotective: '#6366f1',
     };
     return colorMap[bioactivity] || '#6b7280';

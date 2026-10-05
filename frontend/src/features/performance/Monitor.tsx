@@ -302,7 +302,7 @@ export function PerformanceMonitor({
           <section style={{ marginBottom: '16px' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', opacity: 0.7 }}>📊 FPS</h4>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: avgFPS >= 55 ? '#34C759' : avgFPS >= 30 ? '#eab308' : '#FF3B30' }}>
+              <span style={{ fontSize: '24px', fontWeight: 'bold', color: avgFPS >= 55 ? 'var(--color-primary-400)' : avgFPS >= 30 ? '#eab308' : '#FF3B30' }}>
                 {avgFPS}
               </span>
               <span style={{ opacity: 0.6 }}>avg</span>
@@ -323,7 +323,7 @@ export function PerformanceMonitor({
                   style={{
                     flex: 1,
                     height: `${Math.min(100, (d.fps / 60) * 100)}%`,
-                    background: d.fps >= 55 ? '#34C759' : d.fps >= 30 ? '#eab308' : '#FF3B30',
+                    background: d.fps >= 55 ? 'var(--color-primary-400)' : d.fps >= 30 ? '#eab308' : '#FF3B30',
                     borderRadius: '1px',
                     minWidth: '2px',
                     transition: 'height 0.1s ease',
@@ -361,7 +361,7 @@ export function PerformanceMonitor({
                 }}>
                   <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.id}</span>
                   <span style={{
-                    color: m.actualDuration > 16 ? '#FF3B30' : m.actualDuration > 8 ? '#eab308' : '#34C759',
+                    color: m.actualDuration > 16 ? '#FF3B30' : m.actualDuration > 8 ? '#eab308' : 'var(--color-primary-400)',
                   }}>
                     {formatDuration(m.actualDuration)}
                   </span>
@@ -387,7 +387,7 @@ export function PerformanceMonitor({
                   <span>{v.name}</span>
                   <span style={{
                     fontWeight: 600,
-                    color: v.rating === 'good' ? '#34C759' : v.rating === 'needs-improvement' ? '#eab308' : '#FF3B30',
+                    color: v.rating === 'good' ? 'var(--color-primary-400)' : v.rating === 'needs-improvement' ? '#eab308' : '#FF3B30',
                   }}>
                     {v.name === 'CLS' ? v.value.toFixed(3) : formatDuration(v.value)}
                   </span>
@@ -419,7 +419,7 @@ export function PerformanceMonitor({
                 <div style={{
                   width: `${(memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100}%`,
                   height: '100%',
-                  background: memoryInfo.usedJSHeapSize > memoryInfo.jsHeapSizeLimit * 0.7 ? '#FF3B30' : '#34C759',
+                  background: memoryInfo.usedJSHeapSize > memoryInfo.jsHeapSizeLimit * 0.7 ? '#FF3B30' : 'var(--color-primary-400)',
                   borderRadius: '3px',
                   transition: 'width 0.5s ease',
                 }} />

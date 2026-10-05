@@ -40,7 +40,7 @@ const DEFAULT_HAZARD_TYPES: HazardType[] = [
 
 const COLOR_CONFIG = {
   unknown: { fill: 'var(--color-slate-200, #E5E7EB)', text: 'var(--color-slate-500, #6B7280)' },
-  low: { fill: 'var(--color-primary, #34C759)', text: 'var(--color-green-900, #065F46)' },
+  low: { fill: 'var(--color-primary, var(--color-primary-400))', text: 'var(--color-green-900, #065F46)' },
   medium: { fill: 'var(--color-warning, #FF9F0A)', text: 'var(--color-amber-800, #D97706)' },
   high: { fill: 'var(--color-error, #FF3B30)', text: 'var(--color-red-800, #DC2626)' },
 }

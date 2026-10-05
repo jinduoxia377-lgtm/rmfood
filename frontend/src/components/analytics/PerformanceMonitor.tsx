@@ -148,7 +148,7 @@ function ResourceTiming({ loadTime }: ResourceTimingProps) {
         <span className="text-sm font-medium text-neutral-700">资源加载时间</span>
       </div>
       <div className={`text-2xl font-bold ${isFast ? 'text-success-700' : 'text-error-700'}`}>{loadTime.toFixed(0)}ms</div>
-      <div className="text-xs mt-1" style={{ color: isFast ? 'var(--color-success, #34C759)' : 'var(--color-error, #FF3B30)' }}>
+      <div className="text-xs mt-1" style={{ color: isFast ? 'var(--color-success, var(--color-primary-400))' : 'var(--color-error, #FF3B30)' }}>
         {isFast ? '✓ 首屏加载 ≤ 2秒' : '⚠️ 需要优化'}
       </div>
     </div>

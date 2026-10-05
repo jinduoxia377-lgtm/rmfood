@@ -66,9 +66,9 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
       {/* 数据区域 */}
       <polygon
         points={pointsString}
-        fill="var(--color-tertiary, #AF52DE)"
+        fill="var(--color-tertiary, var(--color-accent-500))"
         fillOpacity={0.3}
-        stroke="var(--color-tertiary, #AF52DE)"
+        stroke="var(--color-tertiary, var(--color-accent-500))"
         strokeWidth={2}
       />
       {/* 数据点 */}
@@ -80,7 +80,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
             cx={point.x}
             cy={point.y}
             r={3}
-            fill="var(--color-tertiary, #AF52DE)"
+            fill="var(--color-tertiary, var(--color-accent-500))"
           />
         )
       })}

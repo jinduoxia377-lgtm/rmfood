@@ -304,9 +304,9 @@ export function MechanismPieChart({ mechanisms, dominant }: MechanismPieChartPro
   };
 
   const mechanismColors = {
-    bliss_independence: 'var(--color-primary, #34C759)', // green
+    bliss_independence: 'var(--color-primary, var(--color-primary-400))', // green
     pk_interaction: 'var(--color-secondary, #0A84FF)', // blue
-    gibbs_stability: 'var(--color-tertiary, #AF52DE)', // purple
+    gibbs_stability: 'var(--color-tertiary, var(--color-accent-500))', // purple
     network_pharmacology: 'var(--color-warning, #FF9F0A)', // orange
     taste_matrix: 'var(--color-pink-500, #D946EF)', // pink
   };
@@ -588,7 +588,7 @@ export function ParetoScatterChart({
                 cx={cx}
                 cy={cy}
                 r={radius}
-                fill={isSelected ? 'var(--color-tertiary, #AF52DE)' : isHovered ? 'var(--color-tertiary-hover, #818CF8)' : 'var(--color-tertiary-400, #A5B4FC)'}
+                fill={isSelected ? 'var(--color-tertiary, var(--color-accent-500))' : isHovered ? 'var(--color-tertiary-hover, #818CF8)' : 'var(--color-tertiary-400, #A5B4FC)'}
                 stroke="#fff"
                 strokeWidth="2"
                 className="cursor-pointer hover:r-8 transition-all"

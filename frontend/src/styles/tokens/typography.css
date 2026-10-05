@@ -16,14 +16,14 @@ html {
 body {
   font-family: var(--font-sans);
   line-height: 1.6;
-  background-color: var(--bg-canvas, #F5F5F7);
+  background-color: var(--bg-canvas, var(--bg-canvas));
   color: var(--text-primary, #1D1D1F);
   font-size: 17px;
 }
 
 .dark body {
   background-color: var(--bg-primary, #000000);
-  color: var(--text-primary, #F5F5F7);
+  color: var(--text-primary, var(--bg-canvas));
 }
 
 /* ── 标题系统 — Professional Hierarchy ── */

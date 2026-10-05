@@ -101,18 +101,18 @@ export default function SyncTab({
               <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
                 <Database className="w-4 h-4 text-primary-600" />
               </div>
-              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">TCMSP 中药材</h3>
+              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">TCMSP 中药材</h3>
             </div>
             <Badge variant="primary" size="sm">{stats?.tcmsp?.kb_total ?? 0} 知识库</Badge>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
               <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">本地数据库</span>
-              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{tcmspTotal} 条</strong>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] font-mono">{tcmspTotal} 条</strong>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
               <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">药食同源</span>
-              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{stats?.tcmsp?.food_homology_count ?? 0} 种</strong>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] font-mono">{stats?.tcmsp?.food_homology_count ?? 0} 种</strong>
             </div>
             <div className="flex justify-between py-1.5">
               <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">最后同步</span>
@@ -147,18 +147,18 @@ export default function SyncTab({
               <div className="w-8 h-8 rounded-lg bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center">
                 <Activity className="w-4 h-4 text-secondary-600" />
               </div>
-              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">DFBP 活性肽</h3>
+              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">DFBP 活性肽</h3>
             </div>
             <Badge variant="info" size="sm">{stats?.dfbp?.kb_total ?? 0} 知识库</Badge>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
               <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">本地数据库</span>
-              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{dfbpTotal} 条</strong>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] font-mono">{dfbpTotal} 条</strong>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
               <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">活性类型</span>
-              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] font-mono">
                 {Object.keys(stats?.dfbp?.activity_types ?? {}).length} 种
               </strong>
             </div>
@@ -192,7 +192,7 @@ export default function SyncTab({
       {/* 知识图谱统计 */}
       {stats?.knowledge_graph && (
         <Card className="p-5">
-          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-4 flex items-center gap-2">
+          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-4 flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary-600" />知识图谱概览
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -208,7 +208,7 @@ export default function SyncTab({
             ].map(({ label, value, icon: Icon, bg }) => (
               <div key={label} className={`p-3 rounded-xl text-center ${bg}`}>
                 <Icon className="w-4 h-4 mx-auto mb-1 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]" />
-                <div className="text-xl font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{value}</div>
+                <div className="text-xl font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{value}</div>
                 <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-1">{label}</div>
               </div>
             ))}
@@ -219,7 +219,7 @@ export default function SyncTab({
       {/* 数据快照时间线 */}
       {snapshotsQuery.data?.snapshots && Array.isArray(snapshotsQuery.data.snapshots) && snapshotsQuery.data.snapshots.length > 0 && (
         <Card className="p-5">
-          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-4 flex items-center gap-2">
+          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-4 flex items-center gap-2">
             <Clock className="w-4 h-4 text-secondary-600" />同步快照记录
           </h3>
           <div className="relative">
@@ -234,7 +234,7 @@ export default function SyncTab({
                   }`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{s.source_db}</span>
+                      <span className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{s.source_db}</span>
                       {s.is_active && <Badge variant="success" size="sm">当前</Badge>}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-[var(--text-muted,#9A9A9F)]">

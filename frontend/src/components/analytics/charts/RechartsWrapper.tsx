@@ -44,12 +44,12 @@ export interface BaseChartProps {
 
 export const COLORS = [
   'var(--color-secondary, #0A84FF)', // primary
-  'var(--color-primary, #34C759)', // green
+  'var(--color-primary, var(--color-primary-400))', // green
   'var(--color-warning, #FF9F0A)', // amber
   'var(--color-error, #FF3B30)', // red
-  'var(--color-tertiary, #AF52DE)', // violet
+  'var(--color-tertiary, var(--color-accent-500))', // violet
   'var(--color-pink-500, #D946EF)', // pink
-  'var(--color-info, #007AFF)', // cyan
+  'var(--color-info, var(--color-secondary-500))', // cyan
   'var(--color-success-400, #4ADE80)', // lime
 ];
 

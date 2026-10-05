@@ -97,14 +97,14 @@ export interface ChartConfig {
 
 // ─── 常量定义 ───
 const CHART_COLORS = [
-  'var(--color-primary, #34C759)', // primary green
+  'var(--color-primary, var(--color-primary-400))', // primary green
   'var(--color-secondary, #0A84FF)', // blue
-  'var(--color-tertiary, #AF52DE)', // violet
+  'var(--color-tertiary, var(--color-accent-500))', // violet
   'var(--color-warning, #FF9F0A)', // amber
   'var(--color-error, #FF3B30)', // red
-  'var(--color-info, #007AFF)', // cyan
+  'var(--color-info, var(--color-secondary-500))', // cyan
   'var(--color-pink-500, #D946EF)', // pink
-  'var(--color-success, #34C759)', // lime
+  'var(--color-success, var(--color-primary-400))', // lime
 ];
 
 const DARK_CHART_COLORS = [
@@ -442,7 +442,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
           backgroundColor: isDark ? 'var(--bg-canvas, #000000)' : 'var(--card-bg-solid, #FFFFFF)',
           borderRadius: '12px',
           padding: '16px',
-          border: `1px solid ${isDark ? 'var(--bg-secondary, #1C1C1E)' : 'var(--border-subtle, rgba(0,0,0,0.06))'}`,
+          border: `1px solid ${isDark ? 'var(--bg-secondary, var(--bg-surface-container))' : 'var(--border-subtle, rgba(0,0,0,0.06))'}`,
           transition: 'box-shadow 0.2s',
         }}
         onMouseEnter={(e) => {

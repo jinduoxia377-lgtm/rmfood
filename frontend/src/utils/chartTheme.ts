@@ -8,13 +8,13 @@ import { useIsDarkMode } from '@/theme'
 
 /** 图表颜色方案 */
 const LIGHT_COLORS = {
-  primary: 'var(--color-primary, #34C759)',
+  primary: 'var(--color-primary, var(--color-primary-400))',
   secondary: 'var(--color-secondary, #0A84FF)',
-  accent: 'var(--color-tertiary, #AF52DE)',
-  success: 'var(--color-success, #34C759)',
+  accent: 'var(--color-tertiary, var(--color-accent-500))',
+  success: 'var(--color-success, var(--color-primary-400))',
   warning: 'var(--color-warning, #FF9F0A)',
   danger: 'var(--color-error, #FF3B30)',
-  info: 'var(--color-info, #007AFF)',
+  info: 'var(--color-info, var(--color-secondary-500))',
   text: 'var(--text-primary, #1D1D1F)',
   textSecondary: 'var(--text-secondary, #6E6E73)',
   grid: 'var(--border-subtle, rgba(0, 0, 0, 0.06))',
@@ -33,11 +33,11 @@ const DARK_COLORS = {
   warning: 'var(--color-warning, #FF9F0A)',
   danger: 'var(--color-error, #FF453A)',
   info: 'var(--color-info, #0A84FF)',
-  text: 'var(--text-primary, #F5F5F7)',
+  text: 'var(--text-primary, var(--bg-canvas))',
   textSecondary: 'var(--text-secondary, #A1A1A6)',
   grid: 'var(--border-subtle, rgba(255, 255, 255, 0.06))',
   background: 'transparent',
-  tooltipBg: 'var(--bg-surface, #1C1C1E)',
+  tooltipBg: 'var(--bg-surface, var(--bg-surface-container))',
   tooltipBorder: 'var(--border-subtle, rgba(255, 255, 255, 0.06))',
   axisLine: 'var(--border-color, rgba(255, 255, 255, 0.08))',
   tickLine: 'var(--border-color, rgba(255, 255, 255, 0.08))',
@@ -45,12 +45,12 @@ const DARK_COLORS = {
 
 /** 多系列配色 */
 const SERIES_COLORS_LIGHT = [
-  'var(--color-primary, #34C759)',
+  'var(--color-primary, var(--color-primary-400))',
   'var(--color-secondary, #0A84FF)',
-  'var(--color-tertiary, #AF52DE)',
+  'var(--color-tertiary, var(--color-accent-500))',
   'var(--color-warning, #FF9F0A)',
   'var(--color-error, #FF3B30)',
-  'var(--color-info, #007AFF)',
+  'var(--color-info, var(--color-secondary-500))',
   'var(--color-pink-500, #D946EF)',
   'var(--color-orange-500, #EA580C)',
 ]
@@ -197,7 +197,7 @@ export const FORMULA_ROLE_COLORS = {
 
 /** 配方分类调色板（10 色，用于饼图/柱状图）。复用系列色板并补足到 10 色。 */
 export const FORMULA_CATEGORY_PALETTE = {
-  light: [...SERIES_COLORS_LIGHT, 'var(--color-cyan-600, #0891b2)', 'var(--color-purple-600, #9333ea)'],
+  light: [...SERIES_COLORS_LIGHT, 'var(--color-cyan-600, var(--color-info-600))', 'var(--color-purple-600, #9333ea)'],
   dark: [...SERIES_COLORS_DARK, 'var(--color-cyan-700, #0e7490)', 'var(--color-purple-500, #a855f7)'],
 } as const
 

@@ -62,16 +62,16 @@ export function GAFitnessChart({ chartData }: GAPanelChartsProps) {
             type="monotone"
             dataKey="best_fitness"
             name="最佳适应度"
-            stroke="#34C759"
+            stroke="var(--color-primary-400)"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4, fill: '#34C759' }}
+            activeDot={{ r: 4, fill: 'var(--color-primary-400)' }}
           />
           <Line
             type="monotone"
             dataKey="avg_fitness"
             name="平均适应度"
-            stroke="#007AFF"
+            stroke="var(--color-secondary-500)"
             strokeWidth={1.5}
             dot={false}
             strokeDasharray="5 5"

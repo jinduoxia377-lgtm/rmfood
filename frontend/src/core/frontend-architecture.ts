@@ -514,7 +514,7 @@ class WorkerComputeEngine {
 
   _createLogger(): WorkerEngineLogger {
     return {
-      log: (...args: unknown[]) => logger.info("%c[WORKER]", "color:#28A745;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      log: (...args: unknown[]) => logger.info("%c[WORKER]", "color:var(--color-primary-500);font-weight:bold;", ...args.map((a: unknown) => String(a))),
       warn: (...args: unknown[]) => logger.warn("%c[WORKER]", "color:#D97706;font-weight:bold;", ...args.map((a: unknown) => String(a))),
       error: (...args: unknown[]) => logger.error("%c[WORKER]", "color:#FF3B30;font-weight:bold;", ...args.map((a: unknown) => String(a))),
     };

@@ -84,7 +84,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
   ]
 
   const planDistribution = analyticsData?.planDistribution ?? [
-    { name: '企业版', value: 3, color: 'var(--color-tertiary, #AF52DE)' },
+    { name: '企业版', value: 3, color: 'var(--color-tertiary, var(--color-accent-500))' },
     { name: '专业版', value: 5, color: 'var(--color-secondary, #0A84FF)' },
     { name: '免费版', value: 4, color: 'var(--text-muted, #9A9A9F)' },
   ]
@@ -167,7 +167,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
                       `${i * (100 / 11)},${16 - Math.random() * 12}`,
                     ).join(' ')}
                     fill="none"
-                    stroke={isPositive ? 'var(--color-primary, #34C759)' : 'var(--color-error, #FF3B30)'}
+                    stroke={isPositive ? 'var(--color-primary, var(--color-primary-400))' : 'var(--color-error, #FF3B30)'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"

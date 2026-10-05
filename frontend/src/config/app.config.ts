@@ -100,7 +100,7 @@ export const LOGIN_PAGE_CONFIG = {
   // 密码强度等级
   passwordStrength: {
     levels: ['非常弱', '弱', '中等', '强', '非常强'] as string[],
-    colors: ['#FF3B30', '#EA580C', '#eab308', '#34C759', '#28A745'] as string[],
+    colors: ['#FF3B30', '#EA580C', '#eab308', 'var(--color-primary-400)', 'var(--color-primary-500)'] as string[],
   },
   // 凭证 — 🔒 P0 安全修复: 移除默认凭据硬编码
   // 生产环境不显示默认凭据，仅开发环境可选启用
@@ -111,9 +111,9 @@ export const LOGIN_PAGE_CONFIG = {
   // 颜色令牌
   colors: {
     brand: {
-      primary: '#28A745',
-      secondary: '#007AFF',
-      accent: '#AF52DE',
+      primary: 'var(--color-primary-500)',
+      secondary: 'var(--color-secondary-500)',
+      accent: 'var(--color-accent-500)',
     },
     loginForm: {
       background: '#F9FAFB',
@@ -285,12 +285,12 @@ export const STATUS_CONFIG = {
   colors: {
     draft: 'var(--color-neutral-500, #4B5563)',
     pending_review: 'var(--color-warning, #B45309)',
-    approved: 'var(--color-success, #28A745)',
+    approved: 'var(--color-success, var(--color-primary-500))',
     rejected: 'var(--color-danger-600, #B91C1C)',
     archived: 'var(--color-neutral-600, #4B5563)',
     planned: 'var(--color-info, #0284C7)',
-    in_progress: 'var(--color-purple-600, #AF52DE)',
-    completed: 'var(--color-success, #28A745)',
+    in_progress: 'var(--color-purple-600, var(--color-accent-500))',
+    completed: 'var(--color-success, var(--color-primary-500))',
     failed: 'var(--color-danger-600, #B91C1C)',
     cancelled: 'var(--color-neutral-600, #4B5563)',
   },
@@ -451,8 +451,8 @@ export const RHINE_LOGIN_CONFIG = {
   },
   passwordStrength: {
     levels: ['非常弱', '弱', '中等', '强', '非常强'] as string[],
-    // 使用项目功能色: error #B91C1C → warning #ca8a04 → success #16a34a → primary #28A745
-    colors: ['#B91C1C', '#ca8a04', '#ca8a04', '#16a34a', '#28A745'] as string[],
+    // 使用项目功能色: error #B91C1C → warning #ca8a04 → success #16a34a → primary var(--color-primary-500)
+    colors: ['#B91C1C', '#ca8a04', '#ca8a04', '#16a34a', 'var(--color-primary-500)'] as string[],
   },
   credentials: {
     defaultUsername: import.meta.env?.DEV ? 'admin' : undefined,

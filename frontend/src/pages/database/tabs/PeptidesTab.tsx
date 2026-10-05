@@ -334,7 +334,7 @@ export default function PeptidesTab({
                         <Highlight text={item.sequence} keyword={keyword} />
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">
+                    <td className="px-4 py-3 text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                       <Highlight text={item.source_protein || '-'} keyword={keyword} />
                     </td>
                     <td className="px-4 py-3">

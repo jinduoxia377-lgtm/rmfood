@@ -26,7 +26,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1-2次，每次5g，温水冲服',
     tags: ['热门', '免疫力', '药食同源'],
     usage_count: 328,
-    color: 'var(--color-primary, #34C759)',
+    color: 'var(--color-primary, var(--color-primary-400))',
   },
   {
     id: 'sleep-aid',
@@ -42,7 +42,7 @@ const FORMULA_TEMPLATES = [
     usage: '睡前30分钟服用，每次8g，温水冲泡',
     tags: ['睡眠', '安神', '药食同源'],
     usage_count: 256,
-    color: 'var(--color-tertiary, #AF52DE)',
+    color: 'var(--color-tertiary, var(--color-accent-500))',
   },
   {
     id: 'blood-sugar',
@@ -138,7 +138,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1-2次，餐后服用，每次5g',
     tags: ['减肥', '清热', '塑身'],
     usage_count: 289,
-    color: 'var(--color-tertiary, #AF52DE)',
+    color: 'var(--color-tertiary, var(--color-accent-500))',
   },
 ]
 

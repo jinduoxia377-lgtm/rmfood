@@ -85,13 +85,13 @@ const STAT_CARD_CONFIG: Record<string, { label: string; bg: string; icon: ReactN
     label: '药材节点',
     bg: 'bg-primary-50 dark:bg-primary-950/40',
     icon: <Leaf className="w-5 h-5" />,
-    color: 'var(--color-primary-600, #28A745)',
+    color: 'var(--color-primary-600, var(--color-primary-500))',
   },
   compounds: {
     label: '化合物节点',
     bg: 'bg-secondary-50 dark:bg-blue-950/40',
     icon: <FlaskConical className="w-5 h-5" />,
-    color: 'var(--color-info-600, #007AFF)',
+    color: 'var(--color-info-600, var(--color-secondary-500))',
   },
   targets: {
     label: '靶点节点',
@@ -109,7 +109,7 @@ const STAT_CARD_CONFIG: Record<string, { label: string; bg: string; icon: ReactN
     label: '活性肽节点',
     bg: 'bg-accent-50 dark:bg-purple-950/40',
     icon: <Dna className="w-5 h-5" />,
-    color: 'var(--color-purple-600, #AF52DE)',
+    color: 'var(--color-purple-600, var(--color-accent-500))',
   },
   proteins: {
     label: '蛋白质节点',
@@ -1036,7 +1036,7 @@ export default function GraphTab() {
           {selectedNode && selectedNode !== '__full__' ? (
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{selectedNode}</h3>
+                <h3 className="font-bold text-lg text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{selectedNode}</h3>
                 <span className="text-[var(--text-muted,#9A9A9F)] text-sm">— 关系网络</span>
                 <Badge variant="neutral" size="sm">
                   深度 {nodeDepth}
@@ -1064,7 +1064,7 @@ export default function GraphTab() {
           ) : (
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">全局知识图谱</h3>
+                <h3 className="font-bold text-lg text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">全局知识图谱</h3>
                 {fullGraphQuery.data?.mode === 'full' && (
                   <Badge variant="success" size="sm">
                     全量模式
@@ -1245,7 +1245,7 @@ export default function GraphTab() {
       {compareMode && compareNodes.length > 0 && (
         <Card className="p-5 animate-fade-in">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] flex items-center gap-2">
+            <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] flex items-center gap-2">
               <ArrowLeftRight className="w-4 h-4 text-primary-600" />
               节点对比 ({compareNodes.length}/4)
             </h3>
@@ -1358,7 +1358,7 @@ export default function GraphTab() {
       {/* ═════ 路径发现工具 ═════ */}
       {showPathTool && (
         <Card className="p-5 animate-fade-in">
-          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-3 flex items-center gap-2">
+          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-3 flex items-center gap-2">
             <GitBranch className="w-4 h-4 text-primary-600" />
             路径发现 — 查找两节点间的关联链路
           </h3>
@@ -1455,7 +1455,7 @@ export default function GraphTab() {
         herbPathQuery.data?.compounds &&
         herbPathQuery.data.compounds.length > 0 && (
           <Card className="p-5 animate-fade-in">
-            <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-4 flex items-center gap-2">
+            <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-4 flex items-center gap-2">
               <ChevronRight className="w-4 h-4 text-primary-600" />
               {selectedNode} — 化合物-靶点-疾病 完整路径
             </h3>
@@ -1567,7 +1567,7 @@ export default function GraphTab() {
 
       {/* ═════ 配伍关系工具 ═════ */}
       <Card className="p-5">
-        <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-2 flex items-center gap-2">
+        <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-2 flex items-center gap-2">
           <Layers className="w-4 h-4 text-primary-600" />
           药材配伍关系查询
         </h3>
@@ -1593,11 +1593,11 @@ export default function GraphTab() {
                     : 'bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30'
                 }`}
               >
-                <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{edge.source}</span>
+                <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{edge.source}</span>
                 <Badge variant={edge.type === 'synergy' ? 'success' : 'danger'} size="sm">
                   {edge.type === 'synergy' ? '协同' : '拮抗'} ({(edge.strength * 100).toFixed(0)}%)
                 </Badge>
-                <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{edge.target}</span>
+                <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{edge.target}</span>
                 {edge.basis && <span className="text-xs text-[var(--text-muted,#9A9A9F)] ml-auto hidden lg:inline">{edge.basis}</span>}
 
                 {/* 点击跳转到该节点 */}

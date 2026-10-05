@@ -68,11 +68,11 @@ const COLOR_MAP: Record<TagColor, {
     shadowColor: 'var(--color-primary-500, #10b981)',
   },
   success: {
-    gradient: 'linear-gradient(135deg, #34C759, #28A745)',
+    gradient: 'linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500))',
     lightBg: 'var(--color-green-50, #F0FDF4)',
-    darkText: 'var(--color-primary-hover, #28A745)',
+    darkText: 'var(--color-primary-hover, var(--color-primary-500))',
     border: 'var(--color-primary-300, #86EFAC)',
-    shadowColor: 'var(--color-primary, #34C759)',
+    shadowColor: 'var(--color-primary, var(--color-primary-400))',
   },
   warning: {
     gradient: 'linear-gradient(135deg, #D97706, #B45309)',
@@ -89,7 +89,7 @@ const COLOR_MAP: Record<TagColor, {
     shadowColor: 'var(--color-error, #FF3B30)',
   },
   info: {
-    gradient: 'linear-gradient(135deg, #007AFF, #007AFF)',
+    gradient: 'linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-500))',
     lightBg: 'var(--color-blue-50, #F0F7FF)',
     darkText: 'var(--color-blue-700, #0052AE)',
     border: 'var(--color-blue-300, #A8DFFF)',
