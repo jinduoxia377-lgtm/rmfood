@@ -19,7 +19,6 @@ const FAMS = ['primary', 'secondary', 'accent'];
 // ① 显式排除（他人 WIP，绝不触碰）
 const EXCLUDE_WIP = new Set([
   'src/pages/settings/SettingsPage.tsx',
-  'src/pages/formula/components/DashboardLayout.tsx',
 ]);
 // ② 动态 M 名单
 const status = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf8' });
