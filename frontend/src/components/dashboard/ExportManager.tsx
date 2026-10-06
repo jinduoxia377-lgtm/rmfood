@@ -69,12 +69,11 @@ export function ExportManager({ data, className }: ExportManagerProps) {
   ]
 
   useEffect(() => {
-    // 定期更新任务状态
-    const interval = setInterval(() => {
-      setExportTasks(exportService.getHistory() as unknown as ExportTask[])
-    }, 1000)
-
-    return () => clearInterval(interval)
+    // API-04：改为事件订阅（替代 1s 轮询）——订阅 exportService 历史变更
+    const sync = () => setExportTasks(exportService.getHistory() as unknown as ExportTask[])
+    sync()
+    const unsubscribe = exportService.onHistoryChange(sync)
+    return unsubscribe
   }, [])
 
   const handleExport = async () => {

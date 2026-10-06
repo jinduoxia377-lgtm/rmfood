@@ -1,13 +1,13 @@
 /**
  * 团队在线状态组件
  * - 显示当前活跃协作者
- * - 实时更新在线状态
- * - 显示用户操作状态
+ * - R-06：WS 启用时通过真实 user_status 事件更新；未启用时显示「实时连接未启用」占位，
+ *   不再伪造模拟用户列表
  */
-import { useState, useEffect } from 'react'
-import { Users, User, Activity, CheckCircle2, Clock, Zap } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Users, User, Activity, WifiOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui'
-import { wsService } from '@/services/websocket'
+import { wsService, isWebSocketEnabled } from '@/services/websocket'
 
 interface UserStatus {
   userId: string
@@ -27,107 +27,36 @@ interface TeamOnlineStatusProps {
 
 export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusProps) {
   const [users, setUsers] = useState<UserStatus[]>([])
-  const [onlineCount, setOnlineCount] = useState(0)
+
+  const onlineCount = users.filter(u => u.status === 'online').length
+
+  // R-06：WS 启用时订阅真实 user_status 事件（P0-04 已实现真实 EventEmitter）；
+  // 未启用时不伪造模拟用户，UI 展示「实时连接未启用」占位
+  const upsertUser = useCallback((data: any) => {
+    setUsers(prev => {
+      const existing = prev.find(u => u.userId === data.userId)
+      if (existing) {
+        return prev.map(u => u.userId === data.userId
+          ? { ...u, ...data, lastActive: new Date().toLocaleTimeString() }
+          : u)
+      }
+      return [...prev, {
+        userId: data.userId,
+        userName: data.userName,
+        email: data.email,
+        avatar: data.avatar,
+        status: data.status,
+        lastActive: new Date().toLocaleTimeString(),
+        currentAction: data.currentAction,
+      }]
+    })
+  }, [])
 
   useEffect(() => {
-    // 模拟初始用户数据
-    const initialUsers: UserStatus[] = [
-      {
-        userId: 'user1',
-        userName: '张三',
-        email: 'zhangsan@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=张三&background=random',
-        status: 'online',
-        lastActive: new Date().toLocaleTimeString(),
-        currentAction: '编辑仪表板布局',
-      },
-      {
-        userId: 'user2',
-        userName: '李四',
-        email: 'lisi@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=李四&background=random',
-        status: 'away',
-        lastActive: new Date(Date.now() - 5 * 60000).toLocaleTimeString(),
-        currentAction: '查看数据',
-      },
-      {
-        userId: 'user3',
-        userName: '王五',
-        email: 'wangwu@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=王五&background=random',
-        status: 'offline',
-        lastActive: new Date(Date.now() - 30 * 60000).toLocaleTimeString(),
-        currentAction: '离线',
-      },
-    ]
-    setUsers(initialUsers)
-    setOnlineCount(initialUsers.filter(u => u.status === 'online').length)
-
-    // 监听WebSocket消息
-    const unsubscribe = wsService.on('user_status', (data: any) => {
-      handleUserStatusUpdate(data)
-    })
-
-    // 模拟用户状态更新
-    const interval = setInterval(() => {
-      simulateUserStatusUpdate()
-    }, 15000) // 每15秒模拟一次状态更新
-
-    return () => {
-      unsubscribe()
-      clearInterval(interval)
-    }
-  }, [dashboardId])
-
-  const handleUserStatusUpdate = (data: any) => {
-    setUsers(prev => {
-      const updated = prev.map(user =>
-        user.userId === data.userId
-          ? { ...user, ...data, lastActive: new Date().toLocaleTimeString() }
-          : user,
-      )
-      // 如果是新用户，添加到列表
-      if (!updated.some(u => u.userId === data.userId)) {
-        updated.push({
-          userId: data.userId,
-          userName: data.userName,
-          email: data.email,
-          avatar: data.avatar,
-          status: data.status,
-          lastActive: new Date().toLocaleTimeString(),
-          currentAction: data.currentAction,
-        })
-      }
-      return updated
-    })
-
-    // 更新在线计数
-    setOnlineCount(users.filter(u => u.status === 'online').length)
-  }
-
-  const simulateUserStatusUpdate = () => {
-    const randomUserIndex = Math.floor(Math.random() * users.length)
-    const randomStatus: ('online' | 'away' | 'offline')[] = ['online', 'away', 'offline']
-    const randomAction = [
-      '编辑仪表板布局',
-      '查看数据',
-      '添加卡片',
-      '调整布局',
-      '导出数据',
-      '设置共享权限',
-    ]
-
-    const updatedUsers = [...users]
-    updatedUsers[randomUserIndex] = {
-      ...updatedUsers[randomUserIndex],
-      status: randomStatus[Math.floor(Math.random() * randomStatus.length)],
-      currentAction: randomAction[Math.floor(Math.random() * randomAction.length)],
-      lastActive: new Date().toLocaleTimeString(),
-    }
-
-    setUsers(updatedUsers)
-    setOnlineCount(updatedUsers.filter(u => u.status === 'online').length)
-  }
+    if (!isWebSocketEnabled) return
+    const unsubscribe = wsService.on('user_status', upsertUser)
+    return unsubscribe
+  }, [dashboardId, upsertUser])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,11 +85,9 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
   }
 
   const getActionIcon = (action: string) => {
-    if (action.includes('编辑')) return <Zap size={16} className="text-secondary-600" />
-    if (action.includes('查看')) return <Activity size={16} className="text-neutral-600" />
-    if (action.includes('添加')) return <CheckCircle2 size={16} className="text-success-600" />
-    if (action.includes('导出')) return <Clock size={16} className="text-warning-600" />
-    return <User size={16} className="text-neutral-500" />
+    if (action.includes('编辑')) return <Activity size={16} className="text-secondary-600" />
+    if (action.includes('查看')) return <User size={16} className="text-neutral-600" />
+    return <Activity size={16} className="text-neutral-500" />
   }
 
   return (
@@ -171,39 +98,64 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
             <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-semibold">团队在线状态</CardTitle>
           </div>
-          <Badge size="sm">{onlineCount}</Badge>
+          {isWebSocketEnabled
+            ? <Badge size="sm">{onlineCount}</Badge>
+            : <Badge variant="secondary" size="sm">实时连接未启用</Badge>}
         </div>
       </CardHeader>
       <CardContent>
-        {/* 在线用户列表 */}
-        <div className="space-y-2">
-          {users.map((user) => (
-            <div key={user.userId} className="py-2">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                      {user.userName.charAt(0)}
-                    </span>
+        {/* R-06：WS 未启用或无真实用户数据时，展示占位而非伪造列表 */}
+        {users.length === 0 ? (
+          <div className="py-6 flex flex-col items-center gap-2 text-center">
+            {isWebSocketEnabled ? (
+              <>
+                <Users size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无在线协作用户</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">当团队协作者打开此仪表盘时，将在此实时显示</p>
+              </>
+            ) : (
+              <>
+                <WifiOff size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">实时连接未启用</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  设置 VITE_WEBSOCKET_ENABLED=true 并启动后端 WebSocket 服务后可查看实时在线状态
+                </p>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+          {/* 在线用户列表 */}
+          <div className="space-y-2">
+            {users.map((user) => (
+              <div key={user.userId} className="py-2">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                      <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                        {user.userName.charAt(0)}
+                      </span>
+                    </div>
+                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${getStatusColor(user.status)}`} />
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${getStatusColor(user.status)}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium truncate">{user.userName}</p>
-                    <Badge className={`${getStatusColor(user.status)} text-white text-xs`}>
-                      {getStatusText(user.status)}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    {getActionIcon(user.currentAction)}
-                    <p className="text-xs text-neutral-500 truncate">{user.currentAction}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium truncate">{user.userName}</p>
+                      <Badge className={`${getStatusColor(user.status)} text-white text-xs`}>
+                        {getStatusText(user.status)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {getActionIcon(user.currentAction)}
+                      <p className="text-xs text-neutral-500 truncate">{user.currentAction}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          </>
+        )}
 
         {/* 统计信息 */}
         <div className="mt-4 grid grid-cols-3 gap-2">

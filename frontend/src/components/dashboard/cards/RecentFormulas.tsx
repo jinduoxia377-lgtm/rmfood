@@ -20,6 +20,9 @@ interface Props {
 }
 
 export const RecentFormulas: FC<Props> = ({ items, loading }) => {
+  // C-06: 骨架行数自适应实际条数（加载态未知时默认 3）
+  const skeletonRows = items?.length ? Math.min(5, Math.max(2, items.length)) : 3
+
   if (loading) {
     return (
       <Card className="overflow-hidden">
@@ -30,7 +33,7 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: skeletonRows }).map((_, i) => (
             <div key={i} className="px-6 py-3"><Skeleton className="h-5 w-3/4 mb-2" /><Skeleton className="h-3 w-1/2" /></div>
           ))}
         </CardContent>

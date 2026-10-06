@@ -64,6 +64,26 @@ export interface ExportOptions {
 class ExportService {
   private tasks = new Map<string, ExportTask>()
   private progressTracker: ExportProgressTracker | null = null
+  // API-04：历史变更订阅者（替代 UI 侧 1s setInterval 轮询）
+  private historyListeners = new Set<() => void>()
+
+  private notifyHistoryChange() {
+    this.historyListeners.forEach((listener) => {
+      try {
+        listener()
+      } catch {
+        // 单个监听器异常不影响其余订阅者
+      }
+    })
+  }
+
+  /** 订阅历史变更；返回取消函数（P0-04 风格：on() 返回 unsubscribe） */
+  onHistoryChange(listener: () => void): () => void {
+    this.historyListeners.add(listener)
+    return () => {
+      this.historyListeners.delete(listener)
+    }
+  }
 
   async export(
     data: any[] | EnhancedIngredient[],
@@ -132,6 +152,8 @@ class ExportService {
         duration,
         fileSize: 0,
       })
+      // API-04：通知订阅者历史已变更（替代 UI 轮询）
+      this.notifyHistoryChange()
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '未知错误'
@@ -143,6 +165,8 @@ class ExportService {
           error: errorMessage,
         })
       }
+      // API-04：失败也通知订阅者
+      this.notifyHistoryChange()
 
       throw error
     }
@@ -512,10 +536,12 @@ class ExportService {
 
   clearHistory() {
     exportHistory.clearHistory()
+    this.notifyHistoryChange()
   }
 
   removeHistoryEntry(id: string) {
     exportHistory.removeEntry(id)
+    this.notifyHistoryChange()
   }
 }
 

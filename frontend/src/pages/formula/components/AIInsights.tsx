@@ -16,7 +16,7 @@ interface Insight {
   title: string
   description: string
   impact: 'high' | 'medium' | 'low'
-  confidence: number
+  confidence?: number
   timestamp: string
   actionUrl?: string
   actionLabel?: string
@@ -47,17 +47,22 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
     return <ErrorCard title="AI洞察加载失败" message="数据获取异常，请稍后重试" onRetry={onRetry} className={className} />
   }
 
+  // A-06：按 confidence 降序排列（tab 切换时同样保持排序稳定）
   const filteredInsights = useMemo(() => {
     if (!insights) return []
-    if (activeTab === 'all') return insights
-    const typeMap: Record<string, Insight['type']> = {
-      trends: 'trend',
-      anomalies: 'anomaly',
-      recommendations: 'recommendation',
-      achievements: 'achievement',
-    }
-    const insightType = typeMap[activeTab]
-    return insights.filter(i => i.type === insightType)
+    const base = activeTab === 'all'
+      ? insights
+      : (() => {
+          const typeMap: Record<string, Insight['type']> = {
+            trends: 'trend',
+            anomalies: 'anomaly',
+            recommendations: 'recommendation',
+            achievements: 'achievement',
+          }
+          const insightType = typeMap[activeTab]
+          return insights.filter(i => i.type === insightType)
+        })()
+    return [...base].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
   }, [activeTab, insights])
 
   const getImpactColor = (impact: string) => {
