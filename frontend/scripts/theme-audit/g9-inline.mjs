@@ -1,60 +1,46 @@
 #!/usr/bin/env node
 /**
- * GATE-09 根治：@theme 自引用登记声明（--x: var(--x)）→ @theme inline
+ * GATE-09 诊断工具（**不自动改写**，仅验证两种路线的可行性）
  *
- * 背景（v1.1.5 口径）：@theme 中 --x: var(--x) 是 Tailwind v4 生成工具类的
- * 登记机制（有声明才生成 bg-<族>-<档>），删除会让工具类不生成（D-55 实证）。
- * 根治方向：改用 @theme inline —— 不输出自引用（产物里无 --x:var(--x)），
- * 但仍登记令牌、仍生成工具类。
+ * 结论（2026-10-06 实证）：GATE-09 的 106 个 `--x:var(--x)` 登记声明在
+ * 本项目 Tailwind v4 + 暗色反转架构下**无安全根治解**：
  *
- * 本脚本把 index.css 的 @theme { ... } 块改为 @theme inline { ... }，
- * 并删除块内所有「值 == var(自身)」的登记声明（inline 模式下 Tailwind 会
- * 直接读 :root/.dark 的字面量，无需自引用登记）。
- * 保留块内「值 != 自身」的实质声明（如 --color-x: var(--color-y) 的跨令牌组合、
- * 带 fallback 的声明、非 var() 的字面量声明）。
+ *   路线 A：@theme → @theme inline
+ *     自引用归 0、产物减 112KB，但「值含 var() 的声明被展开为字面量」→
+ *     源码写 bg-secondary-500 处烘焙 base.css 字面值，暗色模式不再翻转 →
+ *     暗色下品牌色阶视觉失效；且 GATE-12 因产物内工具类选择器缺失报错。
+ *
+ *   路线 B：保持 @theme，删除自引用登记声明
+ *     Tailwind v4 非 inline @theme 中「键名出现」是工具类生成机制
+ *     （v1.1.5 口径，D-55 实证 secondary 族缺条目 → 0 工具类）；
+ *     删 100 个自引用后 GATE-12 回归（工具类 396 → 115）。
+ *
+ *   → GATE-09 维持 ⚠️ warn（合法登记声明，非缺陷）。真正根治需等
+ *     Tailwind 版本升级或暗色架构调整（D-1 的 .dark 类驱动与 @theme inline
+ *     互斥），届时单独立项。
+ *
+ * 本脚本仅作诊断：统计登记声明数 + 输出结论。
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 const IDX = 'src/index.css';
-const BASE = 'src/styles/tokens/base.css';
-const DARK = 'src/styles/tokens/dark.css';
-const fs = { readFileSync, writeFileSync };
-const base = fs.readFileSync(BASE, 'utf8');
-const dark = fs.readFileSync(DARK, 'utf8');
-// base/dark 有真实定义的键（字面量或跨令牌组合）
-const realDefined = new Set(
-  [...base.matchAll(/--([a-z0-9-]+)\s*:/g), ...dark.matchAll(/--([a-z0-9-]+)\s*:/g)]
-    .map(m => m[1])
-);
-
-let idx = fs.readFileSync(IDX, 'utf8');
-
-// 定位 @theme { 块（不含 inline 的那个）
-const themeRe = /@theme\s*\{/;
-const m = idx.match(themeRe);
-if (!m) { console.error('未找到 @theme 块'); process.exit(1); }
-const openIdx = m.index + m[0].length - 1; // '{'
-// 找配对的 '}'（@theme 块内无嵌套 {}）
-let depth = 0, closeIdx = -1;
-for (let i = openIdx; i < idx.length; i++) {
-  if (idx[i] === '{') depth++;
-  else if (idx[i] === '}') { depth--; if (depth === 0) { closeIdx = i; break; } }
+const idx = readFileSync(IDX, 'utf8');
+let selfRef = 0, crossRef = 0, literal = 0;
+// 只在 @theme 块内统计
+const start = idx.indexOf('@theme');
+const themeBlock = idx.slice(start);
+for (const l of themeBlock.split('\n')) {
+  const t = l.trim();
+  const m = t.match(/^--([a-z0-9-]+)\s*:\s*(.+);$/);
+  if (!m) continue;
+  if (new RegExp(`^var\\(\\s*--${m[1]}\\s*\\)$`).test(m[2])) selfRef++;
+  else if (m[2].startsWith('var(--')) crossRef++;
+  else literal++;
 }
-const block = idx.slice(openIdx + 1, closeIdx);
-const lines = block.split('\n');
-const keptLines = [];
-let removed = 0;
-for (const raw of lines) {
-  const l = raw.trim();
-  if (!l) { keptLines.push(raw); continue; }
-  const sm = l.match(/^--([a-z0-9-]+)\s*:\s*var\(\s*--([a-z0-9-]+)\s*\)\s*;/);
-  if (sm && sm[1] === sm[2] && realDefined.has(sm[1])) {
-    removed++; // 自引用 + 有下游真实定义 → inline 模式下可删
-    continue;
-  }
-  keptLines.push(raw);
-}
-const newBlock = keptLines.join('\n');
-const newIdx = idx.slice(0, openIdx) + 'inline' + '\n' + newBlock + idx.slice(closeIdx);
-fs.writeFileSync(IDX, newIdx, 'utf8');
-console.log(`@theme → @theme inline；删除 ${removed} 个自引用登记声明，保留 ${keptLines.filter(l=>l.trim()).length - removed} 行（注释/实质声明）`);
+console.log(`@theme 块内登记声明统计：`);
+console.log(`  自引用 --x:var(--x)        ${selfRef} 个（v1.1.5 合法登记机制，必须保留）`);
+console.log(`  跨令牌组合 --x:var(--y)    ${crossRef} 个`);
+console.log(`  字面量/fallback            ${literal} 个`);
+console.log(`\n结论：GATE-09 的 ${selfRef} 个自引用为 Tailwind v4 工具类生成机制，`);
+console.log(`  在暗色反转（.dark 类驱动）架构下无安全根治解，维持 ⚠️ warn（合法）。`);
+console.log(`  根治需 Tailwind 版本升级或暗色架构调整，届时单独立项。`);
