@@ -155,7 +155,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
       : '';
 
     const ingredientsHtml = config.includeIngredients
-      ? `<div style="font-size:${FONT_SIZES['label-sm']};color:var(--color-text-secondary);">
+      ? `<div style="font-size:${FONT_SIZES['label-sm']};color:var(--text-secondary);">
           ${(Array.isArray(formula.ingredients) ? formula.ingredients : []).map((ing) => `${typeof ing.name === 'string' ? ing.name : '未知药材'}(${typeof ing.dosage === 'string' ? ing.dosage : '未知剂量'})`).join(' + ')}
         </div>`
       : '';

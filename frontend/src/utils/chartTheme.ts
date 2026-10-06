@@ -217,14 +217,14 @@ export function getChartThemeColors() {
 
   return {
     grid: 'var(--color-border-divider, rgba(0,0,0,0.06))',
-    axis: 'var(--color-text-secondary, #6E6E73)',
+    axis: 'var(--text-secondary, #6E6E73)',
     tooltipBg: 'var(--color-surface-default, #ffffff)',
     tooltipBorder: 'var(--color-border-default, #E5E7EB)',
     tooltipText: 'var(--color-text-primary, #111827)',
     line: isDark ? 'var(--color-primary, #34d399)' : 'var(--color-success, #10b981)',
     bar: isDark ? 'var(--color-secondary, #60a5fa)' : 'var(--color-success, #10b981)',
     pie: isDark ? FORMULA_CATEGORY_PALETTE.dark : FORMULA_CATEGORY_PALETTE.light,
-    axisColor: 'var(--color-text-secondary, #6E6E73)',
+    axisColor: 'var(--text-secondary, #6E6E73)',
     barFill: 'var(--color-primary, #10b981)',
   }
 }

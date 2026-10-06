@@ -68,7 +68,7 @@ export function ScoreRadarChart({ synergyScore, tasteScore, stabilityScore, over
                 dataKey="dimension"
                 tick={{
                   fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize,
-                  fill: 'var(--color-text-muted)',
+                  fill: 'var(--text-muted)',
                   fontWeight: CHART_TYPOGRAPHY.dataLabel.fontWeight,
                 }}
               />

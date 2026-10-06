@@ -162,18 +162,18 @@ export const CHART_TYPOGRAPHY = {
   axisLabel: {
     fontSize: parseInt(FONT_SIZES['body-sm']), // 12px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
-    color: 'var(--color-text-secondary)',
+    color: 'var(--text-secondary)',
   },
   axisTitle: {
     fontSize: parseInt(FONT_SIZES['label-md']), // 12px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
     fontWeight: Number(FONT_WEIGHTS.medium),
-    color: 'var(--color-text-secondary)',
+    color: 'var(--text-secondary)',
   },
   legendText: {
     fontSize: parseInt(FONT_SIZES['body-md']), // 14px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
-    color: 'var(--color-text-secondary)',
+    color: 'var(--text-secondary)',
   },
   tooltipTitle: {
     fontSize: parseInt(FONT_SIZES['body-md']), // 14px
@@ -184,7 +184,7 @@ export const CHART_TYPOGRAPHY = {
   tooltipContent: {
     fontSize: parseInt(FONT_SIZES['body-sm']), // 12px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
-    color: 'var(--color-text-secondary)',
+    color: 'var(--text-secondary)',
   },
   dataLabel: {
     fontSize: parseInt(FONT_SIZES['label-md']), // 12px

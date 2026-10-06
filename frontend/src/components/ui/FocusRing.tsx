@@ -18,7 +18,7 @@ interface FocusRingProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const FocusRing: React.FC<FocusRingProps> = ({
  className,
- color ='var(--color-brand-400)',
+ color ='var(--color-primary)',
  width = 2,
  alwaysShow = false,
  children,
@@ -51,14 +51,14 @@ export function useFocusStyles() {
  style.textContent = `
  /* 全局 focus-visible 样式 */
  *:focus-visible {
- outline: 2px solid var(--color-brand-400);
+ outline: 2px solid var(--color-primary);
  outline-offset: 2px;
  }
 
  /* 按钮焦点样式 */
  button:focus-visible,
  a:focus-visible {
- outline: 2px solid var(--color-brand-400);
+ outline: 2px solid var(--color-primary);
  outline-offset: 2px;
  border-radius: var(--radius-sm);
  }
@@ -67,9 +67,9 @@ export function useFocusStyles() {
  input:focus-visible,
  textarea:focus-visible,
  select:focus-visible {
- outline: 2px solid var(--color-brand-400);
+ outline: 2px solid var(--color-primary);
  outline-offset: 1px;
- border-color: var(--color-brand-400);
+ border-color: var(--color-primary);
  }
 
  /* 减少动画模式 */
