@@ -270,7 +270,7 @@ const MembersTab = memo(
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
           >
             <UserPlus className="w-4 h-4" />
             邀请成员
@@ -568,7 +568,7 @@ const MembersTab = memo(
                   'inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors',
                   inviting || !inviteEmail.trim()
                     ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                    : 'bg-secondary-600 text-white hover:bg-secondary-700',
+                    : 'bg-secondary-container text-secondary-main hover:bg-secondary-container',
                 )}
               >
                 {inviting && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -198,7 +198,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
               <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">自定义角色</h3>
               <button
                 onClick={handleCreateRole}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 创建角色
@@ -407,7 +407,7 @@ const RoleEditorModal: React.FC<{
             type="submit"
             form="role-editor-form"
             disabled={isSubmitting || !name.trim()}
-            className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {role ? '保存更改' : '创建角色'}

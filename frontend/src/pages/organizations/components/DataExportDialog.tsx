@@ -428,7 +428,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
               <button
                 onClick={handleExport}
                 disabled={isExporting || visibleFields.length === 0}
-                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-primary-main bg-primary-container rounded-lg hover:bg-primary-container transition-colors disabled:opacity-50"
               >
                 {isExporting ? (
                   <>

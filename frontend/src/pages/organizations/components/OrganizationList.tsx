@@ -528,7 +528,7 @@ const EmptyState = () => (
     <Building2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">暂无组织</h3>
     <p className="text-neutral-500 dark:text-neutral-400 mb-6">创建您的第一个组织开始使用</p>
-    <button className="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center gap-2">
+    <button className="px-6 py-2.5 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors inline-flex items-center gap-2">
       <Building2 className="w-4 h-4" />
       创建组织
     </button>

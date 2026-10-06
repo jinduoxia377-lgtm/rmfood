@@ -352,7 +352,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
             <p className="text-xs text-secondary-600 dark:text-secondary-400">升级计划以解锁更多成员席位和高级功能</p>
             <button
               onClick={() => onRefresh?.()}
-              className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors"
+              className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors"
             >
               刷新数据
             </button>

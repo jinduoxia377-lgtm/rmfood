@@ -233,7 +233,7 @@ export function Pagination({
               className={cn(
                 'w-8 h-8 rounded-lg text-sm font-medium transition-all duration-150',
                 p === _page
-                  ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
+                  ? 'bg-primary-container text-primary-main shadow-sm shadow-primary-600/20'
                   : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
               aria-current={p === _page ? 'page' : undefined}

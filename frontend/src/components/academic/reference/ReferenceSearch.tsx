@@ -41,7 +41,7 @@ export function ReferenceSearch() {
           onClick={() => setSearchType('search')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'search'
-              ? 'bg-primary-500 text-white'
+              ? 'bg-primary-container text-primary-main'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >
@@ -52,7 +52,7 @@ export function ReferenceSearch() {
           onClick={() => setSearchType('doi')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'doi'
-              ? 'bg-primary-500 text-white'
+              ? 'bg-primary-container text-primary-main'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >
@@ -62,7 +62,7 @@ export function ReferenceSearch() {
           onClick={() => setSearchType('isbn')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'isbn'
-              ? 'bg-primary-500 text-white'
+              ? 'bg-primary-container text-primary-main'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >

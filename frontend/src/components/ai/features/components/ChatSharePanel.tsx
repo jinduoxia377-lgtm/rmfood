@@ -766,7 +766,7 @@ export function ChatSharePanel({
                       ${
                         copiedLink
                           ? 'bg-success-500 text-white'
-                          : 'bg-primary-500 text-white hover:bg-primary-600 active:scale-95'
+                          : 'bg-primary-container text-primary-main hover:bg-primary-container active:scale-95'
                       }
                       disabled:opacity-50 disabled:cursor-not-allowed
                     `}
@@ -850,7 +850,7 @@ export function ChatSharePanel({
                   <button
                     onClick={handleGenerateQRCode}
                     disabled={isGeneratingQR || !generatedLink}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-medium rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg shadow-primary-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary-container text-primary-main font-medium rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGeneratingQR ? (
                       <>
@@ -1047,7 +1047,7 @@ export function ChatSharePanel({
                     handleCopyLink();
                     setPopupPlatform(null);
                   }}
-                  className="flex-1 py-2.5 text-sm font-medium bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  className="flex-1 py-2.5 text-sm font-medium bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
                 >
                   复制内容
                 </button>

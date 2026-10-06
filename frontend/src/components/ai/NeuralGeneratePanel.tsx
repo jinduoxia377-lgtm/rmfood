@@ -221,7 +221,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     tabIndex={0}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                       selectedEffects.includes(effect)
-                        ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/20'
+                        ? 'bg-primary-container text-primary-main shadow-sm shadow-primary-500/20'
                         : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
@@ -245,7 +245,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     tabIndex={0}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 ${
                       selectedIngredientTypes.includes(type)
-                        ? 'bg-accent-500 text-white shadow-sm shadow-accent-500/20'
+                        ? 'bg-accent-container text-accent-main shadow-sm shadow-accent-500/20'
                         : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >

@@ -476,7 +476,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
 
         <button
           onClick={handleNewSession}
-          className="p-2.5 rounded-lg bg-primary-500 text-white hover:bg-primary-600 mb-4 shadow-md"
+          className="p-2.5 rounded-lg bg-primary-container text-primary-main hover:bg-primary-container mb-4 shadow-md"
           title="新建会话"
         >
           <Plus className="w-5 h-5" />
@@ -531,7 +531,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       <div className="p-3 space-y-2">
         <button
           onClick={handleNewSession}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 active:scale-[0.98] transition-all shadow-sm"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-container text-primary-main rounded-lg font-medium hover:bg-primary-container active:scale-[0.98] transition-all shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span>新建会话</span>
@@ -678,7 +678,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
               </button>
               <button
                 onClick={handleRenameConfirm}
-                className="px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                className="px-4 py-2 text-sm bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
               >
                 确认
               </button>
@@ -734,7 +734,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                 />
                 <button
                   onClick={handleAddTag}
-                  className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm"
+                  className="px-3 py-2 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container text-sm"
                 >
                   <Plus className="w-4 h-4" />
                 </button>

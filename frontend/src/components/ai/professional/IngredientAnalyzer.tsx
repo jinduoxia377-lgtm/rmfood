@@ -214,7 +214,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
           <button
             onClick={this.handleSearch}
             disabled={searchLoading}
-            className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:bg-neutral-400 transition-colors"
+            className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:bg-neutral-400 transition-colors"
           >
             {searchLoading ? '搜索中...' : '搜索'}
           </button>

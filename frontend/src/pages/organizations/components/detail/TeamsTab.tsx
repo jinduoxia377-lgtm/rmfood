@@ -332,7 +332,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         </div>
         <button
           onClick={() => openCreateModal(null)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
         >
           <Plus className="w-4 h-4" />
           创建团队
@@ -479,7 +479,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
                 'inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors',
                 submitting || !formName.trim()
                   ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                  : 'bg-secondary-600 text-white hover:bg-secondary-700',
+                  : 'bg-secondary-container text-secondary-main hover:bg-secondary-container',
               )}
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -536,7 +536,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
                 'inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors',
                 submitting || !formName.trim()
                   ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                  : 'bg-secondary-600 text-white hover:bg-secondary-700',
+                  : 'bg-secondary-container text-secondary-main hover:bg-secondary-container',
               )}
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

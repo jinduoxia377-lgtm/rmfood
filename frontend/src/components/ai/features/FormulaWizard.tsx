@@ -518,7 +518,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() => setConstraints((prev) => ({ ...prev, temperature: temp }))}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             constraints.temperature === temp
-                              ? 'bg-primary-500 text-white shadow-md'
+                              ? 'bg-primary-container text-primary-main shadow-md'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
@@ -541,7 +541,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() => setConstraints((prev) => ({ ...prev, viscosity: visc }))}
                           className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                             constraints.viscosity === visc
-                              ? 'bg-primary-500 text-white shadow-md'
+                              ? 'bg-primary-container text-primary-main shadow-md'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
@@ -570,7 +570,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() => setConstraints((prev) => ({ ...prev, irritationLevel: level.value }))}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             constraints.irritationLevel === level.value
-                              ? 'bg-primary-500 text-white shadow-md'
+                              ? 'bg-primary-container text-primary-main shadow-md'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
@@ -1003,7 +1003,7 @@ function PresetManager({
             }
           }}
           disabled={!newPresetName.trim()}
-          className="px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 disabled:opacity-50"
+          className="px-3 py-1.5 bg-primary-container text-primary-main text-sm rounded-lg hover:bg-primary-container disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
         </button>

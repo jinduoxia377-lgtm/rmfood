@@ -275,7 +275,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         <p className="text-sm text-neutral-500 dark:text-neutral-400">{error.message}</p>
         <button
           onClick={() => orgId && fetchDetail(orgId)}
-          className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors"
+          className="px-4 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors"
         >
           重试
         </button>

@@ -205,7 +205,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                   >
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center',
-                      isActive ? 'bg-primary-500 text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500',
+                      isActive ? 'bg-primary-container text-primary-main' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500',
                     )}>
                       <Icon size={14} />
                     </div>

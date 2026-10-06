@@ -252,7 +252,7 @@ export const PermissionSelectModal: React.FC<{
           </button>
           <button
             onClick={() => onConfirm(role)}
-            className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700"
+            className="px-4 py-2 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container"
           >
             确认修改
           </button>

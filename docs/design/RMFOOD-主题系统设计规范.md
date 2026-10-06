@@ -966,7 +966,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **GATE-11** | M1 | 主色表面令牌对比度（亮/暗 × 基础/hover 全部 ≥ 4.5:1），且 `.surface-primary:hover` 不引用会反转的色阶令牌 | CHK-24 | ✅ 通过（亮 5.48/7.68，暗 7.68/5.48） |
 | **GATE-12** | M1 | 源码使用的品牌色阶类**必须**在编译产物中真实生成 | CHK-18 / CHK-28 | ✅ 通过（568 个类全部存在） |
 | **GATE-13** | M4 | 代码中出现的**自有** `--color-*` 令牌必须已在 L0 登记（漏登记无机械校验的兜底） | T6 / §3 | ✅ 通过（白名单制：自有 14 族全部 L0 定义，Tailwind 内置 + 代码高亮色豁免；4 个未登记消费已修，`g1314.mjs` + `g13-fix.mjs`） |
-| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ⚠️ warn（165 处存量待清零，`g1314.mjs` 已检出；逐文件清理属 M4 治理范围） |
+| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ✅ 我名下 0 处（165→0，`g14-clean.mjs` 批量清 79 文件/136 行 + 5 处渐变 D-50 修复 + SynergyTab 动态档位 bug；WIP 文件残余 4 处待其合并后同规则清）。2026-10-06 口径校准：排除 `dark:text-white` 反转文字与 `bg-white` 输入框两类误报，仅保留「反转实底 + 白字」与「动态模板 `bg-primary-${`（JIT 不可生成）」 |
 
 > **GATE-11 的由来**：v1.1.2 的 D-50 修复只改了基础态，`semantic-utils.css` 的 `.surface-primary:hover` 仍指向色阶级令牌 —— 暗色下 `--color-primary-800` 反转为 `#d1fae5`（浅薄荷），白字对比度 **1.13:1**，比 D-50 原缺陷的 1.52:1 更差。**这是 GATE-05/06 的结构性盲区**（它们只测非悬停态、且只筛 `className` 含 `text-white` 的元素，而 `.surface-primary` 的前景色由 CSS 自设）。见 D-54。
 > **GATE-12 的由来**：`@theme` 桥接层不完整时，Tailwind v4 不生成对应工具类，而源码类名照常书写 → 元素**静默**失去颜色。GATE-08（`var()` 可用性）与静态 grep 都发现不了。本次实测发现 `secondary` 整族与 `info` 族缺档，影响 100+ 处使用。见 D-55 / D-56。
@@ -1093,7 +1093,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 `D-12、D-18、D-19、D-24、D-25、D-27、D-28、D-29、D-30、D-31、D-42、D-44、D-46、D-47、D-48`（M3 死代码/架构收口）
 → 排期见《修复执行方案》§0.0 与 §6.4。**M2 已关闭**：D-2、D-3、D-4、D-13、D-23、D-26、D-32、D-34~D-38、D-40、D-43、D-45。**D-53 已随 T-B2b 修复**（kebab 化令牌名，解锁 10 维度自定义）。
 
-**残余风险**：静态扫描原记 82 处条件类字符串形如 `bg-primary-{400..950} + text-white`（仅在特定状态渲染；原记 105 处，经精确统计修正为 82）。**2026-10-06 经 `g1314.mjs` 复测为 165 处**（随源码增长），现由 **GATE-14**（§10.3）机械检出、warn 级登记待清零。门禁在 **12 路由 × 22 个白字实底元素 × 双模式**下未发现失败实例，但这些未渲染状态仍可能触发 D-50。
+**残余风险**：条件类字符串 `bg-primary-{400..950} + text-white` 曾在 165 处（`g1314.mjs` 原估 82，随源码增长实测 165）。**2026-10-06 经 `g14-clean.mjs` 批量清零我名下全部 136 行（79 文件）+ 手动修复 5 处渐变 D-50 + SynergyTab 动态档位 bug**，我名下 0 处；他人 WIP 文件（SettingsPage/DashboardLayout）残余 4 处待其 WIP 合并后同规则清。
 
 **M2 期间新增缺陷**（均由本轮对抗性复核发现）：**D-54**（P0，`.surface-primary:hover` 暗色 **1.13:1**，D-50 修复自身引入的回归）、**D-55**（P0，`@theme` 未桥接 `secondary` 整族 → 104 处 `bg-secondary-*` **0 生成**）、**D-56**（P1，`info` 族非色阶 + `error` 缺 950）、**D-57**（P1，无障碍同步路径缺失）。连同 **D-53** 一并登记。
 
@@ -1160,7 +1160,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 28 | 补主题回归测试，消除 0 覆盖（D-46） |
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
 | 30 | 实现 **GATE-11**（令牌/语义类登记校验）与 **GATE-12**（105 处条件类静态断言） |
-| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 warn 待 M4 逐文件清零。配套 §8.4 操作手册 |
+| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 → 我名下 **0 处**（`g14-clean.mjs` 批量清 79 文件/136 行 + 5 处渐变 D-50 修复 + SynergyTab 动态档位 bug；WIP 文件残余 4 处待其合并后清）。配套 §8.4 操作手册 |
 
 ### 阶段 3 — 治理落地（P2–P3）
 
@@ -1365,6 +1365,8 @@ const bad = await page.evaluate(() => {
 | `frontend/src/theme/RadixThemeProvider.tsx` | — | **已删除**（T-R1 / D-41：样式表从未加载，属无效层） | — |
 | `frontend/src/components/ui/RadixComponents.tsx` | L2 | Badge/Text 包装层（**已改项目原生实现**，保留 API + `role="status"`） | 名称保留仅为兼容导入路径 |
 | `components/theme/ThemePanel.tsx`（新增） | 主题设置面板组件（嵌入 `SettingsPage` 主题 tab；浅色/深色/跟随系统三态 + 预设主题 + 无障碍 4 档 + 减少动画开关 + 导入/导出（走 `themeStore` 权威通道）+ 重置；全 L1 语义色类，§4.3 C-24 合规） |
+| `frontend/scripts/theme-audit/g1314.mjs` | GATE-13/14 断言 | 自检 | 令牌登记白名单校验（GATE-13）+ D-50 条件类静态扫描（GATE-14，2026-10-06 口径校准：排除 `dark:text-white`/`bg-white` 误报） |
+| `frontend/scripts/theme-audit/g14-clean.mjs` | GATE-14 批量清理 | M4 治理 | 把「反转实底色阶 + text-white」共现行替换为 `bg-*-container text-*-main`；WIP 双重安全（显式排除 + git M 名单） |
 | `frontend/scripts/theme-audit/theme-gate.mjs` | 门禁 | **门禁唯一入口**：`GATE-01`~`GATE-14` **十四项**断言，静态 / 编译产物 / 渲染三级（GATE-13/14 经 `g1314.mjs` 注入）；支持 `--milestone` `--json` `--require-render` | 只读，**禁止**修改仓库代码。断言清单见 §10.3 |
 | `frontend/scripts/theme-audit/*.mjs` | 门禁 | 其余 15 个只读审计/取证脚本（隔离矩阵、令牌安全、过渡、截图对比等） | 见该目录 `README.md` |
 | `frontend/scripts/theme-validate.ts` | 门禁 | 规范一致性校验脚本（`SPEC_COLORS` 表**已知有误**，待重写） | **尚未注册**为 npm script；见 §9.3 **G-4** |

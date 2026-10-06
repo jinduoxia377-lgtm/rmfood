@@ -49,7 +49,7 @@ const PermissionCell = memo(({ checked, onChange, readonly }: {
     className={cn(
       'w-6 h-6 rounded flex items-center justify-center transition-all',
       checked
-        ? 'bg-secondary-500 text-white'
+        ? 'bg-secondary-container text-secondary-main'
         : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700',
       readonly && 'opacity-40 cursor-not-allowed',
     )}
@@ -141,7 +141,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-colors"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           <Save className="w-4 h-4" />

@@ -187,7 +187,7 @@ export default function TrendsTab({ filters }: Props) {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             刷新
           </button>
-          <button className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-1.5">
+          <button className="px-3 py-1.5 text-sm bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors flex items-center gap-1.5">
             <Download className="w-4 h-4" />
             导出
           </button>

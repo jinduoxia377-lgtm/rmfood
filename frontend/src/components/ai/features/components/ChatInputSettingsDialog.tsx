@@ -376,7 +376,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                               onClick={() => handleHotkeyChange(action, 'ctrl', !config?.ctrl)}
                               className={`px-2 py-0.5 text-xs font-mono rounded transition-colors ${
                                 config?.ctrl
-                                  ? 'bg-primary-600 text-white'
+                                  ? 'bg-primary-container text-primary-main'
                                   : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                               }`}
                             >
@@ -386,7 +386,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                               onClick={() => handleHotkeyChange(action, 'alt', !config?.alt)}
                               className={`px-2 py-0.5 text-xs font-mono rounded transition-colors ${
                                 config?.alt
-                                  ? 'bg-primary-600 text-white'
+                                  ? 'bg-primary-container text-primary-main'
                                   : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                               }`}
                             >
@@ -396,7 +396,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                               onClick={() => handleHotkeyChange(action, 'shift', !config?.shift)}
                               className={`px-2 py-0.5 text-xs font-mono rounded transition-colors ${
                                 config?.shift
-                                  ? 'bg-primary-600 text-white'
+                                  ? 'bg-primary-container text-primary-main'
                                   : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                               }`}
                             >
@@ -506,7 +506,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-primary-main bg-primary-container hover:bg-primary-container rounded-lg transition-colors"
             >
               保存设置
             </button>

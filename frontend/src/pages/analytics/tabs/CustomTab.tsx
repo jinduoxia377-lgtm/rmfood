@@ -239,7 +239,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
             onClick={() => setIsEditMode(!isEditMode)}
             className={`px-3 py-1.5 text-sm rounded-lg transition-all flex items-center gap-1.5 ${
               isEditMode
-                ? 'bg-primary-600 text-white shadow-sm'
+                ? 'bg-primary-container text-primary-main shadow-sm'
                 : 'bg-surface-hover text-text-primary hover:bg-surface-pressed'
             }`}
           >
@@ -268,7 +268,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && (
             <button
               onClick={() => setShowWidgetPicker(!showWidgetPicker)}
-              className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               添加组件
@@ -278,7 +278,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && widgets.length > 0 && (
             <button
               onClick={() => { setNewLayoutName(currentLayoutName); setShowSaveDialog(true) }}
-              className="px-3 py-1.5 bg-secondary-600 hover:bg-secondary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-secondary-container hover:bg-secondary-container text-secondary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Save className="w-4 h-4" />
               保存布局
@@ -347,7 +347,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
             <button
               onClick={handleSaveLayout}
               disabled={!newLayoutName.trim()}
-              className="w-full py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 text-primary-main text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <Save className="w-4 h-4" />
               保存

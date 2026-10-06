@@ -232,7 +232,7 @@ export function SynergyFormulaDesigner() {
           onClick={() => setUserMode('guided')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
             userMode === 'guided'
-              ? 'bg-primary-500 text-white shadow-md'
+              ? 'bg-primary-container text-primary-main shadow-md'
               : 'text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700'
           }`}
         >
@@ -243,7 +243,7 @@ export function SynergyFormulaDesigner() {
           onClick={() => setUserMode('expert')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
             userMode === 'expert'
-              ? 'bg-primary-500 text-white shadow-md'
+              ? 'bg-primary-container text-primary-main shadow-md'
               : 'text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700'
           }`}
         >
@@ -276,7 +276,7 @@ export function SynergyFormulaDesigner() {
                   idx < currentStep
                     ? 'bg-success-500 text-white'
                     : idx === currentStep
-                    ? 'bg-primary-500 text-white ring-4 ring-primary-200 dark:ring-primary-900'
+                    ? 'bg-primary-container text-primary-main ring-4 ring-primary-200 dark:ring-primary-900'
                     : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {idx < currentStep ? (

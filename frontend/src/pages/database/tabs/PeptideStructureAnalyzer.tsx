@@ -740,12 +740,17 @@ function BatchAnalysisView() {
     setLoading(true); setError(null); setResults([]);
     try {
       const res = await peptideStructureService.batchAnalyze(seqs);
-      // 后端直接返回完整分析结果，不是 { success, result } 包装
-      setResults((res.results || []).map(r => ({
-        ...r,
-        success: true,
-        result: r,
-      })));
+      // 后端返回扁平结构：{ success, count, results: [{sequence, molecular_weight, ...}] }
+      // 判定成功依据：存在 sequence 且解析出了分子量，而非无条件置 true
+      setResults((res.results || []).map(r => {
+        const ok = !!r && !!r.sequence && (r.molecular_weight ?? 0) > 0;
+        return {
+          ...r,
+          success: ok,
+          result: ok ? r : null,
+          error: ok ? undefined : '分析失败或序列无法解析',
+        };
+      }));
     } catch (e: any) {
       setError(e.message || '批量分析失败');
     } finally {
@@ -851,13 +856,13 @@ function DeepAnalysisView() {
         <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           {[
-            ['分子量 (Da)', result.basic_properties?.molecular_weight?.toFixed(2)],
+            ['分子量 (Da)', result.molecular_weight?.toFixed(2) ?? '-'],
             ['LogP', pp?.logp?.toFixed(3)],
             ['GRAVY', pp?.gravy?.toFixed(3)],
             ['不稳定指数', pp?.instability_index?.toFixed(1)],
             ['代数指数', pp?.aliphatic_index?.toFixed(1)],
             ['消光系数', pp?.extinction_coefficient?.toFixed(0)],
-            ['等电点', result.basic_properties?.isoelectric_point?.toFixed(2)],
+            ['等电点', result.isoelectric_point?.toFixed(2) ?? '-'],
             ['净电荷(pH7)', pp?.net_charge?.toFixed(1)],
           ].map(([label, val]) => (
             <div key={label} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
@@ -1282,12 +1287,23 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
           analysis_time: new Date().toISOString(),
         };
         setResult(tempResult);
-        // 获取3D坐标（同时修正分子量，保留后端已计算的 pI）
+        // 获取3D坐标并计算等电点
         fetchMolecule3D(res.smiles, (mw3D: number) => {
           if (mw3D > 0) {
-            // 只更新分子量，不覆盖后端正确计算的 pI
             setResult(prev => prev ? { ...prev, molecular_weight: mw3D } : prev);
           }
+          // pI 通过完整分析接口计算
+          peptideStructureService.analyzePeptide(sequence.toUpperCase(), {
+            n_terminal: nTerminal || undefined,
+            c_terminal: cTerminal || undefined,
+          }).then(analyzeRes => {
+            setResult(prev => prev ? {
+              ...prev,
+              isoelectric_point: analyzeRes.isoelectric_point || prev.isoelectric_point,
+              molecular_weight: analyzeRes.molecular_weight || prev.molecular_weight,
+              hydrophobicity: analyzeRes.hydrophobicity || prev.hydrophobicity,
+            } : prev);
+          }).catch(() => {});
         });
       }
     } catch (e: any) {

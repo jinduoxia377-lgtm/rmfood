@@ -138,7 +138,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                       copied
                         ? 'bg-success-100 text-success-700'
-                        : 'bg-secondary-600 text-white hover:bg-secondary-700'
+                        : 'bg-secondary-container text-secondary-main hover:bg-secondary-container'
                     }`}
                   >
                     {copied ? '已复制！' : isGenerating ? '生成中...' : '复制链接'}
@@ -236,7 +236,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                   <button
                     onClick={handleAddCollaborator}
                     disabled={!newCollaboratorEmail.trim()}
-                    className="px-4 py-2 bg-secondary-600 text-white text-sm font-medium rounded-lg hover:bg-secondary-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-secondary-container text-secondary-main text-sm font-medium rounded-lg hover:bg-secondary-container disabled:opacity-50"
                   >
                     邀请
                   </button>

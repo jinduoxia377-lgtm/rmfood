@@ -244,7 +244,7 @@ export function ViewManager({
         >
           💾 已保存 ({savedViews.length})
           {savedViews.length > 0 && (
-            <span className="absolute -top-1 -right-2 w-4 h-4 bg-secondary-500 text-white text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-2 w-4 h-4 bg-secondary-container text-secondary-main text-xs rounded-full flex items-center justify-center">
               {savedViews.length}
             </span>
           )}
@@ -470,7 +470,7 @@ export function ViewManager({
 
         <button
           onClick={handleApply}
-          className="px-5 py-2 text-sm font-medium text-white bg-secondary-600 hover:bg-secondary-700 rounded-lg shadow-sm transition-colors"
+          className="px-5 py-2 text-sm font-medium text-secondary-main bg-secondary-container hover:bg-secondary-container rounded-lg shadow-sm transition-colors"
         >
           ✓ 应用更改
         </button>

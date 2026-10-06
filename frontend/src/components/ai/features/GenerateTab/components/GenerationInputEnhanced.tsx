@@ -258,7 +258,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                     <div
                       className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${
                         msg.role === 'user'
-                          ? 'bg-primary-500 text-white rounded-br-sm'
+                          ? 'bg-primary-container text-primary-main rounded-br-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-bl-sm'
                       }`}
                     >
@@ -294,7 +294,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               <button
                 onClick={handleChatSend}
                 disabled={!chatInput.trim() || isChatProcessing}
-                className="px-3 py-2 bg-primary-500 hover:bg-primary-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white rounded-xl transition-colors duration-200"
+                className="px-3 py-2 bg-primary-container hover:bg-primary-container disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-primary-main rounded-xl transition-colors duration-200"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -334,7 +334,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                   key={category}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                     hasSelected
-                      ? 'bg-primary-500 text-white shadow-sm'
+                      ? 'bg-primary-container text-primary-main shadow-sm'
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >

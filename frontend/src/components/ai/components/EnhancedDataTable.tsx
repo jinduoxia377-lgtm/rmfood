@@ -420,7 +420,7 @@ export function EnhancedDataTable({
                       onClick={() => table.setPageIndex(pageNum)}
                       className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
                         table.getState().pagination.pageIndex === pageNum
-                          ? 'bg-primary-600 text-white'
+                          ? 'bg-primary-container text-primary-main'
                           : 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
                       }`}
                     >

@@ -845,7 +845,7 @@ export default function DatabasePage() {
           <div ref={quickActionsRef} className="relative">
             <button
               onClick={() => setShowQuickActions(!showQuickActions)}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors leading-normal tracking-tight"
+              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-primary-main bg-primary-container hover:bg-primary-container rounded-md transition-colors leading-normal tracking-tight"
             >
               快速操作
               <ChevronDown className={`w-4 h-4 transition-transform ${showQuickActions ? 'rotate-180' : ''}`} />

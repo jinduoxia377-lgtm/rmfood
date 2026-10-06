@@ -83,7 +83,7 @@ function CategoryChip({
       className={cn(
         'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150 active:scale-95',
         active
-          ? 'bg-primary-500 text-white shadow-sm'
+          ? 'bg-primary-container text-primary-main shadow-sm'
           : 'bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-secondary hover:bg-neutral-200 dark:hover:bg-neutral-700',
       )}
     >
@@ -272,7 +272,7 @@ function Pagination({
             className={cn(
               'w-8 h-8 rounded-lg text-[14px] font-medium transition-all duration-150 active:scale-95',
               p === page
-                ? 'bg-primary-500 text-white shadow-sm'
+                ? 'bg-primary-container text-primary-main shadow-sm'
                 : 'text-text-secondary hover:bg-surface-tertiary dark:hover:bg-neutral-800',
             )}
           >

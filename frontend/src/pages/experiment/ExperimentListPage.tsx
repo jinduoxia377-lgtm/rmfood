@@ -310,7 +310,7 @@ export default function ExperimentListPage() {
                   className={cn(
                     'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                     sortKey === opt.key
-                      ? 'bg-primary-500 text-white'
+                      ? 'bg-primary-container text-primary-main'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700',
                   )}
                 >
@@ -410,7 +410,7 @@ export default function ExperimentListPage() {
                     className={cn(
                       'shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors mt-0.5',
                       isSelected
-                        ? 'bg-primary-500 border-primary-500 text-white'
+                        ? 'bg-primary-container border-primary-500 text-primary-main'
                         : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
                     )}
                   >

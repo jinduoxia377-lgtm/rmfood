@@ -98,7 +98,7 @@ export function CloneOrgDialog({ open, sourceOrg, onClone, onClose, onCloned }: 
           <button
             onClick={handleClone}
             disabled={loading || cloned || !name.trim()}
-            className="px-4 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {cloned ? <><CheckCircle className="w-4 h-4" />完成</> : '开始克隆'}

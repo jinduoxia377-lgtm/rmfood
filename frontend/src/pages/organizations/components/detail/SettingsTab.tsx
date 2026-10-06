@@ -243,7 +243,7 @@ const SettingsTab = memo(({ organizationId, organization, onArchive, onDelete, o
               'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all',
               saving || !isModified
                 ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                : 'bg-secondary-600 text-white hover:bg-secondary-700 shadow-sm shadow-blue-500/25 hover:shadow-md',
+                : 'bg-secondary-container text-secondary-main hover:bg-secondary-container shadow-sm shadow-blue-500/25 hover:shadow-md',
             )}
           >
             {saving ? (

@@ -431,7 +431,7 @@ function HealthDashboard() {
                   <button
                     onClick={handleLlmSave}
                     disabled={llmSaving}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-150 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-container text-primary-main hover:bg-primary-container transition-colors duration-150 disabled:opacity-50"
                   >
                     {llmSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     保存配置
@@ -887,7 +887,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
           <div className="flex items-center gap-2">
             <button onClick={() => handleSave(modelKey)} disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-150 disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-container text-primary-main hover:bg-primary-container transition-colors duration-150 disabled:opacity-50">
               {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               保存配置
             </button>

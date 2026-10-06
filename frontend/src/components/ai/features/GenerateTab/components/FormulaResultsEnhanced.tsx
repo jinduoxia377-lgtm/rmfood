@@ -423,7 +423,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
             {onSaveAll && (
               <button
                 onClick={onSaveAll}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-primary-main bg-primary-container hover:bg-primary-container rounded-lg transition-colors"
               >
                 保存全部
               </button>

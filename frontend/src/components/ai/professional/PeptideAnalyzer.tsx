@@ -277,7 +277,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           <button
             onClick={this.handleAnalyze}
             disabled={this.state.loading || !sequence.trim()}
-            className="px-6 py-3 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-6 py-3 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {this.state.loading ? '分析中...' : '开始分析'}
           </button>

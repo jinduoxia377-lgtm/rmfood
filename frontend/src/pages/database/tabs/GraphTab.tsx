@@ -575,7 +575,7 @@ export default function GraphTab() {
             <button
               key={d}
               onClick={() => setNodeDepth(d)}
-              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${nodeDepth === d ? 'bg-primary-600 text-white shadow-sm' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted,#9A9A9F)] hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
+              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${nodeDepth === d ? 'bg-primary-container text-primary-main shadow-sm' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted,#9A9A9F)] hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
             >
               {d}
             </button>
@@ -659,7 +659,7 @@ export default function GraphTab() {
                 onClick={() => setAnalyticsTab(key)}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   analyticsTab === key
-                    ? 'bg-primary-600 text-white shadow-sm'
+                    ? 'bg-primary-container text-primary-main shadow-sm'
                     : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] hover:text-[var(--text-primary,#1D1D1F)] dark:hover:text-white border border-neutral-200 dark:border-neutral-700'
                 }`}
               >
@@ -688,7 +688,7 @@ export default function GraphTab() {
                     key={m}
                     onClick={() => setCentralityMode(m)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                      centralityMode === m ? 'bg-secondary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)]'
+                      centralityMode === m ? 'bg-secondary-container text-secondary-main' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)]'
                     }`}
                   >
                     {m === 'pageRank' ? 'PageRank' : m === 'betweenness' ? '介数中心性' : '接近中心性'}
@@ -807,7 +807,7 @@ export default function GraphTab() {
                   <button
                     key={k}
                     onClick={() => setKCoreValue(k)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${kCoreValue === k ? 'bg-accent-600 text-white shadow-sm' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)]'}`}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${kCoreValue === k ? 'bg-accent-container text-accent-main shadow-sm' : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)]'}`}
                   >
                     {k}
                   </button>

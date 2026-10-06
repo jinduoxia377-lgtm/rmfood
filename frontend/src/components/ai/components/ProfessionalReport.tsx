@@ -608,7 +608,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">无法加载报告</h3>
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">{error || '暂无报告数据。请先在对话中获取配方或分析数据，然后生成报告。'}</p>
           <div className="flex items-center justify-center gap-3">
-            <button onClick={handleClose} className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+            <button onClick={handleClose} className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
               关闭
             </button>
             {onClose && (
@@ -641,7 +641,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             </ul>
           </div>
           <div className="flex items-center justify-center gap-3">
-            <button onClick={handleClose} className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+            <button onClick={handleClose} className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
               关闭
             </button>
             <button onClick={() => window.location.reload()} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
