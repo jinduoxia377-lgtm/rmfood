@@ -318,6 +318,10 @@
   /* ═══ Safe Area Insets ═══ */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  /* P1-10（2026-10-06）：viewport-fit=cover 已在 index.html meta 激活，
+     上述令牌在 iOS 独立 PWA 下不再恒为 0。待办（随导航 WIP 批次原子落地）：
+     MainLayout header 固定 height:56px + padding-top:env(...) 互斥 →
+     改 min-height: calc(56px + var(--safe-area-inset-top))。 */
 
   /* ═══ Skeleton Fill Token ═══ */
   --fill-secondary: #e2e8f0;
