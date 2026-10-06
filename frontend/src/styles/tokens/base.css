@@ -313,6 +313,7 @@
   --z-modal-backdrop: 1000;
   --z-toast: 1200;
   --z-tooltip: 1300;
+  --z-dropdown: 500;        /* 下拉面板：高于 header(100)/sidebar(301)/overlay(300)，低于 modal(1000) */
 
   /* ═══ Safe Area Insets ═══ */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
