@@ -54,6 +54,7 @@ import {
   TodosList,
   ReviewQueueList,
   ActivityTimeline,
+  UserRoleStats,
 } from '@/components/dashboard/cards'
 import { CardSkeleton as CardSkeletonComp } from '@/components/ui/SkeletonPresets'
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
@@ -75,6 +76,7 @@ const CARD_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'todos': TodosList,
   'review-queue': ReviewQueueList,
   'activity-timeline': ActivityTimeline,
+  'user-role-stats': UserRoleStats,
   'kpi-dashboard': () => <KPIDashboard />,
   'team-activity': () => (
     <Card>
@@ -110,7 +112,11 @@ function renderTemplateManager(currentLayout: DashboardLayout, setCurrentLayout:
 
 interface CardRenderProps {
   card: CardConfig
-  data: { formulas: { total: number; by_status: Record<string, number> }; experiments: { total: number; by_status: Record<string, number> } } | null
+  data: {
+    formulas: { total: number; by_status: Record<string, number> }
+    experiments: { total: number; by_status: Record<string, number> }
+    users?: { total: number; by_role?: Record<string, number> }
+  } | null
   trendsData: { data: { date: string; formulas_created: number; experiments_created: number; formulas_approved: number }[] } | null
   // C-02: 卡片直接消费 API 分页响应（items），去掉 renderCard 中间映射
   formulasData: { items?: any[] } | null
@@ -259,6 +265,13 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     props.onRetry = refetchTimeline
   }
 
+  // API-05：用户角色分布
+  if (card.type === 'user-role-stats') {
+    props.byRole = (data?.users?.by_role || {}) as Record<string, number>
+    props.total = data?.users?.total ?? 0
+    props.loading = statsLoading
+  }
+
   // AI insights — API-03: 由卡片内部 useAIInsights 统一管理加载/错误态，
   // 页面不再注入 loading/error/onRetry（否则会与卡片自身查询状态冲突）
 
@@ -294,7 +307,7 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
 export default function DashboardPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const [trendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
+  const [trendPeriod, setTrendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStatistics()
   const { data: trendsData, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends } = useDashboardTrends(trendPeriod)
   const { data: formulasData, isLoading: formulasLoading, error: formulasError, refetch: refetchFormulas } = useFormulas({ page: 1, page_size: 5 })
@@ -747,6 +760,28 @@ export default function DashboardPage() {
               刷新
             </Button>
 
+            {/* 趋势周期切换器（P3：trendPeriod 接 UI，消费 DASHBOARD_CONFIG.periodOptions） */}
+            <div className="flex items-center gap-1.5" role="group" aria-label="趋势周期">
+              <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">趋势</span>
+              <div className="flex items-center bg-white/15 rounded-full overflow-hidden">
+                {DASHBOARD_CONFIG.periodOptions.map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setTrendPeriod(opt.key)}
+                    className={`px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                      trendPeriod === opt.key
+                        ? 'bg-white text-primary-600'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                    aria-label={`切换趋势周期为${opt.label}`}
+                    aria-pressed={trendPeriod === opt.key}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* 编辑模式下的布局控制 — 内嵌于横幅右侧 */}
             {isEditMode && (
               <div className="flex items-center gap-3 pl-4 border-l border-white/20 ml-1" role="group" aria-label="布局设置">
@@ -851,7 +886,11 @@ export default function DashboardPage() {
               >
                 {renderCard({
                   card,
-                  data: stats ? { formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} }, experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} } } : null,
+                  data: stats ? {
+                    formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} },
+                    experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} },
+                    users: stats.users ? { total: stats.users.total ?? 0, by_role: stats.users.by_role ?? {} } : undefined,
+                  } : null,
                   trendsData: trendsData || null,
                   formulasData: formulasData || null,
                   experimentsData: experimentsData || null,

@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, CardSkeleton }
 import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 import { cn } from '@/lib/utils'
 import { useAIInsights, useAIPredictions, useKPIProgress } from '@/hooks/useAIInsights'
+import { aiInsightsApi, type InsightEngine } from '@/api/aiInsights'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 interface Insight {
@@ -36,6 +37,10 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
   const { data: insights, isLoading: insightsLoading } = useAIInsights()
   const { data: predictions, isLoading: predictionsLoading } = useAIPredictions()
   const { data: kpiProgress, isLoading: kpiLoading } = useKPIProgress()
+
+  // A-07：洞察引擎版本标识（规则版 / 模型版）
+  const engine: InsightEngine = useMemo(() => aiInsightsApi.getEngine(), [])
+  const engineLabel = engine === 'model' ? '模型版' : '规则版'
 
   // 父级 loading 优先：数据请求期间显示卡片骨架
   if (loading) {
@@ -114,7 +119,9 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
             <p className="text-xs text-neutral-500 dark:text-neutral-400">基于数据的智能分析与建议</p>
           </div>
         </div>
-        <Badge variant="primary" size="sm">Beta</Badge>
+        <Badge variant="primary" size="sm" title={`洞察引擎：${engineLabel}版`}>
+          {engineLabel}
+        </Badge>
       </CardHeader>
 
       <CardContent>

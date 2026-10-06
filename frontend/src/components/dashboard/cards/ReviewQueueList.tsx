@@ -57,7 +57,13 @@ export const ReviewQueueList: FC<Props> = ({ items, loading }) => {
             <AlertTriangle size={18} className="text-warning-500" />
             <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>待审核配方</CardTitle>
           </div>
-          <Badge variant="neutral" size="sm">{items.length}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="neutral" size="sm">{items.length}</Badge>
+            {/* C-05：统一「查看全部」入口 */}
+            <Link to="/formulas?status=pending_review" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
+              全部 <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
