@@ -19,6 +19,13 @@ interface DraggableCardProps {
   children: React.ReactNode
   disabled?: boolean
   theme?: 'light' | 'dark' | 'system'
+  /**
+   * L-05：编辑状态统一由页面 isEditMode 单源控制。
+   * 传入时：卡片自身不再维护本地编辑态，操作栏可见性/禁用性随该 prop 与 disabled 联动；
+   * 未传入（旧调用方）：回退到本地 isEditing 语义（向后兼容）。
+   */
+  isEditing?: boolean
+  onExitEdit?: () => void
 }
 
 export function DraggableCard({
@@ -30,9 +37,14 @@ export function DraggableCard({
   children,
   disabled = false,
   theme = 'system',
+  isEditing: externalEditing,
+  onExitEdit,
 }: DraggableCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const [localEditing, setLocalEditing] = useState(false)
+  // L-05：外部受控优先；未受控时回退本地态
+  const isEditing = externalEditing !== undefined ? externalEditing : localEditing
+  const setIsEditing = externalEditing !== undefined ? onExitEdit ?? (() => {}) : setLocalEditing
   const [aspectRatioLocked, setAspectRatioLocked] = useState(false)
   const [cardTheme, setCardTheme] = useState<'light' | 'dark' | 'system'>(theme)
   const [showThemeOptions, setShowThemeOptions] = useState(false)
@@ -258,8 +270,8 @@ export function DraggableCard({
         {children}
       </Card>
 
-      {/* 编辑按钮 - 仅在非编辑模式但悬停时显示 */}
-      {!isEditing && (isHovered || isSorting) && (
+      {/* 编辑按钮 - L-05：仅在本地（未受控）且非编辑模式时悬停显示；受控模式由页面横幅统一开关 */}
+      {!isEditing && externalEditing === undefined && (isHovered || isSorting) && (
         <button
           onClick={() => setIsEditing(true)}
           className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"

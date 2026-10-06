@@ -62,6 +62,11 @@ export const TrendChart: FC<Props> = ({ data, loading }) => {
     return `${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
   };
 
+  // C-03: X 轴刻度按周期动态稀疏（90d 下逐日显示会重叠）
+  const totalDays = data?.length ?? 0
+  const tickStep = totalDays <= 14 ? 1 : totalDays <= 35 ? 5 : 15
+  const xTickFormatter = (value: string, index: number) => (index % tickStep === 0 ? value : '')
+
   const trendChartData = data?.map((d) => ({
     date: formatDate(d.date),
     '新增配方': d.formulas_created,
@@ -92,7 +97,7 @@ export const TrendChart: FC<Props> = ({ data, loading }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" tickFormatter={xTickFormatter} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={36} />
               <Tooltip {...tooltipStyle} />
               <Legend wrapperStyle={{ paddingTop: 16, fontSize: 12 }} iconType="circle" iconSize={8} />

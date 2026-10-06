@@ -4,8 +4,8 @@
 import type { FC } from 'react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, TestTubes, Clock, Brain, Database, ArrowRight, Pencil, Trash2, Check } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui'
+import { Plus, TestTubes, Clock, Brain, Database, ArrowRight, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Button, Modal, Input } from '@/components/ui'
 
 const STORAGE_KEY = 'rmfood_quick_actions'
 
@@ -80,6 +80,9 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 export const QuickActions: FC = () => {
   const [actions, setActions] = useState<Action[]>([])
   const [editMode, setEditMode] = useState(false)
+  // C-04: 自定义入口 Modal 表单（替代 4 次 prompt()）
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [draft, setDraft] = useState({ to: '', title: '', desc: '', iconKey: 'Plus' })
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -115,14 +118,24 @@ export const QuickActions: FC = () => {
   }
 
   const handleAddCustom = () => {
-    const to = prompt('请输入跳转路径（如 /formulas）：')
+    setDraft({ to: '', title: '', desc: '', iconKey: 'Plus' })
+    setShowAddModal(true)
+  }
+
+  const handleConfirmAdd = () => {
+    const to = draft.to.trim()
     if (!to) return
-    const title = prompt('请输入标题：', '自定义入口') || '自定义入口'
-    const desc = prompt('请输入描述：', '') || ''
-    const iconKey = prompt('图标（Plus/TestTubes/Clock/Brain/Database/ArrowRight）：', 'Plus') || 'Plus'
-    const icon = ICON_MAP[iconKey] || Plus
-    const newAction: Action = { to, icon, title, desc, iconBg: 'bg-accent-100 dark:bg-accent-900/30', iconColor: 'text-accent-600 dark:text-accent-400' }
+    const icon = ICON_MAP[draft.iconKey] || Plus
+    const newAction: Action = {
+      to,
+      icon,
+      title: draft.title.trim() || '自定义入口',
+      desc: draft.desc.trim(),
+      iconBg: 'bg-accent-100 dark:bg-accent-900/30',
+      iconColor: 'text-accent-600 dark:text-accent-400',
+    }
     saveActions([...actions, newAction])
+    setShowAddModal(false)
   }
 
   const handleDelete = (index: number) => {
@@ -183,6 +196,63 @@ export const QuickActions: FC = () => {
           )}
         </div>
       </CardContent>
+
+      {/* C-04：自定义入口 Modal 表单 */}
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="添加快捷入口"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">跳转路径 *</label>
+            <Input
+              value={draft.to}
+              onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
+              placeholder="如 /formulas"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">标题</label>
+            <Input
+              value={draft.title}
+              onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+              placeholder="自定义入口"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">描述</label>
+            <Input
+              value={draft.desc}
+              onChange={(e) => setDraft((d) => ({ ...d, desc: e.target.value }))}
+              placeholder="可选"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">图标</label>
+            <select
+              value={draft.iconKey}
+              onChange={(e) => setDraft((d) => ({ ...d, iconKey: e.target.value }))}
+              className="w-full h-9 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-neutral-100"
+            >
+              {Object.keys(ICON_MAP).map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowAddModal(false)}>取消</Button>
+            <Button
+              size="sm"
+              disabled={!draft.to.trim()}
+              onClick={handleConfirmAdd}
+            >
+              添加
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   )
 }

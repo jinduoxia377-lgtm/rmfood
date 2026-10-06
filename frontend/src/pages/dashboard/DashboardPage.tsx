@@ -112,8 +112,9 @@ interface CardRenderProps {
   card: CardConfig
   data: { formulas: { total: number; by_status: Record<string, number> }; experiments: { total: number; by_status: Record<string, number> } } | null
   trendsData: { data: { date: string; formulas_created: number; experiments_created: number; formulas_approved: number }[] } | null
-  formulasData: { data: { id: number; name: string; code: string; status: string; created_at: string; creator_name: string }[] } | null
-  experimentsData: { data: { id: number; title: string; code: string; formula_id: number; formula_name: string; status: string; created_at: string }[] } | null
+  // C-02: 卡片直接消费 API 分页响应（items），去掉 renderCard 中间映射
+  formulasData: { items?: any[] } | null
+  experimentsData: { items?: any[] } | null
   todos: { type: string; id: number | string; title: string; detail: string; priority: 'high' | 'medium' | 'low' }[]
   reviewQueue: { id: number | string; name: string; code: string; creator_name: string; target_effects: string[] }[]
   timeline: { type: string; id: number | string; event: string; title: string; created_at: string; status: string }[]
@@ -217,9 +218,10 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     props.onRetry = refetchStats
   }
 
+  // C-02: 直接传 API 响应，卡片内部消费 items
   // Recent formulas
   if (card.type === 'recent-formulas') {
-    props.items = formulasData?.data ?? null
+    props.items = (formulasData?.items ?? null) as Parameters<typeof RecentFormulas>[0]['items']
     props.loading = formulasLoading
     props.error = formulasError
     props.onRetry = refetchFormulas
@@ -227,7 +229,7 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
 
   // Recent experiments
   if (card.type === 'recent-experiments') {
-    props.items = experimentsData?.data ?? null
+    props.items = (experimentsData?.items ?? null) as Parameters<typeof RecentExperiments>[0]['items']
     props.loading = experimentsLoading
     props.error = experimentsError
     props.onRetry = refetchExperiments
@@ -439,6 +441,7 @@ export default function DashboardPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
+  // L-03：拖拽后同步回写 position（dnd-kit 以数组序渲染网格，position 作为语义坐标保持一致）
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -447,12 +450,16 @@ export default function DashboardPage() {
     const overIndex = currentLayout.cards.findIndex(card => card.id === over.id)
 
     if (activeIndex !== -1 && overIndex !== -1) {
-      const newCards = arrayMove(currentLayout.cards, activeIndex, overIndex)
+      const moved = arrayMove(currentLayout.cards, activeIndex, overIndex)
+      const newCards = moved.map((card, index) => ({
+        ...card,
+        position: { x: index, y: Math.floor(index / layoutColumns) },
+      }))
       const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
       setCurrentLayout(newLayout)
       DashboardConfigManager.saveLayout(newLayout)
     }
-  }, [currentLayout])
+  }, [currentLayout, layoutColumns])
 
   const updateCard = useCallback((cardId: string, updates: Partial<CardConfig>) => {
     const newCards = currentLayout.cards.map(card =>
@@ -837,14 +844,17 @@ export default function DashboardPage() {
                 onRemove={() => updateCard(card.id, { isVisible: false })}
                 onDuplicate={duplicateCard}
                 disabled={!isEditMode}
+                // L-05：编辑状态统一由页面 isEditMode 单源控制
+                isEditing={isEditMode}
+                onExitEdit={() => setIsEditMode(false)}
                 aria-label={`卡片: ${card.title}，拖拽调整位置`}
               >
                 {renderCard({
                   card,
                   data: stats ? { formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} }, experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} } } : null,
                   trendsData: trendsData || null,
-                  formulasData: formulasData ? { data: (formulasData.items ?? []).map((f: any) => ({ id: f.id, name: f.name, code: f.code, status: f.status, created_at: f.created_at, creator_name: f.creator_name })) } : null,
-                  experimentsData: experimentsData ? { data: (experimentsData.items ?? []).map((e: any) => ({ id: e.id, title: e.title, code: e.code, formula_id: e.formula_id, formula_name: e.formula_name, status: e.status, created_at: e.created_at })) } : null,
+                  formulasData: formulasData || null,
+                  experimentsData: experimentsData || null,
                   todos,
                   reviewQueue,
                   timeline,

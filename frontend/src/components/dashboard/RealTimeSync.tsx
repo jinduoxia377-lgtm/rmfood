@@ -1,13 +1,13 @@
 /**
  * 实时数据同步组件
  * - 展示实时数据更新
- * - 模拟数据变更和同步
- * - 演示WebSocket消息处理
+ * - R-06：WS 启用时订阅真实 data_update 频道；未启用时显式提示「实时连接未启用」，
+ *   不再伪造模拟数据变更
  */
 import { useState, useEffect, useRef } from 'react'
-import { Activity, RefreshCw, Clock, Send, Database } from 'lucide-react'
+import { Activity, RefreshCw, Clock, Send, Database, WifiOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
-import { wsService, subscribeToChannel } from '@/services/websocket'
+import { subscribeToChannel, isWebSocketEnabled } from '@/services/websocket'
 
 interface RealTimeSyncProps {
   className?: string
@@ -28,14 +28,11 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    // 订阅数据更新频道
+    // R-06：仅 WS 启用时订阅真实数据更新频道；未启用不伪造模拟变更
+    if (!isWebSocketEnabled) return
     const unsubscribe = subscribeToChannel('data_update', (message) => {
       handleDataUpdate(message)
     })
-
-    // 模拟数据同步
-    startSimulation()
-
     return () => {
       unsubscribe()
       if (intervalRef.current) {
@@ -43,52 +40,6 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
       }
     }
   }, [])
-
-  const startSimulation = () => {
-    intervalRef.current = setInterval(() => {
-      simulateDataChange()
-    }, 5000) // 每5秒模拟一次数据变更
-  }
-
-  const simulateDataChange = () => {
-    const types = ['create', 'update', 'delete'] as const
-    const entities = ['formula', 'experiment', 'user'] as const
-
-    const type = types[Math.floor(Math.random() * types.length)]
-    const entity = entities[Math.floor(Math.random() * entities.length)]
-
-    const mockData = {
-      formula: {
-        id: `formula_${Date.now()}`,
-        name: `测试配方 ${Date.now()}`,
-        status: 'draft',
-      },
-      experiment: {
-        id: `exp_${Date.now()}`,
-        title: `实验 ${Date.now()}`,
-        status: 'in_progress',
-      },
-      user: {
-        id: `user_${Date.now()}`,
-        name: `用户 ${Date.now()}`,
-        role: 'user',
-      },
-    }
-
-    const data = mockData[entity]
-
-    // 模拟接收WebSocket消息
-    handleDataUpdate({
-      type: 'data_update',
-      data: {
-        entity_type: entity,
-        entity_id: data.id,
-        action: type,
-        data,
-      },
-      timestamp: new Date().toISOString(),
-    })
-  }
 
   const handleDataUpdate = (message: any) => {
     const { entity_type, action, data } = message.data
@@ -105,14 +56,12 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
     setSyncCount(prev => prev + 1)
   }
 
+  // R-06：手动同步仅在 WS 启用时有意义（触发一次真实同步请求占位，由后端推送后续事件）
   const handleManualSync = () => {
+    if (!isWebSocketEnabled) return
     setIsSyncing(true)
-
-    // 模拟手动同步
-    setTimeout(() => {
-      simulateDataChange()
-      setIsSyncing(false)
-    }, 1000)
+    // WS 通道由后端推送，此处仅复位状态（后续收到 data_update 事件即完成）
+    setTimeout(() => setIsSyncing(false), 1000)
   }
 
   const getActionIcon = (type: string) => {
@@ -162,7 +111,9 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
             <Activity size={20} className="text-primary-600 dark:text-primary-400" />
             <CardTitle as="h3" className="text-sm font-semibold">实时数据同步</CardTitle>
           </div>
-          <Badge variant="primary" size="sm">{syncCount}</Badge>
+          {isWebSocketEnabled
+            ? <Badge variant="primary" size="sm">{syncCount}</Badge>
+            : <Badge variant="secondary" size="sm">实时连接未启用</Badge>}
         </div>
       </CardHeader>
       <CardContent>
@@ -174,15 +125,22 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
               最后同步: {lastUpdate || '从未'}
             </span>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Send size={16} />}
-            onClick={handleManualSync}
-            disabled={isSyncing}
-          >
-            {isSyncing ? '同步中...' : '手动同步'}
-          </Button>
+          {isWebSocketEnabled ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Send size={16} />}
+              onClick={handleManualSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? '同步中...' : '手动同步'}
+            </Button>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500" title="设置 VITE_WEBSOCKET_ENABLED=true 后可启用实时同步">
+              <WifiOff size={14} />
+              实时连接未启用
+            </span>
+          )}
         </div>
 
         {/* 同步历史 */}
@@ -223,14 +181,24 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         {/* 同步说明 */}
         <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-start gap-3">
-            <RefreshCw size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
+            {isWebSocketEnabled ? (
+              <RefreshCw size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
+            ) : (
+              <WifiOff size={18} className="text-neutral-400 flex-shrink-0 mt-0.5" />
+            )}
             <div>
               <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">实时同步说明</h4>
               <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
-                <li>• 系统会自动同步数据变更</li>
-                <li>• 数据变更后500ms内推送更新</li>
-                <li>• 支持离线操作和自动重连</li>
-                <li>• 冲突解决基于时间戳和版本号</li>
+                {isWebSocketEnabled ? (
+                  <>
+                    <li>• 系统会自动同步数据变更</li>
+                    <li>• 数据变更后 500ms 内推送更新</li>
+                    <li>• 支持离线操作和自动重连</li>
+                    <li>• 冲突解决基于时间戳和版本号</li>
+                  </>
+                ) : (
+                  <li>• 实时同步未启用（设置 VITE_WEBSOCKET_ENABLED=true 并启动后端 WebSocket 后可用）；当前卡片仅展示历史同步记录</li>
+                )}
               </ul>
             </div>
           </div>

@@ -577,6 +577,8 @@ class NoOpWebSocketService {
   }
 }
 
+export const isWebSocketEnabled = shouldEnableWebSocket()
+
 // 创建全局WebSocket服务实例 — 从 VITE_BACKEND_URL 动态推导 WS 地址
 const _backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').replace(/^https?/, 'ws')
 const wsUrl = import.meta.env.VITE_WS_URL || `${_backendUrl}/api/v1/ws`

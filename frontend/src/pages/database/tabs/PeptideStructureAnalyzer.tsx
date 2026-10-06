@@ -1183,6 +1183,38 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     }
   }, [searchParams]);
 
+  // 获取分子3D坐标（供 handleAnalyze 使用）— 保留用户 pI 修复：仅回填分子量
+  const fetchMolecule3D = useCallback(async (
+    smiles: string,
+    onMwUpdated?: (mw: number) => void,
+  ) => {
+    if (!smiles) return;
+    setLoading3D(true);
+    setMolecule3DError(null);
+    try {
+      const response = await fetch(`/api/v1/peptide-structure/smiles-to-3d?smiles=${encodeURIComponent(smiles)}`);
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(errText || `HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.success) {
+        setMolecule3D(data);
+        if (onMwUpdated && data.molecular_weight > 0) {
+          onMwUpdated(data.molecular_weight);
+        }
+      } else {
+        setMolecule3DError(data.detail || '3D结构生成失败');
+      }
+    } catch (e: any) {
+      const msg = e?.message || '3D坐标获取失败';
+      setMolecule3DError(msg);
+      console.error('3D坐标获取失败:', e);
+    } finally {
+      setLoading3D(false);
+    }
+  }, []);
+
   // 完整分析
   const handleAnalyze = useCallback(async () => {
     if (!sequence || sequence.length < 2) {
@@ -1250,10 +1282,11 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
           analysis_time: new Date().toISOString(),
         };
         setResult(tempResult);
-        // 获取3D坐标（同时修正分子量）
-        fetchMolecule3D(res.smiles, (mw3D: number, pI: number) => {
+        // 获取3D坐标（同时修正分子量，保留后端已计算的 pI）
+        fetchMolecule3D(res.smiles, (mw3D: number) => {
           if (mw3D > 0) {
-            setResult(prev => prev ? { ...prev, molecular_weight: mw3D, isoelectric_point: pI } : prev);
+            // 只更新分子量，不覆盖后端正确计算的 pI
+            setResult(prev => prev ? { ...prev, molecular_weight: mw3D } : prev);
           }
         });
       }
@@ -1262,7 +1295,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     } finally {
       setLoading(false);
     }
-  }, [sequence, nTerminal, cTerminal]);
+  }, [sequence, nTerminal, cTerminal, fetchMolecule3D]);
 
   // 添加对比序列
   const addCompareSequence = useCallback(() => {
@@ -1272,38 +1305,6 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
       setCompareInput('');
     }
   }, [compareInput, compareSequences]);
-
-  // 获取分子3D坐标，同时可选回调修正分子量和等电点
-  const fetchMolecule3D = useCallback(async (
-    smiles: string,
-    onMwUpdated?: (mw: number, pI: number) => void,
-  ) => {
-    if (!smiles) return;
-    setLoading3D(true);
-    setMolecule3DError(null);
-    try {
-      const response = await fetch(`/api/v1/peptide-structure/smiles-to-3d?smiles=${encodeURIComponent(smiles)}`);
-      if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(errText || `HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.success) {
-        setMolecule3D(data);
-        if (onMwUpdated && data.molecular_weight > 0) {
-          onMwUpdated(data.molecular_weight, 6.0); // pI 暂用默认值，等后端返回
-        }
-      } else {
-        setMolecule3DError(data.detail || '3D结构生成失败');
-      }
-    } catch (e: any) {
-      const msg = e?.message || '3D坐标获取失败';
-      setMolecule3DError(msg);
-      console.error('3D坐标获取失败:', e);
-    } finally {
-      setLoading3D(false);
-    }
-  }, []);
 
   // 清空结果
   const handleClear = useCallback(() => {
