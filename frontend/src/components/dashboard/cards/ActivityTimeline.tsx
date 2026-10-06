@@ -3,7 +3,7 @@
  */
 import type { FC } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, FlaskConical, TestTubes } from 'lucide-react'
+import { Activity, FlaskConical, TestTubes, ArrowRight } from 'lucide-react'
 import { Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { StatusBadge } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
@@ -53,9 +53,15 @@ export const ActivityTimeline: FC<Props> = ({ items, loading }) => {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="px-6 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          <Activity size={18} className="text-primary-500" />
-          <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近动态</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Activity size={18} className="text-primary-500" />
+            <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近动态</CardTitle>
+          </div>
+          {/* C-05：统一「查看全部」入口 */}
+          <Link to="/formulas" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
+            全部 <ArrowRight size={14} />
+          </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">

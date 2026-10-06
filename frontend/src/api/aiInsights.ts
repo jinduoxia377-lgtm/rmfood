@@ -16,6 +16,13 @@ export interface AIInsight {
   actionLabel?: string
 }
 
+/**
+ * A-07：洞察引擎版本标识
+ * - 'rules'  规则版：基于 dashboard statistics/trends 的阈值与比率规则生成（当前实现）
+ * - 'model'  模型版：未来接入 LLM/统计模型预测（占位语义）
+ */
+export type InsightEngine = 'rules' | 'model'
+
 export interface TrendPrediction {
   metric: string
   current: number
@@ -34,6 +41,9 @@ export interface KPIProgress {
 }
 
 export const aiInsightsApi = {
+  /** 当前洞察引擎版本（A-07：规则版 / 模型版标识，供 UI Badge 展示） */
+  getEngine: (): InsightEngine => 'rules',
+
   getInsights: async (): Promise<AIInsight[]> => {
     const [stats, trends] = await Promise.all([
       apiClient.get('/dashboard/statistics').then(r => r.data),

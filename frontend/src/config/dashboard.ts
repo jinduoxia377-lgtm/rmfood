@@ -22,6 +22,7 @@ export type CardType =
   | 'stats-experiments'
   | 'stats-in-progress'
   | 'stats-completed'
+  | 'user-role-stats'
   | 'chart-trends'
   | 'chart-formula-pie'
   | 'chart-experiment-bar'
@@ -115,6 +116,7 @@ export const CARD_CATALOG = {
     { type: 'stats-experiments' as const, name: '实验总数', description: '显示所有实验的总数', icon: 'TestTubes' },
     { type: 'stats-in-progress' as const, name: '进行中实验', description: '显示当前进行中的实验', icon: 'TrendingUp' },
     { type: 'stats-completed' as const, name: '完成实验', description: '显示已完成的实验数量', icon: 'CheckCircle2' },
+    { type: 'user-role-stats' as const, name: '用户角色分布', description: '按角色统计用户数量（消费 users.by_role）', icon: 'UserCheck' },
     { type: 'chart-trends' as const, name: '研发趋势', description: '显示配方和实验的时间趋势', icon: 'BarChart3' },
     { type: 'chart-formula-pie' as const, name: '配方状态分布', description: '饼图展示各状态配方占比', icon: 'PieChart' },
     { type: 'chart-experiment-bar' as const, name: '实验状态统计', description: '条形图展示各状态实验数量', icon: 'BarChart2' },
