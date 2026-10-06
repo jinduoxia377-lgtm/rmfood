@@ -1,92 +1,80 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Sun, Moon, Monitor, Palette, Accessibility, BookOpen, Eye,
-  Download, Upload, RotateCcw, CheckCircle2, AlertCircle, Sparkles,
+  Sun, Moon, Monitor, Gauge, Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  useTheme, useThemeStore,
-  presetThemes,
-  type PresetThemeId,
+  useTheme, useThemeStore, useIsDarkMode,
+  type TransitionType,
 } from '@/theme';
 
 /**
- * ThemePanel — 主题设置面板（嵌入 SettingsPage「主题」tab）
+ * ThemePanel — 明暗主题核心模块（嵌入 SettingsPage「主题」tab）
  *
- * 规范依据（RMFOOD-主题系统设计规范 v1.1.9）：
+ * 设计原则（按产品要求：只聚焦明/暗主题核心，不引入其他主题）：
+ *  - 全部调用 themeStore / useTheme 现成 API，不新增 store 代码
  *  - §8.2 U-4：状态读写一律走 useTheme() / useThemeStore()
- *  - §8.2 U-5：导入/导出禁止自造格式，走 themeStore.exportTheme()/importTheme()
- *  - §8.2 U-6：预设选中态从 store 派生（activeThemeId），禁止本地 state 初值
- *  - §4.3 C-24：反转色阶（400..950）禁止配白字 → 选中态用 .bg-primary-container + .border-primary-main
- *  - §10.3 GATE-12：只用 L1 已登记的语义类（semantic-utils.css），禁双前缀伪类名
+ *  - §4.3 C-24：选中态用 .border-primary-main + .bg-primary-container
+ *    （不可反转，非 400..950 色阶配白字），双模式对比度合规
+ *  - §10.3 GATE-12/13：只用 L1 已登记语义类 / L0 已登记令牌
  *
- * 颜色令牌体系（全部 L1 语义色，暗色自动反转，无需 dark: 变体）：
- *  - 文字：.text-neutral-900 / .text-neutral-700 / .text-neutral-500 / .text-primary-main / .text-error-main
- *  - 表面：.surface-card / .surface-hover（单前缀，非 bg-surface-*）
- *  - 边框：.border-neutral-200 / .border-primary-main
- *  - 选中态：.bg-primary-container（浅色 #d1fae5 / 深色 #047857，对比度 4.5:1 合规）
+ * 五区块（均为明暗核心能力）：
+ *  ① 明暗三态切换（light/dark/system，setThemeMode）
+ *  ② 跟随系统实时状态（matchMedia 只读 + useIsDarkMode，system 态下显示系统实际偏好）
+ *  ③ 切换过渡动画（fade/scale/none，setTransitionType）
+ *  ④ 减少动画开关（motionPreferences，setMotionPreferences）
+ *  ⑤ 明暗实时预览（随当前明暗即时渲染的迷你卡片，证明双模式生效）
  */
 export const ThemePanel: React.FC = () => {
+  const { mode, setThemeMode } = useTheme();
   const {
-    mode, accessibilityMode, activeThemeId,
-    setThemeMode, setPresetTheme, setAccessibilityMode, resetToDefault,
-  } = useTheme();
+    transitionType, setTransitionType,
+    motionPreferences, setMotionPreferences,
+  } = useThemeStore();
+  const isDark = useIsDarkMode();
 
-  const { motionPreferences, setMotionPreferences, exportTheme, importTheme } = useThemeStore();
-
-  const [importError, setImportError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleExport = () => {
-    const json = exportTheme();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rmfood-theme-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const ok = importTheme(String(ev.target?.result ?? ''));
-      setImportError(ok ? null : '导入失败：无效的主题配置（仅接受 RMFOOD 导出的 JSON）');
-    };
-    reader.readAsText(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  // ── ② 系统偏好实时状态（只读 matchMedia + 订阅 change）──
+  const [systemPref, setSystemPref] = useState<'light' | 'dark' | 'unknown'>('unknown');
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      setSystemPref('unknown');
+      return;
+    }
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => setSystemPref(mq.matches ? 'dark' : 'light');
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const MODES = [
-    { mode: 'light' as const, icon: Sun, label: '浅色模式', desc: '明亮清爽，适合白天使用' },
-    { mode: 'dark' as const, icon: Moon, label: '深色模式', desc: '护眼沉浸，适合夜间使用' },
-    { mode: 'system' as const, icon: Monitor, label: '跟随系统', desc: '自动适配操作系统偏好' },
+    { mode: 'light' as const, icon: Sun, label: '浅色', desc: '明亮清爽，适合白天' },
+    { mode: 'dark' as const, icon: Moon, label: '深色', desc: '护眼沉浸，适合夜间' },
+    { mode: 'system' as const, icon: Monitor, label: '跟随系统', desc: '自动适配系统偏好' },
   ];
 
-  const ACCESS = [
-    { m: 'normal' as const, icon: Eye, label: '标准', desc: '默认显示' },
-    { m: 'high-contrast' as const, icon: Palette, label: '高对比度', desc: '增强色差' },
-    { m: 'reading' as const, icon: BookOpen, label: '阅读模式', desc: '护眼色调' },
-    { m: 'color-blind' as const, icon: Accessibility, label: '色盲友好', desc: '色觉安全色板' },
+  const TRANSITIONS: { t: TransitionType; label: string; desc: string }[] = [
+    { t: 'fade', label: '淡入淡出', desc: '柔和过渡（默认）' },
+    { t: 'scale', label: '缩放', desc: '轻微缩放过渡' },
+    { t: 'none', label: '无过渡', desc: '即时切换' },
   ];
 
-  // 选中 / 未选中 tile 类名（全部 L1 语义色）
+  const cardBase = 'rounded-2xl border border-neutral-200 surface-card p-5';
+  const headBase = 'flex items-center gap-2.5 mb-4';
+  const headTitle = 'text-sm font-semibold text-neutral-900';
   const tileActive = 'border-primary-main bg-primary-container';
   const tileIdle = 'border-neutral-200 surface-hover';
 
   return (
     <div className="space-y-6">
-      {/* ═══ 1. 主题模式（三态）═══ */}
-      <div className="surface-card rounded-2xl border border-neutral-200 p-5">
-        <div className="flex items-center gap-2.5 mb-4">
+      {/* ═══ ① 明暗三态切换 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-mode-h">
+        <div className={headBase}>
           <Sun size={18} className="text-primary-main" aria-hidden />
-          <h3 className="text-sm font-semibold text-neutral-900">外观模式</h3>
-          <span className="text-xs text-neutral-500 ml-auto">快捷键 Ctrl+Shift+T 快速切换</span>
+          <h3 id="tp-mode-h" className={headTitle}>外观模式</h3>
+          <span className="text-xs text-neutral-500 ml-auto">快捷键 Ctrl+Shift+T</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="主题模式">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="明暗模式">
           {MODES.map(({ mode: m, icon: Icon, label, desc }) => {
             const active = mode === m;
             return (
@@ -104,84 +92,79 @@ export const ThemePanel: React.FC = () => {
                 <Icon size={22} className={active ? 'text-primary-main' : 'text-neutral-700'} aria-hidden />
                 <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{label}</span>
                 <span className="text-xs text-neutral-500">{desc}</span>
-                {active && <CheckCircle2 size={14} className="absolute top-2.5 right-2.5 text-primary-main" aria-hidden />}
+                {active && <span className="absolute top-2.5 right-2.5 text-xs font-semibold text-primary-main">✓</span>}
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* ═══ 2. 预设主题（U-6：选中态从 activeThemeId 派生）═══ */}
-      <div className="surface-card rounded-2xl border border-neutral-200 p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <Sparkles size={18} className="text-primary-main" aria-hidden />
-          <h3 className="text-sm font-semibold text-neutral-900">预设主题</h3>
+      {/* ═══ ② 跟随系统实时状态 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-sys-h">
+        <div className={headBase}>
+          <Monitor size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-sys-h" className={headTitle}>跟随系统</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {Object.values(presetThemes).map((t) => {
-            const active = activeThemeId === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setPresetTheme(t.id as PresetThemeId)}
-                className={cn(
-                  'flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-                  active ? tileActive : tileIdle
-                )}
-              >
-                <span
-                  className="w-9 h-9 rounded-lg shadow-sm shrink-0"
-                  style={{ backgroundColor: t.colors.primary.main }}
-                  aria-hidden
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-neutral-900 truncate">{t.name}</span>
-                  <span className="block text-xs text-neutral-500 truncate">{t.description}</span>
-                </span>
-                {active && <CheckCircle2 size={18} className="text-primary-main shrink-0" aria-hidden />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ═══ 3. 无障碍模式（4 档）═══ */}
-      <div className="surface-card rounded-2xl border border-neutral-200 p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <Accessibility size={18} className="text-primary-main" aria-hidden />
-          <h3 className="text-sm font-semibold text-neutral-900">无障碍模式</h3>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {ACCESS.map(({ m, icon: Icon, label, desc }) => {
-            const active = accessibilityMode === m;
-            return (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setAccessibilityMode(m)}
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-                  active ? tileActive : tileIdle
-                )}
-              >
-                <Icon size={20} className={active ? 'text-primary-main' : 'text-neutral-700'} aria-hidden />
-                <span className="text-xs font-medium text-neutral-900">{label}</span>
-                <span className="text-[11px] text-neutral-500 text-center leading-tight">{desc}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ═══ 4. 减少动画（motionPreferences）═══ */}
-      <div className="surface-card rounded-2xl border border-neutral-200 p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900">减少动画</h3>
-            <p className="text-xs text-neutral-500 mt-1">降低或禁用界面动效，可配合系统「减弱动态效果」偏好</p>
+            <p className="text-sm text-neutral-700">
+              {mode === 'system'
+                ? '当前「跟随系统」，将自动匹配下方系统偏好'
+                : '当前为手动模式，系统偏好变化不会自动切换'}
+            </p>
+            <p className="text-xs text-neutral-500 mt-1">系统偏好变化时自动同步（无需刷新）</p>
+          </div>
+          <div
+            className={cn(
+              'flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium',
+              systemPref === 'dark' ? 'border-neutral-700 bg-neutral-800 text-neutral-100'
+                : systemPref === 'light' ? 'border-neutral-200 bg-white text-neutral-700'
+                : 'border-neutral-200 bg-neutral-50 text-neutral-400'
+            )}
+            role="status"
+            aria-live="polite"
+          >
+            {systemPref === 'dark' ? <Moon size={14} aria-hidden /> : <Sun size={14} aria-hidden />}
+            系统当前：<span className="font-semibold">{systemPref === 'dark' ? '深色' : systemPref === 'light' ? '浅色' : '检测中'}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ ③ 切换过渡动画 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-trans-h">
+        <div className={headBase}>
+          <Gauge size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-trans-h" className={headTitle}>明暗切换过渡</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="过渡动画">
+          {TRANSITIONS.map(({ t, label, desc }) => {
+            const active = transitionType === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setTransitionType(t)}
+                className={cn(
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  active ? tileActive : tileIdle
+                )}
+              >
+                <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{label}</span>
+                <span className="text-xs text-neutral-500">{desc}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ═══ ④ 减少动画 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-motion-h">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 id="tp-motion-h" className={headTitle}>减少动画</h3>
+            <p className="text-xs text-neutral-500 mt-1">开启后停用全部过渡动画（系统「减弱动态效果」偏好会自动同步此开关）</p>
           </div>
           <button
             type="button"
@@ -203,50 +186,53 @@ export const ThemePanel: React.FC = () => {
             />
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* ═══ 5. 导入 / 导出 / 重置（U-5：themeStore 权威通道）═══ */}
-      <div className="surface-card rounded-2xl border border-neutral-200 p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <Download size={18} className="text-primary-main" aria-hidden />
-          <h3 className="text-sm font-semibold text-neutral-900">导入 / 导出 / 重置</h3>
+      {/* ═══ ⑤ 明暗实时预览 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-preview-h">
+        <div className={headBase}>
+          <Eye size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-preview-h" className={headTitle}>实时预览</h3>
+          <span className="text-xs text-neutral-500 ml-auto">{isDark ? '深色' : '浅色'}模式即时渲染</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleExport}
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
-          >
-            <Download size={14} aria-hidden /> 导出配置
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
-          >
-            <Upload size={14} aria-hidden /> 导入配置
-          </button>
-          <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleImport} className="hidden" aria-hidden />
-          <button
-            type="button"
-            onClick={() => { resetToDefault(); setImportError(null); }}
-            className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
-          >
-            <RotateCcw size={14} aria-hidden /> 重置默认
-          </button>
-          {importError && (
-            <p role="alert" className="flex items-center gap-1.5 text-xs text-error-main w-full">
-              <AlertCircle size={14} aria-hidden />{importError}
-            </p>
+        <div
+          className={cn(
+            'rounded-xl border p-4 transition-colors',
+            isDark ? 'border-neutral-700 bg-neutral-900' : 'border-neutral-200 bg-white'
           )}
+          aria-label="当前明暗预览卡片"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-lg',
+                isDark ? 'bg-primary-container' : 'bg-primary-container'
+              )}
+            >
+              {isDark ? <Moon size={18} className="text-primary-main" aria-hidden /> : <Sun size={18} className="text-primary-main" aria-hidden />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className={cn('h-2.5 w-28 rounded-full', isDark ? 'bg-neutral-600' : 'bg-neutral-300')} />
+              <div className={cn('mt-2 h-2 w-44 rounded-full', isDark ? 'bg-neutral-700' : 'bg-neutral-200')} />
+            </div>
+          </div>
+          <button
+            type="button"
+            className={cn(
+              'mt-4 w-full rounded-lg py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+              'bg-primary-container text-primary-main'
+            )}
+          >
+            主按钮示例（不可反转底色 + 语义前景）
+          </button>
         </div>
-      </div>
+      </section>
 
       {/* 当前状态摘要 */}
       <p className="text-xs text-neutral-500 px-1" aria-live="polite">
-        当前模式：{mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
-        · 无障碍：{accessibilityMode}
-        · 预设：{activeThemeId}
+        当前：{isDark ? '深色' : '浅色'}渲染
+        · 模式：{mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
+        · 过渡：{TRANSITIONS.find(t => t.t === transitionType)?.label ?? transitionType}
         · 减少动画：{motionPreferences.reducedMotion ? '开启' : '关闭'}
       </p>
     </div>
