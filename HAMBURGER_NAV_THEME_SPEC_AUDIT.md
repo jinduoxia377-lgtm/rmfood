@@ -26,15 +26,15 @@
 | P1-6 | 重要 | 「滑动打开抽屉」是死代码：手势绑在抽屉自身，关闭态 `visibility:hidden` + 移出屏外 | 源码 | ✅ 已修复 |
 | P1-7 | 重要 | 焦点归还只在 Escape 路径实现；遮罩点击/导航点击/关闭按钮三条路径焦点丢进 `aria-hidden` 容器 | 源码 | ✅ 已修复 |
 | P1-8 | 重要 | **全部 `focus:ring-*` 工具类失效**（详见 §三修正）——未分层的全局 `*:focus-visible` 恒定接管焦点环 | 浏览器实测 box-shadow | ⏳ 未修复（须先做分层治理） |
-| P1-9 | 重要 | `z-dropdown` 不存在（computed `z-index: auto`）；导航 z 值全部硬编码、与 `--z-*` 令牌脱节；命令面板 `z-[60]/[70]` 低于抽屉 `z-[400]`（Ctrl+K 在抽屉打开时打开不可见面板） | 编译产物 + 浏览器 | ⏳ 未修复 |
-| P1-10 | 重要 | 安全区与固定高度互斥：border-box 下 header `56px + padding-top:env(...)` 会把内容盒压到 ~9px；且全项目无 `viewport-fit=cover`，安全区平时恒为 0（死代码），一旦生效即破版 | 源码 + 令牌 | ⏳ 未修复 |
+| P1-9 | 重要 | `z-dropdown` 不存在（computed `z-index: auto`）；导航 z 值全部硬编码、与 `--z-*` 令牌脱节；命令面板 `z-[60]/[70]` 低于抽屉 `z-[400]`（Ctrl+K 在抽屉打开时打开不可见面板） | 编译产物 + 浏览器 | ✅ **部分修复**（commit `168369a`：`base.css` 补 `--z-dropdown: 500`，ThemeSwitcher 面板 z 值可解析；命令面板 z 倒挂仍属导航 WIP） |
+| P1-10 | 重要 | 安全区与固定高度互斥：border-box 下 header `56px + padding-top:env(...)` 会把内容盒压到 ~9px；且全项目无 `viewport-fit=cover`，安全区平时恒为 0（死代码），一旦生效即破版 | 源码 + 令牌 | ⏳ 未修复（**meta + 高度形态须原子落地**；高度形态在 `MainLayout`/`MobileBottomNav`，属导航 WIP，随其批次） |
 | P2-11 | 一般 | 抽屉内"关闭菜单"与汉堡按钮（打开态）**同名** | 源码 | ✅ 已修复（改名"关闭导航菜单"） |
 | P2-12 | 一般 | MobileBottomNav「更多」面板：遮罩 `tabIndex={0}` + `aria-hidden="true"`（反模式）、无 focus trap、无焦点归还；两处 `body.style.overflow` 滚动锁互相清空 | 源码 | ⏳ 未修复 |
 | P2-13 | 一般 | `MOBILE_BOTTOM_NAV_ITEMS` 无人引用，MobileBottomNav 用 7 条硬编码路由白名单重建列表，"单一数据源"不成立 | 源码检索 | ⏳ 未修复 |
 | P2-14 | 一般 | `max-[900px]:hidden` 魔法断点，与 `useMobile.ts` 的 768/1200 断点体系无关；溢出靠 `overflow-hidden` 静默裁掉 | 源码 | ⏳ 未修复（裁切已解除） |
 | P2-15 | 一般 | ThemeSwitcher 内 `bg-primary-main/10`、`ring-primary-main/30`、`focus:border-primary-main`、`animate-in fade-in slide-in-from-top-2` 编译产物均不存在（v3 语法残留） | 编译产物计数 | ⏳ 未修复 |
 | P2-16 | 一般 | 移动端底部导航徽章 `text-white` on `--color-error`：暗色下 `#f87171` 白字约 2.8:1（`NotificationCenter.tsx:240` 同款） | 令牌推算 | ⏳ 未修复 |
-| TOOL-1 | 严重 | `pnpm test` 无法运行：`vitest@3.2.6` 与 `vite@8.1.3` 不兼容（vitest 3 依赖 `vite/index.js`，vite 8 已移除） | 实际执行报错 + 版本比对 | ⏳ 未修复 |
+| TOOL-1 | 严重 | `pnpm test` 无法运行：`vitest@3.2.6` 与 `vite@8.1.3` 不兼容（vitest 3 依赖 `vite/index.js`，vite 8 已移除） | 实际执行报错 + 版本比对 | ✅ **已自愈**（2026-10-06 复核实测 `pnpm test` 7/7 通过，虚拟存储已修复，无需版本对齐） |
 
 ---
 
