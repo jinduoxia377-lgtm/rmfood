@@ -724,6 +724,10 @@ async function main() {
   log('');
   log('── 静态断言 ──');
   g01(); g02(); g03(); g09(); g10(); g11(); g12();
+  // GATE-13/14（M4）：经 g1314.mjs 注入 rec 运行（不依赖渲染环境）
+  const g1314 = await import('./g1314.mjs');
+  g1314.setGateRec(rec);
+  g1314.run();
 
   log('');
   log('── 渲染断言 ──');
@@ -838,6 +842,8 @@ async function main() {
   log('');
   log('══════════════════════════════════════════════════════════════');
   log(` 通过 ${passed.length} / 失败 ${failed.length} / 跳过 ${skipped.length}   （范围：${OPT.milestone || '全部'}）`);
+  const warns = inScope.filter(r => r.status === 'warn');
+  if (warns.length) log(` 告警 ${warns.length} 项: ` + warns.map(r => r.id).join(', '));
   if (failed.length) {
     log(' 失败项: ' + failed.map(r => r.id).join(', '));
   }

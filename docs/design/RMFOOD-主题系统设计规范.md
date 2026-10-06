@@ -808,7 +808,41 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
   > 违规：`ThemeSettingsPage.tsx:65` `selectedPreset` 初值恒为 `'light-default'` → 高亮永久错误。
 - **U-7** 预设清单**必须**单一来源。当前在 3 处硬编码（`presetThemes`、`ThemeSwitcher.tsx:229`、`ThemeSettingsPage.tsx:65`）→ D-47。
 
-### 8.3 AI 对话模块的令牌边界（`chatTheme.css`）
+### 8.4 后期开发操作手册（SOP）
+
+> 本节是规范对「后期页面调整」的操作入口——开发者照做即合规，无需通读全文。
+> 配套门禁：`GATE-13`（令牌登记校验，§10.3）+ `GATE-14`（条件类字符串静态清零）。
+
+#### 8.4.1 新页面 / 新组件的主题接入 SOP
+
+| 序 | 动作 | 依据 | 验证 |
+|:--:|:-----|:-----|:-----|
+| 1 | **选颜色**：查 §4.1 消费优先级（语义令牌 > 语义类 `.surface-*` > 品牌色阶 > 图表通道），**禁止**直接写 `text-[#xxx]` / `bg-primary-600 text-white` | §4.1 / C-1~C-24 | 编译产物对照 |
+| 2 | **写类名**：对照 §4.3 的 24 条 C-* 禁止项逐条过；反转色阶（400..950）禁止配白字 → 改用 `.surface-primary` 或固定色阶 | §4.3 C-24（D-50） | `GATE-04` 渲染级断言 |
+| 3 | **新增令牌**：走 §9.1 RFC（`base.css` + `dark.css` **成对** + §3.4 登记 + 对比度计算 A-1） | §9.1 / I2/I3 | `GATE-13` 漏登记即 fail |
+| 4 | **图表 / canvas 取色**：只走 `chartTheme.ts` / `CANVAS_COLORS`，**禁止** canvas 直赋 `var()` 字符串、**禁止**自定色数组 | §5.3 / C-20~C-23 | 编译产物 0 硬编码 |
+| 5 | **暗色适配**：写 `.dark` 选择器或 `dark:` 工具类（走 `@custom-variant`），**禁止** `@media (prefers-color-scheme: dark)` | §7.2 / C-4 | `GATE-03` 编译产物归属 |
+| 6 | **焦点环**：默认 3px 主色环由 `focus-scroll.css` 提供；自定义语义环写 `focus:ring-error`（**注意**：P1-8 焦点环分层治理前，未分层的全局 `*:focus-visible` 仍压过工具类，见 §11.2 残余风险） | §6.4 | 浏览器探针 |
+| 7 | **提交前**：跑 `npx theme:gate`（14 项）+ `npx theme:validate`（0/0），CI 自动 | §10.3 | 退出码 0 |
+
+#### 8.4.2 孤儿组件裁决指引（§8.1 盘点）
+
+`§8.1` 登记的 ≈1 382 行死代码（`ThemeEditor`/`ThemePreviewOverlay`/`ThemeOnboarding`/`useThemedComponent` 等），处置**由产品决策**，开发者照下表执行：
+
+| 组件 | 裁决 | 处置 | 归属 |
+|:-----|:-----|:-----|:-----|
+| `ThemeSettingsPage.tsx`（505 行孤儿页） | **产品决策「删除 or 接入 `SettingsPage`」** | 接入前**禁止**在其上开发（U-2）；接入须走 §9.1 + 删 0 引用 | 他人 `SettingsPage.tsx` WIP + 产品方向 |
+| `ThemeEditor`/`ThemePreviewOverlay`/`ThemeOnboarding`/`ColorEditor`/`VersionHistoryPanel` | 未挂载（仅 `index.ts` 导出，0 外部引用） | 产品确认「自定义主题编辑」需求后**接入或整体删除**；需求未定前冻结（U-2） | 产品决策 |
+| `useThemedComponent.tsx`（171 行） | **必须删除**（U-3，职责由 `useThemedValue` 承担） | 直接删，无产品依赖 | 可立即执行 |
+| `FocusRing.tsx` | 死代码（焦点环违规组件，`useFocusStyles` 注入全局 `*:focus-visible` 与 `focus-scroll.css` 冲突 → P1-8 一部分） | 随 P1-8 分层治理批次处置；其 `--color-brand-400` 误用已由 `g13-fix.mjs` 改为 `var(--color-primary)` | 专项 |
+
+> **裁决原则**：U-1 唯一产品入口是 `SettingsPage`；任何「平行主题设置入口」在裁决前**禁止**挂载。`useThemedComponent` 是唯一可立即删除项（U-3 强制）。
+
+#### 8.4.3 GATE-13 / GATE-14 使用指引
+
+- **GATE-13（fail 阻断）**：新增/修改 `var(--color-*)` 引用前，先确认该令牌在 `base.css` **和** `dark.css` 都有定义（I2/I3 成对）。若引用的是 Tailwind 内置调色板（`blue`/`red`/…）或代码高亮色（`--color-ts` 等），**无需** L0 定义（`@theme` 默认保留）。误用了「该用 L0 但 L0 没有」的自有族令牌 → `GATE-13` fail，按 §9.1 补定义或改消费者。
+- **GATE-14（warn 存量）**：`g1314.mjs` 检出 165 处 `bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串。新增代码**禁止**再写这类组合（§4.3 C-24 方案 A/B/C）；存量清理按 `g1314.mjs` 输出逐文件改 `.surface-primary` 或不可反转色阶，清零后 `GATE-14` 转 pass。
+
 
 `components/ai/features/styles/chatTheme.css`（约 2 904 行 / 81.5 KB）由 `index.css:46` 全局导入：
 
@@ -930,19 +964,14 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **GATE-09** | M1 | 无「循环引用」自引用令牌 | CHK-26 / CHK-27 | ⚠️ warn（0 循环引用；106 条登记声明，属正常机制） |
 | **GATE-10** | M1 | Radix Themes 前置条件（导入样式表或移除依赖） | CHK-21 | ✅ 通过 |
 | **GATE-11** | M1 | 主色表面令牌对比度（亮/暗 × 基础/hover 全部 ≥ 4.5:1），且 `.surface-primary:hover` 不引用会反转的色阶令牌 | CHK-24 | ✅ 通过（亮 5.48/7.68，暗 7.68/5.48） |
-| **GATE-12** | M1 | 源码使用的品牌色阶类**必须**在编译产物中真实生成 | CHK-18 / CHK-28 | ✅ 通过（305 个类全部存在） |
+| **GATE-12** | M1 | 源码使用的品牌色阶类**必须**在编译产物中真实生成 | CHK-18 / CHK-28 | ✅ 通过（568 个类全部存在） |
+| **GATE-13** | M4 | 代码中出现的**自有** `--color-*` 令牌必须已在 L0 登记（漏登记无机械校验的兜底） | T6 / §3 | ✅ 通过（白名单制：自有 14 族全部 L0 定义，Tailwind 内置 + 代码高亮色豁免；4 个未登记消费已修，`g1314.mjs` + `g13-fix.mjs`） |
+| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ⚠️ warn（165 处存量待清零，`g1314.mjs` 已检出；逐文件清理属 M4 治理范围） |
 
 > **GATE-11 的由来**：v1.1.2 的 D-50 修复只改了基础态，`semantic-utils.css` 的 `.surface-primary:hover` 仍指向色阶级令牌 —— 暗色下 `--color-primary-800` 反转为 `#d1fae5`（浅薄荷），白字对比度 **1.13:1**，比 D-50 原缺陷的 1.52:1 更差。**这是 GATE-05/06 的结构性盲区**（它们只测非悬停态、且只筛 `className` 含 `text-white` 的元素，而 `.surface-primary` 的前景色由 CSS 自设）。见 D-54。
 > **GATE-12 的由来**：`@theme` 桥接层不完整时，Tailwind v4 不生成对应工具类，而源码类名照常书写 → 元素**静默**失去颜色。GATE-08（`var()` 可用性）与静态 grep 都发现不了。本次实测发现 `secondary` 整族与 `info` 族缺档，影响 100+ 处使用。见 D-55 / D-56。
-
-**待补断言（已识别，尚未实现）**：
-
-| 拟议 | 内容 | 动因 |
-|:-----|:-----|:-----|
-| **GATE-13** | 代码中出现的 `--color-*` 令牌与语义类**必须**已在本文 §3/§4.2 登记 | v1.1.2 的 `--color-primary-surface` / `.surface-primary` 漏登记即为本类问题；T6 有要求但无机械校验 |
-| **GATE-14** | 静态清零条件类字符串 `bg-primary-{400..950}` + `text-white`（实测 82 处 / 61 文件） | §11.2 已识别为残余风险，但无断言、无路线图项 |
-
----
+> **GATE-13 口径（2026-10-06 实现）**：白名单制 —— 只对 **RMFOOD 自有语义族**（base.css/dark.css 实际定义的 14 个 `--color-<族>-` 前缀）做「消费必须有 L0 定义」校验；Tailwind 内置调色板（`blue`/`red`/`pink`/`amber` 等 20 族）与代码高亮色（`--color-ts`/`--color-py` 等）**豁免**（由 `@theme` 默认保留、L0 不定义是正确设计）；带 fallback 的 `var(--x, …)` 豁免（有兜底值）。检出 `--color-text-secondary`/`--color-text-muted`/`--color-brand-400`/`--color-danger` 4 个真缺陷（L0 无定义、解析为空），已修消费者（`g13-fix.mjs`，对齐 L0 权威名 `--text-secondary`/`--text-muted`/`--color-primary`/`--color-error`，不补 L0 新定义避免第二真相源）。
+> **GATE-14 由来**：§12 序 21 登记的「条件类字符串残余」无断言、无路线图项。`g1314.mjs` 静态扫描全 src 的 `bg-{primary,secondary,accent}-{400..950}` 与 `text-white` 同行共现，检出 165 处（原估 82 处，随源码增长）—— 这些字符串在特定条件渲染时触发 D-50（暗色对比度 1.52:1）。清零属 M4 治理，逐文件改 `.surface-primary` 或不可反转色阶。
 
 ## 11. 已知缺陷登记表
 
@@ -1064,9 +1093,12 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 `D-12、D-18、D-19、D-24、D-25、D-27、D-28、D-29、D-30、D-31、D-42、D-44、D-46、D-47、D-48`（M3 死代码/架构收口）
 → 排期见《修复执行方案》§0.0 与 §6.4。**M2 已关闭**：D-2、D-3、D-4、D-13、D-23、D-26、D-32、D-34~D-38、D-40、D-43、D-45。**D-53 已随 T-B2b 修复**（kebab 化令牌名，解锁 10 维度自定义）。
 
-**残余风险**：静态扫描仍有 **82 处**条件类字符串形如 `bg-primary-{400..950} + text-white`（仅在特定状态渲染；原记 105 处，经精确统计修正为 82）。门禁在 **12 路由 × 22 个白字实底元素 × 双模式**下未发现失败实例，但这些未渲染状态仍可能触发 D-50。
+**残余风险**：静态扫描原记 82 处条件类字符串形如 `bg-primary-{400..950} + text-white`（仅在特定状态渲染；原记 105 处，经精确统计修正为 82）。**2026-10-06 经 `g1314.mjs` 复测为 165 处**（随源码增长），现由 **GATE-14**（§10.3）机械检出、warn 级登记待清零。门禁在 **12 路由 × 22 个白字实底元素 × 双模式**下未发现失败实例，但这些未渲染状态仍可能触发 D-50。
 
 **M2 期间新增缺陷**（均由本轮对抗性复核发现）：**D-54**（P0，`.surface-primary:hover` 暗色 **1.13:1**，D-50 修复自身引入的回归）、**D-55**（P0，`@theme` 未桥接 `secondary` 整族 → 104 处 `bg-secondary-*` **0 生成**）、**D-56**（P1，`info` 族非色阶 + `error` 缺 950）、**D-57**（P1，无障碍同步路径缺失）。连同 **D-53** 一并登记。
+
+**2026-10-06 新增（GATE-13 检出，M4 治理）**：4 个**未登记的自有 `--color-*` 消费**（L0 无定义 → 解析为空，消费者失去颜色）：
+`--color-text-secondary`（`FormulaSharePanel.tsx`/`typography.ts`）、`--color-text-muted`（`ScoreRadarChart.tsx`）、`--color-brand-400`（`FocusRing.tsx`，§8.1 登记的焦点环违规死代码）、`--color-danger`（`IngredientAnalysisPage.tsx`/`StabilityPage.tsx`，误用名，功能色族权威名为 `--color-error`）。**已修消费者**（`g13-fix.mjs`，对齐 L0 权威名 `--text-secondary`/`--text-muted`/`--color-primary`/`--color-error`，**不补 L0 新定义**避免第二真相源），`GATE-13` 转 pass。
 
 ---
 
@@ -1128,6 +1160,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 28 | 补主题回归测试，消除 0 覆盖（D-46） |
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
 | 30 | 实现 **GATE-11**（令牌/语义类登记校验）与 **GATE-12**（105 处条件类静态断言） |
+| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 warn 待 M4 逐文件清零。配套 §8.4 操作手册 |
 
 ### 阶段 3 — 治理落地（P2–P3）
 
@@ -1331,7 +1364,7 @@ const bad = await page.evaluate(() => {
 | `frontend/src/theme/index.ts` | 入口 | `@/theme` 统一导出 | 单一入口 |
 | `frontend/src/theme/RadixThemeProvider.tsx` | — | **已删除**（T-R1 / D-41：样式表从未加载，属无效层） | — |
 | `frontend/src/components/ui/RadixComponents.tsx` | L2 | Badge/Text 包装层（**已改项目原生实现**，保留 API + `role="status"`） | 名称保留仅为兼容导入路径 |
-| `frontend/scripts/theme-audit/theme-gate.mjs` | 门禁 | **门禁唯一入口**：`GATE-01`~`GATE-12` **十二项**断言，静态 / 编译产物 / 渲染三级；支持 `--milestone` `--json` `--require-render` | 只读，**禁止**修改仓库代码。断言清单见 §10.3 |
+| `frontend/scripts/theme-audit/theme-gate.mjs` | 门禁 | **门禁唯一入口**：`GATE-01`~`GATE-14` **十四项**断言，静态 / 编译产物 / 渲染三级（GATE-13/14 经 `g1314.mjs` 注入）；支持 `--milestone` `--json` `--require-render` | 只读，**禁止**修改仓库代码。断言清单见 §10.3 |
 | `frontend/scripts/theme-audit/*.mjs` | 门禁 | 其余 15 个只读审计/取证脚本（隔离矩阵、令牌安全、过渡、截图对比等） | 见该目录 `README.md` |
 | `frontend/scripts/theme-validate.ts` | 门禁 | 规范一致性校验脚本（`SPEC_COLORS` 表**已知有误**，待重写） | **尚未注册**为 npm script；见 §9.3 **G-4** |
 | `frontend/.husky/pre-commit` | 治理 | 提交钩子，调用 `npx lint-staged`。**勘误**：`package.json` 中**确有** `lint-staged` 配置（TS/TSX/JS → prettier + eslint；CSS → prettier），并非空操作；但该配置**未包含任何 `theme:` 门禁** → G-4 的「接入 lint-staged」仍未完成 | 见 §9.3 **G-4** |

@@ -34,7 +34,7 @@ const CHART_COLORS = [
   'var(--color-success)',
   'var(--color-secondary)',
   'var(--color-warning)',
-  'var(--color-danger)',
+  'var(--color-error)',
   'var(--color-accent)',
 ]
 

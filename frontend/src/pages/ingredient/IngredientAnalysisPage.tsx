@@ -27,7 +27,7 @@ const CHART_COLORS = {
   accent: 'var(--color-accent)',
   success: 'var(--color-success)',
   warning: 'var(--color-warning)',
-  danger: 'var(--color-danger)',
+  danger: 'var(--color-error)',
   secondary: 'var(--color-secondary)',
 }
 
