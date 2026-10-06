@@ -299,7 +299,7 @@ export default function HerbsTab({
               setFoodOnly(!foodOnly);
               setPage(1);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${foodOnly ? 'bg-primary-500 text-white border-emerald-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-emerald-400 hover:text-primary-600'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${foodOnly ? 'bg-primary-container text-primary-main border-emerald-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-emerald-400 hover:text-primary-600'}`}
           >
             <Zap className="w-3.5 h-3.5" />
             仅药食同源

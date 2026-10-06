@@ -272,7 +272,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 setEditingTemplate(null)
                 setShowEditor(true)
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-container hover:bg-primary-container text-primary-main rounded-lg transition-colors font-medium text-sm"
             >
               <Plus className="w-4 h-4" />
               新建模板
@@ -539,7 +539,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 导出全部
               </button>
 
-              <label className="flex items-center gap-2 px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white rounded-lg text-sm font-medium cursor-pointer transition-colors">
+              <label className="flex items-center gap-2 px-4 py-2 bg-secondary-container hover:bg-secondary-container text-secondary-main rounded-lg text-sm font-medium cursor-pointer transition-colors">
                 <Upload className="w-4 h-4" />
                 导入文件
                 <input type="file" accept=".json" onChange={handleImport} className="hidden" />
@@ -905,7 +905,7 @@ const VariableEditorModal: React.FC<VariableEditorModalProps> = ({
           </button>
           <button
             onClick={onConfirm}
-            className="px-6 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-md hover:shadow-lg"
+            className="px-6 py-2 text-sm font-medium text-primary-main bg-primary-container hover:bg-primary-container rounded-lg transition-colors shadow-md hover:shadow-lg"
           >
             确认插入
           </button>

@@ -279,7 +279,7 @@ export function ChatEnhancedDemo({
           {showSyncButton && (
             <button
               onClick={syncNow}
-              className="mt-2 px-3 py-1 bg-secondary-500 text-white rounded text-xs hover:bg-secondary-600"
+              className="mt-2 px-3 py-1 bg-secondary-container text-secondary-main rounded text-xs hover:bg-secondary-container"
             >
               {syncButtonText}
             </button>
@@ -340,7 +340,7 @@ export function ChatEnhancedDemo({
         <button
           onClick={handleSendMessage}
           disabled={!inputValue.trim()}
-          className="px-6 py-2 bg-secondary-500 text-white rounded-lg hover:bg-secondary-600 disabled:bg-neutral-300"
+          className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:bg-neutral-300"
         >
           {isOnline ? '发送' : '保存到队列'}
         </button>

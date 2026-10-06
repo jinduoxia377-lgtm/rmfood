@@ -258,7 +258,7 @@ export default function HomologyTab() {
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setEffectFilter(null)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${!effectFilter ? 'bg-primary-500 text-white border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${!effectFilter ? 'bg-primary-container text-primary-main border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
           >
             全部
           </button>
@@ -266,7 +266,7 @@ export default function HomologyTab() {
             <button
               key={effect}
               onClick={() => setEffectFilter(effectFilter === effect ? null : effect)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${effectFilter === effect ? 'bg-primary-500 text-white border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${effectFilter === effect ? 'bg-primary-container text-primary-main border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
             >
               {effect}
             </button>

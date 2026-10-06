@@ -549,7 +549,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                 <p className="text-sm">开始新设计并保存您的第一个项目</p>
                 <button
                   onClick={() => setMainView('design')}
-                  className="mt-4 px-6 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700"
+                  className="mt-4 px-6 py-2 bg-accent-container text-accent-main rounded-lg hover:bg-accent-container"
                 >
                   开始新设计
                 </button>

@@ -320,7 +320,7 @@ export function ShareButton({
             <button
               type="button"
               onClick={handleShare}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 transition-all shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-container text-primary-main transition-all shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
               title="打开完整分享面板 (快捷键: Ctrl+Shift+S)"
               aria-label="打开分享面板"
             >

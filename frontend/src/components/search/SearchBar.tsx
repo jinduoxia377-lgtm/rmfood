@@ -272,7 +272,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
             className={clsx(
               'px-4 py-2 mr-1 rounded-lg transition-colors',
               hasActiveFilters
-                ? 'bg-secondary-500 text-white'
+                ? 'bg-secondary-container text-secondary-main'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200',
             )}
           >
@@ -282,7 +282,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
 
         <button
           onClick={handleSearch}
-          className="px-6 py-2 mr-1 bg-secondary-500 text-white rounded-lg hover:bg-secondary-600 transition-colors"
+          className="px-6 py-2 mr-1 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors"
         >
           搜索
         </button>
@@ -396,7 +396,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   className={clsx(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     (filters.types ?? []).includes(type)
-                      ? 'border-blue-500 bg-secondary-500 text-white'
+                      ? 'border-blue-500 bg-secondary-container text-secondary-main'
                       : 'border-neutral-200 text-neutral-600 hover:border-neutral-300',
                   )}
                 >
@@ -420,7 +420,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   className={clsx(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     selectedDateRange === option.value
-                      ? 'border-blue-500 bg-secondary-500 text-white'
+                      ? 'border-blue-500 bg-secondary-container text-secondary-main'
                       : 'border-neutral-200 text-neutral-600 hover:border-neutral-300',
                   )}
                 >

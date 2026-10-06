@@ -276,7 +276,7 @@ export default function PeptidesTab({
             }}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
               activityType === t.type_en
-                ? 'bg-secondary-500 text-white border-blue-500'
+                ? 'bg-secondary-container text-secondary-main border-blue-500'
                 : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-blue-300 dark:hover:border-blue-700'
             }`}
           >

@@ -24,7 +24,7 @@ export function ConfirmDialog({
   if (!open) return null
 
   const variantStyles = {
-    default: 'bg-primary-600 hover:bg-primary-700 text-white',
+    default: 'bg-primary-container hover:bg-primary-container text-primary-main',
     danger: 'bg-error-600 hover:bg-error-700 text-white',
     warning: 'bg-yellow-500 hover:bg-yellow-600 text-black',
   }

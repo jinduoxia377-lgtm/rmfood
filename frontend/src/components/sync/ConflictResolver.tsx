@@ -406,7 +406,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                       handleResolve(conflict.id);
                     }}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:opacity-50 transition-all"
+                    className="px-4 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-all"
                   >
                     确认解决
                   </button>

@@ -377,7 +377,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
             <button
               onClick={handleAddKey}
               disabled={!inputKey.trim() || isSaving}
-              className="w-full py-2.5 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 bg-primary-container text-primary-main rounded-lg font-medium hover:bg-primary-container disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>

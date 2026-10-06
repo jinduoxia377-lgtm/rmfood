@@ -23,7 +23,7 @@ function getBadgeColor(count: number): string {
     return 'bg-neutral-400 text-white dark:bg-neutral-500'
   }
   if (count > 0 && count < 5) {
-    return 'bg-secondary-500 text-white dark:bg-secondary-600'
+    return 'bg-secondary-container text-secondary-main dark:bg-secondary-container'
   }
   return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white dark:from-emerald-600 dark:to-teal-700'
 }

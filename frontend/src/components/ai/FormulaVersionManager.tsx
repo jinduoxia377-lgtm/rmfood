@@ -549,7 +549,7 @@ function VersionItem({
               <div className="flex gap-2">
                 <button
                   onClick={onSaveRemark}
-                  className="px-2 py-1 text-xs bg-secondary-500 text-white rounded hover:bg-secondary-600 flex items-center gap-1"
+                  className="px-2 py-1 text-xs bg-secondary-container text-secondary-main rounded hover:bg-secondary-container flex items-center gap-1"
                 >
                   <Save className="w-2.5 h-2.5" />
                   保存
@@ -756,7 +756,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
         <div className="flex gap-4 mb-6">
           <div className="flex-1 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-secondary-500 text-white text-xs font-bold rounded">v{version1.versionNumber}</span>
+              <span className="px-2 py-0.5 bg-secondary-container text-secondary-main text-xs font-bold rounded">v{version1.versionNumber}</span>
               <span className="text-xs text-secondary-600 dark:text-secondary-400">旧版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version1.formulaName === 'string' ? version1.formulaName : '未知配方'}</div>
@@ -777,7 +777,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
           </div>
           <div className="flex-1 p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-accent-500 text-white text-xs font-bold rounded">v{version2.versionNumber}</span>
+              <span className="px-2 py-0.5 bg-accent-container text-accent-main text-xs font-bold rounded">v{version2.versionNumber}</span>
               <span className="text-xs text-accent-600 dark:text-accent-400">新版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version2.formulaName === 'string' ? version2.formulaName : '未知配方'}</div>

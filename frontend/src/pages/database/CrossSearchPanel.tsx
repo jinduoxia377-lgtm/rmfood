@@ -355,7 +355,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-secondary-600 text-white text-sm font-medium rounded-lg hover:bg-secondary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-secondary-container text-secondary-main text-sm font-medium rounded-lg hover:bg-secondary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? "搜索中..." : "关联检索"}
         </button>

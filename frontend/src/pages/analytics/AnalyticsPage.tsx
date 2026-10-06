@@ -363,7 +363,7 @@ export default function AnalyticsPage() {
               </button>
               <button
                 onClick={() => { setShowFilters(false); refresh() }}
-                className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors"
+                className="px-4 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors"
               >
                 应用筛选
               </button>

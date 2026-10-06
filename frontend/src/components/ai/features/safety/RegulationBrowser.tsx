@@ -193,7 +193,7 @@ function GBStandardsView({ standards, onSelect }: GBViewProps) {
               onClick={() => setCategory(category === cat ? 'all' : cat)}
               className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
                 category === cat
-                  ? 'bg-secondary-600 text-white border-secondary-600'
+                  ? 'bg-secondary-container text-secondary-main border-secondary-600'
                   : 'border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-secondary-400'
               }`}
             >

@@ -179,7 +179,7 @@ export function Pagination({
               onClick={() => onPageChange(pageNum as number)}
               className={`px-3 py-1.5 rounded text-sm transition-colors ${
                 currentPage === pageNum
-                  ? 'bg-primary-600 text-white font-medium'
+                  ? 'bg-primary-container text-primary-main font-medium'
                   : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-text-primary'
               }`}
             >

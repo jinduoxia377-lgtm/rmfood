@@ -103,7 +103,7 @@ const SessionCard: React.FC<{
         <div
           className={clsx(
             'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
-            isActive ? 'bg-primary-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400',
+            isActive ? 'bg-primary-container text-primary-main' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400',
           )}
         >
           <MessageSquare className="w-5 h-5" />
@@ -253,7 +253,7 @@ export function SessionHistory({
           </h2>
           <button
             onClick={handleCreateSession}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
             title="创建新会话"
           >
             <Plus className="w-4 h-4" />

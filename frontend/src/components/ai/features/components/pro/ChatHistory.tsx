@@ -221,7 +221,7 @@ export default function ChatHistory({
               <button
                 onClick={handleForkConfirm}
                 disabled={forking || !forkTitle.trim()}
-                className="px-3 py-1.5 text-xs bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50"
+                className="px-3 py-1.5 text-xs bg-primary-container text-primary-main rounded-lg hover:bg-primary-container disabled:opacity-50"
               >{forking ? '创建中...' : '确认创建'}</button>
             </div>
           </div>

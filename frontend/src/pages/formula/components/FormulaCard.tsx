@@ -111,7 +111,7 @@ export function FormulaCard({
           className={cn(
             'w-5 h-5 rounded border-2 shrink-0 transition-all flex items-center justify-center mt-0.5',
             isSelected
-              ? 'bg-primary-500 border-primary-500 text-white'
+              ? 'bg-primary-container border-primary-500 text-primary-main'
               : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
           )}
           aria-label={isSelected ? '取消选择' : '选择'}

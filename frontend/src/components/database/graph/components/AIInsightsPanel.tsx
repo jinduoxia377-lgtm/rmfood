@@ -47,7 +47,7 @@ export default function AIInsightsPanel({
         </div>
         <div className="flex items-center gap-1">
           <button onClick={onRegenerateInsights} disabled={isGeneratingInsight}
-            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50 transition-colors flex items-center gap-1">
+            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-accent-container text-accent-main hover:bg-accent-container disabled:opacity-50 transition-colors flex items-center gap-1">
             {isGeneratingInsight ? '⏳ 分析中...' : '🔄 重新分析'}
           </button>
           <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>

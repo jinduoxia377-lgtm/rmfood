@@ -137,9 +137,9 @@ function StepCard({
         <div className={`flex-shrink-0 rounded-full flex items-center justify-center
           transition-all duration-300 ring-1 ring-offset-1
           ${compact ? 'w-5 h-5' : 'w-6 h-6'}
-          ${isComplete ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white ring-primary-200 dark:ring-primary-800'
-            : isProcessing ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white ring-amber-200 dark:ring-amber-800 animate-pulse'
-            : isError ? 'bg-gradient-to-br from-red-400 to-red-500 text-white ring-red-200 dark:ring-red-800'
+          ${isComplete ? 'bg-primary-container text-primary-main ring-primary-200 dark:ring-primary-800'
+            : isProcessing ? 'bg-warning-container text-warning-main ring-amber-200 dark:ring-amber-800 animate-pulse'
+            : isError ? 'bg-error-container text-error-main ring-red-200 dark:ring-red-800'
             : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 ring-slate-200 dark:ring-slate-700'}
         `}>
           {isComplete ? <CheckCircle2 className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />

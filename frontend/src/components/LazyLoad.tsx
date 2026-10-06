@@ -153,7 +153,7 @@ export function LazyLoadWrapper<P = object>(props: {
         <div className="flex gap-3">
           <button
             onClick={handleRetry}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
           >
             重新加载
           </button>

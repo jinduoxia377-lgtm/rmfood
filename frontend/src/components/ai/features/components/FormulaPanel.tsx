@@ -445,7 +445,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
             <Button
               onClick={() => onGenerateReport()}
               disabled={isGeneratingReport || formulaCount === 0}
-              className="w-full sm:w-auto bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-lg shadow-primary-500/25 px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+              className="w-full sm:w-auto bg-primary-container text-primary-main shadow-lg px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95"
               icon={isGeneratingReport ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
             >
               {isGeneratingReport ? '生成中...' : `生成报告 (${formulaCount})`}

@@ -37,7 +37,7 @@ export function setGateRec(fn) { if (typeof fn === 'function') gateRec = fn; }
 // 兼容旧调用：若 process.env.GATE_REC 注入的是「已解析的函数引用」（直接赋值，非字符串）
 if (typeof process.env.GATE_REC === 'function') gateRec = process.env.GATE_REC;
 
-// ── 工具：递归收集 .ts/.tsx/.css 文件（排除 __tests__） ──
+// ── 工具：递归收集 .ts/.tsx 文件（排除 __tests__；GATE-14 不扫 .css —— CSS 无「条件类字符串」） ──
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e);
@@ -45,7 +45,7 @@ function walk(dir, out = []) {
     if (s.isDirectory()) {
       if (e === 'node_modules' || e === '__tests__') continue;
       walk(p, out);
-    } else if (/\.(ts|tsx|css)$/.test(e)) {
+    } else if (/\.(ts|tsx)$/.test(e)) {
       out.push(p);
     }
   }
@@ -124,34 +124,50 @@ function g13() {
 
 // ============================================================================
 // GATE-14：条件类字符串 bg-primary-{400..950} + text-white 静态清零
+//
+// 口径：D-50 隐患 = **实底反转色阶（400..950）上叠加 text-white**（暗色下
+// 反转成浅色，白字对比度 1.52:1）。以下**误报形态**已排除（2026-10-06 校准）：
+//   ① dark: 反转文字：`text-neutral-900 dark:text-white` —— 暗色白字落在
+//      neutral-800/900 深底上，对比度合规（非 D-50 场景），合法模式
+//   ② bg-white 输入框：`bg-white dark:bg-neutral-700 text-...` —— 白底配深
+//      色文字（text-neutral-*），不涉反转色阶实底
+// 仅保留：行内含 bg-{primary,secondary,accent}-{400..950} 反转色阶且同行有
+// text-white（实底白字 D-50），或动态模板 `bg-primary-${...}`（JIT 不可生成）。
 // ============================================================================
 function g14() {
   const files = walk(SRC);
   const hits = [];
-  // 同一类名串中 bg-{primary,secondary,accent}-{400..950} 与 text-white 共现
-  const comboRe = /bg-(?:primary|secondary|accent)-(?:400|500|600|700|800|900|950)[^"'\`]*\btext-white\b|\btext-white\b[^"'\`]*\b(?:bg-)?(?:primary|secondary|accent)-(?:400|500|600|700|800|900|950)/;
-  // 条件拼接/模板字符串：`bg-primary-${x}` 或条件三元 + text-white
-  const condRe = /bg-(?:primary|secondary|accent)-\$\{|\btext-white\b[^\n]*bg-(?:primary|secondary|accent)-(?:400|500|600|700|800|900|950)/;
+  const INV_RE = /bg-(?:primary|secondary|accent)-(?:400|500|600|700|800|900|950)/; // 反转实底色阶
+  const WHITE_RE = /\btext-white\b/;
+  const DARK_TEXT_RE = /\btext-[a-z]+-900\s+dark:text-white\b/; // 误报①
+  const BGWHITE_RE = /\bbg-white\b(?![^"\n]*INV_RE)*/;        // 误报②（无实底反转色阶）
   for (const f of files) {
     const lines = readFileSync(f, 'utf8').split('\n');
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
-      // 跳过注释行（避免把 §4.3 C-24 文档示例误报）
       if (/^\s*(\/\/|\/\*|\*|<!--)/.test(l)) continue;
-      if (comboRe.test(l) || condRe.test(l)) {
+      // 仅当真反转实底色阶 与 text-white 同行共现才报（D-50 实底白字）
+      const hasInverted = INV_RE.test(l);
+      const hasWhite = WHITE_RE.test(l);
+      const isDarkTextOnly = DARK_TEXT_RE.test(l) && !INV_RE.test(l.replace(DARK_TEXT_RE, ''));
+      // 动态模板字符串 bg-primary-${...}（JIT 不可生成，GATE-12 同源隐患）
+      // 豁免：已映射到合法档位 + /alpha 的安全形态（`bg-primary-${tier}/NN`，
+      // 字面量里 $ 后是标识符再跟 /NN）
+      const isDynTemplate = /bg-(?:primary|secondary|accent)-\$[a-zA-Z_]/.test(l) && !/\$[a-zA-Z_]+\/\d+/.test(l);
+      if ((hasInverted && hasWhite && !isDarkTextOnly) || isDynTemplate) {
         hits.push({ file: relative(ROOT, f), line: i + 1, text: l.trim().slice(0, 90) });
       }
     }
   }
   if (hits.length === 0) {
     return gateRec('GATE-14', 'M4', '无「反转色阶 + text-white」条件类字符串', 'pass',
-      `扫描 ${files.length} 文件，0 处条件类残余`);
+      `扫描 ${files.length} 文件，0 处 D-50 条件类残余（dark:反转文字 / bg-white 误报已排除）`);
   }
   return gateRec('GATE-14', 'M4', '无「反转色阶 + text-white」条件类字符串', 'warn',
-    `发现 ${hits.length} 处条件类字符串（存量待清零，规范 §12 序 21）：\n` +
+    `发现 ${hits.length} 处 D-50 条件类（反转实底色阶 + 白字 / 动态模板）：\n` +
     hits.slice(0, 10).map(h => `  · ${h.file}:${h.line}  ${h.text}`).join('\n') +
     (hits.length > 10 ? `\n  …（共 ${hits.length} 处）` : '') +
-    '\n后果：特定条件渲染时触发 D-50（暗色对比度 1.52:1）。修复：见 §4.3 C-24 方案 A/B/C。');
+    '\n后果：特定条件渲染时触发 D-50（暗色对比度 1.52:1）。修复：改 .surface-primary / *-container + 语义前景色。');
 }
 
 // 被 theme-gate.mjs import 时由 run() 显式调用（配合 setGateRec 注入 rec）

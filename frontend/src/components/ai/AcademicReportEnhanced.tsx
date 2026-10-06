@@ -339,7 +339,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
               setShowSettings(false);
               feedbackService.showSuccess('设置已保存', '报告设置已保存');
             }}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
           >
             保存设置
           </button>
@@ -407,7 +407,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             <button
               onClick={handleGenerateReport}
               disabled={isGenerating || isExporting}
-              className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 px-6 py-3 bg-primary-container text-primary-main rounded-xl hover:bg-primary-container disabled:opacity-50 transition-all"
             >
               {isGenerating ? (
                 <>
@@ -483,7 +483,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             <p className="text-neutral-500 mb-4">点击"生成报告"开始生成学术报告</p>
             <button
               onClick={handleGenerateReport}
-              className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              className="px-6 py-3 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
             >
               立即生成
             </button>

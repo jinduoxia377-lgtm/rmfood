@@ -291,7 +291,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
           <button
             onClick={exportAnalysis}
             disabled={!pivotData.length}
-            className="px-3 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="px-3 py-1.5 text-sm bg-primary-container hover:bg-primary-container text-primary-main rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
             导出CSV

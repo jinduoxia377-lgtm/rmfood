@@ -248,7 +248,7 @@ export default function DocumentExtractPage() {
                   <button key={t} onClick={() => { setDocType(t); setTextInput(EXAMPLE_TEXTS[t] ?? '') }}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       docType === t
-                        ? 'bg-accent-500 text-white shadow-sm'
+                        ? 'bg-accent-container text-accent-main shadow-sm'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}>
                     {docTypeLabel(t)}

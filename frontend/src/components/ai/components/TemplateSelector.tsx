@@ -120,7 +120,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             onClick={() => setSelectedType(type.value)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               selectedType === type.value
-                ? 'bg-secondary-600 text-white shadow-md'
+                ? 'bg-secondary-container text-secondary-main shadow-md'
                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
             }`}
           >

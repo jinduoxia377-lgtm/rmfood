@@ -211,7 +211,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
               onClick={() => this.handleFormatChange(format)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedFormat === format
-                  ? 'bg-secondary-600 text-white'
+                  ? 'bg-secondary-container text-secondary-main'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -312,7 +312,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
 
         <button
           onClick={this.handleExport}
-          className="w-full mt-4 px-6 py-3 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors font-medium"
+          className="w-full mt-4 px-6 py-3 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors font-medium"
         >
           导出
         </button>

@@ -849,7 +849,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="data-[state=active]:bg-primary-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-primary-container data-[state=active]:text-primary-main"
             >
               {tab.label}
             </TabsTrigger>

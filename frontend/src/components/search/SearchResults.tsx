@@ -178,7 +178,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                 className={clsx(
                   'mt-1 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                   selectedItems.has(item.id)
-                    ? 'bg-secondary-500 border-blue-500 text-white'
+                    ? 'bg-secondary-container border-blue-500 text-secondary-main'
                     : 'border-neutral-300 hover:border-blue-400',
                 )}
               >

@@ -229,7 +229,7 @@ export default function ReportsTab({ filters }: Props) {
         </div>
         <button
           onClick={() => setShowGenerator(!showGenerator)}
-          className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
           创建自定义报表
@@ -403,7 +403,7 @@ export default function ReportsTab({ filters }: Props) {
                 <button
                   onClick={handleCustomGenerate}
                   disabled={exporting || !reportName.trim() || selectedDimensions.length === 0}
-                  className="w-full py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed text-primary-main rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                   生成并下载报表

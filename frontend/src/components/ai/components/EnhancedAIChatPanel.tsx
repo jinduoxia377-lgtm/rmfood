@@ -306,7 +306,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
               onClick={() => onSelectIngredient(ing.name)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                 selectedIngredients.includes(ing.name)
-                  ? 'bg-primary-500 text-white shadow-md'
+                  ? 'bg-primary-container text-primary-main shadow-md'
                   : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
               }`}
             >

@@ -640,7 +640,7 @@ export function SafetyReportTemplate({
                     onClick={() => setActiveSection(section.id)}
                     className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-lg transition-colors ${
                       activeSection === section.id
-                        ? 'bg-secondary-600 text-white'
+                        ? 'bg-secondary-container text-secondary-main'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                   >

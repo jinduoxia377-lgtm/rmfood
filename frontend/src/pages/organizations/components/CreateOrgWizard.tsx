@@ -79,7 +79,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
           {(['basic', 'details', 'members', 'confirm'] as const).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                step === s ? 'bg-secondary-600 text-white' :
+                step === s ? 'bg-secondary-container text-secondary-main' :
                 step !== 'basic' && ['basic', 'details', 'members', 'confirm'].indexOf(step) > i ? 'bg-success-500 text-white' :
                 'bg-neutral-200 text-neutral-500'
               }`}>
@@ -271,20 +271,20 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
             </button>
           ) : <div />}
           {step === 'success' ? (
-            <button onClick={handleClose} className="px-6 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+            <button onClick={handleClose} className="px-6 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
               完成
             </button>
           ) : step === 'confirm' ? (
             <button
               onClick={handleCreate}
               disabled={loading}
-              className="px-6 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+              className="px-6 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-colors flex items-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               确认创建
             </button>
           ) : (
-            <button onClick={() => setStep(step === 'basic' ? 'details' : step === 'details' ? 'members' : 'confirm')} className="px-6 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+            <button onClick={() => setStep(step === 'basic' ? 'details' : step === 'details' ? 'members' : 'confirm')} className="px-6 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
               下一步
             </button>
           )}

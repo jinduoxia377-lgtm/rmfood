@@ -125,7 +125,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
               )}
             >
               {plan.highlight && (
-                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-xs font-medium bg-accent-500 text-white rounded-full">
+                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-xs font-medium bg-accent-container text-accent-main rounded-full">
                   推荐
                 </span>
               )}
@@ -185,7 +185,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
           <button
             onClick={handleConfirm}
             disabled={confirming || !confirmText.trim() || confirmText !== `确认升级至 ${PLAN_CONFIG.find(p => p.value === selectedPlan)?.label}` || !canDowngrade()}
-            className="px-4 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             {confirming && <Loader2 className="w-4 h-4 animate-spin" />}
             确认变更

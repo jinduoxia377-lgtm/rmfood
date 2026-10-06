@@ -373,7 +373,12 @@ export function SynergyTab() {
                           content = '·';
                         } else if (cell.type === 'synergy') {
                           const intensity = Math.min(cell.value, 1);
-                          bgClass = `bg-primary-${Math.round(intensity * 200)}00 dark:bg-primary-${Math.round(intensity * 300)}00/40`;
+                          // 修复 D-55 同源动态类 bug：原 `bg-primary-${Math.round(intensity*200)}00`
+                          // 生成 000/010/020... 等不存在档位（Tailwind 色阶为 50-950），JIT 0 生成 →
+                          // 热力图整行无背景。改为映射到真实色阶档位（100-500）+ 暗色不反转的 /alpha。
+                          const step = Math.min(5, Math.max(1, Math.round(intensity * 5)));
+                          const tier = [100, 200, 300, 400, 500][step - 1];
+                          bgClass = `bg-primary-${tier}/15 dark:bg-primary-${tier}/30`;
                           textColor = 'text-primary-700 dark:text-primary-400';
                           content = cell.value.toFixed(2);
                         } else if (cell.type === 'antagonism') {

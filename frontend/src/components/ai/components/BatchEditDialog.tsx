@@ -102,7 +102,7 @@ const BatchEditDialog: React.FC<BatchEditDialogProps> = ({
           <button
             onClick={handleApply}
             disabled={!value && value !== false}
-            className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 border border-transparent rounded-md hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-neutral-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-secondary-main bg-secondary-container border border-transparent rounded-md hover:bg-secondary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             应用更改
           </button>

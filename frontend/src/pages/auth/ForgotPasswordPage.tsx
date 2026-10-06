@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md mx-auto">
           {/* 移动端 Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+            <div className="w-12 h-12 rounded-xl bg-primary-container text-primary-main flex items-center justify-center shadow-lg">
               <Icon name="Beaker" size={24} />
             </div>
             <div>

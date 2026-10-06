@@ -1575,7 +1575,7 @@ export default function FormulaDetailPage() {
                                 className={cn(
                                   'relative z-10 flex-shrink-0 w-12 h-12 rounded-full border-4 border-white dark:border-neutral-900 flex items-center justify-center',
                                   v.is_current
-                                    ? 'bg-primary-500 text-white'
+                                    ? 'bg-primary-container text-primary-main'
                                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500',
                                 )}
                               >
