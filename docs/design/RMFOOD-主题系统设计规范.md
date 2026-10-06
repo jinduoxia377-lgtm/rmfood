@@ -966,7 +966,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **GATE-11** | M1 | 主色表面令牌对比度（亮/暗 × 基础/hover 全部 ≥ 4.5:1），且 `.surface-primary:hover` 不引用会反转的色阶令牌 | CHK-24 | ✅ 通过（亮 5.48/7.68，暗 7.68/5.48） |
 | **GATE-12** | M1 | 源码使用的品牌色阶类**必须**在编译产物中真实生成 | CHK-18 / CHK-28 | ✅ 通过（568 个类全部存在） |
 | **GATE-13** | M4 | 代码中出现的**自有** `--color-*` 令牌必须已在 L0 登记（漏登记无机械校验的兜底） | T6 / §3 | ✅ 通过（白名单制：自有 14 族全部 L0 定义，Tailwind 内置 + 代码高亮色豁免；4 个未登记消费已修，`g1314.mjs` + `g13-fix.mjs`） |
-| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ✅ 我名下 0 处（165→0，`g14-clean.mjs` 批量清 79 文件/136 行 + 5 处渐变 D-50 修复 + SynergyTab 动态档位 bug；WIP 文件残余 4 处待其合并后同规则清）。2026-10-06 口径校准：排除 `dark:text-white` 反转文字与 `bg-white` 输入框两类误报，仅保留「反转实底 + 白字」与「动态模板 `bg-primary-${`（JIT 不可生成）」 |
+| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ✅ 我名下 0 处（165→0；`g14-clean.mjs` 批量清 79 文件/136 行 + DashboardLayout 3 处 + 5 处渐变 D-50 + SynergyTab 动态档位 bug；WIP 残余 1 处 SettingsPage 待其合并后清）。2026-10-06 口径校准：排除 `dark:text-white` 反转文字与 `bg-white` 输入框两类误报，仅保留「反转实底 + 白字」与「动态模板 `bg-primary-${`（JIT 不可生成）」 |
 
 > **GATE-11 的由来**：v1.1.2 的 D-50 修复只改了基础态，`semantic-utils.css` 的 `.surface-primary:hover` 仍指向色阶级令牌 —— 暗色下 `--color-primary-800` 反转为 `#d1fae5`（浅薄荷），白字对比度 **1.13:1**，比 D-50 原缺陷的 1.52:1 更差。**这是 GATE-05/06 的结构性盲区**（它们只测非悬停态、且只筛 `className` 含 `text-white` 的元素，而 `.surface-primary` 的前景色由 CSS 自设）。见 D-54。
 > **GATE-12 的由来**：`@theme` 桥接层不完整时，Tailwind v4 不生成对应工具类，而源码类名照常书写 → 元素**静默**失去颜色。GATE-08（`var()` 可用性）与静态 grep 都发现不了。本次实测发现 `secondary` 整族与 `info` 族缺档，影响 100+ 处使用。见 D-55 / D-56。
