@@ -1364,6 +1364,7 @@ const bad = await page.evaluate(() => {
 | `frontend/src/theme/index.ts` | 入口 | `@/theme` 统一导出 | 单一入口 |
 | `frontend/src/theme/RadixThemeProvider.tsx` | — | **已删除**（T-R1 / D-41：样式表从未加载，属无效层） | — |
 | `frontend/src/components/ui/RadixComponents.tsx` | L2 | Badge/Text 包装层（**已改项目原生实现**，保留 API + `role="status"`） | 名称保留仅为兼容导入路径 |
+| `components/theme/ThemePanel.tsx`（新增） | 主题设置面板组件（嵌入 `SettingsPage` 主题 tab；浅色/深色/跟随系统三态 + 预设主题 + 无障碍 4 档 + 减少动画开关 + 导入/导出（走 `themeStore` 权威通道）+ 重置；全 L1 语义色类，§4.3 C-24 合规） |
 | `frontend/scripts/theme-audit/theme-gate.mjs` | 门禁 | **门禁唯一入口**：`GATE-01`~`GATE-14` **十四项**断言，静态 / 编译产物 / 渲染三级（GATE-13/14 经 `g1314.mjs` 注入）；支持 `--milestone` `--json` `--require-render` | 只读，**禁止**修改仓库代码。断言清单见 §10.3 |
 | `frontend/scripts/theme-audit/*.mjs` | 门禁 | 其余 15 个只读审计/取证脚本（隔离矩阵、令牌安全、过渡、截图对比等） | 见该目录 `README.md` |
 | `frontend/scripts/theme-validate.ts` | 门禁 | 规范一致性校验脚本（`SPEC_COLORS` 表**已知有误**，待重写） | **尚未注册**为 npm script；见 §9.3 **G-4** |
