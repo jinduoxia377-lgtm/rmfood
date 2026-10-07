@@ -20,7 +20,7 @@ const buttonVariants = cva(
         warning: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
         ai: 'bg-gradient-to-r from-accent to-primary text-white shadow-md hover:shadow-lg',
         amber: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
-        glass: 'backdrop-blur-md bg-white/10 border border-white/20 text-white shadow-lg hover:bg-white/20',
+        glass: 'backdrop-blur-md bg-white/90 dark:bg-neutral-900/10 border border-white/40 dark:border-neutral-500/30 text-neutral-800 dark:text-neutral-100 shadow-lg hover:bg-white dark:hover:bg-neutral-900/20',
       },
       size: {
         default: 'h-9 px-4 py-2 text-sm',
