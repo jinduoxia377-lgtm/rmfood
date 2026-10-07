@@ -524,7 +524,7 @@ export function FormulaCaseDetailPage() {
             {/* Hero Banner */}
             <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${theme.gradient} p-6 text-white shadow-lg`}>
               {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-8" />
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white dark:bg-neutral-900/5 rounded-full -translate-y-1/2 translate-x-8" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-8" />
               <div className="absolute top-4 right-8 w-16 h-16 border border-white/10 rounded-2xl rotate-12" />
               <div className="absolute bottom-8 left-16 w-8 h-8 border border-white/10 rounded-full" />
@@ -532,7 +532,7 @@ export function FormulaCaseDetailPage() {
               <div className="relative">
                 {/* Badges */}
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-sm`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-white shadow-sm`}>
                     {caseItem.category ?? '未分类'}
                   </span>
                   {caseItem.is_featured && (
@@ -541,7 +541,7 @@ export function FormulaCaseDetailPage() {
                     </span>
                   )}
                   {caseItem.generated_by_ai && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm border border-white/30 text-white">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-white">
                       <Sparkles size={11} />AI生成
                     </span>
                   )}

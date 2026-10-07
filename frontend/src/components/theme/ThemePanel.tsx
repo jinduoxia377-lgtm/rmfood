@@ -252,7 +252,7 @@ export const ThemePanel: React.FC = () => {
             className={cn(
               'flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium',
               systemPref === 'dark' ? 'border-neutral-700 bg-neutral-800 text-neutral-100'
-                : systemPref === 'light' ? 'border-neutral-200 bg-white text-neutral-700'
+                : systemPref === 'light' ? 'border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-700'
                 : 'border-neutral-200 bg-neutral-50 text-neutral-400'
             )}
             role="status"
@@ -313,7 +313,7 @@ export const ThemePanel: React.FC = () => {
           >
             <span
               className={cn(
-                'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform',
+                'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white dark:bg-neutral-900 shadow transition-transform',
                 motionPreferences.reducedMotion ? 'translate-x-5' : 'translate-x-0'
               )}
               aria-hidden
@@ -332,7 +332,7 @@ export const ThemePanel: React.FC = () => {
         <div
           className={cn(
             'rounded-xl border p-4 transition-colors',
-            isDark ? 'border-neutral-700 bg-neutral-900' : 'border-neutral-200 bg-white'
+            isDark ? 'border-neutral-700 bg-neutral-900' : 'border-neutral-200 bg-white dark:bg-neutral-900'
           )}
           aria-label="当前明暗预览卡片"
         >
@@ -427,7 +427,7 @@ export const ThemePanel: React.FC = () => {
           <button
             type="button"
             onClick={handleReset}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 surface-hover px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 surface-hover px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
           >
             <RotateCcw size={14} aria-hidden /> 重置默认
           </button>

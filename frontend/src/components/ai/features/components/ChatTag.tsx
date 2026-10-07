@@ -181,7 +181,7 @@ function ChatTag({
           onClick={handleClose}
           className="
             relative z-10 ml-1 rounded-full p-0.5
-            text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100/80
+            text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800/80
             transition-all duration-150 ease-out
             focus:outline-none focus:ring-2 focus:ring-slate-300
             opacity-0 group-hover:opacity-100

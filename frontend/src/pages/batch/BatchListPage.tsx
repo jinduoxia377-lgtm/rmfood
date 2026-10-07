@@ -94,7 +94,7 @@ export default function BatchListPage() {
               从配方生成批记录，追踪原料→批次→样品的完整链路
             </p>
           </div>
-          <Button onClick={() => navigate('/batches/new')} className="bg-white/15 hover:bg-white/25 text-white border-none">
+          <Button onClick={() => navigate('/batches/new')} className="bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-white border-none">
             <Plus size={16} />
             新建批记录
           </Button>
@@ -207,7 +207,7 @@ export default function BatchListPage() {
                 </tr>
               ) : (
                 batches.map(batch => (
-                  <tr key={batch.id} className="border-b border-neutral-50 dark:border-neutral-800/50 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                  <tr key={batch.id} className="border-b border-neutral-50 dark:border-neutral-800/50 hover:bg-neutral-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="px-4 py-3">
                       <span className="font-mono text-xs font-medium text-primary">
                         {batch.batch_code}
@@ -233,7 +233,7 @@ export default function BatchListPage() {
                     <td className="px-4 py-3">
                       <span className={cn(
                         'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                        STATUS_COLORS[batch.status] || 'bg-neutral-100 text-neutral-600'
+                        STATUS_COLORS[batch.status] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600'
                       )}>
                         {batch.status}
                       </span>
@@ -248,13 +248,13 @@ export default function BatchListPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           to={`/batches/${batch.id}`}
-                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
                         >
                           <Eye size={14} className="text-neutral-500" />
                         </Link>
                         <Link
                           to={`/batches/${batch.id}/trace`}
-                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
                           title="追溯"
                         >
                           <ArrowRight size={14} className="text-neutral-500" />

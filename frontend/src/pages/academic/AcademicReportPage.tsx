@@ -140,7 +140,7 @@ export default function AcademicReportPage() {
     draft:      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
     in_review:  'bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300',
     published:  'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
-  }[s] ?? 'bg-neutral-100 text-neutral-600')
+  }[s] ?? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600')
 
   const clearFilters = () => {
     setSearchQuery(''); setSelectedStatus('all'); setSortField('updatedAt'); setSortOrder('desc')
@@ -213,7 +213,7 @@ export default function AcademicReportPage() {
           <Button
             icon={<Plus size={16} />}
             size="md"
-            className="bg-white text-primary-600 hover:bg-neutral-100 shadow-sm"
+            className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
             onClick={() => { setSelectedReport(null); setViewMode('editor') }}
           >
             新建报告
@@ -257,7 +257,7 @@ export default function AcademicReportPage() {
                   'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                   selectedStatus === s
                     ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                    : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                    : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
                 )}
               >
                 {s === 'all' ? '全部' : s === 'draft' ? '草稿' : s === 'in_review' ? '审核中' : '已发布'}
@@ -277,7 +277,7 @@ export default function AcademicReportPage() {
                     'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                     sortField === opt.key
                       ? 'bg-primary-container text-primary-main'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700',
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700',
                   )}
                 >
                   {opt.label}
@@ -350,7 +350,7 @@ export default function AcademicReportPage() {
                 <div
                   key={report.id}
                   className={cn(
-                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/30 transition-colors',
+                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/30 transition-colors',
                     isSelected && 'bg-primary-50/50 dark:bg-primary-900/10',
                   )}
                 >
@@ -416,20 +416,20 @@ export default function AcademicReportPage() {
                     </button>
                     <div className="relative">
                       <button type="button" onClick={() => setShowMoreMenu(showMenu ? null : report.id)} title="更多"
-                        className="p-1.5 rounded-lg text-neutral-300 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
+                        className="p-1.5 rounded-lg text-neutral-300 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors">
                         <MoreVertical size={14} />
                       </button>
                       {showMenu && (
                         <>
                           <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setShowMoreMenu(null)} />
                           <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 z-20">
-                            <button onClick={() => handleView(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
+                            <button onClick={() => handleView(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
                               <Eye size={13} />查看
                             </button>
-                            <button onClick={() => handleEdit(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
+                            <button onClick={() => handleEdit(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
                               <Edit size={13} />编辑
                             </button>
-                            <button onClick={() => handleDuplicate(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
+                            <button onClick={() => handleDuplicate(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
                               <ClipboardCopy size={13} />复制
                             </button>
                             <div className="my-1 border-t border-neutral-100 dark:border-neutral-700" />

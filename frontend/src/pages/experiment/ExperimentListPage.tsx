@@ -206,7 +206,7 @@ export default function ExperimentListPage() {
               <Button
                 icon={<Plus size={16} />}
                 size="md"
-                className="bg-white text-primary-600 hover:bg-neutral-100 shadow-sm"
+                className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
               >
                 新建实验
               </Button>
@@ -261,7 +261,7 @@ export default function ExperimentListPage() {
               className={cn(
                 'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                 !status ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                        : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                        : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >全部
               <span className="ml-1 text-neutral-400">({total})</span>
@@ -273,7 +273,7 @@ export default function ExperimentListPage() {
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                   status === f.value ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                                     : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                                     : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
                 )}
               >
                 {f.label}
@@ -287,7 +287,7 @@ export default function ExperimentListPage() {
               className={cn(
                 'ml-auto px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                 showAdvanced ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                             : 'text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                             : 'text-neutral-400 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >
               排序
@@ -311,7 +311,7 @@ export default function ExperimentListPage() {
                     'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                     sortKey === opt.key
                       ? 'bg-primary-container text-primary-main'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700',
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700',
                   )}
                 >
                   {opt.label}
@@ -400,7 +400,7 @@ export default function ExperimentListPage() {
                 <div
                   key={exp.id}
                   className={cn(
-                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/30 transition-colors',
+                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/30 transition-colors',
                     isSelected && 'bg-primary-50/50 dark:bg-primary-900/10',
                   )}
                 >

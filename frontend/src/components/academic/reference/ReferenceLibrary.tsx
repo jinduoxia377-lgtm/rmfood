@@ -144,7 +144,7 @@ export function ReferenceLibrary() {
           <div className="relative">
             <button
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700"
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               筛选
               <ChevronDown className="w-4 h-4" />
@@ -156,7 +156,7 @@ export function ReferenceLibrary() {
                     useReferenceStore.getState().setTypeFilter('all');
                     setShowTypeDropdown(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                 >
                   全部类型
                 </button>
@@ -167,7 +167,7 @@ export function ReferenceLibrary() {
                       useReferenceStore.getState().setTypeFilter(value as ReferenceType);
                       setShowTypeDropdown(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                   >
                     {label}
                   </button>
@@ -206,7 +206,7 @@ export function ReferenceLibrary() {
         <div className="border rounded-lg p-4 bg-white dark:bg-neutral-800">
             <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">添加新文献</h3>
-            <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-neutral-100 rounded">
+            <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-neutral-100 dark:bg-neutral-800 rounded">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -297,7 +297,7 @@ export function ReferenceLibrary() {
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               取消
             </button>
@@ -342,7 +342,7 @@ export function ReferenceLibrary() {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2">
-                  <span className={cn('px-2 py-1 text-xs rounded', typeColors[ref.type as ReferenceType] || 'bg-neutral-100 text-neutral-700')}>
+                  <span className={cn('px-2 py-1 text-xs rounded', typeColors[ref.type as ReferenceType] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700')}>
                     {typeLabels[ref.type as ReferenceType] || ref.type}
                   </span>
                   <button
@@ -400,7 +400,7 @@ export function ReferenceLibrary() {
           <p className="text-neutral-400">暂无文献</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           >
             添加第一篇文献
           </button>

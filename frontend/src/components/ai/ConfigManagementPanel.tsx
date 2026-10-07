@@ -32,7 +32,7 @@ import { ModelSelector } from '@/components/ai/ModelSelector';
 import { ModelClient } from '@/api/modelClient';
 import type { ModelType } from '@/api/modelClient';
 import type { ModelStatus } from '@/api/modelClient';
-import { ConfigManager } from '@/utils/configManager';
+import { ConfigManager, dispatchConfigSync, validateConfigSync, decryptKeyAsync } from '@/utils/configManager';
 import type { ModelConfig } from '@/utils/configManager';
 import { useModelHealthPolling } from './features/hooks/useModelHealthSSE';
 import { compactionMonitor, getDashboardData } from './features/utils/compactionMonitor';
@@ -171,6 +171,29 @@ function HealthDashboard() {
   const [llmMsg, setLlmMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [llmModels, setLlmModels] = useState<string[]>([]);
   const [llmFetching, setLlmFetching] = useState(false);
+  const [llmBackendLoading, setLlmBackendLoading] = useState(false);
+
+  /** P0 功能 #2：从后端加载全局配置（apiKey 绝不写回本地，仅回填 baseUrl/model/provider） */
+  const handleLlmLoadFromBackend = useCallback(async () => {
+    setLlmBackendLoading(true);
+    setLlmMsg(null);
+    try {
+      const backendCfg = await ConfigManager.loadFromBackend('llm');
+      if (!backendCfg) {
+        setLlmMsg({ type: 'error', text: '后端未返回 LLM 配置（可能未登录或无配置）' });
+        return;
+      }
+      if (backendCfg.baseUrl) setLlmBaseUrl(backendCfg.baseUrl);
+      if (backendCfg.provider) setLlmProvider(backendCfg.provider);
+      if (backendCfg.model) setLlmModel(backendCfg.model);
+      setLlmMsg({
+        type: 'success',
+        text: `已从后端加载配置（provider=${backendCfg.provider || '—'}, model=${backendCfg.model || '—'}），密钥需重新填写后保存`,
+      });
+    } finally {
+      setLlmBackendLoading(false);
+    }
+  }, []);
 
   /** 实时获取 Provider 可用模型列表（OpenAI 兼容 API） */
   const fetchLlmModels = useCallback(async (provider: string, apiKey: string, baseUrl: string) => {
@@ -200,6 +223,26 @@ function HealthDashboard() {
     }
   }, []);
 
+  // P1 模型列表走网关：优先走后端代理端点 /models/models/list（避免浏览器直连 LLM，
+  // 密钥不出后端；旧直连逻辑保留为 fallback，代理失败时降级）。
+  const fetchLlmModelsViaProxy = useCallback(async (provider: string, apiKey: string, baseUrl: string) => {
+    try {
+      const targetUrl = baseUrl || LLM_PRESETS[provider]?.baseUrl || '';
+      const res = await fetch('/api/v1/ai/models/models/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ provider, api_key: apiKey, base_url: targetUrl, timeout_ms: 8000 }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as { models?: string[] };
+      setLlmModels(data.models && data.models.length > 0 ? data.models : [`(请手动输入模型名)`]);
+    } catch {
+      // 代理不可用，降级到浏览器直连（旧路径）
+      fetchLlmModels(provider, apiKey, baseUrl);
+    }
+  }, [fetchLlmModels]);
+
   // 组件挂载时初始化配置
   useEffect(() => {
     try {
@@ -223,18 +266,41 @@ function HealthDashboard() {
         const preset = LLM_PRESETS[llmProvider];
         setLlmBaseUrl(preset?.baseUrl || '');
       } catch {}
-      fetchLlmModels(llmProvider, llmKey, llmBaseUrl);
+      fetchLlmModelsViaProxy(llmProvider, llmKey, llmBaseUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLlmQuick]);
 
-  // Provider 或自定义 baseUrl 变化时重新拉取模型
   useEffect(() => {
     if (showLlmQuick) {
-      fetchLlmModels(llmProvider, llmKey, llmBaseUrl);
+      fetchLlmModelsViaProxy(llmProvider, llmKey, llmBaseUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [llmProvider, llmBaseUrl]);
+  }, [llmProvider, llmBaseUrl, showLlmQuick]);
+
+  // 保存前验活（P0 功能 #3）：用填写的密钥做一次最小 LLM 调用，不写库
+  const [llmTesting, setLlmTesting] = useState(false);
+  const handleLlmTest = useCallback(async () => {
+    if (!llmKey.trim()) {
+      setLlmMsg({ type: 'error', text: '请先填写 API 密钥再验活' });
+      return;
+    }
+    setLlmTesting(true);
+    setLlmMsg(null);
+    const effectiveBaseUrl = llmBaseUrl.trim() || LLM_PRESETS[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1';
+    const result = await ConfigManager.testUserLlmKey({
+      provider: llmProvider,
+      apiKey: llmKey.trim(),
+      baseUrl: effectiveBaseUrl,
+      model: llmModel,
+    });
+    setLlmTesting(false);
+    if (result.success) {
+      setLlmMsg({ type: 'success', text: `验活通过：${result.detail}` });
+    } else {
+      setLlmMsg({ type: 'error', text: `验活失败：${result.detail}` });
+    }
+  }, [llmKey, llmModel, llmBaseUrl, llmProvider]);
 
   const handleLlmSave = async () => {
     if (!llmKey.trim() || llmKey.trim().length < 20) {
@@ -243,20 +309,17 @@ function HealthDashboard() {
     setLlmSaving(true); setLlmMsg(null);
     try {
       const effectiveBaseUrl = llmBaseUrl.trim() || LLM_PRESETS[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1';
-      
-      // Step 1: 同步到后端数据库
-      const backendResult = await ConfigManager.syncToBackend('llm', {
+
+      // P0 功能 #1：普通用户保存走 user-key 通道（无需管理员），
+      // 与全局管理员配置完全隔离，影响范围仅限当前用户。
+      const userResult = await ConfigManager.saveUserLlmKey({
+        provider: llmProvider,
         apiKey: llmKey.trim(),
         baseUrl: effectiveBaseUrl,
-        timeout: 60000,
-        maxRetries: 3,
-        concurrencyLimit: 3,
         model: llmModel,
-        provider: llmProvider,
       });
-      const backendSuccess = backendResult.success;
-      
-      // Step 2: 本地持久化
+
+      // 本地缓存仍然更新（保留历史路径）
       ConfigManager.setModelConfig('llm', {
         apiKey: llmKey.trim(),
         baseUrl: effectiveBaseUrl,
@@ -268,14 +331,14 @@ function HealthDashboard() {
       });
       localStorage.setItem('rmfood_llm_provider', llmProvider);
       localStorage.setItem('rmfood_llm_model', llmModel);
-      
-      if (backendSuccess) {
-        setLlmMsg({ type: 'success', text: '配置已保存到服务器和本地缓存' });
+
+      if (userResult.success) {
+        setLlmMsg({ type: 'success', text: `个人密钥已保存${userResult.keyMasked ? `（${userResult.keyMasked}）` : ''}，/ai 对话将使用您自己的密钥` });
       } else {
-        setLlmMsg({ type: 'error', text: '配置已保存到本地缓存，服务器保存失败' });
+        setLlmMsg({ type: 'error', text: userResult.message || '个人密钥保存失败，已同步本地缓存；可尝试下方"验活"排查密钥有效性' });
       }
-      
-      window.dispatchEvent(new Event('rmfood-config-sync'));
+
+      dispatchConfigSync();
     } catch (error) {
       setLlmMsg({ type: 'error', text: '保存失败，请检查网络或后端服务' });
     } finally {
@@ -291,7 +354,7 @@ function HealthDashboard() {
         iconBg="bg-emerald-100 dark:bg-emerald-900/30"
         iconColor="text-emerald-600 dark:text-emerald-400"
         title="模型健康监控"
-        subtitle={`实时状态 · 自动刷新 · ${isConnected ? 'SSE 已连接' : '轮询模式'}`}
+        subtitle={`实时状态 · 每 15s 刷新 · ${isConnected ? '轮询正常' : '轮询失败'}`}
         action={
           <>
             {lastUpdated && (
@@ -359,8 +422,19 @@ function HealthDashboard() {
             {/* 快捷配置面板 */}
             {showLlmQuick && (
               <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 space-y-3">
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 dark:text-primary-400">
-                  <Key className="w-3.5 h-3.5" />LLM API 配置
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 dark:text-primary-400">
+                    <Key className="w-3.5 h-3.5" />LLM API 配置
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLlmLoadFromBackend}
+                    disabled={llmBackendLoading}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {llmBackendLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
+                    从后端加载
+                  </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -378,16 +452,34 @@ function HealthDashboard() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-[var(--text-secondary)] block">Model</label>
                     <select
-                      value={llmModel}
-                      onChange={(e) => setLlmModel(e.target.value)}
+                      value={llmModels.includes(llmModel) ? llmModel : ''}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === '__custom__') {
+                          // 切到"自定义输入"：清空当前值让用户填写
+                          setLlmModel('');
+                        } else {
+                          setLlmModel(v);
+                        }
+                      }}
                       disabled={llmFetching}
                       className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                     >
+                      <option value="" disabled>{llmFetching ? '加载中...' : '选择模型'}</option>
                       {llmModels.map((m) => (
                         <option key={m} value={m}>{m}</option>
                       ))}
-                      {llmFetching && <option value="">加载中...</option>}
+                      <option value="__custom__">自定义输入（手动填写模型名）</option>
                     </select>
+                    {(!llmModels.includes(llmModel) || llmModel === '') && !llmFetching && (
+                      <Input
+                        type="text"
+                        value={llmModel}
+                        onChange={(e) => setLlmModel(e.target.value)}
+                        placeholder="手动输入模型名，如 qwen-max-0428"
+                        className="h-9 font-mono text-xs"
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -427,6 +519,14 @@ function HealthDashboard() {
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-normal border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
                   >
                     取消
+                  </button>
+                  <button
+                    onClick={handleLlmTest}
+                    disabled={llmTesting || llmSaving}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-normal border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {llmTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                    验活
                   </button>
                   <button
                     onClick={handleLlmSave}
@@ -503,8 +603,8 @@ function HealthDashboard() {
             <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>模型响应质量</span>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
               {isConnected
-                ? <><Wifi className="w-3.5 h-3.5 text-emerald-500" /><span>SSE 实时</span></>
-                : <><WifiOff className="w-3.5 h-3.5" /><span>轮询</span></>
+                ? <><Wifi className="w-3.5 h-3.5 text-emerald-500" /><span>轮询中</span></>
+                : <><WifiOff className="w-3.5 h-3.5" /><span>连接失败</span></>
               }
             </div>
           </div>
@@ -553,13 +653,27 @@ function DefaultModelSection() {
   });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [backendSync, setBackendSync] = useState<'idle' | 'ok' | 'fail'>('idle');
 
   const handleModelSelect = async (modelType: ModelType) => {
     setSelectedModel(modelType);
     setSaving(true); setSaveMsg(null);
+    setBackendSync('idle');
     try {
       localStorage.setItem('rmfood_default_model', modelType);
       setSaveMsg(`${BUSINESS_MODELS.find((o: typeof BUSINESS_MODELS[0]) => o.value === modelType)?.label} 已设为默认模型`);
+      // P1 默认模型持久化：尽力同步到后端（/ai 页统计与跨设备一致）
+      try {
+        const res = await fetch('/api/v1/ai/models/default', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ model_type: modelType }),
+        });
+        setBackendSync(res.ok ? 'ok' : 'fail');
+      } catch {
+        setBackendSync('fail');
+      }
       await queryClient.refetchQueries({ queryKey: ['ai-model-status'] });
     } catch { setSaveMsg('保存失败，请重试'); }
     finally { setSaving(false); setTimeout(() => setSaveMsg(null), 3000); }
@@ -581,6 +695,7 @@ function DefaultModelSection() {
             <div className="mt-3 px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               {saveMsg}
+              {backendSync === 'fail' && <span className="ml-auto text-xs font-normal text-amber-600 dark:text-amber-400">（未同步至后端，仅本地缓存）</span>}
             </div>
           )}
         </div>
@@ -669,7 +784,33 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
     } catch {}
   }, []);
 
-  // Fix 4: 监听 localStorage 变更，同步 configs state
+  // P1 密钥存储升级消费：LLM 密钥可能为 RMF:2: AES-GCM 加密，同步读 getModelConfigs 解不开，
+  // 需在挂载时异步水合，把已升级密钥真正载入 UI 并更新 legacyUnencrypted 标记
+  const hydrateLlmKeyAsync = useCallback(async () => {
+    try {
+      const stored = localStorage.getItem('rmfood_model_configs');
+      if (!stored) return;
+      const raw = JSON.parse(stored);
+      const encKey = (raw?.llm?.apiKey as string) || '';
+      if (!encKey.startsWith('RMF:2:')) return; // 非 AES 值，同步路径已可处理
+      const { raw: decrypted, legacyUnencrypted } = await decryptKeyAsync(encKey);
+      if (decrypted) {
+        setConfigs(prev => ({ ...prev, llm: { ...(prev.llm || ConfigManager.getDefaultModelConfig()), apiKey: decrypted } }));
+        setLlmLegacyKey(false);
+      } else {
+        // 跨会话 DPAPI 密钥丢失：密钥不可用，强制重输
+        setConfigs(prev => ({ ...prev, llm: { ...(prev.llm || ConfigManager.getDefaultModelConfig()), apiKey: '' } }));
+        setLlmLegacyKey(true);
+      }
+    } catch {}
+  }, []);
+
+  // P1 legacyUnencrypted 消费：检测当前 LLM 密钥是否为历史明文（未经 base64 编码入库），
+  // 若为明文则强制用户重新输入，避免把疑似明文当有效密钥继续使用
+  const [llmLegacyKey, setLlmLegacyKey] = useState(false);
+  useEffect(() => {
+    hydrateLlmKeyAsync();
+  }, [hydrateLlmKeyAsync]);
   const syncFromStorage = useCallback(() => {
     try {
       const latest = ConfigManager.getModelConfigs();
@@ -683,11 +824,15 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
   }, []);
 
   useEffect(() => {
+    // P1 广播事件防护：仅接受带 token 签名的合法事件，拒绝外来脚本派发的裸事件
+    const onSync = (e: Event) => {
+      if (validateConfigSync(e)) syncFromStorage();
+    };
     window.addEventListener('storage', syncFromStorage);
-    window.addEventListener('rmfood-config-sync', syncFromStorage);
+    window.addEventListener('rmfood-config-sync', onSync);
     return () => {
       window.removeEventListener('storage', syncFromStorage);
-      window.removeEventListener('rmfood-config-sync', syncFromStorage);
+      window.removeEventListener('rmfood-config-sync', onSync);
     };
   }, [syncFromStorage]);
 
@@ -699,6 +844,8 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       if (!preset.models.includes(llmModel)) setLlmModel(preset.models[0] || '');
       await fetchLlmModels(provider, configs.llm?.apiKey || '', configs.llm?.baseUrl);
     }
+    // P1 一致性 #12：provider 变更也派发同步事件，避免快捷面板读到旧 provider
+    dispatchConfigSync();
   };
 
   const handleSave = async (key: ModelType) => {
@@ -715,6 +862,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       
       // Step 2: 同步到后端数据库（仅 LLM 类型需要）
       let backendSuccess = true;
+      let backendForbidden = false;
       if (key === 'llm') {
         const effectiveBaseUrl = (config.baseUrl || '').trim() || LLM_PRESETS[llmProvider]?.baseUrl || '';
         const r = await ConfigManager.syncToBackend('llm', {
@@ -727,14 +875,18 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
           provider: llmProvider,
         });
         backendSuccess = r.success;
+        backendForbidden = r.forbidden === true;
       }
       
       await queryClient.refetchQueries({ queryKey: ['ai-model-status'] });
       syncFromStorage();
-      window.dispatchEvent(new Event('rmfood-config-sync'));
+      dispatchConfigSync();
       
       if (backendSuccess) {
         setMsg({ type: 'success', text: '配置已保存到服务器和本地缓存' });
+      } else if (backendForbidden) {
+        // P0 功能 #1：非管理员调用全局配置端点会被 403 拒绝，引导走个人密钥通道
+        setMsg({ type: 'error', text: '无权限修改全局 LLM 配置（仅管理员）。您可改用上方"配置管理"快捷面板保存个人密钥，或联系管理员。' });
       } else {
         setMsg({ type: 'error', text: '配置已保存到本地缓存，服务器保存失败' });
       }
@@ -747,7 +899,11 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
   };
 
   const handleReset = (key: ModelType) => {
-    try { ConfigManager.resetModelConfig(key); setConfigs(ConfigManager.getModelConfigs()); setMsg({ type: 'success', text: '已重置' }); } catch {}
+    try {
+      ConfigManager.resetModelConfig(key);
+      setConfigs(ConfigManager.getModelConfigs());
+      setMsg({ type: 'success', text: '已重置本地缓存（后端全局配置不受影响）' });
+    } catch {}
   };
 
   const isActive = status?.status === 'active';
@@ -811,11 +967,29 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-[var(--text-secondary)] block">Model</label>
-                <select value={llmModel} onChange={e => setLlmModel(e.target.value)} disabled={llmFetching}
-                  className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50">
+                <select
+                  value={llmModels.includes(llmModel) ? llmModel : ''}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === '__custom__') setLlmModel('');
+                    else setLlmModel(v);
+                  }}
+                  disabled={llmFetching}
+                  className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                >
+                  <option value="" disabled>{llmFetching ? '加载中...' : '选择模型'}</option>
                   {llmModels.map((m) => <option key={m} value={m}>{m}</option>)}
-                  {llmFetching && <option value="">加载中...</option>}
+                  <option value="__custom__">自定义输入（手动填写模型名）</option>
                 </select>
+                {(!llmModels.includes(llmModel) || llmModel === '') && !llmFetching && (
+                  <Input
+                    type="text"
+                    value={llmModel}
+                    onChange={(e) => setLlmModel(e.target.value)}
+                    placeholder="手动输入模型名"
+                    className="h-9 font-mono text-xs"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -844,6 +1018,12 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {modelKey === 'llm' && llmLegacyKey && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                该密钥为历史明文存储（未经编码入库），请重新输入以启用安全编码保护
+              </p>
+            )}
             {modelKey === 'llm' && (
               <p className="text-xs text-[var(--text-muted)]">
                 获取密钥: {LLM_PRESETS[llmProvider]?.keyHint}

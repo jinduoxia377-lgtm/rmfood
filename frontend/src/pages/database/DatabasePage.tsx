@@ -778,11 +778,11 @@ export default function DatabasePage() {
             <p className="text-white/80 text-sm mt-1">TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" onClick={() => window.print()}>
+            <Button variant="outline" size="sm" className="bg-white dark:bg-neutral-900/10 text-white border-white/30 hover:bg-white dark:bg-neutral-900/20 hover:text-white" onClick={() => window.print()}>
               <Printer className="w-4 h-4 mr-1.5" />
               打印报告
             </Button>
-            <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" onClick={handleExportStats}>
+            <Button variant="outline" size="sm" className="bg-white dark:bg-neutral-900/10 text-white border-white/30 hover:bg-white dark:bg-neutral-900/20 hover:text-white" onClick={handleExportStats}>
               <Download className="w-4 h-4 mr-1.5" />
               导出数据
             </Button>
@@ -1294,7 +1294,7 @@ export default function DatabasePage() {
             <TabsTrigger
               key={value}
               value={value}
-              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-700 transition-all duration-200 px-4 py-2.5 rounded-xl gap-2"
+              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-white dark:bg-neutral-900 dark:data-[state=active]:bg-neutral-700 transition-all duration-200 px-4 py-2.5 rounded-xl gap-2"
             >
               <Icon className="w-[18px] h-[18px] shrink-0" />
               <span className="text-[13.5px] font-semibold leading-none tracking-tight">{label}</span>
@@ -1365,7 +1365,7 @@ export default function DatabasePage() {
               </div>
               <button
                 onClick={() => setShowShortcuts(false)}
-                className="p-2 hover:bg-white/20 rounded-md transition-colors"
+                className="p-2 hover:bg-white dark:bg-neutral-900/20 rounded-md transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>

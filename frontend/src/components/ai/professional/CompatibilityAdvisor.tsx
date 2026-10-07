@@ -143,7 +143,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
             e.stopPropagation();
             this.removeHerb(herb);
           }}
-          className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+          className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white dark:bg-neutral-900/20 transition-colors"
         >
           <X className="w-3 h-3" />
         </button>
@@ -224,7 +224,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-white dark:bg-neutral-900/20 flex items-center justify-center">
               <Shield className="w-7 h-7 text-white" />
             </div>
             <div>

@@ -363,12 +363,12 @@ export function FormulaCasesPage() {
 
           <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             {/* View toggle */}
-            <div className="flex items-center border border-white/30 rounded-lg overflow-hidden bg-white/10">
+            <div className="flex items-center border border-white/30 rounded-lg overflow-hidden bg-white dark:bg-neutral-900/10">
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn(
                   'px-3 py-2 min-h-[44px] text-sm font-medium transition-colors',
-                  viewMode === 'grid' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white',
+                  viewMode === 'grid' ? 'bg-white dark:bg-neutral-900/20 text-white' : 'text-white/70 hover:text-white',
                 )}
               >
                 <Grid size={14} className="inline mr-1" />网格
@@ -377,7 +377,7 @@ export function FormulaCasesPage() {
                 onClick={() => setViewMode('list')}
                 className={cn(
                   'px-3 py-2 min-h-[44px] text-sm font-medium transition-colors border-l border-white/20',
-                  viewMode === 'list' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white',
+                  viewMode === 'list' ? 'bg-white dark:bg-neutral-900/20 text-white' : 'text-white/70 hover:text-white',
                 )}
               >
                 <ListIcon size={14} className="inline mr-1" />列表
@@ -386,12 +386,12 @@ export function FormulaCasesPage() {
 
             {/* CTA */}
             <Link to="/formulas/new">
-              <button className="px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-white/10 text-white/80 hover:bg-white/20 border border-white/30 transition-all active:scale-95">
+              <button className="px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-white dark:bg-neutral-900/10 text-white/80 hover:bg-white dark:bg-neutral-900/20 border border-white/30 transition-all active:scale-95">
                 <Plus size={14} className="inline mr-1" />新建配方
               </button>
             </Link>
             <Link to="/formulas/cases/new">
-              <Button variant="primary" icon={<Plus size={16} />} className="bg-white text-primary-600 hover:bg-white/90 shadow-sm font-semibold">
+              <Button variant="primary" icon={<Plus size={16} />} className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-white dark:bg-neutral-900/90 shadow-sm font-semibold">
                 创建案例
               </Button>
             </Link>

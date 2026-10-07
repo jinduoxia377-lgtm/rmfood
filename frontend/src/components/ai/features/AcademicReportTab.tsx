@@ -493,7 +493,7 @@ export function AcademicReportTab({
                 </label>
                 <div className="space-y-4">
                   {report.chapters?.map((section, index) => (
-                    <div key={index} className="bg-slate-50 rounded-lg p-4">
+                    <div key={index} className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4">
                       <input
                         type="text"
                         defaultValue={section.title}

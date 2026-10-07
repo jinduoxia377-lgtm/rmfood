@@ -541,7 +541,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                         e.stopPropagation();
                         handleCancelEdit();
                       }}
-                      className="p-2 sm:p-1 text-neutral-500 hover:bg-neutral-100 rounded min-h-[44px] sm:min-h-0"
+                      className="p-2 sm:p-1 text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 rounded min-h-[44px] sm:min-h-0"
                     >
                       <X size={16} />
                     </button>
@@ -603,7 +603,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 e.stopPropagation();
                 onToggleExpand(formula.id);
               }}
-              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               aria-label={isExpanded ? '收起' : '展开详情'}
             >
               {isExpanded ? (

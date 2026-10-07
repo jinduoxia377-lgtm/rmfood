@@ -126,7 +126,7 @@ export default function PeptideStructurePage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900/20 flex items-center justify-center">
                   <Dna size={18} className="text-white" />
                 </div>
                 <span className="text-xs font-medium uppercase tracking-wider text-white/70">肽链结构分析工具</span>

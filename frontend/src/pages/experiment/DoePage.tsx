@@ -115,7 +115,7 @@ function ResponseInputTable({ runs, factors, values, onChange, autoFill }: {
           {runs.map(run => {
             const shown = values[run.run_id] ?? (autoFill ? autoFill(run) : undefined)
             return (
-              <tr key={run.run_id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+              <tr key={run.run_id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50">
                 <td className="py-2 pr-2 text-neutral-500 dark:text-neutral-400 font-mono">{run.run_id}</td>
                 {factorNames.map(name => (
                   <td key={name} className="py-2 px-2 text-center font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">
@@ -563,7 +563,7 @@ export default function DoePage() {
           </div>
           {history.length > 0 && (
             <button onClick={() => setShowHistory(!showHistory)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white/15 hover:bg-white/25 rounded-full transition-colors">
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 rounded-full transition-colors">
               <ClipboardList size={12} />历史记录 ({history.length})
             </button>
           )}

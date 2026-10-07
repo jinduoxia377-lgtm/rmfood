@@ -160,7 +160,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         'block text-[15px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
-                        isActive(l.href) ? 'text-neutral-900 bg-neutral-50' : 'text-neutral-900 hover:text-neutral-900 hover:bg-neutral-50'
+                        isActive(l.href) ? 'text-neutral-900 bg-neutral-50 dark:bg-neutral-800' : 'text-neutral-900 hover:text-neutral-900 hover:bg-neutral-50 dark:bg-neutral-800'
                       )}
                     >
                       {l.label}

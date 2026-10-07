@@ -134,7 +134,7 @@ export default function WorkflowPage() {
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {/* 搜索框 */}
               <div className="relative flex-1 sm:flex-initial">
-                <div className="flex items-center gap-2 bg-white/15 rounded-full px-4 py-2">
+                <div className="flex items-center gap-2 bg-white dark:bg-neutral-900/15 rounded-full px-4 py-2">
                   <Search size={14} className="text-white/70 shrink-0" />
                   <input
                     type="text"
@@ -152,7 +152,7 @@ export default function WorkflowPage() {
                 size="sm"
                 icon={<Sparkles size={16} />}
                 onClick={() => { setPreselectedTemplateId(null); setShowCreateModal(true) }}
-                className="bg-white/90 text-primary-700 hover:bg-white"
+                className="bg-white dark:bg-neutral-900/90 text-primary-700 hover:bg-white dark:bg-neutral-900"
               >
                 快速创建
               </Button>
@@ -164,7 +164,7 @@ export default function WorkflowPage() {
                 onClick={handleRefresh}
                 title="刷新数据"
                 aria-label="刷新工作流数据"
-                className="bg-white/15 text-white hover:bg-white/25"
+                className="bg-white dark:bg-neutral-900/15 text-white hover:bg-white dark:bg-neutral-900/25"
               >
                 刷新
               </Button>
@@ -174,7 +174,7 @@ export default function WorkflowPage() {
                 size="sm"
                 icon={<Plus size={14} />}
                 onClick={() => { setPreselectedTemplateId(null); setShowCreateModal(true) }}
-                className="bg-white text-primary-600 hover:bg-white/90 shrink-0"
+                className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-white dark:bg-neutral-900/90 shrink-0"
               >
                 创建工作流
               </Button>

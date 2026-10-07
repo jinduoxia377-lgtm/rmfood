@@ -143,8 +143,8 @@ function PreviewPanelSkeleton() {
       <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {/* Card Header */}
         <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 space-y-2">
-          <Skeleton width="80%" height={22} animationType="pulse" className="!bg-white/30" />
-          <Skeleton width="60%" height={13} animationType="pulse" className="!bg-white/20" />
+          <Skeleton width="80%" height={22} animationType="pulse" className="!bg-white dark:bg-neutral-900/30" />
+          <Skeleton width="60%" height={13} animationType="pulse" className="!bg-white dark:bg-neutral-900/20" />
         </div>
 
         {/* Card Body */}
@@ -200,7 +200,7 @@ function QuickActionsSkeleton() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <Skeleton width={20} height={20} radius={5} animationType="pulse" />
             <Skeleton width={90 + (i * 15)} height={14} animationType="pulse" />

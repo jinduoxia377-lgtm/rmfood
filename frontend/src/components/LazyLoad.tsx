@@ -133,7 +133,7 @@ export function LazyLoadWrapper<P = object>(props: {
       <div className="h-4 bg-neutral-200 rounded w-full" />
       <div className="h-4 bg-neutral-200 rounded w-5/6" />
       <div className="h-4 bg-neutral-200 rounded w-2/3" />
-      <div className="h-24 bg-neutral-100 rounded mt-8" />
+      <div className="h-24 bg-neutral-100 dark:bg-neutral-800 rounded mt-8" />
     </div>
   );
 

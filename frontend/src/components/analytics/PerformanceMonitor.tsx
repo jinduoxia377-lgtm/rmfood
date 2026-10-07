@@ -35,7 +35,7 @@ function PerformanceCard({ title, value, status, icon, subtitle }: PerformanceCa
       case 'poor':
         return 'bg-error-50 border-red-200 text-error-800';
       default:
-        return 'bg-slate-50 border-neutral-200 text-neutral-800';
+        return 'bg-slate-50 dark:bg-neutral-800 border-neutral-200 text-neutral-800';
     }
   };
 
@@ -69,7 +69,7 @@ function PerformanceCard({ title, value, status, icon, subtitle }: PerformanceCa
     <div className={`p-4 rounded-lg border ${getStatusStyles()}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg bg-white/50 ${getIconStyles()}`}>{icon}</div>
+          <div className={`p-2 rounded-lg bg-white dark:bg-neutral-900/50 ${getIconStyles()}`}>{icon}</div>
           <span className="text-sm font-medium">{title}</span>
         </div>
         {getStatusIcon()}
@@ -189,7 +189,7 @@ export default function PerformanceMonitor() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-6">
       <div className="flex items-center gap-3 mb-6">
         <Gauge className="w-6 h-6 text-primary-600" />
         <h2 className="text-xl font-bold text-neutral-800">性能监控</h2>
@@ -252,7 +252,7 @@ export default function PerformanceMonitor() {
         </div>
       </div>
 
-      <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
         <h4 className="text-sm font-semibold text-neutral-700 mb-2">FPS 统计</h4>
         <div className="flex justify-between text-sm">
           <span className="text-neutral-600">

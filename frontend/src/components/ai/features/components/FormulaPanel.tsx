@@ -454,7 +454,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
             {/* 平板端视图切换按钮 */}
             <button
               onClick={() => setIsTabletView(!isTabletView)}
-              className="hidden md:flex lg:hidden items-center justify-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors min-h-[44px]"
+              className="hidden md:flex lg:hidden items-center justify-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors min-h-[44px]"
               title={isTabletView ? '切换到单列视图' : '切换到双列视图'}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -463,7 +463,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
             <button
               onClick={onClose}
-              className="self-end sm:self-auto p-2 -mr-2 sm:mr-0 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="self-end sm:self-auto p-2 -mr-2 sm:mr-0 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               aria-label="关闭面板"
             >
               <X className="w-5 h-5 text-neutral-500" />
@@ -561,7 +561,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
           <button
             onClick={toggleSortOrder}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-1"
+            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-1"
           >
             {localSortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
           </button>
@@ -626,7 +626,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                         onClick={loadPrevPage}
                         disabled={currentPage === 1}
                         className="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600
-                                 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
+                                 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
                         ⬅️ 上一页
@@ -644,7 +644,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                         onClick={loadNextPage}
                         disabled={currentPage === totalPages}
                         className="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600
-                                 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
+                                 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
                         下一页 ➡️
@@ -726,13 +726,13 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                     <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[200px] z-50">
                       <button
                         onClick={() => { onClearMemory(); setShowMoreMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
                         🔄 清空内存缓存
                       </button>
                       <button
                         onClick={() => { onImport(); setShowMoreMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
                         📥 导入数据
                       </button>
@@ -772,7 +772,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   size="sm"
                   title="选择导出格式"
                   disabled={formulaCount === 0}
-                  className="group-hover:bg-neutral-100"
+                  className="group-hover:bg-neutral-100 dark:bg-neutral-800"
                 >
                   📤 导出 ▼
                 </Button>
@@ -845,21 +845,21 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           >
             <button
               onClick={() => handleContextAction('viewDetail')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <Eye className="w-4 h-4" />
               查看详情
             </button>
             <button
               onClick={() => handleContextAction('generateReport')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <FileText className="w-4 h-4" />
               生成报告
             </button>
             <button
               onClick={() => handleContextAction('export')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               📤 导出数据
             </button>

@@ -141,7 +141,7 @@ export default function StabilityPage() {
             </div>
             {history.length > 0 && (
               <button onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white/15 hover:bg-white/25 rounded-full transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 rounded-full transition-colors">
                 <Save size={12} />历史记录 ({history.length})
               </button>
             )}

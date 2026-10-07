@@ -367,7 +367,7 @@ export default function AIAssistantPage() {
               </div>
               <button
                 onClick={closeMobileMenu}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
                 aria-label="关闭菜单"
               >
                 <X className="w-5 h-5 text-neutral-500" />
@@ -393,7 +393,7 @@ export default function AIAssistantPage() {
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                             tab === t.value
                               ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm scale-[1.02]'
-                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
+                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
                           }`}
                           aria-current={tab === t.value ? 'page' : undefined}
                         >
@@ -434,7 +434,7 @@ export default function AIAssistantPage() {
                 {/* 汉堡菜单按钮（移动端） */}
                 <button
                   onClick={toggleMobileMenu}
-                  className="sm:hidden p-2.5 rounded-lg bg-white/15 hover:bg-white/20 text-white transition-colors duration-150"
+                  className="sm:hidden p-2.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-white transition-colors duration-150"
                   aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
                   aria-expanded={mobileMenuOpen}
                 >
@@ -455,7 +455,7 @@ export default function AIAssistantPage() {
                 {/* 快速操作 */}
                 <button
                   onClick={() => handleStatCardClick('chat', '智能对话')}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/15 hover:bg-white/20 text-white transition-colors duration-150 text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-white transition-colors duration-150 text-sm font-medium"
                 >
                   <MessageSquare className="w-4 h-4" />
                   开始对话
@@ -637,7 +637,7 @@ export default function AIAssistantPage() {
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive} shadow-sm`
-                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-300'
+                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-300'
                               }`}
                             >
                               <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
@@ -718,7 +718,7 @@ export default function AIAssistantPage() {
                               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-150 ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive}`
-                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50'
                               }`}
                             >
                               <TabIcon className="w-3.5 h-3.5" />

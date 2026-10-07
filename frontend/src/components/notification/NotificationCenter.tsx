@@ -230,7 +230,7 @@ export function NotificationCenter() {
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
         aria-label="通知中心"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -263,14 +263,14 @@ export function NotificationCenter() {
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  showSettings ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  showSettings ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                 }`}
               >
                 <Settings className="w-4 h-4 text-neutral-500" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800"
               >
                 <X className="w-4 h-4 text-neutral-500" />
               </button>
@@ -342,7 +342,7 @@ export function NotificationCenter() {
 
             {categories.length > 0 && (
               <div className="relative">
-                <button className="flex items-center gap-1 px-2 py-1 text-sm text-neutral-500 hover:text-neutral-700 rounded hover:bg-neutral-100">
+                <button className="flex items-center gap-1 px-2 py-1 text-sm text-neutral-500 hover:text-neutral-700 rounded hover:bg-neutral-100 dark:bg-neutral-800">
                   <Filter className="w-3 h-3" />
                   筛选
                 </button>
@@ -367,7 +367,7 @@ export function NotificationCenter() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`group relative px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
+                    className={`group relative px-4 py-3 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
                       notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-slate-50/50 dark:bg-neutral-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-900/10'
                     }`}
                   >
@@ -465,14 +465,14 @@ export function NotificationCenter() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600"
                 >
                   上一页
                 </button>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600"
                 >
                   下一页
                 </button>

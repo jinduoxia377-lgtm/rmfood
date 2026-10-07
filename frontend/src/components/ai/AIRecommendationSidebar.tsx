@@ -165,7 +165,7 @@ export function AIRecommendationSidebar({
     if (score >= 0.85) return 'text-success-600 bg-success-50'
     if (score >= 0.7) return 'text-secondary-600 bg-secondary-50'
     if (score >= 0.5) return 'text-yellow-600 bg-yellow-50'
-    return 'text-neutral-600 bg-slate-50'
+    return 'text-neutral-600 bg-slate-50 dark:bg-neutral-800'
   }
 
   const filteredRecommendations =
@@ -192,7 +192,7 @@ export function AIRecommendationSidebar({
             <button
               onClick={fetchRecommendations}
               disabled={isLoading}
-              className="p-1.5 hover:bg-neutral-100 rounded-md transition-colors"
+              className="p-1.5 hover:bg-neutral-100 dark:bg-neutral-800 rounded-md transition-colors"
             >
               <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             </button>
@@ -208,7 +208,7 @@ export function AIRecommendationSidebar({
             className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
               typeFilter === 'all'
                 ? 'bg-accent-100 text-accent-700 border border-purple-300'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             全部
@@ -220,7 +220,7 @@ export function AIRecommendationSidebar({
               className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap flex items-center gap-1 transition-colors ${
                 typeFilter === type
                   ? 'bg-accent-100 text-accent-700 border border-purple-300'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
               {TYPE_ICONS[type]}

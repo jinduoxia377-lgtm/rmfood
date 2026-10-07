@@ -162,14 +162,14 @@ export default function DocumentExtractPage() {
             <div className="flex items-center gap-2">
               {history.length > 0 && (
                 <button onClick={() => setShowHistory(!showHistory)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white/15 hover:bg-white/25 rounded-full transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 rounded-full transition-colors">
                   <History size={12} />历史记录 ({history.length})
                 </button>
               )}
               {compareResults.length > 0 && (
                 <button onClick={() => setCompareMode(!compareMode)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                    compareMode ? 'bg-white/30' : 'bg-white/15 hover:bg-white/25'
+                    compareMode ? 'bg-white dark:bg-neutral-900/30' : 'bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25'
                   }`}>
                   <Layers size={12} />对比 ({compareResults.length})
                 </button>

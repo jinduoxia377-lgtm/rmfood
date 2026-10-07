@@ -30,13 +30,13 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
   onDeleteSelected,
 }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-neutral-200">
+    <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 p-1">
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="撤销 (Ctrl+Z)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +46,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="重做 (Ctrl+Y)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
 
           <button
             onClick={onAddRow}
-            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded"
             title="添加行"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
           <button
             onClick={onDiscard}
             disabled={!hasUnsavedChanges || isSaving}
-            className="px-3 py-1.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-md hover:bg-slate-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             放弃更改
           </button>

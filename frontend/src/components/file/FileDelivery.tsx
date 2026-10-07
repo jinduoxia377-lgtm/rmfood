@@ -140,7 +140,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
             <p className="text-sm font-medium">{filename}</p>
             <p className="text-xs text-neutral-500">{formatName[format]} 格式</p>
           </div>
-          <Badge className={status ? statusColor[status.status] : 'bg-neutral-100 text-neutral-700'}>
+          <Badge className={status ? statusColor[status.status] : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700'}>
             {status ? (
               <div className="flex items-center gap-1">
                 {statusIcon[status.status]}
@@ -215,7 +215,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
                 title="PDF 预览"
               />
             ) : (
-              <div className="p-4 bg-slate-50 rounded-lg">
+              <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                 <p className="text-sm text-neutral-500">
                   此文件格式不支持在线预览，请下载后查看
                 </p>

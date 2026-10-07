@@ -131,7 +131,7 @@ function CustomTooltip({ active, payload, label, dark }: CustomTooltipProps) {
   return (
     <div
       className={`px-4 py-3 rounded-lg shadow-lg border ${
-        dark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'
+        dark ? 'bg-neutral-800 border-neutral-700' : 'bg-white dark:bg-neutral-900 border-neutral-200'
       }`}
     >
       {label && <p className={`text-sm font-semibold mb-2 ${dark ? 'text-neutral-200' : 'text-neutral-900'}`}>{label}</p>}

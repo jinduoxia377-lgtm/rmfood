@@ -34,7 +34,7 @@ const RANK_BADGES = [
   'bg-yellow-100 text-yellow-700',
   'bg-neutral-200 text-neutral-600',
   'bg-orange-100 text-orange-700',
-  'bg-slate-50 text-neutral-400',
+  'bg-slate-50 dark:bg-neutral-800 text-neutral-400',
 ]
 
 export default function CentralityPanel({
@@ -134,7 +134,7 @@ export default function CentralityPanel({
                 <button key={`${item.node.id}_${idx}`}
                   onClick={() => onNodeClick?.(item.node)}
                   className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-secondary-50/70 dark:hover:bg-blue-950/20 transition-colors group text-left">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-slate-50 text-neutral-400'}`}>
+                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-slate-50 dark:bg-neutral-800 text-neutral-400'}`}>
                     {idx + 1}
                   </span>
                   <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: conf?.color || '#9CA3AF' }} />

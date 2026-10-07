@@ -772,7 +772,7 @@ export default function UserManagementPage() {
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
             {selectedIds.size > 0 && (
-              <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium">
+              <span className="px-3 py-1 rounded-full bg-white dark:bg-neutral-900/20 backdrop-blur-sm text-white text-xs font-medium">
                 已选 {selectedIds.size}
               </span>
             )}
@@ -786,7 +786,7 @@ export default function UserManagementPage() {
               onClick={() => setShowOpLogPanel(!showOpLogPanel)}>
               操作日志
               {anomalyCount > 0 && (
-                <span className="ml-1.5 min-w-[18px] h-[18px] bg-white text-primary-600 text-[10px] font-bold rounded-full flex items-center justify-center px-1">{anomalyCount}</span>
+                <span className="ml-1.5 min-w-[18px] h-[18px] bg-white dark:bg-neutral-800 text-primary-600 text-[10px] font-bold rounded-full flex items-center justify-center px-1">{anomalyCount}</span>
               )}
             </Button>
           </div>
@@ -1214,7 +1214,7 @@ export default function UserManagementPage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'comfortable'
                       ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" /> 舒适{' '}
@@ -1224,7 +1224,7 @@ export default function UserManagementPage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'compact'
                       ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <List className="w-3.5 h-3.5" /> 紧凑
@@ -1458,7 +1458,7 @@ export default function UserManagementPage() {
                         return (
                           <tr
                             key={user.id}
-                            className={`group animate-in fade-in slide-in-from-4 duration-300 fill-mode-both hover:[&]:bg-slate-50/90 dark:hover:bg-neutral-800/50 [&]:transition-colors [&]:duration-150 ${
+                            className={`group animate-in fade-in slide-in-from-4 duration-300 fill-mode-both hover:[&]:bg-slate-50 dark:bg-neutral-800/90 dark:hover:bg-neutral-800/50 [&]:transition-colors [&]:duration-150 ${
                               isSelected
                                 ? 'bg-primary-50/60 dark:bg-primary-950/20 ring-1 ring-primary-200 dark:ring-primary-800'
                                 : ''
@@ -1474,7 +1474,7 @@ export default function UserManagementPage() {
                             </td>
                             <td className={cellPadding}>
                               <button
-                                className="flex items-center gap-2.5 text-left hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 active:scale-[0.98] rounded-lg p-1 -m-1 hover:shadow-sm hover:bg-neutral-100/80 dark:hover:bg-neutral-700/30"
+                                className="flex items-center gap-2.5 text-left hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 active:scale-[0.98] rounded-lg p-1 -m-1 hover:shadow-sm hover:bg-neutral-100 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/30"
                                 onClick={() => {
                                   setDetailUser(user);
                                   setDetailTab('info');
@@ -1561,7 +1561,7 @@ export default function UserManagementPage() {
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
                                 <button
                                   onClick={() => setActionMenuId(showMenu ? null : user.id)}
-                                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
+                                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
                                   aria-label={`${user.username} 的操作菜单`}
                                 >
                                   <MoreVertical className="w-4 h-4" />
@@ -1586,7 +1586,7 @@ export default function UserManagementPage() {
                                       <FileText className="w-4 h-4 text-neutral-400" /> 查看详情
                                     </button>
                                     <button
-                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
                                       onClick={() => {
                                         // Cycle through roles: ADMIN -> MANAGER -> RESEARCHER -> ANALYST -> VIEWER -> ADMIN
                                         const roleOrder = [UserRole.ADMIN, UserRole.MANAGER, UserRole.RESEARCHER, UserRole.ANALYST, UserRole.VIEWER];

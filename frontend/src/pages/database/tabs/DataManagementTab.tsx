@@ -655,7 +655,7 @@ export default function DataManagementTab() {
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
           isDragging
             ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-950/30 scale-[1.01]'
-            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-slate-50/50 dark:hover:bg-neutral-800/30'
+            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30'
         }`}
       >
         <input
@@ -702,7 +702,7 @@ export default function DataManagementTab() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {previewData.rows.map((row, ri) => (
-                  <tr key={ri} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/30">
+                  <tr key={ri} className="hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30">
                     {row.map((cell, ci) => (
                       <td
                         key={ci}
@@ -1180,7 +1180,7 @@ export default function DataManagementTab() {
             {qualityIssues.map((issue) => (
               <div
                 key={issue.id}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/30 transition-colors"
               >
                 {issue.severity === 'error' ? (
                   <XCircle className="w-4 h-4 text-error-500 shrink-0" />
@@ -1228,7 +1228,7 @@ export default function DataManagementTab() {
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                 logTypeFilter === f.value
                   ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400'
-                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
               }`}
             >
               {f.label}
@@ -1279,7 +1279,7 @@ export default function DataManagementTab() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                  <tr key={log.id} className="hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="px-4 py-2.5 text-xs font-mono text-neutral-500 whitespace-nowrap leading-[1.375] tabular-nums">
                       {log.time}
                     </td>
@@ -1364,7 +1364,7 @@ export default function DataManagementTab() {
           <TrendingUp className="w-4 h-4 text-primary-600" />
           最近 1 小时查询量趋势
         </h4>
-        <div className="h-[80px] flex items-center justify-center text-xs text-neutral-400 bg-neutral-50 rounded-lg border border-neutral-100">
+        <div className="h-[80px] flex items-center justify-center text-xs text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-100">
           暂无实时查询趋势数据，后续将接入搜索日志 API
         </div>
         <div className="flex justify-between text-xs text-neutral-400">
