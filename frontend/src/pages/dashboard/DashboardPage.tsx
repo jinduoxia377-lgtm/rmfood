@@ -55,6 +55,7 @@ import {
   ReviewQueueList,
   ActivityTimeline,
   UserRoleStats,
+  TeamActivity,
 } from '@/components/dashboard/cards'
 import { CardSkeleton as CardSkeletonComp } from '@/components/ui/SkeletonPresets'
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
@@ -77,17 +78,8 @@ const CARD_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'review-queue': ReviewQueueList,
   'activity-timeline': ActivityTimeline,
   'user-role-stats': UserRoleStats,
+  'team-activity': TeamActivity,
   'kpi-dashboard': () => <KPIDashboard />,
-  'team-activity': () => (
-    <Card>
-      <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
-      </CardHeader>
-      <CardContent className="px-6 pb-6 pt-0">
-        <EmptyState icon={<Sparkles size={48} />} title="即将上线" description="团队协作功能开发中，敬请期待" />
-      </CardContent>
-    </Card>
-  ),
   'ai-insights': () => <AIInsights />,
   'websocket-status': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><WebSocketStatus /></Suspense>,
   'real-time-sync': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><RealTimeSync /></Suspense>,
@@ -270,6 +262,15 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     props.byRole = (data?.users?.by_role || {}) as Record<string, number>
     props.total = data?.users?.total ?? 0
     props.loading = statsLoading
+  }
+
+  // 团队活动：聚合「在线协作者 + 最近动态」，替代原「即将上线」占位
+  if (card.type === 'team-activity') {
+    const Cmp = CARD_COMPONENTS['team-activity'] as React.ComponentType<{
+      timeline: typeof timeline
+      timelineLoading?: boolean
+    }>
+    return <Cmp timeline={timeline} timelineLoading={timelineLoading} />
   }
 
   // AI insights — API-03: 由卡片内部 useAIInsights 统一管理加载/错误态，

@@ -1063,6 +1063,8 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 > **2026-10-07 深色漏配清零终态登记**（提交 `677f4a6` + `efbf6d0`）：承接上轮，全库 A 类深色漏配**清零 104 文件 / 350 行 → 0 / 0**（`dark-fix-remaining.mjs` 批量修剩余 64 文件 / 89 行 + 手动补 1 处多实例行）。**修复中 2 类回归已修**：① 批量脚本误给「半透明白玻璃态 + text-white」元素追加 `dark:bg-neutral-900` 实底，致 **GATE-05（text-white 实底对比度）4 处白字白底 1:1** → 逐处修 `ui/Button.tsx` glass 变体（`text-white` 配 `bg-white/90` 半透明 + `text-neutral-800 dark:text-neutral-100` 双模式深/浅字，**全局组件影响面最大**）/ `ThemeSettingsPage` 重复 `dark:bg` 类去重 / `AIAssistantPage` 双 `dark:bg` 冗余串清理 / `UserManagementPage` 白底徽章实底 900 回退 800 → **GATE-05 转 pass（17 元素全部 ≥ 阈值）**。② 全量审计工具落库 `scripts/theme-audit/`（`dark-audit.mjs`/`dark-audit2.mjs` 四类扫描 + `dark-classify.mjs` 纯净度核验 + `dark-fix-top20/remaining` 幂等批量修 + `dark-rescan-top20` 复扫 + `list-mine-dark.mjs` WIP 隔离清单）。`DashboardPage.tsx`（含他人 TeamActivity WIP 19+/18-，8 处深色修复同文件混排）按 WIP 隔离保留工作区不提交，待 WIP 合并后随同提交。**终态：门禁 13/0/1（仅 GATE-09 合法 warn）· GATE-05/14 pass · validate 0/0 · build ✅ · vitest 29/29 · 浏览器 45/45 · 静态 50/0**。
 
+> **2026-10-07 深色漏配清零完全收尾登记**（提交 `1475a76`）：`DashboardPage.tsx` 剩余 TeamActivity WIP（11 行）经用户确认「保留该功能」后纳管提交，全库 A 类深色漏配**完全清零 104 文件 / 350 行 → 0 / 0**，WIP 隔离收尾。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
