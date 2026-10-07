@@ -9,6 +9,7 @@
  *   - 去除侧边栏，内容全宽展开
  */
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
@@ -38,7 +39,9 @@ import {
   useLoginHistory, useClearUserData,
 } from '@/hooks/useUserSettings'
 import { useTheme, type ThemeMode } from '@/theme'
+import { ThemePanel } from '@/components/theme/ThemePanel'
 import { PersonalInfoSection } from './components/PersonalInfoSection'
+import { AccountDeactivationSection } from './components/AccountDeactivationSection'
 import { ConfigManager } from '@/utils/configManager'
 import type { ApiKey } from '@/utils/configManager'
 import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager'
@@ -571,29 +574,23 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(!!twoFaStatus?.enabled)
   useEffect(() => { if (twoFaStatus) setTwoFactorEnabled(!!twoFaStatus.enabled) }, [twoFaStatus])
 
-  const [form, setForm] = useState({
-    full_name: (user as unknown as Record<string, unknown>)?.full_name as string || '',
-    email: user?.email || '', phone: user?.phone || '', department: user?.department || '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-
   const [pw, setPw] = useState({ old_password: '', new_password: '', confirm: '' })
   const [pwSaving, setPwSaving] = useState(false)
   const [pwMsg, setPwMsg] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak')
 
   const [show2FAModal, setShow2FAModal] = useState(false)
+  // 2FA 启用响应（真实 secret + 备用码），弹窗内渲染真实二维码；
+  // 旧实现弹静态 QrCode 占位图 + 硬编码备用码 "ABCD-..."，与后端完全脱节
+  const [twoFaSecret, setTwoFaSecret] = useState<string | null>(null)
+  const [twoFaBackupCodes, setTwoFaBackupCodes] = useState<string[]>([])
   const [loadingSecurity, setLoadingSecurity] = useState(false)
   const modal2FARef = useRef<HTMLDivElement>(null)
   useFocusTrap(modal2FARef, show2FAModal, () => setShow2FAModal(false))
 
-  const [devices] = useState(devicesData?.devices || [
-    { id: 1, name: '当前设备', type: 'Windows 11', lastActive: new Date(), current: true },
-  ])
-  const [loginHistory] = useState(loginHistoryData?.history || [
-    { id: 1, device: '当前会话', browser: 'Chrome on Windows', ip: '192.168.1.100', location: '厦门', time: new Date(), current: true },
-  ])
+  // 设备/登录历史 — 直接消费后端 /users/me/settings 真实字段，
+  // 旧实现用 useState(假数据) 捕获初始值，API 成功后永不刷新（"当前设备/厦门"假数据）
+  const devices = devicesData?.devices ?? []
+  const loginHistory = loginHistoryData?.history ?? []
 
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
   const [isCreatingKey, setIsCreatingKey] = useState(false)
@@ -641,16 +638,25 @@ export default function SettingsPage() {
   const toggleNotifPref = (key: keyof typeof notifPrefs) =>
     saveNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] })
 
-  const handleProfileSave = async () => {
-    setSaving(true); setSaveMsg(null)
-    try { await authApi.updateMe(form); setSaveMsg({ type: 'success', msg: '个人信息已更新' }); addToast({ type: 'success', message: '个人信息已更新' }) }
-    catch { setSaveMsg({ type: 'error', msg: '更新失败，请稍后重试' }) }
-    finally { setSaving(false) }
+  // P1-5: 强度判定与提交校验使用同一套规则，视觉条与提交结果严格一致。
+  // 规则（共 6 项）：长度≥8、长度≥12、大写、小写、数字、特殊字符
+  //   ≥5 项 = 强；4 项 = 中；≤3 项 = 弱（弱则拒绝提交）
+  const computeStrength = (pwd: string) => {
+    if (!pwd) return 'weak' as const
+    let s = 0
+    if (pwd.length >= 8) s++
+    if (pwd.length >= 12) s++
+    if (/[A-Z]/.test(pwd)) s++
+    if (/[a-z]/.test(pwd)) s++
+    if (/[0-9]/.test(pwd)) s++
+    if (/[^A-Za-z0-9]/.test(pwd)) s++
+    return s >= 5 ? 'strong' as const : s === 4 ? 'medium' as const : 'weak' as const
   }
 
   const handlePasswordChange = async () => {
     if (pw.new_password.length < 8) { setPwMsg({ type: 'error', msg: '新密码至少 8 位' }); return }
-    if (passwordStrength === 'weak') { setPwMsg({ type: 'error', msg: '密码强度不足，请使用更复杂的密码' }); return }
+    const strength = computeStrength(pw.new_password)
+    if (strength === 'weak') { setPwMsg({ type: 'error', msg: '密码强度不足：建议至少 8 位并包含大小写字母、数字与特殊字符' }); return }
     if (pw.new_password !== pw.confirm) { setPwMsg({ type: 'error', msg: '两次输入的新密码不一致' }); return }
     setPwSaving(true); setPwMsg(null)
     try {
@@ -662,34 +668,35 @@ export default function SettingsPage() {
     finally { setPwSaving(false) }
   }
 
-  useEffect(() => {
-    if (pw.new_password) {
-      let s = 0
-      if (pw.new_password.length >= 8) s++
-      if (/[A-Z]/.test(pw.new_password)) s++
-      if (/[a-z]/.test(pw.new_password)) s++
-      if (/[0-9]/.test(pw.new_password)) s++
-      if (/[^A-Za-z0-9]/.test(pw.new_password)) s++
-      setPasswordStrength(s <= 2 ? 'weak' : s <= 4 ? 'medium' : 'strong')
-    } else {
-      setPasswordStrength('weak')
-    }
-  }, [pw.new_password])
+  const passwordStrength = pw.new_password ? computeStrength(pw.new_password) : 'weak'
 
   const handleToggle2FA = async () => {
-    if (!twoFactorEnabled) { setShow2FAModal(true) }
+    if (!twoFactorEnabled) {
+      // 打开弹窗前先调用真实启用端点，拿到 secret + 备用码再展示；
+      // 旧实现先弹静态占位图，点"确认启用"才调 API，用户看到的备用码是硬编码假数据
+      setLoadingSecurity(true)
+      setTwoFaSecret(null); setTwoFaBackupCodes([])
+      try {
+        const data: any = await enable2FAMutation.mutateAsync()
+        setTwoFaSecret(data?.secret || null)
+        setTwoFaBackupCodes(data?.backup_codes || [])
+        setTwoFactorEnabled(true)
+        setShow2FAModal(true)
+      }
+      catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail || '启用失败' }) }
+      finally { setLoadingSecurity(false) }
+    }
     else {
       setLoadingSecurity(true)
-      try { await disable2FAMutation.mutateAsync(); setTwoFactorEnabled(false); addToast({ type: 'success', message: '两步验证已禁用' }) }
+      try { await disable2FAMutation.mutateAsync(); setTwoFactorEnabled(false); setTwoFaSecret(null); setTwoFaBackupCodes([]); addToast({ type: 'success', message: '两步验证已禁用' }) }
       catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail || '操作失败' }) }
       finally { setLoadingSecurity(false) }
     }
   }
+  // 确认启用（扫码绑定完成后）：仅关闭弹窗，secret 已由 toggle 时写入
   const handleEnable2FA = async () => {
-    setLoadingSecurity(true)
-    try { await enable2FAMutation.mutateAsync(); setTwoFactorEnabled(true); setShow2FAModal(false); addToast({ type: 'success', message: '两步验证已启用，请妥善保存备用验证码' }) }
-    catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail || '启用失败' }) }
-    finally { setLoadingSecurity(false) }
+    setShow2FAModal(false)
+    addToast({ type: 'success', message: '两步验证已启用，请妥善保存备用验证码' })
   }
   const handleRemoveDevice = async (id: number) => {
     setLoadingSecurity(true)
@@ -697,10 +704,15 @@ export default function SettingsPage() {
     catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail || '移除失败' }) }
     finally { setLoadingSecurity(false) }
   }
-  const handleLogoutSession = async () => {
+  const handleLogoutSession = async (deviceId: number) => {
     setLoadingSecurity(true)
-    try { await new Promise(r => setTimeout(r, 600)); addToast({ type: 'success', message: '会话已退出' }) }
-    catch { addToast({ type: 'error', message: '操作失败' }) }
+    try {
+      // 与"移除设备"同一后端端点（DELETE /users/me/settings/devices/{id}），
+      // 后端会把该设备会话标记失效；旧实现用 setTimeout 模拟 600ms，无真实效果
+      await removeDeviceMutation.mutateAsync(deviceId)
+      addToast({ type: 'success', message: '该设备会话已退出' })
+    }
+    catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail || '操作失败' }) }
     finally { setLoadingSecurity(false) }
   }
 
@@ -842,13 +854,20 @@ export default function SettingsPage() {
             </div>
           )}
         </CardContent>
-        <CardFooter className="justify-end pt-0">
+        <CardFooter className="justify-between pt-0">
+          {/* 忘记密码入口 — 旧实现完全缺失，用户只能走 /forgot-password 页面 */}
+          <Link to="/forgot-password" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+            忘记密码？
+          </Link>
           <Button variant="amber" loading={pwSaving} disabled={!pw.old_password || !pw.new_password}
             icon={<KeyRound className="w-4 h-4" />} onClick={handlePasswordChange}>
             更新密码
           </Button>
         </CardFooter>
       </Card>
+
+      {/* 账户注销（GDPR/个保法数据可携权）— 旧实现完全缺失 */}
+      <AccountDeactivationSection />
     </div>
   )
 
@@ -901,40 +920,47 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {loginHistory.length === 0 ? (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 py-6 text-center">暂无登录历史（审计日志未记录到登录事件）</p>
+          ) : (
           <div className="space-y-2" role="list">
-            {loginHistory.map((s: any) => (
-              <div key={String(s.id)} role="listitem"
+            {loginHistory.map((s: any, idx: number) => {
+              // 后端 /users/me/settings/login-history 真实字段:
+              // { id, ip_address, created_at, user_agent, details: { device_type }, is_current }
+              // is_current 由后端按 UA 匹配计算（当前会话仅标记一行）
+              const d: any = s.details || {}
+              const isCurrent = !!s.is_current
+              return (
+              <div key={s.id ?? idx} role="listitem"
                 className={cn('flex items-center justify-between p-4 rounded-xl border transition-colors',
-                  s.current
+                  isCurrent
                     ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-900/10'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-50 dark:hover:bg-neutral-800/40')}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                    s.current ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
-                    <Smartphone className={cn('w-5 h-5', s.current ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
+                    isCurrent ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
+                    <Smartphone className={cn('w-5 h-5', isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">{s.device}</span>
-                      {s.current && <Badge variant="success" size="sm">当前</Badge>}
+                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                        {s.user_agent || d.user_agent || d.device_type || '未知设备'}
+                      </span>
+                      {isCurrent && <Badge variant="success" size="sm">最近</Badge>}
                     </div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      {s.browser} · {s.ip} · {s.location}
+                      {s.ip_address || 'IP 未记录'}
                     </p>
                     <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-                      {new Date(s.time).toLocaleString('zh-CN')}
+                      {s.created_at ? new Date(s.created_at).toLocaleString('zh-CN') : '时间未知'}
                     </p>
                   </div>
                 </div>
-                {!s.current && (
-                  <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 h-8 text-xs"
-                    disabled={loadingSecurity} onClick={handleLogoutSession}>
-                    <LogOut className="w-3.5 h-3.5 mr-1" />退出
-                  </Button>
-                )}
               </div>
-            ))}
+              )
+            })}
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -952,30 +978,37 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {devices.length === 0 ? (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 py-6 text-center">暂无已注册设备</p>
+          ) : (
           <div className="space-y-2" role="list">
             {devices.map((d: any) => (
               <div key={String(d.id)} role="listitem"
                 className={cn('flex items-center justify-between p-4 rounded-xl border transition-colors',
-                  d.current
+                  d.is_current
                     ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-900/10'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-50 dark:hover:bg-neutral-800/40')}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
-                    d.current ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
-                    <Smartphone className={cn('w-5 h-5', d.current ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
+                    d.is_current ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
+                    <Smartphone className={cn('w-5 h-5', d.is_current ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{d.name}</span>
-                      {d.current && <Badge variant="success" size="sm">本机</Badge>}
+                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        {d.device_name || d.name || '未知设备'}
+                      </span>
+                      {d.is_current && <Badge variant="success" size="sm">本机</Badge>}
                     </div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{d.type}</p>
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-                      上次活跃：{new Date(d.lastActive).toLocaleString('zh-CN')}
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {(d.device_type || d.type || '未知类型')}
+                      {d.last_active || d.lastActive
+                        ? ` · 上次活跃：${new Date(d.last_active || d.lastActive).toLocaleString('zh-CN')}`
+                        : ''}
                     </p>
                   </div>
                 </div>
-                {!d.current && (
+                {d.is_active !== false && !d.is_current && (
                   <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 h-8 text-xs"
                     disabled={loadingSecurity} onClick={() => handleRemoveDevice(Number(d.id))}>
                     <Trash className="w-3.5 h-3.5 mr-1" />移除
@@ -984,6 +1017,7 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -1405,78 +1439,7 @@ export default function SettingsPage() {
   )
 
   const renderThemePanel = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
-              <Palette className="w-5 h-5 text-purple-600 dark:text-purple-500" />
-            </div>
-            <div>
-              <CardTitle as="h2" className="text-base font-semibold tracking-tight">外观主题</CardTitle>
-              <CardDescription>选择浅色或深色主题，切换快捷键 Ctrl+Shift+T</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {[
-              { mode: 'light' as const, icon: Sun, label: '浅色模式', desc: '明亮清爽，适合白天使用' },
-              { mode: 'dark' as const, icon: Moon, label: '深色模式', desc: '护眼沉浸，适合夜间使用' },
-            ].map(({ mode: m, icon: Icon, label, desc }) => (
-              <button key={m} onClick={() => { setThemeMode(m as ThemeMode); addToast({ type: 'success', message: `已切换到${label}` }) }}
-                className={cn('flex flex-col items-center p-8 rounded-xl border-2 transition-all duration-200 relative text-center',
-                  mode === m
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
-                    : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-md')}
-                aria-pressed={mode === m}>
-                {mode === m && (
-                  <div className="absolute -top-2.5 -right-2.5 w-7 h-7 bg-primary-500 rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle2 className="w-4 h-4 text-white" />
-                  </div>
-                )}
-                <div className={cn('w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors',
-                  mode === m ? 'bg-primary-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400')}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{label}</span>
-                <span className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">{desc}</span>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 快捷键提示 */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-700/50 flex items-center justify-center shrink-0">
-              <Keyboard className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-            </div>
-            <div>
-              <CardTitle as="h2" className="text-base font-semibold tracking-tight">快捷键</CardTitle>
-              <CardDescription>常用操作键盘快捷方式</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="p-5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
-            <div className="flex items-center gap-3 flex-wrap">
-              {['Ctrl', 'Shift', 'T'].map((k, i) => (
-                <div key={k} className="flex items-center gap-2">
-                  {i > 0 && <span className="text-neutral-400 text-sm">+</span>}
-                  <kbd className="px-3 py-1.5 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-mono font-medium text-neutral-700 dark:text-neutral-300 shadow-sm">
-                    {k}
-                  </kbd>
-                </div>
-              ))}
-              <span className="text-sm text-neutral-600 dark:text-neutral-400 ml-2">快速切换明暗主题</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <ThemePanel />
   )
 
   const renderNotificationsPanel = () => (
@@ -1576,6 +1539,28 @@ export default function SettingsPage() {
   )
 
   // ── Dialogs ───────────────────────────────────────────────────
+  // 2FA 真实二维码：用项目已装的 qrcode 库把 otpauth:// URI 渲染成 canvas，
+  // 旧实现只有静态 QrCode 占位图标 + 硬编码 "ABCD-..." 备用码，与后端完全脱节
+  useEffect(() => {
+    if (!show2FAModal || !twoFaSecret) return
+    let cancelled = false
+    const renderQr = async () => {
+      try {
+        const QRCode = await import('qrcode')
+        if (cancelled) return
+        // 与服务端 TOTP 密钥对齐：issuer 用平台名，accountName 用当前用户名
+        const uri = `otpauth://totp/RMFOOD:${user?.username || 'user'}?secret=${twoFaSecret}&issuer=RMFOOD&algorithm=SHA1&digits=6&period=30`
+        await QRCode.toCanvas(document.getElementById('two-factor-qrcode') as HTMLCanvasElement, uri, {
+          width: 192, margin: 1, color: { dark: '#000000', light: '#ffffff' },
+        })
+      } catch {
+        /* 渲染失败时用户仍可用下方手动密钥输入 */
+      }
+    }
+    renderQr()
+    return () => { cancelled = true }
+  }, [show2FAModal, twoFaSecret, user?.username])
+
   const render2FADialog = () => (
     <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
       <DialogContent ref={modal2FARef} size="sm">
@@ -1596,23 +1581,43 @@ export default function SettingsPage() {
               </ol>
             </div>
           </div>
-          <div className="flex justify-center p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700">
-            <div className="text-center">
-              <QrCode className="w-28 h-28 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">二维码区域（生产环境对接真实密钥）</p>
+          {twoFaSecret ? (
+            <div className="flex flex-col items-center gap-3">
+              <canvas id="two-factor-qrcode" className="rounded-lg bg-white p-2 border border-neutral-200 dark:border-neutral-700" />
+              <div className="text-center">
+                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">手动输入密钥</p>
+                <code className="text-xs font-mono bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg select-all">
+                  {twoFaSecret}
+                </code>
+              </div>
             </div>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">备用密钥（请妥善保存）</p>
-            <code className="block text-xs font-mono px-4 py-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 select-all text-neutral-700 dark:text-neutral-300">
-              ABCD-EFGH-IJKL-MNOP-QRST-UVWX
-            </code>
-          </div>
+          ) : (
+            <div className="flex justify-center p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700">
+              <div className="text-center">
+                <QrCode className="w-14 h-14 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">正在获取密钥…</p>
+              </div>
+            </div>
+          )}
+          {twoFaBackupCodes.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                备用验证码（共 {twoFaBackupCodes.length} 个，每个只能用一次，请妥善保存）
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {twoFaBackupCodes.map((code, i) => (
+                  <code key={i} className="text-xs font-mono px-3 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 select-all text-neutral-700 dark:text-neutral-300">
+                    {code.toUpperCase()}
+                  </code>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setShow2FAModal(false)} disabled={loadingSecurity}>取消</Button>
-          <Button variant="primary" onClick={handleEnable2FA} loading={loadingSecurity} icon={<ShieldCheck className="w-4 h-4" />}>
-            {loadingSecurity ? '启用中...' : '确认启用'}
+          <Button variant="ghost" onClick={() => setShow2FAModal(false)} disabled={loadingSecurity}>关闭</Button>
+          <Button variant="primary" onClick={handleEnable2FA} icon={<ShieldCheck className="w-4 h-4" />}>
+            我已完成绑定
           </Button>
         </DialogFooter>
       </DialogContent>

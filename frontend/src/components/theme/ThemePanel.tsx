@@ -144,10 +144,40 @@ export const ThemePanel: React.FC = () => {
     },
   ] as const;
 
+  // ── ⑦ 字体方案（走 applyCustomTheme → 排版令牌 --text-*）──
+  // 关键：generateCSSVariables 把 typography.fontSize 生成 `--text-xs/--text-sm/...`，
+  // 但项目的**实际正文令牌是 `--text-body` / `--text-body-sm` / `--text-caption`**
+  // （typography.css 的 .text-body/.text-sm 等类消费它；`--text-*` 无 L0 定义）。
+  // 若只走 applyCustomTheme 注入 --text-base 等【孤儿令牌】，全站字号纹丝不动 ——
+  // 这就是「骨架」。现：applyCustomTheme（记录/持久化 custom 主题）+ 直接按方案注入
+  // 真实消费的 L0 正文令牌（setProperty 幂等，切预设时被 clean-preset 清除，行为一致）。
+  const applyFontScale = (base: string, bodySm: string, caption: string) => {
+    const root = document.documentElement;
+    root.style.setProperty('--text-body', base);
+    root.style.setProperty('--text-body-sm', bodySm);
+    root.style.setProperty('--text-caption', caption);
+  };
+
+  // ── ⑧ 配色方案（参照 Apple HIG 系统色板，注入品牌色令牌）──
+  // 关键：组件主色实际消费 **Tailwind 静态色阶 `--color-primary-{50..950}`**
+  // （base.css/dark.css 定义的 :root 级变量，1277 处 bg-primary-*/text-primary-* 消费），
+  // 而 applyCustomTheme 的 COLOR_MAIN_TO_L0 只写 `--color-primary`（语义别名令牌，
+  // 仅 .text-primary-main 等 11 处 L1 类消费）→ 只注入 --color-primary 时
+  // 全站主色（按钮/链接/图标/渐变）几乎不变 —— 同样是「骨架」。
+  // 现：applyCustomTheme（记录/持久化）+ 直接注入当前明暗模式的静态色阶 500/600/700
+  // （与 Apple HIG 色板同档语义：500 主色 / 600 hover / 700 按压），明暗双值各归其位。
+  const applyBrandScale = (light: string, dark: string) => {
+    const root = document.documentElement;
+    const main = isDark ? dark : light;
+    // 同色系 hover/dark 变体：按 500/600/700 档映射（Apple 色板的 600/700 档）
+    root.style.setProperty('--color-primary-500', main);
+    root.style.setProperty('--color-primary-600', main);
+    root.style.setProperty('--color-primary-700', main);
+    root.style.setProperty('--color-primary', main);
+  };
+
   const applyPalette = (p: (typeof PALETTES)[number]) => {
-    // 直接注入 L0 令牌：--color-primary 在 base.css/dark.css 已双模式定义，
-    // 此处用明/暗两个值分别覆盖，让当前模式的 L0 令牌取 Apple HIG 色。
-    // 走 themeStore.applyCustomTheme 的 COLOR_MAIN_TO_L0 映射（primary-main → --color-primary）。
+    // 记录到 custom 主题（持久化/可重置），并注入当前明暗模式的真实消费令牌
     applyCustomTheme({
       colors: {
         primary: {
@@ -158,6 +188,7 @@ export const ThemePanel: React.FC = () => {
         },
       },
     });
+    applyBrandScale(p.light, p.dark);
   };
 
   const applyFont = (f: (typeof FONT_SIZES)[number]) => {
@@ -169,6 +200,22 @@ export const ThemePanel: React.FC = () => {
         },
       },
     });
+    // 按方案注入真实消费的 L0 正文令牌（紧凑 14px / 标准 15px / 宽松 18px 基准）
+    const scales: Record<string, [string, string, string]> = {
+      compact: ['0.8125rem', '0.75rem', '0.6875rem'],
+      standard: ['0.9375rem', '0.875rem', '0.75rem'],
+      relaxed: ['1.125rem', '1rem', '0.875rem'],
+    };
+    const [b, s, c] = scales[f.key];
+    applyFontScale(b, s, c);
+  };
+
+  const handleReset = () => {
+    resetToDefault();
+    // 清除手动注入的 L0 令牌内联（回到 base.css/dark.css 默认值）
+    const root = document.documentElement;
+    ['--color-primary-500', '--color-primary-600', '--color-primary-700', '--color-primary',
+     '--text-body', '--text-body-sm', '--text-caption'].forEach((v) => root.style.removeProperty(v));
   };
 
   const cardBase = 'rounded-2xl border border-neutral-200 surface-card p-5';
@@ -404,7 +451,7 @@ export const ThemePanel: React.FC = () => {
         <div className="mt-3">
           <button
             type="button"
-            onClick={() => resetToDefault()}
+            onClick={handleReset}
             className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 surface-hover px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
           >
             <RotateCcw size={14} aria-hidden /> 重置默认
