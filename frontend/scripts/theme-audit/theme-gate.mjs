@@ -789,7 +789,7 @@ async function main() {
             b.badges.map(x => `${x.cls.replace('badge-','')}=${x.ratio}`).join(' '));
         } else {
           rec('GATE-06', 'M1', '徽章类亮色对比度达标', 'fail',
-            `--badge-draft-text 解析为 ${b.draftText}（应为 #6E6E73）\n` +
+            `--badge-draft-text 解析为 ${b.draftText}（D-52 基线 #63636A，5.28:1）\n` +
             bad.map(x => `  · ${x.cls}: ${x.ratio}:1（${x.color} on ${x.effectiveBg}）`).join('\n') +
             '\n修复：dark.css 顶层 :root 块把暗色值泄漏到亮色模式（D-21）。');
         }
