@@ -181,6 +181,12 @@ export const useThemeStore = create<ThemeStore>()(
           // 与首屏 FOUC 叠加产生额外空白。用户可见的过渡只应发生在「用户主动切换」时。
           applyThemeToDOM(baseTheme);
 
+          // 7.5 恢复持久化的过渡类型到 DOM（时长/缓动/即时类），使刷新后
+          // 「切换过渡」选项与用户所选一致（setTransitionType 的 DOM 接线）。
+          if (state.transitionType && state.transitionType !== 'fade') {
+            get().setTransitionType(state.transitionType);
+          }
+
           // D-39 修复：无障碍 DOM 属性必须在初始化路径同样写入，
           // 否则刷新后 data-a11y-mode / data-reading-mode 丢失，
           // 使 semantic-utils.css 的阅读/高对比规则整层失效。
@@ -350,9 +356,37 @@ export const useThemeStore = create<ThemeStore>()(
 
       /**
        * 切换过渡效果类型
+       *
+       * 真实接线（非骨架）：过渡样式由 index.css 的 `.theme-transition` 类驱动，
+       * 此前时长/缓动写死（0.2s / cubic-bezier(0.25,0.1,0.25,1.0)），setTransitionType
+       * 只改 state、从不影响 DOM → 「切换过渡」三选项实际无效。现：
+       *  - none：在 :root 挂 .theme-transition-instant（过渡类置 0.01ms，即时切换）
+       *  - fade / scale / slide：同步 :root 的 --theme-transition-duration/-timing
+       *    （与 index.css `:root.theme-animations-enabled` 的同名令牌对齐），
+       *    .theme-transition 类在每次切换时挂载，读取这些变量 → 类型选择真正生效。
+       * 值白名单（仅接受预设时长/缓动），防任意 CSS 注入。
        */
       setTransitionType: (type: TransitionType) => {
         set({ transitionType: type });
+        const root = document.documentElement;
+        const DUR: Record<TransitionType, string> = {
+          fade: '0.3s', scale: '0.2s', slide: '0.25s', none: '0.01ms',
+        };
+        const EASE: Record<TransitionType, string> = {
+          fade: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          scale: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+          slide: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          none: 'linear',
+        };
+        if (type === 'none') {
+          root.classList.add('theme-transition-instant');
+          root.style.removeProperty('--theme-transition-duration');
+          root.style.removeProperty('--theme-transition-timing');
+        } else {
+          root.classList.remove('theme-transition-instant');
+          root.style.setProperty('--theme-transition-duration', DUR[type]);
+          root.style.setProperty('--theme-transition-timing', EASE[type]);
+        }
       },
 
       /**

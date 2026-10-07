@@ -249,22 +249,36 @@
 .border-border-hover   { border-color: var(--border-color-hover, rgba(0,0,0,0.1)); }
 .border-border-divider { border-color: var(--border-subtle, rgba(0,0,0,0.04)); }
 
-/* ── 主题切换平滑过渡 (Apple Spring 风格) ── */
+/* ── 主题切换平滑过渡 (Apple Spring 风格) ──
+   时长/缓动由 :root 的 --theme-transition-duration / --theme-transition-timing 驱动
+   （themeStore.setTransitionType 按所选类型注入：fade 0.3s / scale 0.2s 回弹 /
+   slide 0.25s / none → .theme-transition-instant 置 0.01ms 即时）。
+   默认值 = fade（与历史写死的 0.2s 曲线一致，未选类型时表现不变）。 */
 .theme-transition,
 .theme-transition *:not(svg):not(g):not(path) {
   transition:
-    background-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0),
-    color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0),
-    border-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0),
-    box-shadow 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0),
-    fill 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0),
-    stroke 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    background-color var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    color var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    border-color var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    box-shadow var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    fill var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    stroke var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0));
+}
+
+/* 「无过渡」选项：setTransitionType('none') 在 :root 挂此类，过渡置为即时 */
+:root.theme-transition-instant.theme-transition,
+:root.theme-transition-instant .theme-transition *:not(svg):not(g):not(path) {
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
 }
 
 /* 图标颜色主题过渡 */
 .theme-transition svg,
 .theme-transition [class*="icon"] {
-  transition: color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0), fill 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0), stroke 0.2s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition:
+    color var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    fill var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0)),
+    stroke var(--theme-transition-duration, 0.2s) var(--theme-transition-timing, cubic-bezier(0.25, 0.1, 0.25, 1.0));
 }
 
 /* 深色模式下的图标颜色微调 */
