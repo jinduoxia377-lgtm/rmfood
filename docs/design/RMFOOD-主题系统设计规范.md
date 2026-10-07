@@ -1059,6 +1059,8 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > **⑥ 快捷键**：绑定原有，补「切明暗后重放 custom 注入」（setThemeMode 清内联属性后字体/配色不丢）。
 > 另完成 `SettingsPage.tsx` 接线（`renderThemePanel → <ThemePanel />`，该文件含他人 239 行 WIP，经用户确认一并提交）；接线删除旧面板后 **GATE-14 最后一处 WIP 残余清零 → 转 pass**，门禁 14 项 **13 pass / 0 fail / 1 warn（仅 GATE-09）**。
 
+> **2026-10-07 深色漏配深度核查登记**（提交 `86af4cf`）：用户验收发现深色模式下部分卡片未适配主题配色。`scripts/theme-audit/dark-audit2.mjs` 四类扫描（排除 21 个他人 WIP 模式）：**A 类真漏配 104 文件 / 350 行**（亮色底 `bg-white`/`bg-neutral-50/100`/`bg-slate-50/100` + 无 `dark:` 配对 + 非 var 令牌）、C 类已适配 2161 行。根因单一：卡片写字面类而非 `--card-bg`/`bg-card` 令牌（`dark.css` L89 暗色 `--card-bg:#0f172a` 失效）。**本轮分批修 top 20 重灾区 19 文件 / 176 行**（`DashboardOverview` 24 / `IngredientAnalyzer` 22 / `PeptideAnalyzer` 13 / `InferenceChainVisualizer(V1+V2)` 11+11 / 余各 5-8），`bg-white→dark:bg-neutral-900`、亮灰→`dark:bg-neutral-800`；`dark-classify.mjs` 核验 19 纯净 + 1 混合（`DashboardPage.tsx` 含他人 TeamActivity WIP，已排除，其 8 处修复留工作区待 WIP 合并）。复扫 top20 残留 **0 行**。剩余 64 文件 / 90 行下一轮清。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
