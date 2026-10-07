@@ -966,7 +966,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **GATE-11** | M1 | 主色表面令牌对比度（亮/暗 × 基础/hover 全部 ≥ 4.5:1），且 `.surface-primary:hover` 不引用会反转的色阶令牌 | CHK-24 | ✅ 通过（亮 5.48/7.68，暗 7.68/5.48） |
 | **GATE-12** | M1 | 源码使用的品牌色阶类**必须**在编译产物中真实生成 | CHK-18 / CHK-28 | ✅ 通过（568 个类全部存在） |
 | **GATE-13** | M4 | 代码中出现的**自有** `--color-*` 令牌必须已在 L0 登记（漏登记无机械校验的兜底） | T6 / §3 | ✅ 通过（白名单制：自有 14 族全部 L0 定义，Tailwind 内置 + 代码高亮色豁免；4 个未登记消费已修，`g1314.mjs` + `g13-fix.mjs`） |
-| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ✅ 我名下 0 处（165→0；`g14-clean.mjs` 批量清 79 文件/136 行 + DashboardLayout 3 处 + 5 处渐变 D-50 + SynergyTab 动态档位 bug；WIP 残余 1 处 SettingsPage 待其合并后清）。2026-10-06 口径校准：排除 `dark:text-white` 反转文字与 `bg-white` 输入框两类误报，仅保留「反转实底 + 白字」与「动态模板 `bg-primary-${`（JIT 不可生成）」 |
+| **GATE-14** | M4 | 静态清零条件类字符串 `bg-{primary,secondary,accent}-{400..950}` + `text-white` | §12 序 21 | ✅ **0 处**（2026-10-07 全量清零：`g14-clean.mjs` 批量清 79 文件/136 行 + DashboardLayout 3 处 + 5 处渐变 D-50 + SynergyTab 动态档位 bug；最后一处 WIP 残余 SettingsPage:1472 随 `74a9252` 接线删除旧面板而清零 → **GATE-14 转 pass**。门禁 14 项 **13 pass / 0 fail / 1 warn（仅 GATE-09）**。口径：排除 `dark:text-white` 反转文字与 `bg-white` 输入框两类误报，仅保留「反转实底 + 白字」与「动态模板 `bg-primary-${`（JIT 不可生成）」 |
 
 > **GATE-11 的由来**：v1.1.2 的 D-50 修复只改了基础态，`semantic-utils.css` 的 `.surface-primary:hover` 仍指向色阶级令牌 —— 暗色下 `--color-primary-800` 反转为 `#d1fae5`（浅薄荷），白字对比度 **1.13:1**，比 D-50 原缺陷的 1.52:1 更差。**这是 GATE-05/06 的结构性盲区**（它们只测非悬停态、且只筛 `className` 含 `text-white` 的元素，而 `.surface-primary` 的前景色由 CSS 自设）。见 D-54。
 > **GATE-12 的由来**：`@theme` 桥接层不完整时，Tailwind v4 不生成对应工具类，而源码类名照常书写 → 元素**静默**失去颜色。GATE-08（`var()` 可用性）与静态 grep 都发现不了。本次实测发现 `secondary` 整族与 `info` 族缺档，影响 100+ 处使用。见 D-55 / D-56。
@@ -1052,6 +1052,13 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 > 断言清单与含义见 **§10.3**。当时逐项：GATE-01 ✅、GATE-02 ✅、GATE-03 ✅、GATE-09 ⚠️ warn、GATE-10 ✅、GATE-04~06 ⏭️ 跳过（需渲染）。
 
+> **2026-10-07 明暗核心「去骨架化」登记**（提交 `74a9252`）：ThemePanel 8 区块中 ③⑥⑦⑧ 初版为骨架（渲染 OK 但点击无真实效果），逐项诊断数据层→CSS 消费链路后修复：
+> **③ 过渡骨架**：`setTransitionType` 原只写 state，`.theme-transition` 类时长/缓动写死 → 现按类型注入 `:root` 的 `--theme-transition-duration/-timing`（fade .3s / scale .2s 回弹 / slide .25s / none 挂 `.theme-transition-instant`），index.css 过渡类改读变量，`initialize()` 步骤 7.5 恢复持久化类型到 DOM。
+> **⑦ 字体骨架**：`applyCustomTheme` 生成的 `--text-base/--text-sm` 是孤儿令牌（项目正文实际消费 `--text-body` 15px / `--text-body-sm` / `--text-caption`，`--text-*` 无 L0 定义）→ 面板直接注入 L0 正文令牌三档（紧凑 .8125rem / 标准 .9375rem / 宽松 1.125rem）。
+> **⑧ 配色骨架**：`COLOR_MAIN_TO_L0` 只写 `--color-primary` 语义别名（仅 11 处 L1 类消费），组件主色实际消费 Tailwind 静态色阶 `--color-primary-{500,600,700}`（1277 处 `bg-primary-*`/`text-primary-*`）→ 面板按当前明暗注入静态色阶三档（Apple HIG 明暗双值），「重置默认」清除 7 个手动注入令牌。
+> **⑥ 快捷键**：绑定原有，补「切明暗后重放 custom 注入」（setThemeMode 清内联属性后字体/配色不丢）。
+> 另完成 `SettingsPage.tsx` 接线（`renderThemePanel → <ThemePanel />`，该文件含他人 239 行 WIP，经用户确认一并提交）；接线删除旧面板后 **GATE-14 最后一处 WIP 残余清零 → 转 pass**，门禁 14 项 **13 pass / 0 fail / 1 warn（仅 GATE-09）**。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
@@ -1093,7 +1100,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 `D-12、D-18、D-19、D-24、D-25、D-27、D-28、D-29、D-30、D-31、D-42、D-44、D-46、D-47、D-48`（M3 死代码/架构收口）
 → 排期见《修复执行方案》§0.0 与 §6.4。**M2 已关闭**：D-2、D-3、D-4、D-13、D-23、D-26、D-32、D-34~D-38、D-40、D-43、D-45。**D-53 已随 T-B2b 修复**（kebab 化令牌名，解锁 10 维度自定义）。
 
-**残余风险**：条件类字符串 `bg-primary-{400..950} + text-white` 曾在 165 处（`g1314.mjs` 原估 82，随源码增长实测 165）。**2026-10-06 经 `g14-clean.mjs` 批量清零我名下全部 136 行（79 文件）+ 手动修复 5 处渐变 D-50 + SynergyTab 动态档位 bug**，我名下 0 处；他人 WIP 文件（SettingsPage/DashboardLayout）残余 4 处待其 WIP 合并后同规则清。
+**残余风险**：条件类字符串 `bg-primary-{400..950} + text-white` 曾在 165 处（`g1314.mjs` 原估 82，随源码增长实测 165）。**2026-10-06 经 `g14-clean.mjs` 批量清零我名下全部 136 行（79 文件）+ 手动修复 5 处渐变 D-50 + SynergyTab 动态档位 bug**，我名下 0 处；**2026-10-07 最后一处 WIP 残余（SettingsPage:1472）随 `74a9252` 接线删除旧面板而清零，GATE-14 转 pass，全库 0 处**。
 
 **M2 期间新增缺陷**（均由本轮对抗性复核发现）：**D-54**（P0，`.surface-primary:hover` 暗色 **1.13:1**，D-50 修复自身引入的回归）、**D-55**（P0，`@theme` 未桥接 `secondary` 整族 → 104 处 `bg-secondary-*` **0 生成**）、**D-56**（P1，`info` 族非色阶 + `error` 缺 950）、**D-57**（P1，无障碍同步路径缺失）。连同 **D-53** 一并登记。
 
@@ -1138,7 +1145,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 18 | 阅读模式补覆盖 `--bg-canvas`/`--card-bg-solid`；高对比补 `--border-color`；按 **A-15** 裁决 `color-blind` | D-32 | ✅ **完成** — 三处缺口均已闭合，`color-blind` 用 Okabe-Ito 色板落地 |
 | 19 | 删除 `--dsw-*` 命名空间，改用全局令牌 | U-9 | ⏳ → 并入阶段 2 第 27 项（`chatTheme.css` 全量收敛） |
 | 20 | **建立渲染级 CI 门禁**：关键路由亮/暗截图 diff + 对比度断言 | G-5 | 🔶 **部分完成** — `theme:gate` 已交付 **12 项断言**（含渲染级 GATE-04~08）并通过 npm script 暴露；**接入 CI 仍待做（G-4）** |
-| 21 | 静态清零条件类字符串 `bg-primary-*` + `text-white`（**实测 82 处**，原记 105） | D-50 残余 | ⏳ 未做 |
+| 21 | 静态清零条件类字符串 `bg-primary-*` + `text-white`（**实测 82 处**，原记 105） | D-50 残余 | ✅ **完成**（2026-10-06/07，`g14-clean.mjs` 批量清 + 渐变/动态 bug 修复 + `74a9252` 接线清零最后一处 WIP 残余；**GATE-14 转 pass**） |
 | **22** | ~~清理 106 个「冗余」自引用令牌~~ **→ 更正为：保留登记声明（不改 inline、不删除）** | D-51 残余 | ✅ **已澄清**（v1.1.7）——这 106 条是 Tailwind 生成工具类的**登记机制**，删除会导致工具类完全不生成（实证 D-55）。**改为 `@theme inline` 经实测证伪**（会导致带 opacity 修饰符的类 0 生成）。层叠顺序隐患靠保证 `base.css`/`dark.css` 在 `index.css` 之前导入缓解（当前已如此），**无需额外动作** |
 | **23（新增 v1.1.8）** | **T-B2b 去冗余注入 + 四角色映射**：`isCleanBuiltinPreset()` 使内置预设不注入（`<html>` 内联 86 → 0），无障碍变体 / 自定义 / 导入仍注入；`COLOR_MAIN_TO_L0` 补全 success/error/warning/info 四角色（12 条） | D-2 / D-3 终局 / D-53 配对 | ✅ **完成**（v1.1.8，`verify-b2b.mjs` 37 项断言全过） |
 | **24（新增 v1.1.8）** | **D-53 kebab 化**：`generateCSSVariables` 引入 `toKebab`，10 个 camelCase 令牌名（`--color-primary-contrastText`、`--z-modalBackdrop`、`--ease-easeIn` 等）kebab 化后通过 `SAFE_TOKEN_NAME` 白名单 | D-53 | ✅ **完成**（v1.1.8，`verify-d53.mjs` 16 项断言全过，`--z-modal-backdrop` 首次匹配 L0） |
@@ -1160,7 +1167,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 28 | 补主题回归测试，消除 0 覆盖（D-46） |
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
 | 30 | 实现 **GATE-11**（令牌/语义类登记校验）与 **GATE-12**（105 处条件类静态断言） |
-| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 → 我名下 **0 处**（`g14-clean.mjs` 批量清 79 文件/136 行 + 5 处渐变 D-50 修复 + SynergyTab 动态档位 bug；WIP 文件残余 4 处待其合并后清）。配套 §8.4 操作手册 |
+| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 → **全库 0 处**（`g14-clean.mjs` 批量清 79 文件/136 行 + DashboardLayout 3 处 + 5 处渐变 D-50 + SynergyTab 动态档位 bug；**2026-10-07 `74a9252` 接线删除 SettingsPage 旧面板，最后一处 WIP 残余清零，GATE-14 转 pass，门禁 13/0/1**）。配套 §8.4 操作手册 |
 
 ### 阶段 3 — 治理落地（P2–P3）
 
@@ -1364,7 +1371,7 @@ const bad = await page.evaluate(() => {
 | `frontend/src/theme/index.ts` | 入口 | `@/theme` 统一导出 | 单一入口 |
 | `frontend/src/theme/RadixThemeProvider.tsx` | — | **已删除**（T-R1 / D-41：样式表从未加载，属无效层） | — |
 | `frontend/src/components/ui/RadixComponents.tsx` | L2 | Badge/Text 包装层（**已改项目原生实现**，保留 API + `role="status"`） | 名称保留仅为兼容导入路径 |
-| `components/theme/ThemePanel.tsx`（新增） | 明暗主题核心模块组件（嵌入 `SettingsPage` 主题 tab；**8 区块**：① 明暗三态（`setThemeMode`）② 跟随系统实时状态（`matchMedia` 只读 + `useIsDarkMode`）③ 切换过渡动画 fade/scale/none（`setTransitionType`）④ 减少动画开关（`setMotionPreferences`）⑤ 明暗实时预览 ⑥ Ctrl+Shift+T 快捷键实际绑定（全局 keydown 明暗切换）⑦ 字体方案（紧凑/标准/宽松 → `applyCustomTheme` → `--text-*`）⑧ 配色方案（参照 **Apple HIG 系统色板**：默认绿/苹果蓝/紫/橙/红，明暗双值 → `applyCustomTheme` → `--color-primary`，「重置默认」恢复；**不含**预设主题选择器/自定义主题持久化管理——按产品要求只聚焦明暗核心）。全 L1 语义色类，§4.3 C-24 合规 |
+| `components/theme/ThemePanel.tsx`（新增） | 明暗主题核心模块组件（嵌入 `SettingsPage` 主题 tab，**已接线** `renderThemePanel → <ThemePanel />`；**8 区块**：① 明暗三态（`setThemeMode`）② 跟随系统实时状态（`matchMedia` 只读 + `useIsDarkMode`）③ 切换过渡动画 fade/scale/none（`setTransitionType` → 注入 `:root` 过渡变量，**去骨架化后真正驱动** `.theme-transition` 时长/缓动）④ 减少动画开关（`setMotionPreferences`）⑤ 明暗实时预览 ⑥ Ctrl+Shift+T 快捷键实际绑定（全局 keydown 明暗切换 + 重放 custom 注入）⑦ 字体方案（紧凑/标准/宽松 → 注入 L0 正文令牌 `--text-body*`，**非孤儿 `--text-*`**）⑧ 配色方案（参照 **Apple HIG 系统色板**：默认绿/苹果蓝/紫/橙/红，明暗双值 → 注入 `--color-primary-{500,600,700}` 静态色阶，**非仅语义别名 `--color-primary`**；「重置默认」清除手动注入）。全 L1 语义色类，§4.3 C-24 合规；**不含**预设主题选择器/自定义主题持久化管理（产品红线：不引入第三套主题） |
 | `frontend/scripts/theme-audit/g1314.mjs` | GATE-13/14 断言 | 自检 | 令牌登记白名单校验（GATE-13）+ D-50 条件类静态扫描（GATE-14，2026-10-06 口径校准：排除 `dark:text-white`/`bg-white` 误报） |
 | `frontend/scripts/theme-audit/g14-clean.mjs` | GATE-14 批量清理 | M4 治理 | 把「反转实底色阶 + text-white」共现行替换为 `bg-*-container text-*-main`；WIP 双重安全（显式排除 + git M 名单） |
 | `frontend/scripts/theme-audit/theme-gate.mjs` | 门禁 | **门禁唯一入口**：`GATE-01`~`GATE-14` **十四项**断言，静态 / 编译产物 / 渲染三级（GATE-13/14 经 `g1314.mjs` 注入）；支持 `--milestone` `--json` `--require-render` | 只读，**禁止**修改仓库代码。断言清单见 §10.3 |
