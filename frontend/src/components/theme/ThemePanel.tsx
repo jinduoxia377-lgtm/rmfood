@@ -7,6 +7,7 @@ import {
   useTheme, useThemeStore, useIsDarkMode,
   type TransitionType,
 } from '@/theme';
+import { APPLE_HIG_PALETTES, FONT_SCALES } from './theme-palette';
 
 /**
  * ThemePanel — 明暗主题核心模块（嵌入 SettingsPage「主题」tab）
@@ -104,45 +105,14 @@ export const ThemePanel: React.FC = () => {
   ];
 
   // ── ⑦ 字体方案（走 applyCustomTheme → --text-* 令牌）──
-  const FONT_SIZES = [
-    { key: 'compact', label: '紧凑', desc: '14px 基准，信息密度高', base: '0.875rem' },
-    { key: 'standard', label: '标准', desc: '16px 基准，默认', base: '1rem' },
-    { key: 'relaxed', label: '宽松', desc: '18px 基准，易读', base: '1.125rem' },
-  ] as const;
+  const FONT_SIZES = ['compact', 'standard', 'relaxed'].map((k) => {
+    const label = k === 'compact' ? '紧凑' : k === 'relaxed' ? '宽松' : '标准';
+    const s = FONT_SCALES[k];
+    return { key: k, label, desc: k === 'compact' ? '14px 基准，信息密度高' : k === 'relaxed' ? '18px 基准，易读' : '16px 基准，默认', base: s.body };
+  });
 
   // ── ⑧ 配色方案（参照 Apple HIG 系统色板，含明暗双值；注入 --color-primary）──
-  const PALETTES = [
-    {
-      key: 'green', name: '默认绿',
-      light: '#10B981', dark: '#34D399',
-      sub: '#6EE7B7', subDark: '#A7F3D0',
-      note: '品牌默认（Apple 绿变体，明暗双值）',
-    },
-    {
-      key: 'blue', name: '苹果蓝',
-      light: '#007AFF', dark: '#0A84FF',
-      sub: '#64B5F6', subDark: '#5AC8FA',
-      note: 'Apple HIG systemBlue（#007AFF 亮 / #0A84FF 暗）',
-    },
-    {
-      key: 'purple', name: '紫色',
-      light: '#AF52DE', dark: '#BF5AF2',
-      sub: '#D29BF5', subDark: '#DA7FFF',
-      note: 'Apple HIG systemPurple',
-    },
-    {
-      key: 'orange', name: '橙色',
-      light: '#FF9500', dark: '#FF9F0A',
-      sub: '#FFB84D', subDark: '#FFB340',
-      note: 'Apple HIG systemOrange',
-    },
-    {
-      key: 'red', name: '红色',
-      light: '#FF3B30', dark: '#FF453A',
-      sub: '#FF7A6E', subDark: '#FF6458',
-      note: 'Apple HIG systemRed',
-    },
-  ] as const;
+  const PALETTES = APPLE_HIG_PALETTES;
 
   // ── ⑦ 字体方案（走 applyCustomTheme → 排版令牌 --text-*）──
   // 关键：generateCSSVariables 把 typography.fontSize 生成 `--text-xs/--text-sm/...`，
@@ -166,13 +136,15 @@ export const ThemePanel: React.FC = () => {
   // 全站主色（按钮/链接/图标/渐变）几乎不变 —— 同样是「骨架」。
   // 现：applyCustomTheme（记录/持久化）+ 直接注入当前明暗模式的静态色阶 500/600/700
   // （与 Apple HIG 色板同档语义：500 主色 / 600 hover / 700 按压），明暗双值各归其位。
-  const applyBrandScale = (light: string, dark: string) => {
+  const applyBrandScale = (key: string, light: string, dark: string) => {
     const root = document.documentElement;
     const main = isDark ? dark : light;
-    // 同色系 hover/dark 变体：按 500/600/700 档映射（Apple 色板的 600/700 档）
+    // 500 = 主色 / 600 = hover / 700 = 按压（与 Apple HIG 同族档语义一致）
+    const HOVER: Record<string, string> = { green: '#059669', blue: '#0066CC', purple: '#8E3DA8', orange: '#C86F00', red: '#D70015' };
+    const PRESSED: Record<string, string> = { green: '#047857', blue: '#00518F', purple: '#6D2E84', orange: '#9C5700', red: '#A50011' };
     root.style.setProperty('--color-primary-500', main);
-    root.style.setProperty('--color-primary-600', main);
-    root.style.setProperty('--color-primary-700', main);
+    root.style.setProperty('--color-primary-600', HOVER[key] ?? main);
+    root.style.setProperty('--color-primary-700', PRESSED[key] ?? main);
     root.style.setProperty('--color-primary', main);
   };
 
@@ -188,23 +160,26 @@ export const ThemePanel: React.FC = () => {
         },
       },
     });
-    applyBrandScale(p.light, p.dark);
+    applyBrandScale(p.key, p.light, p.dark);
   };
 
   const applyFont = (f: (typeof FONT_SIZES)[number]) => {
+    // 持久化记录层：applyCustomTheme 生成一条 custom 主题（随 customThemes 持久化，
+    // initialize/migrate 恢复时用 typography.fontSize 重建）——与下方运行时注入表同源。
     applyCustomTheme({
       typography: {
         fontSize: {
-          xs: '0.75rem', sm: '0.875rem', base: f.base, lg: '1.125rem',
-          xl: '1.25rem', '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
+          xs: FONT_SCALES.compact.caption, sm: FONT_SCALES.compact.bodySm, base: f.base,
+          lg: FONT_SCALES.relaxed.bodySm, xl: '1.25rem',
+          '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
         },
       },
     });
     // 按方案注入真实消费的 L0 正文令牌（紧凑 14px / 标准 15px / 宽松 18px 基准）
     const scales: Record<string, [string, string, string]> = {
-      compact: ['0.8125rem', '0.75rem', '0.6875rem'],
-      standard: ['0.9375rem', '0.875rem', '0.75rem'],
-      relaxed: ['1.125rem', '1rem', '0.875rem'],
+      compact: [FONT_SCALES.compact.body, FONT_SCALES.compact.bodySm, FONT_SCALES.compact.caption],
+      standard: [FONT_SCALES.standard.body, FONT_SCALES.standard.bodySm, FONT_SCALES.standard.caption],
+      relaxed: [FONT_SCALES.relaxed.body, FONT_SCALES.relaxed.bodySm, FONT_SCALES.relaxed.caption],
     };
     const [b, s, c] = scales[f.key];
     applyFontScale(b, s, c);
