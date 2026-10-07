@@ -310,7 +310,7 @@ const StatCardGrid = React.memo(({ cards }: { cards: EnhancedStatCard[] }) => {
           key={card.title}
           className={`bg-gradient-to-br ${STAT_CARD_GRADIENTS[i % STAT_CARD_GRADIENTS.length]} rounded-lg pt-3.5 pb-2.5 px-3 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 relative overflow-hidden`}
         >
-          <div className="absolute top-0 left-0 right-0 h-px bg-white/20"></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-white dark:bg-neutral-900/20"></div>
           <p className="text-gradient-muted font-semibold truncate leading-relaxed text-xs tracking-wide">
             {card.title}
           </p>
@@ -503,7 +503,7 @@ const ActivityTimeline = React.memo(({ records }: { records: ActivityRecord[] })
                 className="w-[22px] h-[22px] rounded-full flex-shrink-0 flex items-center justify-center z-10 border-2 border-white shadow-sm"
                 style={{ backgroundColor: config.color }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-neutral-900" />
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -990,7 +990,7 @@ function DistributionChart({
             <span className="text-xs text-neutral-600 w-24 flex-shrink-0 truncate" title={label}>
               {label}
             </span>
-            <div className="flex-1 h-4 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-4 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${(count / maxVal) * 100}%`, backgroundColor: getColor(i) }}
@@ -1408,7 +1408,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               <h3 className="text-[15px] font-bold tracking-tight text-neutral-800">
                 {subTab === 'food-homology' ? '药食同源原料热度排行' : '高活性肽活性排行'}
               </h3>
-              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-white/80 rounded-md text-neutral-500 border border-neutral-200">
+              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-white dark:bg-neutral-900/80 rounded-md text-neutral-500 border border-neutral-200">
                 TOP {Math.min(totalCount, 20)}
               </span>
             </div>
@@ -1435,7 +1435,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             <div className="w-9 h-9 rounded-lg bg-neutral-200 shrink-0" />
             <div className="flex-1 space-y-2">
               <div className={`h-4 bg-neutral-200 rounded ${i % 3 === 0 ? 'w-2/5' : i % 3 === 1 ? 'w-1/3' : 'w-1/2'}`} />
-              <div className="h-3 bg-neutral-100 rounded w-3/5" />
+              <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-3/5" />
             </div>
             <div className="w-16 h-6 bg-neutral-200 rounded-full" />
           </div>
@@ -1448,7 +1448,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         {/* 子标签切换器 + 统计信息 */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* 左侧：子标签 */}
-          <div className="flex items-center gap-1 bg-neutral-100/80 rounded-xl p-1 shadow-inner">
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl p-1 shadow-inner">
             {RANKING_TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = rankingSubTab === tab.key;
@@ -1461,7 +1461,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                   }}
                   className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
                     isActive
-                      ? `bg-white text-${tab.color.split('-')[1]}-600 shadow-sm`
+                      ? `bg-white dark:bg-neutral-900 text-${tab.color.split('-')[1]}-600 shadow-sm`
                       : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
                   }`}
                 >
@@ -1491,7 +1491,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               <button
                 onClick={() => fetchRankingData(rankingSubTab)}
                 disabled={rankingLoading}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-neutral-600 bg-white hover:bg-slate-50 border border-neutral-200 rounded-lg transition-colors disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-neutral-600 bg-white dark:bg-neutral-900 hover:bg-slate-50 dark:bg-neutral-800 border border-neutral-200 rounded-lg transition-colors disabled:opacity-40"
               >
                 <Loader2 className={`w-3.5 h-3.5 ${rankingLoading ? 'animate-spin' : ''}`} />
                 刷新
@@ -1501,7 +1501,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         </div>
 
         {/* 排行榜主体 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
           {/* 表头 */}
           <RankingHeader tabConfig={currentTabConfig} subTab={rankingSubTab} totalCount={currentData?.length ?? 0} />
 
@@ -1510,7 +1510,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             <RankingSkeleton />
           ) : currentData.length === 0 ? (
             <div className="p-16 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-neutral-100 mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 mb-4">
                 <Trophy className="w-7 h-7 text-neutral-300" />
               </div>
               <p className="text-sm font-medium text-neutral-500">暂无排行数据</p>
@@ -1529,7 +1529,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                     <div
                       key={herb.name_cn}
                       className={`group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200 cursor-pointer ${
-                        isHovered ? 'bg-secondary-50/60' : 'hover:bg-slate-50/50'
+                        isHovered ? 'bg-secondary-50/60' : 'hover:bg-slate-50 dark:bg-neutral-800/50'
                       }`}
                       onMouseEnter={() => setHoveredRankItem(index)}
                       onMouseLeave={() => setHoveredRankItem(null)}
@@ -1539,7 +1539,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       <div
                         className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-transform duration-200 ${
                           isHovered ? 'scale-110' : ''
-                        } ${isTop3 ? RANK_BADGE_STYLES[rank] : 'bg-neutral-100 text-neutral-500'}`}
+                        } ${isTop3 ? RANK_BADGE_STYLES[rank] : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'}`}
                       >
                         {isTop3 ? <Medal className="w-4 h-4" /> : <span className="tabular-nums">{rank}</span>}
                       </div>
@@ -1575,12 +1575,12 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                             {Number(herb.ob_percent).toFixed(1)}
                           </p>
                         </div>
-                        <div className="w-px h-7 bg-neutral-100" />
+                        <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
                           <p className="text-[11px] text-neutral-400 leading-none mb-0.5">化合物</p>
                           <p className="text-[14px] font-semibold text-secondary-600 tabular-nums">{herb.compound_count}</p>
                         </div>
-                        <div className="w-px h-7 bg-neutral-100" />
+                        <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
                           <p className="text-[11px] text-neutral-400 leading-none mb-0.5">热度分</p>
                           <p className="text-[13px] font-medium text-orange-500 tabular-nums">
@@ -1608,7 +1608,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                     <div
                       key={`${peptide.sequence}-${index}`}
                       className={`group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200 cursor-pointer ${
-                        isHovered ? 'bg-violet-50/60' : 'hover:bg-slate-50/50'
+                        isHovered ? 'bg-violet-50/60' : 'hover:bg-slate-50 dark:bg-neutral-800/50'
                       }`}
                       onMouseEnter={() => setHoveredRankItem(index)}
                       onMouseLeave={() => setHoveredRankItem(null)}
@@ -1618,7 +1618,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       <div
                         className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-transform duration-200 ${
                           isHovered ? 'scale-110' : ''
-                        } ${isTop3 ? RANK_BADGE_STYLES[rank] : 'bg-neutral-100 text-neutral-500'}`}
+                        } ${isTop3 ? RANK_BADGE_STYLES[rank] : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'}`}
                       >
                         {isTop3 ? <Medal className="w-4 h-4" /> : <span className="tabular-nums">{rank}</span>}
                       </div>
@@ -1652,14 +1652,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                             </span>
                           </p>
                         </div>
-                        <div className="w-px h-7 bg-neutral-100" />
+                        <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
                           <p className="text-[11px] text-neutral-400 leading-none mb-0.5">分子量</p>
                           <p className="text-[14px] font-semibold text-neutral-600 tabular-nums">
                             {peptide.molecular_weight?.toFixed(0) || '-'}
                           </p>
                         </div>
-                        <div className="w-px h-7 bg-neutral-100" />
+                        <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
                           <p className="text-[11px] text-neutral-400 leading-none mb-0.5">长度</p>
                           <p className="text-[14px] font-medium text-neutral-500 tabular-nums">{peptide.seq_length}aa</p>
@@ -1687,7 +1687,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
           {/* 底部信息栏 */}
           {currentData && currentData.length > 0 && (
-            <div className="px-6 py-3 bg-slate-50/80 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-400">
+            <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800/80 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-400">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
                   <Flame className="w-3 h-3 text-orange-400" />
@@ -1884,14 +1884,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-1 bg-neutral-100/80 rounded-xl p-1 shadow-inner">
+        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl p-1 shadow-inner">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`relative px-4 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 tracking-tight ${
                 activeTab === tab.key
-                  ? 'bg-white text-secondary-600 shadow-sm'
+                  ? 'bg-white dark:bg-neutral-900 text-secondary-600 shadow-sm'
                   : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
               }`}
             >
@@ -1913,7 +1913,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             </span>
           </label>
 
-          <span className="text-[11px] text-neutral-400 font-mono tabular-nums px-1.5 py-0.5 bg-neutral-100 rounded-md border border-neutral-200">
+          <span className="text-[11px] text-neutral-400 font-mono tabular-nums px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md border border-neutral-200">
             60s
           </span>
 

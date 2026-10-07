@@ -244,7 +244,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
     const { sequence, validationError } = this.state;
 
     return (
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4 text-neutral-900">多肽序列输入</h2>
 
         <div className="mb-4">
@@ -284,7 +284,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           <button
             onClick={this.handleClear}
             disabled={this.state.loading}
-            className="px-6 py-3 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300 disabled:bg-neutral-100 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-6 py-3 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300 disabled:bg-neutral-100 dark:bg-neutral-800 disabled:cursor-not-allowed transition-colors font-medium"
           >
             清空
           </button>
@@ -352,7 +352,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           ))}
         </div>
 
-        <div className="bg-white border border-neutral-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-neutral-900">二级结构预测</h3>
           <div className="space-y-3">
             <div>
@@ -415,7 +415,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
     return (
       <div className="space-y-6">
-        <div className="bg-white border border-neutral-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-neutral-900">氨基酸组成</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {composition.map(([aa, count]) => {
@@ -444,7 +444,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           </div>
         </div>
 
-        <div className="bg-white border border-neutral-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-neutral-900">氨基酸分类统计</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -541,7 +541,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
         </h3>
 
         {bioactivityPredictions.map((prediction, idx) => (
-          <div key={idx} className="bg-white border border-neutral-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+          <div key={idx} className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -605,7 +605,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-4 mb-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg p-4 mb-4">
             <h4 className="text-sm font-medium text-neutral-700 mb-2">预测的二级结构</h4>
             <div className="flex flex-wrap gap-1">
               {structurePrediction.predictedStructure.split('').map((char, idx) => (
@@ -647,7 +647,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white border border-neutral-200 rounded-lg p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-4">
             <h4 className="font-semibold text-neutral-900 mb-3">表面可及性</h4>
             <div className="space-y-2">
               {structurePrediction.surfaceAccessibility.slice(0, 10).map((value, idx) => (
@@ -672,7 +672,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             </div>
           </div>
 
-          <div className="bg-white border border-neutral-200 rounded-lg p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-4">
             <h4 className="font-semibold text-neutral-900 mb-3">柔性指数</h4>
             <div className="space-y-2">
               {structurePrediction.flexibilityIndex.slice(0, 10).map((value, idx) => (
@@ -711,7 +711,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
     if (!analysis) return null;
 
     return (
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -721,21 +721,21 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             <div className="flex gap-2">
               <button
                 onClick={() => this.handleExport('json')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
                 title="导出JSON"
               >
                 JSON
               </button>
               <button
                 onClick={() => this.handleExport('csv')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
                 title="导出CSV"
               >
                 CSV
               </button>
               <button
                 onClick={() => this.handleExport('txt')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors text-sm"
                 title="导出TXT"
               >
                 TXT

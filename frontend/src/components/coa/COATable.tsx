@@ -80,7 +80,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
       {/* 统计 */}
       {showStats && data && (
         <div className="grid grid-cols-4 gap-3 mb-4">
-          <div className="bg-white rounded-lg border p-3 text-center">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border p-3 text-center">
             <div className="text-xl font-bold">{total}</div>
             <div className="text-xs text-[var(--text-muted)]">总计</div>
           </div>
@@ -88,11 +88,11 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
             <div className="text-xl font-bold text-green-600">{items.filter((i: PeptideBatchCOA) => i.qualified).length}</div>
             <div className="text-xs text-[var(--text-muted)]">合格</div>
           </div>
-          <div className="bg-white rounded-lg border p-3 text-center">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border p-3 text-center">
             <div className="text-xl font-bold">{items.length}</div>
             <div className="text-xs text-[var(--text-muted)]">当前页</div>
           </div>
-          <div className="bg-white rounded-lg border p-3 text-center">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border p-3 text-center">
             <div className="text-xl font-bold">{Math.ceil(total / 20)}</div>
             <div className="text-xs text-[var(--text-muted)]">总页数</div>
           </div>
@@ -114,7 +114,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
           <select
             value={statusFilter}
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white text-[var(--text-primary)]"
+            className="px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white dark:bg-neutral-900 text-[var(--text-primary)]"
           >
             <option value="all">全部状态</option>
             <option value="合格">合格</option>
@@ -167,7 +167,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={e => { e.stopPropagation(); setEditingCOA(coa); setShowCreate(true); }}
-                  className="p-1 bg-white rounded-lg shadow-sm hover:bg-blue-50 text-[var(--text-muted)] hover:text-blue-600"
+                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-blue-50 text-[var(--text-muted)] hover:text-blue-600"
                   title="编辑"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -179,7 +179,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
                       deleteMutation.mutate(coa.id);
                     }
                   }}
-                  className="p-1 bg-white rounded-lg shadow-sm hover:bg-red-50 text-[var(--text-muted)] hover:text-red-600"
+                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-red-50 text-[var(--text-muted)] hover:text-red-600"
                   title="删除"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

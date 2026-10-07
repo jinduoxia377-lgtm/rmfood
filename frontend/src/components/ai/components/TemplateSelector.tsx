@@ -54,7 +54,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
       case ReportTemplateType.REGULATORY:
         return 'border-cyan-500 bg-cyan-50 hover:bg-cyan-100';
       default:
-        return 'border-neutral-500 bg-slate-50 hover:bg-neutral-100';
+        return 'border-neutral-500 bg-slate-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800';
     }
   };
 
@@ -121,7 +121,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
               selectedType === type.value
                 ? 'bg-secondary-container text-secondary-main shadow-md'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 hover:bg-neutral-200'
             }`}
           >
             <span className="mr-1">{type.icon}</span>
@@ -138,7 +138,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg ${
               selectedTemplateId === template.id
                 ? `${getTypeColor(template.type)} ring-2 ring-offset-2 ring-blue-500`
-                : `border-neutral-200 bg-white hover:border-neutral-300`
+                : `border-neutral-200 bg-white dark:bg-neutral-900 hover:border-neutral-300`
             }`}
           >
             {selectedTemplateId === template.id && (
@@ -189,12 +189,12 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             <div className="mt-4 pt-4 border-t border-neutral-100">
               <div className="flex flex-wrap gap-1">
                 {template.supportedLanguages.map((lang: ReportLanguage) => (
-                  <span key={lang} className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-xs rounded">
+                  <span key={lang} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 text-xs rounded">
                     {lang === 'zh-CN' ? '中文' : 'English'}
                   </span>
                 ))}
                 {template.supportedDetailLevels.map((level: DetailLevel) => (
-                  <span key={level} className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-xs rounded">
+                  <span key={level} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 text-xs rounded">
                     {getDetailLevelLabel(level)}
                   </span>
                 ))}

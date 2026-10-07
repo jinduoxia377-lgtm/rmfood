@@ -160,7 +160,7 @@ function hello() {
   return (
     <div className="space-y-3">
       {elements.map((element, index) => (
-        <div key={element.id} className="bg-white border border-neutral-200 rounded-lg p-4">
+        <div key={element.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3 pb-3 border-b border-neutral-100">
             {element.type === 'formula' && <Variable className="w-5 h-5 text-secondary-500" />}
             {element.type === 'table' && <Table className="w-5 h-5 text-success-500" />}
@@ -175,7 +175,7 @@ function hello() {
                 type="button"
                 onClick={() => handleMoveUp(index)}
                 disabled={index === 0}
-                className="p-1 hover:bg-neutral-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 hover:bg-neutral-100 dark:bg-neutral-800 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 title="上移"
               >
                 <MoveUp className="w-4 h-4" />
@@ -184,7 +184,7 @@ function hello() {
                 type="button"
                 onClick={() => handleMoveDown(index)}
                 disabled={index === elements.length - 1}
-                className="p-1 hover:bg-neutral-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 hover:bg-neutral-100 dark:bg-neutral-800 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 title="下移"
               >
                 <MoveDown className="w-4 h-4" />
@@ -288,11 +288,11 @@ function hello() {
         </Button>
 
         {showInsertMenu && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-10">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg shadow-lg z-10">
             <button
               type="button"
               onClick={handleInsertFormula}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Variable className="w-4 h-4 text-secondary-500" />
               插入公式
@@ -300,7 +300,7 @@ function hello() {
             <button
               type="button"
               onClick={handleInsertTable}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Table className="w-4 h-4 text-success-500" />
               插入表格
@@ -308,7 +308,7 @@ function hello() {
             <button
               type="button"
               onClick={handleInsertCode}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Code2 className="w-4 h-4 text-accent-500" />
               插入代码块
@@ -316,7 +316,7 @@ function hello() {
             <button
               type="button"
               onClick={() => setShowInsertMenu(false)}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 text-neutral-500 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 text-neutral-500 flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               取消
@@ -372,7 +372,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
           <thead>
             <tr>
               {headers.map((header, index) => (
-                <th key={index} className="border border-neutral-300 px-3 py-2 bg-slate-50">
+                <th key={index} className="border border-neutral-300 px-3 py-2 bg-slate-50 dark:bg-neutral-800">
                   <input
                     type="text"
                     value={header}
@@ -394,7 +394,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                   )}
                 </th>
               ))}
-              <th className="border border-neutral-300 px-2 py-2 bg-slate-50">
+              <th className="border border-neutral-300 px-2 py-2 bg-slate-50 dark:bg-neutral-800">
                 <button
                   type="button"
                   onClick={addColumn}

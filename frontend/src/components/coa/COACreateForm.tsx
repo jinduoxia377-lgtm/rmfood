@@ -150,7 +150,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -190,7 +190,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
                 <select
                   value={form.product_type}
                   onChange={e => updateField('product_type', e.target.value)}
-                  className="w-full px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white text-[var(--text-primary)]"
+                  className="w-full px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white dark:bg-neutral-900 text-[var(--text-primary)]"
                 >
                   <option>其他食品</option>
                   <option>保健食品</option>
@@ -227,7 +227,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
                 <select
                   value={form.test_conclusion}
                   onChange={e => updateField('test_conclusion', e.target.value)}
-                  className="w-full px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white text-[var(--text-primary)]"
+                  className="w-full px-3 py-1.5 text-sm border border-[var(--border-subtle)] rounded-lg bg-white dark:bg-neutral-900 text-[var(--text-primary)]"
                 >
                   <option>待检</option>
                   <option>合格</option>
@@ -273,12 +273,12 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
             </div>
             <div className="space-y-2">
               {testItems.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-[var(--border-subtle)]">
+                <div key={idx} className="flex items-start gap-2 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-[var(--border-subtle)]">
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <select
                       value={item.category}
                       onChange={e => updateTestItem(idx, 'category', e.target.value)}
-                      className="px-2 py-1 text-xs border border-[var(--border-subtle)] rounded bg-white"
+                      className="px-2 py-1 text-xs border border-[var(--border-subtle)] rounded bg-white dark:bg-neutral-900"
                     >
                       {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
@@ -311,7 +311,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
                     <select
                       value={item.judgment ?? '待判定'}
                       onChange={e => updateTestItem(idx, 'judgment', e.target.value)}
-                      className="px-2 py-1 text-xs border border-[var(--border-subtle)] rounded bg-white col-span-2"
+                      className="px-2 py-1 text-xs border border-[var(--border-subtle)] rounded bg-white dark:bg-neutral-900 col-span-2"
                     >
                       <option>待判定</option>
                       <option>符合</option>
@@ -328,7 +328,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-subtle)] bg-slate-50">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-subtle)] bg-slate-50 dark:bg-neutral-800">
           <span className="text-xs text-[var(--text-muted)]">
             {testItems.filter(i => i.item_name.trim()).length} 项检测已配置
           </span>

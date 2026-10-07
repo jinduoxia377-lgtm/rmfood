@@ -267,7 +267,7 @@ export function ChatEnhancedDemo({
           statusColor === 'green' ? 'bg-success-50 border-green-200' :
           statusColor === 'red' ? 'bg-error-50 border-red-200' :
           statusColor === 'blue' ? 'bg-secondary-50 border-blue-200' :
-          'bg-slate-50 border-neutral-200'
+          'bg-slate-50 dark:bg-neutral-800 border-neutral-200'
         }`}>
           <h3 className="font-semibold mb-2">🌐 网络</h3>
           <p className="text-sm">{statusText}</p>
@@ -299,7 +299,7 @@ export function ChatEnhancedDemo({
       </div>
 
       {/* 消息列表 */}
-      <div className="border rounded-lg p-4 h-96 overflow-y-auto mb-4 bg-white">
+      <div className="border rounded-lg p-4 h-96 overflow-y-auto mb-4 bg-white dark:bg-neutral-900">
         {messages.length === 0 ? (
           <div className="text-center text-neutral-400 mt-20">
             发送一条消息开始对话...
@@ -310,7 +310,7 @@ export function ChatEnhancedDemo({
               key={msg.id}
               className={`mb-3 p-3 rounded-lg ${
                 msg.role === 'user' ? 'bg-secondary-100 ml-12' :
-                msg.role === 'assistant' ? 'bg-neutral-100 mr-12' :
+                msg.role === 'assistant' ? 'bg-neutral-100 dark:bg-neutral-800 mr-12' :
                 msg.role === 'system' ? 'bg-yellow-50 mx-12' :
                 'bg-error-50 mx-12'
               }`}
@@ -395,7 +395,7 @@ export function ChatEnhancedDemo({
           className={`px-4 py-2 rounded ${
             isMonitoring
               ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 hover:bg-neutral-200'
           }`}
         >
           {isMonitoring ? '⏸️ 停止监控' : '▶️ 启动监控'}
@@ -405,7 +405,7 @@ export function ChatEnhancedDemo({
       {/* 性能报告 Modal */}
       {showReportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">📊 性能监控报告</h2>
 
             <pre className="bg-neutral-900 text-success-400 p-4 rounded text-sm overflow-x-auto">

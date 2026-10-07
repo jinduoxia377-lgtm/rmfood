@@ -240,7 +240,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
           <div
             key={herb.id}
              role="button" tabIndex={0} onClick={() => this.handleHerbSelect(herb)}
-            className="p-4 bg-white border border-neutral-200 rounded-lg cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all"
+            className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all"
           >
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">{herb.name}</h3>
             <p className="text-sm text-neutral-600 italic mb-2">{herb.latinName}</p>
@@ -266,7 +266,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
     }
 
     return (
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -276,21 +276,21 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             <div className="flex gap-2">
               <button
                 onClick={() => this.handleExport('json')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
                 title="导出JSON"
               >
                 JSON
               </button>
               <button
                 onClick={() => this.handleExport('csv')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
                 title="导出CSV"
               >
                 CSV
               </button>
               <button
                 onClick={() => this.handleExport('pdf')}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
+                className="px-4 py-2 bg-white dark:bg-neutral-900 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
                 title="导出PDF"
               >
                 PDF
@@ -342,11 +342,11 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
         <div>
           <h3 className="text-lg font-semibold mb-3 text-neutral-900">基本信息</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-slate-50 p-4 rounded-lg">
+            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">科属</p>
               <p className="font-medium text-neutral-900">{selectedHerb.family}</p>
             </div>
-            <div className="bg-slate-50 p-4 rounded-lg">
+            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">性味</p>
               <div className="flex gap-2">
                 <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded">
@@ -359,7 +359,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 ))}
               </div>
             </div>
-            <div className="bg-slate-50 p-4 rounded-lg">
+            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">归经</p>
               <div className="flex flex-wrap gap-2">
                 {selectedHerb.properties.meridian.map((meridian, idx) => (
@@ -369,7 +369,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 ))}
               </div>
             </div>
-            <div className="bg-slate-50 p-4 rounded-lg">
+            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">毒性</p>
               <p className="font-medium text-neutral-900">{selectedHerb.properties.toxicity || '无'}</p>
             </div>
@@ -394,7 +394,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
         <div>
           <h3 className="text-lg font-semibold mb-3 text-neutral-900">用法用量</h3>
-          <div className="bg-slate-50 p-4 rounded-lg">
+          <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
             <p className="text-2xl font-bold text-secondary-600 mb-2">
               {selectedHerb.dosage.amount} {selectedHerb.dosage.unit}
             </p>
@@ -455,24 +455,24 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {chemistry.molecularFormula && (
-              <div className="bg-white p-3 rounded">
+              <div className="bg-white dark:bg-neutral-900 p-3 rounded">
                 <p className="text-xs text-neutral-600 mb-1">分子式</p>
                 <p className="font-mono text-sm font-semibold">{chemistry.molecularFormula}</p>
               </div>
             )}
             {chemistry.molecularWeight && (
-              <div className="bg-white p-3 rounded">
+              <div className="bg-white dark:bg-neutral-900 p-3 rounded">
                 <p className="text-xs text-neutral-600 mb-1">分子量</p>
                 <p className="font-semibold">{this.formatNumber(chemistry.molecularWeight, 2)} Da</p>
               </div>
             )}
             {chemistry.casNumber && (
-              <div className="bg-white p-3 rounded">
+              <div className="bg-white dark:bg-neutral-900 p-3 rounded">
                 <p className="text-xs text-neutral-600 mb-1">CAS号</p>
                 <p className="font-mono text-sm">{chemistry.casNumber}</p>
               </div>
             )}
-            <div className="bg-white p-3 rounded">
+            <div className="bg-white dark:bg-neutral-900 p-3 rounded">
               <p className="text-xs text-neutral-600 mb-1">靶点数量</p>
               <p className="font-semibold">{chemistry.targets.length}</p>
             </div>
@@ -508,7 +508,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
         <h3 className="text-lg font-semibold text-neutral-900">作用靶点 ({targets.length})</h3>
         <div className="grid gap-4">
           {targets.map((target, idx) => (
-            <div key={idx} className="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={idx} className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h4 className="font-semibold text-neutral-900 mb-1">{target.geneName}</h4>
@@ -534,7 +534,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
               </div>
               <div className="flex flex-wrap gap-2">
                 {target.evidence.map((ev, eIdx) => (
-                  <span key={eIdx} className="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded">
+                  <span key={eIdx} className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 text-xs rounded">
                     {ev}
                   </span>
                 ))}
@@ -559,7 +559,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
         <h3 className="text-lg font-semibold text-neutral-900">相关疾病 ({diseases.length})</h3>
         <div className="grid gap-4">
           {diseases.map((disease, idx) => (
-            <div key={idx} className="bg-white border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={idx} className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <h4 className="font-semibold text-neutral-900">{disease.diseaseName}</h4>
                 {this.renderConfidenceBadge(
@@ -601,7 +601,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-neutral-200 p-6 flex justify-between items-center">
             <div>
               <h2 className="h2 text-neutral-900">{selectedCompound.name}</h2>
@@ -645,7 +645,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             </div>
 
             {selectedCompound.smiles && (
-              <div className="bg-slate-50 p-4 rounded-lg mb-6">
+              <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg mb-6">
                 <p className="text-sm text-neutral-600 mb-2">SMILES结构</p>
                 <p className="font-mono text-sm text-neutral-900 break-all bg-white p-3 rounded border">
                   {selectedCompound.smiles}
@@ -712,7 +712,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-neutral-900 rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900">药材搜索</h2>
                 {this.renderSearchSection()}
                 {this.renderHerbList()}

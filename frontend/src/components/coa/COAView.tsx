@@ -67,7 +67,7 @@ const COABasicInfoTable: React.FC<{ coa: PeptideBatchCOA }> = ({ coa }) => {
     <table className="w-full text-sm mb-6 border-collapse">
       <tbody>
         {fields.map((field, idx) => (
-          <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : ''}>
+          <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50 dark:bg-neutral-800' : ''}>
             <td className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 font-semibold text-[var(--text-primary, #1e293b)] w-28 text-center align-middle">
               <div>{field.label}</div>
               <div className="text-xs text-[var(--text-muted, #94a3b8)] font-normal">{field.labelEn}</div>
@@ -120,7 +120,7 @@ const COATestResultTable: React.FC<{
           </h4>
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-slate-100">
+              <tr className="bg-slate-100 dark:bg-neutral-800">
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-left font-semibold text-[var(--text-primary, #1e293b)] w-1/4">
                   项目
                 </th>
@@ -137,7 +137,7 @@ const COATestResultTable: React.FC<{
             </thead>
             <tbody>
               {categoryItems.map((item, idx) => (
-                <tr key={item.id ?? idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                <tr key={item.id ?? idx} className={idx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-slate-50 dark:bg-neutral-800'}>
                   <td className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2">
                     <div className="font-medium text-[var(--text-primary, #1e293b)]">{item.item_name}</div>
                     {item.item_name_en && (
@@ -277,7 +277,7 @@ export const COAView: React.FC<COAViewProps> = ({
   const hasMoreItems = ((coa.test_items ?? []).length) > 5;
 
   return (
-    <div className={`bg-white rounded-xl border border-[var(--border-subtle, #e2e8f0)] overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
+    <div className={`bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
       {/* 操作栏 */}
       {!compact && (
         <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-[var(--border-subtle, #e2e8f0)]">
@@ -389,7 +389,7 @@ export const COACard: React.FC<{
 }> = ({ coa, onClick }) => (
   <div
      role="button" tabIndex={0} onClick={onClick}
-    className="bg-white rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4 cursor-pointer hover:shadow-md hover:border-[var(--color-primary, #1a56db)]/30 transition-all"
+    className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4 cursor-pointer hover:shadow-md hover:border-[var(--color-primary, #1a56db)]/30 transition-all"
   >
     <div className="flex items-start justify-between mb-3">
       <div>
@@ -442,19 +442,19 @@ export const COACard: React.FC<{
 export const COAStatsPanel: React.FC<{ stats: { total: number; qualified: number; unqualified: number; pending: number; qualified_rate: number; peptide_types?: number; total_batches?: number } }>
 = ({ stats }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-    <div className="bg-white rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4">
       <div className="text-2xl font-bold text-[var(--text-primary, #1e293b)]">{stats.total}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">总批次</div>
     </div>
-    <div className="bg-white rounded-xl border border-green-200 p-4">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-green-200 p-4">
       <div className="text-2xl font-bold text-green-600">{stats.qualified}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">合格</div>
     </div>
-    <div className="bg-white rounded-xl border border-red-200 p-4">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-red-200 p-4">
       <div className="text-2xl font-bold text-red-600">{stats.unqualified}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">不合格</div>
     </div>
-    <div className="bg-white rounded-xl border border-yellow-200 p-4">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-yellow-200 p-4">
       <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">待检</div>
     </div>

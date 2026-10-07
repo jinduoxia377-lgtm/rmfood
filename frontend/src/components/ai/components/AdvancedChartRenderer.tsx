@@ -34,7 +34,7 @@ const AdvancedChartRenderer: React.FC<AdvancedChartRendererProps> = ({
 
   if (!chartDef) {
     return (
-      <div className="flex items-center justify-center bg-neutral-100 rounded-lg" style={{ width, height }}>
+      <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-lg" style={{ width, height }}>
         <div className="text-center text-neutral-500">
           <p className="text-lg font-medium">未知图表类型</p>
           <p className="text-sm">类型ID: {chartType}</p>
@@ -46,7 +46,7 @@ const AdvancedChartRenderer: React.FC<AdvancedChartRendererProps> = ({
   return (
     <div className="advanced-chart-container">
       <div
-        className="relative bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden"
+        className="relative bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200 overflow-hidden"
         style={{ width: mergedOptions.width || width, height: mergedOptions.height || height }}
       >
         <ChartToolbar onExport={handleExport} />
@@ -98,7 +98,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
   <div className="absolute top-2 right-2 flex items-center space-x-1 z-10 opacity-0 hover:opacity-100 transition-opacity">
     <button
       onClick={() => onExport('png')}
-      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
       title="导出PNG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
     </button>
     <button
       onClick={() => onExport('svg')}
-      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
       title="导出SVG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
       </svg>
     </button>
     <button
-      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
       title="全屏"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +344,7 @@ const GanttPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> 
     {data.map((task, i) => (
       <div key={i} className="flex items-center">
         <span className="w-24 text-sm text-neutral-700 truncate">{task.name || `任务${i + 1}`}</span>
-        <div className="flex-1 h-6 bg-neutral-100 rounded relative ml-4">
+        <div className="flex-1 h-6 bg-neutral-100 dark:bg-neutral-800 rounded relative ml-4">
           <div
             className="absolute h-full bg-gradient-to-r from-green-400 to-green-500 rounded"
             style={{
