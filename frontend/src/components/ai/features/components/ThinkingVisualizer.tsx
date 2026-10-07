@@ -135,7 +135,7 @@ const ThinkingStepCard: React.FC<{
       } ${config.bgColor} ${isActive ? 'shadow-lg scale-[1.02]' : ''}`}
     >
       {step.status === 'processing' && (
-        <div className="absolute inset-0 bg-white/50 rounded-xl flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-white dark:bg-neutral-900/50 rounded-xl flex items-center justify-center z-10">
           <div className="flex items-center gap-2 text-neutral-600">
             <Clock className="w-4 h-4 animate-spin" />
             <span className="text-sm font-medium">处理中...</span>
@@ -191,7 +191,7 @@ const ThinkingStepCard: React.FC<{
                 {step.relatedData.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-2 p-2 bg-white rounded-lg border border-neutral-100"
+                    className="flex items-start gap-2 p-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-100"
                   >
                     <FileText className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
                     <div className="min-w-0">
@@ -239,14 +239,14 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 cursor-pointer"
          role="button" tabIndex={0} onClick={onToggleVisibility}
       >
         <div className="flex items-center gap-2 text-white">
-          <div className="p-1.5 bg-white/20 rounded-lg">
+          <div className="p-1.5 bg-white dark:bg-neutral-900/20 rounded-lg">
             <Brain className="w-5 h-5" />
           </div>
           <div>
@@ -292,7 +292,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
 
       {/* Progress Indicator */}
       {isVisible && steps.length > 0 && (
-        <div className="px-4 py-3 bg-slate-50 border-t border-neutral-100">
+        <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-100">
           <div className="flex items-center justify-between text-xs text-neutral-500">
             <span>思考进度</span>
             <span>

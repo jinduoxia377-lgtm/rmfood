@@ -270,7 +270,7 @@ export function PromptOptimizer({
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     level === lvl
                       ? `bg-${LEVEL_CONFIG[lvl].color}-100 text-${LEVEL_CONFIG[lvl].color}-700 border border-${LEVEL_CONFIG[lvl].color}-300`
-                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
                   {LEVEL_CONFIG[lvl].label}
@@ -444,13 +444,13 @@ export function PromptOptimizer({
             {activeTab === 'structure' && result.structure_report && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-slate-50 rounded-lg">
+                  <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                     <p className="text-xs text-neutral-500 mb-1">结构类型</p>
                     <p className="text-lg font-semibold capitalize">
                       {result.structure_report.structure_type.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-lg">
+                  <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                     <p className="text-xs text-neutral-500 mb-1">总体得分</p>
                     <p className={`text-lg font-semibold ${getScoreColor(result.structure_report.overall_score)}`}>
                       {result.structure_report.overall_score.toFixed(0)}/100
@@ -460,7 +460,7 @@ export function PromptOptimizer({
 
                 <div className="space-y-2">
                   {Object.entries(result.structure_report.sections).map(([name, section]) => (
-                    <div key={name} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+                    <div key={name} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-800 rounded">
                       <span className="text-sm font-medium">{name}</span>
                       <div className="flex items-center gap-2">
                         {section.is_present ? (
@@ -578,7 +578,7 @@ export function PromptOptimizer({
                         className={`p-3 rounded-lg border ${
                           appliedFixes.has(suggestion.id)
                             ? 'bg-success-50 border-green-200'
-                            : 'bg-slate-50 border-neutral-200'
+                            : 'bg-slate-50 dark:bg-neutral-800 border-neutral-200'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">

@@ -357,7 +357,7 @@ export function SafetyReportTemplate({
     switch (sectionId) {
       case 'cover':
         return (
-          <div className="space-y-6 p-8 bg-white rounded-lg shadow-sm">
+          <div className="space-y-6 p-8 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <div className="text-center space-y-4">
               <h1 className="text-3xl font-bold text-neutral-900">
                 {selectedTemplate.name}
@@ -417,7 +417,7 @@ export function SafetyReportTemplate({
       case 'executive_summary':
       case 'abstract':
         return (
-          <div className="space-y-4 p-6 bg-white rounded-lg shadow-sm">
+          <div className="space-y-4 p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold">
               {sectionId === 'executive_summary' ? '执行摘要' : '摘要'}
             </h3>
@@ -433,7 +433,7 @@ export function SafetyReportTemplate({
       case 'findings':
       case 'safety_evaluation':
         return (
-          <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
+          <div className="space-y-6 p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold">
               检测范围与方法
             </h3>
@@ -453,7 +453,7 @@ export function SafetyReportTemplate({
                 <label className="block text-sm font-medium text-neutral-700 mb-2">原料清单及检测结果</label>
                 <div className="overflow-x-auto border border-neutral-300 rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
+                    <thead className="bg-slate-50 dark:bg-neutral-800">
                       <tr>
                         <th className="px-4 py-2 text-left">序号</th>
                         <th className="px-4 py-2 text-left">成分名称</th>
@@ -501,7 +501,7 @@ export function SafetyReportTemplate({
       case 'risk_assessment':
       case 'risk_characterization':
         return (
-          <div className="space-y-4 p-6 bg-white rounded-lg shadow-sm">
+          <div className="space-y-4 p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold">风险评估</h3>
             <textarea
               value={reportData.riskAssessment}
@@ -516,7 +516,7 @@ export function SafetyReportTemplate({
       case 'improvement_actions':
       case 'action_plan':
         return (
-          <div className="space-y-4 p-6 bg-white rounded-lg shadow-sm">
+          <div className="space-y-4 p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold">改进建议与行动计划</h3>
             <textarea
               value={reportData.improvementActions}
@@ -529,7 +529,7 @@ export function SafetyReportTemplate({
 
       case 'conclusion':
         return (
-          <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
+          <div className="space-y-6 p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold">结论与签名</h3>
 
             <div>
@@ -567,7 +567,7 @@ export function SafetyReportTemplate({
 
       default:
         return (
-          <div className="p-6 bg-white rounded-lg shadow-sm text-center text-neutral-500 py-12">
+          <div className="p-6 bg-white dark:bg-neutral-900 rounded-lg shadow-sm text-center text-neutral-500 py-12">
             <p>{selectedTemplate.sections.find(s => s.id === sectionId)?.title}</p>
             <p className="text-sm mt-2">该章节内容待完善</p>
           </div>

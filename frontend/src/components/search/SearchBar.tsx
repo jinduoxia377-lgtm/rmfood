@@ -226,7 +226,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
       {/* 搜索输入框 */}
       <div
         className={clsx(
-          'relative flex items-center gap-3 bg-white border rounded-lg shadow-sm transition-all duration-200',
+          'relative flex items-center gap-3 bg-white dark:bg-neutral-900 border rounded-lg shadow-sm transition-all duration-200',
           'focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200',
           isFocused && 'shadow-md',
         )}
@@ -273,7 +273,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
               'px-4 py-2 mr-1 rounded-lg transition-colors',
               hasActiveFilters
                 ? 'bg-secondary-container text-secondary-main'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200',
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200',
             )}
           >
             <Filter className="w-4 h-4" />
@@ -290,7 +290,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
 
       {/* 下拉面板 */}
       {isFocused && (showSuggestions || searchHistory.length > 0) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden">
           {/* 搜索建议 */}
           {suggestions.length > 0 && (
             <div className="p-2">
@@ -299,7 +299,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={`${suggestion.type}-${suggestion.id}`}
                   onClick={() => handleSelectSuggestion(suggestion)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
                 >
                   <span className={clsx('px-2 py-0.5 text-xs rounded-full', TYPE_CONFIG[suggestion.type].color)}>
                     {TYPE_CONFIG[suggestion.type].label}
@@ -336,7 +336,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={item.id}
                   onClick={() => handleSelectHistory(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
                 >
                   <Search className="w-4 h-4 text-neutral-400" />
                   <span className="flex-1 text-neutral-700">{item.query}</span>
@@ -356,7 +356,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={item.id}
                   onClick={() => handleSelectHistory(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
                 >
                   <TrendingUp className="w-4 h-4 text-orange-400" />
                   <span className="flex-1 text-neutral-700">{item.query}</span>
@@ -369,7 +369,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
 
       {/* 筛选面板 */}
       {showFilterPanel && (
-        <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-neutral-200">
+        <div className="mt-3 p-4 bg-slate-50 dark:bg-neutral-800 rounded-xl border border-neutral-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-neutral-700">筛选条件</h3>
             {hasActiveFilters && (
@@ -480,7 +480,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   }))
                 }
                 className={clsx(
-                  'px-3 py-2 text-sm border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors',
+                  'px-3 py-2 text-sm border border-neutral-200 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 transition-colors',
                 )}
               >
                 <ChevronDown className={clsx('w-4 h-4', filters.sortOrder === 'asc' && 'rotate-180')} />

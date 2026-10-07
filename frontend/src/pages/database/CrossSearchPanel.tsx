@@ -38,7 +38,7 @@ const ACTIVITY_COLORS: Record<string, string> = {
 const RELEVANCE_BADGES: Record<string, { color: string; label: string }> = {
   high: { color: "bg-success-100 text-success-700 border-green-300", label: "高相关" },
   medium: { color: "bg-yellow-100 text-yellow-700 border-yellow-300", label: "中相关" },
-  low: { color: "bg-neutral-100 text-neutral-600 border-neutral-300", label: "弱相关" },
+  low: { color: "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 border-neutral-300", label: "弱相关" },
 };
 
 function getRelevanceTier(score: number): string {
@@ -238,7 +238,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
             {Array.from(new Set(result.related_peptides.map((p) => p.activity_type))).map((act) => (
               <span
                 key={act}
-                className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[act] || "bg-neutral-100 text-neutral-600"}`}
+                className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[act] || "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"}`}
               >
                 {act}
               </span>
@@ -283,7 +283,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                         <div className="text-xs text-neutral-400">{item.source_organism}</div>
                       </td>
                       <td className="px-4 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[item.activity_type] || "bg-neutral-100 text-neutral-600"}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[item.activity_type] || "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"}`}>
                           {item.activity_type}
                         </span>
                       </td>
@@ -309,7 +309,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
 
         {/* 代表性化合物 */}
         {result.compounds.length > 0 && (
-          <div className="bg-slate-50 rounded-lg px-4 py-3">
+          <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg px-4 py-3">
             <p className="text-xs text-neutral-400 mb-1.5">代表性化合物:</p>
             <div className="flex gap-2 flex-wrap">
               {result.compounds.slice(0, 10).map((c, i) => (
@@ -373,7 +373,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                 <span className={`w-16 text-xs font-medium px-1.5 py-0.5 rounded ${
                   item.type === "source" ? "bg-secondary-50 text-secondary-600" :
                   item.type === "sequence" ? "bg-accent-50 text-accent-600" :
-                  "bg-neutral-100 text-neutral-600"
+                  "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"
                 }`}>
                   {item.type === "source" ? "来源" :
                    item.type === "sequence" ? "序列" : item.type}
@@ -414,7 +414,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                 setQuery(term);
                 doSearch(term);
               }}
-              className="text-xs px-2.5 py-1 bg-neutral-100 text-neutral-600 rounded-md hover:bg-neutral-200 transition-colors"
+              className="text-xs px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 rounded-md hover:bg-neutral-200 transition-colors"
             >
               {term}
             </button>

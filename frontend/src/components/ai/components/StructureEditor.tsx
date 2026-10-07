@@ -105,7 +105,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
   };
 
   return (
-    <div className="flex h-[600px] bg-white rounded-lg shadow-sm border border-neutral-200">
+    <div className="flex h-[600px] bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200">
       <div className="w-64 border-r border-neutral-200 p-4 overflow-y-auto">
         <h3 className="text-sm font-semibold text-neutral-900 mb-3">章节库</h3>
         <div className="space-y-1">
@@ -113,7 +113,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
             <button
               key={section.type}
               onClick={() => handleAddFromLibrary(section.type)}
-              className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 transition-colors group"
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 transition-colors group"
             >
               <div className="flex items-center space-x-2">
                 <span className="text-lg">{section.icon}</span>
@@ -131,7 +131,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => structure.resetToTemplate(initialSections)}
-              className="px-3 py-1.5 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-md hover:bg-neutral-200"
+              className="px-3 py-1.5 text-xs font-medium text-neutral-700 bg-neutral-100 dark:bg-neutral-800 rounded-md hover:bg-neutral-200"
             >
               重置模板
             </button>
@@ -163,7 +163,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                     selectedSectionId === section.id
                       ? 'border-blue-500 bg-secondary-50'
                       : section.visible
-                      ? 'border-neutral-200 hover:border-neutral-300 bg-white'
+                      ? 'border-neutral-200 hover:border-neutral-300 bg-white dark:bg-neutral-900'
                       : 'border-neutral-100 bg-slate-50 opacity-60'
                   } ${draggedId === section.id ? 'opacity-50' : ''}`}
                   style={{ paddingLeft: `${(section.level || 0) * 20 + 12}px` }}
@@ -180,7 +180,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                     </span>
 
                     {!section.required && (
-                      <span className="px-1.5 py-0.5 bg-neutral-100 text-neutral-500 text-xs rounded">
+                      <span className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded">
                         可选
                       </span>
                     )}
@@ -275,7 +275,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
         </div>
 
         {selectedSectionId && (
-          <div className="border-t border-neutral-200 p-4 bg-slate-50">
+          <div className="border-t border-neutral-200 p-4 bg-slate-50 dark:bg-neutral-800">
             <SectionPropertyPanel
               section={structure.getSectionById(selectedSectionId)!}
               onUpdate={(updates) => structure.updateSection(selectedSectionId, updates)}

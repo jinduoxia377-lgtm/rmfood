@@ -572,7 +572,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                             <span className={`px-2 py-0.5 rounded-full ${
                               project.status === 'completed' ? 'bg-success-100 text-success-700' :
                               project.status === 'in_progress' ? 'bg-secondary-100 text-secondary-700' :
-                              project.status === 'draft' ? 'bg-neutral-100 text-neutral-700' :
+                              project.status === 'draft' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700' :
                               'bg-error-100 text-error-700'
                             }`}>
                               {project.status === 'completed' ? '已完成' :
@@ -605,7 +605,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                             </span>
                           ))}
                           {project.target_effects.length > 3 && (
-                            <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 rounded text-xs">
+                            <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 rounded text-xs">
                               +{project.target_effects.length - 3}
                             </span>
                           )}
@@ -623,7 +623,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                         </button>
                         <button
                           onClick={() => handleArchiveProject(project.id)}
-                          className="px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded hover:bg-neutral-200 flex items-center justify-center gap-1.5 text-sm"
+                          className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 rounded hover:bg-neutral-200 flex items-center justify-center gap-1.5 text-sm"
                           title="归档项目"
                         >
                           <Archive className="w-4 h-4" />
@@ -647,7 +647,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                     <button
                       onClick={() => loadProjects(projectPage - 1, statusFilter)}
                       disabled={projectPage <= 1}
-                      className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100"
+                      className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800"
                     >
                       上一页
                     </button>
@@ -657,7 +657,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                     <button
                       onClick={() => loadProjects(projectPage + 1, statusFilter)}
                       disabled={projectPage * 12 >= projectTotal}
-                      className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100"
+                      className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800"
                     >
                       下一页
                     </button>

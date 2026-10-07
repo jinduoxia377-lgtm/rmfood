@@ -157,7 +157,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   const currentStep: InferenceStep | undefined = filteredSteps[currentStepIndex];
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-neutral-200 overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 overflow-hidden">
       {/* 头部 */}
       <div className="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-center justify-between">
@@ -176,7 +176,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       </div>
 
       {/* 统计信息栏 */}
-      <div className="px-6 py-3 bg-slate-50 border-b border-neutral-200">
+      <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
         <div className="flex flex-wrap items-center gap-4">
           <StatItem icon={Hash} label="总步骤" value={stats.totalSteps} />
           <StatItem icon={Lightbulb} label="思考" value={stats.thoughtCount} color="text-warning-600" />
@@ -208,7 +208,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="px-3 py-1 bg-neutral-100 rounded-full text-sm font-medium text-neutral-700 min-w-[80px] text-center">
+          <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-full text-sm font-medium text-neutral-700 min-w-[80px] text-center">
             {currentStepIndex + 1} / {filteredSteps.length}
           </span>
           <button
@@ -250,7 +250,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
               'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors',
               showFilter
                 ? 'bg-secondary-50 border-blue-300 text-secondary-700'
-                : 'border-neutral-200 text-neutral-600 hover:bg-slate-50',
+                : 'border-neutral-200 text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800',
             )}
           >
             <Filter className="w-4 h-4" />
@@ -260,14 +260,14 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
           {/* 展开/折叠按钮 */}
           <button
             onClick={handleExpandAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800 transition-colors"
           >
             <ChevronDown className="w-4 h-4" />
             展开全部
           </button>
           <button
             onClick={handleCollapseAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800 transition-colors"
           >
             <ChevronUp className="w-4 h-4" />
             折叠全部
@@ -277,7 +277,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
       {/* 过滤器面板 */}
       {showFilter && (
-        <div className="px-6 py-3 bg-slate-50 border-b border-neutral-200">
+        <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
           <div className="flex flex-wrap gap-6">
             {/* 类型过滤 */}
             <div>
@@ -296,7 +296,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.stepTypes.includes(type)
                         ? 'bg-secondary-100 border-blue-300 text-secondary-700'
-                        : 'bg-white border-neutral-200 text-neutral-500 hover:bg-slate-50',
+                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-slate-50 dark:bg-neutral-800',
                     )}
                   >
                     {typeLabels[type]}
@@ -322,7 +322,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.statuses.includes(status)
                         ? 'bg-success-100 border-green-300 text-success-700'
-                        : 'bg-white border-neutral-200 text-neutral-500 hover:bg-slate-50',
+                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-slate-50 dark:bg-neutral-800',
                     )}
                   >
                     {statusLabels[status]}
@@ -337,7 +337,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       {/* 步骤列表 */}
       <div
         ref={stepsContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50"
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-neutral-800/50"
       >
         {filteredSteps.length > 0 ? (
           filteredSteps.map((step, index) => (
@@ -362,7 +362,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
       {/* 当前步骤信息栏 */}
       {currentStep && (
-        <div className="px-6 py-3 border-t border-neutral-200 bg-white">
+        <div className="px-6 py-3 border-t border-neutral-200 bg-white dark:bg-neutral-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-neutral-700">当前步骤:</span>
