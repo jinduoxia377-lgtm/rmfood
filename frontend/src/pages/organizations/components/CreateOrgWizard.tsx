@@ -212,7 +212,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                 />
                 <button
                   onClick={() => setInviteEmail('')}
-                  className="px-3 py-2 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
+                  className="px-3 py-2 text-sm text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg transition-colors"
                 >
                   清空
                 </button>
@@ -266,7 +266,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
         {/* 操作按钮 */}
         <div className="flex justify-between gap-3 pt-2">
           {step !== 'basic' && step !== 'success' ? (
-            <button onClick={() => { const steps: WizardStep[] = ['basic', 'details', 'members', 'confirm']; const idx = steps.indexOf(step); if (idx > 0) setStep(steps[idx - 1]); }} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors">
+            <button onClick={() => { const steps: WizardStep[] = ['basic', 'details', 'members', 'confirm']; const idx = steps.indexOf(step); if (idx > 0) setStep(steps[idx - 1]); }} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg transition-colors">
               上一步
             </button>
           ) : <div />}

@@ -53,7 +53,7 @@ export default function HistoryPanel({
                 <p className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate">{entry.description}</p>
                 <span className="text-[8px] text-neutral-400">{entry.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
               </div>
-              {!entry.reversible && <span className="text-[8px] px-1 py-0.5 rounded bg-neutral-100 text-neutral-400 shrink-0">只读</span>}
+              {!entry.reversible && <span className="text-[8px] px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-400 shrink-0">只读</span>}
             </div>
           )
         })}

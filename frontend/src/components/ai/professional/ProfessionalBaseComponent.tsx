@@ -115,7 +115,7 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected renderEmptyState(message: string = t('common.noData')): ReactNode {
     return (
-      <div className="bg-slate-50 border border-neutral-200 rounded-lg p-8 text-center">
+      <div className="bg-slate-50 dark:bg-neutral-800 border border-neutral-200 rounded-lg p-8 text-center">
         <svg className="w-12 h-12 text-neutral-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
@@ -126,7 +126,7 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected renderConfidenceBadge(confidence: number): ReactNode {
     const percentage = Math.round(confidence * 100);
-    let colorClass = 'bg-neutral-100 text-neutral-800';
+    let colorClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800';
 
     if (percentage >= 80) {
       colorClass = 'bg-success-100 text-success-800';
@@ -144,7 +144,7 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
   }
 
   protected renderToxicityBadge(toxicity: string): ReactNode {
-    let colorClass = 'bg-neutral-100 text-neutral-800';
+    let colorClass = 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800';
 
     switch (toxicity) {
       case 'none':
@@ -175,7 +175,7 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
     const colorMap: Record<string, string> = {
       cold: 'bg-secondary-100 text-secondary-800',
       cool: 'bg-cyan-100 text-cyan-800',
-      neutral: 'bg-neutral-100 text-neutral-800',
+      neutral: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800',
       warm: 'bg-orange-100 text-orange-800',
       hot: 'bg-error-100 text-error-800',
     };

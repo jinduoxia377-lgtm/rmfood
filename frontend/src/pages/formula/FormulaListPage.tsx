@@ -95,11 +95,11 @@ type TableSortDir = 'asc' | 'desc';
 
 // ── 常量配置 ──
 const STATUS_OPTIONS = [
-  { value: 'draft', label: '草稿', color: 'bg-neutral-100 text-neutral-700' },
+  { value: 'draft', label: '草稿', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700' },
   { value: 'pending_review', label: '待审核', color: 'bg-warning-100 text-warning-700' },
   { value: 'approved', label: '已通过', color: 'bg-primary-100 text-primary-700' },
   { value: 'rejected', label: '已驳回', color: 'bg-error-100 text-error-700' },
-  { value: 'archived', label: '已归档', color: 'bg-neutral-100 text-neutral-600' },
+  { value: 'archived', label: '已归档', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600' },
   { value: 'cancelled', label: '已取消', color: 'bg-neutral-100 text-neutral-600' },
 ];
 
@@ -902,7 +902,7 @@ export default function FormulaListPage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
               <h2 className="text-xl font-semibold leading-snug tracking-tight">配方管理</h2>
-              <span className="text-xs font-medium text-white/75 bg-white/15 px-2.5 py-0.5 rounded-full tabular-nums">
+              <span className="text-xs font-medium text-white/75 bg-white dark:bg-neutral-900/15 px-2.5 py-0.5 rounded-full tabular-nums">
                 {total} 条
               </span>
             </div>

@@ -71,7 +71,7 @@ function HerbRoleBadge({ role }: { role: string }) {
     <span
       className={cn(
         'px-2 py-0.5 rounded text-xs font-medium',
-        colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-700',
+        colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300',
       )}
     >
       {role}

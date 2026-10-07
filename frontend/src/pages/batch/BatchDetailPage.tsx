@@ -105,7 +105,7 @@ export default function BatchDetailPage() {
               </button>
               <button
                 onClick={() => navigate('/batches/new')}
-                className="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                className="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
               >
                 新建批记录
               </button>
@@ -147,10 +147,10 @@ export default function BatchDetailPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => window.print()} className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-sm text-white transition-colors flex items-center gap-1">
+            <button onClick={() => window.print()} className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-white transition-colors flex items-center gap-1">
               <Printer size={14} /> 打印
             </button>
-            <button className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-sm text-white transition-colors flex items-center gap-1">
+            <button className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-white transition-colors flex items-center gap-1">
               <Download size={14} /> 导出
             </button>
           </div>
@@ -227,7 +227,7 @@ export default function BatchDetailPage() {
               {samples.items.map(sample => (
                 <div
                   key={sample.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-primary">{sample.sample_code}</span>

@@ -129,7 +129,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">导出数据</h3>
@@ -274,7 +274,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
               {columns.map((col) => (
                 <label
                   key={col.key}
-                  className={`flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-slate-50 ${
+                  className={`flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-slate-50 dark:bg-neutral-800 ${
                     selectedColumns.includes(col.key) ? 'bg-secondary-50' : ''
                   }`}
                 >
@@ -347,11 +347,11 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
           </div>
         )}
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-neutral-200 flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-200 flex justify-end space-x-3">
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-md hover:bg-slate-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
             取消
           </button>

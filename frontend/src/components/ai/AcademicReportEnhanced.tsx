@@ -217,7 +217,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
           </h2>
           <button
             onClick={() => setShowSettings(false)}
-            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             <ArrowLeftRight className="w-5 h-5 rotate-90" />
           </button>
@@ -321,7 +321,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
         <div className="p-6 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-3">
           <button
             onClick={() => setShowSettings(false)}
-            className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             关闭
           </button>
@@ -385,13 +385,13 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
           <div className="flex gap-2">
             <button
               onClick={() => setShowSettings(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900/20 hover:bg-white dark:bg-neutral-900/30 rounded-lg transition-colors"
             >
               <Settings className="w-5 h-5" />
               设置
             </button>
             {onClose && (
-              <button onClick={onClose} className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors">
+              <button onClick={onClose} className="p-2 bg-white dark:bg-neutral-900/20 hover:bg-white dark:bg-neutral-900/30 rounded-lg transition-colors">
                 <ArrowLeftRight className="w-5 h-5 rotate-90" />
               </button>
             )}
@@ -448,7 +448,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                     <button
                       key={option.value}
                       onClick={() => handleExport(option.value)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600 transition-colors first:rounded-t-xl last:rounded-b-xl"
                     >
                       {option.icon}
                       <span>{option.label}</span>

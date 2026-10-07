@@ -845,6 +845,8 @@ function DeepAnalysisView() {
   );
 
   const ss = result.secondary_structure?.percentages || {};
+  // 后端 deep 接口把理化性质拆在 basic_properties / physicochemical_profile 两处
+  const bpProps = result.basic_properties || {};
   const pp = result.physicochemical_profile || {};
   const sa = result.safety_assessment || {};
   const bp = result.bioactivity_predictions || {};
@@ -856,14 +858,14 @@ function DeepAnalysisView() {
         <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           {[
-            ['分子量 (Da)', result.molecular_weight?.toFixed(2) ?? '-'],
-            ['LogP', pp?.logp?.toFixed(3)],
-            ['GRAVY', pp?.gravy?.toFixed(3)],
-            ['不稳定指数', pp?.instability_index?.toFixed(1)],
-            ['代数指数', pp?.aliphatic_index?.toFixed(1)],
-            ['消光系数', pp?.extinction_coefficient?.toFixed(0)],
-            ['等电点', result.isoelectric_point?.toFixed(2) ?? '-'],
-            ['净电荷(pH7)', pp?.net_charge?.toFixed(1)],
+            ['分子量 (Da)', bpProps.molecular_weight?.toFixed(2)],
+            ['LogP', bpProps.logp?.toFixed(3)],
+            ['GRAVY', bpProps.gravy?.toFixed(3)],
+            ['不稳定指数', bpProps.instability_index?.toFixed(1)],
+            ['代数指数', bpProps.aliphatic_index?.toFixed(1)],
+            ['消光系数', pp.extinction_coefficient?.toFixed(0)],
+            ['等电点', pp.isoelectric_point?.toFixed(2)],
+            ['净电荷(pH7)', pp.net_charge_at_ph7?.toFixed(1)],
           ].map(([label, val]) => (
             <div key={label} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
               <div className="text-[var(--text-muted)]">{label}</div>
@@ -914,14 +916,15 @@ function DeepAnalysisView() {
           <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
           <div className="space-y-2 text-xs">
             {[
-              ['综合得分', `${(os.composite ?? 0).toFixed(2)}`],
-              ['功能得分', `${(os.functional ?? 0).toFixed(2)}`],
-              ['安全得分', `${(os.safety_score ?? 0).toFixed(2)}`],
-              ['口服生物利用度', sa?.oral_bioavailability ?? 'N/A'],
-              ['毒性模式', sa?.toxicity_pattern ?? 'N/A'],
-              ['免疫原性风险', `${((sa?.immunogenicity_risk ?? 0) * 100).toFixed(0)}%`, sa?.immunogenicity_risk && sa.immunogenicity_risk > 0.5 ? 'text-red-500' : 'text-green-500'],
-            ].map(([label, val, cls]: any) => (
-              <div key={label} className={`flex justify-between ${cls ? cls : ''}`}>
+              ['综合得分', (os.composite ?? 0).toFixed(2)],
+              ['稳定性得分', (os.stability ?? 0).toFixed(2)],
+              ['安全得分', (os.safety ?? 0).toFixed(2)],
+              ['类药性得分', (os.druglikeness ?? 0).toFixed(2)],
+              ['风险等级', sa?.risk_level ?? 'N/A'],
+              ['过敏风险', `${((sa?.allergenicity_risk ?? 0) * 100).toFixed(0)}%`],
+              ['免疫原性风险', `${((sa?.immunogenicity_risk ?? 0) * 100).toFixed(0)}%`],
+            ].map(([label, val]: any) => (
+              <div key={label} className="flex justify-between">
                 <span className="text-[var(--text-muted)]">{label}</span>
                 <span className="font-mono font-medium">{String(val)}</span>
               </div>

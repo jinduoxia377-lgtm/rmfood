@@ -74,7 +74,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">分享报告</h3>
@@ -130,7 +130,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     value={currentShareSettings.link || ''}
                     readOnly
                     placeholder="点击生成按钮创建分享链接..."
-                    className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg bg-slate-50 text-sm"
+                    className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg bg-slate-50 dark:bg-neutral-800 text-sm"
                   />
                   <button
                     onClick={handleCopyLink}
@@ -243,7 +243,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-4">
+              <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-neutral-700 mb-3">权限说明</h4>
                 <div className="space-y-2 text-xs text-neutral-600">
                   <div className="flex items-start space-x-2">
@@ -347,7 +347,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 };
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: string }> = ({ title, value, icon }) => (
-  <div className="bg-slate-50 rounded-lg p-4 text-center">
+  <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4 text-center">
     <div className="text-2xl mb-1">{icon}</div>
     <div className="text-display font-semibold text-neutral-900">{value.toLocaleString()}</div>
     <div className="text-xs text-neutral-500 mt-1">{title}</div>

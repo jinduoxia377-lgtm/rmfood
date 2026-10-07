@@ -181,7 +181,7 @@ export function FormulaTestPage() {
                       className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors text-left ${
                         selectedFormulaId === f.id
                           ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                          : 'border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                          : 'border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50'
                       }`}
                     >
                       <div>
@@ -193,7 +193,7 @@ export function FormulaTestPage() {
                         <span className={`px-2 py-0.5 rounded-full ${
                           f.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
                           f.status === 'DRAFT' ? 'bg-amber-100 text-amber-700' :
-                          'bg-neutral-100 text-neutral-600'
+                          'bg-neutral-100 dark:bg-neutral-800 text-neutral-600'
                         }`}>{f.status || '未知'}</span>
                       </div>
                     </button>

@@ -94,7 +94,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
           </CardHeader>
           {showQR && (
             <CardContent className="flex justify-center">
-              <div className="p-4 bg-white rounded-xl border border-neutral-200">
+              <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200">
                 <div className="relative">
                   <img
                     src={qrCodeUrl}
@@ -131,7 +131,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleShare('mail')}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-error-50 dark:bg-error-500/10 flex items-center justify-center">
                   <Mail size={20} className="text-error-500" />
@@ -141,7 +141,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
 
               <button
                 onClick={() => handleShare('message')}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-success-50 dark:bg-success-500/10 flex items-center justify-center">
                   <MessageCircle size={20} className="text-success-500" />
@@ -151,7 +151,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
 
               <button
                 onClick={handleCopyLink}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
               >
                 <div className="w-10 h-10 rounded-full bg-secondary-50 dark:bg-secondary-500/10 flex items-center justify-center">
                   <Share2 size={20} className="text-secondary-500" />

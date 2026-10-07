@@ -58,7 +58,7 @@ function DetailModal({
             <h3 className="font-semibold text-sm truncate">{title}</h3>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}
-            className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors">
+            className="text-white/80 hover:text-white hover:bg-white dark:bg-neutral-900/20 rounded-lg transition-colors">
             <X size={16} />
           </Button>
         </div>
@@ -995,7 +995,7 @@ export default function RegulationsPage() {
                         .sort(([, a], [, b]) => Number(a) - Number(b))
                         .filter(([, mg]) => !standardSearch || String(mg).includes(standardSearch))
                         .map(([name, mg], i) => (
-                          <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                          <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/30 transition-colors">
                             <td className="px-4 py-2.5 font-medium text-text-primary">{name}</td>
                             <td className="px-4 py-2.5 tabular-nums font-semibold text-success-600 dark:text-success-400">{Number(mg).toLocaleString()}</td>
                             <td className="px-4 py-2.5 text-text-muted text-xs">卫健委药食同源目录（2023版）</td>
@@ -1053,7 +1053,7 @@ export default function RegulationsPage() {
                       ) : filteredProhibited.length === 0 ? (
                         <tr><td colSpan={2} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
                       ) : filteredProhibited.map((p: any, i: number) => (
-                        <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                        <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/30 transition-colors">
                           <td className="px-4 py-2.5">
                             <div className="flex flex-wrap gap-1.5">
                               {p.pair.map((n: string, j: number) => (

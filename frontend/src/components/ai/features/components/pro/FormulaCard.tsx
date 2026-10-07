@@ -58,13 +58,13 @@ export default function FormulaCard({ data }: { data: FormulaData }) {
           </div>
           <div className="flex items-center gap-1">
             <button onClick={handleSave}
-              className={`p-1.5 rounded-lg transition-all ${saved ? 'bg-success-100 text-success-600' : 'hover:bg-white/60 text-neutral-400 hover:text-neutral-600'}`}
+              className={`p-1.5 rounded-lg transition-all ${saved ? 'bg-success-100 text-success-600' : 'hover:bg-white dark:bg-neutral-900/60 text-neutral-400 hover:text-neutral-600'}`}
               title={saved ? '已保存' : '保存配方'}
             >
               {saved ? <Download className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
             </button>
             <button onClick={() => setExpanded(!expanded)}
-              className="p-1.5 rounded-lg hover:bg-white/60 text-neutral-400 hover:text-neutral-600 transition-colors">
+              className="p-1.5 rounded-lg hover:bg-white dark:bg-neutral-900/60 text-neutral-400 hover:text-neutral-600 transition-colors">
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           </div>
@@ -121,10 +121,10 @@ export default function FormulaCard({ data }: { data: FormulaData }) {
             <button className="text-[11px] flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 hover:bg-primary-100 transition-colors">
               <Save className="w-3 h-3" /> 保存到配方库
             </button>
-            <button className="text-[11px] flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 transition-colors">
+            <button className="text-[11px] flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:bg-neutral-800 transition-colors">
               <Plus className="w-3 h-3" /> 创建实验
             </button>
-            <button className="text-[11px] flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 transition-colors">
+            <button className="text-[11px] flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:bg-neutral-800 transition-colors">
               <Download className="w-3 h-3" /> 导出 PDF
             </button>
           </div>
@@ -134,7 +134,7 @@ export default function FormulaCard({ data }: { data: FormulaData }) {
       {/* 折叠提示 */}
       {!expanded && (
         <button onClick={() => setExpanded(true)}
-          className="w-full py-1.5 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 bg-slate-50/50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-1"
+          className="w-full py-1.5 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 bg-slate-50/50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-1"
         >
           <ChevronDown className="w-3 h-3" /> 展开配方详情
         </button>

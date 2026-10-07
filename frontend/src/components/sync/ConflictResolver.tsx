@@ -221,7 +221,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
       return (
         <div className="space-y-1">
           {value.map((item, idx) => (
-            <div key={idx} className="text-sm bg-slate-50 px-2 py-1 rounded">
+            <div key={idx} className="text-sm bg-slate-50 dark:bg-neutral-800 px-2 py-1 rounded">
               {typeof item === 'object' ? JSON.stringify(item, null, 2) : String(item)}
             </div>
           ))}
@@ -231,7 +231,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
     if (typeof value === 'object') {
       return (
-        <pre className="text-xs bg-slate-50 p-2 rounded overflow-auto max-h-40">{JSON.stringify(value, null, 2)}</pre>
+        <pre className="text-xs bg-slate-50 dark:bg-neutral-800 p-2 rounded overflow-auto max-h-40">{JSON.stringify(value, null, 2)}</pre>
       );
     }
 
@@ -320,7 +320,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {conflict.conflictingFields.map((field) => (
-                  <div key={field} className="border rounded p-3 bg-white">
+                  <div key={field} className="border rounded p-3 bg-white dark:bg-neutral-900">
                     <div className="font-medium text-sm mb-2 text-neutral-800">{field}</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">

@@ -284,7 +284,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
       {/* Header */}
       <div className="p-6 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
+          <div className="p-3 bg-white dark:bg-neutral-900/20 rounded-xl backdrop-blur">
             <Microscope className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -307,7 +307,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
               onClick={() => setActiveMode(id as 'single' | 'batch' | 'pareto' | 'synergy' | 'solubility')}
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeMode === id
-                  ? 'bg-white text-accent-600 shadow-md'
+                  ? 'bg-white dark:bg-neutral-900 text-accent-600 shadow-md'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >

@@ -287,7 +287,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  </div>
  </div>
  </div>
- <div className="p-3 rounded-lg bg-neutral-100/70">
+ <div className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800/70">
  <div className="flex items-center gap-2 mb-2">
  <Pocket size={16} className="text-text-muted" />
  <span className="text-xs font-medium text-text-secondary">连接ID</span>
@@ -299,7 +299,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  </div>
 
  {/* 状态说明 */}
- <div className="mt-4 p-3 rounded-lg bg-neutral-100/50">
+ <div className="mt-4 p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800/50">
  <h4 className="text-xs font-semibold text-text-secondary mb-2">状态说明</h4>
  <div className="grid grid-cols-2 gap-2">
  <div className="flex items-center gap-2">

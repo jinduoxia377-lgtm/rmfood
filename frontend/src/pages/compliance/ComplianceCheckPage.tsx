@@ -181,7 +181,7 @@ export default function ComplianceCheckPage() {
             </div>
             {formulas.length > 0 && (
               <button onClick={() => setShowFormulas(!showFormulas)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white/15 hover:bg-white/25 rounded-full transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 rounded-full transition-colors">
                 <History size={12} />配方历史 ({formulas.length})
               </button>
             )}
@@ -460,7 +460,7 @@ export default function ComplianceCheckPage() {
                     </thead>
                     <tbody>
                       {Object.entries(dosageLimits).map(([name, limit]) => (
-                        <tr key={name} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                        <tr key={name} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50">
                           <td className="py-2 pr-3 text-neutral-700 dark:text-neutral-300 font-medium">{name}</td>
                           <td className="py-2 px-2 text-center font-mono text-warning-600 dark:text-warning-400">{limit}mg</td>
                           <td className="py-2 px-2 text-center"><span className="text-success-500 dark:text-success-400">允许</span></td>

@@ -166,7 +166,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             key={item.id}
              role="button" tabIndex={0} onClick={() => onSelect(item)}
             className={clsx(
-              'group relative flex items-start gap-4 p-4 bg-white border rounded-xl cursor-pointer transition-all duration-200',
+              'group relative flex items-start gap-4 p-4 bg-white dark:bg-neutral-900 border rounded-xl cursor-pointer transition-all duration-200',
               'hover:shadow-md hover:border-blue-200',
               selectedItems.has(item.id) && 'ring-2 ring-blue-500 border-blue-500',
             )}
@@ -220,7 +220,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                     {item.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 text-xs bg-neutral-100 text-neutral-600 rounded-full"
+                        className="px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 rounded-full"
                       >
                         {tag}
                       </span>
@@ -295,7 +295,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
       {/* 批量操作提示 */}
       {selectedItems.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-white border border-neutral-200 rounded-lg shadow-lg z-50">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg shadow-lg z-50">
           <span className="text-sm text-neutral-600">
             已选择 <span className="font-semibold">{selectedItems.size}</span> 项
           </span>
@@ -312,7 +312,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           )}
           <button
             onClick={() => setSelectedItems(new Set())}
-            className="px-4 py-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg transition-colors"
           >
             取消选择
           </button>

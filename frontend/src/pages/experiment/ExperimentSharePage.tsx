@@ -142,7 +142,7 @@ export default function ExperimentSharePage() {
                     <CardDescription>{dataPoints.length} 条数据</CardDescription>
                   </div>
                 </div>
-                <div className="flex bg-neutral-100 rounded-lg p-0.5">
+                <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
                   <button onClick={() => setDataView('table')} className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors', dataView === 'table' ? 'surface-card text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500')}>数据表</button>
                   <button onClick={() => setDataView('chart')} className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors', dataView === 'chart' ? 'surface-card text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500')}>图表</button>
                 </div>
@@ -163,7 +163,7 @@ export default function ExperimentSharePage() {
                     </thead>
                     <tbody>
                       {dataPoints.map((d: any) => (
-                        <tr key={d.id} className="border-b border-neutral-100 hover:bg-neutral-50/50 transition-colors">
+                        <tr key={d.id} className="border-b border-neutral-100 hover:bg-neutral-50 dark:bg-neutral-800/50 transition-colors">
                           <td className="py-2 px-3 font-medium text-neutral-900 dark:text-white">{d.parameter}</td>
                           <td className="py-2 px-3 text-neutral-700 font-mono">{d.value ?? '-'}</td>
                           <td className="py-2 px-3 text-neutral-500">{d.unit ?? '-'}</td>

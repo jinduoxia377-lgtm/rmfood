@@ -35,7 +35,7 @@ export function ShortcutHelp({ shortcuts }: ShortcutHelpProps) {
  {/* 快捷键帮助按钮 */}
  <button
  onClick={() => setIsOpen(true)}
- className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 transition-all duration-200"
+ className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 transition-all duration-200"
  style={{ color:'var(--text-secondary)' }}
  title="快捷键帮助"
  >
@@ -66,7 +66,7 @@ export function ShortcutHelp({ shortcuts }: ShortcutHelpProps) {
  </div>
  <button
  onClick={() => setIsOpen(false)}
- className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+ className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 transition-colors"
  >
  <X className="w-4 h-4" style={{ color:'var(--text-muted)' }} />
  </button>
@@ -94,7 +94,7 @@ export function ShortcutHelp({ shortcuts }: ShortcutHelpProps) {
  .map((part: string, i: number) => (
  <span
  key={i}
- className="px-2 py-1 rounded-md text-xs font-mono bg-neutral-100"
+ className="px-2 py-1 rounded-md text-xs font-mono bg-neutral-100 dark:bg-neutral-800"
  style={{ color:'var(--text-primary)' }}
  >
  {part}

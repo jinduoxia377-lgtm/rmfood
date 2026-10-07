@@ -31,9 +31,9 @@ function CoaStatsView() {
     return (
       <div className="grid grid-cols-4 gap-3 mb-6 animate-pulse">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl border p-4 h-20" />
+          <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl border p-4 h-20" />
         ))}
-        <div className="col-span-4 bg-white rounded-xl border p-4 h-16" />
+        <div className="col-span-4 bg-white dark:bg-neutral-900 rounded-xl border p-4 h-16" />
       </div>
     );
   }

@@ -2,7 +2,7 @@ import { useReviewStore } from '@/stores/reviewStore';
 import { CheckCircle, Clock, AlertTriangle, MessageSquare, Users } from 'lucide-react';
 
 const statusLabels: Record<string, { label: string; color: string; bgColor: string }> = {
-  pending: { label: '待提交', color: 'text-neutral-600', bgColor: 'bg-neutral-100' },
+  pending: { label: '待提交', color: 'text-neutral-600', bgColor: 'bg-neutral-100 dark:bg-neutral-800' },
   in_progress: { label: '评审中', color: 'text-secondary-600', bgColor: 'bg-secondary-100' },
   needs_revision: { label: '需修改', color: 'text-warning-600', bgColor: 'bg-warning-100' },
   completed: { label: '已完成', color: 'text-warning-600', bgColor: 'bg-warning-100' },
@@ -49,7 +49,7 @@ export function ReviewProgress() {
             </div>
             <div>
               <h3 className="font-semibold">评审进度</h3>
-              <span className={`inline-block px-2 py-1 text-xs rounded ${statusLabels[currentStatus]?.bgColor || 'bg-neutral-100'} ${statusLabels[currentStatus]?.color || 'text-neutral-600'}`}>
+              <span className={`inline-block px-2 py-1 text-xs rounded ${statusLabels[currentStatus]?.bgColor || 'bg-neutral-100 dark:bg-neutral-800'} ${statusLabels[currentStatus]?.color || 'text-neutral-600'}`}>
                 {statusLabels[currentStatus]?.label || '未知'}
               </span>
             </div>
@@ -88,7 +88,7 @@ export function ReviewProgress() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{stage.name}</span>
-                    <span className={`inline-block px-2 py-1 text-xs rounded ${statusLabels[stageStatus]?.bgColor || 'bg-neutral-100'} ${statusLabels[stageStatus]?.color || 'text-neutral-600'}`}>
+                    <span className={`inline-block px-2 py-1 text-xs rounded ${statusLabels[stageStatus]?.bgColor || 'bg-neutral-100 dark:bg-neutral-800'} ${statusLabels[stageStatus]?.color || 'text-neutral-600'}`}>
                       {statusLabels[stageStatus]?.label || '未知'}
                     </span>
                   </div>

@@ -189,7 +189,7 @@ function ChapterItem({
             ? 'bg-primary/10 text-primary'
             : isItemSelected
             ? 'bg-secondary-50 dark:bg-secondary-900/20'
-            : 'hover:bg-neutral-100 text-neutral-700',
+            : 'hover:bg-neutral-100 dark:bg-neutral-800 text-neutral-700',
         )}
         style={{ paddingLeft: `${depth * 16 + 12}px` }}
          role="button" tabIndex={0} onClick={() => !showBatchToolbar && onSelect(chapter.id)}
@@ -302,7 +302,7 @@ function ChapterItem({
                 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors',
                 selectedChapterId === section.id
                   ? 'bg-primary/5 text-primary'
-                  : 'hover:bg-slate-50 text-neutral-600',
+                  : 'hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600',
               )}
               style={{ paddingLeft: `${depth * 16 + 24}px` }}
                role="button" tabIndex={0} onClick={() => onSelect(section.id)}

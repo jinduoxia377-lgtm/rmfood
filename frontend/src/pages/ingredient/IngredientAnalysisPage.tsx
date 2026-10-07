@@ -133,7 +133,7 @@ export default function IngredientAnalysisPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900/15 flex items-center justify-center">
                 <Beaker className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -143,7 +143,7 @@ export default function IngredientAnalysisPage() {
             </div>
             {history.length > 0 && (
               <button onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white/15 hover:bg-white/25 text-white rounded-full transition-colors">
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-white rounded-full transition-colors">
                 <BookOpen size={12} />历史 ({history.length})
               </button>
             )}

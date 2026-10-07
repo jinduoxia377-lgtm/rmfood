@@ -179,7 +179,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={handleClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors">
+          <button onClick={handleClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg transition-colors">
             取消
           </button>
           <button

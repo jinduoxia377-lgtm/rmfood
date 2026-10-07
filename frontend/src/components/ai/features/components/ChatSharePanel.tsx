@@ -696,7 +696,7 @@ export function ChatSharePanel({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="关闭分享面板"
           >
             <X className="w-5 h-5 text-neutral-500" />
@@ -870,7 +870,7 @@ export function ChatSharePanel({
                 <div className="flex flex-col items-center space-y-4">
                   {/* 二维码图片 */}
                   <div className="relative group">
-                    <div className="p-4 bg-white rounded-2xl shadow-inner border-2 border-dashed border-neutral-200">
+                    <div className="p-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-inner border-2 border-dashed border-neutral-200">
                       <img src={qrCodeDataUrl} alt="分享二维码" className="w-48 h-48 rounded-lg" />
                     </div>
 
@@ -878,7 +878,7 @@ export function ChatSharePanel({
                     <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <button
                         onClick={handleDownloadQRCode}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-neutral-900 rounded-lg font-medium shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
+                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 text-neutral-900 rounded-lg font-medium shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
                       >
                         <Download className="w-4 h-4" />
                         <span>下载</span>
@@ -1026,7 +1026,7 @@ export function ChatSharePanel({
               </div>
               <button
                 onClick={() => setPopupPlatform(null)}
-                className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="p-1 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800"
               >
                 <X className="w-4 h-4 text-neutral-500" />
               </button>

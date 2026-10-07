@@ -442,7 +442,7 @@ const Pagination = memo(
           <button
             onClick={() => onPageChange(1)}
             disabled={page === 1}
-            className="p-1.5 rounded hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             title="首页"
           >
             <ChevronsLeft className="w-4 h-4" />
@@ -450,7 +450,7 @@ const Pagination = memo(
           <button
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="p-1.5 rounded hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             title="上一页"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -463,7 +463,7 @@ const Pagination = memo(
           <button
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages || totalPages === 0}
-            className="p-1.5 rounded hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             title="下一页"
           >
             <ChevronRight className="w-4 h-4" />
@@ -471,7 +471,7 @@ const Pagination = memo(
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={page === totalPages || totalPages === 0}
-            className="p-1.5 rounded hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             title="末页"
           >
             <ChevronsRight className="w-4 h-4" />

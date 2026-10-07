@@ -139,7 +139,7 @@ export function BatchOperations({
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
             selectedIds.size === 0
-              ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+              ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
               : 'bg-error-50 text-error-600 hover:bg-error-100',
           )}
         >
@@ -154,7 +154,7 @@ export function BatchOperations({
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
               selectedIds.size === 0
-                ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
                 : 'bg-secondary-50 text-secondary-600 hover:bg-secondary-100',
             )}
           >
@@ -193,7 +193,7 @@ export function BatchOperations({
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
             selectedIds.size === 0
-              ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+              ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
               : 'bg-success-50 text-success-600 hover:bg-success-100',
           )}
         >

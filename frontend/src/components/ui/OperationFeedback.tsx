@@ -137,7 +137,7 @@ export function OperationFeedback({
 
  {/* Error Code Display */}
  {code && (
- <div className="mt-2 inline-flex items-center px-2 py-1 rounded-md bg-neutral-100">
+ <div className="mt-2 inline-flex items-center px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800">
  <span className="text-xs font-mono text-text-secondary">{code}</span>
  </div>
  )}

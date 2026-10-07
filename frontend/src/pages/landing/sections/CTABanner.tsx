@@ -105,7 +105,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-name"
                         aria-label="请输入您的姓名"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="请输入您的姓名"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -116,7 +116,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-email"
                         aria-label="请输入您的公司邮箱"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="company@example.com"
                         type="email"
                         inputMode="email"
@@ -129,7 +129,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-company"
                         aria-label="请输入公司名称"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="请输入公司名称"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}

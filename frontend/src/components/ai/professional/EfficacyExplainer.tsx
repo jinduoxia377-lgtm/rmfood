@@ -180,7 +180,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
     const styles: Record<string, string> = {
       strong: 'bg-success-100 text-success-800',
       moderate: 'bg-yellow-100 text-yellow-800',
-      weak: 'bg-neutral-100 text-neutral-600',
+      weak: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600',
     };
 
     const labels: Record<string, string> = {
@@ -307,7 +307,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-white dark:bg-neutral-900/20 flex items-center justify-center">
               <BookOpen className="w-7 h-7 text-white" />
             </div>
             <div>

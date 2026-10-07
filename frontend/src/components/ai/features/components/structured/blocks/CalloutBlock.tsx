@@ -98,7 +98,7 @@ function CalloutBlock({ data }: CalloutBlockProps) {
             </div>
             <button
               onClick={handleCopy}
-              className="flex-shrink-0 p-1 rounded hover:bg-white/20 transition-colors"
+              className="flex-shrink-0 p-1 rounded hover:bg-white dark:bg-neutral-900/20 transition-colors"
               title="复制内容"
             >
               {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 opacity-50 hover:opacity-100" />}
@@ -116,7 +116,7 @@ function CalloutBlock({ data }: CalloutBlockProps) {
             onClick={() => setShowDetails(prev => !prev)}
             className="flex items-center gap-1 px-3 py-1.5 w-full text-left
               text-[10px] text-neutral-400 dark:text-neutral-500
-              hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              hover:bg-black/5 dark:hover:bg-white dark:bg-neutral-900/5 transition-colors"
           >
             {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             <span>{showDetails ? '收起详情' : '查看详情'}</span>

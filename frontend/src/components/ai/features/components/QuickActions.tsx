@@ -115,7 +115,7 @@ const QuickActions = memo(({
                 <FileText className="w-4 h-4" aria-hidden="true" />
                 <span>生成综合报告</span>
                 {formulaCount > 1 && (
-                  <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs font-mono">
+                  <span className="px-2 py-0.5 bg-white dark:bg-neutral-900/20 rounded-full text-xs font-mono">
                     {formulaCount}
                   </span>
                 )}

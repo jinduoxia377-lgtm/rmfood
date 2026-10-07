@@ -384,7 +384,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
         <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <button
             onClick={() => setShowImportDialog(!showImportDialog)}
-            className="w-full py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+            className="w-full py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             导入他人分享的配方
           </button>
@@ -539,7 +539,7 @@ export function ImportShareDialog({
           {error && <p className="text-sm text-error-500">{error}</p>}
 
           <div className="flex justify-end gap-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg">
+            <button onClick={onClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg">
               取消
             </button>
             <button

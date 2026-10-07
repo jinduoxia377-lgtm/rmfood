@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {/* 最后更新时间 */}
-            <div className="flex items-center gap-1.5 text-xs text-white/75 px-3 py-1.5 bg-white/10 rounded-lg">
+            <div className="flex items-center gap-1.5 text-xs text-white/75 px-3 py-1.5 bg-white dark:bg-neutral-900/10 rounded-lg">
               <Clock className="w-3.5 h-3.5" />
               <span>更新于 {lastFetched ? formatTime(lastFetched) : '--:--:--'}</span>
             </div>

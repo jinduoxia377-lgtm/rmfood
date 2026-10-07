@@ -245,7 +245,7 @@ function RecommendationPanel({
   return (
     <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
          role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
@@ -356,7 +356,7 @@ function RecommendationPanel({
                       }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-neutral-900 transition-transform ${
                           parameters[param.id] ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
@@ -429,7 +429,7 @@ function RecommendationPanel({
                           <button
                             key={idx}
                             onClick={() => handleLoadPreset(preset)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg"
                           >
                             {preset.name}
                           </button>

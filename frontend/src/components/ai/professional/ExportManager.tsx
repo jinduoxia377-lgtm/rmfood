@@ -212,7 +212,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedFormat === format
                   ? 'bg-secondary-container text-secondary-main'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
               {format.toUpperCase()}
@@ -244,7 +244,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
         </button>
 
         {showAdvanced && (
-          <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+          <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4 space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -290,7 +290,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
     const { customFilename } = this.state;
 
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-4 text-neutral-900">导出数据</h3>
 
         {this.renderFormatSelector()}

@@ -155,7 +155,7 @@ export default function PrivacyPage() {
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium transition-all text-left ${
                           activeSection === s.id
                             ? 'bg-emerald-50 text-emerald-700'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            : 'text-slate-600 hover:bg-slate-50 dark:bg-neutral-800 hover:text-slate-900'
                         }`}
                       >
                         <IconComp size={13} className="shrink-0 opacity-60" />

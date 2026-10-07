@@ -150,7 +150,7 @@ function DimensionBadge({ dimension }: { dimension: ThinkingDimension }) {
 }
 
 function StepTypeBadge({ type }: { type: ThinkingStepType }) {
-  const cfg = STEP_TYPE_CONFIG[type] || STEP_TYPE_CONFIG['analysis'] || { bgColor: 'bg-neutral-100', textColor: 'text-neutral-600', label: String(type || '未知'), icon: 'Brain' }
+  const cfg = STEP_TYPE_CONFIG[type] || STEP_TYPE_CONFIG['analysis'] || { bgColor: 'bg-neutral-100 dark:bg-neutral-800', textColor: 'text-neutral-600', label: String(type || '未知'), icon: 'Brain' }
   const TypeIcon = ICON_MAP[cfg.icon] || Brain
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.bgColor} ${cfg.textColor}`}>
@@ -566,7 +566,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
         <div className="flex items-center gap-2.5 text-white cursor-pointer"  role="button" tabIndex={0} onClick={onToggleVisibility}>
-          <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+          <div className="p-1.5 bg-white dark:bg-neutral-900/20 rounded-lg backdrop-blur-sm">
             <Brain className="w-5 h-5" />
           </div>
           <div>
@@ -578,7 +578,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] text-white/70 hidden sm:inline">{stats.avgConfidence > 0 ? `均置信度 ${Math.round(stats.avgConfidence * 100)}%` : ''}</span>
-          <button onClick={onToggleVisibility} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+          <button onClick={onToggleVisibility} className="p-1.5 hover:bg-white dark:bg-neutral-900/10 rounded-lg transition-colors">
             <ChevronDown className="w-4 h-4 text-white/80" />
           </button>
         </div>

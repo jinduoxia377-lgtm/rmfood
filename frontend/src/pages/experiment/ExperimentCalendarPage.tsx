@@ -61,7 +61,7 @@ export default function ExperimentCalendarPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/experiments" className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500">
+          <Link to="/experiments" className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors text-neutral-500">
             <ArrowLeft size={18} />
           </Link>
           <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function ExperimentCalendarPage() {
         <div className="space-y-3">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}><CardContent className="p-4"><div className="h-4 bg-neutral-100 rounded w-1/3 mb-2" /></CardContent></Card>
+              <Card key={i}><CardContent className="p-4"><div className="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-1/3 mb-2" /></CardContent></Card>
             ))
           ) : sortedExperiments.length === 0 ? (
             <Card>

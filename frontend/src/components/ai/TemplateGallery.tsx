@@ -280,7 +280,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
           </Select>
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 bg-neutral-100 rounded-md p-0.5">
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-md p-0.5">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
@@ -289,7 +289,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-sm' : ''}`}
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 shadow-sm' : ''}`}
             >
               <List size={16} />
             </button>
@@ -469,7 +469,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                   setSelectedTemplate(null);
                   setRenderResult(null);
                 }}
-                className="p-2 hover:bg-neutral-100 rounded-full"
+                className="p-2 hover:bg-neutral-100 dark:bg-neutral-800 rounded-full"
               >
                 <X size={20} />
               </button>

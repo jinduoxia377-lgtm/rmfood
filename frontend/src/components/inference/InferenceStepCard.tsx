@@ -65,7 +65,7 @@ const MemoizedInferenceStepCard = memo(({
     <div
       className={clsx(
         'group rounded-lg border transition-all duration-200 cursor-pointer',
-        isActive ? 'border-blue-400 bg-secondary-50 shadow-md' : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm',
+        isActive ? 'border-blue-400 bg-secondary-50 shadow-md' : 'border-neutral-200 bg-white dark:bg-neutral-900 hover:border-neutral-300 hover:shadow-sm',
         depth > 0 && 'ml-6 border-l-4',
       )}
       onClick={handleClick}
@@ -77,7 +77,7 @@ const MemoizedInferenceStepCard = memo(({
       >
         {/* 折叠/展开指示器 */}
         <button
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             handleToggle();
@@ -91,7 +91,7 @@ const MemoizedInferenceStepCard = memo(({
         </button>
 
         {/* 步骤索引 */}
-        <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-sm font-medium text-neutral-600">
+        <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-600">
           {index + 1}
         </span>
 
@@ -136,7 +136,7 @@ const MemoizedInferenceStepCard = memo(({
       >
         <div className="px-4 pb-4 pt-0">
           {/* 内容区域 */}
-          <div className="pl-15 mt-3 p-3 bg-slate-50 rounded-lg">
+          <div className="pl-15 mt-3 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
             <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">
               {content}
             </p>
@@ -212,7 +212,7 @@ const MemoizedInferenceStepCard = memo(({
                 {toolResult.data && (
                   <div className="mt-2">
                     <div className="text-xs font-medium text-neutral-600 mb-1">返回数据:</div>
-                    <pre className="text-xs text-neutral-700 bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
+                    <pre className="text-xs text-neutral-700 bg-white dark:bg-neutral-900 p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
                       {JSON.stringify(toolResult.data, null, 2)}
                     </pre>
                   </div>

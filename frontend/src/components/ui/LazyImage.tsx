@@ -58,7 +58,7 @@ export function LazyImage({
   return (
     <div
       ref={handleRef}
-      className={`relative overflow-hidden bg-neutral-100 ${className}`}
+      className={`relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 ${className}`}
       style={{ width, height }}
     >
       {!isLoaded && !hasError && (
@@ -84,7 +84,7 @@ export function LazyImage({
       )}
 
       {hasError && (
-        <div className="flex items-center justify-center w-full h-full bg-neutral-100">
+        <div className="flex items-center justify-center w-full h-full bg-neutral-100 dark:bg-neutral-800">
           <svg
             className="w-8 h-8 text-neutral-400"
             fill="none"

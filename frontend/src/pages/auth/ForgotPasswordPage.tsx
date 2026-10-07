@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-neutral-900/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg">
               <Icon name="Beaker" size={28} />
             </div>
             <div>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Link
                   to="/login"
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <Icon name="ArrowLeft" size={16} />
                 </Link>
