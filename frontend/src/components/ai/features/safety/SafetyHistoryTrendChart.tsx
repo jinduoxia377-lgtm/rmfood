@@ -38,20 +38,20 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
   const getTrendIcon = () => {
     if (trend === 'up') return <TrendingUp className="w-3 h-3 text-emerald-500" />
     if (trend === 'down') return <TrendingDown className="w-3 h-3 text-red-500" />
-    return <Minus className="w-3 h-3 text-neutral-400" />
+    return <Minus className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
   }
 
   const getTrendColor = () => {
     if (trend === 'up') return 'text-emerald-500'
     if (trend === 'down') return 'text-red-500'
-    return 'text-neutral-400'
+    return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
   }
 
   if (history.length < 2) {
     return (
       <div className={`rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 ${className}`}>
         <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-4 h-4 text-neutral-400" />
+          <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">安全趋势</span>
         </div>
         <p className="text-sm text-neutral-400 dark:text-neutral-500 py-8 text-center">
@@ -65,7 +65,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
     <div className={`rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-neutral-400" />
+          <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">安全合规趋势</span>
         </div>
         <div className="flex items-center gap-3 text-xs">
@@ -107,7 +107,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
                 <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs shadow-lg">
                   <p className="font-medium text-neutral-700 dark:text-neutral-200">{item.time}</p>
                   <p className="text-primary-500 font-semibold">{item.complianceRate}% 合规</p>
-                  <p className="text-neutral-400">{item.ingredients} 味原料</p>
+                  <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.ingredients} 味原料</p>
                 </div>
               )
             }}

@@ -257,7 +257,7 @@ export function BatchPeptideAnalyzer({
             <Dna className="w-4 h-4 text-primary-500" />
             肽序列批量分析
           </h3>
-          <span className="text-xs text-neutral-400">每行一条序列（如：ACEINL）</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">每行一条序列（如：ACEINL）</span>
         </div>
         <textarea
           value={inputText}
@@ -306,12 +306,12 @@ export function BatchPeptideAnalyzer({
           ].map(({ label, value, color }) => (
             <div key={label} className="text-center p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <div className={`text-lg font-bold tabular-nums ${color}`}>{value}</div>
-              <div className="text-[10px] text-neutral-400">{label}</div>
+              <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
             </div>
           ))}
           <div className="col-span-5">
             <Progress value={stats.rate} className="h-1.5" />
-            <div className="text-xs text-neutral-400 text-center mt-1">完成率 {stats.rate}%</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center mt-1">完成率 {stats.rate}%</div>
           </div>
         </div>
       )}
@@ -321,7 +321,7 @@ export function BatchPeptideAnalyzer({
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Clock className="w-4 h-4 text-neutral-400" />
+              <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               任务队列
               <Badge variant="neutral" className="text-[10px]">{tasks.length}</Badge>
             </h3>
@@ -383,7 +383,7 @@ export function BatchPeptideAnalyzer({
                     }`}>
                       {getQualityScore(task.result)?.toFixed(0)}
                     </span>
-                    <span className="text-neutral-400">分</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分</span>
                     <Badge
                       variant={(getQualityScore(task.result) ?? 0) >= 70 ? 'success' : 'warning'}
                       className="text-[10px]"
@@ -402,7 +402,7 @@ export function BatchPeptideAnalyzer({
 
                 {/* 时间 */}
                 {task.startedAt && task.completedAt && (
-                  <span className="text-neutral-400 flex-shrink-0">
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0">
                     {formatTime(task.completedAt - task.startedAt)}
                   </span>
                 )}
@@ -416,10 +416,10 @@ export function BatchPeptideAnalyzer({
       {tasks.length === 0 && (
         <Card className="p-8 text-center">
           <Dna className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             输入肽序列（如 ACEINL、RPVK）后点击「开始分析」
           </p>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
             支持拖拽文件上传 · 每行一条 · 自动去重
           </p>
         </Card>

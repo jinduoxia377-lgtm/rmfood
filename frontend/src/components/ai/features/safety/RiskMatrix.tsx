@@ -123,25 +123,25 @@ export function RiskMatrix({
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-neutral-500">风险等级:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">风险等级:</span>
             <span className={`ml-2 font-medium`} style={{ color: colorConfig.text }}>
               {hazard.level === 'low' ? '低' : hazard.level === 'medium' ? '中' : hazard.level === 'high' ? '高' : '未检测'}
             </span>
           </div>
           <div>
-            <span className="text-neutral-500">评分:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">评分:</span>
             <span className="ml-2 font-bold">{hazard.score}</span>
           </div>
         </div>
         {hazard.regulation && (
           <div className="text-sm">
-            <span className="text-neutral-500">法规依据:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">法规依据:</span>
             <span className="ml-2">{hazard.regulation}</span>
           </div>
         )}
         {hazard.limit !== undefined && hazard.actual !== undefined && (
           <div className="text-sm">
-            <span className="text-neutral-500">限值/实测:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">限值/实测:</span>
             <span className="ml-2">{hazard.limit} / {hazard.actual}</span>
           </div>
         )}

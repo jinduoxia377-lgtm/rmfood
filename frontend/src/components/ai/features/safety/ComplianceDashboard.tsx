@@ -130,7 +130,7 @@ export function ComplianceDashboard({
             <span className={`font-bold ${mainColor.text}`} style={{ fontSize: config.fontSize }}>
               {animatedRate}%
             </span>
-            <span className="text-xs text-neutral-500 mt-1">合规率</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">合规率</span>
           </div>
 
           {!isLoaded && animated && (
@@ -171,7 +171,7 @@ export function ComplianceDashboard({
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-neutral-500">
+                <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <span>{metric.region}</span>
                   <span className={`flex items-center gap-1 ${
                     metric.trend === 'up' ? 'text-success-600' :
