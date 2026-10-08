@@ -1136,6 +1136,14 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：safety 域控件复用情况良好——绝大多数组件已导入 UI 库（RegulationBrowser 5 个 UI 库导入、其余各 1 个），原生 button 稀少（最多 2 个），无控件复用缺失问题；留白/对齐继承自布局容器。本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。
 > **终态**：tsc 0 错（退出码 0）· `safety-audit-leaks` 漏配扫描 68 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与三个前序域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非 safety 域内部组件；本域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 14.96s）· vitest 29/29。
 
+> **2026-10-08 /ai thinking-viz + knowledge-prompt 子域样板轮登记**（提交 `3017a94`，主题令牌达标 + 视觉一致性）：承接 chat（426ecf3 + 4d951c8）、agent-workflow（0e5ef0f）、formula-generation（01d5dbe）、safety（f153d21）域样板轮，复用同一模板对 **thinking-viz（思维可视化）+ knowledge-prompt（知识/提示）子域** 做第五轮专业规范审计与修复（用户「继续下一步」确认：同模板推进下一子域）。审计方法：`thinking-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（9 文件 / 87 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 思维可视化：`ThinkingVisualizerV3`（27 处：展开/折叠 Chevron 同行双实例 / 子步骤标题 / 时间戳 / 相关度 / 反馈图标 ThumbsUp/Down/RotateCcw 保留 hover / 复杂度 / 依赖关系 / 完成度 / 置信度 / 筛选轴未选中 / 空态×2 / 兼容模式 / 导航提示 / desc）、`ThinkingVisualizer`（10 处：Chevron×2 / 分隔线边框 / 来源标题 / FileText / desc / 空态 / 统计行）、`DeepThinkingPanel`（6 处：Hover 揭示 / History·Copy·Download·X 图标标题 / 时间戳）
+>    - 提示/知识：`PromptLibrary`（20 处：Chevron×2 / BookOpen / 子类数 / 分区标题 / 统计行×2 / Search / X×2 / 空态×3 / 收藏未选中 hover / +N / 标签行 / Edit3 / Copy / 「分」/ 变量 placeholder）、`RAGKnowledgePanel`（10 处：副标题 / X / RefreshCw×2 / Search / 片段数 / 日期 / 展开 Chevron / 删除提示 / 统计行）、`SuggestionPanel`（7 处：平均质量分 / Copy / RefreshCw / ThumbsUp·Down / Chevron / desc）、`RecommendationPanel`（4 处：Chevron×2 / Info / 统计行）、`PreferenceLearner`（1 处）、`ThinkingWithInput`（2 处：默认态 text-neutral-500 border-neutral-300 / text-neutral-400）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。其中一个坑：ThinkinVisualizerV3 展开/折叠 Chevron 一行内两个 `text-neutral-400` 实例，首次脚本 `replace` 只替换首处（仅 ChevronDown 残留）；改用全局正则（`g` 标志）逐行替换所有文本灰阶后复扫 0 漏配。`ThinkinVisualizer.tsx` 的 `border-neutral-200/300` 边框补 `dark:border-neutral-700` 配对。期间一次误用 edit 注入额外 button 块导致该文件损坏，已 `git checkout` 恢复 HEAD 后重跑修正脚本。
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：thinking-viz 域多数组件（ThinkingVisualizerV3 10 原生 button / PromptLibrary 18 / RAGKnowledgePanel 7 / SuggestionPanel 7）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
+> **终态**：tsc 0 错（退出码 0）· `thinking-audit-leaks` 漏配扫描 87 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与四个前序域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非本子域内部组件；本子域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 8.16s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
