@@ -243,12 +243,12 @@ const StepCardV3: React.FC<{
                   <button onClick={(e) => { e.stopPropagation(); onToggle() }}
                     className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
                     title={isExpanded ? '收起子步骤' : '展开子步骤'}>
-                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-neutral-400" /> : <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />}
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> : <ChevronDown className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                   </button>
                 )}
                 <button onClick={(e) => { e.stopPropagation(); onToggle() }}
                   className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors">
-                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-neutral-400" /> : <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />}
+                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> : <ChevronDown className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 </button>
               </div>
             </div>
@@ -260,12 +260,12 @@ const StepCardV3: React.FC<{
 
             <div className="flex items-center gap-2 mt-2">
               {step.evidence && Array.isArray(step.evidence) && step.evidence.length > 0 && (
-                <span className="text-[10px] text-neutral-400 flex items-center gap-0.5">
+                <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
                   <FileText className="w-2.5 h-2.5" />{step.evidence.length} 条证据
                 </span>
               )}
               {step.metadata?.durationMs != null && (
-                <span className="text-[10px] text-neutral-400 flex items-center gap-0.5">
+                <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
                   <Timer className="w-2.5 h-2.5" />{(step.metadata.durationMs / 1000).toFixed(1)}s
                 </span>
               )}
@@ -294,9 +294,9 @@ const StepCardV3: React.FC<{
                     }`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{ev?.title || '未知证据'}</p>
-                      {ev?.snippet && <p className="text-[10px] text-neutral-400 mt-0.5 line-clamp-1">{ev.snippet}</p>}
+                      {ev?.snippet && <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-1">{ev.snippet}</p>}
                     </div>
-                    <span className="text-[9px] text-neutral-400 shrink-0">{Math.round((ev?.relevance ?? 0) * 100)}%</span>
+                    <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{Math.round((ev?.relevance ?? 0) * 100)}%</span>
                   </div>
                 ))}
               </div>
@@ -305,15 +305,15 @@ const StepCardV3: React.FC<{
             {isExpanded && step.metadata?.userFeedback == null && step.status !== 'processing' && (
               <div className="mt-2.5 pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] text-neutral-400">反馈:</span>
+                  <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">反馈:</span>
                   <button onClick={() => onAction('approve')} className="p-1 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded transition-colors" title="批准此步骤">
-                    <ThumbsUp className="w-3 h-3 text-neutral-400 hover:text-primary-500" />
+                    <ThumbsUp className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-primary-500" />
                   </button>
                   <button onClick={() => onAction('reject')} className="p-1 hover:bg-error-50 dark:hover:bg-error-900/30 rounded transition-colors" title="拒绝此步骤">
-                    <ThumbsDown className="w-3 h-3 text-neutral-400 hover:text-error-500" />
+                    <ThumbsDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500" />
                   </button>
                   <button onClick={() => onAction('revise')} className="p-1 hover:bg-warning-50 dark:hover:bg-warning-900/30 rounded transition-colors" title="请求修订">
-                    <RotateCcw className="w-3 h-3 text-neutral-400 hover:text-warning-500" />
+                    <RotateCcw className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-warning-500" />
                   </button>
                 </div>
               </div>
@@ -351,7 +351,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
         <div className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
           拆解为 {decomposition.subProblems.length} 个子问题
         </div>
-        <div className="text-[10px] text-neutral-400">
+        <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           总复杂度: {(decomposition.totalEstimatedComplexity * 100).toFixed(0)}%
         </div>
       </div>
@@ -387,7 +387,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
                     <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 truncate">{sp.title}</p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5">{sp.description}</p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[10px] text-neutral-400">复杂度 {(sp.estimatedComplexity * 100).toFixed(0)}%</span>
+                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">复杂度 {(sp.estimatedComplexity * 100).toFixed(0)}%</span>
                       {deps.length > 0 && (
                         <span className="text-[10px] text-secondary-500 flex items-center gap-0.5">
                           <ArrowRight className="w-2.5 h-2.5" />依赖 {deps.length} 项
@@ -396,7 +396,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
                     </div>
                   </div>
                   {(deps.length > 0 || (sp.dependencies && sp.dependencies.length > 0)) && (
-                    <ChevronRight className={`w-4 h-4 text-neutral-400 transition-transform ${isExp ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform ${isExp ? 'rotate-90' : ''}`} />
                   )}
                 </div>
               </button>
@@ -405,7 +405,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
                 <div className="px-3 pb-3 pt-0 border-t border-neutral-100 dark:border-neutral-800 mt-1">
                   {deps.length > 0 && (
                     <div className="mt-2 space-y-1">
-                      <div className="text-[10px] font-medium text-neutral-500">依赖关系</div>
+                      <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">依赖关系</div>
                       {deps.map((d, i) => {
                         const targetSp = decomposition.subProblems.find(s => s.id === d.to)
                         return (
@@ -468,7 +468,7 @@ function DimensionsView({ steps }: { steps: ThinkingStepV3[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{cfg.label}</p>
-                <p className="text-[10px] text-neutral-400">{completedCount}/{items.length} 完成</p>
+                <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{completedCount}/{items.length} 完成</p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">{Math.round(avgConfidence * 100)}%</span>
@@ -483,7 +483,7 @@ function DimensionsView({ steps }: { steps: ThinkingStepV3[] }) {
                 }`}>
                   <StatusDot status={item.status} />
                   <span className="flex-1 truncate text-neutral-600 dark:text-neutral-400">{item.title}</span>
-                  <span className="text-[10px] text-neutral-400 tabular-nums">{Math.round(item.confidence * 100)}%</span>
+                  <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{Math.round(item.confidence * 100)}%</span>
                 </div>
               ))}
             </div>
@@ -611,7 +611,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
 
           {/* Dimension Filter */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-            <Filter className="w-3 h-3 text-neutral-400 shrink-0" />
+            <Filter className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
             <button onClick={() => onDimensionFilterChange?.('all')}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors shrink-0 ${
                 activeDimensionFilter === 'all' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-neutral-500 hover:text-neutral-700'
@@ -621,7 +621,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
               return (
                 <button key={dim} onClick={() => onDimensionFilterChange?.(dim)}
                   className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors shrink-0 ${
-                    activeDimensionFilter === dim ? `${cfg.bgColor} ${cfg.color}` : 'text-neutral-500 hover:text-neutral-700'
+                    activeDimensionFilter === dim ? `${cfg.bgColor} ${cfg.color}` : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700'
                   }`}>{cfg.label}</button>
               )
             })}
@@ -634,10 +634,10 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
         {viewMode === 'tree' && (
           <div className="p-3 space-y-2.5">
             {rootSteps.length === 0 && !legacySteps?.length ? (
-              <div className="text-center py-12 text-neutral-400">
+              <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">AI 正在准备深度思考...</p>
-                <p className="text-xs mt-1 text-neutral-300">发送问题后，多维度思考过程将在此展示</p>
+                <p className="text-xs mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">发送问题后，多维度思考过程将在此展示</p>
               </div>
             ) : (
               <>
@@ -650,14 +650,14 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
                 ))}
                 {legacySteps && legacySteps.length > 0 && (
                   <div className="pt-3 mt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700">
-                    <p className="text-[10px] text-neutral-400 mb-2 px-1">兼容模式 — 传统步骤</p>
+                    <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2 px-1">兼容模式 — 传统步骤</p>
                     {legacySteps.map(ls => (
                       <div key={ls.id} className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/30 border border-neutral-100 dark:border-neutral-800 ml-4">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{ls.title}</span>
                           <StatusDot status={ls.status} />
                         </div>
-                        <p className="text-xs text-neutral-500 line-clamp-1">{ls.description}</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-1">{ls.description}</p>
                       </div>
                     ))}
                   </div>
@@ -687,7 +687,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
                       <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-neutral-800/40 border border-transparent group-hover:border-neutral-200 dark:group-hover:border-neutral-700 transition-all">
                         <div className="flex items-center justify-between mb-0.5">
                           <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{step.title}</span>
-                          <span className="text-[10px] text-neutral-400">{new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </div>
                         <p className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1">{step.description}</p>
                       </div>
@@ -704,10 +704,10 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
         )}
 
         {viewMode === 'decomposition' && !decomposition && (
-          <div className="text-center py-12 text-neutral-400">
+          <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">暂无问题拆解数据</p>
-            <p className="text-xs mt-1 text-neutral-300">复杂问题将自动拆解为子问题依赖图</p>
+            <p className="text-xs mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">复杂问题将自动拆解为子问题依赖图</p>
           </div>
         )}
 
@@ -731,13 +731,13 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
               style={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }} />
           </div>
           <div className="flex items-center justify-between mt-1.5">
-            <div className="flex items-center gap-2 text-[9px] text-neutral-400">
+            <div className="flex items-center gap-2 text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {stats.dimensions.slice(0, 5).map(d => {
                 const cfg = DIMENSION_CONFIG[d as keyof typeof DIMENSION_CONFIG]
                 return <span key={d} className={`${cfg.color}`}>{cfg.label}</span>
               })}
             </div>
-            <span className="text-[9px] text-neutral-400">↑↓ 导航 · Enter 展开 · Tab 切换视图</span>
+            <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 展开 · Tab 切换视图</span>
           </div>
         </div>
       )}

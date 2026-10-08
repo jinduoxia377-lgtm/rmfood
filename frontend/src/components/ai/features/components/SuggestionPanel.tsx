@@ -247,7 +247,7 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             {suggestion.category}
             {suggestion.score > 0 && (
-              <span className="text-[10px] text-neutral-400 ml-1">
+              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">
                 (相关度: {Math.round(suggestion.score * 100)}%)
               </span>
             )}
@@ -255,7 +255,7 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
         )}
       </div>
       <div className="flex items-center gap-1.5">
-        <ChevronRight className="w-4 h-4 text-neutral-400" />
+        <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
       </div>
     </button>
   )
@@ -526,7 +526,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
             共 {suggestions.length} 条建议
             {' '}·{' '}
             {groupedSuggestions.length} 个分类
-            {avgQScore > 0 && <> | 平均质量分: <strong className="text-neutral-500">{avgQScore}</strong></>}
+            {avgQScore > 0 && <> | 平均质量分: <strong className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{avgQScore}</strong></>}
           </span>
         )}
       </div>
@@ -610,7 +610,7 @@ function EnhancedSuggestionCard({
             className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-600 rounded-lg transition-colors"
             title="复制标题"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-success-500" /> : <Copy className="w-3.5 h-3.5 text-neutral-400" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-success-500" /> : <Copy className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
           </button>
 
           {onRegenerate && (
@@ -619,7 +619,7 @@ function EnhancedSuggestionCard({
               className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-600 rounded-lg transition-colors"
               title="重新生成"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-neutral-400" />
+              <RefreshCw className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </button>
           )}
         </div>
@@ -651,14 +651,14 @@ function EnhancedSuggestionCard({
               className="p-1 hover:bg-success-50 dark:hover:bg-success-900/20 rounded transition-colors"
               title="有帮助"
             >
-              <ThumbsUp className="w-3.5 h-3.5 text-neutral-400 hover:text-success-500" />
+              <ThumbsUp className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-success-500" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleFeedback('NOT_HELPFUL') }}
               className="p-1 hover:bg-error-50 dark:hover:bg-error-900/20 rounded transition-colors"
               title="无帮助"
             >
-              <ThumbsDown className="w-3.5 h-3.5 text-neutral-400 hover:text-error-500" />
+              <ThumbsDown className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500" />
             </button>
           </div>
         )}

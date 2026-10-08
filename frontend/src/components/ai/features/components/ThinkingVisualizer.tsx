@@ -163,9 +163,9 @@ const ThinkingStepCard: React.FC<{
               className="p-1 hover:bg-neutral-200 rounded transition-colors"
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-neutral-500" />
+                <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-neutral-500" />
+                <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               )}
             </button>
           </div>
@@ -176,14 +176,14 @@ const ThinkingStepCard: React.FC<{
           <ConfidenceBar confidence={step.confidence} />
 
           {isExpanded && step.details && (
-            <div className="mt-4 pt-4 border-t border-neutral-200">
+            <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <p className="text-sm text-neutral-700">{step.details}</p>
             </div>
           )}
 
           {isExpanded && step.relatedData && step.relatedData.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-neutral-200">
-              <div className="text-xs font-semibold text-neutral-500 mb-2 flex items-center gap-1">
+            <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2 flex items-center gap-1">
                 <Database className="w-3 h-3" />
                 相关资料
               </div>
@@ -193,16 +193,16 @@ const ThinkingStepCard: React.FC<{
                     key={index}
                     className="flex items-start gap-2 p-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-100"
                   >
-                    <FileText className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                    <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0 mt-0.5" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-neutral-800 truncate">{item.title}</p>
                       {item.snippet && (
-                        <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-2">
                           {item.snippet}
                         </p>
                       )}
                       {item.source && (
-                        <p className="text-xs text-neutral-400 mt-1">来源: {item.source}</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">来源: {item.source}</p>
                       )}
                     </div>
                   </div>
@@ -272,7 +272,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
       {isVisible && (
         <div ref={containerRef} className="p-4 space-y-3 max-h-96 overflow-y-auto">
           {steps.length === 0 ? (
-            <div className="text-center py-8 text-neutral-400">
+            <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>AI正在准备思考...</p>
             </div>
@@ -293,7 +293,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
       {/* Progress Indicator */}
       {isVisible && steps.length > 0 && (
         <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-100">
-          <div className="flex items-center justify-between text-xs text-neutral-500">
+          <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span>思考进度</span>
             <span>
               {steps.filter(s => s.status === 'completed').length} / {steps.length}

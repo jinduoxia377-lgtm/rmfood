@@ -120,17 +120,17 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
             >
               {hasChildren ? (
                 isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-neutral-400" />
+                  <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                  <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 )
               ) : (
                 <div className="w-4" />
               )}
-              <BookOpen className="w-4 h-4 text-neutral-400" />
+              <BookOpen className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <span className="flex-1 text-left">{category.name}</span>
               {category.children && (
-                <span className="text-xs text-neutral-400">{category.children.length}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{category.children.length}</span>
               )}
             </button>
 
@@ -292,7 +292,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧：分类导航 */}
           <aside className="w-64 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto p-4 bg-slate-50/50 dark:bg-neutral-800/30">
-            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-3">
+            <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3 px-3">
               分类导航
             </h3>
 
@@ -314,13 +314,13 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
             {/* 统计信息 */}
             <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <div className="px-3 space-y-2">
-                <div className="flex items-center justify-between text-xs text-neutral-500">
+                <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <span>收藏</span>
                   <span className="font-medium text-neutral-700 dark:text-neutral-300">
                     {promptManager.templates.filter(t => t.isFavorite).length}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-neutral-500">
+                <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <span>自定义</span>
                   <span className="font-medium text-neutral-700 dark:text-neutral-300">
                     {promptManager.templates.filter(t => !t.isBuiltin).length}
@@ -380,7 +380,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
             {/* 搜索栏 */}
             <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <input
                   type="text"
                   placeholder="搜索提示词（标题、描述、标签）..."
@@ -393,7 +393,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                     onClick={() => promptManager.searchTemplates('')}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
                   >
-                    <X className="w-4 h-4 text-neutral-400" />
+                    <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   </button>
                 )}
               </div>
@@ -423,7 +423,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                   ))}
 
                   {promptManager.filteredTemplates.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-neutral-400">
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <AlertCircle className="w-16 h-16 mb-4 opacity-50" />
                       <p className="text-lg font-medium">未找到匹配的提示词</p>
                       <p className="text-sm mt-2">尝试调整搜索条件或选择其他分类</p>
@@ -444,7 +444,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                   ))}
 
                   {recommendations.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
+                    <div className="flex flex-col items-center justify-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <Zap className="w-16 h-16 mb-4 opacity-50" />
                       <p className="text-lg font-medium">暂无推荐</p>
                       <p className="text-sm mt-2">使用更多提示词后，系统将为您智能推荐</p>
@@ -477,7 +477,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                     ))}
 
                   {promptManager.templates.filter(t => t.isFavorite).length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-neutral-400">
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <Heart className="w-16 h-16 mb-4 opacity-50" />
                       <p className="text-lg font-medium">暂无收藏</p>
                       <p className="text-sm mt-2">点击提示词卡片的星标图标即可收藏</p>
@@ -549,7 +549,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 onClick={() => setShowImportExport(false)}
                 className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
               >
-                <X className="w-4 h-4 text-neutral-400" />
+                <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
             </div>
           </div>
@@ -619,7 +619,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
                 'w-4 h-4',
                 template.isFavorite
                   ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-neutral-400 hover:text-yellow-400',
+                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-yellow-400',
               )}
             />
           </button>
@@ -659,13 +659,13 @@ const PromptCard: React.FC<PromptCardProps> = ({
           </span>
         ))}
         {template.tags.length > 3 && (
-          <span className="text-xs text-neutral-400">+{template.tags.length - 3}</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.tags.length - 3}</span>
         )}
       </div>
 
       {/* 底部：统计信息 + 操作按钮 */}
       <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/50">
-        <div className="flex items-center gap-3 text-xs text-neutral-500">
+        <div className="flex items-center gap-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
             使用 {template.usageCount} 次
@@ -691,7 +691,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
             className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
             title="编辑"
           >
-            <Edit3 className="w-4 h-4 text-neutral-400" />
+            <Edit3 className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
           <button
             onClick={(e) => {
@@ -701,7 +701,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
             className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
             title="复制"
           >
-            <Copy className="w-4 h-4 text-neutral-400" />
+            <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
           {!template.isBuiltin && (
             <button
@@ -804,7 +804,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
           {recommendation.score}
         </div>
-        <div className="text-[11px] text-neutral-400">分</div>
+        <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分</div>
       </div>
     </button>
   )
@@ -889,7 +889,7 @@ const VariableEditorModal: React.FC<VariableEditorModalProps> = ({
               )}
 
               {variable.placeholder && variable.type !== 'multiline' && variable.type !== 'select' && (
-                <p className="mt-1 text-xs text-neutral-400">{variable.placeholder}</p>
+                <p className="mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{variable.placeholder}</p>
               )}
             </div>
           ))}
