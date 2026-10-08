@@ -72,7 +72,7 @@ export function AgentMessageList({
           </div>
 
           {/* 时间戳 */}
-          <span className="text-xs text-neutral-400 flex-shrink-0">
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0">
             {msg.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
@@ -80,7 +80,7 @@ export function AgentMessageList({
 
       {/* 运行中指示器 */}
       {isRunning && (
-        <div className="flex items-center gap-2 text-neutral-500 text-sm">
+        <div className="flex items-center gap-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>Agent 正在执行...</span>
         </div>
@@ -88,7 +88,7 @@ export function AgentMessageList({
 
       {/* 执行统计 */}
       {executedCount > 0 && (
-        <div className="flex items-center gap-2 text-xs text-neutral-400 pt-2 border-t">
+        <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pt-2 border-t">
           <CheckCircle2 className="w-3 h-3 text-green-500" />
           <span>已完成 {executedCount} 次执行</span>
         </div>
