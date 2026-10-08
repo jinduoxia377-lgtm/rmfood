@@ -29,7 +29,7 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
         <Clock className="w-4 h-4 text-primary-500" />
         <span className="text-sm font-medium">执行阶段</span>
         {isRunning && (
-          <span className="text-xs text-neutral-400 animate-pulse">进行中...</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-pulse">进行中...</span>
         )}
       </div>
 
@@ -52,7 +52,7 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
               <span className="text-sm flex-1">{stage.stage}</span>
 
               {/* 耗时 */}
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {stage.latencyMs > 0 ? `${stage.latencyMs}ms` : '-'}
               </span>
 
@@ -81,7 +81,7 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
 
         {/* 空状态 */}
         {stages.length === 0 && isRunning && (
-          <div className="flex items-center gap-2 text-sm text-neutral-400">
+          <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>初始化执行阶段...</span>
           </div>
@@ -91,7 +91,7 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
       {/* 流程图示意 */}
       {stages.length > 1 && (
         <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center gap-1 text-xs text-neutral-400 overflow-x-auto">
+          <div className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] overflow-x-auto">
             {stages.map((stage, index) => (
               <React.Fragment key={index}>
                 <span className="flex-shrink-0">{stage.stage.split(' ')[0]}</span>

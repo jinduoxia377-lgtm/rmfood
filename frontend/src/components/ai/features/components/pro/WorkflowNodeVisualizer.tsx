@@ -57,7 +57,7 @@ const STAGE_COLORS: Record<string, string> = {
   running: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
   success: 'text-success-500 bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800',
   failed: 'text-error-500 bg-error-50 dark:bg-error-900/20 border-error-200 dark:border-error-800',
-  pending: 'text-neutral-400 bg-neutral-50 dark:bg-neutral-800/30 border-neutral-200 dark:border-neutral-700',
+  pending: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/30 border-neutral-200 dark:border-neutral-700',
 }
 
 export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: WorkflowNodeVisualizerProps) {
@@ -127,7 +127,7 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
       </div>
 
       {/* 执行描述 */}
-      <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
+      <p className="mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         {currentWorkflow.desc}
       </p>
     </div>

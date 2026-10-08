@@ -23,7 +23,7 @@ export function ToolCallDisplay({ tools, isLoading = false }: ToolCallDisplayPro
         <Wrench className="w-4 h-4 text-primary-500" />
         <span className="text-sm font-medium">工具调用</span>
         {isLoading && (
-          <span className="text-xs text-neutral-400 animate-pulse">执行中...</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-pulse">执行中...</span>
         )}
       </div>
 
@@ -46,7 +46,7 @@ export function ToolCallDisplay({ tools, isLoading = false }: ToolCallDisplayPro
             <span className="text-sm font-medium flex-1">{tool.tool}</span>
 
             {/* 耗时 */}
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {tool.latencyMs > 0 ? `${tool.latencyMs}ms` : '-'}
             </span>
 
@@ -61,7 +61,7 @@ export function ToolCallDisplay({ tools, isLoading = false }: ToolCallDisplayPro
 
         {/* 空状态 */}
         {tools.length === 0 && isLoading && (
-          <div className="flex items-center gap-2 text-sm text-neutral-400">
+          <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>准备调用工具...</span>
           </div>

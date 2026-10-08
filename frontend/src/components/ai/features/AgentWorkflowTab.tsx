@@ -41,7 +41,7 @@ function StepBadge({ step }: { step: import('@/components/ai/shared/types').Step
     running: <Loader2 className="w-3 h-3 animate-spin" />,
     success: <CheckCircle2 className="w-3 h-3 text-green-500" />,
     failed: <XCircle className="w-3 h-3 text-red-500" />,
-    pending: <Circle className="w-3 h-3 text-slate-400" />,
+    pending: <Circle className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />,
   };
 
   const colorMap = {
