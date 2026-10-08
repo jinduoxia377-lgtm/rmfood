@@ -788,7 +788,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <h3 id="ga-nutrition-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
               <FlaskConical className="w-4 h-4 text-success-500" />
               营养约束
-              <span className="text-xs font-normal text-neutral-400">(每100g)</span>
+              <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(每100g)</span>
             </h3>
             <div className="space-y-2">
               {nutritionConstraints.map((constraint, idx) => (
@@ -796,7 +796,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                   <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 w-24">
                     {constraint.nutrient}
                   </span>
-                  <span className="text-xs text-neutral-400">≥</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">≥</span>
                   <Input
                     type="number"
                     value={constraint.min_value ?? ''}
@@ -809,7 +809,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                     className="w-24"
                     aria-label={`${constraint.nutrient} 下限`}
                   />
-                  <span className="text-xs text-neutral-400">≤</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">≤</span>
                   <Input
                     type="number"
                     value={constraint.max_value ?? ''}
@@ -833,7 +833,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           <h3 id="ga-constraints-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <Shield className="w-4 h-4 text-violet-500" />
             约束条件
-            <span className="text-xs font-normal text-neutral-400">(可选)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 排除药材 */}
@@ -891,7 +891,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           <h3 id="ga-included-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <FlaskConical className="w-4 h-4 text-emerald-500" />
             基础配方
-            <span className="text-xs font-normal text-neutral-400">(可选，强制包含)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选，强制包含)</span>
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
             指定药材将作为固定基础，优化器将在其基础上添加更多药材。若留空则由算法自动选择。
@@ -978,7 +978,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             {isStreamingMode ? (
               <Wifi className="w-4 h-4 text-violet-500" aria-hidden="true" />
             ) : (
-              <WifiOff className="w-4 h-4 text-neutral-400" aria-hidden="true" />
+              <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">实时流式模式</span>
           </div>

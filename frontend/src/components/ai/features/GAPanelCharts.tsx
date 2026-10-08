@@ -24,7 +24,7 @@ interface GAPanelChartsProps {
 export function GAFitnessChart({ chartData }: GAPanelChartsProps) {
   if (chartData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 text-neutral-400" role="status">
+      <div className="flex items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" role="status">
         暂无进化曲线数据
       </div>
     )

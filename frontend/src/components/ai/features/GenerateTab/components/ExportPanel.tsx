@@ -95,7 +95,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-neutral-500 truncate">{format.description}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{format.description}</span>
             </div>
           </button>
         ))}

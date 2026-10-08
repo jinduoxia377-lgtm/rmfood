@@ -104,12 +104,12 @@ export function ScatterChartSection({ scatterData, axisX, axisY }: ScatterChartP
       </ResponsiveContainer>
       <div className="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
         {[1, 2, 3, 4, 5].map((rank) => (
-          <div key={rank} className="flex items-center gap-1.5 text-xs text-neutral-500">
+          <div key={rank} className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getParetoColor(rank) }} />
             Rank {rank}
           </div>
         ))}
-        <span className="text-xs text-neutral-400 ml-2">· 大小 = 拥挤距离</span>
+        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">· 大小 = 拥挤距离</span>
       </div>
     </div>
   )

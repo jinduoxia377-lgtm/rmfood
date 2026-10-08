@@ -385,11 +385,11 @@ export function CandidateComparison({
 
                 {/* Top 5 成分 */}
                 <div className="space-y-2 mb-4">
-                  <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">主要成分</h4>
+                  <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">主要成分</h4>
                   {candidate.ingredients.slice(0, 5).map((ing, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-neutral-700 dark:text-neutral-300 truncate flex-1">{ing.name}</span>
-                      <span className="text-neutral-500 ml-2">
+                      <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">
                         {ing.amount}
                         {ing.unit || '%'}
                       </span>
@@ -495,7 +495,7 @@ export function CandidateComparison({
               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">成分差异高亮表格</h3>
 
               {selectedIds.length < 2 ? (
-                <div className="text-center py-8 text-neutral-500">
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <Filter className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <p>请选择至少 2 个方案进行成分对比</p>
                 </div>

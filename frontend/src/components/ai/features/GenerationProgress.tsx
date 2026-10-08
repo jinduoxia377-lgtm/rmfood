@@ -231,7 +231,7 @@ export function GenerationProgress({
                   </span>
                 )}
                 {task.status === 'running' && (
-                  <span className="text-xs text-neutral-500">{task.progress}%</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{task.progress}%</span>
                 )}
               </div>
             ))}
@@ -309,10 +309,10 @@ export function GenerationProgress({
             >
               <div className="mt-3 p-3 bg-neutral-900 dark:bg-black rounded-lg font-mono text-xs max-h-48 overflow-y-auto">
                 <div className="flex items-center justify-between mb-2 pb-2 border-b border-neutral-700">
-                  <span className="text-neutral-400">实时日志</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实时日志</span>
                   <button
                     onClick={handleCopyLogs}
-                    className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-white transition-colors"
                   >
                     <Copy className="w-3 h-3" />
                     复制
@@ -327,10 +327,10 @@ export function GenerationProgress({
                           ? 'text-error-400'
                           : log.level === 'WARN'
                           ? 'text-yellow-400'
-                          : 'text-neutral-300'
+                          : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                       }`}
                     >
-                      <span className="text-neutral-500">[{log.timestamp}]</span>{' '}
+                      <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">[{log.timestamp}]</span>{' '}
                       <span
                         className={
                           log.level === 'ERROR'
