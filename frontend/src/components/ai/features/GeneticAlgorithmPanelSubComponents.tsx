@@ -133,7 +133,7 @@ export function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: C
               </span>
               <div className={`text-2xl font-bold tabular-nums ${scoreColor}`}>
                 {(candidate.overall_score * 100).toFixed(1)}
-                <span className="text-sm font-normal text-neutral-400 ml-1">分</span>
+                <span className="text-sm font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">分</span>
               </div>
               <Badge variant="neutral" size="sm">
                 置信度 {(candidate.confidence * 100).toFixed(0)}%
@@ -168,7 +168,7 @@ export function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: C
           </div>
 
           {/* 展开/收起图标 */}
-          <div className="flex-shrink-0 self-center text-neutral-400" aria-hidden="true">
+          <div className="flex-shrink-0 self-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true">
             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
         </div>

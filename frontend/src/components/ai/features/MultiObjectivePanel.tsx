@@ -1006,7 +1006,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 <Button variant="outline" size="sm" icon={<Plus className="w-4 h-4" />} onClick={addObjective}>
                   添加目标
                 </Button>
-                <span className="text-xs text-neutral-400">快速添加:</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">快速添加:</span>
                 {OBJECTIVE_OPTIONS.filter((opt) => !customObjectives.some((o) => o.key === opt.key)).map((opt) => (
                   <button
                     key={opt.key}
@@ -1043,7 +1043,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">{obj.name}</p>
-                    <p className="text-xs text-neutral-400">{obj.key}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{obj.key}</p>
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
@@ -1073,7 +1073,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <Badge variant="neutral" size="sm">
               {selectedEffects.length} 已选
             </Badge>
-            <span className="text-xs font-normal text-neutral-400">(可选)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
           </h3>
           <div className="flex flex-wrap gap-2" role="group" aria-label="目标功效多选">
             {EFFECT_OPTIONS.map((effect) => (
@@ -1181,7 +1181,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           >
             <Shield className="w-4 h-4 text-indigo-500" />
             约束条件
-            <span className="text-xs font-normal text-neutral-400">(可选)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1254,7 +1254,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           >
             <FlaskConical className="w-4 h-4 text-emerald-500" />
             基础配方
-            <span className="text-xs font-normal text-neutral-400">(可选，强制包含)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选，强制包含)</span>
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
             指定药材将作为固定基础，优化器将在其基础上添加更多药材。若留空则由算法自动选择。
@@ -1313,7 +1313,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             {isStreamingMode ? (
               <Wifi className="w-4 h-4 text-indigo-500" aria-hidden="true" />
             ) : (
-              <WifiOff className="w-4 h-4 text-neutral-400" aria-hidden="true" />
+              <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">实时流式模式</span>
           </div>
@@ -1560,7 +1560,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex items-center justify-center py-12 text-neutral-400" role="status">
+              <div className="flex items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" role="status">
                 暂无进化曲线数据
               </div>
             )}
@@ -1615,7 +1615,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 </h3>
                 {/* 轴切换按钮 */}
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-neutral-500">X:</label>
+                  <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">X:</label>
                   <Select value={axisX} onChange={(v) => setAxisX(v)} className="w-32" size="sm">
                     {availableAxes.map((a) => (
                       <option key={`x-${a}`} value={a}>
@@ -1623,7 +1623,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       </option>
                     ))}
                   </Select>
-                  <label className="text-xs text-neutral-500 ml-2">Y:</label>
+                  <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">Y:</label>
                   <Select value={axisY} onChange={(v) => setAxisY(v)} className="w-32" size="sm">
                     {availableAxes.map((a) => (
                       <option key={`y-${a}`} value={a}>
@@ -1715,12 +1715,12 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               {/* Pareto 排名图例 */}
               <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 {[1, 2, 3, 4, 5].map((rank) => (
-                  <div key={rank} className="flex items-center gap-1.5 text-xs text-neutral-500">
+                  <div key={rank} className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getParetoColor(rank) }} />
                     Rank {rank}
                   </div>
                 ))}
-                <span className="text-xs text-neutral-400 ml-2">· 大小 = 拥挤距离</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">· 大小 = 拥挤距离</span>
               </div>
 
               {/* ═══ 目标空间热力图 ═══ */}
@@ -1804,7 +1804,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       selectedIdx={selectedCandidateIdx}
                     />
                   ) : (
-                    <div className="flex items-center justify-center py-12 text-neutral-400">目标维度不足</div>
+                    <div className="flex items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">目标维度不足</div>
                   )}
                 </Card>
 
@@ -1859,7 +1859,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center py-16 text-neutral-400 text-sm">
+                    <div className="flex items-center justify-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">
                       请点击左侧候选方案或平行坐标图中的折线
                     </div>
                   )}
@@ -1940,7 +1940,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                         </Badge>
                       ))}
                     </div>
-                    {best.explanation && <p className="text-xs text-neutral-500 mt-2 line-clamp-2">{best.explanation}</p>}
+                    {best.explanation && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2 line-clamp-2">{best.explanation}</p>}
                   </div>
                 ))}
               </div>
@@ -1965,7 +1965,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       'px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1',
                       candidateView === 'cards'
                         ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                        : 'text-neutral-500 hover:text-neutral-700',
+                        : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                     )}
                   >
                     <LayoutGrid className="w-3.5 h-3.5" /> 卡片
@@ -1976,7 +1976,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       'px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1',
                       candidateView === 'table'
                         ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                        : 'text-neutral-500 hover:text-neutral-700',
+                        : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                     )}
                   >
                     <TableIcon className="w-3.5 h-3.5" /> 表格
@@ -2038,7 +2038,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {sortedCandidates.map((cand, idx) => (
                         <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors">
-                          <td className="px-3 py-3 text-neutral-500">{idx + 1}</td>
+                          <td className="px-3 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{idx + 1}</td>
                           <td className="px-3 py-3">
                             <Badge
                               variant={

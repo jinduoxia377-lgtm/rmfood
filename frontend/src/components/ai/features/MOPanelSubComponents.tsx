@@ -180,7 +180,7 @@ export function ParallelCoordinatesChart({
       {/* 图例 */}
       <div className="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
         {[1, 2, 3, 4, 5].map((rank) => (
-          <div key={rank} className="flex items-center gap-1 text-xs text-neutral-500">
+          <div key={rank} className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span
               className="w-2.5 h-0.5 rounded-sm"
               style={{ backgroundColor: getParetoColor(rank), height: rank === 1 ? '3px' : '2px' }}
@@ -188,7 +188,7 @@ export function ParallelCoordinatesChart({
             R{rank}
           </div>
         ))}
-        <span className="text-xs text-neutral-400 ml-1">· 点击折线选中查看雷达图</span>
+        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">· 点击折线选中查看雷达图</span>
       </div>
     </div>
   )
@@ -326,7 +326,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
               <span className="text-lg font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
                 {candidate.overall_fitness.toFixed(4)}
               </span>
-              <span className="text-xs text-neutral-400">拥挤度: {candidate.crowding_distance.toFixed(4)}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">拥挤度: {candidate.crowding_distance.toFixed(4)}</span>
             </div>
 
             {/* 药材组成 */}
@@ -364,7 +364,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
             })}
           </div>
 
-          <div className="flex-shrink-0 self-center text-neutral-400" aria-hidden="true">
+          <div className="flex-shrink-0 self-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true">
             {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
         </div>

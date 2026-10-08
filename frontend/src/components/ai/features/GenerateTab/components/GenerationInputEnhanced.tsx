@@ -157,7 +157,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
       {/* 输入模式切换 - 三栏设计 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+          <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">
             {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_INPUT_MODE}
           </span>
           <div className="flex bg-neutral-100 dark:bg-neutral-800/80 rounded-xl p-1 shadow-inner">
@@ -360,7 +360,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               {selectedEffects.length > 0 && (
                 <button
                   onClick={onClearEffects}
-                  className="text-xs text-neutral-500 hover:text-error-500 transition-colors"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors"
                 >
                   清空选择
                 </button>

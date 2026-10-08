@@ -421,7 +421,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={selected ? 'text-primary-600' : 'text-neutral-500'}>{type.icon}</span>
+                            <span className={selected ? 'text-primary-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>{type.icon}</span>
                             <span
                               className={`text-sm font-medium ${selected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300'}`}
                             >
@@ -636,7 +636,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       />
                       <button
                         onClick={() => setConstraints((prev) => ({ ...prev, maxCostPerKg: null }))}
-                        className="text-xs text-neutral-500 hover:text-neutral-700 underline"
+                        className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 underline"
                       >
                         清除
                       </button>
@@ -825,7 +825,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                   <Eye className="w-4 h-4" />
                   配置预览
                 </h4>
-                <button onClick={() => setShowPreview(false)} className="text-neutral-400 hover:text-neutral-600">
+                <button onClick={() => setShowPreview(false)} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
                   ✕
                 </button>
               </div>
@@ -840,7 +840,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
             onClick={() => setShowPreview(true)}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-neutral-800 shadow-lg rounded-l-lg border border-r-0 border-neutral-200 dark:border-neutral-700 hover:bg-slate-50"
           >
-            <Eye className="w-4 h-4 text-neutral-500" />
+            <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         )}
       </div>
@@ -912,7 +912,7 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
     <div className="space-y-4 text-sm">
       {currentStep >= 0 && data.selectedEfficacies?.length > 0 && (
         <div>
-          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">目标功效</h5>
+          <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">目标功效</h5>
           <div className="space-y-1.5">
             {data.selectedEfficacies.slice(0, 5).map((e: any) => (
               <div key={e.id} className="flex items-center justify-between">
@@ -921,7 +921,7 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
               </div>
             ))}
             {data.selectedEfficacies.length > 5 && (
-              <div className="text-xs text-neutral-400">+{data.selectedEfficacies.length - 5} 更多...</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{data.selectedEfficacies.length - 5} 更多...</div>
             )}
           </div>
         </div>
@@ -929,7 +929,7 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
 
       {currentStep >= 1 && (
         <div>
-          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">约束条件</h5>
+          <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">约束条件</h5>
           <div className="space-y-1 text-neutral-600 dark:text-neutral-400">
             <div>
               pH: {data.constraints?.phRange?.[0]}-{data.constraints?.phRange?.[1]}
@@ -951,7 +951,7 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
 
       {currentStep >= 2 && (
         <div>
-          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">高级选项</h5>
+          <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">高级选项</h5>
           <div className="space-y-1 text-neutral-600 dark:text-neutral-400">
             {data.advanced?.sourcePreference?.length > 0 && (
               <div>原料: {data.advanced.sourcePreference.join(', ')}</div>
@@ -982,7 +982,7 @@ function PresetManager({
     <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-xl space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">管理自定义预设</h4>
-        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 text-sm">
+        <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 text-sm">
           ✕
         </button>
       </div>
@@ -1010,14 +1010,14 @@ function PresetManager({
       </div>
 
       {presets.length === 0 ? (
-        <p className="text-xs text-neutral-500 text-center py-2">暂无自定义预设</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-2">暂无自定义预设</p>
       ) : (
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {presets.map((preset) => (
             <div key={preset.id} className="flex items-center justify-between p-2 bg-white dark:bg-neutral-700 rounded-lg">
               <div>
                 <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{preset.name}</div>
-                <div className="text-xs text-neutral-500">{preset.description}</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{preset.description}</div>
               </div>
               <button
                 onClick={() => onDelete(preset.id)}

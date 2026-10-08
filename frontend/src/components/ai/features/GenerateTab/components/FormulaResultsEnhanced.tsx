@@ -171,7 +171,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
           </div>
           <button
             onClick={() => setShowStats(false)}
-            className="col-span-2 sm:col-span-1 self-center text-xs text-neutral-400 hover:text-neutral-600"
+            className="col-span-2 sm:col-span-1 self-center text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
           >
             <ChevronDown className="w-4 h-4 inline mr-1" />
             收起
