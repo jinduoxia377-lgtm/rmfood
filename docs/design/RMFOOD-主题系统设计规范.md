@@ -1067,7 +1067,12 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 1. **TeamActivity barrel 漏登记**：`86c230b` 把 `DashboardPage.tsx` 的 `import { TeamActivity } from '@/components/dashboard/cards'` 带入提交，但 WIP 的 `TeamActivity.tsx` 组件文件**未**加入 `cards/index.ts` barrel（WIP 作者漏登记），导致 dev server 上 `The requested module '...' does not provide an export named 'TeamActivity'` → React 挂载中断 → 整页 `styleSheets=0` → GATE-06 探针读不到 badge 令牌 → fail。**修复**：补 `cards/index.ts` 一行 `export { TeamActivity } from './TeamActivity'`（barrel 登记，非 WIP 功能块）。
 > 2. **GATE-14 真漏配 1 处**：`MainLayout.tsx` L50 skip-link 类 `focus:bg-primary-600 focus:text-white`（反转色阶 400-700 + text-white，D-50 命中）。**修复**：改用 `focus:bg-[var(--color-primary-surface,theme(colors.primary.700))] focus:text-[var(--color-on-primary-surface,#fff)]`（实底 + 白字令牌，双模式达标）。GATE-14 由 1 warn → **pass**（0 处残余）。
 > 3. **门禁基线文案漂移**：`theme-gate.mjs` GATE-06 fail 提示仍写「应为 `#6E6E73`」（D-21 修复前的旧基线），但 `base.css` L439 实际 D-52 基线为 `#63636A`（5.28:1）。**修复**：文案校准到 D-52 实际值。
-> **终态：门禁 10 pass / 0 fail / 3 skip（GATE-03/08/12 需 dist）/ 1 合法 warn（GATE-09）· GATE-06/14 pass · validate 0 error / 2 warn（LoginPage.css #f0f6fc 硬编码，他人 WIP 范围）· build ✅ · vitest 29/29 · 浏览器 45/45 · 静态 50/0 · 全库深色 A 类漏配复扫 1 文件 / 1 行（`dark-audit2` 口径与 `rescan-a-class` 脚本口径略有差异，属 C 类已适配排除边界，不影响实际渲染）**。
+> **终态：门禁 13/0/0（无 skip）· GATE-06/14 pass · validate 0 error / 2 warn（LoginPage.css #f0f6fc 硬编码，他人 WIP 范围）· build ✅ · vitest 29/29 · 浏览器 45/45 · 静态 50/0 · 全库深色 A 类漏配复扫 0 文件 / 0 行**。
+>
+> **2026-10-08 漏网补配 + 工具落库登记**（提交 `8a8a705` + `68034af`）：
+> 1. **49 untracked 归类处置**：13 个主题审计/诊断脚本（`scripts/theme-audit/` 下 GATE-05/06 排查探针 + 批修器）+ `TeamActivity.tsx` 组件文件（承接 `86c230b` 纳管的 WIP 引用）补齐入库。backend 5 文件 / login UX 审计脚本 6 个 / 截图 23 个 png / `AccountDeactivationSection.tsx` 等 35 项保持工作区（他人 WIP 或临时产物，非我范围）。
+> 2. **漏网 1 行补配**：`ThemeSettingsPage.tsx` L312 toggle 滑块 `bg-white` 无 `dark:` 配对（84 文件批量漏掉的 1 处），补 `dark:bg-neutral-200`，全库 A 类漏配复扫 **1 文件 / 1 行 → 0 / 0**。
+> 3. **dist 缺失解除**：`GATE-03/08/12` 曾因 `frontend/dist` 缺失被 skip，执行 `vite build` 后三项全部解除 skip，门禁终态 **13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）**。
 
 > **2026-10-07 深色漏配清零完全收尾登记**（提交 `1475a76`）：`DashboardPage.tsx` 剩余 TeamActivity WIP（11 行）经用户确认「保留该功能」后纳管提交，全库 A 类深色漏配**完全清零 104 文件 / 350 行 → 0 / 0**，WIP 隔离收尾。
 
