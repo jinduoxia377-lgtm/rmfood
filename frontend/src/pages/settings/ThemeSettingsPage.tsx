@@ -309,7 +309,7 @@ const ThemeSettingsPage: React.FC = () => {
               >
                 <span
                   className={`
-                    absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-200 shadow-md
+                    absolute top-1 left-1 w-6 h-6 rounded-full bg-white dark:bg-neutral-200 transition-transform duration-200 shadow-md
                     ${motionPreferences.reducedMotion ? 'translate-x-6' : 'translate-x-0'}
                   `}
                 />
