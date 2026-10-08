@@ -451,7 +451,7 @@ export function SafetyReportTemplate({
             {initialData.ingredients && initialData.ingredients.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">原料清单及检测结果</label>
-                <div className="overflow-x-auto border border-neutral-300 rounded-lg">
+                <div className="overflow-x-auto border border-neutral-300 dark:border-neutral-700 rounded-lg">
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50 dark:bg-neutral-800">
                       <tr>
@@ -486,7 +486,7 @@ export function SafetyReportTemplate({
                                ing.status === 'warning' ? '⚠ 警告' : '✗ 不合规'}
                             </Badge>
                           </td>
-                          <td className="px-4 py-2 text-neutral-500">{ing.notes || '-'}</td>
+                          <td className="px-4 py-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.notes || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -616,7 +616,7 @@ export function SafetyReportTemplate({
                       <h4 className="font-medium text-sm text-neutral-900 dark:text-neutral-100 truncate">
                         {template.name}
                       </h4>
-                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 line-clamp-2">
                         {template.description}
                       </p>
                       <Badge variant="neutral" className="mt-2 text-[10px]">

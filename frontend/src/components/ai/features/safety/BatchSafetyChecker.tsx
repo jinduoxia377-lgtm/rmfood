@@ -445,7 +445,7 @@ export function BatchSafetyChecker({
                 <p className="text-neutral-700 dark:text-neutral-300 font-medium">
                   拖拽文件到此处或点击上传
                 </p>
-                <p className="text-sm text-neutral-500 mt-1">
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                   支持 CSV、Excel 格式，最大 {maxFileSize / 1024 / 1024}MB
                 </p>
               </div>
@@ -577,7 +577,7 @@ export function BatchSafetyChecker({
             </div>
 
             {estimatedTimeRemaining > 0 && (
-              <div className="mt-4 text-sm text-center text-neutral-500">
+              <div className="mt-4 text-sm text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 ⏱️ 预计剩余时间: ~{estimatedTimeRemaining}秒
               </div>
             )}
@@ -625,7 +625,7 @@ export function BatchSafetyChecker({
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <Progress value={task.progress} className="w-24" />
-                          <span className="text-xs text-neutral-500">{task.progress}%</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{task.progress}%</span>
                         </div>
                       </td>
                       <td className="px-4 py-2">
@@ -687,7 +687,7 @@ export function BatchSafetyChecker({
                         <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
                           {task.fileName}
                         </h4>
-                        <p className="text-sm text-neutral-500 mt-1">
+                        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                           成分数: {task.ingredientCount} | 检测时间: {new Date(task.createdAt).toLocaleString()}
                         </p>
                       </div>
@@ -738,7 +738,7 @@ export function BatchSafetyChecker({
 
                     {task.reviewNotes && task.reviewNotes.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                        <p className="text-xs font-medium text-neutral-500 mb-2">复核历史:</p>
+                        <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">复核历史:</p>
                         {task.reviewNotes.map((note, idx) => (
                           <div key={idx} className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
                             • {note}

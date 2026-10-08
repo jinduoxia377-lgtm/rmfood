@@ -109,11 +109,11 @@ export function RiskDetailPanel({
                 <Badge variant={severityConfig.badge as 'warning' | 'danger' | 'success' | 'info' | 'neutral' | 'primary'}>
                   {severityConfig.label}风险
                 </Badge>
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   评分: {riskData.score}/100
                 </span>
-                <span className="text-sm text-neutral-400">|</span>
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
+                <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   影响: {riskData.scope}
                 </span>
               </div>
@@ -185,7 +185,7 @@ export function RiskDetailPanel({
                         {evidence.source}
                       </h4>
                       {evidence.authors && (
-                        <p className="text-sm text-neutral-500 mt-1">
+                        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                           作者: {evidence.authors} {evidence.year && `(${evidence.year})`}
                         </p>
                       )}
@@ -205,7 +205,7 @@ export function RiskDetailPanel({
                     )}
                   </div>
                 </div>
-              )) || <p className="text-neutral-500 text-center py-8">暂无科学依据数据</p>}
+              )) || <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-8">暂无科学依据数据</p>}
             </div>
           )}
 
@@ -230,12 +230,12 @@ export function RiskDetailPanel({
                       <p className="text-sm text-neutral-700 dark:text-neutral-300">{regulation.requirement}</p>
                       {regulation.limitValue !== undefined && (
                         <div className="mt-2 text-sm">
-                          <span className="text-neutral-500">限值: </span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">限值: </span>
                           <span className="font-medium">{regulation.limitValue} {regulation.unit || ''}</span>
                           {regulation.actualValue !== undefined && (
                             <>
-                              <span className="mx-2 text-neutral-400">|</span>
-                              <span className="text-neutral-500">实测: </span>
+                              <span className="mx-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
+                              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实测: </span>
                               <span className={`font-medium ${
                                 regulation.actualValue <= regulation.limitValue ? 'text-success-600' : 'text-error-600'
                               }`}>
@@ -248,7 +248,7 @@ export function RiskDetailPanel({
                     </div>
                   </div>
                 </div>
-              )) || <p className="text-neutral-500 text-center py-8">暂无法规条款数据</p>}
+              )) || <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-8">暂无法规条款数据</p>}
             </div>
           )}
 
@@ -277,7 +277,7 @@ export function RiskDetailPanel({
                     </div>
                   </div>
                 </div>
-              )) || <p className="text-neutral-500 text-center py-8">暂无改进建议</p>}
+              )) || <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-8">暂无改进建议</p>}
             </div>
           )}
 
@@ -293,10 +293,10 @@ export function RiskDetailPanel({
                       <p className="text-sm mt-1 text-neutral-600 dark:text-neutral-400">
                         问题: {caseItem.issue}
                       </p>
-                      <p className="text-sm mt-1 text-neutral-500">
+                      <p className="text-sm mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         解决方案: {caseItem.resolution}
                       </p>
-                      <p className="text-xs mt-2 text-neutral-400">
+                      <p className="text-xs mt-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         日期: {caseItem.date}
                       </p>
                     </div>
@@ -305,7 +305,7 @@ export function RiskDetailPanel({
                     )}
                   </div>
                 </div>
-              )) || <p className="text-neutral-500 text-center py-8">暂无相关案例</p>}
+              )) || <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-8">暂无相关案例</p>}
             </div>
           )}
 

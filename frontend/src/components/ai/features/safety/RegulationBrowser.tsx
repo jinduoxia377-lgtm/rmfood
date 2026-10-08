@@ -133,19 +133,19 @@ function GBStandardsView({ standards, onSelect }: GBViewProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">标准总数</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">标准总数</p>
           <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{standards.length}</p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">现行有效</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">现行有效</p>
           <p className="text-2xl font-bold text-success-600">{activeCount}</p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">已废止</p>
-          <p className="text-2xl font-bold text-neutral-400">{standards.length - activeCount}</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">已废止</p>
+          <p className="text-2xl font-bold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{standards.length - activeCount}</p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">已筛选</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">已筛选</p>
           <p className="text-2xl font-bold text-secondary-600">{filtered.length}</p>
         </div>
       </div>
@@ -204,7 +204,7 @@ function GBStandardsView({ standards, onSelect }: GBViewProps) {
 
       {!selected ? (
         <>
-          <p className="text-sm text-neutral-500">共 {filtered.length} 条标准</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {filtered.length} 条标准</p>
           <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-neutral-800">
@@ -226,14 +226,14 @@ function GBStandardsView({ standards, onSelect }: GBViewProps) {
                     <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400 text-xs">{st.standard_code}</td>
                     <td className="px-4 py-3 max-w-xs truncate text-neutral-800 dark:text-neutral-200">{st.title}</td>
                     <td className="px-4 py-3"><Badge variant="neutral" className="text-xs">{st.category}</Badge></td>
-                    <td className="px-4 py-3 text-neutral-500 text-xs">{st.publish_date}</td>
+                    <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{st.publish_date}</td>
                     <td className="px-4 py-3"><StatusBadge status={st.status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filtered.length === 0 && (
-              <div className="p-12 text-center text-neutral-400">未找到匹配的标准，请调整筛选条件</div>
+              <div className="p-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配的标准，请调整筛选条件</div>
             )}
             {filtered.length > 50 && (
               <div className="p-3 text-center text-xs text-neutral-500 bg-slate-50 dark:bg-neutral-800">
@@ -258,20 +258,20 @@ function GBStandardsView({ standards, onSelect }: GBViewProps) {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-sm">
               <div>
-                <p className="text-xs text-neutral-500 mb-1">发布日期</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">发布日期</p>
                 <p className="font-medium">{selected.publish_date || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">实施日期</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">实施日期</p>
                 <p className="font-medium">{selected.implementation_date || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">类别</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">类别</p>
                 <p className="font-medium">{selected.category}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">英文名称</p>
-                <p className="font-medium text-xs text-neutral-500">{selected.title_en || '-'}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">英文名称</p>
+                <p className="font-medium text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{selected.title_en || '-'}</p>
               </div>
             </div>
 
@@ -360,21 +360,21 @@ function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">国际标准总数</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">国际标准总数</p>
           <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{standards.length}</p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">来源机构</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">来源机构</p>
           <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{orgs.length}</p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">核心参考</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">核心参考</p>
           <p className="text-2xl font-bold text-warning-600">
             {standards.filter(st => st.priority?.includes('P0')).length}
           </p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
-          <p className="text-xs text-neutral-500 mb-1">已筛选</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">已筛选</p>
           <p className="text-2xl font-bold text-secondary-600">{filtered.length}</p>
         </div>
       </div>
@@ -407,7 +407,7 @@ function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
 
       {!selected ? (
         <>
-          <p className="text-sm text-neutral-500">共 {filtered.length} 条国际标准</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {filtered.length} 条国际标准</p>
           <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-neutral-800">
@@ -429,14 +429,14 @@ function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
                     <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400 text-xs">{st.standard_code}</td>
                     <td className="px-4 py-3 max-w-xs truncate text-neutral-800 dark:text-neutral-200">{st.title}</td>
                     <td className="px-4 py-3"><Badge variant="neutral" className="text-xs">{st.category}</Badge></td>
-                    <td className="px-4 py-3 text-neutral-500 text-xs">{st.organization || '-'}</td>
+                    <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{st.organization || '-'}</td>
                     <td className="px-4 py-3"><PriorityBadge priority={st.priority} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filtered.length === 0 && (
-              <div className="p-12 text-center text-neutral-400">未找到匹配的国际标准</div>
+              <div className="p-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配的国际标准</div>
             )}
           </div>
         </>
@@ -451,7 +451,7 @@ function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{selected.title}</h3>
                 <p className="font-mono text-secondary-600 dark:text-secondary-400 mt-1 text-sm">{selected.standard_code}</p>
                 {selected.title_en && (
-                  <p className="text-xs text-neutral-500 mt-1 italic">{selected.title_en}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 italic">{selected.title_en}</p>
                 )}
               </div>
               <div className="flex flex-col gap-2 items-end">
@@ -462,19 +462,19 @@ function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-sm">
               <div>
-                <p className="text-xs text-neutral-500 mb-1">发布机构</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">发布机构</p>
                 <p className="font-medium">{selected.organization || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">发布日期</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">发布日期</p>
                 <p className="font-medium">{selected.publish_date || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">实施日期</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">实施日期</p>
                 <p className="font-medium">{selected.implementation_date || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500 mb-1">标准类型</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">标准类型</p>
                 <p className="font-medium">{selected.category}</p>
               </div>
             </div>
@@ -574,7 +574,7 @@ export function RegulationBrowser({ onStandardSelect, className = '' }: Regulati
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold">合规标准检索中心</CardTitle>
-          <p className="text-sm text-neutral-500 mt-1">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
             收录 {gbStandards.length} 项 GB 国家标准 + {intlStandards.length} 项国际食品安全标准
           </p>
         </CardHeader>
@@ -601,7 +601,7 @@ export function RegulationBrowser({ onStandardSelect, className = '' }: Regulati
 
             <TabsContent value="gb">
               {gbLoading && (
-                <div className="p-12 text-center text-neutral-400 text-sm">正在加载 GB 国家标准数据...</div>
+                <div className="p-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在加载 GB 国家标准数据...</div>
               )}
               {gbError && (
                 <div className="p-6 text-center text-error-600 text-sm bg-error-50 dark:bg-error-900/10 rounded-lg">
@@ -615,7 +615,7 @@ export function RegulationBrowser({ onStandardSelect, className = '' }: Regulati
 
             <TabsContent value="intl">
               {intlLoading && (
-                <div className="p-12 text-center text-neutral-400 text-sm">正在加载国际标准数据...</div>
+                <div className="p-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在加载国际标准数据...</div>
               )}
               {intlError && (
                 <div className="p-6 text-center text-error-600 text-sm bg-error-50 dark:bg-error-900/10 rounded-lg">
