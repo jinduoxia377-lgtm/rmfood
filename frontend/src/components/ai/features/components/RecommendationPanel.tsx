@@ -271,9 +271,9 @@ function RecommendationPanel({
             </Badge>
           )}
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-neutral-400" />
+            <ChevronUp className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-neutral-400" />
+            <ChevronDown className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           )}
         </div>
       </div>
@@ -322,7 +322,7 @@ function RecommendationPanel({
                     </span>
                     {param.description && (
                       <Tooltip content={param.description}>
-                        <Info className="w-4 h-4 text-neutral-400" />
+                        <Info className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       </Tooltip>
                     )}
                   </div>
@@ -338,7 +338,7 @@ function RecommendationPanel({
                         onChange={e => handleParameterChange(param.id, Number(e.target.value))}
                         className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600"
                       />
-                      <div className="flex justify-between text-xs text-neutral-500">
+                      <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <span>{param.min ?? 0}{param.unit || ''}</span>
                         <span className="font-medium text-primary-600 dark:text-primary-400">
                           {(parameters[param.id] as number)?.toFixed(2) || param.default}{param.unit || ''}

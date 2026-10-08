@@ -141,11 +141,11 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
             </div>
             <div>
               <h2 className="font-semibold text-sm text-neutral-900 dark:text-white">知识库管理</h2>
-              <p className="text-[10px] text-neutral-400">RAG 向量检索 · 药食同源知识引擎</p>
+              <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">RAG 向量检索 · 药食同源知识引擎</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-            <X className="w-4 h-4 text-neutral-400" />
+            <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
               {isSeeded ? (
                 <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
               ) : isLoading ? (
-                <RefreshCw className="w-5 h-5 text-neutral-400 animate-spin flex-shrink-0" />
+                <RefreshCw className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-spin flex-shrink-0" />
               ) : (
                 <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
               )}
@@ -229,7 +229,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
           <div className="flex items-center gap-2">
             {/* 搜索 */}
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -239,7 +239,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
             </div>
             {/* 刷新 */}
             <button onClick={loadStatus} className="p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors" title="刷新">
-              <RefreshCw className="w-3.5 h-3.5 text-neutral-500" />
+              <RefreshCw className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </button>
           </div>
 
@@ -283,14 +283,14 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
                       <FileText className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{doc.filename}</p>
-                        <p className="text-[10px] text-neutral-400">{doc.chunks} 个片段</p>
+                        <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{doc.chunks} 个片段</p>
                       </div>
-                      <span className="text-[10px] text-neutral-400 flex-shrink-0">{new Date(doc.created_at).toLocaleDateString('zh-CN')}</span>
-                      {expanded ? <ChevronUp className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />}
+                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0">{new Date(doc.created_at).toLocaleDateString('zh-CN')}</span>
+                      {expanded ? <ChevronUp className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />}
                     </button>
                     {expanded && (
                       <div className="border-t border-neutral-100 dark:border-neutral-800 px-3 py-2 flex items-center justify-end gap-2">
-                        <span className="text-[10px] text-neutral-400 flex-1">点击删除将永久移除该文档的所有知识片段</span>
+                        <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-1">点击删除将永久移除该文档的所有知识片段</span>
                         <button
                           onClick={() => handleDelete(doc.filename)}
                           className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -309,7 +309,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
           {/* 上传进度 */}
           {uploading && (
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs text-neutral-500">
+              <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 <span>上传中… {uploadProgress}%</span>
               </div>

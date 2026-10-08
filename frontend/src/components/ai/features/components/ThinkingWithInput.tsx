@@ -132,7 +132,7 @@ const ThinkingStepItem: React.FC<{
       case 'processing': return 'text-secondary-500 border-blue-300 dark:text-secondary-400 dark:border-blue-600'
       case 'completed': return 'text-success-500 border-green-300 dark:text-success-400 dark:border-green-600'
       case 'error': return 'text-error-500 border-red-300 dark:text-error-400 dark:border-red-600'
-      default: return 'text-neutral-500 border-neutral-300'
+      default: return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] border-neutral-300'
     }
   }
 
@@ -361,7 +361,7 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
               </span>
             )}
           </div>
-          <div className="text-neutral-400">
+          <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             按 Enter 发送，Shift+Enter 换行
           </div>
         </div>

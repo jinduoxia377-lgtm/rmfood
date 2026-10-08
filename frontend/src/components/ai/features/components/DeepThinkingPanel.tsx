@@ -157,7 +157,7 @@ const SuggestedQuestionCard: React.FC<{
     <span className="flex-1 text-left truncate group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors">
       {question}
     </span>
-    <span className="text-[10px] text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
+    <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
       点击应用
     </span>
   </button>
@@ -300,7 +300,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                 title="分析历史"
                 aria-label="查看分析历史"
               >
-                <History className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
+                <History className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-500" />
               </button>
               <button
                 onClick={handleCopyToClipboard}
@@ -311,7 +311,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                 {copied ? (
                   <Check className="w-4 h-4 text-success-500" />
                 ) : (
-                  <Copy className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
+                  <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-500" />
                 )}
               </button>
               <button
@@ -320,7 +320,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                 title="导出JSON报告"
                 aria-label="导出分析报告"
               >
-                <Download className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
+                <Download className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-500" />
               </button>
             </>
           )}
@@ -329,7 +329,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             className="p-1.5 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-all hover:scale-110 ml-1"
             aria-label="关闭深度分析"
           >
-            <X className="w-4 h-4 text-neutral-400 hover:text-error-500" />
+            <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500" />
           </button>
         </div>
       </div>
@@ -352,7 +352,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                  role="button" tabIndex={0} onClick={() => onApplyQuestion(item.analysis.suggestedQuestions[0] || '')}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-neutral-500">{formatTimestamp(item.timestamp)}</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTimestamp(item.timestamp)}</span>
                   <span className={`text-xs font-medium ${
                     SENTIMENT_LABELS[item.analysis.sentiment].color
                   }`}>

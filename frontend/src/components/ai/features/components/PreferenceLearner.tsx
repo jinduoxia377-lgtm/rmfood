@@ -440,7 +440,7 @@ function PreferenceLearner({
                   <span className="text-neutral-600 dark:text-neutral-400">
                     #{idx + 1} · {new Date(profile.createdAt).toLocaleString('zh-CN')}
                   </span>
-                  <span className="text-neutral-500">
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {profile.ratings.length} 维度评分
                   </span>
                 </div>
