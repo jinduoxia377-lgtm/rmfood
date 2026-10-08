@@ -97,7 +97,7 @@ export function StatCard({
                 'flex items-center gap-0.5 text-xs font-normal shrink-0 leading-normal',
                 trend.direction === 'up'   ? 'text-emerald-600 dark:text-emerald-400'
               : trend.direction === 'down' ? 'text-error-600 dark:text-error-400'
-              :                              'text-neutral-400',
+              : 'text-[color:var(--text-muted)]',
               )}>
                 {trendIcon(trend.direction, 'w-3 h-3')}
                 {trend.value}
@@ -109,7 +109,7 @@ export function StatCard({
         {/* 副标题 */}
         {subtitle && (
           <p className={cn(
-            'text-neutral-400 dark:text-neutral-500 leading-relaxed',
+            'text-[color:var(--text-muted)] leading-relaxed',
             isLg ? 'text-sm' : 'text-xs',
           )}>{subtitle}</p>
         )}
