@@ -77,7 +77,15 @@ const MultiObjectivePanel = lazy(() => import('@/components/ai/features/MultiObj
 const FormulaInputWithOptimization = lazy(() => import('@/components/ai/features/FormulaInputWithOptimization').then(m => ({ default: m.FormulaInputWithOptimization })));
 const AgentWorkflowTab = lazy(() => import('@/components/ai/features/AgentWorkflowTab').then(m => ({ default: m.AgentWorkflowTab })));
 
-// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
+// Tab 分组导航专属主题色板 — 桌面/移动共用（原 L577/L672 两份逐字重复，抽成模块级常量 P3-10）
+// 注：这些色族是分组导航的「标识色」（emerald/blue/amber 各自成套），属设计意图内的多色系装饰层。
+const TAB_GROUP_ACCENTS = [
+  { bar: 'bg-emerald-500',  bgActive: 'bg-emerald-50 dark:bg-emerald-950/30', textActive: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20',       iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', iconText: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800/50', subtext: 'text-emerald-600/60 dark:text-emerald-400/60', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
+  { bar: 'bg-blue-500',     bgActive: 'bg-blue-50 dark:bg-blue-950/30',        textActive: 'text-blue-700 dark:text-blue-300',      ring: 'ring-blue-500/20',          iconBg: 'bg-blue-100 dark:bg-blue-900/40',    iconText: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-200 dark:border-blue-800/50',   subtext: 'text-blue-600/60 dark:text-blue-400/60',  badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' },
+  { bar: 'bg-amber-500',    bgActive: 'bg-amber-50 dark:bg-amber-950/30',      textActive: 'text-amber-700 dark:text-amber-300',    ring: 'ring-amber-500/20',         iconBg: 'bg-amber-100 dark:bg-amber-900/40',   iconText: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-200 dark:border-amber-800/50', subtext: 'text-amber-600/60 dark:text-amber-400/60', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
+];
+
+// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
 function TabLoadingSkeleton() {
   return (
     <div className="p-6 space-y-4">
@@ -344,7 +352,7 @@ export default function AIAssistantPage() {
         {isMobile && mobileMenuOpen && (
           <div
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm sm:hidden"
-             role="button" tabIndex={0} onClick={closeMobileMenu}
+             onClick={closeMobileMenu}
             aria-hidden="true"
           />
         )}
@@ -367,7 +375,7 @@ export default function AIAssistantPage() {
               </div>
               <button
                 onClick={closeMobileMenu}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
                 aria-label="关闭菜单"
               >
                 <X className="w-5 h-5 text-neutral-500" />
@@ -426,7 +434,7 @@ export default function AIAssistantPage() {
                 <h2 className="text-xl font-semibold leading-snug tracking-tight">
                   AI 智能助手中心
                 </h2>
-                <p className="mt-1 text-white/80 text-sm">
+                <p className="mt-1 text-sm text-white/90 dark:text-emerald-950/80">
                   智能对话 · 配方生成 · 安全检查 · 协同分析
                 </p>
               </div>
@@ -491,7 +499,6 @@ export default function AIAssistantPage() {
               variant="primary"
               size="large"
               subtitle={`累计 ${chatCount > 0 ? chatCount.toLocaleString() : '0'} 次对话`}
-              trend={{ direction: 'up' as const, value: '+12%' }}
               className="cursor-pointer"
               onClick={() => handleStatCardClick('chat', '智能对话')}
             />
@@ -502,7 +509,6 @@ export default function AIAssistantPage() {
               variant="secondary"
               size="large"
               subtitle={`累计生成 ${generateCount > 0 ? generateCount.toLocaleString() : '0'} 个配方`}
-              trend={{ direction: 'up' as const, value: '+8%' }}
               className="cursor-pointer"
               onClick={() => handleStatCardClick('generate', '配方生成')}
             />
@@ -523,7 +529,6 @@ export default function AIAssistantPage() {
               variant="success"
               size="large"
               subtitle={`累计分析 ${synergyCount > 0 ? synergyCount.toLocaleString() : '0'} 次`}
-              trend={{ direction: 'up' as const, value: '+5%' }}
               className="cursor-pointer"
               onClick={() => handleStatCardClick('synergy', '协同分析')}
             />
@@ -574,12 +579,7 @@ export default function AIAssistantPage() {
                   const GroupIcon = group.icon;
                   const isActive = group.tabs.some((t) => t.value === tab);
                   // 每组的专属主题色
-                  const accentColors = [
-                    { bar: 'bg-emerald-500',  bgActive: 'bg-emerald-50 dark:bg-emerald-950/30', textActive: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20',       iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', iconText: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800/50', subtext: 'text-emerald-600/60 dark:text-emerald-400/60', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
-                    { bar: 'bg-blue-500',     bgActive: 'bg-blue-50 dark:bg-blue-950/30',        textActive: 'text-blue-700 dark:text-blue-300',      ring: 'ring-blue-500/20',          iconBg: 'bg-blue-100 dark:bg-blue-900/40',    iconText: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-200 dark:border-blue-800/50',   subtext: 'text-blue-600/60 dark:text-blue-400/60',  badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' },
-                    { bar: 'bg-amber-500',    bgActive: 'bg-amber-50 dark:bg-amber-950/30',      textActive: 'text-amber-700 dark:text-amber-300',    ring: 'ring-amber-500/20',         iconBg: 'bg-amber-100 dark:bg-amber-900/40',   iconText: 'text-amber-600 dark:text-amber-400',   border: 'border-amber-200 dark:border-amber-800/50', subtext: 'text-amber-600/60 dark:text-amber-400/60', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
-                  ];
-                  const c = accentColors[groupIdx] ?? accentColors[0];
+                  const c = TAB_GROUP_ACCENTS[groupIdx] ?? TAB_GROUP_ACCENTS[0];
 
                   return (
                     <div
@@ -587,30 +587,30 @@ export default function AIAssistantPage() {
                       className={`relative rounded-xl border transition-all duration-200 ${
                         isActive
                           ? `${c.border} bg-white dark:bg-neutral-900 shadow-sm ring-1 ${c.ring}`
-                          : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600'
+                          : 'border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-500'
                       }`}
                     >
                       {/* 顶部主题色条 */}
-                      <div className={`absolute top-0 left-4 right-4 h-[2px] rounded-full transition-colors duration-200 ${isActive ? c.bar : 'bg-neutral-200 dark:bg-neutral-700'}`} />
+                      <div className={`absolute top-0 left-4 right-4 h-[2px] rounded-full transition-colors duration-200 ${isActive ? c.bar : 'bg-neutral-200 dark:bg-neutral-500'}`} />
 
                       {/* 分组标题 */}
                       <div className={`flex items-center gap-2.5 px-4 py-3.5 border-b transition-colors duration-150 ${
                         isActive
                           ? `${c.border} ${c.bgActive}`
-                          : 'border-neutral-100 dark:border-neutral-800'
+                          : 'border-neutral-100 dark:border-neutral-700'
                       }`}>
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
                           isActive ? c.iconBg : 'bg-neutral-100 dark:bg-neutral-800'
                         }`}>
                           <GroupIcon className={`w-4 h-4 transition-colors duration-150 ${
-                            isActive ? c.iconText : 'text-neutral-400 dark:text-neutral-500'
+                            isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                           }`} aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block transition-colors duration-150 ${
-                            isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-500'
+                            isActive ? c.textActive : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                           }`}>{group.label}</span>
-                          <span className={`text-[11px] transition-colors duration-150 ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-600'}`}>
+                          <span className={`text-[11px] transition-colors duration-150 ${isActive ? c.subtext : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                             {group.tabs.length} 个功能
                           </span>
                         </div>
@@ -637,7 +637,7 @@ export default function AIAssistantPage() {
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive} shadow-sm`
-                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-300'
+                                  : 'text-neutral-500 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-100'
                               }`}
                             >
                               <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
@@ -669,12 +669,7 @@ export default function AIAssistantPage() {
                 {tabGroups.map((group, groupIdx) => {
                   const GroupIcon = group.icon;
                   const isActive = group.tabs.some((t) => t.value === tab);
-                  const accentColors = [
-                    { bar: 'bg-emerald-500',  bgActive: 'bg-emerald-50 dark:bg-emerald-950/30', textActive: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20',       iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', iconText: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800/50', subtext: 'text-emerald-600/60 dark:text-emerald-400/60', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
-                    { bar: 'bg-blue-500',     bgActive: 'bg-blue-50 dark:bg-blue-950/30',        textActive: 'text-blue-700 dark:text-blue-300',      ring: 'ring-blue-500/20',          iconBg: 'bg-blue-100 dark:bg-blue-900/40',    iconText: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-200 dark:border-blue-800/50',   subtext: 'text-blue-600/60 dark:text-blue-400/60',  badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' },
-                    { bar: 'bg-amber-500',    bgActive: 'bg-amber-50 dark:bg-amber-950/30',      textActive: 'text-amber-700 dark:text-amber-300',    ring: 'ring-amber-500/20',         iconBg: 'bg-amber-100 dark:bg-amber-900/40',   iconText: 'text-amber-600 dark:text-amber-400',   border: 'border-amber-200 dark:border-amber-800/50', subtext: 'text-amber-600/60 dark:text-amber-400/60', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
-                  ];
-                  const c = accentColors[groupIdx] ?? accentColors[0];
+                  const c = TAB_GROUP_ACCENTS[groupIdx] ?? TAB_GROUP_ACCENTS[0];
                   return (
                     <div
                       key={group.key}
@@ -691,7 +686,7 @@ export default function AIAssistantPage() {
                         isActive ? c.border : 'border-neutral-100 dark:border-neutral-800'
                       }`}>
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? c.iconBg : 'bg-neutral-100 dark:bg-neutral-800'}`}>
-                          <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-neutral-400'}`} />
+                          <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-500'}`}>{group.label}</span>
@@ -718,7 +713,7 @@ export default function AIAssistantPage() {
                               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-150 ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive}`
-                                  : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50'
+                                  : 'text-neutral-500 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50'
                               }`}
                             >
                               <TabIcon className="w-3.5 h-3.5" />
@@ -737,7 +732,7 @@ export default function AIAssistantPage() {
             {/* Tab Panels — 条件渲染，避免 Radix Tabs 状态冲突 */}
             <div className="mt-4">
               {tab === 'agent' && (
-                <div className="h-[calc(100vh-12rem)]">
+                <div role="tabpanel" id="panel-agent" aria-label="Agent 工作流 面板" className="h-[calc(100vh-12rem)]">
                   <Suspense fallback={<TabLoadingSkeleton />}>
                     <ErrorBoundary moduleName="Agent 工作流">
                       <AgentWorkflowTab />
@@ -747,23 +742,32 @@ export default function AIAssistantPage() {
               )}
               {tab === 'chat' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="智能对话">
-                    <ChatStateProvider>
-                      <ChatTab />
-                    </ChatStateProvider>
-                  </ErrorBoundary>
+
+                  <div role="tabpanel" id="panel-chat" aria-label="智能对话 面板">
+                    <ErrorBoundary moduleName="智能对话">
+                      <ChatStateProvider>
+                        <ChatTab />
+                      </ChatStateProvider>
+                    </ErrorBoundary>
+                  </div>
                 </Suspense>
               )}
               {tab === 'generate' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="配方生成">
+
+                  <div role="tabpanel" id="panel-generate" aria-label="配方生成 面板">
+                    <ErrorBoundary moduleName="配方生成">
                     <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'genetic' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <div className="mb-4">
+
+                  <div role="tabpanel" id="panel-genetic" aria-label="遗传优化 面板">
+                    <div className="mb-4">
                     <Tabs
                       value={geneticMode}
                       onValueChange={(v) => {
@@ -800,64 +804,97 @@ export default function AIAssistantPage() {
                           <FormulaInputWithOptimization />
                         </Suspense>
                       </TabsContent>
-                    </Tabs>
+                      </Tabs>
+                    </div>
                   </div>
                 </Suspense>
               )}
               {tab === 'safety' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="安全检查">
+
+                  <div role="tabpanel" id="panel-safety" aria-label="安全检查 面板">
+                    <ErrorBoundary moduleName="安全检查">
                     <SafetyTab />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'synergy' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="协同分析">
+
+                  <div role="tabpanel" id="panel-synergy" aria-label="协同分析 面板">
+                    <ErrorBoundary moduleName="协同分析">
                     <SynergyTab />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'taste' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="口感预测">
+
+                  <div role="tabpanel" id="panel-taste" aria-label="口感预测 面板">
+                    <ErrorBoundary moduleName="口感预测">
                     <TastePredictTab />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'stability' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="稳定性评估">
+
+                  <div role="tabpanel" id="panel-stability" aria-label="稳定性评估 面板">
+                    <ErrorBoundary moduleName="稳定性评估">
                     <StabilityPredictTab />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'peptide-analyze' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="肽序列分析">
+
+                  <div role="tabpanel" id="panel-peptide-analyze" aria-label="肽序列分析 面板">
+                    <ErrorBoundary moduleName="肽序列分析">
                     <AdvancedPeptideAnalyzer />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'peptide-design' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="肽设计优化">
+
+                  <div role="tabpanel" id="panel-peptide-design" aria-label="肽设计优化 面板">
+                    <ErrorBoundary moduleName="肽设计优化">
                     <AdvancedPeptideDesign />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'knowledge' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="知识库">
+
+                  <div role="tabpanel" id="panel-knowledge" aria-label="知识库 面板">
+                    <ErrorBoundary moduleName="知识库">
                     <KnowledgeBasePanel isEmbedded />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
               {tab === 'config' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <ErrorBoundary moduleName="配置管理">
+
+                  <div role="tabpanel" id="panel-config" aria-label="配置管理 面板">
+                    <ErrorBoundary moduleName="配置管理">
                     <ConfigManagementPanel />
                   </ErrorBoundary>
+
+                  </div>
                 </Suspense>
               )}
             </div>
