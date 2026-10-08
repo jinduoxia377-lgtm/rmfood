@@ -62,7 +62,7 @@ function JsonView({ data }: { data: Record<string, unknown> }) {
       {Object.entries(data).map(([k, v]) => (
         <div key={k} className="flex gap-2">
           <span className="text-neutral-800 dark:text-neutral-300">{k}:</span>
-          <span className="text-neutral-500 truncate">
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">
             {typeof v === 'string' ? `"${v}"` : JSON.stringify(v)}
           </span>
         </div>
@@ -111,20 +111,20 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
             {isRunning ? '运行中' : isCompleted ? '已完成' : isError ? '错误' : '等待'}
           </span>
           {selectedCall.durationMs !== undefined && isCompleted && (
-            <span className="text-[10px] text-neutral-400 ml-auto">{selectedCall.durationMs}ms</span>
+            <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{selectedCall.durationMs}ms</span>
           )}
         </div>
 
         {/* 参数 */}
         <div>
-          <div className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">参数</div>
+          <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">参数</div>
           <JsonView data={selectedCall.arguments} />
         </div>
 
         {/* 结果 */}
         {selectedCall.result && (
           <div>
-            <div className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider mb-1">结果</div>
+            <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">结果</div>
             <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2 text-[11px] font-mono text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
               {selectedCall.result}
             </div>

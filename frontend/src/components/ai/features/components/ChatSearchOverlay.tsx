@@ -148,7 +148,7 @@ export function ChatSearchOverlay({ messages, onGoToMessage, onClose }: ChatSear
 
       {/* 搜索栏 */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-neutral-100 dark:border-neutral-800">
-        <Search className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
+        <Search className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" />
         <input
           ref={inputRef}
           value={query}

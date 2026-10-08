@@ -79,7 +79,7 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
         </span>
 
         {/* 展开箭头 */}
-        <ChevronRight className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-150 flex-shrink-0 ${expanded ? 'rotate-90' : ''}`} />
+        <ChevronRight className={`w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform duration-150 flex-shrink-0 ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
       {/* 展开内容 — 内联展示 */}
@@ -94,9 +94,9 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
             <div
               key={i}
               className={`flex items-start gap-1.5 py-0.5 text-[11px] ${
-                step.status === 'thinking' ? 'text-neutral-500' :
-                step.status === 'complete' ? 'text-neutral-600 dark:text-neutral-400' :
-                'text-neutral-400 dark:text-neutral-600'
+                step.status === 'thinking' ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' :
+                step.status === 'complete' ? 'text-neutral-600 dark:text-neutral-300' :
+                'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
               }`}
             >
               {/* 步骤状态 */}
@@ -123,7 +123,7 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
 
           {/* 流式思考中 — 追加动态行 */}
           {isThinking && (
-            <div className="flex items-center gap-1.5 py-0.5 text-[11px] text-neutral-400">
+            <div className="flex items-center gap-1.5 py-0.5 text-[11px] text-[color:var(--text-muted)]">
               <Loader2 className="w-2.5 h-2.5 text-emerald-500 animate-spin flex-shrink-0" />
               <span>正在分析配方需求…</span>
             </div>

@@ -261,7 +261,7 @@ export default function ChatInputPro({
           {showSlashMenu && (
             <div className="absolute bottom-full left-0 mb-2 w-52 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-50 overflow-hidden">
               <div className="px-3 py-1.5 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-700">
-                <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">指令</span>
+                <span className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">指令</span>
               </div>
               <div className="py-1">
                 {SLASH_COMMANDS.map(cmd => (
@@ -270,7 +270,7 @@ export default function ChatInputPro({
                     className="w-full px-3 py-2 text-left text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center justify-between gap-2 transition-colors"
                   >
                     <span className="font-mono text-emerald-600 dark:text-emerald-400 text-xs">/{cmd.command}</span>
-                    <span className="text-neutral-400 text-xs">{cmd.desc}</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{cmd.desc}</span>
                   </button>
                 ))}
               </div>

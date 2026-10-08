@@ -97,8 +97,7 @@ export const StartConversationCard = React.forwardRef<
                 }}
                 className={cn(
                   'rounded-full border px-3 py-1.5 text-xs font-medium',
-                  'border-neutral-300 bg-white',
-                  'dark:border-neutral-600 dark:bg-neutral-800',
+                  'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800',
                   'transition-colors duration-150',
                   'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700',
                   'dark:hover:border-primary-600 dark:hover:bg-primary-900/30 dark:hover:text-primary-300',
