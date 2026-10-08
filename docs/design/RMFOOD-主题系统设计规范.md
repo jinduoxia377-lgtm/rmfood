@@ -1076,6 +1076,20 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 > **2026-10-07 深色漏配清零完全收尾登记**（提交 `1475a76`）：`DashboardPage.tsx` 剩余 TeamActivity WIP（11 行）经用户确认「保留该功能」后纳管提交，全库 A 类深色漏配**完全清零 104 文件 / 350 行 → 0 / 0**，WIP 隔离收尾。
 
+> **2026-10-08 /ai 页设计修复登记**（提交 `4ff6b78`，P0 令牌化 + P1 假数据 + P2 ARIA + P3 常量去重）：承接 /ai 页（`AIAssistantPage.tsx`）设计深度核查（`ai-audit-logged.cjs` 探针实测：亮 15 处 / 暗 38 处对比度不达标，根因整树游离于主题令牌之外写死字面值），逐项修复：
+> 1. **P0 主题令牌化**：① 全局组件 `StatCard.tsx` L112 副标题 `text-neutral-400 dark:text-neutral-500` → `text-[color:var(--text-muted)]`（L0 语义令牌，影响面最大）；② `AIAssistantPage.tsx` 组导航未选中态（组标题/副文本/图标）字面灰阶 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`，未选中 Tab 标签 `dark:text-neutral-400`（on neutral-800 = 3.86:1）→ `dark:text-neutral-200`（4.9:1）+ hover 同步 neutral-100，组卡未选中边框/色条/图标底/组头下划线 `dark:bg|border-neutral-700/800` 提升一档至 neutral-500/600/700；③ 横幅副标题（`surface-primary` 上 `text-white/80` 暗色 3:1）——**不改 base.css/dark.css 的 `--color-primary-surface` 令牌**（D-56 令牌改会影响 23+ 个 D-50 消费面 + 门禁回归风险），改页级双模式类 `text-white/90 dark:text-emerald-950/80`（亮 5.5:1 / 暗 ≈ 7:1）。
+> 2. **P1 内容诚信**：删 3 处硬编码假趋势值（`+12%`/`+8%`/`+5%`）——统计卡数值为真实累计（`useAISummaryStats`），趋势百分比却写死"上涨"，0 次对话也显示 "+12%" 属误导性虚假指标，删后 StatCard 不渲染 trend 区。
+> 3. **P2 可访问性**：① 12 个条件渲染 tab 面板补 `role="tabpanel" id="panel-{value}" aria-label`（tab 触发器 `aria-controls="panel-xxx"` 原本指向不存在的 id = ARIA 关系断裂），agent 面板在其外层原生 div 上加属性；② 移动端汉堡遮罩去 `role="button" + tabIndex=0`（aria-hidden 元素不应可聚焦）。
+> 4. **P3 可维护性**：桌面/移动两套 `accentColors`（3 行 × 2 处逐字重复）抽成模块级常量 `TAB_GROUP_ACCENTS`，单点维护。
+> **终态**：tsc 0 错 · div 平衡 45/42 差 3（基线 34/31 差 3，加 12 对 tabpanel 维持差 3）· 双模式导航层不达标清零（剩余 9 亮 / 34 暗项均来自默认渲染 chat 标签页内部组件 `ChatTab`/`ChatInputArea`/`SearchModal` 的字面灰阶，非本页面导航层，留待下一轮）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
+
+> **2026-10-08 /ai 页设计修复登记**（提交 `4ff6b78`，P0 令牌化 + P1 假数据 + P2 ARIA + P3 常量去重）：承接 /ai 页（`AIAssistantPage.tsx`）设计深度核查（`ai-audit-logged.cjs` 探针实测：亮 15 处 / 暗 38 处对比度不达标，根因整树游离于主题令牌之外写死字面值），逐项修复：
+> 1. **P0 主题令牌化**：① 全局组件 `StatCard.tsx` L112 副标题 `text-neutral-400 dark:text-neutral-500` → `text-[color:var(--text-muted)]`（L0 语义令牌，影响面最大）；② `AIAssistantPage.tsx` 组导航未选中态（组标题/副文本/图标）字面灰阶 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`，未选中 Tab 标签 `dark:text-neutral-400`（on neutral-800 = 3.86:1）→ `dark:text-neutral-200`（4.9:1）+ hover 同步 neutral-100，组卡未选中边框/色条/图标底/组头下划线 `dark:bg|border-neutral-700/800` 提升一档至 neutral-500/600/700；③ 横幅副标题（`surface-primary` 上 `text-white/80` 暗色 3:1）——**不改 base.css/dark.css 的 `--color-primary-surface` 令牌**（D-56 令牌改会影响 23+ 个 D-50 消费面 + 门禁回归风险），改页级双模式类 `text-white/90 dark:text-emerald-950/80`（亮 5.5:1 / 暗 ≈ 7:1）。
+> 2. **P1 内容诚信**：删 3 处硬编码假趋势值（`+12%`/`+8%`/`+5%`）——统计卡数值为真实累计（`useAISummaryStats`），趋势百分比却写死"上涨"，0 次对话也显示 "+12%" 属误导性虚假指标，删后 StatCard 不渲染 trend 区。
+> 3. **P2 可访问性**：① 12 个条件渲染 tab 面板补 `role="tabpanel" id="panel-{value}" aria-label`（tab 触发器 `aria-controls="panel-xxx"` 原本指向不存在的 id = ARIA 关系断裂），agent 面板在其外层原生 div 上加属性；② 移动端汉堡遮罩去 `role="button" + tabIndex=0`（aria-hidden 元素不应可聚焦）。
+> 4. **P3 可维护性**：桌面/移动两套 `accentColors`（3 行 × 2 处逐字重复）抽成模块级常量 `TAB_GROUP_ACCENTS`，单点维护。
+> **终态**：tsc 0 错 · div 平衡 45/42 差 3（基线 34/31 差 3，加 12 对 tabpanel 维持差 3）· 双模式导航层不达标清零（剩余 9 亮 / 34 暗项均来自默认渲染 chat 标签页内部组件 `ChatTab`/`ChatInputArea`/`SearchModal` 的字面灰阶，非本页面导航层，留待下一轮）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
