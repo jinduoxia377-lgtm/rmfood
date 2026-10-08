@@ -232,7 +232,7 @@ export default function ChatInputPro({
                 maxLength={maxLength}
                 disabled={disabled || isStreaming}
                 rows={1}
-                className="flex-1 resize-none bg-transparent border-0 px-3 py-2.5 text-[14px] leading-[22px] placeholder:text-neutral-400 dark:placeholder:text-neutral-600 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 disabled:opacity-50"
+                className="flex-1 resize-none bg-transparent border-0 px-3 py-2.5 text-[14px] leading-[22px] placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 disabled:opacity-50"
                 style={{ minHeight: `${MIN_HEIGHT - 20}px`, maxHeight: `${MAX_HEIGHT - 20}px` }}
                 aria-label="消息输入"
               />
@@ -280,7 +280,7 @@ export default function ChatInputPro({
 
         {/* 提示文本 */}
         <div className="mt-1.5 px-1">
-          <span className="text-[10px] text-neutral-300 dark:text-neutral-700">
+          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             Enter 发送 · Shift+Enter 换行 · Esc 清空 · 拖拽图片上传
           </span>
         </div>

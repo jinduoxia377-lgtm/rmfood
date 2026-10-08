@@ -71,24 +71,24 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {/* 输入区 */}
         <div className="flex items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-          <Search className="w-5 h-5 text-neutral-400 flex-shrink-0" />
+          <Search className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" />
           <input
             ref={inputRef}
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索配方、药材、分析工具..."
-            className="flex-1 ml-3 bg-transparent text-base focus:outline-none text-neutral-900 dark:text-white placeholder:text-neutral-400"
+            className="flex-1 ml-3 bg-transparent text-base focus:outline-none text-neutral-900 dark:text-white placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)]"
             aria-label="搜索内容"
           />
           <button
             onClick={handleClose}
-            className="ml-2 p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400"
+            className="ml-2 p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
             aria-label="关闭搜索"
           >
             <X className="w-4 h-4" />
           </button>
-          <kbd className="ml-3 px-2 py-1 text-xs font-mono text-neutral-400 bg-neutral-100 dark:bg-neutral-700 rounded">
+          <kbd className="ml-3 px-2 py-1 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-100 dark:bg-neutral-700 rounded">
             ESC
           </kbd>
         </div>
@@ -96,7 +96,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         {/* 结果区 */}
         <div className="max-h-96 overflow-y-auto p-2">
           {isSearching ? (
-            <div className="px-4 py-8 text-center text-sm text-neutral-400">搜索中...</div>
+            <div className="px-4 py-8 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">搜索中...</div>
           ) : results.length > 0 ? (
             <div className="space-y-1">
               {results.map((r) => (
@@ -117,16 +117,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     />
                     <div>
                       <div className="text-sm font-medium text-neutral-900 dark:text-white">{r.title}</div>
-                      <div className="text-xs text-neutral-500 truncate">{r.snippet}</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{r.snippet}</div>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
           ) : query.trim() ? (
-            <div className="px-4 py-8 text-center text-sm text-neutral-400">未找到匹配 "{query}" 的结果</div>
+            <div className="px-4 py-8 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配 "{query}" 的结果</div>
           ) : (
-            <div className="px-4 py-8 text-center text-sm text-neutral-400">输入关键词开始搜索</div>
+            <div className="px-4 py-8 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">输入关键词开始搜索</div>
           )}
         </div>
       </div>
