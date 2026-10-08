@@ -1101,6 +1101,17 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：chat 域核心组件（MessageBubble 14 原生 button / TopBar 14 / ChatHistory 9 / ChatInput 6）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按「主题令牌达标 + 视觉一致性」口径仅做令牌化，不改动控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入残余项，留待后续轮次。
 > **终态**：tsc 0 错 · `chat-audit-leaks` 漏配扫描 24 → 0 · 双模式渲染探针（`ai-audit-settled.cjs` 不 reload 直接切主题 3s settle）：chat 域内部组件对比度达标，剩余 4 亮 / 24 暗项为页面层 `SearchModal`/`CommandPalette` 的 ⌘K/ESC kbd 与横幅副标题（非 chat 域子功能组件，属 /ai 页主体，已在 4ff6b78 处理口径内）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
 
+> **2026-10-08 /ai agent-workflow 域样板轮登记**（提交 `0e5ef0f`，主题令牌达标 + 视觉一致性）：承接 chat 域样板轮（426ecf3 + 4d951c8），复用同一模板对 12 个子功能域中的 **agent-workflow（Agent 工作流）域** 做第二轮专业规范审计与修复（用户「进行下一步」确认：同模板推进下一域）。审计方法：`agent-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（5 文件 / 11 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - `shared/StageProgress.tsx`（4 处）：进行中脉冲 / 阶段耗时 / 初始化空态 / 流程图示意 `text-neutral-400`
+>    - `shared/AgentMessageList.tsx`（3 处）：消息时间戳 / 运行中指示器（`text-neutral-500`）/ 执行统计
+>    - `shared/ToolCallDisplay.tsx`（3 处）：执行中脉冲 / 工具耗时 / 准备调用空态
+>    - `pro/WorkflowNodeVisualizer.tsx`（2 处）：`STAGE_COLORS.pending` 态文本色 / 执行描述
+>    - `AgentWorkflowTab.tsx`（1 处）：StepBadge pending 态 Circle 图标 `text-slate-400`
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：agent-workflow 域组件（StageProgress / AgentMessageList / ToolCallDisplay / WorkflowNodeVisualizer）为纯展示型共享组件，0 原生 button/input，不存在控件复用问题；留白与对齐继承自布局容器。本轮按口径仅做令牌化，未改结构（避免交互行为变化与回归风险）。
+> **终态**：tsc 0 错（全仓）· `agent-audit-leaks` 漏配扫描 11 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与 chat 域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，agent 域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
