@@ -93,7 +93,7 @@ export default function FormulaCard({ data }: { data: FormulaData }) {
                     <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
                     <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
                     <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 ml-1">{ing.name}</span>
-                    <span className="text-[11px] text-neutral-400 ml-auto">{ing.dosage}</span>
+                    <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{ing.dosage}</span>
                   </div>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{ing.purpose}</p>
                 </div>

@@ -131,10 +131,10 @@ function SettingsMenu({
       {/* 配方面板 */}
       <button onClick={onShowFormulaList}
         className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors">
-        <FileText className="w-4 h-4 text-neutral-400" />
+        <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         <div className="flex-1 min-w-0">
           <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">配方面板</div>
-          {formulaCount > 0 && <div className="text-[10px] text-neutral-400">{formulaCount} 条配方</div>}
+          {formulaCount > 0 && <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formulaCount} 条配方</div>}
         </div>
       </button>
       {/* 分隔 */}
@@ -142,7 +142,7 @@ function SettingsMenu({
       {/* 清除 */}
       {showConfirm ? (
         <div className="px-3 py-2">
-          <p className="text-[10px] text-neutral-500 mb-2">清空 {messageCount} 条对话？</p>
+          <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">清空 {messageCount} 条对话？</p>
           <div className="flex gap-1.5">
             <button onClick={() => { onClearChat(); setShowConfirm(false) }}
               className="flex-1 px-2 py-1 text-[10px] bg-red-500 text-white rounded hover:bg-red-600 transition-colors">确认</button>
@@ -194,7 +194,7 @@ export function TopBar({
           className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs transition-colors ${
             historyVisible
               ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
-              : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
           }`}
           title="对话历史"
         >
@@ -215,7 +215,7 @@ export function TopBar({
             className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
             <span className={currentModel.color}><Leaf className="w-3 h-3" /></span>
             <span className="hidden md:inline">{currentModel.label}</span>
-            <ChevronDown className="w-3 h-3 text-neutral-400" />
+            <ChevronDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         }>
           {MODELS.map(m => (
@@ -224,7 +224,7 @@ export function TopBar({
               <span className={m.color}><Leaf className="w-3.5 h-3.5" /></span>
               <div>
                 <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">{m.label}</div>
-                <div className="text-[10px] text-neutral-400">{m.desc}</div>
+                <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.desc}</div>
               </div>
             </button>
           ))}
@@ -243,7 +243,7 @@ export function TopBar({
           title={`切换角色：${currentScenario.label}`}
           className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
         >
-          <ScenarioIcon className="w-3.5 h-3.5 text-neutral-500" />
+          <ScenarioIcon className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="hidden sm:inline">{currentScenario.label}</span>
         </button>
 
@@ -269,10 +269,10 @@ export function TopBar({
               ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
               : ragEnabled && ragIsSeeding
                 ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 cursor-wait'
-                : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-700'
+                : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:border-neutral-300 dark:hover:border-neutral-700'
           }`}
         >
-          <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-emerald-500' : 'text-neutral-400'}`} />
+          <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-emerald-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
           <span className="hidden sm:inline">
             {ragIsSeeding ? '初始化…' : ragEnabled && ragIsSeeded ? '知识库ON' : !ragEnabled ? '知识库OFF' : '准备中'}
           </span>
@@ -306,7 +306,7 @@ export function TopBar({
             className={`p-1.5 rounded-md transition-colors ${
               searchOpen
                 ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
           >
             <SearchIcon className="w-4 h-4" />

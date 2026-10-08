@@ -142,7 +142,7 @@ export default function ChatHistory({
                       autoFocus
                     />
                     <button onClick={() => confirmRename(session.id)} className="p-0.5 text-success-500 hover:text-success-600"><Check className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setEditingId(null)} className="p-0.5 text-neutral-400 hover:text-neutral-600"><X className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditingId(null)} className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300"><X className="w-3.5 h-3.5" /></button>
                   </div>
                 ) : (
                   /* 显示模式 */
@@ -151,7 +151,7 @@ export default function ChatHistory({
                     className="w-full text-left p-2"
                   >
                     <div className="flex items-start gap-2">
-                      <MessageSquare className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${isActive ? 'text-primary-500' : 'text-neutral-400'}`} />
+                      <MessageSquare className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${isActive ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
                           {session.title || '新对话'}

@@ -250,7 +250,7 @@ export function MessageList({
 						<Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
 					</div>
 					<h3 className="text-lg font-semibold text-neutral-800">开始新对话</h3>
-					<p className="text-sm text-neutral-500 max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
+					<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
 					{QUICK_ACTIONS.map((action, i) => (
@@ -260,7 +260,7 @@ export function MessageList({
 							</div>
 							<div>
 								<div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{action.title}</div>
-								<div className="text-xs text-neutral-500 mt-0.5">{action.desc}</div>
+								<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{action.desc}</div>
 							</div>
 						</button>
 					))}

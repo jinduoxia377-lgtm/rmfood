@@ -96,7 +96,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
           onClick={toggleAll}
           className="flex items-center gap-1.5 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors group"
         >
-          <Cpu className={`w-3.5 h-3.5 ${isThinking ? 'text-primary-500 animate-pulse' : 'text-neutral-400'}`} />
+          <Cpu className={`w-3.5 h-3.5 ${isThinking ? 'text-primary-500 animate-pulse' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
           <span className="font-medium">
             {isThinking ? 'AI 正在思考...' : `AI 思考过程`}
           </span>
@@ -106,7 +106,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
             </span>
           )}
           {startTime && !isThinking && (
-            <span className="text-[10px] text-neutral-400 flex items-center gap-0.5">
+            <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
               <Clock className="w-3 h-3" />
               {formatDuration(elapsed)}
             </span>
@@ -121,7 +121,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
         {!isThinking && steps.length > 1 && (
           <button
             onClick={toggleAll}
-            className="text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
           >
             {expandedStep === '__all__' ? '收起' : '展开全部'}
           </button>

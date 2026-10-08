@@ -157,7 +157,7 @@ function CodeMessageBlock({ code }: { code: string }) {
 			<div className="flex items-center justify-between px-4 py-2 bg-neutral-800 dark:bg-neutral-900 border-b border-neutral-700">
 				<div className="flex items-center gap-2">
 					<Code className="w-3.5 h-3.5 text-neutral-400" />
-					<span className="text-xs text-neutral-400 font-medium">代码</span>
+					<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">代码</span>
 				</div>
 				<div className="flex gap-1.5">
 					<div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
@@ -166,7 +166,7 @@ function CodeMessageBlock({ code }: { code: string }) {
 				</div>
 			</div>
 			<pre className="p-4 overflow-x-auto text-sm">
-				<code className="text-neutral-300 font-mono">{cleanCode || code}</code>
+				<code className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-mono">{cleanCode || code}</code>
 			</pre>
 		</div>
 	)
@@ -309,7 +309,7 @@ function renderMessageContent(
 											<div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
 												{item.value}{item.unit || ''}
 											</div>
-											<div className="text-xs text-neutral-500 mt-1 truncate">{item.label}</div>
+											<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 truncate">{item.label}</div>
 										</div>
 									))}
 								</div>

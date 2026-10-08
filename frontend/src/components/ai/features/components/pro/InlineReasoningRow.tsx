@@ -87,7 +87,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
             {isThinking ? 'AI 正在分析...' : '思考过程'}
           </span>
           {!isThinking && steps.length > 0 && (
-            <span className="text-[10px] text-neutral-400 ml-1.5">
+            <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1.5">
               {completedCount}/{steps.length} 步
               {elapsedMs !== undefined && ` · ${formatDuration(elapsedMs)}`}
             </span>
@@ -108,7 +108,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
         </div>
 
         {/* 展开/折叠箭头 */}
-        <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 flex-shrink-0 ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform duration-200 flex-shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
 
       {/* 展开内容 — 带动画 */}
@@ -168,7 +168,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
 
           {/* 流式思考中 — 追加提示 */}
           {isThinking && (
-            <div className="flex items-center gap-1.5 py-1 text-xs text-neutral-400">
+            <div className="flex items-center gap-1.5 py-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
               <span>正在处理...</span>
             </div>

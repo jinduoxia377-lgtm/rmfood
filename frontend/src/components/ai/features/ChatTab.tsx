@@ -291,7 +291,7 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           {/* 暂停条 */}
           {isStreaming && (
             <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50/50 dark:bg-neutral-900/50">
-              <span className="text-[10px] text-neutral-400 flex items-center gap-1.5">
+              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 生成中
               </span>
