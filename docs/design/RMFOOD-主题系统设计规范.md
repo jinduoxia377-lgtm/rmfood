@@ -1124,6 +1124,18 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：formula-generation 域核心算法面板（FormulaWizard 19 原生 button/5 原生 input、GenerationInputEnhanced 11、FormulaResultsEnhanced 11）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
 > **终态**：tsc 0 错（全仓）· `formula-audit-leaks` 漏配扫描 55 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与 chat/agent 域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非公式生成域内部组件；本域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 5.08s）· vitest 29/29。
 
+> **2026-10-08 /ai safety 域样板轮登记**（提交 `f153d21`，主题令牌达标 + 视觉一致性）：承接 chat（426ecf3 + 4d951c8）、agent-workflow（0e5ef0f）、formula-generation（01d5dbe）域样板轮，复用同一模板对 12 个子功能域中的 **safety（安全检查）域** 做第四轮专业规范审计与修复（用户「继续执行下一步」确认：同模板推进下一域）。审计方法：`safety-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（8 文件 / 68 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 标准/法规浏览器：`RegulationBrowser`（28 处：统计卡标签×4 / 已废止数值 / 共 N 条×2 / 表格单元格×2 / 空态×2 / 加载态×2 / 详情字段标签×9 / 英文名×2 / 正文 desc）
+>    - 风险详情：`RiskDetailPanel`（13 处：标题值 / 分隔符 / 限值 / 实测 / 空态×4 / 正文 desc×2）
+>    - 批量分析：`BatchPeptideAnalyzer`（8 处）+ `BatchSafetyChecker`（5 处：progress% / 复核历史 / 空态 / 正文 desc×3）
+>    - 风险矩阵：`RiskMatrix`（4 处：风险等级 / 评分 / 法规依据 / 限值实测）
+>    - 趋势图：`SafetyHistoryTrendChart`（5 处：Minus 图标 / 行态 / Clock×2 / N 味原料）
+>    - 合规看板：`ComplianceDashboard`（2 处）+ 报告模板：`SafetyReportTemplate`（3 处：表头边框 `border-neutral-300` 补 `dark:border-neutral-700`、备注单元格 / 正文 desc）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本采用逐行替换（避开 `replace` 首处语义）；`SafetyReportTemplate` 的边框灰阶不在文本令牌处理集内，单独补 `dark:` 配对。
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：safety 域控件复用情况良好——绝大多数组件已导入 UI 库（RegulationBrowser 5 个 UI 库导入、其余各 1 个），原生 button 稀少（最多 2 个），无控件复用缺失问题；留白/对齐继承自布局容器。本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。
+> **终态**：tsc 0 错（退出码 0）· `safety-audit-leaks` 漏配扫描 68 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与三个前序域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非 safety 域内部组件；本域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 14.96s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
