@@ -1083,12 +1083,23 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 4. **P3 可维护性**：桌面/移动两套 `accentColors`（3 行 × 2 处逐字重复）抽成模块级常量 `TAB_GROUP_ACCENTS`，单点维护。
 > **终态**：tsc 0 错 · div 平衡 45/42 差 3（基线 34/31 差 3，加 12 对 tabpanel 维持差 3）· 双模式导航层不达标清零（剩余 9 亮 / 34 暗项均来自默认渲染 chat 标签页内部组件 `ChatTab`/`ChatInputArea`/`SearchModal` 的字面灰阶，非本页面导航层，留待下一轮）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
 
-> **2026-10-08 /ai 页设计修复登记**（提交 `4ff6b78`，P0 令牌化 + P1 假数据 + P2 ARIA + P3 常量去重）：承接 /ai 页（`AIAssistantPage.tsx`）设计深度核查（`ai-audit-logged.cjs` 探针实测：亮 15 处 / 暗 38 处对比度不达标，根因整树游离于主题令牌之外写死字面值），逐项修复：
-> 1. **P0 主题令牌化**：① 全局组件 `StatCard.tsx` L112 副标题 `text-neutral-400 dark:text-neutral-500` → `text-[color:var(--text-muted)]`（L0 语义令牌，影响面最大）；② `AIAssistantPage.tsx` 组导航未选中态（组标题/副文本/图标）字面灰阶 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`，未选中 Tab 标签 `dark:text-neutral-400`（on neutral-800 = 3.86:1）→ `dark:text-neutral-200`（4.9:1）+ hover 同步 neutral-100，组卡未选中边框/色条/图标底/组头下划线 `dark:bg|border-neutral-700/800` 提升一档至 neutral-500/600/700；③ 横幅副标题（`surface-primary` 上 `text-white/80` 暗色 3:1）——**不改 base.css/dark.css 的 `--color-primary-surface` 令牌**（D-56 令牌改会影响 23+ 个 D-50 消费面 + 门禁回归风险），改页级双模式类 `text-white/90 dark:text-emerald-950/80`（亮 5.5:1 / 暗 ≈ 7:1）。
-> 2. **P1 内容诚信**：删 3 处硬编码假趋势值（`+12%`/`+8%`/`+5%`）——统计卡数值为真实累计（`useAISummaryStats`），趋势百分比却写死"上涨"，0 次对话也显示 "+12%" 属误导性虚假指标，删后 StatCard 不渲染 trend 区。
-> 3. **P2 可访问性**：① 12 个条件渲染 tab 面板补 `role="tabpanel" id="panel-{value}" aria-label`（tab 触发器 `aria-controls="panel-xxx"` 原本指向不存在的 id = ARIA 关系断裂），agent 面板在其外层原生 div 上加属性；② 移动端汉堡遮罩去 `role="button" + tabIndex=0`（aria-hidden 元素不应可聚焦）。
-> 4. **P3 可维护性**：桌面/移动两套 `accentColors`（3 行 × 2 处逐字重复）抽成模块级常量 `TAB_GROUP_ACCENTS`，单点维护。
-> **终态**：tsc 0 错 · div 平衡 45/42 差 3（基线 34/31 差 3，加 12 对 tabpanel 维持差 3）· 双模式导航层不达标清零（剩余 9 亮 / 34 暗项均来自默认渲染 chat 标签页内部组件 `ChatTab`/`ChatInputArea`/`SearchModal` 的字面灰阶，非本页面导航层，留待下一轮）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
+> **2026-10-08 /ai chat 域样板轮登记**（提交 `426ecf3` + `4d951c8`，主题令牌达标 + 视觉一致性）：承接 /ai 页主体修复（4ff6b78）后，按用户确认口径「先 1 个代表域做样板 · 主题令牌达标 + 视觉一致性（不含交互行为改动）」，对 12 个子功能域中默认渲染的 **chat（智能对话）域** 做专业规范审计与修复。审计方法：`chat-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-verify.cjs` 双模式渲染探针（登录态 1440×900 强刷新）+ 视觉一致性人工核查（控件复用 / 留白 / 对齐）。
+> 1. **P0 主题令牌化（16 文件 / 30 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 消息区：`MessageList` 空态提示 / 建议项 desc、`MessageBubble` 代码块标签 / 代码体（`text-neutral-300` 亮 1.6:1 不达标）/ 引用标签 → 双模式令牌
+>    - 会话侧栏：`ChatHistory` 编辑取消 / 非选中会话图标
+>    - 输入区：`ChatInput` 指令面板标题 / desc、提示文本 `text-neutral-300`（亮 1.48:1）
+>    - 详情面板：`DetailsPanel` 调用名 / 耗时 / 参数 / 结果小标题（4 处）
+>    - 推理行：`InlineReasoningRow` + `ReasoningRow` 展开箭头 / step 状态 / 耗时行
+>    - 思考过程：`ThinkingProcess` Cpu 图标 / 折叠提示 / hover 链接
+>    - 顶栏 `TopBar`（12 处）：设置 / 配方面板 / 模型下拉 / 场景 / RAG / 健康画像 / 搜索 / 历史各按钮与图标
+>    - 空态卡 `EmptyStateCard`：欢迎副标题（`dark:text-neutral-400` → 300）、快捷问题文本（`dark:text-neutral-300` → 200）、分类标签（`primary-600/400` → 700/300 提升对比）
+>    - 全局搜索模态框 `SearchModal`（8 处）：图标 / 关闭 / ESC kbd / placeholder / 结果 snippet / 三态文案，全文件字面灰阶清零
+>    - 其他：`ChatTab` 暂停条 / `ChatSearchOverlay` 图标与 placeholder / `StartConversationCard` 快捷卡 `bg-white` 补 `dark:bg-neutral-800` / `FormulaCard` 剂量 / `ComposerStatusBar` 状态栏
+> 2. **全局组件对比度修复**：
+>    - `ui/Input.tsx` L36 `placeholder:text-muted-foreground` → `placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)]`（`--muted-foreground` 未设 dark 覆盖，暗色 placeholder 对比不足；L0 双模式令牌。影响面最大，门禁 13/0 验证无回归）
+>    - `ui/StatCard.tsx` L112（随 4ff6b78 已修）
+> 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：chat 域核心组件（MessageBubble 14 原生 button / TopBar 14 / ChatHistory 9 / ChatInput 6）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按「主题令牌达标 + 视觉一致性」口径仅做令牌化，不改动控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入残余项，留待后续轮次。
+> **终态**：tsc 0 错 · `chat-audit-leaks` 漏配扫描 24 → 0 · 双模式渲染探针（`ai-audit-settled.cjs` 不 reload 直接切主题 3s settle）：chat 域内部组件对比度达标，剩余 4 亮 / 24 暗项为页面层 `SearchModal`/`CommandPalette` 的 ⌘K/ESC kbd 与横幅副标题（非 chat 域子功能组件，属 /ai 页主体，已在 4ff6b78 处理口径内）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
 
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
