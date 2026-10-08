@@ -1112,6 +1112,18 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：agent-workflow 域组件（StageProgress / AgentMessageList / ToolCallDisplay / WorkflowNodeVisualizer）为纯展示型共享组件，0 原生 button/input，不存在控件复用问题；留白与对齐继承自布局容器。本轮按口径仅做令牌化，未改结构（避免交互行为变化与回归风险）。
 > **终态**：tsc 0 错（全仓）· `agent-audit-leaks` 漏配扫描 11 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与 chat 域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，agent 域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅ · vitest 29/29。
 
+> **2026-10-08 /ai formula-generation 域样板轮登记**（提交 `01d5dbe`，主题令牌达标 + 视觉一致性）：承接 chat 域（426ecf3 + 4d951c8）与 agent-workflow 域（0e5ef0f）样板轮，复用同一模板对 12 个子功能域中的 **formula-generation（配方生成）域** 做第三轮专业规范审计与修复（用户「继续执行」确认：同模板推进下一域）。审计方法：`formula-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（12 文件 / 55 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 多目标优化：`MultiObjectivePanel`（17 处：快速添加 / 目标 key / （可选）×3 / WifiOff / 空态×2 / X:Y: 坐标 / ranking / 拥挤距离说明 / 卡片表格切换未选中×2 / 序号）、`MOPanelSubComponents`（4 处）、`MOPanelCharts`（2 处）
+>    - 遗传算法：`GeneticAlgorithmPanel`（6 处：（每100g）/ ≥ / ≤ / （可选）×2 / WifiOff）、`GeneticAlgorithmPanelSubComponents`（2 处）、`GAPanelCharts`（1 处空态）
+>    - 配方向导：`FormulaWizard`（10 处：类型图标未选中 / 预设链接 / 关闭 / Eye / 功效 / 约束 / 高级选项小标题×3 / 更多 / 暂无预设 / 预设 desc）
+>    - 生成进度：`GenerationProgress`（5 处：进度% / 实时日志 / 清空 / 日志行态 / 时间戳）
+>    - 候选项比较：`CandidateComparison`（3 处：主要成分小标题 / 关联 span / 空态）
+>    - 其余：`GenerateTab/components/GenerationInputEnhanced`（2 处）、`FormulaResultsEnhanced`（1 处排序切换未选中）、`ExportPanel`（1 处导出格式 desc）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。其中踩到批量脚本对重复字符串仅替换首处的 `replace` 语义（MultiObjectivePanel 卡片/表格切换两行相同字面），已用 `edit` 工具逐处修正。
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：formula-generation 域核心算法面板（FormulaWizard 19 原生 button/5 原生 input、GenerationInputEnhanced 11、FormulaResultsEnhanced 11）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
+> **终态**：tsc 0 错（全仓）· `formula-audit-leaks` 漏配扫描 55 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与 chat/agent 域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非公式生成域内部组件；本域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 5.08s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
