@@ -1201,6 +1201,17 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：非 /ai 页面域 TOP 7 组件多为自造原生控件（表格/表单/按钮）而非复用 UI 库，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
 > **终态**：tsc 0 错（退出码 0）· `pages-audit-leaks` 漏配扫描 258 → 0 · 双模式渲染探针（settled）：/ai 页 亮 0 / 暗 0 不达标（维持第九轮终态）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 12.76s）· vitest 29/29。
 
+> **2026-10-09 非 /ai 页面域 TOP 30 组件样板轮登记（第十轮·第二批）**（提交 `2077955`，主题令牌达标 + 视觉一致性）：承接非 /ai 页面域第一批（`7535ec4`，TOP 7 已清），按同一模板对剩余最密集的 30 个组件做第二批专业规范审计与修复（用户「继续处理」确认：推进 TOP 30 批次）。审计方法：`nonai-scan.mjs` 非 /ai 域全量漏配扫描 + `nonai-fixes.mjs` 全局正则批量令牌化 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（30 文件 / 431 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 数据库域：`CrossSearchPanel`（23）、`DetailPanel`（14）、`PerformancePanel`（12）、`ExternalDataPanel`（11）
+>    - 配方域：`FormulaListPage`（22）、`FormulaEditPage`（20）、`FormulaTestPage`（15）、`OperationLogPanel`（14）、`FormulaQuickView`（9）
+>    - 组织域：`OrganizationList`（23）、`PermissionManager`（16）、`CreateOrgWizard`（13）、`OrganizationsPage`（11）、`TeamManagement`（11）
+>    - 批次/实验域：`TracePage`（19）、`BatchListPage`（14）、`ExperimentSharePage`（18）、`ExperimentDetailPage`（12）、`ExperimentEditPage`（9）、`FormulaValidationPanel`（9）
+>    - 搜索/设置/术语/主题/通知/导入/学术：`GlobalSearch`（17）、`SearchBar`（14）、`SearchResults`（10）、`SettingsPage`（18）、`TerminologyPage`（17）、`ThemePanel`（16）、`NotificationCenter`（12）、`ImportPanel`（12）、`AIAnalysisPanel`（11）、`ReviewProgress`（9）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本全局正则（g 标志）逐行替换 + 边框/背景类补 `dark:` 配对，跳过已有 `dark:` 行；修正了脚本第一版写入路径 bug（改用显式 frontend/ 绝对路径）。
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：非 /ai 页面域 TOP 30 组件与第一批一致——多为自造原生控件（表格/表单/按钮）而非复用 UI 库，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项。
+> **终态**：tsc 0 错（退出码 0）· `nonai-scan` 非 /ai 域 TOP 30 漏配扫描 431 → 0（原 30 文件复扫全 0）· 双模式渲染探针（settled）：/ai 页 亮 0 / 暗 0 不达标（维持第九轮终态）· 14 门禁 13 pass / 0 fail / 0 skip（首次并行跑时 GATE-12 一度报失败，系门禁读 dist/assets 时与 build 并行写入竞争的时序问题；单独干净重跑 13/0/0 通过，GATE-12 达标）/ 1 合法 warn（GATE-09）· build ✅（vite 6.07s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
