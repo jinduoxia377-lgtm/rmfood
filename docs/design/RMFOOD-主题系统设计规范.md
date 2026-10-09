@@ -1212,6 +1212,22 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：非 /ai 页面域 TOP 30 组件与第一批一致——多为自造原生控件（表格/表单/按钮）而非复用 UI 库，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项。
 > **终态**：tsc 0 错（退出码 0）· `nonai-scan` 非 /ai 域 TOP 30 漏配扫描 431 → 0（原 30 文件复扫全 0）· 双模式渲染探针（settled）：/ai 页 亮 0 / 暗 0 不达标（维持第九轮终态）· 14 门禁 13 pass / 0 fail / 0 skip（首次并行跑时 GATE-12 一度报失败，系门禁读 dist/assets 时与 build 并行写入竞争的时序问题；单独干净重跑 13/0/0 通过，GATE-12 达标）/ 1 合法 warn（GATE-09）· build ✅（vite 6.07s）· vitest 29/29。
 
+> **2026-10-09 非 /ai 页面域 TOP 30 组件样板轮登记（第十轮·第二批）**（提交 `12471d5`，主题令牌达标 + 视觉一致性）：承接非 /ai 页面域第一批（`7535ec4`，TOP 7）与第二批首段（`2077955`，TOP 30 段一），按同一模板对剩余最密集的 30 个组件做第二批（段二）专业规范审计与修复（用户「继续下一步」确认：推进 TOP 30 批次）。审计方法：`all-nonai-scan.mjs` 非 /ai 域全量漏配扫描 + `nonai-top30-batch2.mjs` 全局正则批量令牌化 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（30 文件 / 215 行修复，非 /ai 域 TOP 30 漏配 215 → 0）**：
+>    - 学术域：`AcademicElementEditor`（8）、`CitationPanel`（7）、`ReferenceLibrary`（7）、`CollaborationPanel`（5）
+>    - 数据库/图谱域：`CentralityPanel`（8）、`ContextMenu`（6）
+>    - 实验域：`ExperimentCompareModal`（8）、`ExperimentListPage`（7）、`ExperimentCalendarPage`（6）
+>    - 推理域：`InferenceChainVisualizer`（8）、`InferenceChainVisualizerV2`（8）、`InferenceStepCard`（6）
+>    - 同步/冲突域：`ConflictResolver`（8）
+>    - 配方域：`VersionDiffViewer`（9）、`FormulaComparePage`（8）、`FormulaTemplatesPage`（8）、`AIInsights`（7）、`FormulaCostAnalysis`（7）、`FormulaRating`（7）、`ExportModal`（6）、`FormulaDetailSubComponents`（6）
+>    - 组织域：`DataExportDialog`（8）、`MembersTab`（8）、`PlanUpgradeDialog`（6）
+>    - 公共/法规/设置域：`ApiDocsPage`（8）、`RegulationsPage`（8）、`CareersPage`（7）、`AboutPage`（6）、`ComplianceTab`（7）
+>    - 着陆页：`Algorithms`（7）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本全局正则（g 标志）逐行替换 + 边框/背景类补 `dark:` 配对，跳过已有 `dark:` 行。
+> 2. **结果：非 /ai 域全量扫描 156 文件 / 541 处 → 126 文件 / 326 处**（本批清掉 30 文件 / 215 行）；/ai 域（`components/ai/`）维持 0（前九轮全部生效）。
+> 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：非 /ai 页面域 TOP 30 组件与第一批一致——多为自造原生控件（表格/表单/按钮）而非复用 UI 库，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项。
+> **终态**：tsc 0 错（退出码 0）· `all-nonai-scan` 非 /ai 域扫描 215 → 0（本批 30 文件复扫全清）· 双模式渲染探针（settled）：/ai 页 亮 0 / 暗 0 不达标（维持第九轮终态）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 1m 54s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
