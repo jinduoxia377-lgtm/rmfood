@@ -218,6 +218,32 @@ CHECKS = [
         r"customOptimize",
         "前端 service：customOptimize 方法必须存在",
     ),
+    # source 补全 + 外部数据源
+    (
+        "backend/app/services/peptide_analyzer/food_peptide_service.py",
+        r"await self\._enrich_source\(seq, result\)",
+        "source 补全：analyze 流程必须调用 _enrich_source",
+    ),
+    (
+        "backend/app/services/peptide_analyzer/food_peptide_service.py",
+        r"async def _enrich_source",
+        "source 补全：_enrich_source 方法必须定义",
+    ),
+    (
+        "backend/app/api/peptide_structure_routes.py",
+        r"external-source/lookup",
+        "外部数据源：/external-source/lookup 端点必须注册",
+    ),
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"externalSourceLookup",
+        "前端 service：externalSourceLookup 方法必须存在",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"ExternalSourceView",
+        "前端：外部数据源检索子工具必须注册",
+    ),
 ]
 
 

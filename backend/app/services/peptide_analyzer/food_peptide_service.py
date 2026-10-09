@@ -303,6 +303,9 @@ class FoodPeptideAnalyzer:
             # Step 6: 计算综合食品评分
             result.food_safety_score = self._calculate_food_score(result)
             
+            # Step 7: 来源追溯（数据库检索 + 食物来源 + 文献）
+            await self._enrich_source(seq, result)
+            
             logger.info(
                 f"肽分析完成: {sequence}, "
                 f"分子量: {result.molecular_weight:.1f} Da, "
@@ -315,6 +318,49 @@ class FoodPeptideAnalyzer:
             raise
         
         return result
+    
+    async def _enrich_source(
+        self,
+        sequence: str,
+        result: "FoodPeptideAnalysis",
+    ) -> None:
+        """
+        来源追溯：从 DFBP 数据库检索序列对应记录，
+        回填 source.food / source.database / source.references。
+
+        匹配策略：精确匹配 → 去除修饰字符后匹配 → 子串模糊匹配。
+        失败时静默降级（保持 source 为空），不影响主流程。
+        """
+        try:
+            from app.services.peptide_analyzer.food_database import get_food_peptide_database
+            manager = get_food_peptide_database()
+            records = await manager.dfbp.search_by_sequence(sequence, use_online=False)
+            if not records:
+                # 子串模糊匹配（序列可能包含修饰）
+                clean = sequence.replace('-', '').replace('.', '')
+                records = manager.dfbp._fuzzy_match(clean)
+            if not records:
+                logger.debug(f"来源追溯：{sequence} 在 DFBP 无匹配记录")
+                return
+            top = records[0]
+            result.source_food = top.food_source
+            result.source_database = top.source_database
+            # 文献参考：DOI + 活性证据
+            refs = []
+            if top.literature_doi:
+                refs.append(f"DOI: {top.literature_doi}")
+            if top.activity_type:
+                val = f"IC50={top.activity_value} {top.activity_unit}" if top.activity_value else "活性已报道"
+                refs.append(f"{top.activity_type} ({val})")
+            if top.source_protein:
+                refs.append(f"来源蛋白: {top.source_protein} ({top.source_organism or '未知物种'})")
+            result.literature_refs = refs
+            logger.info(
+                f"来源追溯成功: {sequence} → {top.source_database}"
+                f" 食物={top.food_source} 记录数={len(records)}"
+            )
+        except Exception as e:
+            logger.warning(f"来源追溯失败（不影响分析）: {e}")
     
     def _calculate_properties(
         self,
