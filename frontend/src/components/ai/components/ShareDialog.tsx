@@ -75,14 +75,14 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900">分享报告</h3>
-            <p className="mt-0.5 text-sm text-neutral-500">{reportTitle}</p>
+            <p className="mt-0.5 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{reportTitle}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -90,7 +90,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           </button>
         </div>
 
-        <div className="flex border-b border-neutral-200 px-6">
+        <div className="flex border-b border-neutral-200 dark:border-neutral-700 px-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -98,7 +98,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-secondary-600'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  : 'border-transparent text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700'
               }`}
             >
               <span className="mr-1.5">{tab.icon}</span>
@@ -163,7 +163,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     value={currentShareSettings.password || ''}
                     onChange={(e) => onShareSettingsChange({ password: e.target.value || undefined })}
                     placeholder="设置后需要密码才能访问"
-                    className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md"
+                    className="w-full px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded-md"
                   />
                 </div>
                 <div>
@@ -174,7 +174,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     onChange={(e) => onShareSettingsChange({
                       expiresAt: e.target.value ? new Date(e.target.value).toISOString() : null,
                     })}
-                    className="w-full px-3 py-1.5 text-sm border border-neutral-300 rounded-md"
+                    className="w-full px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded-md"
                   />
                 </div>
               </div>
@@ -221,13 +221,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     value={newCollaboratorEmail}
                     onChange={(e) => setNewCollaboratorEmail(e.target.value)}
                     placeholder="colleague@example.com"
-                    className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm"
                     onKeyDown={(e) => e.key === 'Enter' && handleAddCollaborator()}
                   />
                   <select
                     value={newCollaboratorPermission}
                     onChange={(e) => setNewCollaboratorPermission(e.target.value as CollaborationPermission)}
-                    className="px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+                    className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm"
                   >
                     <option value={CollaborationPermission.VIEW}>可查看</option>
                     <option value={CollaborationPermission.COMMENT}>可评论</option>
@@ -308,7 +308,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                         className="w-full bg-secondary-500 rounded-t"
                         style={{ height: `${(item.count / Math.max(...accessStats.viewsByDate.map((d: { date: string; count: number }) => d.count))) * 100}%` }}
                       />
-                      <span className="text-xs text-neutral-500 mt-1">{item.date.slice(5)}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{item.date.slice(5)}</span>
                     </div>
                   ))}
                 </div>
@@ -350,7 +350,7 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: string }
   <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4 text-center">
     <div className="text-2xl mb-1">{icon}</div>
     <div className="text-display font-semibold text-neutral-900">{value.toLocaleString()}</div>
-    <div className="text-xs text-neutral-500 mt-1">{title}</div>
+    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{title}</div>
   </div>
 );
 

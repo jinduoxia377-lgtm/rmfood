@@ -146,7 +146,7 @@ function SensitivityTornado({
             <>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">敏感性:</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">敏感性:</span>
                   <span
                     className={`font-medium ${
                       factor.sensitivity > 0
@@ -160,14 +160,14 @@ function SensitivityTornado({
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">基准值:</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">基准值:</span>
                   <span className="font-medium">
                     {factor.baseValue}
                     {factor.unit || ''}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">变化范围:</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">变化范围:</span>
                   <span className="font-medium">
                     [{factor.lowValue}, {factor.highValue}]{factor.unit || ''}
                   </span>
@@ -205,11 +205,11 @@ function SensitivityTornado({
             <>
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">效应大小:</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">效应大小:</span>
                   <span className="font-medium">{(interaction.effectSize * 100).toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">显著性:</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">显著性:</span>
                   <Badge
                     variant={
                       interaction.significance === 'high'
@@ -248,7 +248,7 @@ function SensitivityTornado({
         </div>
 
         <UITooltip content="Tornado 图用于比较多个因素的相对影响，柱子越长表示该因素对结果的影响越大">
-          <Info className="w-4 h-4 text-neutral-400 cursor-help" />
+          <Info className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] cursor-help" />
         </UITooltip>
       </div>
 
@@ -385,7 +385,7 @@ function SensitivityTornado({
               <span className="w-3 h-3 rounded-full bg-yellow-500" /> 中等显著性
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-neutral-500" /> 低显著性
+              <span className="w-3 h-3 rounded-full bg-neutral-50 dark:bg-neutral-8000" /> 低显著性
             </span>
             {optimalRegion && (
               <span className="flex items-center gap-1.5 ml-auto">
@@ -417,7 +417,7 @@ function SensitivityTornado({
               </span>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">{factor.name}</div>
-                <div className="text-[11px] text-neutral-500">{(factor.sensitivity * 100).toFixed(1)}%</div>
+                <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(factor.sensitivity * 100).toFixed(1)}%</div>
               </div>
             </div>
           ))}

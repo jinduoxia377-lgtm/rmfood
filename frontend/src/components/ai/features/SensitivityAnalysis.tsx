@@ -350,7 +350,7 @@ export function SensitivityAnalysis({
                     className={`w-full h-2 rounded-full appearance-none cursor-pointer accent-purple-500`}
                   />
 
-                  <div className="flex justify-between text-xs text-neutral-400">
+                  <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>{param.minValue}{param.unit}</span>
                     <span className="font-medium text-accent-600">基准: {param.baseValue}{param.unit}</span>
                     <span>{param.maxValue}{param.unit}</span>
@@ -362,7 +362,7 @@ export function SensitivityAnalysis({
 
           {/* 当前结果摘要 */}
           <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">实时计算结果</h5>
+            <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">实时计算结果</h5>
             <div className="grid grid-cols-2 gap-3">
               {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 4).map(metric => {
                 const diff = currentResults[metric] - baselineResults[metric]
@@ -371,7 +371,7 @@ export function SensitivityAnalysis({
 
                 return (
                   <div key={metric} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                    <span className="text-xs text-neutral-500">{METRIC_LABELS[metric]}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{METRIC_LABELS[metric]}</span>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                         {currentResults[metric]}
@@ -447,7 +447,7 @@ export function SensitivityAnalysis({
             {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 5).map(metric => (
               <div key={metric} className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5" style={{ backgroundColor: METRIC_COLORS[metric] }} />
-                <span className="text-xs text-neutral-500">{METRIC_LABELS[metric]}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{METRIC_LABELS[metric]}</span>
               </div>
             ))}
           </div>
@@ -466,9 +466,9 @@ export function SensitivityAnalysis({
           <table className="w-full text-sm">
             <thead>
               <tr>
-                <th className="py-2 px-3 text-left font-medium text-neutral-500">参数 \\ 指标</th>
+                <th className="py-2 px-3 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">参数 \\ 指标</th>
                 {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).map(metric => (
-                  <th key={metric} className="py-2 px-3 text-center font-medium text-neutral-500">
+                  <th key={metric} className="py-2 px-3 text-center font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {METRIC_LABELS[metric]}
                   </th>
                 ))}
@@ -504,7 +504,7 @@ export function SensitivityAnalysis({
         </div>
 
         {/* 热力图说明 */}
-        <div className="mt-3 flex items-center justify-center gap-6 text-xs text-neutral-500">
+        <div className="mt-3 flex items-center justify-center gap-6 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-success-500/70 rounded" />
             <span>正向影响</span>
@@ -543,7 +543,7 @@ export function SensitivityAnalysis({
                   <h4 className="font-semibold text-neutral-900 dark:text-white">
                     {showHeatmapDetail.param} → {showHeatmapDetail.metric}
                   </h4>
-                  <p className="text-sm text-neutral-500 mt-1">
+                  <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     该参数的变化对目标指标的影响程度和方向
                   </p>
                 </div>
@@ -590,7 +590,7 @@ export function SensitivityAnalysis({
         </div>
 
         {scenarios.length === 0 ? (
-          <p className="text-sm text-neutral-500 text-center py-4">暂无对比场景</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">暂无对比场景</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {scenarios.map((scenario, idx) => {
@@ -628,14 +628,14 @@ export function SensitivityAnalysis({
                         <span className="text-2xl font-bold text-neutral-900 dark:text-white">
                           {scenario.results.overall}
                         </span>
-                        <span className="text-xs text-neutral-500 ml-1">分</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">分</span>
                       </div>
 
                       {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[])
                         .filter(m => m !== 'overall')
                         .map(metric => (
                           <div key={metric} className="flex items-center justify-between text-sm">
-                            <span className="text-neutral-500">{METRIC_LABELS[metric]}</span>
+                            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{METRIC_LABELS[metric]}</span>
                             <span className="font-medium text-neutral-900 dark:text-white">
                               {scenario.results?.[metric] || '-'}
                             </span>
@@ -654,7 +654,7 @@ export function SensitivityAnalysis({
                       </button>
                     </div>
                   ) : (
-                    <div className="text-center py-4 text-neutral-400 text-sm">
+                    <div className="text-center py-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">
                       点击保存当前配置为场景
                     </div>
                   )}

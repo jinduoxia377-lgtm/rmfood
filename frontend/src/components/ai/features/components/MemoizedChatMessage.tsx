@@ -321,7 +321,7 @@ const CodeBlockRenderer: React.FC<{
               theme === 'github'
                 ? 'text-neutral-600 dark:text-neutral-400'
                 : theme === 'vscode'
-                  ? 'text-neutral-300'
+                  ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                   : theme === 'monokai'
                     ? 'text-yellow-400'
                     : theme === 'solarized'
@@ -331,7 +331,7 @@ const CodeBlockRenderer: React.FC<{
           >
             {language || 'plaintext'}
           </span>
-          <span className={`text-xs ${theme === 'github' ? 'text-neutral-400' : 'text-neutral-500'}`}>{lines.length} 行</span>
+          <span className={`text-xs ${theme === 'github' ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>{lines.length} 行</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -340,7 +340,7 @@ const CodeBlockRenderer: React.FC<{
             className={`p-1 rounded text-xs opacity-0 group-hover/code:opacity-100 transition-opacity ${
               theme === 'github'
                 ? 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500'
-                : 'hover:bg-neutral-700 text-neutral-400'
+                : 'hover:bg-neutral-700 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
             }`}
             title={showLineNumbers ? '隐藏行号' : '显示行号'}
           >
@@ -354,7 +354,7 @@ const CodeBlockRenderer: React.FC<{
                 ? 'bg-success-500 text-white'
                 : theme === 'github'
                   ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600'
-                  : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                  : 'bg-neutral-700 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:bg-neutral-600'
             }`}
           >
             {copied ? (
@@ -391,7 +391,7 @@ const CodeBlockRenderer: React.FC<{
             <span
               className={`float-left select-none mr-4 pr-3 text-right border-r ${
                 theme === 'github'
-                  ? 'border-neutral-300 dark:border-neutral-600 text-neutral-400 dark:text-neutral-600'
+                  ? 'border-neutral-300 dark:border-neutral-600 text-neutral-400 dark:text-neutral-400'
                   : theme === 'vscode'
                     ? 'border-neutral-700 text-neutral-600'
                     : theme === 'monokai'
@@ -499,7 +499,7 @@ const TypingSpeedController: React.FC<{
                 onClick={() => setMode('preset')}
                 className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
                   mode === 'preset'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
               >
@@ -509,7 +509,7 @@ const TypingSpeedController: React.FC<{
                 onClick={() => setMode('custom')}
                 className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
                   mode === 'custom'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
               >
@@ -530,7 +530,7 @@ const TypingSpeedController: React.FC<{
                     aria-selected={index === currentSpeedIndex}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
                       index === currentSpeedIndex
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 font-medium'
                         : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                     }`}
                   >
@@ -539,7 +539,7 @@ const TypingSpeedController: React.FC<{
                       <span>{speed.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-neutral-400">{speed.delayMs}ms/字</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{speed.delayMs}ms/字</span>
                       {index === currentSpeedIndex && <CheckCircle className="w-4 h-4 text-primary-500" />}
                     </div>
                   </button>
@@ -558,7 +558,7 @@ const TypingSpeedController: React.FC<{
                   onChange={(e) => onCustomDelayChange?.(parseInt(e.target.value))}
                   className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
                 />
-                <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
+                <div className="flex justify-between text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                   <span>即时 (0ms)</span>
                   <span>慢速 (100ms)</span>
                 </div>
@@ -566,11 +566,11 @@ const TypingSpeedController: React.FC<{
             )}
 
             <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2 px-2">
-              <div className="text-[11px] text-neutral-400 flex items-start gap-1">
+              <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-start gap-1">
                 <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
                 <span>{TYPING_SPEEDS[currentSpeedIndex].description}</span>
               </div>
-              <div className="text-[10px] text-neutral-400 mt-1 flex items-center gap-1">
+              <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 flex items-center gap-1">
                 <Keyboard className="w-3 h-3" />
                 <span>使用 ↑↓ 键快速切换</span>
               </div>
@@ -1103,7 +1103,7 @@ const MemoizedChatMessage = memo(
             <code
               className={`${className || ''} px-1.5 py-0.5 rounded text-sm font-mono ${
                 codeTheme === 'github'
-                  ? 'bg-neutral-100 dark:bg-neutral-800 text-error-600 dark:text-error-400'
+                  ? 'bg-neutral-100 dark:bg-neutral-800 text-error-600 dark:text-error-600'
                   : 'bg-neutral-700 text-success-400'
               }`}
               {...props}
@@ -1172,7 +1172,7 @@ const MemoizedChatMessage = memo(
               href={href}
               target={isExternal ? '_blank' : undefined}
               rel={isExternal ? 'noopener noreferrer' : undefined}
-              className="text-secondary-600 dark:text-secondary-400 hover:text-secondary-800 dark:hover:text-secondary-300 underline decoration-1 underline-offset-2 transition-colors"
+              className="text-secondary-600 dark:text-secondary-600 hover:text-secondary-800 dark:hover:text-secondary-300 underline decoration-1 underline-offset-2 transition-colors"
               {...props}
             >
               {children}
@@ -1262,7 +1262,7 @@ const MemoizedChatMessage = memo(
                   <div className="skeleton-shimmer h-24 rounded-xl w-full" />
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 text-xs text-neutral-400 dark:text-neutral-500 font-medium animate-pulse">
+                <div className="flex items-center gap-2 pt-2 text-xs text-neutral-400 dark:text-neutral-400 font-medium animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse" />
                   <span>AI 正在思考...</span>
                 </div>
@@ -1319,7 +1319,7 @@ const MemoizedChatMessage = memo(
                           {onInterrupt && (
                             <button
                               onClick={handleInterruptClick}
-                              className="interrupt-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-error-50 dark:bg-error-900/20 text-error-700 dark:text-error-300 hover:bg-error-100 dark:hover:bg-error-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                              className="interrupt-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-error-50 dark:bg-error-900/20 text-error-700 dark:text-error-600 hover:bg-error-100 dark:hover:bg-error-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                               aria-label="停止 AI 生成"
                             >
                               <Square className="w-3 h-3" />
@@ -1331,7 +1331,7 @@ const MemoizedChatMessage = memo(
                     ) : (
                       /* 完成后的操作栏 */
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-success-600 dark:text-success-400 font-medium flex items-center gap-1">
+                        <span className="text-xs text-success-600 dark:text-success-600 font-medium flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5" />
                           生成完成
                         </span>
@@ -1341,7 +1341,7 @@ const MemoizedChatMessage = memo(
                           {onResumeStreaming && (
                             <button
                               onClick={handleResumeClick}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 hover:bg-secondary-100 dark:hover:bg-secondary-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                               aria-label="继续生成"
                             >
                               <Play className="w-3.5 h-3.5" />
@@ -1383,7 +1383,7 @@ const MemoizedChatMessage = memo(
               className="p-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-colors duration-150"
               aria-label="复制此条消息内容"
             >
-              <Copy className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
+              <Copy className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-500 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors" />
             </button>
 
             {/* 报告按钮 */}
@@ -1406,7 +1406,7 @@ const MemoizedChatMessage = memo(
           {/* 时间戳 */}
           <time
             dateTime={new Date(message.timestamp).toISOString()}
-            className="text-[11px] sm:text-xs font-medium text-neutral-400 dark:text-neutral-500 tabular-nums"
+            className="text-[11px] sm:text-xs font-medium text-neutral-400 dark:text-neutral-400 tabular-nums"
           >
             {new Date(message.timestamp).toLocaleTimeString('zh-CN', {
               hour: '2-digit',
@@ -1416,22 +1416,22 @@ const MemoizedChatMessage = memo(
 
           {/* 状态指示器 */}
           {message.role === 'user' && !message.content && (
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-warning-500 dark:text-warning-400 animate-pulse">
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-warning-500 dark:text-warning-600 animate-pulse">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
               <span>发送中</span>
             </span>
           )}
           {message.role === 'user' && message.content && !isStreaming && (
-            <CheckCircle className="w-4 h-4 text-success-500 dark:text-success-400" aria-label="已发送成功" />
+            <CheckCircle className="w-4 h-4 text-success-500 dark:text-success-600" aria-label="已发送成功" />
           )}
           {message.role === 'assistant' && isEmptyAssistantMsg && !shouldUseStreamingEffect && isStreaming && (
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-secondary-500 dark:text-secondary-400">
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-secondary-500 dark:text-secondary-600">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
               <span>思考中</span>
             </span>
           )}
           {shouldUseStreamingEffect && !isStreamingComplete && (
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-secondary-500 dark:text-secondary-400">
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-medium text-secondary-500 dark:text-secondary-600">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
               <span>生成中 {streamingProgress}%</span>
               {performanceMetrics.currentFps < 30 && (

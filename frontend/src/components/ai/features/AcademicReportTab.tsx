@@ -239,13 +239,13 @@ export function AcademicReportTab({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-              <FileText className="w-6 h-6 text-primary-600" />
+              <FileText className="w-6 h-6 text-primary-700" />
             </div>
             <div>
               <h3 className="font-semibold text-neutral-900">
                 {DEFAULTS.PLACEHOLDER_TEXTS.ACADEMIC_REPORT_GENERATOR_TITLE || '学术报告生成器'}
               </h3>
-              <p className="text-sm text-neutral-500 mt-1">
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                 {DEFAULTS.PLACEHOLDER_TEXTS.ACADEMIC_REPORT_GENERATOR_SUBTITLE || '基于配方数据自动生成专业学术报告'}
               </p>
             </div>
@@ -258,7 +258,7 @@ export function AcademicReportTab({
               onChange={(e) =>
                 setSelectedCitationStyle(e.target.value as CitationStyle)
               }
-              className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {CITATION_STYLES.map((style) => (
                 <option key={style.value} value={style.value}>
@@ -365,7 +365,7 @@ export function AcademicReportTab({
                   </p>
                 )}
                 {report.keywords && (
-                  <p className="text-sm mt-2 text-neutral-500">
+                  <p className="text-sm mt-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_KEYWORDS || '关键词'}：{report.keywords.join('、')}
                   </p>
                 )}
@@ -387,9 +387,9 @@ export function AcademicReportTab({
                     className="w-full flex items-center gap-2 text-left mb-4"
                   >
                     {expandedSections.has(index) ? (
-                      <ChevronDown className="w-5 h-5 text-primary-600" />
+                      <ChevronDown className="w-5 h-5 text-primary-700" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-neutral-400" />
+                      <ChevronRight className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     )}
                     <h2 className="text-xl font-semibold">
                       {index + 1}. {section.title}
@@ -408,7 +408,7 @@ export function AcademicReportTab({
 
               {/* 参考文献 */}
               {report.references && report.references.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-neutral-200">
+                <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                   <h2 className="text-xl font-semibold mb-4">
                     {DEFAULTS.PLACEHOLDER_TEXTS.SECTION_REFERENCES || '参考文献'}
                   </h2>
@@ -416,7 +416,7 @@ export function AcademicReportTab({
                     {report.references.map((ref, index) => (
                       <p
                         key={index}
-                        className="text-sm pl-4 border-l-2 border-neutral-300 text-neutral-600"
+                        className="text-sm pl-4 border-l-2 border-neutral-300 dark:border-neutral-700 text-neutral-600"
                       >
                         {index + 1}. {ref.authors} ({ref.year}). {ref.title}.{' '}
                         {ref.journal || ''}.
@@ -440,7 +440,7 @@ export function AcademicReportTab({
                 <input
                   type="text"
                   defaultValue={report.title}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -451,7 +451,7 @@ export function AcademicReportTab({
                 <input
                   type="text"
                   defaultValue={report.authors?.join('、')}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder={
                     DEFAULTS.PLACEHOLDER_TEXTS.PLACEHOLDER_AUTHORS ||
                     '多个作者用顿号分隔'
@@ -466,7 +466,7 @@ export function AcademicReportTab({
                 <input
                   type="text"
                   defaultValue={report.keywords?.join('、')}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder={
                     DEFAULTS.PLACEHOLDER_TEXTS.PLACEHOLDER_KEYWORDS ||
                     '多个关键词用顿号分隔'
@@ -481,11 +481,11 @@ export function AcademicReportTab({
                 <textarea
                   defaultValue={report.abstract}
                   rows={6}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>
 
-              <hr className="my-4 border-neutral-200" />
+              <hr className="my-4 border-neutral-200 dark:border-neutral-700" />
 
               <div>
                 <label className="block text-sm font-medium mb-3 text-neutral-700">
@@ -497,12 +497,12 @@ export function AcademicReportTab({
                       <input
                         type="text"
                         defaultValue={section.title}
-                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 mb-2"
+                        className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 mb-2"
                       />
                       <textarea
                         defaultValue={section.content}
                         rows={4}
-                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                        className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                       />
                     </div>
                   ))}

@@ -255,7 +255,7 @@ export function SynergyTab() {
             <GitMerge className="w-5 h-5 text-primary-500" />
             {t('ai.synergy.synergyTab.title')}
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">{t('ai.synergy.synergyTab.inputDescription')}</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{t('ai.synergy.synergyTab.inputDescription')}</p>
         </div>
 
         <div className="flex gap-3">
@@ -278,14 +278,14 @@ export function SynergyTab() {
 
         {/* 推荐药材快捷添加 */}
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-neutral-400 flex items-center gap-1">
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
             <Star className="w-3 h-3" /> 快速添加：
           </span>
           {SUGGESTED_HERBS.flat().slice(0, 8).map((herb) => (
             <button
               key={herb}
               onClick={() => handleAddHerb(herb)}
-              className="px-2 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-600 transition-colors flex items-center gap-1"
+              className="px-2 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-700 transition-colors flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> {herb}
             </button>
@@ -310,7 +310,7 @@ export function SynergyTab() {
         )}
 
         {mutation.isError && (
-          <div className="bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-xl p-5 text-sm text-danger-600 dark:text-danger-400">
+          <div className="bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-xl p-5 text-sm text-danger-600 dark:text-danger-600">
             {t('ai.synergy.synergyTab.analyzeFailed')}
           </div>
         )}
@@ -322,20 +322,20 @@ export function SynergyTab() {
           {/* 摘要卡片 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-900/10">
-              <div className="text-2xl font-bold text-primary-600">{synergyResult.score ?? 0}</div>
-              <div className="text-sm text-neutral-500">综合协同评分</div>
+              <div className="text-2xl font-bold text-primary-700">{synergyResult.score ?? 0}</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合协同评分</div>
             </div>
             <div className="border border-success-200 dark:border-success-800 rounded-xl p-4 bg-success-50/50 dark:bg-success-900/10">
               <div className="text-2xl font-bold text-success-600">
                 {synergyResult.synergy_pairs?.length ?? 0}
               </div>
-              <div className="text-sm text-neutral-500">协同配对</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同配对</div>
             </div>
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-4 bg-danger-50/50 dark:bg-danger-500/10">
               <div className="text-2xl font-bold text-danger-600">
                 {synergyResult.antagonism_warnings?.length ?? 0}
               </div>
-              <div className="text-sm text-neutral-500">配伍禁忌</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配伍禁忌</div>
             </div>
           </div>
 
@@ -366,7 +366,7 @@ export function SynergyTab() {
                         const cell = matrixData.matrix[h1][h2];
                         const isHovered = hoveredCell === `${h1}-${h2}`;
                         let bgClass = 'bg-neutral-50 dark:bg-neutral-800/30';
-                        let textColor = 'text-neutral-400';
+                        let textColor = 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
                         let content = '—';
                         if (h1 === h2) {
                           bgClass = 'bg-neutral-100 dark:bg-neutral-700/50';
@@ -379,11 +379,11 @@ export function SynergyTab() {
                           const step = Math.min(5, Math.max(1, Math.round(intensity * 5)));
                           const tier = [100, 200, 300, 400, 500][step - 1];
                           bgClass = `bg-primary-${tier}/15 dark:bg-primary-${tier}/30`;
-                          textColor = 'text-primary-700 dark:text-primary-400';
+                          textColor = 'text-primary-700 dark:text-primary-600';
                           content = cell.value.toFixed(2);
                         } else if (cell.type === 'antagonism') {
                           bgClass = 'bg-danger-100 dark:bg-danger-500/20';
-                          textColor = 'text-danger-700 dark:text-danger-400';
+                          textColor = 'text-danger-700 dark:text-danger-600';
                           content = '!';
                         }
                         return (
@@ -408,7 +408,7 @@ export function SynergyTab() {
               const cell = matrixData.matrix[h1]?.[h2];
               if (!cell || cell.type === 'none') return null;
               return (
-                <div className="mt-2 text-xs text-neutral-500">
+                <div className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {cell.type === 'synergy'
                     ? `✓ ${h1} + ${h2}：协同评分 ${cell.value.toFixed(2)}`
                     : `⚠ ${h1} + ${h2}：存在配伍禁忌`
@@ -416,7 +416,7 @@ export function SynergyTab() {
                 </div>
               );
             })()}
-            <div className="flex gap-4 mt-3 text-xs text-neutral-500">
+            <div className="flex gap-4 mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded bg-primary-200 dark:bg-primary-800/40" /> 协同（颜色越深评分越高）
               </span>
@@ -429,7 +429,7 @@ export function SynergyTab() {
           {/* 协同配对详情 */}
           {synergyResult.synergy_pairs && synergyResult.synergy_pairs.length > 0 && (
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-5 bg-primary-50/30 dark:bg-primary-900/10">
-              <h4 className="font-semibold text-primary-700 dark:text-primary-400 mb-3">
+              <h4 className="font-semibold text-primary-700 dark:text-primary-600 mb-3">
                 协同配对列表
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -439,7 +439,7 @@ export function SynergyTab() {
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm flex-1">{p.a}</span>
                     <span className="text-primary-500 font-medium">+</span>
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm flex-1">{p.b}</span>
-                    <span className="text-xs font-mono text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded">
+                    <span className="text-xs font-mono text-primary-700 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded">
                       {p.score.toFixed(2)}
                     </span>
                   </div>
@@ -451,7 +451,7 @@ export function SynergyTab() {
           {/* 配伍禁忌详情 */}
           {synergyResult.antagonism_warnings && synergyResult.antagonism_warnings.length > 0 && (
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-5 bg-danger-50/30 dark:bg-danger-900/10">
-              <h4 className="font-semibold text-danger-700 dark:text-danger-400 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-danger-700 dark:text-danger-600 mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 配伍禁忌警告
               </h4>
@@ -460,7 +460,7 @@ export function SynergyTab() {
                   <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-danger-100 dark:border-danger-900/30">
                     <span className="text-danger-500 font-medium">!</span>
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm">{w.a}</span>
-                    <span className="text-neutral-400">+</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+</span>
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm">{w.b}</span>
                     {w.reason && (
                       <span className="text-xs text-danger-500 ml-auto">{w.reason}</span>
@@ -480,7 +480,7 @@ export function SynergyTab() {
           size="sm"
           onClick={() => setShowHistory(!showHistory)}
           icon={<History className="w-4 h-4" />}
-          className="text-neutral-500"
+          className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
         >
           分析历史 ({history.length})
         </Button>
@@ -504,9 +504,9 @@ export function SynergyTab() {
                 >
                   <div className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300 truncate">
                     {entry.herbs.slice(0, 3).join(' + ')}
-                    {entry.herbs.length > 3 && <span className="text-neutral-400">…(+{entry.herbs.length - 3})</span>}
+                    {entry.herbs.length > 3 && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">…(+{entry.herbs.length - 3})</span>}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-neutral-400">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>评分 {entry.score.toFixed(2)}</span>
                     <span className="text-success-500">{entry.synergyCount} 协同</span>
                     {entry.antagonismCount > 0 && (

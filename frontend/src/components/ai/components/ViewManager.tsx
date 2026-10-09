@@ -72,7 +72,7 @@ function SortableList({
           </span>
 
           {/* 列名 */}
-          <span className={`flex-1 text-sm truncate ${!item.visible ? 'text-neutral-400 line-through' : ''}`}>
+          <span className={`flex-1 text-sm truncate ${!item.visible ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-through' : ''}`}>
             {item.label}
             {!item.visible && <span className="ml-1 text-xs">(隐藏)</span>}
           </span>
@@ -83,7 +83,7 @@ function SortableList({
           </span>
 
           {/* 排序指示 */}
-          <span className="text-xs text-neutral-400 w-4 text-center">
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-4 text-center">
             #{index + 1}
           </span>
         </div>
@@ -228,7 +228,7 @@ export function ViewManager({
           onClick={() => setActiveTab('edit')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'edit'
-              ? 'border-blue-500 text-secondary-600 dark:text-secondary-400'
+              ? 'border-blue-500 text-secondary-600 dark:text-secondary-600'
               : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -238,7 +238,7 @@ export function ViewManager({
           onClick={() => setActiveTab('saved')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors relative ${
             activeTab === 'saved'
-              ? 'border-blue-500 text-secondary-600 dark:text-secondary-400'
+              ? 'border-blue-500 text-secondary-600 dark:text-secondary-600'
               : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -271,7 +271,7 @@ export function ViewManager({
                 >
                   全部隐藏
                 </button>
-                <span className="text-xs text-neutral-400">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   显示 {stats.visible}/{stats.total} 列
                 </span>
               </div>
@@ -328,7 +328,7 @@ export function ViewManager({
                         max={col.maxWidth || 1000}
                         className="w-20 px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-700"
                       />
-                      <span className="text-xs text-neutral-400">px</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">px</span>
                     </div>
                   </div>
                 );
@@ -338,10 +338,10 @@ export function ViewManager({
             {/* 拖拽排序预览区 */}
             <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-750 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">
                   列顺序 (拖拽调整)
                 </span>
-                <span className="text-xs text-neutral-400">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   提示：上下拖拽行来调整列的显示顺序
                 </span>
               </div>
@@ -376,7 +376,7 @@ export function ViewManager({
           /* ====== 已保存标签页 ====== */
           <div className="space-y-2">
             {savedViews.length === 0 ? (
-              <div className="text-center py-8 text-neutral-400">
+              <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
@@ -406,17 +406,17 @@ export function ViewManager({
                       )}
 
                       {view.id === currentView.id && (
-                        <span className="px-1.5 py-0.5 text-xs bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600 rounded">
                           当前
                         </span>
                       )}
                     </div>
 
                     {view.description && (
-                      <p className="text-xs text-neutral-500 mt-0.5 truncate">{view.description}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">{view.description}</p>
                     )}
 
-                    <p className="text-xs text-neutral-400 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       {view.columns.filter(c => c.visible).length}/{view.columns.length} 列 ·
                       更新于 {new Date(view.updatedAt || view.createdAt).toLocaleDateString()}
                     </p>

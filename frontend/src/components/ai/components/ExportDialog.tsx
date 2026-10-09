@@ -130,7 +130,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">导出数据</h3>
             <p className="mt-1 text-sm text-neutral-600">选择导出格式和选项</p>
@@ -138,7 +138,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
+            className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 disabled:opacity-50"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -189,7 +189,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   className={`relative p-4 rounded-lg border-2 text-center transition-all ${
                     format === fmt
                       ? 'border-blue-500 bg-secondary-50 text-secondary-700'
-                      : 'border-neutral-200 hover:border-neutral-300 text-neutral-700'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700 text-neutral-700'
                   } disabled:opacity-50`}
                 >
                   <span className="text-2xl mb-2 block">{getFormatIcon(fmt)}</span>
@@ -223,7 +223,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                     scope === option.value
                       ? 'border-blue-500 bg-secondary-50'
                       : option.available
-                      ? 'border-neutral-200 hover:border-neutral-300'
+                      ? 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700'
                       : 'border-neutral-100 opacity-50 cursor-not-allowed'
                   }`}
                 >
@@ -238,7 +238,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   />
                   <div className="ml-3 flex-1">
                     <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{option.label}</span>
-                    <span className="ml-2 text-xs text-neutral-500">{option.desc}</span>
+                    <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{option.desc}</span>
                   </div>
                 </label>
               ))}
@@ -259,7 +259,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                 >
                   全选
                 </button>
-                <span className="text-neutral-300">|</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
                 <button
                   type="button"
                   onClick={handleDeselectAllColumns}
@@ -270,7 +270,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                 </button>
               </div>
             </div>
-            <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md p-2 space-y-1">
+            <div className="max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md p-2 space-y-1">
               {columns.map((col) => (
                 <label
                   key={col.key}
@@ -301,7 +301,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
                 disabled={isExporting}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="输入文件名..."
               />
             </div>
