@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 肽链结构分析 API 服务
  * 支持：完整分析、结构转换、历史记录、数据库查询、对比分析
  */
@@ -57,6 +57,8 @@ export interface BatchAnalyzeResult {
     success: boolean;
     result?: PeptideAnalysisResult;
     error?: string;
+    // 后端批量分析返回扁平结构：分子量等字段在顶层，而非仅嵌套在 result 内
+    molecular_weight?: number;
   }>;
 }
 

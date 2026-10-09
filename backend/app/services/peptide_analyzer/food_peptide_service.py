@@ -251,6 +251,7 @@ class FoodPeptideAnalyzer:
             props = self._calculate_properties(seq, smiles=result.smiles)
             result.molecular_weight = props['molecular_weight']
             result.hydrophobicity = props['hydrophobicity']
+            result.isoelectric_point = props['isoelectric_point']
             
             # Step 3: 活性预测（使用真实特征工程模型）
             activity_results = await self.activity_predictor.predict_all(seq)

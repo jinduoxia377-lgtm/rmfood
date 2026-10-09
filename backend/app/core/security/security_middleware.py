@@ -892,6 +892,12 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # AI 智能对话端点豁免 CSRF（JWT 认证 + SPA 场景，CSRF cookie 在跨端口代理下不可靠）
         if request.url.path.startswith("/api/v1/ai/chat"):
             return await call_next(request)
+        # 预注册申请端点豁免 CSRF（SPA 场景，未登录访客提交 + 跨端口代理下 CSRF cookie 不可靠）
+        if request.url.path.startswith("/api/v1/auth/pre-register"):
+            return await call_next(request)
+        # 管理员审核账号申请端点豁免 CSRF（JWT 认证 + admin 专用，与 pre-register 对称）
+        if request.url.path.startswith("/api/v1/admin/pre-register-requests"):
+            return await call_next(request)
         # 合规检查端点豁免 CSRF（纯只读查询，不涉及状态变更，SPA 场景无需 CSRF）
         if request.url.path.startswith("/api/v1/compliance"):
             return await call_next(request)

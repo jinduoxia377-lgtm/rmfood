@@ -164,9 +164,9 @@ type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'bat
 
 // ─── 工具函数 ───
 function getScoreColor(score: number): string {
-  if (score >= 0.8) return 'text-green-600 dark:text-green-400';
-  if (score >= 0.5) return 'text-yellow-600 dark:text-yellow-400';
-  return 'text-red-600 dark:text-red-400';
+  if (score >= 0.8) return 'text-success-600 dark:text-success-700';
+  if (score >= 0.5) return 'text-warning-600 dark:text-warning-700';
+  return 'text-error-600 dark:text-error-700';
 }
 
 function getActivityBadge(level: string): 'success' | 'warning' | 'danger' | 'neutral' {
@@ -217,7 +217,7 @@ function RadarChart({ data }: { data: PeptideAnalysisResult }) {
       ],
       shape: 'polygon',
       splitNumber: 4,
-      axisName: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisName: { color: 'var(--text-secondary,#6B7280)', fontSize: 12 },
       splitLine: { lineStyle: { color: 'rgba(128,128,128,0.2)' } },
       splitArea: { show: false },
       axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
@@ -256,7 +256,7 @@ function BarChart({ data }: { data: PeptideAnalysisResult }) {
     xAxis: {
       type: 'category',
       data: ['ACE抑制', '抗氧化', '抗菌', '食品安全'],
-      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 12 },
       axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
     },
     yAxis: {
@@ -379,16 +379,16 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
                     <td className="px-3 py-2 text-right">{(r.antimicrobial.score * 100).toFixed(1)}%</td>
                     <td className="px-3 py-2 text-center">
                       {r.safety.is_allergen ? (
-                        <span className="text-red-500">是</span>
+                        <span className="text-error-500">是</span>
                       ) : (
-                        <span className="text-green-500">否</span>
+                        <span className="text-success-500">否</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-center">
                       {r.safety.is_toxic ? (
-                        <span className="text-red-500">是</span>
+                        <span className="text-error-500">是</span>
                       ) : (
-                        <span className="text-green-500">否</span>
+                        <span className="text-success-500">否</span>
                       )}
                     </td>
                   </tr>
@@ -623,13 +623,13 @@ function HistoryView() {
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">平均评分</div>
           </div>
           <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
-            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-red-500' : 'text-green-500'}`}>
+            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-error-500' : 'text-success-500'}`}>
               {stats.allergen_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
           </div>
           <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
-            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-red-500' : 'text-green-500'}`}>
+            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-error-500' : 'text-success-500'}`}>
               {stats.toxic_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
@@ -695,9 +695,9 @@ function HistoryView() {
                 <td className="px-3 py-2 text-right">{(r.antioxidant_score * 100).toFixed(1)}%</td>
                 <td className="px-3 py-2 text-center">
                   {r.is_allergen ? (
-                    <span className="text-red-500">是</span>
+                    <span className="text-error-500">是</span>
                   ) : (
-                    <span className="text-green-500">否</span>
+                    <span className="text-success-500">否</span>
                   )}
                 </td>
                 <td className="px-3 py-2 text-xs text-[var(--text-muted,#9A9A9F)]">
@@ -707,7 +707,7 @@ function HistoryView() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                    className="h-6 w-6 p-0 text-error-500 hover:text-error-600"
                     onClick={() => handleDelete(r.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -774,7 +774,7 @@ function BatchAnalysisView() {
           </Button>
         </div>
       </Card>
-      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {results.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -787,7 +787,7 @@ function BatchAnalysisView() {
               {results.map((r, i) => (
                 <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
                   <td className="px-3 py-2 font-mono text-xs">{r.sequence}</td>
-                  <td className="px-3 py-2"><span className={`px-1.5 py-0.5 rounded text-xs ${r.success ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{r.success ? '成功' : '失败'}</span></td>
+                  <td className="px-3 py-2"><span className={`px-1.5 py-0.5 rounded text-xs ${r.success ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700' : 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-700'}`}>{r.success ? '成功' : '失败'}</span></td>
                   {r.success && r.result ? (
                     <>
                       <td className="px-3 py-2 font-mono text-xs">{r.result.molecular_weight?.toFixed(1) ?? '-'}</td>
@@ -799,7 +799,7 @@ function BatchAnalysisView() {
                       <td className="px-3 py-2 text-center text-xs">{r.result.safety?.is_toxic ? '是' : '否'}</td>
                     </>
                   ) : (
-                    <td colSpan={7} className="px-3 py-2 text-xs text-red-500">{r.error ?? '-'}</td>
+                    <td colSpan={7} className="px-3 py-2 text-xs text-error-500">{r.error ?? '-'}</td>
                   )}
                 </tr>
               ))}
@@ -840,7 +840,7 @@ function DeepAnalysisView() {
           {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Bot className="w-4 h-4 mr-1"/>深度分析</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
     </div>
   );
 
@@ -988,7 +988,7 @@ function OptimizeView() {
           {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>计算中...</> : <><Target className="w-4 h-4 mr-1"/>计算 Pareto 前沿</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {result && (
         <Card className="p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -1096,7 +1096,7 @@ function SynergyView() {
           {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Zap className="w-4 h-4 mr-1"/>协同效应分析</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {result && (
         <Card className="p-4 space-y-3">
           <h3 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-primary"/>协同效应结果</h3>
@@ -1451,9 +1451,9 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
           </Card>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <span className="text-sm text-red-700 dark:text-red-400">{error}</span>
+            <div className="flex items-center gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-error-500 flex-shrink-0" />
+              <span className="text-sm text-error-700 dark:text-error-700">{error}</span>
             </div>
           )}
 
@@ -1521,7 +1521,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <div className="mb-3">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary-500"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
                               2D 化学结构
                             </span>
                             <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{result.smiles?.length || 0} chars</span>
@@ -1548,7 +1548,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                           <div className="mb-3">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success-500"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                                 3D 分子结构
                               </span>
                               <select
@@ -1570,18 +1570,18 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                               <span className="flex items-center gap-1"><Dna className="w-3 h-3" />拖拽旋转</span>
                               <span className="flex items-center gap-1"><ZoomIn className="w-3 h-3" />滚轮缩放</span>
                               <span className="flex items-center gap-1"><Expand className="w-3 h-3" />右键平移</span>
-                              <span className="ml-auto font-mono text-emerald-600 dark:text-emerald-400">{molecule3D.atom_count} atoms · {molecule3D.bond_count} bonds · MW {molecule3D.molecular_weight}</span>
+                              <span className="ml-auto font-mono text-success-700 dark:text-success-600">{molecule3D.atom_count} atoms · {molecule3D.bond_count} bonds · MW {molecule3D.molecular_weight}</span>
                             </div>
                           </div>
                         ) : loading3D ? (
                           <div className="mb-3 p-8 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
                             <div className="text-center text-[var(--text-muted,#9A9A9F)]">
-                              <div className="animate-spin w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                              <div className="animate-spin w-5 h-5 border-2 border-success-500 border-t-transparent rounded-full mx-auto mb-2"></div>
                               <p className="text-xs">生成3D结构...</p>
                             </div>
                           </div>
                         ) : molecule3DError ? (
-                          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-600 dark:text-red-400">
+                          <div className="mb-3 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-xs text-error-600 dark:text-error-700">
                             ⚠ 3D结构生成失败：{molecule3DError}
                           </div>
                         ) : null}
@@ -1589,7 +1589,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     )}
 
                     {/* SMILES文本 */}
-                    <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="p-3 bg-gradient-to-r from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
                       <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SMILES字符串</div>
                       <div className="font-mono text-xs break-all text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)] leading-relaxed">
                         {result.smiles}
@@ -1652,13 +1652,13 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">食品安全评分</div>
                   </div>
                   <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
-                    <div className={`text-2xl font-bold ${result.safety.is_allergen ? 'text-red-500' : 'text-green-500'}`}>
+                    <div className={`text-2xl font-bold ${result.safety.is_allergen ? 'text-error-500' : 'text-success-500'}`}>
                       {result.safety.is_allergen ? '是' : '否'}
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
                   </div>
                   <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
-                    <div className={`text-2xl font-bold ${result.safety.is_toxic ? 'text-red-500' : 'text-green-500'}`}>
+                    <div className={`text-2xl font-bold ${result.safety.is_toxic ? 'text-error-500' : 'text-success-500'}`}>
                       {result.safety.is_toxic ? '是' : '否'}
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
@@ -1681,7 +1681,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     </div>
                     <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
                       <div
-                        className="bg-orange-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-warning-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${result.taste.bitterness * 100}%` }}
                       />
                     </div>
@@ -1693,7 +1693,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     </div>
                     <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
                       <div
-                        className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-error-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${result.taste.umami * 100}%` }}
                       />
                     </div>
@@ -1777,9 +1777,9 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
             </div>
           </Card>
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-red-500" />
-              <span className="text-sm text-red-700 dark:text-red-400">{error}</span>
+            <div className="flex items-center gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-error-500" />
+              <span className="text-sm text-error-700 dark:text-error-700">{error}</span>
             </div>
           )}
           {result?.smiles && (
@@ -1827,7 +1827,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 {compareSequences.map((seq, i) => (
                   <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded text-sm font-mono">
                     {seq}
-                    <button onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))} className="text-[var(--text-muted)] hover:text-red-500">
+                    <button onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))} className="text-[var(--text-muted)] hover:text-error-500">
                       <X className="w-3 h-3" />
                     </button>
                   </span>

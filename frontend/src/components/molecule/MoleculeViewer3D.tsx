@@ -186,10 +186,10 @@ export function MoleculeViewer3D({
 }: Props) {
   if (!atoms || atoms.length === 0) {
     return (
-      <div className={`h-[420px] w-full rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center ${className}`}>
+      <div className={`h-[420px] w-full rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 flex items-center justify-center ${className}`}>
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-secondary-500/10 border border-secondary-500/30 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-secondary-400">
               <circle cx="12" cy="12" r="3" />
               <circle cx="5" cy="7" r="2" />
               <circle cx="19" cy="7" r="2" />
@@ -201,26 +201,26 @@ export function MoleculeViewer3D({
               <line x1="14.5" y1="14.5" x2="17.5" y2="16" />
             </svg>
           </div>
-          <p className="text-slate-500 text-sm font-medium">暂无分子数据</p>
-          <p className="text-slate-600 text-xs mt-1">输入肽序列后自动生成3D结构</p>
+          <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm font-medium">暂无分子数据</p>
+          <p className="text-neutral-600 text-xs mt-1">输入肽序列后自动生成3D结构</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`h-[420px] w-full rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative ${className}`}>
+    <div className={`h-[420px] w-full rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 relative ${className}`}>
       {/* 左上角标签 */}
       <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase tracking-wider">
+        <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-secondary-500/20 text-secondary-300 border border-secondary-500/30 uppercase tracking-wider">
           3D Structure
         </span>
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+        <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-success-500/15 text-success-300 border border-success-500/25">
           {atoms.length} atoms
         </span>
       </div>
       {/* 右上角渲染模式指示 */}
-      <div className="absolute top-3 right-3 z-10 text-[10px] font-mono text-slate-500 bg-slate-900/60 px-2 py-1 rounded border border-white/5">
+      <div className="absolute top-3 right-3 z-10 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-900/60 px-2 py-1 rounded border border-white/5">
         {renderingMode === 'ball-stick' ? '●○ Ball & Stick' : renderingMode === 'space-filling' ? '● Space Fill' : '│ Tube Model'}
       </div>
 
