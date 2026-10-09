@@ -113,19 +113,19 @@ const ROLE_CONFIG = {
   owner: {
     label: '所有者',
     icon: Crown,
-    color: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
+    color: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700',
     description: '拥有全部权限',
   },
   admin: {
     label: '管理员',
     icon: Shield,
-    color: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
+    color: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-600',
     description: '除删除团队外的全部权限',
   },
   member: {
     label: '成员',
     icon: UserCheck,
-    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
+    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
     description: '读写权限',
   },
   guest: {
@@ -303,7 +303,7 @@ export function TeamManagement({ className }: { className?: string }) {
 
           {/* 搜索框 */}
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <input
               type="text"
               value={searchQuery}
@@ -321,7 +321,7 @@ export function TeamManagement({ className }: { className?: string }) {
               <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredTeams.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-neutral-400 px-4">
+            <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-4">
               <Users size={48} className="mb-3 opacity-50" />
               <p className="text-sm text-center">{searchQuery ? '未找到匹配的团队' : '暂无团队'}</p>
               {!searchQuery && (
@@ -345,7 +345,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">{team.name}</h3>
                       {team.description && (
-                        <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{team.description}</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-2">{team.description}</p>
                       )}
                     </div>
 
@@ -356,7 +356,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
+                  <div className="flex items-center gap-3 mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span className="flex items-center gap-1">
                       <Users size={12} />
                       {team.member_count} 人
@@ -373,7 +373,7 @@ export function TeamManagement({ className }: { className?: string }) {
       {/* 右侧：团队详情 */}
       <div className="flex-1 flex flex-col bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {!selectedTeamId ? (
-          <div className="flex-1 flex items-center justify-center text-neutral-400">
+          <div className="flex-1 flex items-center justify-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <div className="text-center">
               <Users size={64} className="mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">选择一个团队</p>
@@ -401,7 +401,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{teamDetail.team.description}</p>
                   )}
 
-                  <div className="flex items-center gap-4 mt-3 text-xs text-neutral-500">
+                  <div className="flex items-center gap-4 mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>创建于 {new Date(teamDetail.team.created_at).toLocaleDateString('zh-CN')}</span>
                     <span>·</span>
                     <span>{teamDetail.member_count} 位成员</span>
@@ -454,7 +454,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     className={cn(
                       'px-4 py-2.5 text-sm font-medium transition-colors relative',
                       activeTab === tab.key
-                        ? 'text-secondary-600 dark:text-secondary-400'
+                        ? 'text-secondary-600 dark:text-secondary-700'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white',
                     )}
                   >
@@ -518,8 +518,8 @@ export function TeamManagement({ className }: { className?: string }) {
                                   {roleConfig.label}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-neutral-500 mt-0.5">{member.email}</p>
-                              <p className="text-xs text-neutral-400 mt-0.5">
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{member.email}</p>
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
                                 加入于 {new Date(member.joined_at).toLocaleDateString('zh-CN')}
                               </p>
                             </div>
@@ -595,7 +595,7 @@ export function TeamManagement({ className }: { className?: string }) {
                         <CardContent className="p-4">
                           <Mail size={24} className="text-secondary-600 mb-2" />
                           <h4 className="text-sm font-medium">邮件邀请</h4>
-                          <p className="text-xs text-neutral-500 mt-1">通过邮箱发送邀请</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">通过邮箱发送邀请</p>
                         </CardContent>
                       </Card>
 
@@ -606,7 +606,7 @@ export function TeamManagement({ className }: { className?: string }) {
                         <CardContent className="p-4">
                           <Link size={24} className="text-success-600 mb-2" />
                           <h4 className="text-sm font-medium">分享链接</h4>
-                          <p className="text-xs text-neutral-500 mt-1">生成邀请链接</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">生成邀请链接</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -615,13 +615,13 @@ export function TeamManagement({ className }: { className?: string }) {
                       <div className="mt-4 p-4 bg-success-50 dark:bg-success-900/10 rounded-lg border border-green-200 dark:border-green-800">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-success-800 dark:text-success-300 mb-2">
+                            <p className="text-sm font-medium text-success-800 dark:text-success-600 mb-2">
                               邀请链接已生成
                             </p>
-                            <p className="text-xs text-success-600 dark:text-success-400 font-mono break-all">
+                            <p className="text-xs text-success-600 dark:text-success-600 font-mono break-all">
                               {inviteLink.invite_url}
                             </p>
-                            <p className="text-xs text-success-600 dark:text-success-400 mt-2">
+                            <p className="text-xs text-success-600 dark:text-success-600 mt-2">
                               有效期至 {new Date(inviteLink.expires_at).toLocaleString('zh-CN')} · 剩余{' '}
                               {inviteLink.max_uses - inviteLink.used_count} 次使用
                             </p>
@@ -803,7 +803,7 @@ function InviteMemberModal({
 
         {inviteMethod === 'link' ? (
           <div className="text-center py-8">
-            <QrCode size={48} className="mx-auto text-neutral-400 mb-3" />
+            <QrCode size={48} className="mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">生成一个可分享的邀请链接</p>
             <Button
               onClick={() => {

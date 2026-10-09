@@ -18,7 +18,7 @@ import {
   User, KeyRound, Shield, CheckCircle, AlertCircle,
   Mail, Bell, Clock, Smartphone,
   ChevronRight, ShieldAlert, RefreshCw, Key, Copy, Plus, Download, Upload,
-  Globe, MapPin, CheckCircle2, Eye,
+  Globe, MapPin, CheckCircle2,
   QrCode, Info, ShieldCheck, Sun, Moon, BellRing,
   LogOut, SmartphoneIcon, Trash, Palette, Keyboard,
   Brain,
@@ -43,9 +43,13 @@ import { ThemePanel } from '@/components/theme/ThemePanel'
 import { PersonalInfoSection } from './components/PersonalInfoSection'
 import { AccountDeactivationSection } from './components/AccountDeactivationSection'
 import { ConfigManager } from '@/utils/configManager'
-import type { ApiKey } from '@/utils/configManager'
 import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager'
 import ModelClient from '@/api/modelClient'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  listAPIKeys, revokeAPIKey, type APIKeySummary,
+} from '@/api/integrations'
+import ApiKeyCreateDialog from '@/components/integrations/ApiKeyCreateDialog'
 
 // ─── Tab 定义 ─────────────────────────────────────────────────────
 type TabId = 'account' | 'security' | 'api' | 'data' | 'locale' | 'theme' | 'notifications' | 'llm'
@@ -299,7 +303,7 @@ function LlmPanel() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
-              <Brain className="w-5 h-5 text-accent-600 dark:text-accent-400" />
+              <Brain className="w-5 h-5 text-accent-600 dark:text-accent-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">AI 模型配置</CardTitle>
@@ -330,7 +334,7 @@ function LlmPanel() {
               <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">API 接口地址（Base URL）</label>
               <Input value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.deepseek.com/v1" />
               {providerWarning && (
-                <p className="mt-1 text-xs text-warning-600 dark:text-warning-400 flex items-center gap-1">
+                <p className="mt-1 text-xs text-warning-600 dark:text-warning-700 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 shrink-0" />
                   {providerWarning}
                 </p>
@@ -340,24 +344,24 @@ function LlmPanel() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">API 密钥</label>
-                {maskedKey && <span className="text-xs font-mono text-neutral-400">当前已存：{maskedKey}</span>}
+                {maskedKey && <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前已存：{maskedKey}</span>}
               </div>
               <Input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
                 placeholder="sk-..." error={keyValid ? undefined : (apiKey ? `长度不足（${apiKey.length}/40 字符）` : 'API 密钥不能为空')} />
               {legacyKeyWarning && (
                 <div className="mt-2 flex items-start gap-2 rounded-lg border border-warning-200 dark:border-warning-500/20 bg-warning-50 dark:bg-warning-500/10 px-3 py-2.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-warning-600 dark:text-warning-400 shrink-0 mt-0.5" />
-                  <div className="text-xs text-warning-800 dark:text-warning-300 leading-relaxed">
+                  <AlertCircle className="w-3.5 h-3.5 text-warning-600 dark:text-warning-700 shrink-0 mt-0.5" />
+                  <div className="text-xs text-warning-800 dark:text-warning-700 leading-relaxed">
                     <span className="font-medium">检测到历史遗留的未加密密钥</span>
                     <span className="ml-1">（脱敏显示：{maskedKey}）。该密钥此前未经加密入库，请重新粘贴完整密钥后保存，保存后将自动转为加密存储。</span>
                   </div>
                   <button type="button" onClick={() => setApiKey('')}
-                    className="ml-auto shrink-0 text-xs font-medium text-warning-700 dark:text-warning-400 hover:underline">
+                    className="ml-auto shrink-0 text-xs font-medium text-warning-700 dark:text-warning-700 hover:underline">
                     清空重新输入
                   </button>
                 </div>
               )}
-              <p className="text-xs text-neutral-400 mt-1">
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                 本地以加密方式存储；开启后端同步后仅写入您自己的服务器数据库，不会上传到第三方。
               </p>
             </div>
@@ -366,7 +370,7 @@ function LlmPanel() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400" htmlFor="llm-temperature">温度参数：{temperature}</label>
-                  <span className="text-xs text-neutral-400">0 – 2</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">0 – 2</span>
                 </div>
                 <input id="llm-temperature" type="range" min={0} max={2} step={0.1} value={temperature} onChange={e => setTemperature(parseFloat(e.target.value))}
                   className="w-full" style={{ accentColor: 'var(--color-accent)' } as React.CSSProperties}
@@ -400,7 +404,7 @@ function LlmPanel() {
               测试连接
             </Button>
             {successMsg && (
-              <span className="text-xs text-success-600 dark:text-success-400 flex items-center gap-1">
+              <span className="text-xs text-success-600 dark:text-success-600 flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" />
                 {successMsg}
               </span>
@@ -411,8 +415,8 @@ function LlmPanel() {
             <div className={cn(
               'mt-3 rounded-lg border px-4 py-3 text-xs leading-relaxed',
               testResult.ok
-                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
-                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-600'
+                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-700',
             )}>
               <p className="font-medium mb-1 flex items-center gap-1.5">
                 {testResult.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
@@ -425,8 +429,8 @@ function LlmPanel() {
             <div className={cn(
               'mt-2 rounded-lg border px-4 py-3 text-xs leading-relaxed',
               statusNote.ok
-                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
-                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-600'
+                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-700',
             )}>
               <p className="font-medium mb-1 flex items-center gap-1.5">
                 {statusNote.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
@@ -443,7 +447,7 @@ function LlmPanel() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center shrink-0">
-              <Key className="w-5 h-5 text-success-600 dark:text-success-400" />
+              <Key className="w-5 h-5 text-success-600 dark:text-success-600" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">我的密钥（个人）</CardTitle>
@@ -482,7 +486,7 @@ function LlmPanel() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">API 密钥</label>
-                {myKeyStatus?.configured && <span className="text-xs font-mono text-neutral-400">当前已存：{myKeyStatus.keyMasked}</span>}
+                {myKeyStatus?.configured && <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前已存：{myKeyStatus.keyMasked}</span>}
               </div>
               <Input type="password" value={myKeyApi} onChange={e => setMyKeyApi(e.target.value)}
                 placeholder={myKeyStatus?.configured ? '留空则保留当前密钥' : 'sk-...'}
@@ -513,8 +517,8 @@ function LlmPanel() {
               <div className={cn(
                 'rounded-lg border px-4 py-3 text-xs leading-relaxed',
                 myKeyTestResult.ok
-                  ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
-                  : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+                  ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-600'
+                  : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-700',
               )}>
                 <p className="font-medium mb-1 flex items-center gap-1.5">
                   {myKeyTestResult.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
@@ -531,7 +535,7 @@ function LlmPanel() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-500/10 flex items-center justify-center shrink-0">
-              <Info className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+              <Info className="w-5 h-5 text-secondary-600 dark:text-secondary-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">配置说明</CardTitle>
@@ -548,6 +552,151 @@ function LlmPanel() {
           </ul>
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+// ─── API 密钥管理面板（独立组件，hooks 归属自身 fiber，避免 Rules of Hooks 违规）────
+// v2.0：从 localStorage 伪密钥升级为对接真实后端 /api/v1/integrations/api-keys，
+// 密钥写入 api_keys 表，创建时仅返回一次明文，撤销走后端 is_active 置否。
+function ApiKeyPanel() {
+  const { addToast } = useToast()
+  const qc = useQueryClient()
+
+  // ── 密钥列表（后端真实数据，仅前缀不返回明文）──────────────────────
+  const { data: apiKeysData, isLoading: keysLoading } = useQuery({
+    queryKey: ['integrations-api-keys'],
+    queryFn: listAPIKeys,
+    staleTime: 30_000,
+  })
+  const apiKeys: APIKeySummary[] = apiKeysData?.keys ?? []
+
+  // 创建密钥 Dialog（共享组件统一处理创建 + 一次性明文展示）
+  const [createOpen, setCreateOpen] = useState(false)
+  const refreshApiKeys = () => qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
+
+  const revokeKeyMutation = useMutation({
+    mutationFn: revokeAPIKey,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
+      addToast({ type: 'success', message: 'API 密钥已撤销' })
+    },
+    onError: () => addToast({ type: 'error', message: '撤销失败，请重试' }),
+  })
+
+  // 过期状态（后端 expires_at 判定）
+  const statusOf = (k: APIKeySummary): { label: string; variant: 'success' | 'warning' | 'danger' } => {
+    if (k.is_revoked) return { label: '已撤销', variant: 'danger' }
+    if (k.expires_at) {
+      const d = (new Date(k.expires_at).getTime() - Date.now()) / 86400000
+      if (d < 0) return { label: '已过期', variant: 'danger' }
+      if (d <= 7) return { label: '即将过期', variant: 'warning' }
+    }
+    return { label: '活跃', variant: 'success' }
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-500" />
+              </div>
+              <div>
+                <CardTitle as="h2" className="text-base font-semibold tracking-tight">API 密钥</CardTitle>
+                <CardDescription>用于程序化访问系统的凭证（服务端存储）</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="刷新列表"
+                onClick={() => qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })}
+                disabled={keysLoading}>
+                <RefreshCw className={cn('w-4 h-4', keysLoading && 'animate-spin', 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]')} />
+              </Button>
+              <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}
+                onClick={() => setCreateOpen(true)}>
+                创建密钥
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {keysLoading && apiKeys.length === 0 ? (
+            <div className="py-16 text-center">
+              <RefreshCw className="w-6 h-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-spin mx-auto mb-4" />
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在加载密钥…</p>
+            </div>
+          ) : apiKeys.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+                <Key className="w-6 h-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+              </div>
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">暂无 API 密钥</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">点击右上角按钮创建第一个密钥</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {apiKeys.map(key => {
+                const st = statusOf(key)
+                return (
+                  <div key={key.id} className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-neutral-50/50 dark:bg-neutral-800/30">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{key.name}</span>
+                          <Badge variant={st.variant} size="sm">{st.label}</Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                          <span>创建于 {key.created_at ? fmtDate(key.created_at) : '—'}</span>
+                          {key.expires_at && (<><span>·</span><span>过期于 {fmtDate(key.expires_at)}</span></>)}
+                          {key.last_used_at && (<><span>·</span><span>最后使用 {new Date(key.last_used_at).toLocaleString('zh-CN')}</span></>)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="复制前缀"
+                          onClick={() => { navigator.clipboard.writeText(key.key_prefix); addToast({ type: 'success', message: '密钥前缀已复制' }) }}>
+                          <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30" title="撤销密钥"
+                          onClick={() => revokeKeyMutation.mutate(key.id)}>
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <code className="text-sm font-mono px-4 py-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex-1 truncate text-neutral-500 dark:text-neutral-400">
+                        {key.key_prefix}
+                      </code>
+                    </div>
+                    {key.scopes.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                        {key.scopes.map(s => (
+                          <span key={s} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 font-mono">{s}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="pt-0">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <Info className="w-3.5 h-3.5 inline mr-1.5" />
+            密钥明文仅在创建时展示一次，请妥善保存；列表仅显示前缀，便于识别。撤销后不可恢复。
+          </p>
+        </CardFooter>
+      </Card>
+
+      {/* 创建密钥 Dialog（共享组件统一处理创建 + 一次性明文展示） */}
+      <ApiKeyCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={refreshApiKeys}
+      />
     </div>
   )
 }
@@ -592,15 +741,7 @@ export default function SettingsPage() {
   const devices = devicesData?.devices ?? []
   const loginHistory = loginHistoryData?.history ?? []
 
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
-  const [isCreatingKey, setIsCreatingKey] = useState(false)
-  const [newKeyName, setNewKeyName] = useState('')
-  const [newKeyPermissions, setNewKeyPermissions] = useState<string[]>(['read', 'write'])
-  const [expirationDays, setExpirationDays] = useState(30)
-  const [revealKeyIds, setRevealKeyIds] = useState<Set<string>>(new Set())
-  const createKeyDialogRef = useRef<HTMLDivElement>(null)
-  useFocusTrap(createKeyDialogRef, isCreatingKey, () => setIsCreatingKey(false))
-  useEffect(() => { setApiKeys(ConfigManager.getApiKeys()) }, [])
+  
 
   const [exportOptions, setExportOptions] = useState({
     profile: true, formulas: true, experiments: false, preferences: false,
@@ -716,27 +857,7 @@ export default function SettingsPage() {
     finally { setLoadingSecurity(false) }
   }
 
-  const handleCreateApiKey = () => {
-    if (!newKeyName.trim()) { addToast({ type: 'error', message: '请输入密钥名称' }); return }
-    try {
-      const newKey = ConfigManager.addApiKey({
-        name: newKeyName,
-        key: `sk_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
-        status: 'active', expires_at: new Date(Date.now() + expirationDays * 86400000).toISOString(),
-        permissions: newKeyPermissions,
-      })
-      setApiKeys(prev => [...prev, newKey])
-      setNewKeyName(''); setNewKeyPermissions(['read', 'write']); setExpirationDays(30); setIsCreatingKey(false)
-      addToast({ type: 'success', message: 'API 密钥创建成功' })
-    } catch { addToast({ type: 'error', message: '创建 API 密钥失败' }) }
-  }
-  const handleDeleteApiKey = (id: string) => {
-    try { ConfigManager.deleteApiKey(id); setApiKeys(prev => prev.filter(k => k.id !== id)); addToast({ type: 'success', message: 'API 密钥删除成功' }) }
-    catch { addToast({ type: 'error', message: '删除 API 密钥失败' }) }
-  }
-  const handleCopyApiKey = (key: string) => { navigator.clipboard.writeText(key); addToast({ type: 'success', message: 'API 密钥已复制到剪贴板' }) }
-  const toggleRevealKey = (id: string) =>
-    setRevealKeyIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  
 
   const handleExportData = async () => {
     setLoadingData(true)
@@ -822,7 +943,7 @@ export default function SettingsPage() {
               {pw.new_password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-neutral-500">密码强度</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">密码强度</span>
                     <span className={cn('text-xs font-medium',
                       passwordStrength === 'weak' ? 'text-rose-500' :
                       passwordStrength === 'medium' ? 'text-amber-500' : 'text-emerald-500')}>
@@ -856,7 +977,7 @@ export default function SettingsPage() {
         </CardContent>
         <CardFooter className="justify-between pt-0">
           {/* 忘记密码入口 — 旧实现完全缺失，用户只能走 /forgot-password 页面 */}
-          <Link to="/forgot-password" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+          <Link to="/forgot-password" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors">
             忘记密码？
           </Link>
           <Button variant="amber" loading={pwSaving} disabled={!pw.old_password || !pw.new_password}
@@ -921,7 +1042,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {loginHistory.length === 0 ? (
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 py-6 text-center">暂无登录历史（审计日志未记录到登录事件）</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-400 py-6 text-center">暂无登录历史（审计日志未记录到登录事件）</p>
           ) : (
           <div className="space-y-2" role="list">
             {loginHistory.map((s: any, idx: number) => {
@@ -939,7 +1060,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
                     isCurrent ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
-                    <Smartphone className={cn('w-5 h-5', isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
+                    <Smartphone className={cn('w-5 h-5', isCurrent ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-500')} />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -951,7 +1072,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                       {s.ip_address || 'IP 未记录'}
                     </p>
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">
                       {s.created_at ? new Date(s.created_at).toLocaleString('zh-CN') : '时间未知'}
                     </p>
                   </div>
@@ -979,7 +1100,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {devices.length === 0 ? (
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 py-6 text-center">暂无已注册设备</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-400 py-6 text-center">暂无已注册设备</p>
           ) : (
           <div className="space-y-2" role="list">
             {devices.map((d: any) => (
@@ -991,7 +1112,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
                     d.is_current ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-neutral-100 dark:bg-neutral-700/60')}>
-                    <Smartphone className={cn('w-5 h-5', d.is_current ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500')} />
+                    <Smartphone className={cn('w-5 h-5', d.is_current ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-500')} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -1023,130 +1144,7 @@ export default function SettingsPage() {
     </div>
   )
 
-  const renderApiPanel = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-500" />
-              </div>
-              <div>
-                <CardTitle as="h2" className="text-base font-semibold tracking-tight">API 密钥</CardTitle>
-                <CardDescription>用于程序化访问系统的凭证</CardDescription>
-              </div>
-            </div>
-            <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsCreatingKey(true)}>创建密钥</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {apiKeys.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-                <Key className="w-6 h-6 text-neutral-400" />
-              </div>
-              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">暂无 API 密钥</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">点击右上角按钮创建第一个密钥</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {apiKeys.map(key => {
-                const isRevealed = revealKeyIds.has(key.id)
-                return (
-                  <div key={key.id} className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-neutral-50/50 dark:bg-neutral-800/30">
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{key.name}</span>
-                          <Badge variant={key.status === 'active' ? 'success' : key.status === 'expiring' ? 'warning' : 'danger'} size="sm">
-                            {key.status === 'active' ? '活跃' : key.status === 'expiring' ? '即将过期' : '已过期'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-                          <span>创建于 {fmtDate(key.created_at)}</span>
-                          <span>·</span>
-                          <span>过期于 {fmtDate(key.expires_at)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" title={isRevealed ? '隐藏密钥' : '显示密钥'} onClick={() => toggleRevealKey(key.id)}>
-                          <Eye className={cn('w-4 h-4', isRevealed ? 'text-primary-500' : 'text-neutral-400')} />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" title="复制密钥" onClick={() => handleCopyApiKey(key.key)}>
-                          <Copy className="w-4 h-4 text-neutral-400" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30" title="删除密钥" onClick={() => handleDeleteApiKey(key.id)}>
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <code className={cn('text-sm font-mono px-4 py-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex-1 truncate',
-                        isRevealed ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500')}>
-                        {maskKey(key.key, isRevealed)}
-                      </code>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="pt-0">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            <Info className="w-3.5 h-3.5 inline mr-1.5" />
-            密钥仅在创建时完整展示一次，请妥善保存。建议使用独立的密钥管理工具。
-          </p>
-        </CardFooter>
-      </Card>
-
-      {/* 创建密钥 Dialog */}
-      <Dialog open={isCreatingKey} onOpenChange={setIsCreatingKey}>
-        <DialogContent ref={createKeyDialogRef} size="sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Key className="w-4 h-4 text-indigo-500" />创建新 API 密钥
-            </DialogTitle>
-            <DialogDescription>为应用程序生成访问凭证</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">密钥名称</label>
-              <Input value={newKeyName} onChange={e => setNewKeyName(e.target.value)} placeholder="例如：生产环境、测试工具" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">过期天数</label>
-              <Input type="number" min={1} max={365} value={expirationDays}
-                onChange={e => setExpirationDays(parseInt(e.target.value) || 30)} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 block">权限</label>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={newKeyPermissions.includes('read')}
-                    onChange={e => setNewKeyPermissions(p => e.target.checked ? [...p, 'read'] : p.filter(x => x !== 'read'))}
-                    className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">读取</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={newKeyPermissions.includes('write')}
-                    onChange={e => setNewKeyPermissions(p => e.target.checked ? [...p, 'write'] : p.filter(x => x !== 'write'))}
-                    className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">写入</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsCreatingKey(false)}>取消</Button>
-            <Button variant="primary" onClick={handleCreateApiKey}>创建密钥</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
+  const renderApiPanel = () => <ApiKeyPanel />
 
   const renderDataPanel = () => (
     <div className="space-y-6">
@@ -1180,9 +1178,9 @@ export default function SettingsPage() {
                       : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
                   <input type="checkbox" checked={exportOptions[item.key]}
                     onChange={e => setExportOptions(p => ({ ...p, [item.key]: e.target.checked }))}
-                    className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500 w-4 h-4" />
+                    className="rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500 w-4 h-4" />
                   <div>
-                    <p className={cn('text-sm font-medium', exportOptions[item.key] ? 'text-primary-800 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300')}>{item.label}</p>
+                    <p className={cn('text-sm font-medium', exportOptions[item.key] ? 'text-primary-800 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300')}>{item.label}</p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{item.desc}</p>
                   </div>
                 </label>
@@ -1199,10 +1197,10 @@ export default function SettingsPage() {
                     exportOptions.format === format
                       ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
                       : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
-                  <p className={cn('text-sm font-medium', exportOptions.format === format ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300')}>
+                  <p className={cn('text-sm font-medium', exportOptions.format === format ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300')}>
                     {format === 'json' ? 'JSON' : format === 'csv' ? 'CSV' : 'Excel'}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     {format === 'json' ? '结构化数据' : format === 'csv' ? '表格格式' : '电子表格'}
                   </p>
                 </button>
@@ -1246,16 +1244,16 @@ export default function SettingsPage() {
                   <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{importFile.name}</p>
-                <p className="text-xs text-neutral-500 mt-1">{(importFile.size / 1024).toFixed(1)} KB</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{(importFile.size / 1024).toFixed(1)} KB</p>
                 <Button variant="ghost" size="sm" className="mt-4 text-xs"
                   onClick={e => { e.stopPropagation(); setImportFile(null) }}>更换文件</Button>
               </div>
             ) : (
               <div>
-                <Upload className="w-10 h-10 text-neutral-400 mx-auto mb-4" />
+                <Upload className="w-10 h-10 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-auto mb-4" />
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">拖放文件到此处</p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">或点击选择文件</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-3">支持 JSON、CSV、Excel，最大 10MB</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-3">支持 JSON、CSV、Excel，最大 10MB</p>
               </div>
             )}
           </div>
@@ -1337,7 +1335,7 @@ export default function SettingsPage() {
                     ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
                 <span className="text-2xl" aria-hidden="true">{lang.flag}</span>
-                <span className={cn('text-sm font-medium', selectedLanguage === lang.code ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300')}>
+                <span className={cn('text-sm font-medium', selectedLanguage === lang.code ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300')}>
                   {lang.name}
                 </span>
                 {selectedLanguage === lang.code && <CheckCircle2 className="w-5 h-5 text-primary-500 ml-auto shrink-0" />}
@@ -1414,7 +1412,7 @@ export default function SettingsPage() {
               ] as const).map(item => (
                 <div key={item.format} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700/60 text-center hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer transition-colors">
                   <p className="text-sm font-mono font-medium text-neutral-700 dark:text-neutral-300">{item.format}</p>
-                  <p className="text-xs text-neutral-500 mt-1.5">{item.example}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1.5">{item.example}</p>
                 </div>
               ))}
             </div>
@@ -1428,7 +1426,7 @@ export default function SettingsPage() {
               ]).map(item => (
                 <div key={item.format} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700/60 text-center hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer transition-colors">
                   <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{item.label}</p>
-                  <p className="text-xs text-neutral-500 mt-1.5 font-mono">{item.example}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1.5 font-mono">{item.example}</p>
                 </div>
               ))}
             </div>
@@ -1469,7 +1467,7 @@ export default function SettingsPage() {
               ]).map(item => (
                 <div key={item.key} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-3">
-                    <Bell className="w-4 h-4 text-neutral-400 shrink-0" />
+                    <Bell className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{item.label}</p>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">{item.desc}</p>
@@ -1490,7 +1488,7 @@ export default function SettingsPage() {
               ]).map(item => (
                 <div key={item.key} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-3">
-                    <item.icon className="w-4 h-4 text-neutral-400 shrink-0" />
+                    <item.icon className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{item.label}</p>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">{item.desc}</p>
@@ -1594,7 +1592,7 @@ export default function SettingsPage() {
           ) : (
             <div className="flex justify-center p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700">
               <div className="text-center">
-                <QrCode className="w-14 h-14 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+                <QrCode className="w-14 h-14 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">正在获取密钥…</p>
               </div>
             </div>
@@ -1721,7 +1719,7 @@ export default function SettingsPage() {
                 )}
                 aria-current={active ? 'true' : undefined}
               >
-                <Icon className={cn('w-4 h-4', active ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-500')} />
+                <Icon className={cn('w-4 h-4', active ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
                 {label}
               </button>
             )

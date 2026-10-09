@@ -119,9 +119,9 @@ export function FormulaTestPage() {
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">选择配方：</span>
             {formulasLoading ? (
-              <Loader className="w-4 h-4 animate-spin text-neutral-400" />
+              <Loader className="w-4 h-4 animate-spin text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             ) : formulas.length === 0 ? (
-              <span className="text-sm text-neutral-500">暂无配方，请先创建</span>
+              <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无配方，请先创建</span>
             ) : (
               <select
                 value={selectedFormulaId ?? ''}
@@ -137,8 +137,8 @@ export function FormulaTestPage() {
             )}
             {selectedFormula && (
               <>
-                <span className="text-xs text-neutral-400">|</span>
-                <span className="text-xs text-neutral-500">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {selectedFormula.ingredients?.length ?? 0} 味药材
                   {selectedFormula.status ? ` · ${selectedFormula.status}` : ''}
                 </span>
@@ -169,9 +169,9 @@ export function FormulaTestPage() {
             <CardHeader><CardTitle>配方列表</CardTitle></CardHeader>
             <CardContent>
               {formulasLoading ? (
-                <div className="text-center py-8 text-neutral-500"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
               ) : formulas.length === 0 ? (
-                <div className="text-center py-8 text-neutral-500">暂无配方数据</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无配方数据</div>
               ) : (
                 <div className="space-y-2">
                   {formulas.map(f => (
@@ -188,7 +188,7 @@ export function FormulaTestPage() {
                         <div className="font-mono text-xs text-primary">{f.id}</div>
                         <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{f.name || f.code || `配方#${f.id}`}</div>
                       </div>
-                      <div className="text-xs text-neutral-400 flex items-center gap-3">
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-3">
                         <span>{f.ingredients?.length ?? 0} 味药材</span>
                         <span className={`px-2 py-0.5 rounded-full ${
                           f.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
@@ -210,9 +210,9 @@ export function FormulaTestPage() {
             <CardHeader><CardTitle>成本分析测试</CardTitle></CardHeader>
             <CardContent>
               {selectedFormulaLoading ? (
-                <div className="text-center py-8 text-neutral-500"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
               ) : !selectedFormula ? (
-                <div className="text-center py-8 text-neutral-500">请先选择一个配方</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请先选择一个配方</div>
               ) : (
                 <FormulaCostAnalysis
                   ingredients={(selectedFormula.ingredients ?? []).map((ing: any) => ({
@@ -235,9 +235,9 @@ export function FormulaTestPage() {
             <CardHeader><CardTitle>评分系统测试</CardTitle></CardHeader>
             <CardContent>
               {selectedFormulaLoading ? (
-                <div className="text-center py-8 text-neutral-500"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
               ) : !selectedFormula ? (
-                <div className="text-center py-8 text-neutral-500">请先选择一个配方</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请先选择一个配方</div>
               ) : (
                 <FormulaRating
                   formulaId={selectedFormulaId!}
@@ -255,14 +255,14 @@ export function FormulaTestPage() {
             <CardHeader><CardTitle>分享功能测试</CardTitle></CardHeader>
             <CardContent>
               {selectedFormulaLoading ? (
-                <div className="text-center py-8 text-neutral-500"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"><Loader className="w-6 h-6 animate-spin mx-auto mb-2" />加载配方...</div>
               ) : !selectedFormula ? (
-                <div className="text-center py-8 text-neutral-500">请先选择一个配方</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请先选择一个配方</div>
               ) : (
                 <div className="space-y-4">
                   <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-sm">
                     <div className="font-medium mb-1">{selectedFormula.name || `配方#${selectedFormulaId}`}</div>
-                    <div className="text-neutral-500">配方ID: {selectedFormula.id} | 成分数: {selectedFormula.ingredients?.length ?? 0}</div>
+                    <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方ID: {selectedFormula.id} | 成分数: {selectedFormula.ingredients?.length ?? 0}</div>
                   </div>
                   <Button
                     variant="primary"
@@ -290,7 +290,7 @@ export function FormulaTestPage() {
             <CardHeader><CardTitle>深度分析测试</CardTitle></CardHeader>
             <CardContent>
               {!selectedFormulaId ? (
-                <div className="text-center py-8 text-neutral-500">请先选择一个配方</div>
+                <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请先选择一个配方</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <TestPanel

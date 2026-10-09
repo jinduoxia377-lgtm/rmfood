@@ -26,9 +26,9 @@ const STATUS_FILTERS = [
 ]
 
 const STATUS_COLORS: Record<string, string> = {
-  planned: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
-  in_progress: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
-  completed: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
+  planned: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
+  in_progress: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700',
+  completed: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
   closed: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
 }
 
@@ -73,7 +73,7 @@ export default function BatchListPage() {
   }
 
   const SortIcon = ({ field }: { field: SortKey }) => {
-    if (sortKey !== field) return <ArrowUpDown size={13} className="text-neutral-300" />
+    if (sortKey !== field) return <ArrowUpDown size={13} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
     return sortDir === 'asc'
       ? <ChevronUp size={13} className="text-primary" />
       : <ChevronDown size={13} className="text-primary" />
@@ -134,7 +134,7 @@ export default function BatchListPage() {
         <CardContent className="pt-4">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <Input
                 placeholder="搜索批号..."
                 value={search}
@@ -164,25 +164,25 @@ export default function BatchListPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-100 dark:border-neutral-800">
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <button onClick={() => handleSort('batch_code')} className="flex items-center gap-1">
                     批号 <SortIcon field="batch_code" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">配方</th>
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方</th>
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <button onClick={() => handleSort('target_weight_kg')} className="flex items-center gap-1">
                     目标产量 <SortIcon field="target_weight_kg" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">状态</th>
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">样品数</th>
-                <th className="text-left px-4 py-3 font-medium text-neutral-500">
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">状态</th>
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">样品数</th>
+                <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <button onClick={() => handleSort('created_at')} className="flex items-center gap-1">
                     创建时间 <SortIcon field="created_at" />
                   </button>
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-neutral-500">操作</th>
+                <th className="text-right px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -220,12 +220,12 @@ export default function BatchListPage() {
                       >
                         {batch.formula_name || batch.formula_code}
                       </Link>
-                      <div className="text-xs text-neutral-400">{batch.formula_code}</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{batch.formula_code}</div>
                     </td>
                     <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
                       {batch.target_weight_kg?.toFixed(3)} kg
                       {batch.actual_weight_kg && (
-                        <span className="ml-2 text-xs text-neutral-400">
+                        <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           实际: {batch.actual_weight_kg.toFixed(3)} kg
                         </span>
                       )}
@@ -241,7 +241,7 @@ export default function BatchListPage() {
                     <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
                       {batch.sample_count ?? 0}
                     </td>
-                    <td className="px-4 py-3 text-xs text-neutral-400">
+                    <td className="px-4 py-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       {batch.created_at ? new Date(batch.created_at).toLocaleDateString('zh-CN') : '-'}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -250,14 +250,14 @@ export default function BatchListPage() {
                           to={`/batches/${batch.id}`}
                           className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
                         >
-                          <Eye size={14} className="text-neutral-500" />
+                          <Eye size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </Link>
                         <Link
                           to={`/batches/${batch.id}/trace`}
                           className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
                           title="追溯"
                         >
-                          <ArrowRight size={14} className="text-neutral-500" />
+                          <ArrowRight size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </Link>
                       </div>
                     </td>

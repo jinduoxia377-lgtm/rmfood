@@ -133,7 +133,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   // 渲染无结果状态
   if (results.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-neutral-500">
+      <div className="flex flex-col items-center justify-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <div className="text-4xl mb-4">暂无结果</div>
         <p>未找到与"{query}"相关的内容</p>
         <p className="text-sm mt-2">请尝试其他关键词或调整筛选条件</p>
@@ -179,7 +179,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   'mt-1 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                   selectedItems.has(item.id)
                     ? 'bg-secondary-container border-blue-500 text-secondary-main'
-                    : 'border-neutral-300 hover:border-blue-400',
+                    : 'border-neutral-300 dark:border-neutral-700 hover:border-blue-400',
                 )}
               >
                 {selectedItems.has(item.id) && <Check className="w-3 h-3" />}
@@ -203,7 +203,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               </div>
 
               {item.subtitle && (
-                <p className="text-sm text-neutral-500 mb-2 truncate">{item.subtitle}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2 truncate">{item.subtitle}</p>
               )}
 
               {item.description && (
@@ -214,7 +214,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               <div className="flex flex-wrap items-center gap-2">
                 {item.tags.length > 0 && (
                   <>
-                    <div className="flex items-center gap-1 text-xs text-neutral-400">
+                    <div className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <Tag className="w-3 h-3" />
                     </div>
                     {item.tags.slice(0, 3).map((tag) => (
@@ -226,12 +226,12 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                       </span>
                     ))}
                     {item.tags.length > 3 && (
-                      <span className="text-xs text-neutral-400">+{item.tags.length - 3}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{item.tags.length - 3}</span>
                     )}
                   </>
                 )}
 
-                <div className="flex items-center gap-1 text-xs text-neutral-400 ml-auto">
+                <div className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">
                   <Clock className="w-3 h-3" />
                   {formatDate(item.createdAt)}
                 </div>
@@ -243,7 +243,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               {onQuickReuse && (
                 <button
                   onClick={(e) => handleQuickReuse(item, e)}
-                  className="p-2 text-neutral-400 hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                  className="p-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
                   title="快速复用"
                 >
                   <Copy className="w-4 h-4" />
@@ -256,7 +256,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                     'p-2 rounded-lg transition-colors',
                     copiedId === item.id
                       ? 'text-success-600 bg-success-50'
-                      : 'text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50',
+                      : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-600 hover:bg-secondary-50',
                   )}
                   title={copiedId === item.id ? '已复制' : '复制标题'}
                 >
@@ -268,7 +268,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   e.stopPropagation();
                   onSelect(item);
                 }}
-                className="p-2 text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50 rounded-lg transition-colors"
+                className="p-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-600 hover:bg-secondary-50 rounded-lg transition-colors"
                 title="查看详情"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -285,7 +285,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                       style={{ width: `${(item.relevance || 0) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-neutral-400">{Math.round((item.relevance || 0) * 100)}%</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{Math.round((item.relevance || 0) * 100)}%</span>
                 </div>
               </div>
             )}

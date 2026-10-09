@@ -85,7 +85,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 <>
                   <h2 id="quick-view-title" className="text-base font-semibold text-neutral-900 dark:text-white">{formula?.name}</h2>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm text-neutral-500">{formula?.code}</span>
+                    <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formula?.code}</span>
                     <StatusBadge status={formula!.status} />
                   </div>
                 </>
@@ -133,7 +133,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
-                  <p className="text-xs text-neutral-500 mb-1">安全检查</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">安全检查</p>
                   <p
                     className={cn(
                       'text-base font-semibold',
@@ -141,20 +141,20 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                         ? 'text-success-600'
                         : safetyPassed === false
                           ? 'text-error-600'
-                          : 'text-neutral-400',
+                          : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                     )}
                   >
                     {safetyPassed === null ? '未检测' : safetyPassed ? '通过' : '未通过'}
                   </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
-                  <p className="text-xs text-neutral-500 mb-1">协同评分</p>
-                  <p className="text-base font-semibold text-primary-600">
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">协同评分</p>
+                  <p className="text-base font-semibold text-primary-700">
                     {synergyScore !== null ? synergyScore : '-'}
                   </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
-                  <p className="text-xs text-neutral-500 mb-1">成分数量</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">成分数量</p>
                   <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">{ingredientList.length}</p>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                                 </Badge>
                               )}
                             </td>
-                            <td className="py-1.5 text-right text-neutral-500">{ing.dosage}</td>
+                            <td className="py-1.5 text-right text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.dosage}</td>
                             <td className="py-1.5 text-right">
                               {ing.is_food_homology && (
                                 <Badge variant="success" size="sm">
@@ -204,19 +204,19 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                   .filter((p) => p.value)
                   .map(({ label, value }) => (
                     <div key={label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2">
-                      <p className="text-xs text-neutral-400">{label}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</p>
                       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-0.5">{value}</p>
                     </div>
                   ))}
               </div>
             </div>
           ) : (
-            <div className="text-center py-6 text-neutral-500">配方不存在</div>
+            <div className="text-center py-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方不存在</div>
           )}
         </div>
 
         <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/50">
-          <span className="text-xs text-neutral-400">
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {isLoading
               ? ''
               : `版本 v${formula?.version} · 创建于 ${formula ? new Date(formula.createdAt).toLocaleDateString('zh-CN') : ''}`}

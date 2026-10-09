@@ -171,7 +171,7 @@ export default function TracePage() {
             {batchesLoading ? (
               <Skeleton className="h-10 w-full" />
             ) : batchesData?.items?.length === 0 ? (
-              <div className="text-sm text-neutral-500 text-center py-4">
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">
                 当前无批记录，请先{' '}
                 <Link to="/batches/new" className="text-primary hover:underline font-medium">创建批记录</Link>
               </div>
@@ -189,7 +189,7 @@ export default function TracePage() {
                     </option>
                   ))}
                 </select>
-                <div className="flex items-center justify-between text-xs text-neutral-400">
+                <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <span>共 {batchesData?.total ?? 0} 条批记录</span>
                   <Link to="/batches" className="text-primary hover:underline">查看全部</Link>
                 </div>
@@ -231,7 +231,7 @@ export default function TracePage() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-neutral-400">输入原料入库批号，查找所有使用该批号的成品批次</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">输入原料入库批号，查找所有使用该批号的成品批次</p>
           </CardContent>
         </Card>
       )}
@@ -239,7 +239,7 @@ export default function TracePage() {
       {/* 错误提示 */}
       {traceError && (
         <Card className="border-danger-200 dark:border-danger-900/50">
-          <CardContent className="pt-4 flex items-start gap-3 text-danger-600 dark:text-danger-400">
+          <CardContent className="pt-4 flex items-start gap-3 text-danger-600 dark:text-danger-600">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <div>
               <div className="font-medium text-sm">追溯失败</div>
@@ -280,10 +280,10 @@ function ResultCard({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CheckCircle2 size={16} className="text-success-500 dark:text-success-400" />
+            <CheckCircle2 size={16} className="text-success-500 dark:text-success-600" />
             反向追溯结果
             {result.batch_code && (
-              <span className="font-mono text-sm text-neutral-400 font-normal ml-auto">
+              <span className="font-mono text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-normal ml-auto">
                 {result.batch_code}
               </span>
             )}
@@ -293,23 +293,23 @@ function ResultCard({
           {/* 批次摘要 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-              <div className="text-xs text-neutral-500 mb-1">配方</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">配方</div>
               <div className="text-sm font-medium truncate" title={result.formula_name || result.formula_code}>
                 {result.formula_name || result.formula_code || '—'}
               </div>
             </div>
             <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-              <div className="text-xs text-neutral-500 mb-1">目标产量</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">目标产量</div>
               <div className="text-sm font-medium">
                 {result.target_weight_kg?.toFixed(3)} kg
               </div>
             </div>
             <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-              <div className="text-xs text-neutral-500 mb-1">原料批号数</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原料批号数</div>
               <div className="text-sm font-medium">{result.ingredient_lot_count ?? 0}</div>
             </div>
             <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-              <div className="text-xs text-neutral-500 mb-1">样品数</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">样品数</div>
               <div className="text-sm font-medium">{result.samples?.length ?? 0}</div>
             </div>
           </div>
@@ -335,7 +335,7 @@ function ResultCard({
                         <div className="text-sm text-neutral-600 dark:text-neutral-400">{lot.ingredient_name}</div>
                       </div>
                     </div>
-                    <div className="text-right text-xs text-neutral-500">
+                    <div className="text-right text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <div>供应商: {lot.supplier_lot_number || '—'}</div>
                       <div className="font-mono">用量: {lot.used_qty_kg?.toFixed(3)} kg</div>
                     </div>
@@ -344,7 +344,7 @@ function ResultCard({
               </div>
             </div>
           ) : (
-            <div className="text-sm text-neutral-400 text-center py-4">暂无原料批号记录</div>
+            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">暂无原料批号记录</div>
           )}
 
           {/* 样品列表 */}
@@ -364,11 +364,11 @@ function ResultCard({
                         <TestTube size={14} className="text-accent-500" />
                       </div>
                       <div>
-                        <div className="font-mono text-xs text-accent-600 dark:text-accent-400">{s.sample_code}</div>
-                        <div className="text-xs text-neutral-500">{s.sample_type}</div>
+                        <div className="font-mono text-xs text-accent-600 dark:text-accent-700">{s.sample_code}</div>
+                        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{s.sample_type}</div>
                       </div>
                     </div>
-                    <div className="text-xs text-neutral-400">测试项: {s.test_count ?? 0}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">测试项: {s.test_count ?? 0}</div>
                   </div>
                 ))}
               </div>
@@ -384,10 +384,10 @@ function ResultCard({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <CheckCircle2 size={16} className="text-success-500 dark:text-success-400" />
+          <CheckCircle2 size={16} className="text-success-500 dark:text-success-600" />
           正向追溯结果
           {result.ingredient_name && (
-            <span className="font-mono text-sm text-neutral-400 font-normal ml-auto">
+            <span className="font-mono text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-normal ml-auto">
               {result.ingredient_name} · Lot #{result.ingredient_lot_id ?? result.ingredient_lot_code ?? '—'}
             </span>
           )}
@@ -399,24 +399,24 @@ function ResultCard({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {result.ingredient_name && (
               <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-                <div className="text-xs text-neutral-500 mb-1">原料</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原料</div>
                 <div className="text-sm font-medium">{result.ingredient_name}</div>
               </div>
             )}
             {result.received_qty_kg != null && (
               <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-                <div className="text-xs text-neutral-500 mb-1">入库量</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">入库量</div>
                 <div className="text-sm font-medium">{result.received_qty_kg.toFixed(3)} kg</div>
               </div>
             )}
             {result.remaining_qty_kg != null && (
               <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-                <div className="text-xs text-neutral-500 mb-1">剩余量</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">剩余量</div>
                 <div className="text-sm font-medium">{result.remaining_qty_kg.toFixed(3)} kg</div>
               </div>
             )}
             <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-              <div className="text-xs text-neutral-500 mb-1">使用批次</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">使用批次</div>
               <div className="text-sm font-medium">{result.batch_count ?? 0}</div>
             </div>
           </div>
@@ -461,13 +461,13 @@ function ResultCard({
             </div>
           </div>
         ) : (
-          <div className="text-sm text-neutral-400 text-center py-4">未找到关联批次</div>
+          <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">未找到关联批次</div>
         )}
 
         {/* 关联样品统计 */}
         {result.samples?.length > 0 && (
           <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="text-xs text-neutral-500">
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               共关联 <span className="font-medium text-neutral-700 dark:text-neutral-300">{result.samples.length}</span> 个样品
               {(() => {
                 const flat = (result.samples as any[]).flat()

@@ -37,7 +37,7 @@ export default function ExternalDataPanel({
   if (!showExternalPanel || !selectedNode) return null
 
   const statusClasses = {
-    connected: 'bg-primary-100 text-primary-600',
+    connected: 'bg-primary-100 text-primary-700',
     syncing: 'bg-secondary-100 text-secondary-600 animate-pulse',
     disconnected: 'bg-error-100 text-error-600',
   }
@@ -68,13 +68,13 @@ export default function ExternalDataPanel({
         {externalLoadingId === selectedNode.label ? (
           <div className="flex flex-col items-center py-6 gap-2">
             <div className="w-6 h-6 border-2 border-cyan-200 border-t-cyan-500 rounded-full animate-spin" />
-            <p className="text-[10px] text-neutral-400">正在查询外部数据库...</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在查询外部数据库...</p>
           </div>
         ) : externalData ? (
           <ExternalDataContent data={externalData} />
         ) : (
           <div className="text-center py-6">
-            <p className="text-xs text-neutral-400 mb-2">暂无外部数据</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">暂无外部数据</p>
             <button onClick={onQueryExternalData}
               className="text-xs text-cyan-500 hover:text-cyan-600 font-medium">查询 PubChem / TCMSP →</button>
           </div>
@@ -87,26 +87,26 @@ export default function ExternalDataPanel({
 function ExternalDataContent({ data }: { data: ExternalDataItem }) {
   return (
     <div className="space-y-2.5">
-      <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400">{data.description}</p>
+      <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">{data.description}</p>
       {data.molecularFormula && (
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-lg bg-cyan-50/80 dark:bg-cyan-950/20 p-2">
-            <div className="text-[9px] text-neutral-400">分子式</div>
+            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子式</div>
             <div className="text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300">{data.molecularFormula}</div>
           </div>
           <div className="rounded-lg bg-cyan-50/80 dark:bg-cyan-950/20 p-2">
-            <div className="text-[9px] text-neutral-400">分子量</div>
+            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子量</div>
             <div className="text-xs font-bold text-cyan-700 dark:text-cyan-300">{data.molecularWeight?.toFixed(1)}</div>
           </div>
         </div>
       )}
       {data.properties && Object.keys(data.properties).length > 0 && (
         <div className="bg-slate-50/80 dark:bg-neutral-800/30 rounded-lg p-2">
-          <span className="text-[10px] font-semibold text-neutral-500 mb-1 block">属性</span>
+          <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1 block">属性</span>
           <div className="grid grid-cols-2 gap-1">
             {Object.entries(data.properties).slice(0, 8).map(([k, v]) => (
-              <div key={k} className="flex justify-between text-[10px]">
-                <span className="text-neutral-500 truncate max-w-[70px]" title={k}>{k}</span>
+              <div key={k} className="flex justify-between text-xs">
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate max-w-[70px]" title={k}>{k}</span>
                 <span className="font-mono text-neutral-700 dark:text-neutral-300 truncate max-w-[80px]">{String(v)}</span>
               </div>
             ))}
@@ -115,37 +115,37 @@ function ExternalDataContent({ data }: { data: ExternalDataItem }) {
       )}
       {data.targets && data.targets.length > 0 && (
         <div>
-          <span className="text-[10px] font-semibold text-neutral-500">靶点 ({data.targets.length})</span>
+          <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">靶点 ({data.targets.length})</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.targets.map(t => (
-              <span key={t} className="px-1.5 py-0.5 rounded-md text-[9px] bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-300 font-mono">{t}</span>
+              <span key={t} className="px-1.5 py-0.5 rounded-md text-[9px] bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-600 font-mono">{t}</span>
             ))}
           </div>
         </div>
       )}
       {data.pathways && data.pathways.length > 0 && (
         <div>
-          <span className="text-[10px] font-semibold text-neutral-500">通路 ({data.pathways.length})</span>
+          <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">通路 ({data.pathways.length})</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.pathways.map(p => (
-              <span key={p} className="px-1.5 py-0.5 rounded-md text-[9px] bg-accent-50 dark:bg-accent-900/20 text-accent-600 dark:text-accent-300">{p}</span>
+              <span key={p} className="px-1.5 py-0.5 rounded-md text-[9px] bg-accent-50 dark:bg-accent-900/20 text-accent-600 dark:text-accent-700">{p}</span>
             ))}
           </div>
         </div>
       )}
       {data.diseases && data.diseases.length > 0 && (
         <div>
-          <span className="text-[10px] font-semibold text-neutral-500">相关疾病</span>
+          <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关疾病</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.diseases.map(d => (
-              <span key={d} className="px-1.5 py-0.5 rounded-md text-[9px] bg-warning-50 dark:bg-warning-900/20 text-warning-600 dark:text-warning-300">{d}</span>
+              <span key={d} className="px-1.5 py-0.5 rounded-md text-[9px] bg-warning-50 dark:bg-warning-900/20 text-warning-600 dark:text-warning-700">{d}</span>
             ))}
           </div>
         </div>
       )}
       <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/30">
-        <span className="text-[9px] text-neutral-400">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
-        <span className="text-[8px] text-neutral-400">更新: {data.lastUpdated}</span>
+        <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
+        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新: {data.lastUpdated}</span>
       </div>
     </div>
   )

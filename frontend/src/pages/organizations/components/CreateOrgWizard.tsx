@@ -81,11 +81,11 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
                 step === s ? 'bg-secondary-container text-secondary-main' :
                 step !== 'basic' && ['basic', 'details', 'members', 'confirm'].indexOf(step) > i ? 'bg-success-500 text-white' :
-                'bg-neutral-200 text-neutral-500'
+                'bg-neutral-200 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
               }`}>
                 {['basic', 'details', 'members', 'confirm'].indexOf(step) > i ? <CheckCircle className="w-4 h-4" /> : i + 1}
               </div>
-              <span className={`text-sm ${step === s ? 'text-secondary-600 font-medium' : 'text-neutral-500'}`}>
+              <span className={`text-sm ${step === s ? 'text-secondary-600 font-medium' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                 {i === 0 ? '基本信息' : i === 1 ? '详细设置' : i === 2 ? '邀请成员' : '确认创建'}
               </span>
               {i < 3 && <div className="w-6 h-px bg-neutral-200" />}
@@ -112,12 +112,12 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                 <label className="block text-sm font-medium text-neutral-700">
                   标识符 <span className="text-error-500">*</span>
                 </label>
-                <label className="flex items-center gap-1 text-xs text-neutral-500 cursor-pointer">
+                <label className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={autoSlug}
                     onChange={(e) => setAutoSlug(e.target.checked)}
-                    className="rounded border-neutral-300"
+                    className="rounded border-neutral-300 dark:border-neutral-700"
                   />
                   自动生成
                 </label>
@@ -130,7 +130,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                 placeholder="rmfood-r&D-center"
                 className="w-full px-3 py-2 rounded-lg border border-neutral-300 surface-card text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 disabled:opacity-50"
               />
-              <p className="text-xs text-neutral-400 mt-1">仅支持小写字母、数字和连字符</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">仅支持小写字母、数字和连字符</p>
             </div>
           </div>
         )}
@@ -155,8 +155,8 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                     }
                   }} />
                   <div className="px-4 py-2 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg text-center hover:border-secondary-500 transition-colors">
-                    <p className="text-sm text-neutral-500">点击上传 Logo</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">支持 JPG、PNG，建议 200×200px</p>
+                    <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">点击上传 Logo</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">支持 JPG、PNG，建议 200×200px</p>
                   </div>
                 </label>
               </div>
@@ -185,11 +185,11 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       plan === p.value
                         ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20'
-                        : 'border-neutral-200 hover:border-neutral-300'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700'
                     }`}
                   >
                     <p className="font-medium text-sm text-neutral-900 dark:text-white">{p.label}</p>
-                    <p className="text-xs text-neutral-500 mt-0.5">{p.desc}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{p.desc}</p>
                     <p className="text-sm font-semibold text-secondary-600 mt-1">{p.price}</p>
                   </button>
                 ))}
@@ -217,14 +217,14 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                   清空
                 </button>
               </div>
-              <p className="text-xs text-neutral-400 mt-1.5">创建组织后可在设置中继续邀请更多成员</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1.5">创建组织后可在设置中继续邀请更多成员</p>
             </div>
           </div>
         )}
 
         {step === 'confirm' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl border border-neutral-200 p-4 space-y-3">
+            <div className="surface-card rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg">
                   {logoUrl ? (
@@ -233,12 +233,12 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                 </div>
                 <div>
                   <p className="font-semibold text-neutral-900 dark:text-white">{name}</p>
-                  <p className="text-sm text-neutral-500">@{slug}</p>
+                  <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">@{slug}</p>
                 </div>
               </div>
               {description && <p className="text-sm text-neutral-600 dark:text-neutral-400">{description}</p>}
               <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400">
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700">
                   {plan === 'free' ? '免费版' : plan === 'pro' ? '专业版' : '企业版'}
                 </span>
               </div>
@@ -252,12 +252,12 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
               <CheckCircle className="w-8 h-8 text-success-500" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">组织创建成功！</h3>
-            <p className="text-sm text-neutral-500">您可以开始邀请成员并配置组织设置</p>
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">您可以开始邀请成员并配置组织设置</p>
           </div>
         )}
 
         {error && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-900/20 rounded-lg px-3 py-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             {error}
           </div>

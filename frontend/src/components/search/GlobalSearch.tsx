@@ -166,7 +166,7 @@ export function GlobalSearch() {
       >
         <Search size={16} />
         <span className="hidden sm:inline">搜索...</span>
-        <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 text-[10px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+        <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           ⌘K
         </kbd>
       </button>
@@ -177,7 +177,7 @@ export function GlobalSearch() {
           <div className="flex flex-col h-[600px]">
             {/* 搜索输入框 */}
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-700">
-              <Search size={20} className="text-neutral-400 flex-shrink-0" />
+              <Search size={20} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" />
               <input
                 ref={inputRef}
                 autoFocus
@@ -196,7 +196,7 @@ export function GlobalSearch() {
                 }}
                 className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
               >
-                <X size={18} className="text-neutral-400" />
+                <X size={18} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
             </div>
 
@@ -208,7 +208,7 @@ export function GlobalSearch() {
                   {/* 最近搜索 */}
                   {history.length > 0 && (
                     <div>
-                      <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2 flex items-center gap-1">
                         <Clock size={12} /> 最近搜索
                       </h3>
                       <div className="space-y-1">
@@ -218,9 +218,9 @@ export function GlobalSearch() {
                             onClick={() => handleHistoryClick(item.keyword)}
                             className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left transition-colors"
                           >
-                            <Clock size={14} className="text-neutral-400" />
+                            <Clock size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                             <span className="text-sm text-neutral-700 dark:text-neutral-300">{item.keyword}</span>
-                            <span className="ml-auto text-xs text-neutral-400">{formatTimeAgo(item.timestamp)}</span>
+                            <span className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTimeAgo(item.timestamp)}</span>
                           </button>
                         ))}
                       </div>
@@ -229,7 +229,7 @@ export function GlobalSearch() {
 
                   {/* 热门搜索 */}
                   <div>
-                    <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2 flex items-center gap-1">
                       <TrendingUp size={12} /> 热门搜索
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -247,10 +247,10 @@ export function GlobalSearch() {
 
                   {/* 快捷键提示 */}
                   <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                    <p className="text-xs text-neutral-400 text-center">
-                      按 <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-[10px]">↑↓</kbd> 导航 ·
-                      <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-[10px]">↵</kbd> 选择 ·
-                      <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-[10px]">Esc</kbd> 关闭
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
+                      按 <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-xs">↑↓</kbd> 导航 ·
+                      <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-xs">↵</kbd> 选择 ·
+                      <kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-xs">Esc</kbd> 关闭
                     </p>
                   </div>
                 </div>
@@ -267,8 +267,8 @@ export function GlobalSearch() {
                         className={cn(
                           'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                           !activeType
-                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
-                            : 'text-neutral-500 hover:text-neutral-700',
+                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700'
+                            : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                         )}
                       >
                         全部 ({totalResults})
@@ -281,8 +281,8 @@ export function GlobalSearch() {
                           className={cn(
                             'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                             activeType === type
-                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
-                              : 'text-neutral-500 hover:text-neutral-700',
+                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700'
+                              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                           )}
                         >
                           {getTypeLabel(type)} ({items.length})
@@ -323,7 +323,7 @@ export function GlobalSearch() {
                                 </div>
 
                                 {item.description && (
-                                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">
+                                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-2">
                                     {highlightText(item.description.substring(0, 120), query)}
                                   </p>
                                 )}
@@ -331,7 +331,7 @@ export function GlobalSearch() {
 
                               <ArrowRight
                                 size={16}
-                                className="mt-1 text-neutral-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                className="mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                               />
                             </button>
                           ))}
@@ -345,16 +345,16 @@ export function GlobalSearch() {
                         <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-1">
                           未找到 "{query}" 的相关结果
                         </h3>
-                        <p className="text-xs text-neutral-500 mb-4">尝试使用不同的关键词或检查拼写</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">尝试使用不同的关键词或检查拼写</p>
 
                         {suggestions.length > 0 && (
                           <div className="space-y-1">
-                            <p className="text-xs text-neutral-400 mb-2">建议搜索:</p>
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">建议搜索:</p>
                             {suggestions.map((s, i) => (
                               <button
                                 key={i}
                                 onClick={() => setQuery(s)}
-                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-sm text-secondary-600 dark:text-secondary-600 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
+                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-sm text-secondary-600 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
                               >
                                 {s}
                               </button>
@@ -372,15 +372,15 @@ export function GlobalSearch() {
             {query && (
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-3">
-                  <button className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-700 transition-colors">
+                  <button className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 transition-colors">
                     <SlidersHorizontal size={14} /> 高级筛选
                   </button>
-                  <button className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-700 transition-colors">
+                  <button className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 transition-colors">
                     <Filter size={14} /> 保存筛选
                   </button>
                 </div>
 
-                <div className="text-xs text-neutral-400">
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {isSearching ? '搜索中...' : `找到 ${totalResults} 条结果`}
                 </div>
               </div>
@@ -418,13 +418,13 @@ function getTypeIcon(type: string, size = 16) {
 
 function getTypeColor(type: string): string {
   const colors: Record<string, string> = {
-    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-600',
-    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-600',
+    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-700',
+    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-700',
     workflow: 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-600',
     ingredient: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
     user: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400',
   };
-  return colors[type] || 'bg-neutral-100 text-neutral-600';
+  return colors[type] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600';
 }
 
 function highlightText(text: string, query: string): React.ReactNode {

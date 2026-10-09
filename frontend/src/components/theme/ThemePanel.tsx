@@ -193,11 +193,11 @@ export const ThemePanel: React.FC = () => {
      '--text-body', '--text-body-sm', '--text-caption'].forEach((v) => root.style.removeProperty(v));
   };
 
-  const cardBase = 'rounded-2xl border border-neutral-200 surface-card p-5';
+  const cardBase = 'rounded-2xl border border-neutral-200 dark:border-neutral-700 surface-card p-5';
   const headBase = 'flex items-center gap-2.5 mb-4';
   const headTitle = 'text-sm font-semibold text-neutral-900';
   const tileActive = 'border-primary-main bg-primary-container';
-  const tileIdle = 'border-neutral-200 surface-hover';
+  const tileIdle = 'border-neutral-200 dark:border-neutral-700 surface-hover';
 
   return (
     <div className="space-y-6">
@@ -206,7 +206,7 @@ export const ThemePanel: React.FC = () => {
         <div className={headBase}>
           <Sun size={18} className="text-primary-main" aria-hidden />
           <h3 id="tp-mode-h" className={headTitle}>外观模式</h3>
-          <span className="text-xs text-neutral-500 ml-auto">快捷键 Ctrl+Shift+T 即时明暗切换</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">快捷键 Ctrl+Shift+T 即时明暗切换</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="明暗模式">
           {MODES.map(({ mode: m, icon: Icon, label, desc }) => {
@@ -225,7 +225,7 @@ export const ThemePanel: React.FC = () => {
               >
                 <Icon size={22} className={active ? 'text-primary-main' : 'text-neutral-700'} aria-hidden />
                 <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{label}</span>
-                <span className="text-xs text-neutral-500">{desc}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{desc}</span>
                 {active && <span className="absolute top-2.5 right-2.5 text-xs font-semibold text-primary-main">✓</span>}
               </button>
             );
@@ -246,14 +246,14 @@ export const ThemePanel: React.FC = () => {
                 ? '当前「跟随系统」，将自动匹配下方系统偏好'
                 : '当前为手动模式，系统偏好变化不会自动切换'}
             </p>
-            <p className="text-xs text-neutral-500 mt-1">系统偏好变化时自动同步（无需刷新）</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">系统偏好变化时自动同步（无需刷新）</p>
           </div>
           <div
             className={cn(
               'flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium',
               systemPref === 'dark' ? 'border-neutral-700 bg-neutral-800 text-neutral-100'
                 : systemPref === 'light' ? 'border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-700'
-                : 'border-neutral-200 bg-neutral-50 text-neutral-400'
+                : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
             )}
             role="status"
             aria-live="polite"
@@ -286,7 +286,7 @@ export const ThemePanel: React.FC = () => {
                 )}
               >
                 <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{label}</span>
-                <span className="text-xs text-neutral-500">{desc}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{desc}</span>
               </button>
             );
           })}
@@ -298,7 +298,7 @@ export const ThemePanel: React.FC = () => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 id="tp-motion-h" className={headTitle}>减少动画</h3>
-            <p className="text-xs text-neutral-500 mt-1">开启后停用全部过渡动画（系统「减弱动态效果」偏好会自动同步此开关）</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">开启后停用全部过渡动画（系统「减弱动态效果」偏好会自动同步此开关）</p>
           </div>
           <button
             type="button"
@@ -308,7 +308,7 @@ export const ThemePanel: React.FC = () => {
             onClick={() => setMotionPreferences({ reducedMotion: !motionPreferences.reducedMotion })}
             className={cn(
               'relative h-7 w-12 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-              motionPreferences.reducedMotion ? 'bg-primary-main' : 'border border-neutral-300'
+              motionPreferences.reducedMotion ? 'bg-primary-main' : 'border border-neutral-300 dark:border-neutral-700'
             )}
           >
             <span
@@ -327,7 +327,7 @@ export const ThemePanel: React.FC = () => {
         <div className={headBase}>
           <Eye size={18} className="text-primary-main" aria-hidden />
           <h3 id="tp-preview-h" className={headTitle}>实时预览</h3>
-          <span className="text-xs text-neutral-500 ml-auto">{isDark ? '深色' : '浅色'}模式即时渲染</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{isDark ? '深色' : '浅色'}模式即时渲染</span>
         </div>
         <div
           className={cn(
@@ -367,7 +367,7 @@ export const ThemePanel: React.FC = () => {
         <div className={headBase}>
           <Type size={18} className="text-primary-main" aria-hidden />
           <h3 id="tp-font-h" className={headTitle}>字体大小</h3>
-          <span className="text-xs text-neutral-500 ml-auto">调整全局正文字号</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">调整全局正文字号</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="字体大小">
           {FONT_SIZES.map((f) => (
@@ -383,11 +383,11 @@ export const ThemePanel: React.FC = () => {
               )}
             >
               <span className="text-sm font-medium text-neutral-700">{f.label}</span>
-              <span className="text-xs text-neutral-500">{f.desc}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{f.desc}</span>
             </button>
           ))}
         </div>
-        <p className="text-xs text-neutral-400 mt-2">点击即时生效（标准 = 默认字号）；切换明暗模式后恢复默认</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">点击即时生效（标准 = 默认字号）；切换明暗模式后恢复默认</p>
       </section>
 
       {/* ═══ ⑧ 配色方案（Apple HIG）═══ */}
@@ -395,7 +395,7 @@ export const ThemePanel: React.FC = () => {
         <div className={headBase}>
           <Palette size={18} className="text-primary-main" aria-hidden />
           <h3 id="tp-palette-h" className={headTitle}>配色方案</h3>
-          <span className="text-xs text-neutral-500 ml-auto">参照 Apple HIG 系统色板</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">参照 Apple HIG 系统色板</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3" role="radiogroup" aria-label="配色方案">
           {PALETTES.map((p) => (
@@ -420,7 +420,7 @@ export const ThemePanel: React.FC = () => {
             </button>
           ))}
         </div>
-        <p className="text-xs text-neutral-400 mt-2">
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
           每方案含明暗双值（如苹果蓝 亮 #007AFF / 暗 #0A84FF）；点击即时生效；「重置默认」恢复品牌默认绿
         </p>
         <div className="mt-3">
@@ -435,7 +435,7 @@ export const ThemePanel: React.FC = () => {
       </section>
 
       {/* 当前状态摘要 */}
-      <p className="text-xs text-neutral-500 px-1" aria-live="polite">
+      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-1" aria-live="polite">
         当前：{isDark ? '深色' : '浅色'}渲染
         · 模式：{mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
         · 过渡：{TRANSITIONS.find(t => t.t === transitionType)?.label ?? transitionType}

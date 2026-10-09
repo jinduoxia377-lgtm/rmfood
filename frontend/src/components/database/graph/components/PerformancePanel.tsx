@@ -31,32 +31,32 @@ export default function PerformancePanel({
       {showPerfPanel && (
         <div className="absolute top-14 right-3 z-40 w-56 rounded-xl bg-neutral-900/95 dark:bg-slate-950/95 backdrop-blur-xl border border-neutral-700/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           <div className="px-3 py-2 border-b border-neutral-700/40 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-primary-400 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
               性能监控
             </span>
-            <button onClick={onToggle} className="text-neutral-500 hover:text-neutral-300 transition-colors p-0.5" aria-label="关闭性能面板">
+            <button onClick={onToggle} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-colors p-0.5" aria-label="关闭性能面板">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
           <div className="p-2.5 space-y-2">
             {/* FPS 指示器 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-neutral-400">帧率 FPS</span>
-              <span className={`text-[11px] font-mono font-bold tabular-nums ${
+              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧率 FPS</span>
+              <span className={`text-xs font-mono font-bold tabular-nums ${
                 perfStats.fps >= 55 ? 'text-primary-400' : perfStats.fps >= 40 ? 'text-warning-400' : perfStats.fps >= 24 ? 'text-orange-400' : 'text-error-400'
               }`}>
-                {perfStats.fps} <span className="text-[8px] font-normal text-neutral-500">fps</span>
+                {perfStats.fps} <span className="text-[8px] font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">fps</span>
               </span>
             </div>
             {/* 帧时间 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-neutral-400">帧时间</span>
-              <span className="text-[10px] font-mono text-neutral-300 tabular-nums">{perfStats.frameTime} <span className="text-[8px] text-neutral-500">ms</span></span>
+              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧时间</span>
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{perfStats.frameTime} <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">ms</span></span>
             </div>
             {/* 性能评级 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-neutral-400">性能评级</span>
+              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">性能评级</span>
               <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
                 perfStats.rating === 'excellent' ? 'bg-primary-500/20 text-primary-400' :
                 perfStats.rating === 'good' ? 'bg-secondary-500/20 text-secondary-400' :
@@ -69,25 +69,25 @@ export default function PerformancePanel({
             <div className="border-t border-neutral-700/30 pt-2 space-y-1.5">
               {/* 节点/边数 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-neutral-400">节点 / 边</span>
-                <span className="text-[9px] font-mono text-neutral-300">{filteredNodeCount} / {filteredEdgeCount}</span>
+                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">节点 / 边</span>
+                <span className="text-[9px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{filteredNodeCount} / {filteredEdgeCount}</span>
               </div>
               {/* LOD 级别 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-neutral-400">渲染级别</span>
+                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">渲染级别</span>
                 <span className={`text-[9px] font-medium ${
                   lodLevel === 'full' ? 'text-primary-400' : lodLevel === 'reduced' ? 'text-warning-400' : 'text-error-400'
                 }`}>{lodLabels[lodLevel] || lodLevel}</span>
               </div>
               {/* 内存估算 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-neutral-400">内存估算</span>
-                <span className="text-[9px] font-mono text-neutral-300">{perfStats.memoryEst}</span>
+                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">内存估算</span>
+                <span className="text-[9px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{perfStats.memoryEst}</span>
               </div>
             </div>
             {/* 增量更新状态 */}
             <div className="border-t border-neutral-700/30 pt-2 flex items-center justify-between">
-              <span className="text-[9px] text-neutral-400">更新模式</span>
+              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新模式</span>
               <span className={`text-[9px] font-medium ${dataChanged ? 'text-warning-400' : 'text-primary-400'}`}>
                 {dataChanged ? '全量重绘' : '增量更新'}
               </span>

@@ -46,7 +46,7 @@ export default function DetailPanel({
                 '--tw-ring-color': TYPE_CONFIG[selectedNode.type]?.color,
               } as React.CSSProperties}
             >
-              <span className="text-[10px] text-white font-bold">{TYPE_CONFIG[selectedNode.type]?.label?.[0]}</span>
+              <span className="text-xs text-white font-bold">{TYPE_CONFIG[selectedNode.type]?.label?.[0]}</span>
             </div>
             <div className="min-w-0 flex-1">
               <span className="font-semibold text-neutral-800 dark:text-neutral-100 text-sm leading-tight block truncate" title={selectedNode.label}>
@@ -61,7 +61,7 @@ export default function DetailPanel({
                   {TYPE_CONFIG[selectedNode.type]?.label || selectedNode.type}
                 </Badge>
                 {selectedNode.degree != null && selectedNode.degree > 0 && (
-                  <span className="text-[9px] font-mono tabular-nums text-neutral-400 dark:text-neutral-500">
+                  <span className="text-[9px] font-mono tabular-nums text-neutral-400 dark:text-neutral-400">
                     度数 {selectedNode.degree}
                   </span>
                 )}
@@ -80,16 +80,16 @@ export default function DetailPanel({
         {/* 快速统计条 */}
         <div className="grid grid-cols-3 gap-1.5 mt-3">
           <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
-            <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-500">关联数</div>
+            <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
+            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">关联数</div>
           </div>
           <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
-            <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.neighbors.length}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-500">邻居</div>
+            <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.neighbors.length}</div>
+            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">邻居</div>
           </div>
           <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
-            <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-500">类型</div>
+            <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
+            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">类型</div>
           </div>
         </div>
 
@@ -115,9 +115,9 @@ export default function DetailPanel({
           <button
             key={tab}
             onClick={() => onSetDetailTab(tab)}
-            className={`flex-1 px-2 py-2 text-[10px] font-medium transition-all relative ${
+            className={`flex-1 px-2 py-2 text-xs font-medium transition-all relative ${
               detailTab === tab
-                ? 'text-primary-600 dark:text-primary-400'
+                ? 'text-primary-700 dark:text-primary-700'
                 : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-400'
             }`}
           >
@@ -160,13 +160,13 @@ export default function DetailPanel({
       <div className="px-4 py-2.5 border-t border-neutral-200/70 dark:border-neutral-700/50 bg-slate-50/50 dark:bg-neutral-800/30 flex gap-2">
         <button
           onClick={() => onNodeClick?.(selectedNode)}
-          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white text-[11px] font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
         >
           查看完整详情
         </button>
         <button
           onClick={() => setSelectedNode(null)}
-          className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[11px] font-medium transition-all active:scale-[0.98]"
+          className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-medium transition-all active:scale-[0.98]"
         >
           关闭
         </button>
@@ -186,7 +186,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
     <div className="p-3 space-y-3">
       {/* 节点ID */}
       {selectedNode.id && selectedNode.id !== selectedNode.label && (
-        <div className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono bg-slate-50 dark:bg-neutral-800/40 rounded-lg px-2 py-1.5 break-all">
+        <div className="text-xs text-neutral-400 dark:text-neutral-400 font-mono bg-slate-50 dark:bg-neutral-800/40 rounded-lg px-2 py-1.5 break-all">
           ID: {selectedNode.id}
         </div>
       )}
@@ -198,21 +198,21 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors group"
           title="查看完整详情"
         >
-          <svg className="w-4 h-4 text-neutral-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span className="text-[8px] text-neutral-500 group-hover:text-primary-600 transition-colors">详情</span>
+          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-primary-700 transition-colors">详情</span>
         </button>
         <button
           onClick={() => onSetDetailTab('connections')}
           className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-secondary-50 dark:hover:bg-blue-950/30 transition-colors group"
           title="查看所有连接"
         >
-          <svg className="w-4 h-4 text-neutral-400 group-hover:text-secondary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
           </svg>
-          <span className="text-[8px] text-neutral-500 group-hover:text-secondary-600 transition-colors">连接</span>
+          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-600 transition-colors">连接</span>
         </button>
         <button
           onClick={() => {
@@ -221,27 +221,27 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-warning-50 dark:hover:bg-amber-950/30 transition-colors group"
           title="高亮邻居节点"
         >
-          <svg className="w-4 h-4 text-neutral-400 group-hover:text-warning-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
           </svg>
-          <span className="text-[8px] text-neutral-500 group-hover:text-warning-600 transition-colors">高亮</span>
+          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-600 transition-colors">高亮</span>
         </button>
         <button
           onClick={() => onSetSelectedNode(null)}
           className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-error-50 dark:hover:bg-red-950/30 transition-colors group"
           title="关闭面板"
         >
-          <svg className="w-4 h-4 text-neutral-400 group-hover:text-error-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span className="text-[8px] text-neutral-500 group-hover:text-error-600 transition-colors">关闭</span>
+          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-600 transition-colors">关闭</span>
         </button>
       </div>
 
       {/* 邻居预览列表（最多显示8个） */}
       {nodeConnections.neighbors.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-semibold px-1">
+          <div className="text-[9px] uppercase tracking-wider text-neutral-400 dark:text-neutral-400 font-semibold px-1">
             直接邻居 ({nodeConnections.neighbors.length})
           </div>
           <div className="space-y-0.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
@@ -254,13 +254,13 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors text-left group/item"
                 >
                   <span className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover/item:scale-150" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
-                  <span className="text-[11px] text-neutral-600 dark:text-neutral-300 truncate flex-1 font-medium group-hover/item:text-neutral-900 dark:group-hover/item:text-neutral-100">{neighbor.label}</span>
-                  <span className="text-[8px] text-neutral-400 shrink-0">{nconf?.label}</span>
+                  <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate flex-1 font-medium group-hover/item:text-neutral-900 dark:group-hover/item:text-neutral-100">{neighbor.label}</span>
+                  <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{nconf?.label}</span>
                 </button>
               )
             })}
             {nodeConnections.neighbors.length > 8 && (
-              <button onClick={() => onSetDetailTab('connections')} className="w-full text-center text-[10px] text-primary-500 hover:text-primary-600 dark:text-primary-400 py-1 hover:bg-primary-50/50 dark:hover:bg-primary-950/20 rounded-lg transition-colors font-medium">
+              <button onClick={() => onSetDetailTab('connections')} className="w-full text-center text-xs text-primary-500 hover:text-primary-700 dark:text-primary-700 py-1 hover:bg-primary-50/50 dark:hover:bg-primary-950/20 rounded-lg transition-colors font-medium">
                 查看全部 {nodeConnections.neighbors.length} 个邻居 →
               </button>
             )}
@@ -280,11 +280,11 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
       {nodeConnections.totalConnections === 0 ? (
         <div className="text-center py-8 space-y-2">
           <div className="w-10 h-10 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-            <svg className="w-5 h-5 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
             </svg>
           </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">该节点暂无连接关系</p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-400">该节点暂无连接关系</p>
         </div>
       ) : (
         <>
@@ -304,8 +304,8 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                     <div key={`in-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
-                        <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
-                        <span className="text-[8px] text-neutral-400">{nconf?.label}</span>
+                        <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
+                        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
                       </button>
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                         {EDGE_TYPE_LABELS[edge.type] || edge.type}
@@ -332,8 +332,8 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                   return (
                     <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
-                        <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
-                        <span className="text-[8px] text-neutral-400">{nconf?.label}</span>
+                        <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
+                        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                       </button>
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
@@ -357,12 +357,12 @@ function DetailPropertiesTab({ selectedNode }: { selectedNode: GraphNode }) {
       <div className="p-3">
         <div className="text-center py-8 space-y-2">
           <div className="w-10 h-10 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-            <svg className="w-5 h-5 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">该节点暂无属性数据</p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-400">该节点暂无属性数据</p>
         </div>
       </div>
     )
@@ -418,7 +418,7 @@ function DetailPropertiesTab({ selectedNode }: { selectedNode: GraphNode }) {
                 {keyLabelMap[key] || key}
               </span>
               <span
-                className={`font-medium max-w-[180px] truncate transition-colors text-right ${isHighlight ? 'text-primary-600 dark:text-primary-400 font-semibold' : 'text-neutral-700 dark:text-neutral-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}
+                className={`font-medium max-w-[180px] truncate transition-colors text-right ${isHighlight ? 'text-primary-700 dark:text-primary-700 font-semibold' : 'text-neutral-700 dark:text-neutral-200 group-hover:text-primary-700 dark:group-hover:text-primary-400'}`}
                 title={String(val)}
               >
                 {displayVal}
@@ -427,7 +427,7 @@ function DetailPropertiesTab({ selectedNode }: { selectedNode: GraphNode }) {
           )
         })}
         {sortedProps.length === 0 && (
-          <p className="text-[10px] text-neutral-400 italic text-center py-4">属性值为空</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic text-center py-4">属性值为空</p>
         )}
       </div>
     </div>

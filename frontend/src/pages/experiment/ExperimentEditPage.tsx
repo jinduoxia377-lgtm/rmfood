@@ -179,8 +179,8 @@ export default function ExperimentEditPage() {
   if (!experiment) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-neutral-500">实验不存在</p>
-        <Link to="/experiments" className="text-primary-600 text-sm mt-2 inline-block">返回列表</Link>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实验不存在</p>
+        <Link to="/experiments" className="text-primary-700 text-sm mt-2 inline-block">返回列表</Link>
       </div>
     )
   }
@@ -190,8 +190,8 @@ export default function ExperimentEditPage() {
   if (!isEditable) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-neutral-500">当前状态的实验不可编辑</p>
-        <Link to={`/experiments/${experimentId}`} className="text-primary-600 text-sm mt-2 inline-block">返回详情</Link>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前状态的实验不可编辑</p>
+        <Link to={`/experiments/${experimentId}`} className="text-primary-700 text-sm mt-2 inline-block">返回详情</Link>
       </div>
     )
   }
@@ -212,7 +212,7 @@ export default function ExperimentEditPage() {
             <div className="w-16 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
               <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
             </div>
-            <span className="text-xs text-neutral-400 font-medium">{formCompleteness.percent}%</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">{formCompleteness.percent}%</span>
           </div>
           <Button
             onClick={handleSave}
@@ -226,7 +226,7 @@ export default function ExperimentEditPage() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 text-error-600 dark:text-error-400 text-sm">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 text-error-600 dark:text-error-600 text-sm">
           <AlertCircle size={16} />{error}
         </div>
       )}
@@ -372,14 +372,14 @@ export default function ExperimentEditPage() {
                   <span className="text-sm text-neutral-500 dark:text-neutral-400 flex-1 truncate">{String(value)}</span>
                   <button
                     onClick={() => removeParam(key)}
-                    className="p-1 rounded text-neutral-400 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={12} />
                   </button>
                 </div>
               ))}
               {(form.parameters ? Object.keys(form.parameters).length === 0 : true) && (
-                <div className="text-center py-6 text-sm text-neutral-400">暂无参数，请在下方添加</div>
+                <div className="text-center py-6 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无参数，请在下方添加</div>
               )}
             </div>
 
@@ -442,14 +442,14 @@ export default function ExperimentEditPage() {
                   </div>
                   <button
                     onClick={() => removeMaterial(idx)}
-                    className="p-1 rounded text-neutral-400 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
               {(form.materials || []).length === 0 && (
-                <div className="text-center py-4 text-sm text-neutral-400">暂无材料，请在下方添加</div>
+                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无材料，请在下方添加</div>
               )}
 
               <div className="flex gap-2">
@@ -483,14 +483,14 @@ export default function ExperimentEditPage() {
                   </Badge>
                   <button
                     onClick={() => removeEquipment(idx)}
-                    className="p-1 rounded text-neutral-400 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
               {(form.equipment || []).length === 0 && (
-                <div className="text-center py-4 text-sm text-neutral-400">暂无设备，请在下方添加</div>
+                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无设备，请在下方添加</div>
               )}
 
               <div className="flex gap-2">
