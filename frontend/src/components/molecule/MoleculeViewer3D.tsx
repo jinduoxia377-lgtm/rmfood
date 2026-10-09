@@ -8,6 +8,7 @@
 import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import { Quaternion, Vector3 } from 'three';
 
 // ─── CPK 配色方案（科学可视化标准） ──────────────────────────
 const CPK: Record<string, string> = {
@@ -69,6 +70,7 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
     const result: Array<{
       key: string; mid: [number, number, number]; len: number;
       isDouble: boolean; isTriple: boolean; thickness: number;
+      quaternion: Quaternion;
     }> = [];
     bonds.forEach(b => {
       const a1 = atoms[b.start]; const a2 = atoms[b.end];
@@ -79,10 +81,14 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
       const isDouble = b.type?.toLowerCase() === 'double';
       const isTriple = b.type?.toLowerCase() === 'triple';
       const thickness = isTriple ? 0.10 : isDouble ? 0.08 : 0.055;
+      // 圆柱默认沿 +Y 轴，需四元数旋转对齐到键方向（否则所有键都竖直渲染）
+      const bondDir = new Vector3(dx / len, dy / len, dz / len);
+      const quaternion = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), bondDir);
       result.push({
         key: `${b.start}-${b.end}`,
         mid: [(a1.x+a2.x)/2, (a1.y+a2.y)/2, (a1.z+a2.z)/2],
         len, isDouble, isTriple, thickness,
+        quaternion,
       });
     });
     return result;
@@ -109,7 +115,7 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
       })}
       {/* 键 */}
       {bondInfo.map(b => (
-        <mesh key={b.key} position={b.mid}>
+        <mesh key={b.key} position={b.mid} quaternion={b.quaternion}>
           <cylinderGeometry args={[b.thickness, b.thickness, b.len, 10]} />
           <meshStandardMaterial
             color={BOND_COLOR}
@@ -167,8 +173,18 @@ function TubeModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
         const dx = a2.x - a1.x, dy = a2.y - a1.y, dz = a2.z - a1.z;
         const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
         if (len < 0.01) return null;
+        // 圆柱默认沿 +Y 轴，需旋转对齐到键方向
+        const bondDir = new Vector3(dx / len, dy / len, dz / len);
+        const quaternion = new Quaternion().setFromUnitVectors(
+          new Vector3(0, 1, 0),
+          bondDir
+        );
         return (
-          <mesh key={`t-b-${idx}`} position={[(a1.x+a2.x)/2, (a1.y+a2.y)/2, (a1.z+a2.z)/2]}>
+          <mesh
+            key={`t-b-${idx}`}
+            position={[(a1.x+a2.x)/2, (a1.y+a2.y)/2, (a1.z+a2.z)/2]}
+            quaternion={quaternion}
+          >
             <cylinderGeometry args={[0.04, 0.04, len, 8]} />
             <meshStandardMaterial color="#5a8fc4" metalness={0.7} roughness={0.3} />
           </mesh>
