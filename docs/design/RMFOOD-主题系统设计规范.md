@@ -1243,6 +1243,12 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 3. **整体完成度**：`/ai` 域 100%（工作树 + 提交层双清零）；非 /ai 域工作树 100% 清零、提交层 47 纯文件入库 + 87 混合待 WIP；**全仓字面灰阶漏配（工作树层）彻底归零 ✅**。
 > 完整报告见 `RMFOOD-主题规范化最终复核报告-v4.md`。
 
+> **2026-10-09 收尾确认（用户「选 3」确认：就此收尾，剩余交 WIP 会话处理）**：
+> 1. **工作树层最终复核**：WIP 会话新引入的 3 处字面灰阶（`CareersPage` L89/L91 `text-neutral-300`「·」分隔符、`ThemeImport` L105 `border-neutral-300` 虚线上传框）已补 `dark:` 配对（`dark:text-neutral-500` / `dark:border-neutral-600`），修复保留在工作树；全仓 `final-repo-state.mjs` 扫描仅剩 1 处「漏配」——`FormulaCasesPage` L64，经人工核实为**双模式数据配置**（`text:'text-neutral-700'` + `darkText:'text-neutral-300'` 成对字段，下游以 `text-neutral-700 dark:text-neutral-300` 消费），非真实漏配。→ **全仓（/ai + 非 /ai）字面灰阶漏配真正归零**。
+> 2. **GATE-14 现状（7 处 D-50 条件类，warn 非 fail）**：`GeneticAlgorithmPanel:609`、`MultiObjectivePanel:1096`、`ReportDialog:51`、`SharePanel:44`、`ReportExportPanel:103`、`AgentPage:252/353`——经查 HEAD 提交中无这些行，系**其它会话 WIP 新增的 `bg-accent-500/600 + text-white` 按钮**引入（暗色反转实底 1.52:1），非本主题批次产生；7 文件均含 WIP 删除行，不强行提交，属 WIP 会话应补的 `dark:` 配对。
+> 3. **最终门禁/验证终态（干净重跑）**：14 门禁 **12 pass / 0 fail / 0 skip**，2 合法 warn（GATE-09 + GATE-14）；GATE-04/05（渲染断言反转色阶 + text-white 元素）达标；tsc 0 错 · build ✓ · vitest 29/29；双模式渲染探针（/ai 页）**亮 0 / 暗 0 不达标**（此前瞬态 11 处为探针扫到另一会话 Rhine landing 页 WIP，重跑归零）。
+> 4. **收尾结论（选 3）**：工作树层全仓归零已达成；提交层 47 纯令牌化文件已入库（`5477767`）；**87 混合 WIP 文件 + GATE-14 7 处 D-50 + CareersPage/ThemeImport 2 文件**的令牌化改动均保留在工作树（不会丢失），交 WIP 会话收敛后随其提交回填，本主题规范化到此收尾。回填清单完整保留在 §11.2 各批次登记与 `RMFOOD-主题规范化最终复核报告-v4.md`。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
