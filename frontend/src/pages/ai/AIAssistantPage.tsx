@@ -378,13 +378,13 @@ export default function AIAssistantPage() {
                 className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
                 aria-label="关闭菜单"
               >
-                <X className="w-5 h-5 text-neutral-500" />
+                <X className="w-5 h-5 text-neutral-500 dark:text-neutral-300" />
               </button>
             </div>
             <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-72px)]">
               {tabGroups.map((group) => (
                 <div key={group.key} className="mb-3">
-                  <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
                     <group.icon className="w-3.5 h-3.5" />
                     {group.label}
                   </div>
@@ -400,8 +400,8 @@ export default function AIAssistantPage() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                             tab === t.value
-                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 shadow-sm scale-[1.02]'
-                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
+                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 shadow-sm scale-[1.02]'
+                              : 'text-neutral-600 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
                           }`}
                           aria-current={tab === t.value ? 'page' : undefined}
                         >
@@ -482,7 +482,7 @@ export default function AIAssistantPage() {
               className="h-10 pl-10 rounded-lg border-neutral-200 dark:border-neutral-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-colors duration-150"
             />
             <kbd
-              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
               aria-label="快捷键 Ctrl+K"
             >
               ⌘K
@@ -644,7 +644,7 @@ export default function AIAssistantPage() {
                                 isSelected ? c.iconBg : 'bg-transparent'
                               }`}>
                                 <TabIcon className={`w-3.5 h-3.5 transition-colors duration-150 ${
-                                  isSelected ? c.iconText : 'text-neutral-400 dark:text-neutral-500'
+                                  isSelected ? c.iconText : 'text-neutral-400 dark:text-neutral-400'
                                 }`} aria-hidden="true" />
                               </div>
                               <span className="flex-1 font-medium">{t.label}</span>
@@ -689,8 +689,8 @@ export default function AIAssistantPage() {
                           <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-500'}`}>{group.label}</span>
-                          <span className={`text-[10px] ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-600'}`}>{group.tabs.length} 个功能</span>
+                          <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-400'}`}>{group.label}</span>
+                          <span className={`text-[10px] ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-400'}`}>{group.tabs.length} 个功能</span>
                         </div>
                         {isActive && (
                           <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${c.badge}`}>
