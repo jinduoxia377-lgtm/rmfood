@@ -114,8 +114,8 @@ export default function ChatHistory({
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {sortedSessions.length === 0 ? (
           <div className="text-center py-8">
-            <MessageSquare className="w-6 h-6 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
-            <p className="text-[11px] text-neutral-400">暂无历史对话</p>
+            <MessageSquare className="w-6 h-6 text-neutral-300 dark:text-neutral-400 mx-auto mb-2" />
+            <p className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无历史对话</p>
           </div>
         ) : (
           sortedSessions.map(session => {
@@ -157,10 +157,10 @@ export default function ChatHistory({
                           {session.title || '新对话'}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <Clock className="w-3 h-3 text-neutral-400" />
-                          <span className="text-[10px] text-neutral-400">{formatTime(session.timestamp)}</span>
-                          <span className="text-[10px] text-neutral-300">·</span>
-                          <span className="text-[10px] text-neutral-400">{session.messageCount}条</span>
+                          <Clock className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTime(session.timestamp)}</span>
+                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{session.messageCount}条</span>
                         </div>
                       </div>
                     </div>

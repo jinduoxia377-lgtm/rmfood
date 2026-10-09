@@ -238,7 +238,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
             ))}
             {remainingCount > 0 && (
               <span
-                className={`inline-flex items-center rounded-md font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 ${
+                className={`inline-flex items-center rounded-md font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-600 ${
                   compact ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs'
                 }`}
               >
@@ -274,7 +274,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           </span>
           {isExpanded && (
             <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer"
+              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer"
                role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           )}
           {!isExpanded && (
             <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer"
+              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer"
                role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               展开详情
@@ -347,25 +347,25 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 <div className="grid grid-cols-4 gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
                   <div className="text-center">
                     <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
-                    <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
+                    <div className="text-lg font-bold text-primary-700 dark:text-primary-600">
                       {qualityScore.overallScore}
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">置信度</div>
-                    <div className="text-lg font-bold text-success-600 dark:text-success-400">
+                    <div className="text-lg font-bold text-success-600 dark:text-success-600">
                       {qualityScore.confidenceScore}
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">完整性</div>
-                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400">
+                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-600">
                       {qualityScore.completenessScore}
                     </div>
                   </div>
                   <div className="text-center">
                     <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">多样性</div>
-                    <div className="text-lg font-bold text-accent-600 dark:text-accent-400">
+                    <div className="text-lg font-bold text-accent-600 dark:text-accent-600">
                       {qualityScore.diversityScore}
                     </div>
                   </div>
@@ -506,7 +506,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                     e.stopPropagation();
                     onSelect(formula.id);
                   }}
-                  className={`mt-1 rounded border-neutral-300 text-primary-600 focus:ring-primary-500/50 cursor-pointer shrink-0 ${
+                  className={`mt-1 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500/50 cursor-pointer shrink-0 ${
                     compact ? 'w-5 h-5 sm:w-4 sm:h-4' : 'w-4 h-4'
                   }`}
                   onClick={(e) => e.stopPropagation()}
@@ -563,7 +563,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                     {onRename && (
                       <Pencil
                         size={14}
-                        className="text-neutral-400 opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0"
+                        className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0"
                       />
                     )}
                   </div>
@@ -603,7 +603,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 e.stopPropagation();
                 onToggleExpand(formula.id);
               }}
-              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               aria-label={isExpanded ? '收起' : '展开详情'}
             >
               {isExpanded ? (

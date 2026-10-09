@@ -215,7 +215,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
               <p className="text-sm text-neutral-500 dark:text-neutral-400">{category.description}</p>
             </div>
           </div>
-          <div className="text-neutral-400">
+          <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {isExpanded ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
@@ -242,12 +242,12 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                     </p>
                     {item.targets && item.targets.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-xs text-neutral-500 mb-1">相关靶点：</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">相关靶点：</p>
                         <div className="flex flex-wrap gap-2">
                           {item.targets.map((target) => (
                             <span
                               key={target.uniprotId}
-                              className="px-2 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded text-xs"
+                              className="px-2 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 rounded text-xs"
                             >
                               {target.geneSymbol}
                             </span>
@@ -257,12 +257,12 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                     )}
                     {item.diseases && item.diseases.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-xs text-neutral-500 mb-1">相关疾病：</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">相关疾病：</p>
                         <div className="flex flex-wrap gap-2">
                           {item.diseases.map((disease) => (
                             <span
                               key={disease.diseaseId}
-                              className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded text-xs"
+                              className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-600 rounded text-xs"
                             >
                               {disease.diseaseName}
                             </span>
@@ -295,7 +295,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
     if (!herb) {
       return (
         <div className="text-center py-12">
-          <Leaf className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+          <Leaf className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">请选择或搜索中药成分</p>
         </div>
       );
@@ -319,7 +319,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
 
         <div className="p-6">
           <div className="flex flex-wrap gap-2 mb-6">
-            <span className="px-3 py-1 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-300 rounded-full text-sm">
+            <span className="px-3 py-1 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-600 rounded-full text-sm">
               药性：{herb.properties.nature}
             </span>
             {herb.properties.flavor.map((flavor, index) => (
@@ -333,7 +333,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             {herb.properties.meridian.map((meridian, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded-full text-sm"
+                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 rounded-full text-sm"
               >
                 归{meridian}经
               </span>
@@ -351,7 +351,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             <div className="space-y-2">
               {herb.contraindications.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-error-600 dark:text-error-400">禁忌：</p>
+                  <p className="text-sm font-medium text-error-600 dark:text-error-600">禁忌：</p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {herb.contraindications.join('；')}
                   </p>

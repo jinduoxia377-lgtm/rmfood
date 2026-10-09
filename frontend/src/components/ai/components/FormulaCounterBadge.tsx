@@ -185,7 +185,7 @@ const FormulaCounterBadgeComponent = ({
                 <span className="truncate flex-1 text-neutral-200 group-hover:text-white transition-colors">
                   {formula.name}
                 </span>
-                <span className="text-neutral-400 ml-auto flex-shrink-0 tabular-nums">
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto flex-shrink-0 tabular-nums">
                   {formula.ingredientCount}种
                 </span>
               </li>

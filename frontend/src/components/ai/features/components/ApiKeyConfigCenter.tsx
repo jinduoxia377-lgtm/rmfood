@@ -287,7 +287,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" />
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary-700" />
             API Key 配置中心
           </h2>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
@@ -304,7 +304,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
 
       {/* 错误提示 */}
       {errors.global && (
-        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-error-600 dark:text-error-400">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {errors.global}
         </div>
@@ -361,7 +361,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                 <button
                   type="button"
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-neutral-700"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700"
                 >
                   {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -415,7 +415,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
 
           <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
             {apiKeys.length === 0 ? (
-              <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
+              <div className="text-center py-12 text-neutral-400 dark:text-neutral-400">
                 <Shield className="w-12 h-12 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">暂未配置 API Key</p>
                 <p className="text-xs mt-1">请在左侧添加您的第一个密钥</p>
@@ -451,14 +451,14 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                       <div className="flex items-center gap-1 ml-2">
                         <button
                           onClick={() => navigator.clipboard.writeText(keyData.key)}
-                          className="p-1.5 text-neutral-400 hover:text-secondary-600"
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-600"
                           title="复制"
                         >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteKey(keyData.id)}
-                          className="p-1.5 text-neutral-400 hover:text-error-600"
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-600"
                           title="删除"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -471,7 +471,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                       <button
                         onClick={() => handleTestConnection(keyData.id)}
                         disabled={testingId === keyData.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 hover:bg-secondary-100 disabled:opacity-50"
                       >
                         {testingId === keyData.id ? (
                           <>
@@ -514,7 +514,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                         {!usage ? (
                           <button
                             onClick={() => fetchUsage(keyData.id)}
-                            className="text-xs text-neutral-500 hover:text-primary-600 flex items-center gap-1"
+                            className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-primary-700 flex items-center gap-1"
                           >
                             <Activity className="w-3.5 h-3.5" />
                             查看用量

@@ -40,8 +40,8 @@ function ShareQRCode({ url }: { url: string }) {
   return (
     <div className="w-32 h-32 mx-auto bg-white rounded-lg border border-neutral-200 dark:border-neutral-700
       flex items-center justify-center overflow-hidden">
-      <QrCode className="w-16 h-16 text-neutral-300 dark:text-neutral-600" />
-      <div className="absolute text-[9px] text-neutral-400">扫码查看配方</div>
+      <QrCode className="w-16 h-16 text-neutral-300 dark:text-neutral-400" />
+      <div className="absolute text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">扫码查看配方</div>
     </div>
   )
 }
@@ -99,7 +99,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
             </h2>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800">
-            <X className="w-4 h-4 text-neutral-400" />
+            <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
@@ -115,7 +115,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
               onClick={() => setActiveTab(key)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
                 activeTab === key
-                  ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-500'
+                  ? 'text-primary-700 dark:text-primary-600 border-b-2 border-primary-500'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
               }`}
             >
@@ -132,7 +132,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
             <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               {formulaName}
             </div>
-            <div className="text-[10px] text-neutral-400 dark:text-neutral-500">
+            <div className="text-[10px] text-neutral-400 dark:text-neutral-400">
               基于药食同源目录的辅助调理配方
             </div>
           </div>
@@ -216,7 +216,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
           {activeTab === 'qr' && (
             <div className="space-y-4">
               <ShareQRCode url={shareUrl || '#'} />
-              <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-500">
+              <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-400">
                 扫描下方二维码查看配方详情
               </p>
               <button

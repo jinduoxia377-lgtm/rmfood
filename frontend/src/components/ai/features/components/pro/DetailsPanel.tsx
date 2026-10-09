@@ -98,7 +98,7 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* 工具名称 */}
         <div className="flex items-center gap-2">
-          <span className="text-neutral-500">{getToolIcon(selectedCall.name)}</span>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{getToolIcon(selectedCall.name)}</span>
           <span className="text-sm font-mono font-medium text-neutral-800 dark:text-neutral-200">
             {selectedCall.name}
           </span>

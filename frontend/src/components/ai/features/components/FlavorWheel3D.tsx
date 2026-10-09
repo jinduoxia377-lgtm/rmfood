@@ -407,7 +407,7 @@ const FlavorWheel3D = memo(({
 
         {/* 交互提示 */}
         {interactive && !isDragging && (
-          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-xs text-neutral-400 pointer-events-none select-none">
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pointer-events-none select-none">
             拖拽旋转 · 滚轮缩放 · 点击查看详情
           </div>
         )}
@@ -422,7 +422,7 @@ const FlavorWheel3D = memo(({
             </div>
             <div className="text-sm">强度值: {hoveredDimension.value.toFixed(1)}</div>
             {hoveredDimension.description && (
-              <div className="text-xs text-neutral-400">{hoveredDimension.description}</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{hoveredDimension.description}</div>
             )}
           </div>
         }>

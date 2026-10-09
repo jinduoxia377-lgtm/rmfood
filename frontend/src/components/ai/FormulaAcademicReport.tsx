@@ -272,10 +272,10 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
       green: 'from-green-500 to-green-600',
     };
     const bgClasses: Record<string, string> = {
-      purple: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300',
+      purple: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-600',
       yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
-      blue: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300',
-      green: 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300',
+      blue: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600',
+      green: 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-600',
     };
 
     return (
@@ -306,7 +306,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary-100 dark:bg-primary-800 rounded-lg">
-              <FileText className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              <FileText className="w-6 h-6 text-primary-700 dark:text-primary-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{report.formulaName}</h2>
@@ -448,7 +448,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-100">配方综合评分雷达图</h4>
-                  <span className="text-xs text-neutral-500">各项维度评分对比</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">各项维度评分对比</span>
                 </div>
                 <RadarChart data={scores} />
               </Card>
@@ -458,7 +458,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-100">成分贡献度分析</h4>
-                  <span className="text-xs text-neutral-500">各成分对配方的贡献程度</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">各成分对配方的贡献程度</span>
                 </div>
                 <BarChart data={contributionData} />
               </Card>
@@ -468,7 +468,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-100">成分比例分布</h4>
-                  <span className="text-xs text-neutral-500">各成分用量占比</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">各成分用量占比</span>
                 </div>
                 <PieChart data={pieData} />
               </Card>
@@ -478,7 +478,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium text-neutral-900 dark:text-neutral-100">稳定性变化趋势</h4>
-                  <span className="text-xs text-neutral-500">12个月稳定性预测（虚线为预测值）</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">12个月稳定性预测（虚线为预测值）</span>
                 </div>
                 <LineChart data={stabilityData} currentStability={scores.stability * 100} />
               </Card>
@@ -497,7 +497,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               onClick={() => setUseEnhancedVersion(!useEnhancedVersion)}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                 useEnhancedVersion
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-300 dark:border-primary-700'
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 border border-primary-300 dark:border-primary-700'
                   : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'
               }`}
             >
@@ -524,9 +524,9 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                   >
                     <span className="font-semibold text-neutral-900 dark:text-neutral-100">{chapter.title}</span>
                     {expandedChapters.has(chapterIndex) ? (
-                      <ChevronDown className="w-5 h-5 text-neutral-400" />
+                      <ChevronDown className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-neutral-400" />
+                      <ChevronRight className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     )}
                   </button>
 
@@ -587,7 +587,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
           <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 max-h-80 overflow-y-auto">
             {report.references.map((ref, index) => (
               <div key={index} className="pl-4 border-l-2 border-neutral-200 dark:border-neutral-700 py-1">
-                <span className="font-medium text-primary-600 dark:text-primary-400">{ref.number}.</span>
+                <span className="font-medium text-primary-700 dark:text-primary-600">{ref.number}.</span>
                 <span className="ml-1">
                   {ref.authors}. {ref.title}[J]. {ref.journal}, {ref.year}
                   {ref.volume && `, ${ref.volume}`}
@@ -622,8 +622,8 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                 <p
                   className={`font-medium ${
                     candidate.safety_passed
-                      ? 'text-primary-700 dark:text-primary-400'
-                      : 'text-warning-700 dark:text-warning-400'
+                      ? 'text-primary-700 dark:text-primary-600'
+                      : 'text-warning-700 dark:text-warning-600'
                   }`}
                 >
                   {candidate.safety_passed ? '安全评估通过' : '需要关注的安全问题'}
@@ -637,10 +637,10 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
             </div>
             {(candidate.safety_details?.warnings?.length ?? 0) > 0 && (
               <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-800">
-                <p className="text-sm font-medium text-warning-700 dark:text-warning-400 mb-2">注意事项：</p>
+                <p className="text-sm font-medium text-warning-700 dark:text-warning-600 mb-2">注意事项：</p>
                 <ul className="space-y-1">
                   {(candidate.safety_details?.warnings ?? []).map((warning: string, index: number) => (
-                    <li key={index} className="text-sm text-warning-600 dark:text-warning-400 flex items-start gap-2">
+                    <li key={index} className="text-sm text-warning-600 dark:text-warning-600 flex items-start gap-2">
                       <span className="mt-1.5 w-1 h-1 rounded-full bg-warning-500 shrink-0" />
                       {warning}
                     </li>
@@ -653,7 +653,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
 
         {/* 底部声明 */}
         <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-start gap-2 text-xs text-neutral-400 dark:text-neutral-500">
+          <div className="flex items-start gap-2 text-xs text-neutral-400 dark:text-neutral-400">
             <Clock className="w-4 h-4 mt-0.5 shrink-0" />
             <p>本报告由AI辅助生成，仅供研发参考。实际产品开发需进行完整的实验验证和审批流程。</p>
           </div>

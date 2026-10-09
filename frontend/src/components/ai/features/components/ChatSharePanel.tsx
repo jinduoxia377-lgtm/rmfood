@@ -283,7 +283,7 @@ const TabSwitcher: React.FC<{
             transition-all duration-200
             ${
               activeTab === tab.id
-                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-600 shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
             }
           `}
@@ -699,7 +699,7 @@ export function ChatSharePanel({
             className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="关闭分享面板"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
@@ -714,7 +714,7 @@ export function ChatSharePanel({
           {error && (
             <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2 animate-fade-in">
               <AlertCircle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-error-700 dark:text-error-300">{error}</p>
+              <p className="text-sm text-error-700 dark:text-error-600">{error}</p>
               <button onClick={() => setError(null)} className="ml-auto text-error-500 hover:text-error-700">
                 <X className="w-4 h-4" />
               </button>
@@ -842,7 +842,7 @@ export function ChatSharePanel({
                 /* 生成按钮 */
                 <div className="flex flex-col items-center py-8">
                   <div className="w-20 h-20 mb-4 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl flex items-center justify-center">
-                    <QrCode className="w-10 h-10 text-neutral-400" />
+                    <QrCode className="w-10 h-10 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   </div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 text-center">
                     生成二维码，方便手机扫码查看
@@ -890,7 +890,7 @@ export function ChatSharePanel({
                   <div className="flex gap-2 w-full">
                     <button
                       onClick={handleDownloadQRCode}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       下载二维码
@@ -954,7 +954,7 @@ export function ChatSharePanel({
                     <div
                       className={`flex flex-col items-center gap-2 ${
                         selectedExportFormat === item.format
-                          ? 'text-primary-600 dark:text-primary-400'
+                          ? 'text-primary-700 dark:text-primary-600'
                           : 'text-neutral-600 dark:text-neutral-400'
                       }`}
                     >
@@ -1028,7 +1028,7 @@ export function ChatSharePanel({
                 onClick={() => setPopupPlatform(null)}
                 className="p-1 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800"
               >
-                <X className="w-4 h-4 text-neutral-500" />
+                <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
             </div>
 

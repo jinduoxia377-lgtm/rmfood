@@ -217,7 +217,7 @@ function ConditionRow({
           })}
           className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
             condition.logicOperator === 'AND'
-              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'
+              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
               : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
           }`}
         >
@@ -314,7 +314,7 @@ function ConditionGroupRenderer({
                 </button>
                 <button
                   onClick={() => onRemoveItem(item.id)}
-                  className="p-0.5 text-neutral-400 hover:text-error-600 rounded"
+                  className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-600 rounded"
                   title="删除条件组"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -505,7 +505,7 @@ export function FilterBuilder({
         style={{ maxHeight }}
       >
         {!hasConditions ? (
-          <div className="text-center py-8 text-neutral-400 dark:text-neutral-500">
+          <div className="text-center py-8 text-neutral-400 dark:text-neutral-400">
             <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.364 6.364a1 1 0 00-.293.707V17l-4 4v-2.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
@@ -566,7 +566,7 @@ export function FilterBuilder({
                     className="flex-1 text-left text-neutral-700 dark:text-neutral-300 truncate"
                   >
                     📋 {filter.name}
-                    <span className="ml-2 text-neutral-400">
+                    <span className="ml-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       ({countConditions(filter.group)} 条件)
                     </span>
                   </button>
@@ -577,7 +577,7 @@ export function FilterBuilder({
                         e.stopPropagation();
                         onDeleteFilter(filter.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-error-600 transition-all ml-2"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-600 transition-all ml-2"
                       title="删除此方案"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

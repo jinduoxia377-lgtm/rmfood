@@ -96,7 +96,7 @@ const PrecautionDetailPanel = memo(({ precautions, visible, onClose }: Precautio
             className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             aria-label="关闭面板"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
@@ -192,7 +192,7 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
                 <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${condition.isHardLimit ? 'bg-error-500' : 'bg-yellow-500'}`} />
                 <span>{condition.description}</span>
                 {condition.isHardLimit && (
-                  <span className="px-1.5 py-0.5 bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-400 rounded text-[10px] font-medium">
+                  <span className="px-1.5 py-0.5 bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-600 rounded text-[10px] font-medium">
                     硬性限制
                   </span>
                 )}

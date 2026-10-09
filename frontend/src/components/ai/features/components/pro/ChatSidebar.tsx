@@ -83,8 +83,8 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
 
         {steps.length === 0 && !isThinking && (
           <div className="text-center py-8">
-            <Brain className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
-            <p className="text-xs text-neutral-500">AI 思考过程将在此显示</p>
+            <Brain className="w-8 h-8 text-neutral-300 dark:text-neutral-400 mx-auto mb-2" />
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">AI 思考过程将在此显示</p>
           </div>
         )}
 
@@ -125,7 +125,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
                     <button
                       onClick={() => setExpandedStep(isExpanded ? null : step.step)}
                       aria-expanded={isExpanded}
-                      className="flex items-center gap-1 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 transition-colors"
+                      className="flex items-center gap-1 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-700 transition-colors"
                     >
                       {step.step}
                       {step.detail && (

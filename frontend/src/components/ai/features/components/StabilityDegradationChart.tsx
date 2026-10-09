@@ -71,7 +71,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
 
   if (chart.length === 0) {
     return (
-      <div className={`flex items-center justify-center h-48 text-sm text-neutral-400 ${className}`}>
+      <div className={`flex items-center justify-center h-48 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ${className}`}>
         暂无时间序列数据
       </div>
     )
@@ -168,24 +168,24 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
       {/* 关键指标卡片 */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-900/10 p-3 text-center">
-          <div className="text-2xl font-bold text-success-600 dark:text-success-400">
+          <div className="text-2xl font-bold text-success-600 dark:text-success-600">
             {result.shelfLifeDays >= 365
               ? `${(result.shelfLifeDays / 365).toFixed(1)}年`
               : `${result.shelfLifeDays}天`}
           </div>
-          <div className="text-xs text-neutral-500 mt-1">预测保质期</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">预测保质期</div>
         </div>
         <div className="rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 p-3 text-center">
-          <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+          <div className="text-2xl font-bold text-primary-700 dark:text-primary-600">
             {result.score}/100
           </div>
-          <div className="text-xs text-neutral-500 mt-1">稳定性评分</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">稳定性评分</div>
         </div>
         <div className="rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50/50 dark:bg-warning-900/10 p-3 text-center">
-          <div className="text-2xl font-bold text-warning-600 dark:text-warning-400">
+          <div className="text-2xl font-bold text-warning-600 dark:text-warning-600">
             {shelfLifeMonth ?? '—'}
           </div>
-          <div className="text-xs text-neutral-500 mt-1">临界时间点</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">临界时间点</div>
         </div>
       </div>
 
@@ -230,7 +230,7 @@ export function FactorImpactBar({ factors, className = '' }: FactorImpactBarProp
         <div key={i}>
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-neutral-600 dark:text-neutral-300">{f.factor}</span>
-            <span className="font-mono text-neutral-500">{f.impact.toFixed(1)}%</span>
+            <span className="font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{f.impact.toFixed(1)}%</span>
           </div>
           <div className="h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
             <div
@@ -242,7 +242,7 @@ export function FactorImpactBar({ factors, className = '' }: FactorImpactBarProp
             />
           </div>
           {f.description && (
-            <p className="text-[10px] text-neutral-400 mt-0.5">{f.description}</p>
+            <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{f.description}</p>
           )}
         </div>
       ))}

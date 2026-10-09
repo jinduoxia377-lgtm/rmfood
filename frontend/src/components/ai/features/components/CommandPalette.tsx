@@ -193,7 +193,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'show-settings',
         label: '打开设置',
         description: '配置对话偏好和模型参数',
-        icon: <Settings className="w-4 h-4 text-neutral-500" />,
+        icon: <Settings className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />,
         category: COMMAND_CATEGORIES.help,
         shortcut: ['S'],
         action: () => {
@@ -359,7 +359,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       >
         {/* Search Input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
-          <Search className="w-5 h-5 text-neutral-400" />
+          <Search className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="text"
             value={searchQuery}
@@ -379,7 +379,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Results */}
         <div className="max-h-[50vh] overflow-y-auto">
           {filteredCommands.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
+            <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Search className="w-12 h-12 mb-4 opacity-50" />
               <p className="text-sm">未找到匹配的命令</p>
               <p className="text-xs mt-1">尝试其他关键词</p>
@@ -401,7 +401,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         onClick={command.action}
                         className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                           isSelected
-                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600'
                             : 'hover:bg-slate-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                         }`}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}

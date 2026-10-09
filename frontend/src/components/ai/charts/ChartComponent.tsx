@@ -54,7 +54,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </LineChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )
@@ -72,7 +72,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </BarChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )
@@ -100,7 +100,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </PieChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )

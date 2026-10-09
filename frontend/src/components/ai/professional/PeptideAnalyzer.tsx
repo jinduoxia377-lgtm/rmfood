@@ -256,7 +256,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             onChange={(e) => this.setState({ sequence: e.target.value.toUpperCase() })}
             placeholder="例如: LVGQDPVHPF"
             className={`w-full h-32 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 font-mono text-lg ${
-              validationError ? 'border-red-500 focus:ring-red-500' : 'border-neutral-300 focus:ring-blue-500'
+              validationError ? 'border-red-500 focus:ring-red-500' : 'border-neutral-300 dark:border-neutral-700 focus:ring-blue-500'
             }`}
             disabled={this.state.loading}
           />
@@ -268,7 +268,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
               {validationError}
             </p>
           )}
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             支持20种标准氨基酸 (A, R, N, D, C, E, Q, G, H, I, L, K, M, F, P, S, T, W, Y, V)
           </p>
         </div>
@@ -545,7 +545,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className={`px-3 py-1 ${bioactivityColors[prediction.type] || 'bg-neutral-500'} text-white rounded-full text-sm font-semibold`}>
+                  <span className={`px-3 py-1 ${bioactivityColors[prediction.type] || 'bg-neutral-50 dark:bg-neutral-8000'} text-white rounded-full text-sm font-semibold`}>
                     {prediction.type}
                   </span>
                   {this.renderConfidenceBadge(prediction.confidence)}
@@ -569,7 +569,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-neutral-200">
+            <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <p className="text-xs text-neutral-600 mb-2">证据支持:</p>
               <p className="text-sm text-neutral-700">{prediction.evidence}</p>
             </div>
@@ -611,7 +611,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
               {structurePrediction.predictedStructure.split('').map((char, idx) => (
                 <span
                   key={idx}
-                  className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-semibold text-white ${structureColors[char] || 'bg-neutral-500'}`}
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-semibold text-white ${structureColors[char] || 'bg-neutral-50 dark:bg-neutral-8000'}`}
                   title={
                     char === 'H' ? 'α-螺旋' :
                     char === 'E' ? 'β-折叠' :
@@ -665,7 +665,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                 </div>
               ))}
               {structurePrediction.surfaceAccessibility.length > 10 && (
-                <p className="text-xs text-neutral-500 text-center">
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
                   ... 共 {structurePrediction.surfaceAccessibility.length} 个氨基酸
                 </p>
               )}
@@ -694,7 +694,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                 </div>
               ))}
               {structurePrediction.flexibilityIndex.length > 10 && (
-                <p className="text-xs text-neutral-500 text-center">
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
                   ... 共 {structurePrediction.flexibilityIndex.length} 个氨基酸
                 </p>
               )}
@@ -744,7 +744,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           </div>
         </div>
 
-        <div className="border-b border-neutral-200">
+        <div className="border-b border-neutral-200 dark:border-neutral-700">
           <nav className="flex">
             {(['properties', 'composition', 'bioactivity', 'structure'] as const).map((tab) => (
               <button

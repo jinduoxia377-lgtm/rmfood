@@ -35,7 +35,7 @@ const AdvancedChartRenderer: React.FC<AdvancedChartRendererProps> = ({
   if (!chartDef) {
     return (
       <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 rounded-lg" style={{ width, height }}>
-        <div className="text-center text-neutral-500">
+        <div className="text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <p className="text-lg font-medium">未知图表类型</p>
           <p className="text-sm">类型ID: {chartType}</p>
         </div>
@@ -249,7 +249,7 @@ const HeatmapPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }
 );
 
 const SankeyPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> = () => (
-  <div className="flex items-center justify-center h-full text-neutral-500">
+  <div className="flex items-center justify-center h-full text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <div className="text-center">
       <div className="text-4xl mb-2">🔀</div>
       <p className="text-sm">桑基流向图</p>
@@ -274,7 +274,7 @@ const FunnelPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }>
 );
 
 const SunburstPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> = () => (
-  <div className="flex items-center justify-center h-full text-neutral-500">
+  <div className="flex items-center justify-center h-full text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <div className="text-center">
       <div className="text-4xl mb-2">☀️</div>
       <p className="text-sm">旭日层级图</p>
@@ -359,7 +359,7 @@ const GanttPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> 
 );
 
 const GenericChartPlaceholder: React.FC<{ type: string; data: any[]; options: Record<string, any> }> = ({ type }) => (
-  <div className="flex items-center justify-center h-full text-neutral-500">
+  <div className="flex items-center justify-center h-full text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <div className="text-center">
       <div className="text-4xl mb-2">📊</div>
       <p className="text-sm font-medium">图表类型: {type}</p>

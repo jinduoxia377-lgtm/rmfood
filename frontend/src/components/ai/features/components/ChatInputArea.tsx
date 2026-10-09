@@ -173,12 +173,12 @@ export const ChatInputArea = memo(
                 </div>
               )}
               {state.smartSearch && (
-                <div className="flex items-center gap-1.5 text-primary-700 dark:text-primary-300">
+                <div className="flex items-center gap-1.5 text-primary-700 dark:text-primary-600">
                   <Search className="w-3.5 h-3.5" />
                   <span>智能搜索模式已启用</span>
                   <button
                     onClick={() => state.toggleSmartSearch()}
-                    className="ml-1 text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="ml-1 text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
                     aria-label="禁用智能搜索"
                   >
                     <X className="w-3 h-3" />
@@ -242,7 +242,7 @@ export const ChatInputArea = memo(
                   className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
                   aria-label="清空所有附件"
                 >
-                  <XCircle className="w-4 h-4 text-neutral-400" />
+                  <XCircle className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 </button>
               </div>
               <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -261,21 +261,21 @@ export const ChatInputArea = memo(
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-neutral-500" />
+                          <Icon className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
                           {attachment.name}
                         </div>
-                        <div className="text-[10px] text-neutral-500">{(attachment.size / 1024).toFixed(1)} KB</div>
+                        <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(attachment.size / 1024).toFixed(1)} KB</div>
                       </div>
                       <button
                         onClick={() => state.removeAttachment(attachment.id)}
                         className="opacity-0 group-hover:opacity-100 p-1 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded transition-all"
                         aria-label="移除附件"
                       >
-                        <X className="w-3.5 h-3.5 text-neutral-500" />
+                        <X className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       </button>
                     </div>
                   );
@@ -307,7 +307,7 @@ export const ChatInputArea = memo(
               {/* 思考内容区域 */}
               <div className="px-4 py-6">
                 {thinkingSteps.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-4 text-neutral-400">
+                  <div className="flex flex-col items-center justify-center py-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center mb-3">
                       <Sparkles className="w-7 h-7 text-indigo-400" />
                     </div>
@@ -470,7 +470,7 @@ export const ChatInputArea = memo(
               <button
                 onClick={() => state.setShowSuggestions(!state.showSuggestions)}
                 disabled={disabled || isStreaming}
-                className={`p-2.5 sm:p-3 transition-all duration-200 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 ${state.showSuggestions ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'} ${disabled || isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`p-2.5 sm:p-3 transition-all duration-200 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 ${state.showSuggestions ? 'text-primary-700 dark:text-primary-600' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'} ${disabled || isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="智能建议"
                 aria-label="智能建议"
                 aria-pressed={state.showSuggestions}
@@ -497,7 +497,7 @@ export const ChatInputArea = memo(
           {state.showFormatError && (
             <div
               id="format-error"
-              className="mt-2 flex items-center gap-2 text-error-500 dark:text-error-400 text-xs sm:text-sm"
+              className="mt-2 flex items-center gap-2 text-error-500 dark:text-error-600 text-xs sm:text-sm"
               role="alert"
               aria-live="polite"
             >
@@ -529,7 +529,7 @@ export const ChatInputArea = memo(
                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
                   state.smartSearch
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                    : 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:shadow-md'
+                    : 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:shadow-md'
                 } ${isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={state.smartSearch ? '关闭知识库检索' : '启用知识库检索 - 搜索配方数据库'}
                 aria-pressed={state.smartSearch}
@@ -543,7 +543,7 @@ export const ChatInputArea = memo(
             <div className="flex items-center gap-3 sm:gap-4">
               {state.inputBehavior.showCharCount && maxLength && (
                 <div
-                  className={`text-xs sm:text-sm transition-colors flex items-center gap-1 ${isExceeded ? 'text-error-500 dark:text-error-400 font-semibold' : isOverLimit ? 'text-orange-500' : 'text-neutral-400'}`}
+                  className={`text-xs sm:text-sm transition-colors flex items-center gap-1 ${isExceeded ? 'text-error-500 dark:text-error-600 font-semibold' : isOverLimit ? 'text-orange-500' : 'text-neutral-400'}`}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -572,7 +572,7 @@ export const ChatInputArea = memo(
                   </kbd>
                   <span>换行</span>
                 </span>
-                <span className="text-neutral-300">·</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
                 <span className="inline-flex items-center gap-1">
                   <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
                     ↵

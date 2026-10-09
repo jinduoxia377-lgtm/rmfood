@@ -127,7 +127,7 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
     const baseClassName =
       'w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500' +
       (readOnly ? ' bg-neutral-100 dark:bg-neutral-800 cursor-not-allowed' : '') +
-      (hasError && isTouched ? ' border-red-500' : ' border-neutral-300')
+      (hasError && isTouched ? ' border-red-500' : ' border-neutral-300 dark:border-neutral-700')
 
     switch (item.type) {
       case 'string':
@@ -195,7 +195,7 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
 
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <div className="p-4 text-center text-neutral-500">
+      <div className="p-4 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         该插件没有可配置的选项
       </div>
     )
@@ -226,7 +226,7 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
             {renderSettingItem(key, item)}
 
             {item.description && (
-              <p className="text-xs text-neutral-500">{item.description}</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.description}</p>
             )}
 
             {errors[key] && touched.has(key) && (
@@ -237,8 +237,8 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
       </div>
 
       {!readOnly && (
-        <div className="pt-4 border-t border-neutral-200">
-          <p className="text-xs text-neutral-400">配置将自动保存到本地存储</p>
+        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配置将自动保存到本地存储</p>
         </div>
       )}
     </div>

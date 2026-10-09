@@ -187,7 +187,7 @@ export function StabilityPredictTab() {
             <div className="rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center">
-                  <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-400" />
+                  <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-600" />
                 </div>
                 <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                   储存条件配置
@@ -327,7 +327,7 @@ export function StabilityPredictTab() {
             <div className="text-center space-y-3 p-8">
               <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-600" />
               <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">等待输入配方...</h3>
-              <p className="text-sm text-neutral-500 max-w-md">
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
                 在左侧输入成分名称并配置储存条件后，点击"本地计算"或"AI 分析"按钮，
                 此处将显示稳定性评分、保质期预测和时间序列分析。
               </p>
@@ -359,7 +359,7 @@ export function StabilityPredictTab() {
                     <h3 className="font-semibold text-lg">稳定性评分</h3>
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-bold text-secondary-600">{stabilityResult.score.toFixed(0)}</span>
-                      <span className="text-xl text-neutral-500">/100</span>
+                      <span className="text-xl text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/100</span>
                     </div>
                     <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
                       <div
@@ -396,7 +396,7 @@ export function StabilityPredictTab() {
                 </div>
 
                 {/* 关键影响因素 */}
-                <div className="mt-6 pt-6 border-t border-neutral-200">
+                <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                   <h4 className="font-semibold mb-3">关键影响因素</h4>
                   <div className="flex flex-wrap gap-2">
                     {stabilityResult.criticalFactors.map((factor, idx) => (

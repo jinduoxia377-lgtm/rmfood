@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import { secureApiKeyManager, type ApiKeyMetadata } from '@/utils/secureKeyManager'
 import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager'
+import { ConfigManager } from '@/utils/configManager'
 import { logger } from '@/utils/safeLogger'
 
 // ══════════════════════════════════════
@@ -210,35 +211,24 @@ export function ApiKeyConfigPanel({
         throw new Error('无法读取已存储的 API Key')
       }
 
-      // 调用后端测试接口
-      const response = await fetch('/api/v1/ai/models/config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
-        },
-        body: JSON.stringify({
-          provider: 'deepseek',
-          api_key: storedKey,
-          base_url: 'https://api.deepseek.com/v1',
-          model: 'deepseek-chat',
-          max_tokens: 4096,
-          temperature: 0.7,
-        }),
+      // 调用后端测试接口（D-3 收敛：改用不写库的验活端点，避免误写全局配置）
+      const testResult = await ConfigManager.testUserLlmKey({
+        provider: 'deepseek',
+        apiKey: storedKey,
+        baseUrl: 'https://api.deepseek.com/v1',
+        model: 'deepseek-chat',
       })
 
-      if (response.ok) {
-        const data = await response.json()
+      if (testResult.success) {
         setStatus('success')
-        setMessage(`🎉 连接测试成功！模型: ${data.config?.model || 'deepseek-chat'}`)
+        setMessage(`🎉 连接测试成功！模型: deepseek-chat`)
 
         setTimeout(() => {
           setStatus('idle')
           setMessage('')
         }, 3000)
       } else {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || `HTTP ${response.status}`)
+        throw new Error(testResult.detail || '验活失败')
       }
 
     } catch (error) {
@@ -300,7 +290,7 @@ export function ApiKeyConfigPanel({
             <Shield className="w-5 h-5 text-primary-500" />
             DeepSeek API 密钥配置
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
             安全配置你的 API 密钥以启用 AI 智能对话功能
           </p>
         </div>
@@ -339,7 +329,7 @@ export function ApiKeyConfigPanel({
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
                   <Lock className="w-4 h-4 text-success-600" />
-                  <span className="font-medium text-success-700 dark:text-success-400">
+                  <span className="font-medium text-success-700 dark:text-success-600">
                     API Key 已安全存储
                   </span>
                 </div>
@@ -358,7 +348,7 @@ export function ApiKeyConfigPanel({
                     </button>
                   </p>
 
-                  <p className="text-neutral-500 text-xs">
+                  <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">
                     <span>提供商：</span>{configInfo?.provider || 'deepseek'}
                     {' • '}
                     <span>配置时间：</span>
@@ -407,7 +397,7 @@ export function ApiKeyConfigPanel({
           {/* 安全说明 */}
           <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
             <Info className="w-4 h-4 text-secondary-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-secondary-700 dark:text-secondary-300">
+            <div className="text-sm text-secondary-700 dark:text-secondary-600">
               <p className="font-medium">安全提示</p>
               <ul className="mt-1 space-y-1 text-xs list-disc list-inside">
                 <li>API Key 使用 AES-256-GCM 军事级加密存储在本地浏览器中</li>
@@ -519,15 +509,15 @@ export function ApiKeyConfigPanel({
           <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
             {/* 交叉引导文案 */}
             <div className="mb-3 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
-              <p className="text-xs text-secondary-700 dark:text-secondary-300 font-medium mb-1">
+              <p className="text-xs text-secondary-700 dark:text-secondary-600 font-medium mb-1">
                 💡 这是<strong>快速配置</strong>入口（推荐大多数用户使用）
               </p>
-              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1 list-disc list-inside">
+              <ul className="text-xs text-secondary-600 dark:text-secondary-600 space-y-1 list-disc list-inside">
                 <li>✅ 适合首次配置或只想快速开始使用的用户</li>
                 <li>✅ 使用 AES-256-GCM 军事级加密保护</li>
                 <li>✅ 配置会自动同步到系统所有模块</li>
               </ul>
-              <p className="text-xs text-secondary-500 dark:text-secondary-400 mt-2">
+              <p className="text-xs text-secondary-500 dark:text-secondary-600 mt-2">
                 📌 如需管理多个模型或调整高级参数（temperature/timeout等），
                 请前往页面顶部的<strong>"配置管理"</strong>标签页。
               </p>
@@ -548,7 +538,7 @@ export function ApiKeyConfigPanel({
                   <li>粘贴到上方输入框并点击保存</li>
                 </ol>
 
-                <p className="text-warning-600 dark:text-warning-400 mt-2">
+                <p className="text-warning-600 dark:text-warning-600 mt-2">
                   ⚠️ 请确保账户余额充足，API 调用可能产生费用
                 </p>
               </div>

@@ -107,7 +107,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             type="checkbox"
             checked={includePatentScores}
             onChange={(e) => setIncludePatentScores(e.target.checked)}
-            className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
           />
           <span className="text-sm text-neutral-600 dark:text-neutral-300">包含专利协同评分</span>
         </label>
@@ -116,7 +116,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             type="checkbox"
             checked={includeDetailedInfo}
             onChange={(e) => setIncludeDetailedInfo(e.target.checked)}
-            className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
           />
           <span className="text-sm text-neutral-600 dark:text-neutral-300">包含详细信息</span>
         </label>

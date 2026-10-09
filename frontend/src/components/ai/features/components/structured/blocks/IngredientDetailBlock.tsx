@@ -75,9 +75,9 @@ function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
           className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           {showDetails ? (
-            <ChevronUp className="w-4 h-4 text-neutral-400" />
+            <ChevronUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-neutral-400" />
+            <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           )}
         </button>
       </div>
@@ -89,7 +89,7 @@ function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
             <div className="flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-primary-500 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-[10px] text-neutral-400 dark:text-neutral-500">来源</div>
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-400">来源</div>
                 <div className="text-xs text-neutral-700 dark:text-neutral-300">{source}</div>
               </div>
             </div>
@@ -98,7 +98,7 @@ function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
             <div className="flex items-start gap-2">
               <Shield className="w-3.5 h-3.5 text-secondary-500 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-[10px] text-neutral-400 dark:text-neutral-500">性味</div>
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-400">性味</div>
                 <div className="text-xs text-neutral-700 dark:text-neutral-300">{properties}</div>
               </div>
             </div>
@@ -129,7 +129,7 @@ function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
                 {active_compounds.map((compound, i) => (
                   <span
                     key={i}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-300 border border-accent-200 dark:border-accent-800"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-600 border border-accent-200 dark:border-accent-800"
                   >
                     {compound}
                   </span>

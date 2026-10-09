@@ -51,7 +51,7 @@ function ChartBlock({ data }: ChartBlockProps) {
       default:
         return (
           <div className="text-center py-4">
-            <p className="text-xs text-neutral-400">暂不支持的图表类型: {chartType}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂不支持的图表类型: {chartType}</p>
           </div>
         )
     }
