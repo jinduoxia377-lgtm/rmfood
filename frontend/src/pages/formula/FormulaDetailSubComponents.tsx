@@ -40,7 +40,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
                 )}
                 {p.overall_si !== undefined && (
                   <span className={`text-sm font-semibold ${
-                    p.overall_si > 0.7 ? 'text-emerald-600' : p.overall_si > 0.4 ? 'text-amber-600' : 'text-neutral-500'
+                    p.overall_si > 0.7 ? 'text-emerald-600' : p.overall_si > 0.4 ? 'text-amber-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                   }`}>
                     SI: {p.overall_si.toFixed(2)}
                   </span>
@@ -101,7 +101,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
               <div key={key} className="text-center">
                 <div className={`h-16 rounded-lg ${colors[key]} opacity-70`} style={{ height: `${Math.max(8, val * 64)}px`, marginTop: 'auto' }} />
                 <p className="text-xs font-medium mt-1 text-neutral-700 dark:text-neutral-300">{labels[key]}</p>
-                <p className="text-xs text-neutral-500">{val.toFixed(2)}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{val.toFixed(2)}</p>
               </div>
             );
           })}
@@ -195,7 +195,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
                 }`}>{issue.level}</span>
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{issue.description}</p>
-              {issue.suggestion && <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">💡 {issue.suggestion}</p>}
+              {issue.suggestion && <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">💡 {issue.suggestion}</p>}
             </div>
           ))}
         </div>
@@ -244,7 +244,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
                 }`}>{a.level}</span>
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{a.message}</p>
-              {a.recommendation && <p className="text-xs text-neutral-500 mt-1">💡 {a.recommendation}</p>}
+              {a.recommendation && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">💡 {a.recommendation}</p>}
             </div>
           ))}
         </div>
@@ -268,7 +268,7 @@ export function ComplianceCheckSection({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
         检查合规性...
       </div>
@@ -414,13 +414,13 @@ export function AnalysisCard({
           <Button variant="ghost" size="sm" icon={<RefreshCw size={12} />} onClick={(e) => { e.stopPropagation(); onRun() }} disabled={loading}>
             重新分析
           </Button>
-          <ChevronDown size={14} className={`text-neutral-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          <ChevronDown size={14} className={`text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </div>
       </button>
       {expanded && (
         <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
           {loading && !result ? (
-            <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <RefreshCw size={14} className="animate-spin" /> 正在分析...
             </div>
           ) : (

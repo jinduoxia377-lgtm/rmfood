@@ -110,7 +110,7 @@ export default function ExperimentCalendarPage() {
               {/* 日历网格 */}
               <div className="grid grid-cols-7 gap-px">
                 {weekDays.map((d) => (
-                  <div key={d} className="text-center text-xs font-medium text-neutral-500 py-2">
+                  <div key={d} className="text-center text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] py-2">
                     {d}
                   </div>
                 ))}
@@ -140,10 +140,10 @@ export default function ExperimentCalendarPage() {
                           key={exp.id}
                           to={`/experiments/${exp.id}`}
                           className={cn(
-                            'block px-1.5 py-0.5 rounded text-[10px] truncate mb-0.5 transition-colors',
-                            exp.status === 'in_progress' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
-                              : exp.status === 'completed' ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
-                              : exp.status === 'failed' ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400'
+                            'block px-1.5 py-0.5 rounded text-xs truncate mb-0.5 transition-colors',
+                            exp.status === 'in_progress' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                              : exp.status === 'completed' ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
+                              : exp.status === 'failed' ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700'
                               : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
                           )}
                           title={exp.title}
@@ -152,7 +152,7 @@ export default function ExperimentCalendarPage() {
                         </Link>
                       ))}
                       {dayExps.length > 2 && (
-                        <div className="text-[10px] text-neutral-400 pl-1.5">+{dayExps.length - 2} 更多</div>
+                        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pl-1.5">+{dayExps.length - 2} 更多</div>
                       )}
                     </div>
                   )
@@ -171,8 +171,8 @@ export default function ExperimentCalendarPage() {
           ) : sortedExperiments.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <CalendarIcon size={32} className="mx-auto text-neutral-300 mb-2" />
-                <p className="text-sm text-neutral-500">暂无实验数据</p>
+                <CalendarIcon size={32} className="mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2" />
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无实验数据</p>
                 <Link to="/experiments/new">
                   <Button variant="ghost" size="sm" className="mt-2">新建实验</Button>
                 </Link>
@@ -192,9 +192,9 @@ export default function ExperimentCalendarPage() {
                         <span className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{exp.title}</span>
                         <StatusBadge status={exp.status} />
                       </div>
-                      <p className="text-xs text-neutral-500">{exp.code} · {format(new Date(exp.start_date), 'yyyy-MM-dd', { locale: zhCN })}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{exp.code} · {format(new Date(exp.start_date), 'yyyy-MM-dd', { locale: zhCN })}</p>
                     </div>
-                    <ChevronRight size={16} className="text-neutral-300 shrink-0" />
+                    <ChevronRight size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
                   </CardContent>
                 </Card>
               </Link>

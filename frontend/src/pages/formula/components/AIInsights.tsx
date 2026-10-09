@@ -72,9 +72,9 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400'
-      case 'medium': return 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400'
-      case 'low': return 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
+      case 'high': return 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-600'
+      case 'medium': return 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700'
+      case 'low': return 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
       default: return 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400'
     }
   }
@@ -91,10 +91,10 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'trend': return 'text-secondary-600 bg-secondary-100 dark:text-secondary-400 dark:bg-secondary-900/30'
-      case 'anomaly': return 'text-error-600 bg-error-100 dark:text-error-400 dark:bg-error-900/30'
-      case 'recommendation': return 'text-accent-600 bg-accent-100 dark:text-accent-400 dark:bg-accent-900/30'
-      case 'achievement': return 'text-success-600 bg-success-100 dark:text-success-400 dark:bg-success-900/30'
+      case 'trend': return 'text-secondary-600 bg-secondary-100 dark:text-secondary-700 dark:bg-secondary-900/30'
+      case 'anomaly': return 'text-error-600 bg-error-100 dark:text-error-600 dark:bg-error-900/30'
+      case 'recommendation': return 'text-accent-600 bg-accent-100 dark:text-accent-700 dark:bg-accent-900/30'
+      case 'achievement': return 'text-success-600 bg-success-100 dark:text-success-600 dark:bg-success-900/30'
       default: return 'text-neutral-600 bg-neutral-100 dark:text-neutral-400 dark:bg-neutral-800'
     }
   }
@@ -103,7 +103,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
     switch (trend) {
       case 'up': return <ArrowUpRight size={14} className="text-success-600" />
       case 'down': return <ArrowDownRight size={14} className="text-error-600" />
-      default: return <Minus size={14} className="text-neutral-400" />
+      default: return <Minus size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
     }
   }
 
@@ -112,7 +112,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
-            <Brain size={20} className="text-accent-600 dark:text-accent-400" />
+            <Brain size={20} className="text-accent-600 dark:text-accent-700" />
           </div>
           <div>
             <CardTitle as="h3" className="text-sm font-semibold">AI智能洞察</CardTitle>
@@ -144,7 +144,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
                 activeTab === tab.key
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -206,7 +206,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-neutral-400">置信度:</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">置信度:</span>
                         <div
                           className="w-20 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden"
                           role="progressbar"
@@ -220,7 +220,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
                             style={{ width: `${insight.confidence * 100}%` }}
                           />
                         </div>
-                        <span className="text-xs text-neutral-500">{Math.round(insight.confidence * 100)}%</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{Math.round(insight.confidence * 100)}%</span>
                       </div>
                     </div>
                     {insight.actionUrl && (
@@ -269,16 +269,16 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
                     <span className="text-lg font-bold text-neutral-900 dark:text-white">
                       {prediction.current}
                     </span>
-                    <span className="text-xs text-neutral-500">→</span>
-                    <span className="text-sm font-semibold text-primary-600 dark:text-primary-400">
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">→</span>
+                    <span className="text-sm font-semibold text-primary-700 dark:text-primary-700">
                       {prediction.predicted}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-neutral-500">{prediction.timeframe}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{prediction.timeframe}</span>
                     <span className={cn(
                       'text-xs font-medium',
-                      prediction.trend === 'up' ? 'text-success-600' : prediction.trend === 'down' ? 'text-error-600' : 'text-neutral-500',
+                      prediction.trend === 'up' ? 'text-success-600' : prediction.trend === 'down' ? 'text-error-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                     )}>
                       {prediction.trend === 'up' ? '+' : ''}{prediction.changePercent}%
                     </span>
@@ -301,7 +301,7 @@ export function KPIDashboard({ className }: { className?: string }) {
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
-            <Target size={20} className="text-warning-600 dark:text-warning-400" />
+            <Target size={20} className="text-warning-600 dark:text-warning-700" />
           </div>
           <div>
             <CardTitle as="h3" className="text-sm font-semibold">KPI进度监控</CardTitle>
@@ -338,7 +338,7 @@ export function KPIDashboard({ className }: { className?: string }) {
                     <span className="text-sm font-medium text-neutral-900 dark:text-white">{kpi.name}</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-sm font-semibold text-neutral-900 dark:text-white">{kpi.current}%</span>
-                      <span className="text-xs text-neutral-500">/ {kpi.target}%</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/ {kpi.target}%</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

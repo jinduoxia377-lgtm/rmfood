@@ -210,7 +210,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
   const renderFieldValue = (value: any, label: string): React.ReactNode => {
     if (value === null || value === undefined) {
-      return <span className="text-neutral-400 italic">空值</span>;
+      return <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">空值</span>;
     }
 
     if (typeof value === 'boolean') {
@@ -263,7 +263,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm text-neutral-500">{conflict.conflictingFields.length} 个字段冲突</span>
+              <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{conflict.conflictingFields.length} 个字段冲突</span>
               <span
                 className={`px-2 py-1 text-xs rounded-full ${
                   conflict.status === 'resolved'
@@ -280,9 +280,9 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     : '待处理'}
               </span>
               {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-neutral-400" />
+                <ChevronUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-neutral-400" />
+                <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               )}
             </div>
           </div>
@@ -363,7 +363,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     className={`px-3 py-2 text-sm rounded-lg border transition-all ${
                       selectedResolution[conflict.id] === 'local'
                         ? 'border-blue-500 bg-secondary-50 text-secondary-700'
-                        : 'border-neutral-300 hover:border-blue-300'
+                        : 'border-neutral-300 dark:border-neutral-700 hover:border-blue-300'
                     }`}
                   >
                     <User className="w-4 h-4 inline mr-1" />
@@ -378,7 +378,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     className={`px-3 py-2 text-sm rounded-lg border transition-all ${
                       selectedResolution[conflict.id] === 'server'
                         ? 'border-green-500 bg-success-50 text-success-700'
-                        : 'border-neutral-300 hover:border-green-300'
+                        : 'border-neutral-300 dark:border-neutral-700 hover:border-green-300'
                     }`}
                   >
                     <Server className="w-4 h-4 inline mr-1" />
@@ -435,7 +435,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
       <div className={`text-center py-12 ${className}`}>
         <CheckCircle className="w-16 h-16 mx-auto text-success-500 mb-4" />
         <h3 className="text-lg font-medium text-neutral-900 mb-2">没有检测到冲突</h3>
-        <p className="text-neutral-500">所有数据同步正常，无需手动干预</p>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">所有数据同步正常，无需手动干预</p>
       </div>
     );
   }
@@ -448,7 +448,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
             <GitMerge className="w-6 h-6" />
             冲突解决中心
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
             共 {conflicts.length} 个冲突（{pendingConflicts.length} 个待处理，{resolvedConflicts.length} 个已解决）
           </p>
         </div>

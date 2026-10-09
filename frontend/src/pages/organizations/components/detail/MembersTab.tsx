@@ -38,16 +38,16 @@ interface MembersTabProps {
 
 const ROLE_OPTIONS: { value: Role; label: string; description: string; color: string }[] = [
   { value: 'owner', label: '所有者', description: '拥有所有权限', color: 'text-yellow-600 dark:text-yellow-400' },
-  { value: 'admin', label: '管理员', description: '可管理成员和设置', color: 'text-secondary-600 dark:text-secondary-400' },
-  { value: 'member', label: '成员', description: '标准权限', color: 'text-success-600 dark:text-success-400' },
+  { value: 'admin', label: '管理员', description: '可管理成员和设置', color: 'text-secondary-600 dark:text-secondary-700' },
+  { value: 'member', label: '成员', description: '标准权限', color: 'text-success-600 dark:text-success-600' },
   { value: 'viewer', label: '访客', description: '只读访问', color: 'text-neutral-500 dark:text-neutral-400' },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; dotColor: string; textColor: string }> = {
-  active: { label: '活跃', dotColor: 'bg-success-500', textColor: 'text-success-700 dark:text-success-400' },
+  active: { label: '活跃', dotColor: 'bg-success-500', textColor: 'text-success-700 dark:text-success-600' },
   pending: { label: '待激活', dotColor: 'bg-yellow-500', textColor: 'text-yellow-700 dark:text-yellow-400' },
-  invited: { label: '已邀请', dotColor: 'bg-secondary-500', textColor: 'text-secondary-700 dark:text-secondary-400' },
-  suspended: { label: '已停用', dotColor: 'bg-error-500', textColor: 'text-error-700 dark:text-error-400' },
+  invited: { label: '已邀请', dotColor: 'bg-secondary-500', textColor: 'text-secondary-700 dark:text-secondary-700' },
+  suspended: { label: '已停用', dotColor: 'bg-error-500', textColor: 'text-error-700 dark:text-error-600' },
 };
 
 function getRoleIcon(role: Role) {
@@ -59,7 +59,7 @@ function getRoleIcon(role: Role) {
     case 'member':
       return <UserCheck className="w-4 h-4 text-success-500" />;
     case 'viewer':
-      return <Eye className="w-4 h-4 text-neutral-400" />;
+      return <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />;
     default:
       return null;
   }
@@ -68,8 +68,8 @@ function getRoleIcon(role: Role) {
 function getRoleBadgeClass(role: Role): string {
   const map: Record<Role, string> = {
     owner: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    admin: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
-    member: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
+    admin: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
+    member: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
     viewer: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
   };
   return map[role] || map.viewer;
@@ -156,14 +156,14 @@ function RoleSelect({
                 className={cn(
                   'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors text-left',
                   option.value === value
-                    ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300'
+                    ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-700'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700',
                 )}
               >
                 {getRoleIcon(option.value)}
                 <div>
                   <p className="font-medium">{option.label}</p>
-                  <p className="text-xs text-neutral-400">{option.description}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{option.description}</p>
                 </div>
               </button>
             ))}
@@ -280,7 +280,7 @@ const MembersTab = memo(
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <input
               type="text"
               placeholder="搜索姓名或邮箱..."
@@ -291,7 +291,7 @@ const MembersTab = memo(
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-neutral-400 hover:text-neutral-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -347,9 +347,9 @@ const MembersTab = memo(
         <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           {filteredMembers.length === 0 ? (
             <div className="py-16 text-center">
-              <Users className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+              <Users className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400 font-medium">暂无匹配的成员</p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
+              <p className="text-sm text-neutral-400 dark:text-neutral-400 mt-1">
                 {searchQuery || roleFilter !== 'all' || statusFilter !== 'all'
                   ? '尝试调整筛选条件'
                   : '点击上方按钮邀请第一位成员'}
@@ -399,7 +399,7 @@ const MembersTab = memo(
                         {updatingRoleId === member.id ? (
                           <div className="flex items-center gap-1.5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-secondary-500" />
-                            <span className="text-xs text-neutral-400">更新中...</span>
+                            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新中...</span>
                           </div>
                         ) : (
                           <RoleSelect
@@ -426,7 +426,7 @@ const MembersTab = memo(
                           <span
                             className={cn(
                               'text-xs font-medium',
-                              STATUS_CONFIG[member.status]?.textColor || 'text-neutral-500',
+                              STATUS_CONFIG[member.status]?.textColor || 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                             )}
                           >
                             {STATUS_CONFIG[member.status]?.label || member.status}
@@ -457,8 +457,8 @@ const MembersTab = memo(
                                   className={cn(
                                     'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors',
                                     removingId === member.id
-                                      ? 'text-neutral-400 cursor-not-allowed'
-                                      : 'text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/10',
+                                      ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] cursor-not-allowed'
+                                      : 'text-error-600 dark:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/10',
                                     member.role === 'owner' && 'opacity-50 cursor-not-allowed',
                                   )}
                                 >
@@ -510,7 +510,7 @@ const MembersTab = memo(
                 邮箱地址
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <input
                   id="invite-email"
                   type="email"

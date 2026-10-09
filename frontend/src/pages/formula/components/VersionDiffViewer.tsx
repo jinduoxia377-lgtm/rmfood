@@ -143,9 +143,9 @@ function DiffLine({ item, expanded, onToggle }: { item: DiffItem; expanded: bool
   }[item.type]
 
   const valueClass = {
-    added: 'text-success-700 dark:text-success-400',
-    removed: 'text-error-700 dark:text-error-400',
-    modified: 'text-warning-700 dark:text-warning-400',
+    added: 'text-success-700 dark:text-success-600',
+    removed: 'text-error-700 dark:text-error-600',
+    modified: 'text-warning-700 dark:text-warning-700',
     unchanged: 'text-neutral-500 dark:text-neutral-400',
   }[item.type]
 
@@ -191,12 +191,12 @@ function DiffLine({ item, expanded, onToggle }: { item: DiffItem; expanded: bool
           {item.type === 'removed' || item.type === 'modified' ? (
             <span className={cn('truncate', valueClass)}>{renderValue(item.oldValue)}</span>
           ) : (
-            <span className="truncate text-neutral-400">-</span>
+            <span className="truncate text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
           )}
           {item.type === 'added' || item.type === 'modified' ? (
             <span className={cn('truncate', valueClass)}>{renderValue(item.newValue)}</span>
           ) : (
-            <span className="truncate text-neutral-400">-</span>
+            <span className="truncate text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
           )}
         </div>
       </div>
@@ -271,7 +271,7 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
 
   if (!leftVersion && !rightVersion) {
     return (
-      <div className="text-center py-12 text-neutral-500">
+      <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <p>请选择要对比的版本</p>
       </div>
     )
@@ -307,29 +307,29 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-0.5">
             {leftVersion ? `v${leftVersion.version}` : '未选择'}
           </p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {leftVersion ? new Date(leftVersion.created_at).toLocaleDateString('zh-CN') : '-'}
           </p>
           {leftVersion?.change_summary && (
-            <p className="text-xs text-neutral-400 mt-1">{leftVersion.change_summary}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{leftVersion.change_summary}</p>
           )}
         </div>
         <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-0.5">
             {rightVersion ? `v${rightVersion.version}` : '未选择'}
           </p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {rightVersion ? new Date(rightVersion.created_at).toLocaleDateString('zh-CN') : '-'}
           </p>
           {rightVersion?.change_summary && (
-            <p className="text-xs text-neutral-400 mt-1">{rightVersion.change_summary}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{rightVersion.change_summary}</p>
           )}
         </div>
       </div>
 
       <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
         <div className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 px-3 py-2 flex items-center justify-between" role="row">
-          <div className="flex items-center gap-4 text-xs text-neutral-500">
+          <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span className="w-4"></span>
             <span className="flex-1">路径</span>
             <span className="flex-[2]">旧值</span>
@@ -343,7 +343,7 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
         >
           <div role="rowgroup" aria-label="差异数据">
           {changedDiffs.length === 0 ? (
-            <div className="py-8 text-center text-sm text-neutral-400" role="row">两个版本完全相同</div>
+            <div className="py-8 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" role="row">两个版本完全相同</div>
           ) : (
             changedDiffs.map((item) => (
               <DiffLine

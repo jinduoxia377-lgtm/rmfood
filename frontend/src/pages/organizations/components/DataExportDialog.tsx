@@ -211,11 +211,11 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-              <Download className="w-5 h-5 text-primary-600" />
+              <Download className="w-5 h-5 text-primary-700" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">数据导出</h2>
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 导出 {filteredOrganizations.length} 个组织的数据
               </p>
             </div>
@@ -254,11 +254,11 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
-                    <Icon className={`w-8 h-8 mx-auto mb-2 ${isSelected ? 'text-success-600' : 'text-neutral-400'}`} />
+                    <Icon className={`w-8 h-8 mx-auto mb-2 ${isSelected ? 'text-success-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                     <div className={`font-medium text-sm ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
                       {config.label}
                     </div>
-                    <div className="text-xs text-neutral-500 mt-1">{config.description}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{config.description}</div>
                   </button>
                 )
               })}
@@ -273,14 +273,14 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
               <div className="flex gap-2">
                 <button
                   onClick={selectAllFields}
-                  className="text-xs text-primary-600 hover:text-primary-700"
+                  className="text-xs text-primary-700 hover:text-primary-700"
                 >
                   全选
                 </button>
-                <span className="text-neutral-300">|</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
                 <button
                   onClick={deselectAllFields}
-                  className="text-xs text-neutral-500 hover:text-neutral-700"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700"
                 >
                   取消全选
                 </button>
@@ -301,7 +301,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                     type="checkbox"
                     checked={field.visible}
                     onChange={() => toggleField(field.key)}
-                    className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
                 </label>
@@ -343,7 +343,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                 </label>
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="text-xs text-neutral-500 hover:text-neutral-700"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700"
                 >
                   隐藏预览
                 </button>
@@ -379,7 +379,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           {!showPreview && (
             <button
               onClick={() => setShowPreview(true)}
-              className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700"
+              className="flex items-center gap-2 text-sm text-primary-700 hover:text-primary-700"
             >
               <Eye className="w-4 h-4" />
               显示数据预览
@@ -389,13 +389,13 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           {error && (
             <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-error-700 dark:text-error-400">{error}</div>
+              <div className="text-sm text-error-700 dark:text-error-600">{error}</div>
             </div>
           )}
 
           <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <Info className="w-5 h-5 text-secondary-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-secondary-700 dark:text-secondary-400 space-y-1">
+            <div className="text-sm text-secondary-700 dark:text-secondary-700 space-y-1">
               <p>• CSV格式可在Excel、Google Sheets等软件中直接打开</p>
               <p>• 支持UTF-8编码，完美显示中文内容</p>
               <p>• 导出的数据包含BOM头，确保Excel正确识别编码</p>
@@ -405,7 +405,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
 
         <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-neutral-500">
+            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {isExporting ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />

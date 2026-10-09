@@ -2,7 +2,7 @@
  * 实验管理页面 — 专家级深度增强版
  * 功能：搜索高亮 + 关联配方显示 + 批量操作 + 列排序 + 高级筛选 + 负责人筛选 + 导出 + 统计概览
  */
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Plus, Search, Filter, TestTubes, Trash2, X,
@@ -11,8 +11,8 @@ import {
   TestTube, CheckCircle2, AlertCircle, Ban, Clock,
   Sparkles,
 } from 'lucide-react'
-import { useExperiments } from '@/hooks/useQueries'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useExperiments, useExperimentStatistics } from '@/hooks/useQueries'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { StatusBadge, EmptyState, Pagination, Skeleton } from '@/components/ui/Common'
 import { Button, Input, StatCard, Badge, Card, CardContent } from '@/components/ui'
 import { Highlight } from '@/components/common'
@@ -36,10 +36,10 @@ type SortKey = 'title' | 'updated_at' | 'status' | 'code'
 
 // ── 排序图标 ──
 const SortIcon: React.FC<{ field: SortKey; sortKey: SortKey | null; sortDir: 'asc' | 'desc' }> = ({ field, sortKey, sortDir }) => {
-  if (sortKey !== field) return <ArrowUpDown size={13} className="text-neutral-300" />
+  if (sortKey !== field) return <ArrowUpDown size={13} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
   return sortDir === 'asc'
-    ? <ChevronUp size={13} className="text-primary-600 dark:text-primary-400" />
-    : <ChevronDown size={13} className="text-primary-600 dark:text-primary-400" />
+    ? <ChevronUp size={13} className="text-primary-700 dark:text-primary-700" />
+    : <ChevronDown size={13} className="text-primary-700 dark:text-primary-700" />
 }
 
 export default function ExperimentListPage() {
@@ -58,47 +58,41 @@ export default function ExperimentListPage() {
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
-  // 查询
+  // 查询（排序交由服务端处理）
   const { data, isLoading } = useExperiments({
     page,
     page_size: 12,
     status: status || undefined,
     search: search || undefined,
+    sort_field: sortKey ?? undefined,
+    sort_order: sortKey ? sortDir : undefined,
   })
 
-  // 个人删除
+  // 个人删除（取消）
   const deleteMut = useMutation({
     mutationFn: (id: number) => experimentApi.delete(id),
     onSuccess: () => {
-      addToast({ type: 'success', message: '实验已删除' })
+      addToast({ type: 'success', message: '实验已取消' })
       qc.invalidateQueries({ queryKey: ['experiments'] })
     },
-    onError: () => addToast({ type: 'error', message: '删除失败' }),
+    onError: () => addToast({ type: 'error', message: '取消失败' }),
   })
 
-  // 批量删除
+  // 批量删除（取消）
   const batchDeleteMut = useMutation({
     mutationFn: (ids: number[]) => experimentApi.batchDelete(ids),
     onSuccess: (res) => {
-      addToast({ type: 'success', message: res.message || '批量删除成功' })
+      addToast({ type: 'success', message: res.message || '批量取消成功' })
       qc.invalidateQueries({ queryKey: ['experiments'] })
       setSelectedIds(new Set())
     },
-    onError: () => addToast({ type: 'error', message: '批量删除失败' }),
+    onError: () => addToast({ type: 'error', message: '批量取消失败' }),
   })
 
   const items = data?.items ?? []
   const total = data?.total ?? 0
 
-  // 排序
-  const sortedItems = useMemo(() => {
-    if (!sortKey) return items
-    return [...items].sort((a, b) => {
-      const av = String(a[sortKey as keyof typeof a] ?? '')
-      const bv = String(b[sortKey as keyof typeof b] ?? '')
-      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
-    })
-  }, [items, sortKey, sortDir])
+  const sortedItems = items
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
@@ -139,23 +133,34 @@ export default function ExperimentListPage() {
   }
 
   const handleDelete = (id: number) => {
-    if (!confirm('确定要删除这个实验吗？此操作不可恢复。')) return
+    if (!confirm('确定要取消这个实验吗？取消后状态将变为「已取消」。')) return
     deleteMut.mutate(id)
+  }
+
+  const handleBatchDelete = () => {
+    if (selectedIds.size === 0) return
+    if (!confirm(`确定要取消选中的 ${selectedIds.size} 个实验吗？取消后状态将变为「已取消」。`)) return
+    batchDeleteMut.mutate(Array.from(selectedIds))
   }
 
   // 导出 CSV
   const handleExportCSV = () => {
+    // CSV 注入防护：对以 = + - @ \t 开头的单元格加前缀 '，防止 Excel 公式注入
+    const escapeCell = (val: string) => {
+      const str = String(val ?? '')
+      return /^[=+\-@\t]/.test(str) ? `'${str}` : str
+    }
     const rows = [
       ['编号', '标题', '状态', '关联配方', '更新时间'],
       ...sortedItems.map((exp) => [
-        String(exp.id),
-        exp.title,
-        exp.status,
-        exp.formulaId ? `配方#${exp.formulaId}` : '-',
-        format(new Date(exp.updatedAt), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+        escapeCell(exp.code ?? String(exp.id)),
+        escapeCell(exp.title),
+        escapeCell(exp.status),
+        exp.formula_id ? `配方#${exp.formula_id}` : '-',
+        exp.updated_at ? format(new Date(exp.updated_at), 'yyyy-MM-dd HH:mm', { locale: zhCN }) : '-',
       ]),
     ]
-    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
+    const csv = rows.map((r) => r.map((c) => `"${escapeCell(String(c))}"`).join(',')).join('\n')
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -167,15 +172,15 @@ export default function ExperimentListPage() {
 
   const totalPages = Math.ceil(total / 12)
 
-  // 状态统计
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = { planned: 0, in_progress: 0, completed: 0, failed: 0, cancelled: 0 }
-    for (const exp of items) {
-      const s = exp.status
-      if (counts[s] !== undefined) counts[s]++
-    }
-    return counts
-  }, [items])
+  // 状态统计 —— 使用后端全量统计（避免仅统计当前页 12 条导致的数字漂移）
+  const { data: statsData } = useExperimentStatistics()
+  const statusCounts: Record<string, number> = {
+    planned: statsData?.planned ?? 0,
+    in_progress: statsData?.in_progress ?? 0,
+    completed: statsData?.completed ?? 0,
+    failed: statsData?.failed ?? 0,
+    cancelled: statsData?.cancelled ?? 0,
+  }
 
   return (
     <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
@@ -188,7 +193,7 @@ export default function ExperimentListPage() {
             <h2 className="text-xl font-semibold leading-snug tracking-tight">
               实验管理
             </h2>
-            <p className="mt-1 text-white/80 text-sm">
+            <p className="mt-1 text-sm text-[color:var(--text-muted)]">
               实验计划 · 执行跟踪 · 结果分析 · 共 {total} 项实验
             </p>
           </div>
@@ -206,7 +211,7 @@ export default function ExperimentListPage() {
               <Button
                 icon={<Plus size={16} />}
                 size="md"
-                className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
+                className="bg-white dark:bg-neutral-900 text-primary-700 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
               >
                 新建实验
               </Button>
@@ -243,7 +248,7 @@ export default function ExperimentListPage() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="搜索实验标题或编号…"
-              prefix={<Search size={14} className="text-neutral-400" />}
+              prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               className="flex-1 h-9 text-sm"
             />
             {(search || status || sortKey) && (
@@ -255,16 +260,16 @@ export default function ExperimentListPage() {
 
           {/* 状态筛选 */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Filter size={13} className="text-neutral-400 shrink-0" />
+            <Filter size={13} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
             <button
               onClick={() => handleFilter('')}
               className={cn(
                 'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                !status ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                !status ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                         : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >全部
-              <span className="ml-1 text-neutral-400">({total})</span>
+              <span className="ml-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({total})</span>
             </button>
             {STATUS_FILTERS.filter((f) => f.value).map((f) => (
               <button
@@ -272,13 +277,13 @@ export default function ExperimentListPage() {
                 onClick={() => handleFilter(f.value)}
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                  status === f.value ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                  status === f.value ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
                 )}
               >
                 {f.label}
                 {statusCounts[f.value] !== undefined && (
-                  <span className="ml-1 text-neutral-400">({statusCounts[f.value]})</span>
+                  <span className="ml-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({statusCounts[f.value]})</span>
                 )}
               </button>
             ))}
@@ -286,7 +291,7 @@ export default function ExperimentListPage() {
               onClick={() => setShowAdvanced(!showAdvanced)}
               className={cn(
                 'ml-auto px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                showAdvanced ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                showAdvanced ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                              : 'text-neutral-400 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >
@@ -297,7 +302,7 @@ export default function ExperimentListPage() {
           {/* 高级排序面板 */}
           {showAdvanced && (
             <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-              <span className="text-xs text-neutral-500 shrink-0">排序依据：</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">排序依据：</span>
               {[
                 { key: 'title' as SortKey, label: '标题' },
                 { key: 'code' as SortKey, label: '编号' },
@@ -326,7 +331,7 @@ export default function ExperimentListPage() {
       {/* ── 多选提示条 ── */}
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
-          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+          <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
             已选中 {selectedIds.size} 个实验
           </span>
           <Button
@@ -334,13 +339,13 @@ export default function ExperimentListPage() {
             size="sm"
             icon={<Trash2 size={13} />}
             loading={batchDeleteMut.isPending}
-            onClick={() => batchDeleteMut.mutate(Array.from(selectedIds))}
+            onClick={handleBatchDelete}
           >
-            批量删除
+            批量取消
           </Button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="ml-auto text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 transition-colors"
           >
             取消选择
           </button>
@@ -361,8 +366,8 @@ export default function ExperimentListPage() {
         </div>
       ) : sortedItems.length === 0 ? (
         <EmptyState
-          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><TestTubes size={24} className="text-primary-500 dark:text-primary-400" /></div>}
-          title={search || status ? '没有匹配的实驗' : '暂无实验'}
+          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><TestTubes size={24} className="text-primary-500 dark:text-primary-700" /></div>}
+          title={search || status ? '没有匹配的实验' : '暂无实验'}
           description={search || status ? '尝试调整搜索关键词或筛选条件' : '创建实验来验证您的配方方案'}
           action={
             <Link to="/experiments/new">
@@ -429,12 +434,12 @@ export default function ExperimentListPage() {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <FlaskConical size={13} className="text-primary-500 shrink-0" />
-                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
                         <Highlight text={exp.title} keyword={search} />
                       </span>
                     </div>
                     {exp.description && (
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500 line-clamp-1">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-400 line-clamp-1">
                         <Highlight text={exp.description} keyword={search} />
                       </p>
                     )}
@@ -448,8 +453,8 @@ export default function ExperimentListPage() {
                   </Link>
 
                   {/* 编号 */}
-                  <div className="hidden sm:block text-xs font-mono text-neutral-400 dark:text-neutral-500 shrink-0">
-                    #{exp.id}
+                  <div className="hidden sm:block text-xs font-mono text-neutral-400 dark:text-neutral-400 shrink-0">
+                    {exp.code ?? `#${exp.id}`}
                   </div>
 
                   {/* 状态 */}
@@ -462,21 +467,21 @@ export default function ExperimentListPage() {
                     {exp.formula_id ? (
                       <Link
                         to={`/formulas/${exp.formula_id}`}
-                        className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs text-primary-700 dark:text-primary-700 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <FlaskConical size={11} />
-                        {exp.formulaId ? `#${exp.formulaId}` : '-'}
+                        {exp.formula_name ?? `配方#${exp.formula_id}`}
                       </Link>
                     ) : (
-                      <span className="text-xs text-neutral-300 dark:text-neutral-600">-</span>
+                      <span className="text-xs text-neutral-300 dark:text-neutral-400">-</span>
                     )}
                   </div>
 
                   {/* 更新时间 */}
-                  <div className="hidden sm:flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500 shrink-0">
+                  <div className="hidden sm:flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-400 shrink-0">
                     <Calendar size={11} />
-                    {format(new Date(exp.updatedAt), 'MM-dd', { locale: zhCN })}
+                    {exp.updated_at ? format(new Date(exp.updated_at), 'MM-dd', { locale: zhCN }) : '-'}
                   </div>
 
                   {/* 删除按钮 */}
@@ -485,11 +490,11 @@ export default function ExperimentListPage() {
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(exp.id) }}
                     disabled={deleting}
                     className={cn(
-                      'shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-error-600 dark:hover:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors',
+                      'shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-error-600 dark:hover:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors',
                       deleting && 'opacity-50 cursor-wait',
                     )}
-                    aria-label="删除实验"
-                    title="删除"
+                    aria-label="取消实验"
+                    title="取消"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -498,7 +503,7 @@ export default function ExperimentListPage() {
                   <Link
                     to={`/doe?exp=${exp.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                    className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                     title="发送到 DOE 拟合"
                     aria-label="发送到 DOE"
                   >
@@ -510,7 +515,7 @@ export default function ExperimentListPage() {
                     <Link
                       to={`/experiments/${exp.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                      className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
                       title="查看验证详情"
                       aria-label="验证配方"
                     >

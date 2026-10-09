@@ -207,7 +207,7 @@ function hello() {
                 <textarea
                   value={element.content}
                   onChange={(e) => handleUpdateFormula(element.id, e.target.value, element.label || '')}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   rows={3}
                   placeholder="输入公式，如: E = mc^2"
                 />
@@ -218,7 +218,7 @@ function hello() {
                   type="text"
                   value={element.label || ''}
                   onChange={(e) => handleUpdateFormula(element.id, element.content, e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="公式标签"
                 />
               </div>
@@ -241,7 +241,7 @@ function hello() {
                 <select
                   value={element.language}
                   onChange={(e) => handleUpdateCode(element.id, e.target.value, element.code, element.caption || '')}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {LANGUAGES.map(lang => (
                     <option key={lang.value} value={lang.value}>{lang.label}</option>
@@ -253,7 +253,7 @@ function hello() {
                 <textarea
                   value={element.code}
                   onChange={(e) => handleUpdateCode(element.id, element.language, e.target.value, element.caption || '')}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   rows={6}
                 />
               </div>
@@ -263,7 +263,7 @@ function hello() {
                   type="text"
                   value={element.caption || ''}
                   onChange={(e) => handleUpdateCode(element.id, element.language, element.code, e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="代码标题"
                 />
               </div>
@@ -364,7 +364,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
         type="text"
         value={caption}
         onChange={(e) => onUpdate(headers, rows, e.target.value)}
-        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
         placeholder="表格标题"
       />
       <div className="overflow-x-auto">
@@ -410,7 +410,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => (
-                  <td key={cellIndex} className="border border-neutral-300 px-3 py-2">
+                  <td key={cellIndex} className="border border-neutral-300 dark:border-neutral-700 px-3 py-2">
                     <input
                       type="text"
                       value={cell}
@@ -425,7 +425,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                     />
                   </td>
                 ))}
-                <td className="border border-neutral-300 px-2 py-2">
+                <td className="border border-neutral-300 dark:border-neutral-700 px-2 py-2">
                   <button
                     type="button"
                     onClick={() => deleteRow(rowIndex)}

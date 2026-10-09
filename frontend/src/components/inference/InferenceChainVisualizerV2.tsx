@@ -214,14 +214,14 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 overflow-hidden">
       {/* 头部 */}
-      <div className="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-slate-50 to-white">
+      <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900">{chain.title}</h2>
-            {chain.description && <p className="text-sm text-neutral-500 mt-1">{chain.description}</p>}
+            {chain.description && <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{chain.description}</p>}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-500">
+            <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               步骤: {filteredSteps.length}/{chain.steps.length}
             </span>
           </div>
@@ -276,13 +276,13 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
         <div className="flex items-center gap-2">
           {/* 搜索框 */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <input
               type="text"
               placeholder="搜索步骤..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+              className="pl-9 pr-4 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
             />
           </div>
 
@@ -419,7 +419,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-neutral-500">
+              <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <BarChart3 className="w-12 h-12 mb-3 opacity-50" />
                 <p>没有找到匹配的步骤</p>
                 <p className="text-sm mt-1">请尝试调整过滤条件或搜索关键词</p>
@@ -437,7 +437,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
               <span className="text-sm font-medium text-neutral-700">当前步骤:</span>
               <span className="text-sm text-neutral-900">{currentStep.title}</span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-neutral-500">
+            <div className="flex items-center gap-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <span>类型: {typeLabels[currentStep.type]}</span>
               <span>状态: {statusLabels[currentStep.status]}</span>
               {currentStep.confidence !== undefined && (
@@ -477,7 +477,7 @@ function StatItem({ icon: Icon, label, value, color = 'text-neutral-600' }: Stat
   return (
     <div className="flex items-center gap-1.5">
       <Icon className={clsx('w-4 h-4', color)} />
-      <span className="text-xs text-neutral-500">{label}</span>
+      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</span>
       <span className={clsx('text-sm font-semibold', color)}>{value}</span>
     </div>
   );

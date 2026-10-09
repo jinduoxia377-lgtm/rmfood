@@ -244,7 +244,7 @@ export default function FormulaTemplatesPage() {
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
                 category === cat.value
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -255,7 +255,7 @@ export default function FormulaTemplatesPage() {
       </div>
 
       {/* 模板统计 */}
-      <div className="flex items-center gap-4 text-sm text-neutral-500">
+      <div className="flex items-center gap-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <span>共 {filteredTemplates.length} 个模板</span>
         {favorites.size > 0 && (
           <span className="flex items-center gap-1">
@@ -295,10 +295,10 @@ export default function FormulaTemplatesPage() {
                 {/* 头部 */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white group-hover:text-primary-600 transition-colors">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white group-hover:text-primary-700 transition-colors">
                       {template.name}
                     </h3>
-                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 flex items-center gap-1">
                       <Zap size={10} className="text-warning-500" />
                       使用 {template.usage_count} 次
                     </p>
@@ -309,7 +309,7 @@ export default function FormulaTemplatesPage() {
                   >
                     <Star
                       size={16}
-                      className={favorites.has(template.id) ? 'fill-amber-400 text-warning-400' : 'text-neutral-300'}
+                      className={favorites.has(template.id) ? 'fill-amber-400 text-warning-400' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                     />
                   </button>
                 </div>
@@ -328,23 +328,23 @@ export default function FormulaTemplatesPage() {
 
                 {/* 成分预览 */}
                 <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
-                  <p className="text-xs text-neutral-500 mb-2">成分组成</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">成分组成</p>
                   <div className="flex flex-wrap gap-1">
                     {template.ingredients.slice(0, 4).map(ing => (
                       <span key={ing.name} className="text-xs text-neutral-600 dark:text-neutral-400">
                         {ing.name}
                         {ing.role && <span className="text-primary-500 ml-0.5">({ing.role})</span>}
-                        {ing.dosage && <span className="text-neutral-400 ml-0.5">{ing.dosage}</span>}
+                        {ing.dosage && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{ing.dosage}</span>}
                       </span>
                     ))}
                     {template.ingredients.length > 4 && (
-                      <span className="text-xs text-neutral-400">+{template.ingredients.length - 4}种</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.ingredients.length - 4}种</span>
                     )}
                   </div>
                 </div>
 
                 {/* 服用方法 */}
-                <p className="text-xs text-neutral-400 mb-4 flex items-center gap-1">
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4 flex items-center gap-1">
                   <Clock size={10} />
                   {template.usage}
                 </p>
@@ -361,7 +361,7 @@ export default function FormulaTemplatesPage() {
                     使用此模板
                   </Button>
                   <button
-                    className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-primary-600 hover:border-primary-300 transition-colors"
+                    className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-primary-700 hover:border-primary-300 transition-colors"
                     title="预览配方详情"
                   >
                     <ArrowRight size={14} />
@@ -374,9 +374,9 @@ export default function FormulaTemplatesPage() {
       )}
 
       {/* 底部提示 */}
-      <div className="text-center py-6 text-sm text-neutral-400">
+      <div className="text-center py-6 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <p>没有找到合适的模板？</p>
-        <Link to="/formulas/new" className="text-primary-600 hover:text-primary-700 mt-1 inline-block">
+        <Link to="/formulas/new" className="text-primary-700 hover:text-primary-700 mt-1 inline-block">
           从空白配方开始创建
         </Link>
       </div>

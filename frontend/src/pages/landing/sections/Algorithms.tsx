@@ -83,7 +83,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
                   </span>
                 )}
               </div>
-              <div className="text-[12px] font-mono text-neutral-500">{algo.subtitle}</div>
+              <div className="text-[12px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{algo.subtitle}</div>
             </div>
           </div>
 
@@ -108,7 +108,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
           {/* 适用场景（展开时显示） */}
           {expanded && algo.applicable && (
             <div className="mb-3 pt-3" style={{ borderTop: '1px solid var(--color-neutral-100, #f1f5f9)' }}>
-              <div className="text-[12px] text-neutral-500 mb-1.5">适用场景</div>
+              <div className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">适用场景</div>
               <div className="flex flex-wrap gap-1">
                 {algo.applicable.map((s) => (
                   <span
@@ -196,7 +196,7 @@ function PerformanceTable() {
           <thead>
             <tr style={{ background: 'var(--color-neutral-50, #f8fafc)' }}>
               {['操作类型', 'P50', 'P95', 'P99', 'SLA 目标'].map((h) => (
-                <th key={h} className="px-3 py-2 text-left font-medium text-neutral-500 whitespace-nowrap">
+                <th key={h} className="px-3 py-2 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -209,7 +209,7 @@ function PerformanceTable() {
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-primary-700, #047857)' }}>{m.p50}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-secondary-700, #1d4ed8)' }}>{m.p95}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-warning-700, #b45309)' }}>{m.p99}</td>
-                <td className="px-3 py-2 font-mono text-neutral-500">{m.sla}</td>
+                <td className="px-3 py-2 font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.sla}</td>
               </tr>
             ))}
           </tbody>
@@ -252,7 +252,7 @@ export default function Algorithms() {
               >
                 优化算法引擎
               </span>
-              <span className="lp-caption text-neutral-500">7 种求解器 · 统一接口 · 自动策略选择</span>
+              <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">7 种求解器 · 统一接口 · 自动策略选择</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {optimizerAlgos.map((algo, i) => (
@@ -272,7 +272,7 @@ export default function Algorithms() {
               >
                 协同机制
               </span>
-              <span className="lp-caption text-neutral-500">5 种数学模型 · 加权综合指数 SI</span>
+              <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">5 种数学模型 · 加权综合指数 SI</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {synergyMechanisms.slice(0, 5).map((mech, i) => (
@@ -292,7 +292,7 @@ export default function Algorithms() {
               >
                 性能基准
               </span>
-              <span className="lp-caption text-neutral-500">实测于 Intel i7 · Python 3.10 · 5 成分配方</span>
+              <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实测于 Intel i7 · Python 3.10 · 5 成分配方</span>
             </div>
             <PerformanceTable />
           </div>

@@ -32,7 +32,7 @@ export default function ExperimentCompareModal({ experiments, onClose }: Props) 
             </div>
             <div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">实验数据对比</h2>
-              <p className="text-xs text-neutral-500">{experiments.length} 个实验</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{experiments.length} 个实验</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={onClose}>关闭</Button>
@@ -87,7 +87,7 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
   }
 
   if (allParams.size === 0) {
-    return <div className="text-center py-8 text-sm text-neutral-400">暂无参数数据可对比</div>
+    return <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无参数数据可对比</div>
   }
 
   const paramLabels: Record<string, string> = {
@@ -105,9 +105,9 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-200 dark:border-neutral-700">
-            <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 w-32">参数</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-32">参数</th>
             {experiments.map((exp, i) => (
-              <th key={exp.id} className="text-left py-3 px-4 text-xs font-semibold text-neutral-500">
+              <th key={exp.id} className="text-left py-3 px-4 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                   <span className="max-w-[150px] truncate">{exp.title}</span>
@@ -154,7 +154,7 @@ function DataComparison({ experiments }: { experiments: Experiment[] }) {
   }
 
   if (allParams.size === 0) {
-    return <div className="text-center py-8 text-sm text-neutral-400">暂无数据点可对比</div>
+    return <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无数据点可对比</div>
   }
 
   return (
@@ -173,9 +173,9 @@ function DataComparison({ experiments }: { experiments: Experiment[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 dark:border-neutral-700">
-              <th className="text-left py-2 px-3 text-xs font-semibold text-neutral-500">参数</th>
+              <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">参数</th>
               {experiments.map((exp, i) => (
-                <th key={exp.id} className="text-left py-2 px-3 text-xs font-semibold text-neutral-500">
+                <th key={exp.id} className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                     {exp.code}
@@ -192,7 +192,7 @@ function DataComparison({ experiments }: { experiments: Experiment[] }) {
                   const dps = allDataPoints[exp.id] || []
                   const matching = dps.filter((d: any) => d.parameter === param)
                   return (
-                    <td key={exp.id} className="py-2 px-3 text-neutral-500 font-mono text-xs">
+                    <td key={exp.id} className="py-2 px-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-mono text-xs">
                       {matching.map((d: any, idx: number) => (
                         <div key={idx}>{d.value ?? '-'} {d.unit ?? ''}</div>
                       )) || '-'}

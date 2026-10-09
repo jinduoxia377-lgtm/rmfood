@@ -55,12 +55,12 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
         <CardContent className="text-center py-12">
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <Calculator size={24} className="text-neutral-400" />
+              <Calculator size={24} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </div>
             <h4 className="text-lg font-medium text-neutral-700 dark:text-neutral-300">
               暂无成分数据
             </h4>
-            <p className="text-sm text-neutral-500 max-w-md">
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
               请添加配方成分后查看成本与营养分析
             </p>
           </div>
@@ -173,32 +173,32 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(totalCost * 100) / 100}
             </div>
-            <div className="text-xs text-neutral-500">总成本</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总成本</div>
           </div>
           <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(avgCost * 1000) / 1000}
             </div>
-            <div className="text-xs text-neutral-500">元/克</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">元/克</div>
           </div>
           <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               {totalWeight}g
             </div>
-            <div className="text-xs text-neutral-500">总重量</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总重量</div>
           </div>
         </div>
 
         {/* 营养概览 */}
         <div className="p-4 bg-success-50 dark:bg-success-900/10 rounded-xl border border-green-200 dark:border-green-800">
-          <h4 className="text-sm font-medium text-success-800 dark:text-success-300 mb-3">
+          <h4 className="text-sm font-medium text-success-800 dark:text-success-600 mb-3">
             营养成分估算
           </h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-success-700 dark:text-success-400">热量</span>
-                <span className="font-medium text-success-800 dark:text-success-300">
+                <span className="text-success-700 dark:text-success-600">热量</span>
+                <span className="font-medium text-success-800 dark:text-success-600">
                   {nutritionAnalysis.calories} kcal
                 </span>
               </div>
@@ -206,8 +206,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-success-700 dark:text-success-400">蛋白质</span>
-                <span className="font-medium text-success-800 dark:text-success-300">
+                <span className="text-success-700 dark:text-success-600">蛋白质</span>
+                <span className="font-medium text-success-800 dark:text-success-600">
                   {nutritionAnalysis.protein}g
                 </span>
               </div>
@@ -215,8 +215,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-success-700 dark:text-success-400">膳食纤维</span>
-                <span className="font-medium text-success-800 dark:text-success-300">
+                <span className="text-success-700 dark:text-success-600">膳食纤维</span>
+                <span className="font-medium text-success-800 dark:text-success-600">
                   {nutritionAnalysis.fiber}g
                 </span>
               </div>
@@ -224,8 +224,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-success-700 dark:text-success-400">每100g热量</span>
-                <span className="font-medium text-success-800 dark:text-success-300">
+                <span className="text-success-700 dark:text-success-600">每100g热量</span>
+                <span className="font-medium text-success-800 dark:text-success-600">
                   {nutritionAnalysis.caloriesPer100g} kcal
                 </span>
               </div>
@@ -252,13 +252,13 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
                         <Badge variant="success" size="sm">药食同源</Badge>
                       )}
                     </div>
-                    <div className="text-xs text-neutral-500">{item.dosage || '未知用量'}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.dosage || '未知用量'}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium text-neutral-900 dark:text-white">
                       ¥{item.estimatedCost.toFixed(2)}
                     </div>
-                    <div className="text-xs text-neutral-400">
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       {item.costRatio.toFixed(1)}%
                     </div>
                   </div>
@@ -282,7 +282,7 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
                   className="flex items-start gap-2 p-2 bg-secondary-50 dark:bg-secondary-900/10 rounded-lg text-sm"
                 >
                   <AlertCircle size={14} className="text-secondary-500 mt-0.5 shrink-0" />
-                  <span className="text-secondary-700 dark:text-secondary-400">{suggestion}</span>
+                  <span className="text-secondary-700 dark:text-secondary-700">{suggestion}</span>
                 </div>
               ))}
             </div>

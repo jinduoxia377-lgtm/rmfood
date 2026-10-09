@@ -185,7 +185,7 @@ export function CitationPanel({
     {/* 工具栏 */}
     <div className="flex items-center gap-2 p-3 border-b border-neutral-200 dark:border-neutral-700">
       <div className="flex-1 relative">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"/>
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"/>
 <input aria-label="搜索引文..." type="text" placeholder="搜索引文..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-8 pr-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"/>
       </div>
       <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
@@ -222,7 +222,7 @@ export function CitationPanel({
                   )}
                 >
                   <div className="font-medium">{config.label}</div>
-                  <div className="text-xs text-neutral-500">{config.description}</div>
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{config.description}</div>
                 </button>
               ))}
             </div>
@@ -230,7 +230,7 @@ export function CitationPanel({
         </div>
         {recentStyles.length > 0 && (
           <div className="flex items-center gap-1 ml-2">
-            <Clock className="w-3 h-3 text-neutral-400"/>
+            <Clock className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"/>
             <div className="flex gap-1">
               {recentStyles.filter(s => s !== citationStyle).slice(0, 2).map(style => (
                 <button
@@ -250,7 +250,7 @@ export function CitationPanel({
     {/* 批量操作栏 */}
     {selectedIds.size > 0 && (
       <div className="px-3 py-2 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800 flex items-center justify-between">
-        <span className="text-sm text-primary dark:text-primary-300">
+        <span className="text-sm text-primary dark:text-primary-700">
           已选择 {selectedIds.size} 项
         </span>
         <div className="flex gap-2">
@@ -294,7 +294,7 @@ export function CitationPanel({
               type="checkbox"
               checked={selectedIds.size === filteredCitations.length && filteredCitations.length > 0}
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+              className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary focus:ring-primary"
             />
             <span className="text-xs text-neutral-500 dark:text-neutral-400">全选</span>
           </div>
@@ -322,7 +322,7 @@ export function CitationPanel({
                     handleToggleSelect(citation.id);
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="mt-1 w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                  className="mt-1 w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary focus:ring-primary"
                 />
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-neutral-200 dark:bg-neutral-700 rounded-full text-xs font-medium text-neutral-600 dark:text-neutral-300">
                   {index + 1}
@@ -338,7 +338,7 @@ export function CitationPanel({
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteCitation(citation.id); }}
-                  className="p-1 text-neutral-400 hover:text-error-500 transition-colors"
+                  className="p-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors"
                 >
                   <X className="w-4 h-4"/>
                 </button>
@@ -373,7 +373,7 @@ export function CitationPanel({
             {ref}
           </div>
         ))}
-        {references.length === 0 && (<p className="text-neutral-400">添加引文后将在此显示参考文献列表</p>)}
+        {references.length === 0 && (<p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">添加引文后将在此显示参考文献列表</p>)}
       </div>
     </div>
 
@@ -478,11 +478,11 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
 
       {errors.length > 0 && (
         <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <div className="flex items-center gap-2 text-error-600 dark:text-error-400 mb-2">
+          <div className="flex items-center gap-2 text-error-600 dark:text-error-600 mb-2">
             <AlertCircle className="w-4 h-4"/>
             <span className="text-sm font-medium">请修正以下错误</span>
           </div>
-          <ul className="text-xs text-error-500 dark:text-error-300 space-y-1">
+          <ul className="text-xs text-error-500 dark:text-error-600 space-y-1">
             {errors.map((err, i) => <li key={i}>• {err}</li>)}
           </ul>
         </div>
