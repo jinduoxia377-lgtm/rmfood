@@ -81,6 +81,7 @@ interface PeptideAnalysisResult {
   ace_inhibition: ActivityScore;
   antioxidant: ActivityScore;
   antimicrobial: ActivityScore;
+  dpp4_inhibition?: ActivityScore;
   safety: SafetyInfo;
   taste: TasteInfo;
   source: SourceInfo;
@@ -97,6 +98,15 @@ interface SafetyInfo {
   is_allergen: boolean;
   is_toxic: boolean;
   digestibility: string;
+  allergen_source?: string | null;
+  allergen_evidence?: string | null;
+  toxic_source?: string | null;
+  toxic_evidence?: string | null;
+  digestibility_reason?: string | null;
+  peptic_resistance?: number;
+  proteolytic_resistance?: number;
+  overall_risk?: string;
+  warnings?: string[];
 }
 
 interface TasteInfo {
@@ -676,7 +686,10 @@ function HistoryView() {
               <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">评分</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">ACE</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗氧化</th>
+              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗菌</th>
               <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">过敏</th>
+              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">毒性</th>
+              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">消化性</th>
               <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">时间</th>
               <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
             </tr>
@@ -693,6 +706,7 @@ function HistoryView() {
                 </td>
                 <td className="px-3 py-2 text-right">{(r.ace_inhibition_score * 100).toFixed(1)}%</td>
                 <td className="px-3 py-2 text-right">{(r.antioxidant_score * 100).toFixed(1)}%</td>
+                <td className="px-3 py-2 text-right">{((r.antimicrobial_score ?? 0) * 100).toFixed(1)}%</td>
                 <td className="px-3 py-2 text-center">
                   {r.is_allergen ? (
                     <span className="text-error-500">是</span>
@@ -700,6 +714,14 @@ function HistoryView() {
                     <span className="text-success-500">否</span>
                   )}
                 </td>
+                <td className="px-3 py-2 text-center">
+                  {r.is_toxic ? (
+                    <span className="text-error-500">是</span>
+                  ) : (
+                    <span className="text-success-500">否</span>
+                  )}
+                </td>
+                <td className="px-3 py-2 text-center capitalize">{r.digestibility || '未知'}</td>
                 <td className="px-3 py-2 text-xs text-[var(--text-muted,#9A9A9F)]">
                   {new Date(r.created_at).toLocaleDateString()}
                 </td>
@@ -877,6 +899,15 @@ function DeepAnalysisView() {
 
       <Card className="p-4">
         <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Layers className="w-4 h-4 text-primary"/>二级结构预测 (Chou-Fasman)</h3>
+        <div className="flex items-center justify-between mb-3 text-xs">
+          <span className="text-[var(--text-muted)]">主导结构： <span className="font-medium text-neutral-700 dark:text-neutral-300">{(() => {
+            const a = ss?.alpha_helix ?? 0, b = ss?.beta_sheet ?? 0, c = ss?.random_coil ?? 0;
+            if (a >= b && a >= c) return 'α-螺旋';
+            if (b >= a && b >= c) return 'β-折叠';
+            return '无规卷曲';
+          })()}</span></span>
+          <span className="text-[var(--text-muted)]">聚集倾向： <span className="font-medium">{ss?.aggregation_potential ?? 'N/A'}</span></span>
+        </div>
         <div className="grid grid-cols-3 gap-3">
           {[
             ['α-螺旋 (%)', ss?.alpha_helix ?? 0, '#3b82f6'],
@@ -896,6 +927,33 @@ function DeepAnalysisView() {
           <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
             <div className="text-xs text-[var(--text-muted)] mb-1">结构序列 (H=螺旋 E=折叠 C=卷曲)</div>
             <div className="font-mono text-xs break-all">{ss.predicted_sequence}</div>
+          </div>
+        )}
+        {ss?.residue_probabilities && ss.residue_probabilities.length > 0 && (
+          <div className="mt-3">
+            <div className="text-xs text-[var(--text-muted)] mb-1">逐残基结构概率</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-2 py-1 text-left">位置</th>
+                  <th className="px-2 py-1 text-left">氨基酸</th>
+                  <th className="px-2 py-1 text-right">螺旋</th>
+                  <th className="px-2 py-1 text-right">折叠</th>
+                  <th className="px-2 py-1 text-right">卷曲</th>
+                </tr></thead>
+                <tbody>
+                  {ss.residue_probabilities.map((rp: any) => (
+                    <tr key={rp.position} className="border-b border-neutral-100 dark:border-neutral-800">
+                      <td className="px-2 py-1 font-mono">{rp.position}</td>
+                      <td className="px-2 py-1 font-mono font-medium">{rp.amino_acid}</td>
+                      <td className="px-2 py-1 text-right font-mono">{(rp.helix * 100).toFixed(0)}%</td>
+                      <td className="px-2 py-1 text-right font-mono">{(rp.sheet * 100).toFixed(0)}%</td>
+                      <td className="px-2 py-1 text-right font-mono">{(rp.coil * 100).toFixed(0)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </Card>
@@ -929,6 +987,24 @@ function DeepAnalysisView() {
                 <span className="font-mono font-medium">{String(val)}</span>
               </div>
             ))}
+            {sa?.protease_cleavage_sites?.length > 0 && (
+              <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-xs text-[var(--text-muted)] mb-1">蛋白酶切割位点</div>
+                <div className="flex flex-wrap gap-1">
+                  {sa.protease_cleavage_sites.map((site: any, i: number) => (
+                    <Badge key={i} variant="outline" size="sm">
+                      {site.protease}: pos.{site.position} ({site.site})
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {sa?.recommended_storage_conditions && (
+              <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+                <span className="text-[var(--text-muted)]">推荐储存： </span>
+                <span className="font-medium">{Array.isArray(sa.recommended_storage_conditions) ? sa.recommended_storage_conditions.join(', ') : String(sa.recommended_storage_conditions)}</span>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -2139,11 +2215,15 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <ScoreProgress label="ACE抑制活性" score={result.ace_inhibition.score} />
                   <ScoreProgress label="抗氧化活性" score={result.antioxidant.score} />
                   <ScoreProgress label="抗菌活性" score={result.antimicrobial.score} />
+                  <ScoreProgress label="DPP-IV抑制活性" score={result.dpp4_inhibition?.score ?? 0} />
                 </div>
                 <div className="mt-3 flex gap-2 flex-wrap">
                   <Badge variant={getActivityBadge(result.ace_inhibition.level)}>ACE抑制: {result.ace_inhibition.level}</Badge>
                   <Badge variant={getActivityBadge(result.antioxidant.level)}>抗氧化: {result.antioxidant.level}</Badge>
                   <Badge variant={getActivityBadge(result.antimicrobial.level)}>抗菌: {result.antimicrobial.level}</Badge>
+                  {result.dpp4_inhibition && (
+                    <Badge variant={getActivityBadge(result.dpp4_inhibition.level)}>DPP-IV: {result.dpp4_inhibition.level}</Badge>
+                  )}
                 </div>
               </Card>
 
@@ -2207,6 +2287,52 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   </div>
                 </div>
               </Card>
+
+              {/* 来源与证据 */}
+              {(result.source?.food || result.source?.database || (result.source?.references?.length ?? 0) > 0 || (result.safety?.warnings?.length ?? 0) > 0) && (
+                <Card className="p-4">
+                  <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <Database className="w-4 h-4 text-primary" />
+                    来源与证据
+                  </h3>
+                  <div className="space-y-2 text-xs">
+                    {result.source?.food && (
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-muted,#9A9A9F)]">食物来源</span>
+                        <span className="font-medium">{result.source.food}</span>
+                      </div>
+                    )}
+                    {result.source?.database && (
+                      <div className="flex justify-between">
+                        <span className="text-[var(--text-muted,#9A9A9F)]">数据库</span>
+                        <span className="font-medium">{result.source.database}</span>
+                      </div>
+                    )}
+                    {result.source?.references && result.source.references.length > 0 && (
+                      <div>
+                        <div className="text-[var(--text-muted,#9A9A9F)] mb-1">文献参考</div>
+                        <ul className="list-disc list-inside space-y-0.5">
+                          {result.source.references.map((ref: string, i: number) => (
+                            <li key={i} className="text-[var(--text-secondary,#6B7280)]">{ref}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {result.safety?.warnings && result.safety.warnings.length > 0 && (
+                      <div>
+                        <div className="text-warning-600 dark:text-warning-500 mb-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />安全警告
+                        </div>
+                        <ul className="list-disc list-inside space-y-0.5">
+                          {result.safety.warnings.map((w: string, i: number) => (
+                            <li key={i} className="text-[var(--text-secondary,#6B7280)]">{w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
 
               <div className="text-xs text-[var(--text-muted,#9A9A9F)] text-right">
                 分析时间: {new Date(result.analysis_time).toLocaleString()}
