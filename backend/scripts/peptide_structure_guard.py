@@ -130,6 +130,55 @@ CHECKS = [
         r"quantitative/predict\?\$\{params\}",
         "前端 service：quantitative/predict 必须用查询参数",
     ),
+    # 完整分析 Tab：DPP4 + 来源证据 + 安全警告
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"result\.dpp4_inhibition\?",
+        "完整分析 Tab：DPP4 抑制必须渲染（带缺失守卫）",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"来源与证据",
+        "完整分析 Tab：来源与证据卡片必须注册",
+    ),
+    # 深度分析 Tab：逐残基概率 + 聚集倾向 + 蛋白酶位点 + 储存条件
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"residue_probabilities",
+        "深度分析 Tab：逐残基结构概率表必须渲染",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"aggregation_potential",
+        "深度分析 Tab：聚集倾向必须展示",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"protease_cleavage_sites",
+        "深度分析 Tab：蛋白酶切割位点必须渲染",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"recommended_storage_conditions",
+        "深度分析 Tab：推荐储存条件必须渲染",
+    ),
+    # 历史记录 Tab：抗菌/毒性/消化性三列
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"antimicrobial_score \?\? 0",
+        "历史 Tab：抗菌评分列必须渲染（带缺失守卫）",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"r\.is_toxic",
+        "历史 Tab：毒性列必须渲染",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"r\.digestibility",
+        "历史 Tab：消化性列必须渲染",
+    ),
+
     # 前端高级工具 Tab 必须注册
     (
         "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
