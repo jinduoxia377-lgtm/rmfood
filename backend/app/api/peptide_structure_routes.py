@@ -181,6 +181,39 @@ async def batch_analyze(req: BatchAnalysisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# 外部数据源检索
+@router.post("/external-source/lookup", summary="外部数据源检索（DFBP/BioPeptideDB）")
+async def external_source_lookup(
+    sequence: str,
+    use_online: bool = True,
+):
+    """
+    在 DFBP 本地库（7540 条）+ BioPeptideDB 在线 API 中检索序列，
+    返回食物来源、活性类型、文献 DOI。在线查询不可用时静默降级。
+    """
+    try:
+        if not sequence or len(sequence) < 2:
+            raise HTTPException(status_code=422, detail="sequence 至少 2 个字符")
+        from app.services.peptide_analyzer.food_database import get_food_peptide_database
+        manager = get_food_peptide_database()
+        records = await manager.search(
+            sequence=sequence.upper(),
+            use_online=use_online,
+        )
+        return {
+            "success": True,
+            "sequence": sequence,
+            "match_count": len(records),
+            "databases_queried": ["DFBP"] + (["BioPeptideDB"] if use_online else []),
+            "records": [r.to_dict() for r in records[:20]],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"外部数据源检索失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # 高级功能API
 @router.post("/hydrolysis/simulate", summary="水解模拟")
 async def simulate_hydrolysis(sequence: str, enzymes: str = "Pepsin,Trypsin"):

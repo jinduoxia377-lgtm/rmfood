@@ -1202,7 +1202,7 @@ function SynergyView() {
 
 // ─── 高级工具组件（水解模拟 / 序列比对 / 定量预测 / 溶解度预测 / 变体生成 / 自定义优化）──────────────
 function AdvancedToolsView() {
-  const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative' | 'solubility' | 'variants' | 'customOpt'>('hydrolysis');
+  const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative' | 'solubility' | 'variants' | 'customOpt' | 'external'>('hydrolysis');
 
   const tools = [
     { key: 'hydrolysis' as const, label: '水解模拟' },
@@ -1211,6 +1211,7 @@ function AdvancedToolsView() {
     { key: 'solubility' as const, label: '溶解度' },
     { key: 'variants' as const, label: '变体生成' },
     { key: 'customOpt' as const, label: '自定义优化' },
+    { key: 'external' as const, label: '外部数据源' },
   ];
 
   return (
@@ -1234,6 +1235,7 @@ function AdvancedToolsView() {
       {tool === 'solubility' && <SolubilityPredictorView />}
       {tool === 'variants' && <VariantGeneratorView />}
       {tool === 'customOpt' && <CustomOptimizerView />}
+      {tool === 'external' && <ExternalSourceView />}
     </div>
   );
 }
@@ -1716,6 +1718,86 @@ function QuantitativePredictorView() {
             </div>
           </Card>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── 外部数据源检索 ──
+function ExternalSourceView() {
+  const [sequence, setSequence] = useState('');
+  const [useOnline, setUseOnline] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleLookup = useCallback(async () => {
+    if (!sequence.trim()) { setError('请输入肽序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.externalSourceLookup(sequence.trim().toUpperCase(), useOnline);
+      setResult(res);
+    } catch (e: any) {
+      setError(e.message || '外部检索失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequence, useOnline]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
+          <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <label className="flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+          <input type="checkbox" checked={useOnline} onChange={e => setUseOnline(e.target.checked)} />
+          同时查询 BioPeptideDB 在线 API（默认关闭，离线可用）
+        </label>
+        <Button onClick={handleLookup} disabled={loading || !sequence.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>检索中...</> : '外部数据源检索'}
+        </Button>
+        <div className="text-xs text-[var(--text-muted)]">DFBP 本地库 7540 条 + BioPeptideDB 在线（可选）</div>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium">检索结果</h3>
+            <span className="text-xs text-[var(--text-muted)]">
+              {result.databases_queried?.join(' + ')}，命中 {result.match_count} 条
+            </span>
+          </div>
+          {result.match_count === 0 ? (
+            <p className="text-xs text-[var(--text-muted)]">未命中外部数据库记录（该序列为合成序列或库中未收录）</p>
+          ) : (
+            <div className="overflow-x-auto max-h-72">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-2 py-1.5 text-left">来源库</th>
+                  <th className="px-2 py-1.5 text-left">食物来源</th>
+                  <th className="px-2 py-1.5 text-left">活性类型</th>
+                  <th className="px-2 py-1.5 text-left">活性值</th>
+                  <th className="px-2 py-1.5 text-left">来源蛋白</th>
+                  <th className="px-2 py-1.5 text-left">文献</th>
+                </tr></thead>
+                <tbody>
+                  {result.records.map((r: any, i: number) => (
+                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                      <td className="px-2 py-1.5"><Badge variant="outline" size="sm">{r.source_database}</Badge></td>
+                      <td className="px-2 py-1.5">{r.food_source || '-'}</td>
+                      <td className="px-2 py-1.5">{r.activity_type || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono">{r.activity_value != null ? `${r.activity_value} ${r.activity_unit || ''}` : '-'}</td>
+                      <td className="px-2 py-1.5">{r.source_protein || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono text-[10px]">{r.literature_doi || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );

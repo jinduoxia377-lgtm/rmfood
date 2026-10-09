@@ -549,6 +549,36 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
   }
 
   /**
+   * 外部数据源检索（DFBP 本地库 + BioPeptideDB 在线）
+   * 返回食物来源、活性类型、文献 DOI 等
+   */
+  async externalSourceLookup(sequence: string, useOnline = true): Promise<{
+    success: boolean;
+    sequence: string;
+    match_count: number;
+    databases_queried: string[];
+    records: Array<{
+      sequence: string;
+      source_protein?: string | null;
+      source_organism?: string | null;
+      activity_type?: string | null;
+      activity_value?: number | null;
+      activity_unit?: string | null;
+      molecular_weight?: number | null;
+      hydrolysis_enzyme?: string | null;
+      database_id?: string | null;
+      literature_doi?: string | null;
+      source_database: string;
+      food_source?: string | null;
+      created_at: string;
+    }>;
+  }> {
+    const params = new URLSearchParams({ sequence, use_online: String(useOnline) });
+    const response = await request.post(`/api/v1/peptide-structure/external-source/lookup?${params}`);
+    return response.data;
+  }
+
+  /**
    * 高级功能能力清单
    */
   async getCapabilities(): Promise<any> {
