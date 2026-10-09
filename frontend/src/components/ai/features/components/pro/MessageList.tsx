@@ -249,7 +249,7 @@ export function MessageList({
 					<div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 shadow-lg shadow-primary-300/40 dark:shadow-primary-900/30 flex items-center justify-center animate-pulse-slow">
 						<Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
 					</div>
-					<h3 className="text-lg font-semibold text-neutral-800">开始新对话</h3>
+					<h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">开始新对话</h3>
 					<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
@@ -274,7 +274,7 @@ export function MessageList({
 		return (
 			<div className="flex-1 flex items-center justify-center p-4">
 				<div className="text-center space-y-3">
-					<p className="text-error-600 dark:text-error-400 text-sm">{chatError.message}</p>
+					<p className="text-error-600 dark:text-error-600 text-sm">{chatError.message}</p>
 					{onRetry && (
 						<button onClick={onRetry} className="text-xs flex items-center gap-1 hover:underline mx-auto">
 							<RefreshCw className="w-3 h-3" /> 重新发送

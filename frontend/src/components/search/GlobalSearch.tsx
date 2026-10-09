@@ -166,7 +166,7 @@ export function GlobalSearch() {
       >
         <Search size={16} />
         <span className="hidden sm:inline">搜索...</span>
-        <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 text-[10px] font-mono text-neutral-400">
+        <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 text-[10px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           ⌘K
         </kbd>
       </button>
@@ -267,7 +267,7 @@ export function GlobalSearch() {
                         className={cn(
                           'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                           !activeType
-                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'
+                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
                             : 'text-neutral-500 hover:text-neutral-700',
                         )}
                       >
@@ -281,7 +281,7 @@ export function GlobalSearch() {
                           className={cn(
                             'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                             activeType === type
-                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'
+                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
                               : 'text-neutral-500 hover:text-neutral-700',
                           )}
                         >
@@ -341,7 +341,7 @@ export function GlobalSearch() {
                     {/* 无结果 */}
                     {totalResults === 0 && !isSearching && (
                       <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Search size={48} className="text-neutral-300 dark:text-neutral-600 mb-4" />
+                        <Search size={48} className="text-neutral-300 dark:text-neutral-400 mb-4" />
                         <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-1">
                           未找到 "{query}" 的相关结果
                         </h3>
@@ -354,7 +354,7 @@ export function GlobalSearch() {
                               <button
                                 key={i}
                                 onClick={() => setQuery(s)}
-                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-sm text-secondary-600 dark:text-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
+                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-sm text-secondary-600 dark:text-secondary-600 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
                               >
                                 {s}
                               </button>
@@ -418,9 +418,9 @@ function getTypeIcon(type: string, size = 16) {
 
 function getTypeColor(type: string): string {
   const colors: Record<string, string> = {
-    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400',
-    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400',
-    workflow: 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400',
+    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-600',
+    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-600',
+    workflow: 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-600',
     ingredient: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
     user: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400',
   };
