@@ -1165,6 +1165,17 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：report+share+analysis 子域控件复用情况良好——ShareDialog/ExportDialog 已复用 UI 库 Dialog/Button，原生控件较少；AdvancedFilter/SensitivityTornado 自造滑杆/图表属分析专用控件，保留现状。本轮按口径仅令牌化 + 门禁配套修复，未改控件结构。
 > **终态**：tsc 0 错（退出码 0）· `report-audit-leaks` 漏配扫描 171 → 0 · 双模式渲染探针（settled）：亮 1 / 暗 1 不达标（**优于前六域 4/24 基线**——页面层 ⌘K kbd 等项在本轮收敛；剩余 2 项仍为 /ai 页主体层已知项）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 42.28s）· vitest 29/29。
 
+> **2026-10-09 /ai 剩余散点组件扫尾批次登记（第八样板轮，/ai 域全量清零）**（提交 `b93d1ea`，主题令牌达标 + 视觉一致性）：承接前七域样板轮，按 `ai-full-scan.mjs` 全仓 /ai 目录全量扫描定位的剩余 **51 个散点文件 / 156 处漏配**做第八轮扫尾（用户「继续执行」确认：清掉剩余 /ai 散点，/ai 域彻底清零）。审计方法：`ai-full-scan.mjs` 全量扫描 + `sweep-fixes.mjs` 全局正则批量令牌化 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（51 文件 / 158 行修复，/ai 域漏配 156 → 0 全量清零）**：
+>    - 图表与数据展示：`charts/ChartComponent`（3）、`AdvancedChartRenderer`（4）、`EnhancedDataTable`（6）、`StabilityDegradationChart`（6）、`StabilityTimeSeries`（1）、`FlavorWheel3D`（2）、structured/blocks `ChartBlock`（1）/`IngredientDetailBlock`（2）/`SynergyChartBlock`（1）
+>    - 专业版 pro 组件：`pro/ChatHistory`（5）/`ChatSidebarV4`（5）/`ChatSidebar`（1）/`DetailsPanel`（1）/`FollowUpSuggestionsBar`（1）/`MessageBubble`（3）/`ThinkingProcess`（3）、`professional/PeptideAnalyzer`（8）/`CompatibilityAdvisor`（6）/`EfficacyExplainer`（4）/`ExportManager`（1）/`ProfessionalBaseComponent`（1）
+>    - 功能面板：`ChatInputArea`（6）、`SessionSidebar`（6）、`ChatSharePanel`（3）、`CommandPalette`（3）、`DialogInput`（4）、`SearchPanel`（3）、`ApiKeyConfigCenter`（4）、`ApiKeyConfigPanel`（2）、`ApiKeyDiagnosticTool`（5）、`PluginSettings`（5）、`UserProfileSettingsPanel`（1）、`BatchEditDialog`（3）、`FilterBuilder`（3）、`PrecautionBadge`（2）、`PrecautionDetailPanel`（1）、`EfficacyTagChip`（6）、`FormulaCounterBadge`（1）、`FormulaCard`（2）、`FormulaShareModal`（2）、`LanguageSwitcher`（2）
+>    - 学术报告与预测：`FormulaAcademicReport`（6）、`AcademicReportEnhanced`（4）、`StabilityPredictTab`（3）、`TastePredictTab`（3）、`ChatEnhancedDemo`（3）、`GenerateTab/components/ExportPanel`（2）、`GeneticAlgorithmPanel`（1）、`FormulaInputWindow`（1）、`PersonalizedRecommendations`（4）、`renderers/SimpleMarkdown`（2）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本全局正则（g 标志）逐行替换 + 边框/背景类补 `dark:` 配对，跳过已有 `dark:` 行。
+> 2. **结果：/ai 域（src/components/ai/ 全部 .tsx）主题令牌漏配彻底清零**（51 → 0 文件 / 156 → 0 处）。
+> 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：本批散点文件控件复用情况与前七轮一致（多数已导入 UI 库，原生控件为历史习惯）；本轮按口径仅令牌化，未改控件结构。
+> **终态**：tsc 0 错（退出码 0）· `ai-full-scan` /ai 全量扫描 51 文件 / 156 处 → 0 文件 / 0 处（**/ai 域全量清零**）· 双模式渲染探针（settled）：亮 1 / 暗 1 不达标（与第七轮终态一致，优于早期 4/24 基线；剩余 2 项仍为 /ai 页主体层已知项）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 11.29s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
