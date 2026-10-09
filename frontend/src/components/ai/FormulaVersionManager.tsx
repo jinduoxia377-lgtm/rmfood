@@ -218,10 +218,10 @@ export function FormulaVersionManager({
       <Card className="p-6">
         <div className="flex flex-col items-center text-center">
           <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
-            <History className="w-6 h-6 text-neutral-400" />
+            <History className="w-6 h-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </div>
           <h3 className="font-medium text-neutral-700 dark:text-neutral-300 mb-1">暂无版本记录</h3>
-          <p className="text-sm text-neutral-500">配方修改后将自动创建版本</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方修改后将自动创建版本</p>
         </div>
       </Card>
     )
@@ -249,7 +249,7 @@ export function FormulaVersionManager({
               </div>
               <div>
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">确认回滚</h3>
-                <p className="text-sm text-neutral-500">版本 {rollbackConfirm.versionNumber}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">版本 {rollbackConfirm.versionNumber}</p>
               </div>
             </div>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6">
@@ -292,7 +292,7 @@ export function FormulaVersionManager({
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-secondary-600 dark:text-secondary-400" />
               <span className="font-medium text-secondary-700 dark:text-secondary-300">版本历史</span>
-              <span className="text-xs text-neutral-500">({versions.length}/{maxVersions})</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({versions.length}/{maxVersions})</span>
             </div>
             {selectedVersions.length === 2 && (
               <button
@@ -507,11 +507,11 @@ function VersionItem({
               </span>
             ))}
             {version.effects.length > 2 && (
-              <span className="text-[10px] text-neutral-400">+{version.effects.length - 2}</span>
+              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{version.effects.length - 2}</span>
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] text-neutral-500">
+          <div className="flex items-center gap-3 text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {new Date(version.createdAt).toLocaleString('zh-CN', {
@@ -535,7 +535,7 @@ function VersionItem({
                   rows={3}
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <span className={`text-[10px] ${remarkText.length > 180 ? 'text-warning-500' : 'text-neutral-400'}`}>
+                  <span className={`text-[10px] ${remarkText.length > 180 ? 'text-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                     {remarkText.length}/200
                   </span>
                   {isSaving && (
@@ -565,7 +565,7 @@ function VersionItem({
           ) : (
             <>
               {version.remark && (
-                <p className="mt-1 text-xs text-neutral-500 line-clamp-2">{version.remark}</p>
+                <p className="mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2">{version.remark}</p>
               )}
 
               <div className="flex items-center gap-2 mt-2">
@@ -740,7 +740,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
             </div>
             <div>
               <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 text-lg">版本对比</h3>
-              <p className="text-xs text-neutral-500">详细对比两个版本的内容差异</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">详细对比两个版本的内容差异</p>
             </div>
           </div>
           {onClose && (
@@ -760,7 +760,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
               <span className="text-xs text-secondary-600 dark:text-secondary-400">旧版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version1.formulaName === 'string' ? version1.formulaName : '未知配方'}</div>
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
+            <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Clock className="w-3 h-3" />
               {new Date(version1.createdAt).toLocaleString('zh-CN')}
             </div>
@@ -772,7 +772,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
           </div>
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <ArrowRightLeft className="w-4 h-4 text-neutral-400" />
+              <ArrowRightLeft className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </div>
           </div>
           <div className="flex-1 p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
@@ -781,7 +781,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
               <span className="text-xs text-accent-600 dark:text-accent-400">新版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version2.formulaName === 'string' ? version2.formulaName : '未知配方'}</div>
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
+            <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Clock className="w-3 h-3" />
               {new Date(version2.createdAt).toLocaleString('zh-CN')}
             </div>
@@ -822,7 +822,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                       ? 'text-success-600'
                       : score.diff < 0
                       ? 'text-error-600'
-                      : 'text-neutral-400'
+                      : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                   }`}
                 >
                   {score.diff > 0 ? '↑' : score.diff < 0 ? '↓' : '-'} {Math.abs(score.diff).toFixed(2)}
@@ -848,7 +848,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-neutral-400">无</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>
                 )}
               </div>
             </div>
@@ -862,7 +862,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-neutral-400">无</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>
                 )}
               </div>
             </div>
@@ -876,7 +876,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-neutral-400">无</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>
                 )}
               </div>
             </div>

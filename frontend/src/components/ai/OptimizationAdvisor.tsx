@@ -583,7 +583,7 @@ export function OptimizationAdvisor({
             <div className="p-6 text-center">
               <Sparkles className="w-8 h-8 text-warning-400 mx-auto mb-2" />
               <p className="text-sm text-neutral-600 dark:text-neutral-400">当前配方已接近最优</p>
-              <p className="text-xs text-neutral-500 mt-1">暂无明显的优化空间</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">暂无明显的优化空间</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -675,7 +675,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
             <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{suggestion.title}</h4>
           </div>
 
-          <p className="text-xs text-neutral-500 line-clamp-2">{suggestion.description}</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2">{suggestion.description}</p>
 
           {suggestion.expectedImprovement && (
             <div className="flex items-center gap-1 mt-1.5">
@@ -689,9 +689,9 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
         <div className="flex flex-col items-center gap-2 shrink-0">
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-neutral-400" />
+            <ChevronUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-neutral-400" />
+            <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           )}
 
           {!isApplied && (
@@ -725,10 +725,10 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
           <div className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg space-y-2">
             {suggestion.currentValue && suggestion.suggestedValue && (
               <div>
-                <span className="text-xs text-neutral-500">调整建议：</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">调整建议：</span>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-error-500 line-through">{suggestion.currentValue}</span>
-                  <span className="text-neutral-400">→</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">→</span>
                   <span className="text-xs text-success-500 font-medium">{suggestion.suggestedValue}</span>
                 </div>
               </div>
@@ -736,13 +736,13 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
             {suggestion.reasoning && (
               <div>
-                <span className="text-xs text-neutral-500">优化原理：</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">优化原理：</span>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">{suggestion.reasoning}</p>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
-              <span className="text-xs text-neutral-500">置信度</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">置信度</span>
               <div className="flex items-center gap-2">
                 <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
@@ -782,13 +782,13 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
           onClick={onCancel}
           className="p-1 hover:bg-secondary-100 dark:hover:bg-secondary-900/40 rounded"
         >
-          <X className="w-4 h-4 text-neutral-400" />
+          <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 
       <div className="space-y-3">
         <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg">
-          <p className="text-xs text-neutral-500 mb-2">将要应用的更改：</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">将要应用的更改：</p>
           <div className="space-y-2">
             {preview.changes.map((change, idx) => (
               <div key={idx} className="flex items-center gap-2 text-xs">
@@ -796,7 +796,7 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
                 <span className="text-error-500 line-through">
                   {typeof change.before === 'object' ? JSON.stringify(change.before).slice(0, 30) + '...' : typeof change.before === 'string' ? change.before : String(change.before)}
                 </span>
-                <ArrowRight className="w-3 h-3 text-neutral-400" />
+                <ArrowRight className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <span className="text-success-500">
                   {typeof change.after === 'object' ? JSON.stringify(change.after).slice(0, 30) + '...' : typeof change.after === 'string' ? change.after : String(change.after)}
                 </span>
@@ -806,7 +806,7 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
         </div>
 
         <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg">
-          <p className="text-xs text-neutral-500 mb-2">预估评分变化：</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">预估评分变化：</p>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(preview.estimatedScoreChange).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between">
@@ -861,7 +861,7 @@ function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: S
           onClick={onCancel}
           className="p-1 hover:bg-warning-100 dark:hover:bg-warning-900/40 rounded"
         >
-          <X className="w-4 h-4 text-neutral-400" />
+          <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 
@@ -876,7 +876,7 @@ function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: S
 
       <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg mb-3">
         <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mb-1">{suggestion.title}</p>
-        <p className="text-xs text-neutral-500">{suggestion.description}</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{suggestion.description}</p>
       </div>
 
       <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 mb-3">
@@ -914,14 +914,14 @@ function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistor
     <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-neutral-500" />
+          <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">建议历史</span>
         </div>
         <button
           onClick={onClose}
           className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
         >
-          <X className="w-4 h-4 text-neutral-400" />
+          <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 
@@ -952,9 +952,9 @@ function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistor
                   }`}>
                     {entry.suggestion.priority === 'high' ? '高' : entry.suggestion.priority === 'medium' ? '中' : '低'}
                   </span>
-                  <span className="text-xs text-neutral-500 truncate">{entry.suggestion.title}</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{entry.suggestion.title}</span>
                 </div>
-                <p className="text-xs text-neutral-400 mt-1">
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                   {new Date(entry.timestamp).toLocaleString('zh-CN')}
                 </p>
               </div>
@@ -1038,8 +1038,8 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
         <div className="flex items-start gap-2">
           <Lightbulb className="w-4 h-4 text-primary-500 mt-0.5" />
           <div>
-            <p className="text-xs font-medium text-primary-700 dark:text-primary-300">优化建议</p>
-            <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
+            <p className="text-xs font-medium text-primary-700 dark:text-primary-600">优化建议</p>
+            <p className="text-xs text-primary-700 dark:text-primary-600 mt-0.5">
               配方整体表现良好，建议重点关注口感优化，可通过添加天然甜味剂提升适口性。
             </p>
           </div>

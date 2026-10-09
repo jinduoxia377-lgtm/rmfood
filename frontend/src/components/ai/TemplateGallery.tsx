@@ -244,7 +244,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
           {/* 搜索框 */}
           <div className="flex-1 w-full relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <Input
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
@@ -283,7 +283,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
           <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-md p-0.5">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
+              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-800 shadow-sm' : ''}`}
             >
               <Grid size={16} />
             </button>
@@ -301,7 +301,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
       {isLoading && (
         <div className="py-12 text-center">
           <Loader2 size={32} className="mx-auto animate-spin text-accent-600 mb-3" />
-          <p className="text-sm text-neutral-500">正在加载模板库...</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在加载模板库...</p>
         </div>
       )}
 
@@ -326,7 +326,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                 <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-1 group-hover:text-accent-600 transition-colors">
                   {template.name}
                 </h4>
-                <p className="text-xs text-neutral-500 mt-0.5">{template.category}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{template.category}</p>
               </div>
 
               <div className="flex items-center gap-1 ml-2">
@@ -352,13 +352,13 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                   </Badge>
                 ))}
                 {template.tags.length > 3 && (
-                  <span className="text-[10px] text-neutral-400">+{template.tags.length - 3}</span>
+                  <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.tags.length - 3}</span>
                 )}
               </div>
             )}
 
             {/* 统计信息 */}
-            <div className="flex items-center gap-3 text-xs text-neutral-500 mb-3 pt-2 border-t">
+            <div className="flex items-center gap-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3 pt-2 border-t">
               <span className="flex items-center gap-1">
                 <Download size={12} />
                 使用 {template.usage_count} 次
@@ -394,7 +394,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                 <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-accent-600 transition-colors">
                   {template.name}
                 </h4>
-                <p className="text-xs text-neutral-500 mt-0.5 line-clamp-1">{template.description}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-1">{template.description}</p>
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0">
@@ -404,7 +404,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                     {template.rating.toFixed(1)}
                   </span>
                 )}
-                <span className="text-xs text-neutral-400">{template.usage_count}次使用</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{template.usage_count}次使用</span>
 
                 <Button onClick={() => handlePreview(template)} variant="primary" size="sm">
                   使用
@@ -417,7 +417,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
       {/* 分页 */}
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between pt-4">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             共 {totalItems} 个模板 · 第 {currentPage}/{totalPages} 页
           </p>
 
@@ -445,7 +445,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
 
       {/* 空状态 */}
       {!isLoading && templates.length === 0 && !error && (
-        <div className="py-16 text-center text-neutral-500">
+        <div className="py-16 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <BookOpen size={48} className="mx-auto mb-3 opacity-30" />
           <p className="text-lg font-medium mb-1">暂无匹配的模板</p>
           <p className="text-sm">尝试调整搜索条件或浏览其他分类</p>
@@ -460,7 +460,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{selectedTemplate.name}</h3>
-                <p className="text-sm text-neutral-500">{selectedTemplate.category}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{selectedTemplate.category}</p>
               </div>
 
               <button
@@ -521,7 +521,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                           }
                           placeholder={`输入${varName}...`}
                         />
-                        <p className="text-[10px] text-neutral-400 mt-0.5">示例值请参考模板说明</p>
+                        <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">示例值请参考模板说明</p>
                       </div>
                     ))}
                   </div>

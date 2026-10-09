@@ -363,39 +363,54 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
         setSuccess('配置保存成功');
       }
 
-      // 当保存 LLM 或 FormulaGPT 模型配置时，尝试更新后端配置
+      // 当保存 LLM 或 FormulaGPT 模型配置时，更新后端配置
+      // D-3 收敛：LLM 改走用户级密钥通道（saveUserLlmKey，普通用户可用），
+      // 避免旧全局端点 POST /models/config（ADMIN-only）与三套入口打架。
       let backendSyncError: string | null = null;
       if (modelType === 'formula_gpt' || modelType === 'llm') {
         try {
-          // 🔒 使用 Cookie 认证 + CSRF token（与 axios 客户端一致）
-          const csrfToken = document.cookie.match(/(^| )csrf_token=([^;]+)/)?.[2] || '';
-          const response = await fetch('/api/v1/ai/models/config', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-            },
-            body: JSON.stringify({
-              provider: modelType === 'llm' ? llmProvider : 'deepseek',
-              api_key: config.apiKey,
-              base_url: config.baseUrl || (modelType === 'llm' ? llmProviderPresets[llmProvider]?.baseUrl : 'https://api.deepseek.com/v1'),
-              model: modelType === 'llm' ? llmModel : 'deepseek-chat',
-              max_tokens: 4096,
-              temperature: 0.7,
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            logger.info('✅ 更新后端配置成功:', data);
-          } else if (response.status === 401) {
-            backendSyncError = 'Token 已过期，请重新登录后再保存配置';
-            logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新失败 (401 认证失败)');
+          if (modelType === 'llm') {
+            // 用户级密钥通道：无需管理员，写入当前用户的个人 SystemConfig
+            const r = await ConfigManager.saveUserLlmKey({
+              provider: llmProvider || 'deepseek',
+              apiKey: config.apiKey || '',
+              baseUrl: config.baseUrl || llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1',
+              model: llmModel,
+            });
+            if (r.success) {
+              logger.info('✅ 个人 LLM 密钥已保存到后端');
+            } else {
+              backendSyncError = r.message || '个人密钥保存失败';
+            }
           } else {
-            const errorData = await response.json().catch(() => ({}));
-            backendSyncError = `后端配置更新失败 (${response.status}): ${errorData?.detail || '未知错误'}`;
-            logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新失败:', errorData);
+            // formula_gpt 仍走全局有参端点（ADMIN）
+            const csrfToken = document.cookie.match(/(^| )csrf_token=([^;]+)/)?.[2] || '';
+            const response = await fetch('/api/v1/ai/models/config/formula_gpt', {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+              },
+              body: JSON.stringify({
+                model_type: 'formula_gpt',
+                provider: 'deepseek',
+                api_key: config.apiKey,
+                base_url: config.baseUrl || 'https://api.deepseek.com/v1',
+                model: 'deepseek-chat',
+                max_tokens: 4096,
+                temperature: 0.7,
+              }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+              logger.info('✅ 更新后端配置成功:', data);
+            } else if (response.status === 401) {
+              backendSyncError = 'Token 已过期，请重新登录后再保存配置';
+            } else {
+              const errorData = await response.json().catch(() => ({}));
+              backendSyncError = `后端配置更新失败 (${response.status}): ${errorData?.detail || '未知错误'}`;
+            }
           }
         } catch (apiError: any) {
           backendSyncError = `后端服务不可达 (${apiError?.message || '网络错误'})`;
@@ -487,7 +502,8 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       setError(null);
       setSuccess(null);
 
-      // 🔧 确保配置已同步到后端
+      // 🔧 验活前用用户级密钥通道做一次真实调用（testUserLlmKey，不写库），
+      // 替代旧全局端点 POST /models/config（ADMIN-only）的误用。
       let syncError: string | null = null;
       if (modelType === 'llm') {
         try {
@@ -496,36 +512,23 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
           if (!currentConfig?.apiKey || currentConfig.apiKey.trim() === '') {
             syncError = 'API Key 未配置，请先输入 API Key 后再测试。';
           } else {
-            logger.info('🔄 同步配置到后端...');
-            // 🔒 使用 Cookie 认证 + CSRF token
-            const csrfToken = document.cookie.match(/(^| )csrf_token=([^;]+)/)?.[2] || '';
-            const syncResponse = await fetch('/api/v1/ai/models/config', {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-              },
-              body: JSON.stringify({
-                provider: llmProvider,
-                api_key: currentConfig.apiKey,
-                base_url: currentConfig.baseUrl || llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1',
-                model: llmModel,
-                max_tokens: 4096,
-                temperature: 0.7,
-              }),
+            logger.info('🔄 通过用户级密钥通道验活...');
+            const testResult = await ConfigManager.testUserLlmKey({
+              provider: llmProvider || 'deepseek',
+              apiKey: currentConfig.apiKey,
+              baseUrl: currentConfig.baseUrl || llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1',
+              model: llmModel,
             });
-
-            if (!syncResponse.ok) {
-              syncError = `同步配置失败 (HTTP ${syncResponse.status})。请重新登录后重试。`;
-              logger.warn('[ModelConfigPanel] 同步配置失败:', syncResponse.status);
+            if (testResult.success) {
+              logger.info('✅ 用户级密钥验活通过');
             } else {
-              logger.info('✅ 配置已同步到后端');
+              syncError = testResult.detail || '验活失败，请检查密钥或网络';
+              logger.warn('[ModelConfigPanel] 验活失败:', syncError);
             }
           }
         } catch (syncErr) {
-          syncError = `同步配置失败: ${syncErr instanceof Error ? syncErr.message : '未知错误'}`;
-          logger.warn('同步配置到后端失败（将继续测试）:', syncErr);
+          syncError = `验活失败: ${syncErr instanceof Error ? syncErr.message : '未知错误'}`;
+          logger.warn('验活失败（将继续测试）:', syncErr);
         }
       }
 
@@ -734,7 +737,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
             <Settings className="w-5 h-5 text-primary-500" />
             模型配置管理
           </h2>
-          <p className="text-sm text-neutral-500 mt-1">配置模型的 API 密钥、参数和连接设置</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">配置模型的 API 密钥、参数和连接设置</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -860,8 +863,8 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
           <TabsContent key={tab.value} value={tab.value}>
             <div className="space-y-6">
               <div className="p-4 rounded-lg bg-primary-50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800/40">
-                <h3 className="font-medium text-primary-700 dark:text-primary-300 mb-2">{tab.label}</h3>
-                <p className="text-sm text-neutral-500">{tab.description}</p>
+                <h3 className="font-medium text-primary-700 dark:text-primary-600 mb-2">{tab.label}</h3>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{tab.description}</p>
               </div>
 
               <div className="space-y-4">
@@ -947,7 +950,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                       {validationErrors.apiKey && (
                         <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
                       )}
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {llmProvider === 'deepseek' && '获取 DeepSeek API 密钥: https://platform.deepseek.com'}
                         {llmProvider === 'openai' && '获取 OpenAI API 密钥: https://platform.openai.com/api-keys'}
                         {llmProvider === 'zhipu' && '获取智谱 AI API 密钥: https://open.bigmodel.cn'}
@@ -964,7 +967,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                         placeholder="输入 API 基础 URL"
                         className="w-full"
                       />
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         当前默认: {llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1'}
                       </p>
                     </div>
@@ -993,7 +996,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                       {validationErrors.apiKey && (
                         <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
                       )}
-                      <p className="text-xs text-neutral-500">API 密钥（可选，部分模型无需密钥）</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">API 密钥（可选，部分模型无需密钥）</p>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 基础 URL</label>
@@ -1003,7 +1006,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                         placeholder="输入 API 基础 URL"
                         className="w-full"
                       />
-                      <p className="text-xs text-neutral-500">留空使用内置默认值</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">留空使用内置默认值</p>
                     </div>
                   </>
                 )}
@@ -1044,7 +1047,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                     onChange={(value) => handleConfigChange(tab.value, 'concurrencyLimit', value)}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-xs text-neutral-500">
+                  <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>1</span>
                     <span>{configs[tab.value]?.concurrencyLimit ?? 3}</span>
                     <span>10</span>
@@ -1093,7 +1096,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       <div className="mt-4">
         <button
           onClick={() => setShowAuditLog((v) => !v)}
-          className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-400 transition-colors"
         >
           <History className="w-4 h-4" />
           配置变更审计日志
@@ -1104,11 +1107,11 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
         {showAuditLog && (
           <div className="mt-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30 max-h-80 overflow-y-auto">
             {auditLogs.length === 0 ? (
-              <p className="text-sm text-neutral-400 text-center py-4">暂无变更记录</p>
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">暂无变更记录</p>
             ) : (
               <>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-neutral-500">最近 {auditLogs.length} 条记录</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">最近 {auditLogs.length} 条记录</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1125,20 +1128,20 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                       key={i}
                       className="flex items-start gap-3 p-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs"
                     >
-                      <Clock className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0 mt-0.5" />
+                      <Clock className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-neutral-700 dark:text-neutral-300">{log.action}</span>
-                          <span className="text-neutral-400">·</span>
-                          <span className="text-neutral-500">{log.userId}</span>
-                          <span className="text-neutral-400">·</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{log.userId}</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
                           <Badge variant="neutral" className="text-[10px]">{log.userRole}</Badge>
                         </div>
-                        <div className="text-neutral-400 mt-0.5">
+                        <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
                           {new Date(log.timestamp).toLocaleString('zh-CN')}
                         </div>
                         {log.details && Object.keys(log.details).length > 0 && (
-                          <div className="mt-1 text-neutral-500 font-mono break-all">
+                          <div className="mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-mono break-all">
                             {JSON.stringify(log.details)}
                           </div>
                         )}
