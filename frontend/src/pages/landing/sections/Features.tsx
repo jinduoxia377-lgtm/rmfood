@@ -63,7 +63,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
                   <span className="lp-caption font-mono shrink-0" style={{ color: 'var(--color-primary-700, #047857)' }}>{feature.keyMetric}</span>
                 )}
               </div>
-              <span className="text-[12px] text-neutral-500">{feature.tag}</span>
+              <span className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{feature.tag}</span>
             </div>
           </div>
 
@@ -78,7 +78,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               {feature.steps.map((step, i) => (
                 <li key={step.label} className="text-[12px] text-neutral-600 leading-relaxed">
                   <span className="font-medium text-neutral-700">{step.label}</span>
-                  {step.detail && <span className="text-neutral-500 ml-1">— {step.detail}</span>}
+                  {step.detail && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">— {step.detail}</span>}
                 </li>
               ))}
             </ol>

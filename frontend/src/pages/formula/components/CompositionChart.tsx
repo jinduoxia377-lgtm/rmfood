@@ -95,7 +95,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
   if (totalIngredients === 0) {
     return (
-      <div className="py-8 text-center text-neutral-400 dark:text-neutral-500">
+      <div className="py-8 text-center text-neutral-400 dark:text-neutral-400">
         <p className="text-sm">暂无成分数据</p>
         <p className="text-xs mt-1">请先添加成分后查看分布图</p>
       </div>
@@ -178,7 +178,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
                     <div className="min-w-0">
                       <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{entry.name}</span>
-                      <p className="text-[10px] text-neutral-400">{entry.value} 种</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{entry.value} 种</p>
                     </div>
                   </div>
                 ))}

@@ -86,7 +86,7 @@ export function LazyImage({
       {hasError && (
         <div className="flex items-center justify-center w-full h-full bg-neutral-100 dark:bg-neutral-800">
           <svg
-            className="w-8 h-8 text-neutral-400"
+            className="w-8 h-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

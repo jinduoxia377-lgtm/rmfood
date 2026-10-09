@@ -280,7 +280,7 @@ export const COAView: React.FC<COAViewProps> = ({
     <div className={`bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
       {/* 操作栏 */}
       {!compact && (
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-[var(--border-subtle, #e2e8f0)]">
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-[var(--border-subtle, #e2e8f0)]">
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
               coa.qualified

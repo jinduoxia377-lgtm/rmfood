@@ -24,7 +24,7 @@ const STATUS_CONFIG = {
 export function ComplianceBadge({ result, loading, compact, onFix }: Props) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-400">
+      <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
         检查中...
       </div>

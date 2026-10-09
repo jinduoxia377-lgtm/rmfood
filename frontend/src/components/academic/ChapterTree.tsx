@@ -203,7 +203,7 @@ function ChapterItem({
             {isItemSelected ? (
               <CheckSquare className="w-4 h-4 text-secondary-500" />
             ) : (
-              <Square className="w-4 h-4 text-neutral-400" />
+              <Square className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             )}
           </button>
         )}
@@ -246,7 +246,7 @@ function ChapterItem({
             />
           ) : (
             <span className="truncate flex items-center gap-2">
-              <span className="text-neutral-400 text-xs">{chapter.order}.</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{chapter.order}.</span>
               {chapter.title}
             </span>
           )}

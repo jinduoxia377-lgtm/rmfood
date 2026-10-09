@@ -184,7 +184,7 @@ export default function AgentPage() {
 
         {/* 工作流选择器 */}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-gray-400">工作流:</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">工作流:</span>
           <select
             value={workflowType}
             onChange={(e) => setWorkflowType(e.target.value)}
@@ -204,7 +204,7 @@ export default function AgentPage() {
         </div>
 
         {executedCount > 0 && (
-          <span className="ml-3 text-xs text-gray-400">
+          <span className="ml-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             已执行 {executedCount} 次
           </span>
         )}
@@ -278,7 +278,7 @@ export default function AgentPage() {
                       {ws.success ? '✓' : '⋯'}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300 font-mono">{ws.stage}</span>
-                    <span className="text-gray-400">{ws.latencyMs}ms</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ws.latencyMs}ms</span>
                     {ws.error && (
                       <span className="text-red-400 ml-1">{ws.error}</span>
                     )}
@@ -311,7 +311,7 @@ export default function AgentPage() {
                       {tc.status === 'success' ? '✓' : tc.status === 'failed' ? '✗' : '⋯'}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300 font-mono">{tc.tool}</span>
-                    <span className="text-gray-400">{tc.latencyMs}ms</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{tc.latencyMs}ms</span>
                     {tc.error && (
                       <span className="text-red-400 ml-1">{tc.error}</span>
                     )}

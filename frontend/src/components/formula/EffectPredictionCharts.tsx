@@ -148,7 +148,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
             <p className="text-xs text-neutral-600 dark:text-neutral-400">{label}</p>
             <p className="font-mono font-bold text-neutral-900 dark:text-white">
               {value}
-              {unit && <span className="text-xs text-neutral-500 ml-1">{unit}</span>}
+              {unit && <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">{unit}</span>}
             </p>
           </div>
         ))}
@@ -488,7 +488,7 @@ export function MultiFormulaComparison({ formulas, selectedFormulas = [], onForm
                   .map((f) => (
                     <td key={f.id} className="px-4 py-3 text-right font-mono">
                       {getValue(f.data)}
-                      {unit && <span className="text-neutral-500 ml-1">{unit}</span>}
+                      {unit && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">{unit}</span>}
                     </td>
                   ))}
               </tr>
@@ -499,7 +499,7 @@ export function MultiFormulaComparison({ formulas, selectedFormulas = [], onForm
 
       {/* 提示信息 */}
       {selectedFormulas.length === 0 && (
-        <div className="text-center py-8 text-neutral-500">
+        <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <GitCompare className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>请选择至少一个配方进行对比</p>
         </div>

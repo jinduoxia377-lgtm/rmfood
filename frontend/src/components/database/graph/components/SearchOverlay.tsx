@@ -39,7 +39,7 @@ export default function SearchOverlay({
             }`}
           >
             <span className="w-2.5 h-2.5 rounded-full shrink-0 ring-1.5 ring-white dark:ring-slate-900" style={{ backgroundColor: tconf?.color || '#9CA3AF' }} />
-            <span className={`flex-1 min-w-0 text-[11px] font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300'}`}>
+            <span className={`flex-1 min-w-0 text-xs font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300'}`}>
               {node.label}
             </span>
             <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${tconf?.color || '#9CA3AF'}15`, color: tconf?.color || '#6B7280' }}>
@@ -52,8 +52,8 @@ export default function SearchOverlay({
         )
       })}
       <div className="px-3 py-1.5 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
-        <span className="text-[9px] text-neutral-400">找到 {totalMatches} 个匹配</span>
-        <span className="text-[8px] text-neutral-400">↑↓ 导航 · Enter 选择</span>
+        <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">找到 {totalMatches} 个匹配</span>
+        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 选择</span>
       </div>
     </div>
   )

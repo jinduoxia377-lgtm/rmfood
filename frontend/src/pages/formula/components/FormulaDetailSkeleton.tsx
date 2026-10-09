@@ -277,7 +277,7 @@ function RecommendationsSkeleton() {
               ))}
             </div>
             <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-1.5">关键成分:</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">关键成分:</p>
               <div className="flex flex-wrap gap-1">
                 {Array.from({ length: 4 }).map((_, k) => (
                   <Skeleton key={k} width={45 + (k * 8)} height={20} radius={4} animationType="pulse" />

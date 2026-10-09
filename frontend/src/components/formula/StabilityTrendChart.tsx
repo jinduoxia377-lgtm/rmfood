@@ -79,7 +79,7 @@ export function StabilityTrendChart({ data, size = 200 }: StabilityTrendChartPro
         </p>
         <p className="text-2xl font-bold text-neutral-900 dark:text-white">
           {shelfLife > 0 ? `${shelfLife.toFixed(0)}` : '—'}
-          <span className="text-sm font-normal text-neutral-500 ml-1">月</span>
+          <span className="text-sm font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">月</span>
         </p>
       </div>
 

@@ -27,7 +27,7 @@ export const Section: React.FC<SectionProps> = ({
         <Icon size={20} className="text-neutral-500 dark:text-neutral-400" />
         <span className="font-semibold text-neutral-900 dark:text-neutral-100">{title}</span>
       </div>
-      {isExpanded ? <ChevronUp size={20} className="text-neutral-400" /> : <ChevronDown size={20} className="text-neutral-400" />}
+      {isExpanded ? <ChevronUp size={20} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> : <ChevronDown size={20} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
     </button>
     {isExpanded && (
       <div className="p-6 border-t border-neutral-200 dark:border-neutral-700">

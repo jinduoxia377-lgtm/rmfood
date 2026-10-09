@@ -110,7 +110,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
           }}
           className={cn(
             'w-5 h-5 flex items-center justify-center rounded transition-colors shrink-0',
-            hasChildren ? 'text-neutral-400 hover:text-neutral-600' : 'invisible',
+            hasChildren ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600' : 'invisible',
           )}
           aria-label={isExpanded ? '收起' : '展开'}
         >
@@ -125,7 +125,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
         {isExpanded || !hasChildren ? (
           <FolderOpen className="w-4.5 h-4.5 text-secondary-500 shrink-0" />
         ) : (
-          <Folder className="w-4.5 h-4.5 text-neutral-400 shrink-0" />
+          <Folder className="w-4.5 h-4.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
         )}
 
         {/* Name */}
@@ -147,7 +147,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
               )}
             </div>
           )}
-          <span className="inline-flex items-center gap-1 text-xs text-neutral-400">
+          <span className="inline-flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Users className="w-3.5 h-3.5" />
             {team.memberIds.length}
           </span>
@@ -164,7 +164,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(team) }}
-              className="p-1 rounded text-neutral-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+              className="p-1 rounded text-neutral-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20"
               title="编辑团队"
               aria-label={`编辑 ${team.name}`}
             >
@@ -345,9 +345,9 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5" role="tree" aria-label="团队树形结构">
           {rootTeams.length === 0 ? (
             <div className="py-12 text-center">
-              <Folder className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+              <Folder className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400 font-medium">暂无团队</p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">点击上方按钮创建第一个团队</p>
+              <p className="text-sm text-neutral-400 dark:text-neutral-400 mt-1">点击上方按钮创建第一个团队</p>
             </div>
           ) : (
             <div className="space-y-0.5">
@@ -387,7 +387,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
                 </div>
                 <button
                   onClick={() => setSelectedTeamId(null)}
-                  className="p-1 rounded text-neutral-400 hover:text-neutral-600"
+                  className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
                   aria-label="关闭详情面板"
                 >
                   <X className="w-4 h-4" />
@@ -409,13 +409,13 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
                         <MiniAvatar name={m.displayName} size={28} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">{m.displayName}</p>
-                          <p className="text-xs text-neutral-400 truncate">{m.email}</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{m.email}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-neutral-400 dark:text-neutral-500 py-4 text-center">
+                  <p className="text-sm text-neutral-400 dark:text-neutral-400 py-4 text-center">
                     该团队暂无成员
                   </p>
                 )}
@@ -423,7 +423,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
             </div>
           ) : (
             <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">
-              <Users className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+              <Users className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
               <p className="text-sm text-neutral-500 dark:text-neutral-400">选择一个团队查看详情</p>
             </div>
           )}

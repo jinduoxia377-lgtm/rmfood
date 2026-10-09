@@ -19,7 +19,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
   if (!template) {
     return (
       <div className="flex items-center justify-center h-64 border rounded-lg bg-slate-50 dark:bg-neutral-800">
-        <p className="text-neutral-400">选择一个模板进行预览</p>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">选择一个模板进行预览</p>
       </div>
     );
   }
@@ -29,7 +29,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">{template.name || '未命名模板'}</h2>
-          <p className="text-sm text-neutral-500 mt-1">{template.description || '暂无描述'}</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{template.description || '暂无描述'}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -63,7 +63,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
             ))}
           </div>
         ) : (
-          <p className="text-sm text-neutral-400">暂无章节</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无章节</p>
         )}
       </div>
 

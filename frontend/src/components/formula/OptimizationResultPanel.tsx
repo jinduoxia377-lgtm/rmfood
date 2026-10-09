@@ -25,7 +25,7 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
   if (!result) {
     return (
       <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
-        <p className="text-sm text-neutral-500 text-center">暂无优化结果</p>
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">暂无优化结果</p>
       </div>
     );
   }
@@ -94,7 +94,7 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
               {Object.entries(result.ratios).map(([name, dose]) => (
                 <div key={name} className="flex items-center justify-between text-sm">
                   <span className="text-neutral-700 dark:text-neutral-300">{name}</span>
-                  <span className="text-neutral-500">
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {dose.toFixed(1)}g ({(dose / (result.total_dosage_g || 1) * 100).toFixed(1)}%)
                   </span>
                 </div>

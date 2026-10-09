@@ -154,7 +154,7 @@ function Testimonials() {
                 </div>
                 <div>
                   <div className="lp-label font-semibold" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{t.name}</div>
-                  <div className="text-[12px] text-neutral-500">{t.role} · {t.org}</div>
+                  <div className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t.role} · {t.org}</div>
                 </div>
               </div>
             </div>

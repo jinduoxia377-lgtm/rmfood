@@ -370,7 +370,7 @@ export function AcademicReportEditor() {
     return (<div className="h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="text-6xl mb-4">📄</div>
-        <p className="text-neutral-500">正在加载文档...</p>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在加载文档...</p>
       </div>
     </div>);
   }
@@ -555,7 +555,7 @@ export function AcademicReportEditor() {
                   className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
                   title="批量选择模式"
                 >
-                  <Layers className="w-4 h-4 text-neutral-500" />
+                  <Layers className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 </button>
               )}
             </div>

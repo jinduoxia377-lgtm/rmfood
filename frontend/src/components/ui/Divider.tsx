@@ -29,7 +29,7 @@ export function Divider({
  return (
  <div
  className={cn(
-'border-neutral-200',
+'border-neutral-200 dark:border-neutral-700',
  variantClasses[variant],
  orientationClasses[orientation],
  className,

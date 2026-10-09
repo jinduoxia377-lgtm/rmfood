@@ -82,7 +82,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
           <div className="space-y-2">
             <div className="text-3xl">📄</div>
             <div className="font-medium text-gray-900 dark:text-gray-100">{file.name}</div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {(file.size / 1024).toFixed(1)} KB
             </div>
             <button
@@ -104,7 +104,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
               </span>
               {' 或拖拽文件到此处'}
             </div>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] space-y-1">
               {supportedFormats.map((f) => (
                 <div key={f}>{f}</div>
               ))}
@@ -113,7 +113,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
         )}
 
         {loading && (
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
             解析中...
           </div>

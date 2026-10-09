@@ -93,7 +93,7 @@ export default function CTABanner() {
                     <CheckCircle size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--color-primary-700, #047857)' }} />
                     <div>
                       <p className="text-[15px] font-semibold text-neutral-900">预约成功</p>
-                      <p className="text-[12px] text-neutral-500 mt-1">
+                      <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                         已收到您的预约信息（{email}），顾问将在 24 小时内与您联系。
                       </p>
                     </div>

@@ -37,7 +37,7 @@ const ROLE_COLOR: Record<string, string> = {
 export function ExplainabilityReport({ result, loading, error }: Props) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
         生成解释报告中...
       </div>
@@ -75,7 +75,7 @@ export function ExplainabilityReport({ result, loading, error }: Props) {
             ].map(({ label, value, color }) => (
               <div key={label} className="text-center">
                 <div className={`text-xl font-semibold ${color}`}>{value}</div>
-                <div className="text-xs text-gray-500">{label}</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
               </div>
             ))}
           </div>
