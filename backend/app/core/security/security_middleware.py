@@ -904,6 +904,9 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # 肽链结构分析端点豁免 CSRF（纯计算功能，不涉及用户数据变更）
         if request.url.path.startswith("/api/v1/peptide-structure"):
             return await call_next(request)
+        # PepINVENT 高级分析端点豁免 CSRF（JWT 认证 + SPA 场景，与 /ai/chat 一致）
+        if request.url.path.startswith("/api/v1/ai/peptide"):
+            return await call_next(request)
         # 配料分析端点豁免 CSRF（小程序场景，JWT认证 + 跨域）
         if request.url.path.startswith("/api/v1/ingredients"):
             return await call_next(request)
