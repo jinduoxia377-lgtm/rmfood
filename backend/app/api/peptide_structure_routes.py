@@ -196,11 +196,18 @@ async def simulate_hydrolysis(sequence: str, enzymes: str = "Pepsin,Trypsin"):
 
 @router.post("/evolution/align", summary="序列比对")
 async def align_sequences(sequences: str, matrix: str = "BLOSUM62"):
+    """两序列 Needleman-Wunsch 比对。matrix 参数保留以兼容调用方，当前算法使用内置替换矩阵。"""
     try:
         seq_list = [s.strip() for s in sequences.split(",")]
+        if len(seq_list) != 2:
+            raise HTTPException(status_code=422, detail="需恰好提供 2 条序列（逗号分隔）")
+        if not seq_list[0] or not seq_list[1]:
+            raise HTTPException(status_code=422, detail="序列不能为空")
         from app.services.peptide_analyzer.advanced_analysis import EvolutionAnalyzer
         analyzer = EvolutionAnalyzer()
-        return analyzer.align(seq_list, matrix)
+        return analyzer.align_sequences(seq_list[0], seq_list[1])
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"序列比对失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -208,10 +215,20 @@ async def align_sequences(sequences: str, matrix: str = "BLOSUM62"):
 
 @router.post("/quantitative/predict", summary="定量预测")
 async def quantitative_predict(sequence: str, model: str = "QSAR"):
+    """QSAR 定量预测：ACE 抑制 IC50 + 抗氧化活性。model 参数保留兼容。"""
     try:
+        if not sequence or not sequence.strip():
+            raise HTTPException(status_code=422, detail="sequence 不能为空")
         from app.services.peptide_analyzer.advanced_analysis import QuantitativePredictor
         predictor = QuantitativePredictor()
-        return await predictor.predict(sequence, model)
+        return {
+            "sequence": sequence,
+            "model": model,
+            "ace_inhibition": predictor.predict_ace_ic50(sequence),
+            "antioxidant": predictor.predict_antioxidant_activity(sequence),
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"定量预测失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
