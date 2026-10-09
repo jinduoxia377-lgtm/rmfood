@@ -1184,6 +1184,11 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **结果：/ai 页双模式渲染探针 亮 0 / 暗 0 不达标** —— 前八轮遗留的最后 2 项（⌘K kbd + 开始新对话标题）全部达标，`/ai` 页（含主体层 + 12 子功能域）对比度全量达标。
 > **终态**：tsc 0 错（退出码 0）· 双模式渲染探针（settled）：**亮 0 / 暗 0 不达标**（此前亮 1 / 暗 1）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 1m 12s）· vitest 29/29。
 
+> **2026-10-09 /ai 主题规范化最终复核验收**（无新增代码改动，仅验收确认；用户「下一步」确认）：承接九轮样板轮（`4ff6b78` → `6ca1ae2`），对前端全仓做主题规范化最终复核。结论：
+> 1. **全仓扫描（final-full-scan.mjs）**：/ai 域（`src/components/ai/` 全部 .tsx）漏配 **0 处 / 0 文件** —— 九轮样板轮全部生效，/ai 域主题令牌漏配彻底清零；非 /ai 域剩余 **1228 处 / 193 文件**（TOP：UserManagementPage 58 / DashboardOverview 48 / FormulaCompare 37 / FormulaDetailPage 34 等，完整报告见 `RMFOOD-主题规范化最终复核报告.md`），记为独立后续工作项（非本轮 /ai 规范化范围）。
+> 2. **验证终态全绿**：双模式渲染探针（/ai 页）**亮 0 / 暗 0 不达标** · 14 门禁 13 pass / 0 fail / 0 skip（GATE-05 达标，GATE-09 合法 warn）· tsc 0 错 · vitest 29/29 · build ✓。
+> **结论**：/ai 主题规范化九轮样板轮全部完成并验收通过。非 /ai 页面域剩余漏配建议单独立项按同模板推进（优先 TOP 20）。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
