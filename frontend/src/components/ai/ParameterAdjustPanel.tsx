@@ -149,9 +149,9 @@ export function ParameterAdjustPanel({
           <span className="font-medium text-accent-700 dark:text-accent-300">多维度参数调整</span>
         </div>
         {expanded ? (
-          <ChevronUp className="w-4 h-4 text-neutral-400" />
+          <ChevronUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-neutral-400" />
+          <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         )}
       </button>
 
@@ -188,7 +188,7 @@ export function ParameterAdjustPanel({
             </div>
             <div className="mt-3 p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-neutral-500">综合口感评分</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合口感评分</span>
                 <span className="font-medium text-accent-600 dark:text-accent-400">
                   {tasteScore.toFixed(2)}
                 </span>
@@ -216,11 +216,11 @@ export function ParameterAdjustPanel({
                   type="checkbox"
                   checked={safety.excludeRestricted}
                   onChange={(e) => handleSafetyChange({ excludeRestricted: e.target.checked })}
-                  className="rounded border-neutral-300 text-error-500 focus:ring-red-500"
+                  className="rounded border-neutral-300 dark:border-neutral-700 text-error-500 focus:ring-red-500"
                 />
                 <span>排除受限制成分</span>
               </label>
-              <div className="flex items-center gap-2 text-xs text-neutral-500">
+              <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <span>最低安全评分：</span>
                 <span className="font-medium">{safety.minSafetyScore.toFixed(1)}</span>
               </div>
@@ -239,7 +239,7 @@ export function ParameterAdjustPanel({
                   placeholder="最低"
                   className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
-                <span className="text-neutral-400">-</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
                 <input
                   type="number"
                   value={cost.maxCost}
@@ -247,14 +247,14 @@ export function ParameterAdjustPanel({
                   placeholder="最高"
                   className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
-                <span className="text-neutral-500 text-sm">元/kg</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">元/kg</span>
               </div>
               <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={cost.optimizeCost}
                   onChange={(e) => handleCostChange({ optimizeCost: e.target.checked })}
-                  className="rounded border-neutral-300 text-accent-500 focus:ring-purple-500"
+                  className="rounded border-neutral-300 dark:border-neutral-700 text-accent-500 focus:ring-purple-500"
                 />
                 <span>优化成本（保持功效下降低成本）</span>
               </label>

@@ -21,7 +21,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
 
   if (!candidates || candidates.length < 2) {
     return (
-      <Card className="p-6 text-center text-neutral-500">
+      <Card className="p-6 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <p className="text-sm">需要至少2个候选方案才能进行对比分析</p>
       </Card>
     );
@@ -64,9 +64,9 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
       case 'up':
         return <TrendingUp className="w-3 h-3 text-danger-500" />;
       case 'down':
-        return <TrendingDown className="w-3 h-3 text-neutral-400" />;
+        return <TrendingDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />;
       default:
-        return <Minus className="w-3 h-3 text-neutral-300" />;
+        return <Minus className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />;
     }
   };
 
@@ -79,7 +79,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
       return `${baseClass} bg-danger-50/30 dark:bg-danger-900/10 text-danger-600 dark:text-danger-400`;
     }
     if (diff === 'down') {
-      return `${baseClass} text-neutral-400`;
+      return `${baseClass} text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`;
     }
     return `${baseClass} text-neutral-600 dark:text-neutral-400`;
   };
@@ -155,7 +155,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
                   key={i}
                   className={`px-4 py-3 text-center text-xs font-bold border-b-2 border-primary-300 dark:border-primary-600 ${
                     selectedIndex === i
-                      ? 'bg-primary-100/50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                      ? 'bg-primary-100/50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600'
                       : 'text-primary-800 dark:text-primary-200'
                   }`}
                 >
@@ -216,13 +216,13 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
                       </div>
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-xs text-neutral-500 text-center">
+                  <td className="px-4 py-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
                     {compare.differences.filter((d) => d === 'up').length > 0 && (
                       <span className="text-danger-500">
                         方案 {compare.differences.findIndex((d) => d === 'up') + 1} 更优
                       </span>
                     )}
-                    {compare.differences.every((d) => d === 'same') && <span className="text-neutral-400">持平</span>}
+                    {compare.differences.every((d) => d === 'same') && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">持平</span>}
                   </td>
                 </tr>
               );
@@ -245,13 +245,13 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
                   )}
                 </td>
               ))}
-              <td className="px-4 py-3 text-xs text-neutral-500 text-center">
+              <td className="px-4 py-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
                 {safetyOk[0] !== safetyOk[1] && (
                   <Badge variant="warning" size="sm">
                     安全状态不同
                   </Badge>
                 )}
-                {safetyOk[0] === safetyOk[1] && <span className="text-neutral-400">状态一致</span>}
+                {safetyOk[0] === safetyOk[1] && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">状态一致</span>}
               </td>
             </tr>
 
@@ -269,9 +269,9 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
               ))}
               <td className="px-4 py-3 text-xs text-center">
                 {herbCounts[0] !== herbCounts[1] && (
-                  <span className="text-neutral-500">相差 {Math.abs(herbCounts[0] - herbCounts[1])} 味</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相差 {Math.abs(herbCounts[0] - herbCounts[1])} 味</span>
                 )}
-                {herbCounts[0] === herbCounts[1] && <span className="text-neutral-400">数量相同</span>}
+                {herbCounts[0] === herbCounts[1] && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">数量相同</span>}
               </td>
             </tr>
 
@@ -289,9 +289,9 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
               ))}
               <td className="px-4 py-3 text-xs text-center">
                 {peptideCounts[0] !== peptideCounts[1] && (
-                  <span className="text-neutral-500">相差 {Math.abs(peptideCounts[0] - peptideCounts[1])} 个</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相差 {Math.abs(peptideCounts[0] - peptideCounts[1])} 个</span>
                 )}
-                {peptideCounts[0] === peptideCounts[1] && <span className="text-neutral-400">数量相同</span>}
+                {peptideCounts[0] === peptideCounts[1] && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">数量相同</span>}
               </td>
             </tr>
           </tbody>
@@ -328,7 +328,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {candidates.map((c, i) => (
               <div key={i} className="bg-slate-50/50 dark:bg-neutral-800/50 rounded-lg p-3">
-                <div className="text-xs font-medium text-neutral-500 mb-2">
+                <div className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">
                   方案 {i + 1}: {typeof c.formula_name === 'string' ? c.formula_name : '未知配方'}
                 </div>
                 <div className="space-y-1">

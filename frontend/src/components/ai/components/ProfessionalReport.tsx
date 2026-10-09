@@ -209,7 +209,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       case 'appendix':
         return renderAppendix(section)
       default:
-        return <div className="p-8 text-center text-neutral-500">未知章节类型</div>
+        return <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未知章节类型</div>
     }
   }
 
@@ -428,10 +428,10 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         <details key={idx} className="bg-white dark:bg-neutral-800 rounded-lg shadow border border-neutral-200 dark:border-neutral-700 group">
           <summary className="p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <ChevronRight className="w-5 h-5 text-neutral-400 group-open:rotate-90 transition-transform" />
+              <ChevronRight className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-open:rotate-90 transition-transform" />
               <div>
                 <h4 className="font-semibold text-neutral-900 dark:text-white">{ingredient.name}</h4>
-                {ingredient.latinName && <p className="text-sm text-neutral-500 italic">{ingredient.latinName}</p>}
+                {ingredient.latinName && <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">{ingredient.latinName}</p>}
               </div>
             </div>
             <span className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900 text-secondary-800 dark:text-secondary-200 text-xs rounded-full">
@@ -588,7 +588,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <Loader2 className="w-16 h-16 animate-spin text-secondary-600 mx-auto" />
             <p className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">正在生成专业报告...</p>
             <p className="text-neutral-500 dark:text-neutral-400">请稍候，正在整合分析数据</p>
-            <div className="mt-4 space-y-2 text-sm text-neutral-400">
+            <div className="mt-4 space-y-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <p>✓ 提取配方数据</p>
               <p>✓ 分析成分信息</p>
               <p>✓ 评估协同效应</p>
@@ -656,7 +656,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
   // ==================== Main Render ====================
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 print:p-0 print:bg-white">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 print:p-0 print:bg-white dark:bg-neutral-800">
       <div className="bg-white dark:bg-neutral-900 w-full max-w-7xl h-[95vh] rounded-xl shadow-2xl flex flex-col overflow-hidden print:h-auto print:shadow-none print:rounded-none">
 
         {/* Header Toolbar */}
@@ -775,7 +775,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           {/* Left Sidebar Navigation */}
           <nav className="w-56 bg-slate-50 dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto print:hidden">
             <div className="p-4">
-              <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">目录导航</h3>
+              <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">目录导航</h3>
               <ul className="space-y-1">
                 {sortedSections.map((section) => (
                   <li key={section.type}>

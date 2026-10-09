@@ -65,7 +65,7 @@ const SOURCE_CONFIG: Record<IngredientSource, {
   },
   [IngredientSource.PEPTIDE]: {
     label: '食源性多肽',
-    color: 'text-primary-600 dark:text-primary-400',
+    color: 'text-primary-700 dark:text-primary-600',
     bgColor: 'bg-primary-50 dark:bg-primary-900/20',
     borderColor: 'border-l-primary-500',
     icon: <Dna className="w-3.5 h-3.5" />,
@@ -210,7 +210,7 @@ const IngredientRow = memo(({
             {tagMatchStatus === 'success' && matchedTags && (() => {
               const tags = matchedTags.get(ingredient.name) || []
               if (tags.length === 0) {
-                return <span className="text-xs text-neutral-400">—</span>
+                return <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">—</span>
               }
               return (
                 <EfficacyTagList
@@ -231,7 +231,7 @@ const IngredientRow = memo(({
             )}
 
             {(tagMatchStatus === 'idle' || !matchedTags) && (ingredient.efficacyTags ?? []).length === 0 && tagMatchStatus !== 'loading' && (
-              <span className="text-xs text-neutral-400">—</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">—</span>
             )}
           </div>
         </td>
@@ -248,7 +248,7 @@ const IngredientRow = memo(({
               </div>
             ))}
             {(ingredient.precautions ?? []).length > 2 && (
-              <span className="text-xs text-neutral-400">+{(ingredient.precautions ?? []).length - 2}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{(ingredient.precautions ?? []).length - 2}</span>
             )}
           </div>
         </td>
@@ -272,7 +272,7 @@ const IngredientRow = memo(({
             aria-label={isExpanded ? '收起详情' : '展开详情'}
             aria-expanded={isExpanded}
           >
-            <Info className={`w-4 h-4 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <Info className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
         </td>
       </tr>
@@ -308,7 +308,7 @@ const IngredientDetail = memo(({ ingredient }: { ingredient: Ingredient }) => (
       </h4>
       <p className="text-neutral-600 dark:text-neutral-400 font-mono">
         {(ingredient.amount * 0.8).toFixed(0)}-{(ingredient.amount * 1.2).toFixed(0)}{ingredient.unit}
-        <span className="block text-xs mt-1 text-neutral-500">±20% 安全范围</span>
+        <span className="block text-xs mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">±20% 安全范围</span>
       </p>
     </div>
 
@@ -606,7 +606,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
   const getSortIcon = (field: SortField) => {
     if (sortConfig.field !== field) {
-      return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+      return <ArrowUpDown className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity" />
     }
     return sortConfig.direction === 'asc' ? (
       <ArrowUp className="w-3.5 h-3.5 text-primary-500" />
@@ -650,7 +650,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
     <div className="w-full space-y-4" role="region" aria-label="配方结构化表格">
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="search"
             placeholder="搜索成分名称..."
@@ -678,7 +678,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                   type="checkbox"
                   checked={selectedSources.has(key as IngredientSource)}
                   onChange={() => toggleSourceFilter(key as IngredientSource)}
-                  className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                  className="rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
                   aria-label={`筛选${config.label}`}
                 />
                 <span className={`text-xs ${config.color}`}>{config.label}</span>
@@ -699,7 +699,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                 px-2.5 py-1 text-xs rounded-full transition-all duration-200
                 border
                 ${selectedTags.has(tag)
-                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border-primary-300 dark:border-primary-700'
+                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 border-primary-300 dark:border-primary-700'
                   : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300 dark:hover:border-neutral-500'
                 }
               `}
@@ -711,7 +711,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
           {selectedTags.size > 0 && (
             <button
               onClick={() => setSelectedTags(new Set())}
-              className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+              className="text-xs text-primary-700 dark:text-primary-600 hover:underline"
             >
               清除全部
             </button>
@@ -809,7 +809,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                           {(searchQuery || selectedTags.size > 0 || selectedSources.size !== Object.values(IngredientSource).length) && '，请检查以下条件：'}
                         </p>
                         {searchQuery && (
-                          <p className="text-xs text-primary-600 dark:text-primary-400">
+                          <p className="text-xs text-primary-700 dark:text-primary-600">
                             搜索关键词: "{searchQuery}"
                           </p>
                         )}
@@ -831,7 +831,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                         setSelectedSources(new Set(Object.values(IngredientSource)))
                         setSelectedTags(new Set())
                       }}
-                      className="mt-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                      className="mt-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
                     >
                       重置所有筛选条件
                     </button>

@@ -362,7 +362,7 @@ export function AIGenerator({
                     }
                     className="w-full accent-blue-600"
                   />
-                  <div className="flex justify-between text-[10px] text-neutral-500 mt-1">
+                  <div className="flex justify-between text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     <span>保守</span>
                     <span>创新</span>
                   </div>
@@ -552,7 +552,7 @@ export function AIGenerator({
           </div>
 
           {history.length === 0 ? (
-            <p className="text-sm text-neutral-500 text-center py-8">暂无历史记录</p>
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-8">暂无历史记录</p>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {history.map((item) => (
@@ -568,7 +568,7 @@ export function AIGenerator({
                       <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 line-clamp-2">
                         {item.description.slice(0, 80)}...
                       </p>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                         {new Date(item.timestamp).toLocaleString('zh-CN')} ·{' '}
                         {item.params.tone} · {item.params.length}
                       </p>

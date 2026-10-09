@@ -189,7 +189,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         </div>
         <div>
           <h2 className="text-lg font-semibold">神经网络配方生成</h2>
-          <p className="text-sm text-neutral-500">基于深度学习模型智能生成配方方案</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">基于深度学习模型智能生成配方方案</p>
         </div>
       </div>
 
@@ -320,7 +320,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                 className="input resize-none w-full"
                 rows={3}
               />
-              <p className="text-xs text-neutral-500 mt-1">多个功效用逗号分隔</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">多个功效用逗号分隔</p>
             </div>
           </div>
         </TabsContent>
@@ -330,7 +330,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">优先级权重调节</label>
-            <span className="text-xs text-neutral-500">调整各项权重影响配方生成倾向</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">调整各项权重影响配方生成倾向</span>
           </div>
           <div className="space-y-4">
             {[
@@ -467,7 +467,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                       <h4 className="font-semibold text-neutral-900 dark:text-neutral-100">
                         {typeof candidate.formula_name === 'string' ? candidate.formula_name : '未知配方'}
                       </h4>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                         协同 {(candidate.synergy_score ?? 0).toFixed(2)} | 口感{' '}
                         {(candidate.taste_score ?? 0).toFixed(2)} | 稳定性 {(candidate.stability_score ?? 0).toFixed(2)}
                       </p>
@@ -484,12 +484,12 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                       >
                         {(candidate.overall_score ?? 0).toFixed(2)}
                       </div>
-                      <div className="text-xs text-neutral-500">综合评分</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合评分</div>
                     </div>
                   </div>
 
                   <div className="mb-3">
-                    <span className="text-xs font-medium text-neutral-500">药材组成：</span>
+                    <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">药材组成：</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {candidate.herb_combination?.map((herb, i) => (
                         <Badge key={i} variant="neutral" size="sm">
