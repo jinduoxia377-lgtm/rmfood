@@ -1153,6 +1153,18 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：advanced-analysis 域多数组件已导入 UI 库，但 AdvancedPeptideDesign（15 原生 button/6 input）、FormulaVersionManager（15）、ProfessionalReport（12）、OptimizationAdvisor（12）、StructureEditor（7 button/5 input）仍自造控件，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
 > **终态**：tsc 0 错（退出码 0）· `advanced-audit-leaks` 漏配扫描 146 → 0 · 双模式渲染探针（settled）：亮 1 / 暗 26 不达标（探针重跑后与五个前序域一致，均为 /ai 页主体层 SearchModal/CommandPalette 的 ⌘K/ESC kbd、页面导航 tab 标签、EmptyStateCard 快捷问题 的已知伪阳性——effectiveBg 走到未随 dark 切换的浅色背景；经逐项核对 26 项 className 均出自页面主体层 / chat 域 / SearchModal，无一来自本次改动的 13 个 advanced/config 组件）· 14 门禁 13 pass / 0 fail / 0 skip（首次并行跑时 GATE-05 一度报失败，系门禁读 dist/assets 时与 build 并行写入竞争的时序问题；单独干净重跑 13/0/0 通过，GATE-05 达标）/ 1 合法 warn（GATE-09）· build ✅（vite）· vitest 29/29。
 
+> **2026-10-09 /ai report+share+analysis 子域样板轮登记**（提交 `85e3752`，主题令牌达标 + 视觉一致性）：承接 chat（426ecf3 + 4d951c8）、agent-workflow（0e5ef0f）、formula-generation（01d5dbe）、safety（f153d21）、thinking-viz（3017a94）、advanced-analysis + config（86f01b5）域样板轮，复用同一模板对 **report+share+analysis（报告/共享/敏感与协同分析）子域** 做第七轮专业规范审计与修复（用户「继续下一步」确认：全量扫描后推进下一批密集子域）。审计方法：`report-audit-leaks.mjs`（全仓 `/ai` 全量扫描定位剩余 69 文件 / 327 处后聚焦本批 18 文件）+ `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（18 文件 / 171 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 高级分析与提示优化：`AdvancedPeptideAnalyzer`（14 处）、`PromptOptimizer`（14 处：原始分数/优化后预估/提升幅度/空态×2/选中行 bg-slate-50 补 dark/结构类型/总体得分/综合效果评分/Sparkles/ChevronRight）
+>    - 学术报告与敏感/协同：`AcademicReportTab`（13 处：输入框 border-neutral-300 ×5/分隔线/引用块/hr）、`SensitivityAnalysis`（12 处：实时计算结果/表头×2/图例/空态/单位「分」/指标标签）、`SynergyTab`（12 处：综合协同评分/协同配对/配伍禁忌/空态/配对列表）、`SensitivityTornado`（8 处：敏感性/基准值/变化范围/效应大小/显著性/Info/百分比）
+>    - 共享与导出：`ShareDialog`（11 处：标题栏 border/tab 下划线/未选中 tab/输入框×4/日期/卡片标题）、`ExportDialog`（8 处：标题栏 border/X/卡片×2/desc/分隔符/选项列表/输入框）、`FormulaSharePanel`（7 处：副标题/X/分享预览/统计行）
+>    - 聊天与会话：`EnhancedAIChatPanel`（9 处：Info/Minimize2/Maximize2/desc/单位/label/空态×3）、`MemoizedChatMessage`（8 处：行号/代码块复制/打字机速度/时间戳/推理标签）、`SessionHistory`（7 处：标签×2/+N/会话项/Search/空态/计数）、`VersionHistory`（8 处：标签/未选中/Chevron×2/当前版本/版本计数/元信息/空态）
+>    - 视图与推荐：`ViewManager`（9 处）、`AIRecommendationSidebar`（8 处）、`FormulaPanel`（8 处）、`AdvancedFilter`（9 处：置信度区间×2/统计/减号/单位「种」/可用标签/未显示提示/空态）、`IngredientAnalyzer`（7 处：输入框/科属/分隔线/UniProt/模态头/关闭/序列块）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本全局正则（g 标志）逐行替换 + 边框/背景类补 `dark:` 配对，跳过已有 `dark:` 行。
+> 2. **附带修复 GATE-05 存量缺陷（非本子域文件，经 stash 验证与本轮 18 文件无关）**：本轮门禁首次出现 GATE-05 失败——`/formulas`（`FormulaListPage` L905 计数徽章 `text-white/75 bg-white`，亮色白底白字实测 1:1）与 `/analytics`（`AnalyticsPage` 状态药丸 `bg-success-500/20 text-white`、`bg-warning-500/20 text-white` 浅底白字）两页既有缺陷（此前门禁因页面数据未全量渲染未扫描到该 2 元素，本轮数据全量后 17 元素中暴露 2 处）。按 D-50 表面令牌配套原则修复：徽章 → `text-neutral-700 dark:text-white/75 bg-white dark:bg-neutral-900/15`；状态药丸 → 亮色深色前景（`text-success-800`/`text-warning-800`）+ dark 浅色前景（`dark:text-success-200` 等）。修复后 14 门禁 13/0/0（GATE-05 重新达标）。
+> 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：report+share+analysis 子域控件复用情况良好——ShareDialog/ExportDialog 已复用 UI 库 Dialog/Button，原生控件较少；AdvancedFilter/SensitivityTornado 自造滑杆/图表属分析专用控件，保留现状。本轮按口径仅令牌化 + 门禁配套修复，未改控件结构。
+> **终态**：tsc 0 错（退出码 0）· `report-audit-leaks` 漏配扫描 171 → 0 · 双模式渲染探针（settled）：亮 1 / 暗 1 不达标（**优于前六域 4/24 基线**——页面层 ⌘K kbd 等项在本轮收敛；剩余 2 项仍为 /ai 页主体层已知项）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 42.28s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
