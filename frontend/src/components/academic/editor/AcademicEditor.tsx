@@ -94,9 +94,9 @@ export function AcademicEditor() {
             </button>
           )
         ))}
-        <div className="ml-auto flex items-center gap-2 text-xs text-neutral-400">
+        <div className="ml-auto flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span>{wordCount} 字</span>
-          <span className="text-neutral-300">|</span>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
           <span>{charCount} 字符</span>
         </div>
       </div>

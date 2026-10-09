@@ -163,15 +163,15 @@ export function FileHistory() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <div className="text-xs text-neutral-500">格式</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">格式</div>
                       <div className="text-sm">{formatName[item.format]}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-neutral-500">大小</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">大小</div>
                       <div className="text-sm">{(item.size / 1024).toFixed(2)} KB</div>
                     </div>
                     <div className="col-span-2">
-                      <div className="text-xs text-neutral-500">创建时间</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">创建时间</div>
                       <div className="text-sm">{new Date(item.created_at).toLocaleString('zh-CN')}</div>
                     </div>
                   </div>

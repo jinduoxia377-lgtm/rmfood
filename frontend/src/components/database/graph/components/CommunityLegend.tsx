@@ -8,7 +8,7 @@ export default function CommunityLegend({ generatedCommunityColors, communities 
   if (communities.size === 0) return null
   return (
     <div className="absolute bottom-3 left-3 z-40 flex flex-wrap gap-1.5 p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-lg border border-neutral-200/60 dark:border-neutral-700/40 shadow-md max-w-xs">
-      <span className="text-[9px] font-semibold text-neutral-500 w-full mb-0.5">社群着色 ({new Set(communities.values()).size}个)</span>
+      <span className="text-[9px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-full mb-0.5">社群着色 ({new Set(communities.values()).size}个)</span>
       {Object.entries(generatedCommunityColors).slice(0, 10).map(([id, color]) => {
         const count = [...communities.values()].filter(v => v === Number(id)).length
         return (
@@ -19,7 +19,7 @@ export default function CommunityLegend({ generatedCommunityColors, communities 
         )
       })}
       {Object.keys(generatedCommunityColors).length > 10 && (
-        <span className="text-[9px] text-neutral-400 italic">+{Object.keys(generatedCommunityColors).length - 10}...</span>
+        <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">+{Object.keys(generatedCommunityColors).length - 10}...</span>
       )}
     </div>
   )

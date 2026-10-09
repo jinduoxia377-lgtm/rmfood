@@ -138,7 +138,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">{filename}</p>
-            <p className="text-xs text-neutral-500">{formatName[format]} 格式</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatName[format]} 格式</p>
           </div>
           <Badge className={status ? statusColor[status.status] : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700'}>
             {status ? (
@@ -155,7 +155,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
         {status && status.status !== 'completed' && status.status !== 'failed' && (
           <div>
             <Progress value={status.progress} className="w-full" />
-            <p className="text-xs text-neutral-500 mt-2">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
               处理进度: {status.progress}%
             </p>
           </div>
@@ -216,7 +216,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
               />
             ) : (
               <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   此文件格式不支持在线预览，请下载后查看
                 </p>
                 <Button

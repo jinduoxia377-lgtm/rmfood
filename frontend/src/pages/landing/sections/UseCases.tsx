@@ -104,10 +104,10 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
               <tbody>
                 {item.metrics.map((m, i) => (
                   <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
-                    <td className="py-1 px-2 text-neutral-500">{m.label}</td>
+                    <td className="py-1 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.label}</td>
                     <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: 'var(--color-primary-700, #047857)' }}>
                       {m.value}
-                      {m.unit && <span className="font-normal text-neutral-500 ml-0.5">{m.unit}</span>}
+                      {m.unit && <span className="font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{m.unit}</span>}
                     </td>
                   </tr>
                 ))}

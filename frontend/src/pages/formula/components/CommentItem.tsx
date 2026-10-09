@@ -75,11 +75,11 @@ export function CommentItem({
               {comment.author_name ?? '未知用户'}
             </span>
             {comment.author_role && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
                 {ROLE_LABELS[comment.author_role] ?? comment.author_role}
               </span>
             )}
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {new Date(comment.created_at).toLocaleDateString('zh-CN', {
                 month: 'short',
                 day: 'numeric',
@@ -97,7 +97,7 @@ export function CommentItem({
               disabled={likeLoading}
               className={cn(
                 'flex items-center gap-1 text-xs transition-all duration-200',
-                isLiked ? 'text-error-500 hover:text-error-600' : 'text-neutral-400 hover:text-error-500',
+                isLiked ? 'text-error-500 hover:text-error-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500',
               )}
             >
               <Heart
@@ -108,14 +108,14 @@ export function CommentItem({
             </button>
             <button
               onClick={() => onReply(comment.id)}
-              className="flex items-center gap-1 text-xs text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="flex items-center gap-1 text-xs text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
             >
               <Reply size={12} /> 回复
             </button>
             {canDelete && (
               <button
                 onClick={() => onDelete(comment.id)}
-                className="flex items-center gap-1 text-xs text-neutral-400 hover:text-error-500 transition-colors"
+                className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors"
               >
                 <Trash2 size={12} /> 删除
               </button>
@@ -126,7 +126,7 @@ export function CommentItem({
           {comment.replies_count > 0 && (
             <button
               onClick={onToggle}
-              className="flex items-center gap-1 mt-2 text-xs text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="flex items-center gap-1 mt-2 text-xs text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
             >
               {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               {comment.replies_count} 条回复
@@ -138,13 +138,13 @@ export function CommentItem({
                 const canDeleteReply = currentUserId === reply.user_id;
                 return (
                   <div key={reply.id} className="flex gap-2 group/reply">
-                    <div className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 text-[10px] font-medium shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 text-xs font-medium shrink-0 mt-0.5">
                       {reply.author_name?.[0] ?? 'U'}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-xs font-medium text-neutral-900 dark:text-white">{reply.author_name}</span>
-                        <span className="text-[10px] text-neutral-400">
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           {new Date(reply.created_at).toLocaleDateString('zh-CN', {
                             month: 'short',
                             day: 'numeric',
@@ -157,7 +157,7 @@ export function CommentItem({
                       {canDeleteReply && (
                         <button
                           onClick={() => onDelete(reply.id)}
-                          className="flex items-center gap-1 mt-1 text-xs text-neutral-400 hover:text-error-500 opacity-0 group-hover/reply:opacity-100 transition-all"
+                          className="flex items-center gap-1 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover/reply:opacity-100 transition-all"
                         >
                           <Trash2 size={11} /> 删除
                         </button>

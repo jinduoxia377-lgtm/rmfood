@@ -40,7 +40,7 @@ export function TemplateEditor({ initialTemplate, onSave, onCancel }: TemplateEd
     <div className="space-y-6">
       <div className="border-b border-neutral-200 dark:border-neutral-700 pb-4">
         <h2 className="text-xl font-semibold">模板编辑</h2>
-        <p className="text-sm text-neutral-500 mt-1">创建和编辑学术报告模板</p>
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">创建和编辑学术报告模板</p>
       </div>
 
       <div className="space-y-4">
@@ -93,12 +93,12 @@ export function TemplateEditor({ initialTemplate, onSave, onCancel }: TemplateEd
             {template.sections.map((section: any, index: number) => (
               <div key={section.id || index} className="p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg">
                 <div className="font-medium">{section.name || `章节 ${index + 1}`}</div>
-                <div className="text-sm text-neutral-500">{section.type}</div>
+                <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{section.type}</div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-neutral-400">暂无章节</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无章节</p>
         )}
       </div>
 

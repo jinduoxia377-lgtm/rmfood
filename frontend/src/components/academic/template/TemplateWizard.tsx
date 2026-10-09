@@ -43,7 +43,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= s ? 'bg-primary text-white' : 'bg-neutral-200 text-neutral-500'
+              step >= s ? 'bg-primary text-white' : 'bg-neutral-200 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
             }`}>
               {step > s ? <Check className="w-4 h-4" /> : s}
             </div>
@@ -95,9 +95,9 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       {step === 2 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">章节结构</h2>
-          <div className="p-4 border border-dashed border-neutral-300 rounded-lg text-center">
-            <FileText className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
-            <p className="text-sm text-neutral-500">选择预设章节模板或自定义章节</p>
+          <div className="p-4 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg text-center">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">选择预设章节模板或自定义章节</p>
           </div>
         </div>
       )}

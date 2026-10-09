@@ -55,7 +55,7 @@ export default function BatchWeightList({
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg">批记录单</CardTitle>
-            <div className="text-sm text-neutral-500 mt-1 space-y-0.5">
+            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 space-y-0.5">
               <div>配方: <span className="font-mono font-medium">{formulaCode}</span> — {formulaName}</div>
               <div>目标产量: <span className="font-medium">{targetWeightKg.toFixed(3)} kg</span></div>
               <div>放大倍数: <span className="font-medium">{scaleFactor.toFixed(2)}×</span></div>
@@ -104,9 +104,9 @@ export default function BatchWeightList({
                     {checkedItems.has(idx) && <CheckCircle2 size={12} />}
                   </button>
                 </td>
-                <td className="py-2 px-2 text-neutral-400">{idx + 1}</td>
+                <td className="py-2 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{idx + 1}</td>
                 <td className="py-2 px-2 font-medium">{ing.name}</td>
-                <td className="py-2 px-2 text-right text-neutral-500 font-mono">
+                <td className="py-2 px-2 text-right text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-mono">
                   {ing.specified_dosage_mg?.toFixed(1)}
                 </td>
                 <td className="py-2 px-2 text-right font-mono font-semibold text-primary">
@@ -114,9 +114,9 @@ export default function BatchWeightList({
                 </td>
                 <td className="py-2 px-2">
                   {ing.batch_code ? (
-                    <span className="font-mono text-xs text-neutral-500">{ing.batch_code}</span>
+                    <span className="font-mono text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.batch_code}</span>
                   ) : (
-                    <span className="text-neutral-300">—</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">—</span>
                   )}
                 </td>
               </tr>

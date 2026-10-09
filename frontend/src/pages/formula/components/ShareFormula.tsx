@@ -105,7 +105,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
                       const parent = e.currentTarget.parentElement;
                       if (parent) {
                         parent.innerHTML = `
-                          <div class="flex flex-col items-center justify-center w-48 h-48 text-neutral-400">
+                          <div class="flex flex-col items-center justify-center w-48 h-48 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             <QrCode size={32} />
                             <p class="text-xs mt-2">二维码加载失败</p>
                           </div>
@@ -114,7 +114,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
                     }}
                   />
                 </div>
-                <p className="text-xs text-neutral-500 text-center mt-2">扫码查看配方</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center mt-2">扫码查看配方</p>
               </div>
             </CardContent>
           )}

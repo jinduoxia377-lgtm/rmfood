@@ -120,7 +120,7 @@ export function ExportDialog({ report }: ExportDialogProps) {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">导出成功！</h3>
-                  <p className="text-neutral-500 mb-4">文件已开始下载</p>
+                  <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">文件已开始下载</p>
                   <button onClick={handleReset} className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                     继续导出
                   </button>
@@ -139,17 +139,17 @@ export function ExportDialog({ report }: ExportDialogProps) {
                             p-4 rounded-lg border-2 transition-all duration-200 text-left
                             ${selectedFormat === option.value
                               ? 'border-primary bg-primary/5'
-                              : 'border-neutral-200 hover:border-neutral-300'
+                              : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700'
                             }
                           `}
                         >
-                          <div className={`mb-2 ${selectedFormat === option.value ? 'text-primary' : 'text-neutral-500'}`}>
+                          <div className={`mb-2 ${selectedFormat === option.value ? 'text-primary' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                             {option.icon}
                           </div>
                           <div className={`font-medium text-sm ${selectedFormat === option.value ? 'text-primary' : 'text-neutral-900 dark:text-neutral-100'}`}>
                             {option.label}
                           </div>
-                          <div className="text-xs text-neutral-500 mt-1">
+                          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                             {option.description}
                           </div>
                         </button>

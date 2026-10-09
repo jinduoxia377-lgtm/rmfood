@@ -110,7 +110,7 @@ export function BatchOperations({
             {selectedIds.size === flatChapters.length && flatChapters.length > 0 ? (
               <CheckSquare className="w-5 h-5 text-primary" />
             ) : (
-              <Square className="w-5 h-5 text-neutral-400" />
+              <Square className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             )}
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               {selectedIds.size === flatChapters.length ? '取消全选' : '全选'}
@@ -128,7 +128,7 @@ export function BatchOperations({
           onClick={onClose}
           className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
         >
-          <X className="w-5 h-5 text-neutral-500" />
+          <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 

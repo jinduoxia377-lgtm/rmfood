@@ -123,7 +123,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="mt-2 flex items-center gap-1 text-xs text-neutral-500 hover:text-rose-500 transition-colors"
+          className="mt-2 flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-rose-500 transition-colors"
         >
           <X className="w-3 h-3" />
           移除图片
@@ -134,7 +134,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         <p className="mt-2 text-sm text-rose-500 text-center">{error}</p>
       )}
 
-      <p className="mt-2 text-xs text-neutral-400">
+      <p className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         支持 JPG、PNG、WebP，不超过 2MB
       </p>
     </div>

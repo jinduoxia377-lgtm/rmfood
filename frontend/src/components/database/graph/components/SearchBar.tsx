@@ -27,7 +27,7 @@ export default function SearchBar({
     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 w-72">
       <div className="relative">
         <div className="flex items-center gap-1 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 shadow-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary-500/30 focus-within:border-primary-400 transition-all">
-          <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
           <input
@@ -41,7 +41,7 @@ export default function SearchBar({
               else if (e.key === 'Escape') { onClearSearch(); (e.target as HTMLInputElement).blur() }
             }}
             placeholder="搜索节点..."
-            className="flex-1 bg-transparent text-[11px] text-neutral-700 dark:text-neutral-300 placeholder-slate-400 outline-none min-w-0"
+            className="flex-1 bg-transparent text-xs text-neutral-700 dark:text-neutral-300 placeholder-slate-400 outline-none min-w-0"
           />
           {searchQuery && (
             <button onClick={onClearSearch} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0">

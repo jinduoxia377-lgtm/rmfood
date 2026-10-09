@@ -16,7 +16,7 @@ export function TemplateList({ templates = [], onSelect, onCreate }: TemplateLis
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="text"
             placeholder="搜索模板..."
@@ -45,7 +45,7 @@ export function TemplateList({ templates = [], onSelect, onCreate }: TemplateLis
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold truncate">{template.name}</h3>
-                <p className="text-sm text-neutral-500 line-clamp-2 mt-1">
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2 mt-1">
                   {template.description || '暂无描述'}
                 </p>
               </div>
@@ -56,8 +56,8 @@ export function TemplateList({ templates = [], onSelect, onCreate }: TemplateLis
 
       {templates.length === 0 && (
         <div className="text-center py-12">
-          <FileText className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
-          <p className="text-neutral-400">暂无模板</p>
+          <FileText className="w-12 h-12 mx-auto mb-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+          <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无模板</p>
           <button
             onClick={onCreate}
             className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"

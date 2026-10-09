@@ -99,7 +99,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               className={`
                 w-full px-3 py-2 pr-12 rounded-lg border bg-white dark:bg-neutral-900
                 text-neutral-900 dark:text-white text-sm
-                placeholder:text-neutral-400
+                placeholder:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]
                 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
                 disabled:opacity-50 disabled:cursor-not-allowed
                 resize-none
@@ -109,7 +109,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                 }
               `}
             />
-            <span className="absolute bottom-2 right-3 text-xs text-neutral-400">
+            <span className="absolute bottom-2 right-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {data.bio.length}/500
             </span>
           </div>

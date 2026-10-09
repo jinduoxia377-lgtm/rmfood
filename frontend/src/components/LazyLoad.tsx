@@ -149,7 +149,7 @@ export function LazyLoadWrapper<P = object>(props: {
       <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
         <div className="text-4xl mb-4">⚠️</div>
         <h3 className="text-lg font-semibold text-neutral-700 mb-2">组件加载失败</h3>
-        <p className="text-sm text-neutral-500 mb-6">抱歉，页面组件加载时发生错误。请重试或刷新页面。</p>
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-6">抱歉，页面组件加载时发生错误。请重试或刷新页面。</p>
         <div className="flex gap-3">
           <button
             onClick={handleRetry}

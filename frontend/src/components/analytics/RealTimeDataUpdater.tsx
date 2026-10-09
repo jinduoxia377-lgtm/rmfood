@@ -375,7 +375,7 @@ export const RealTimeDataUpdater: React.FC<{
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-neutral-400" />
+            <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <div>
               <div className="font-medium text-text-primary">最后更新</div>
               <div className="text-text-muted text-xs">{formatLastUpdate(status.lastUpdate)}</div>
@@ -383,7 +383,7 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-neutral-400" />
+            <TrendingUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <div>
               <div className="font-medium text-text-primary">接收消息</div>
               <div className="text-text-muted text-xs">{status.messagesReceived.toLocaleString()} 条</div>
@@ -391,7 +391,7 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-neutral-400" />
+            <Zap className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <div>
               <div className="font-medium text-text-primary">网络延迟</div>
               <div className="text-text-muted text-xs">{status.latency} ms</div>
@@ -399,7 +399,7 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <AlertCircle className={`w-4 h-4 ${status.errorsCount > 0 ? 'text-error-500' : 'text-neutral-400'}`} />
+            <AlertCircle className={`w-4 h-4 ${status.errorsCount > 0 ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
             <div>
               <div className="font-medium text-text-primary">错误次数</div>
               <div className={`text-xs ${status.errorsCount > 0 ? 'text-error-500' : 'text-text-muted'}`}>

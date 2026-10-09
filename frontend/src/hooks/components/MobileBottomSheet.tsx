@@ -126,7 +126,7 @@ export default function MobileBottomSheet({
                 className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all duration-200 touch-target"
                 aria-label="关闭面板"
               >
-                <X size={20} className="text-neutral-500" />
+                <X size={20} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
             )}
           </div>

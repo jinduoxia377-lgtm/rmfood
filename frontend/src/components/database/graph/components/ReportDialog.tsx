@@ -37,32 +37,32 @@ export default function ReportDialog({
         <div className="p-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] font-semibold text-neutral-500 block mb-1">报告标题</label>
-<input aria-label="报告标题" value={reportConfig.title} onChange={e => onSetReportConfig({ title: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
+              <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] block mb-1">报告标题</label>
+<input aria-label="报告标题" value={reportConfig.title} onChange={e => onSetReportConfig({ title: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-xs bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
             <div>
-              <label className="text-[10px] font-semibold text-neutral-500 block mb-1">作者</label>
-<input aria-label="报告标题" value={reportConfig.author} onChange={e => onSetReportConfig({ author: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
+              <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] block mb-1">作者</label>
+<input aria-label="报告标题" value={reportConfig.author} onChange={e => onSetReportConfig({ author: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-xs bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
           </div>
           <div>
-            <label className="text-[10px] font-semibold text-neutral-500 block mb-1">导出格式</label>
+            <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] block mb-1">导出格式</label>
             <div className="flex gap-1.5">
               {(['pdf', 'word', 'html'] as const).map(fmt => (
                 <button key={fmt} onClick={() => onSetReportConfig({ format: fmt })}
-                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-indigo-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
+                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-indigo-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
                   {fmt}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <span className="text-[10px] font-semibold text-neutral-500 block mb-1.5">包含内容</span>
+            <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] block mb-1.5">包含内容</span>
             <div className="space-y-1">
               {contentOptions.map(opt => (
                 <label key={opt.key} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={reportConfig[opt.key] as boolean}
                     onChange={e => onSetReportConfig({ [opt.key]: e.target.checked })}
-                    className="rounded border-neutral-300 text-indigo-500 focus:ring-indigo-300" />
-                  <span className="text-[11px] text-neutral-600 dark:text-neutral-400">{opt.label}</span>
+                    className="rounded border-neutral-300 dark:border-neutral-700 text-indigo-500 focus:ring-indigo-300" />
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">{opt.label}</span>
                 </label>
               ))}
             </div>

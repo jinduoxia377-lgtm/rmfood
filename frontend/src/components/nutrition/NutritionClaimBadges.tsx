@@ -25,7 +25,7 @@ export function NutritionClaimBadges({ claims, className }: ClaimBadgeProps) {
   if (!claims || claims.length === 0) {
     return (
       <div className={cn('nutrition-claims-empty', className)}>
-        <span className="text-sm text-neutral-500">暂无营养声称</span>
+        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无营养声称</span>
       </div>
     )
   }
