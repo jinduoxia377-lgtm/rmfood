@@ -234,7 +234,7 @@ export function AIRecommendationSidebar({
       {isLoading && (
         <div className="py-12 text-center">
           <Loader2 size={32} className="mx-auto animate-spin text-accent-600 mb-3" />
-          <p className="text-sm text-neutral-500">正在生成个性化推荐...</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在生成个性化推荐...</p>
         </div>
       )}
 
@@ -250,7 +250,7 @@ export function AIRecommendationSidebar({
 
       {/* 空状态 */}
       {!isLoading && !error && filteredRecommendations.length === 0 && (
-        <div className="py-8 text-center text-neutral-500">
+        <div className="py-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <Sparkles size={40} className="mx-auto mb-2 opacity-30" />
           <p className="text-sm">暂无推荐内容</p>
           <p className="text-xs mt-1">继续使用平台后将获得更多个性化推荐</p>
@@ -280,7 +280,7 @@ export function AIRecommendationSidebar({
                     </h4>
                   </div>
 
-                  <p className="text-xs text-neutral-500 line-clamp-2 mb-2">{item.description}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2 mb-2">{item.description}</p>
 
                   {/* 推荐理由标签 */}
                   <div className="flex flex-wrap gap-1 mb-2">
@@ -303,7 +303,7 @@ export function AIRecommendationSidebar({
                         匹配度 {(item.confidence_score * 100).toFixed(0)}%
                       </Badge>
 
-                      <span className="text-[10px] text-neutral-400 flex items-center gap-1">
+                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
                         <Clock size={10} />
                         {TYPE_LABELS[item.type]}
                       </span>
@@ -311,7 +311,7 @@ export function AIRecommendationSidebar({
 
                     <ChevronRight
                       size={14}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
                     />
                   </div>
                 </button>
@@ -327,7 +327,7 @@ export function AIRecommendationSidebar({
                       className={`p-1 rounded hover:bg-success-50 transition-colors ${
                         feedbackState[String(item.id)] === 'like'
                           ? 'text-success-600 bg-success-50'
-                          : 'text-neutral-400'
+                          : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                       }`}
                     >
                       <ThumbsUp size={14} />
@@ -343,7 +343,7 @@ export function AIRecommendationSidebar({
                       className={`p-1 rounded hover:bg-error-50 transition-colors ${
                         feedbackState[String(item.id)] === 'dislike'
                           ? 'text-error-600 bg-error-50'
-                          : 'text-neutral-400'
+                          : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                       }`}
                     >
                       <ThumbsDown size={14} />
@@ -357,7 +357,7 @@ export function AIRecommendationSidebar({
 
       {/* 最后更新时间 */}
       {lastRefreshTime && !isLoading && (
-        <p className="text-[10px] text-neutral-400 text-center pt-2">
+        <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center pt-2">
           上次更新: {lastRefreshTime.toLocaleTimeString('zh-CN')}
         </p>
       )}

@@ -270,7 +270,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {Object.entries(props).map(([key, value]) => (
         <div key={key} className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-          <div className="text-xs text-neutral-500 capitalize">{key.replace(/_/g, ' ')}</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] capitalize">{key.replace(/_/g, ' ')}</div>
           <div className="text-lg font-semibold mt-1">
             {typeof value === 'number' ? value.toFixed(2) : String(value)}
           </div>
@@ -348,7 +348,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
             {error && (
               <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-error-500 mt-0.5" />
-                <div className="text-error-700 dark:text-error-300">{error}</div>
+                <div className="text-error-700 dark:text-error-600">{error}</div>
               </div>
             )}
 
@@ -368,7 +368,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     ) : (
                       <>
                         <Save className="w-5 h-5 text-orange-600" />
-                        <span className="text-sm text-neutral-500">分析完成，可保存到数据库</span>
+                        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分析完成，可保存到数据库</span>
                       </>
                     )}
                   </div>
@@ -459,7 +459,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       <AlertTriangle className="w-5 h-5" />
                       确认删除此分析记录？
                     </div>
-                    <p className="text-sm text-error-600 dark:text-error-300">
+                    <p className="text-sm text-error-600 dark:text-error-600">
                       删除后数据将移至回收站，可在管理后台恢复。此操作不可撤销。
                     </p>
                     <div className="flex gap-2 justify-end">
@@ -500,12 +500,12 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                     <div className="max-h-96 overflow-y-auto">
                       {historyLoading ? (
-                        <div className="p-8 text-center text-neutral-500">
+                        <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
                           加载中...
                         </div>
                       ) : historyList.length === 0 ? (
-                        <div className="p-8 text-center text-neutral-400">
+                        <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           <Database className="w-12 h-12 mx-auto mb-2 opacity-30" />
                           暂无历史记录
                         </div>
@@ -520,7 +520,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                               <div className="font-mono font-semibold text-neutral-900 dark:text-white">
                                 {item.sequence}
                               </div>
-                              <div className="flex items-center gap-3 mt-1 text-xs text-neutral-500">
+                              <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                 <span>{item.analysis_mode}</span>
                                 <span>•</span>
                                 <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -544,7 +544,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     {/* 分页控件 */}
                     {historyTotal > 20 && (
                       <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-sm">
-                        <span className="text-neutral-500">
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           第 {(historyPage - 1) * 20 + 1}-{Math.min(historyPage * 20, historyTotal)} 条，共 {historyTotal} 条
                         </span>
                         <div className="flex gap-2">
@@ -578,7 +578,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     { label: '安全性', value: Number(result.overall_scores?.safety ?? 0), color: 'emerald' },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="text-center">
-                      <div className="text-xs text-neutral-500 mb-1">{label}</div>
+                      <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{label}</div>
                       <div className={`text-3xl font-bold text-${color}-600`}>
                         {(value * 100).toFixed(1)}<span className="text-lg">%</span>
                       </div>
@@ -617,7 +617,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                         ].map(({ type, percent, color }) => (
                           <div key={type} className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-center">
                             <div className={`text-2xl font-bold text-${color}-600`}>{percent.toFixed(1)}%</div>
-                            <div className="text-sm text-neutral-500 mt-1">{type}</div>
+                            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{type}</div>
                             <div className={`mt-2 h-2 bg-${color}-200 rounded-full overflow-hidden`}>
                               <div className={`h-full bg-${color}-500 rounded-full transition-all`} style={{ width: `${percent}%` }} />
                             </div>
@@ -628,15 +628,15 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       {/* Predicted Sequence Visualization */}
                       {result.secondary_structure.predicted_sequence && (
                         <div className="mt-4">
-                          <div className="text-sm text-neutral-500 mb-2">结构序列可视化</div>
+                          <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">结构序列可视化</div>
                           <div className="font-mono text-lg flex flex-wrap gap-1">
                             {result.secondary_structure.predicted_sequence.split('').map((char: string, i: number) => (
                               <span
                                 key={i}
                                 className={`px-2 py-1 rounded ${
-                                  char === 'H' ? 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-300' :
-                                  char === 'E' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300' :
-                                  'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
+                                  char === 'H' ? 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-600' :
+                                  char === 'E' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600' :
+                                  'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
                                 }`}
                                 title={`${(result.sequence?.[i] ?? '')}${i + 1}: ${char === 'H' ? 'Helix' : char === 'E' ? 'Sheet' : 'Coil'}`}
                               >
@@ -677,7 +677,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                             </div>
                             {renderScoreBar(activity, score, tier === 'excellent' ? 'green' : tier === 'good' ? 'blue' : 'yellow')}
                             {data.potential_applications && (
-                              <div className="mt-2 text-xs text-neutral-500">
+                              <div className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                 应用场景: {data.potential_applications.join(', ')}
                               </div>
                             )}
@@ -710,7 +710,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                           {sa.risk_level === 'high' && <AlertTriangle className="w-6 h-6 text-error-500" />}
                           <div>
                             <div className="font-semibold">安全等级: {sa.risk_level?.toUpperCase() ?? '-'}</div>
-                            <div className="text-sm text-neutral-500">评分: {(sa.safety_score ?? 0 * 100).toFixed(1)}%</div>
+                            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">评分: {(sa.safety_score ?? 0 * 100).toFixed(1)}%</div>
                           </div>
                         </div>
                       </div>
@@ -735,7 +735,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                           { label: '推荐储存', value: sa.recommended_storage_conditions ?? '-' },
                         ].map(({ label, value }) => (
                           <div key={label} className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                            <div className="text-xs text-neutral-500">{label}</div>
+                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
                             <div className="text-sm font-medium mt-0.5">
                               {typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : value}
                             </div>
@@ -771,7 +771,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
         {/* Other modes placeholder */}
         {activeMode !== 'single' && (
-          <div className="text-center py-16 text-neutral-500">
+          <div className="text-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Atom className="w-16 h-16 mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-medium mb-2">功能开发中</h3>
             <p className="text-sm">"{activeMode}" 模式即将上线</p>
@@ -811,7 +811,7 @@ function SectionCard({
           {icon}
           <h3 className="font-semibold text-neutral-900 dark:text-white">{title}</h3>
         </div>
-        {expanded ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
+        {expanded ? <ChevronUp className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> : <ChevronDown className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
       </button>
       {expanded && (
         <div className="px-5 py-4 bg-white dark:bg-neutral-900">

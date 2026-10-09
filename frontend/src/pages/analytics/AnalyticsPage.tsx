@@ -183,15 +183,15 @@ export default function AnalyticsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {/* 最后更新时间 */}
-            <div className="flex items-center gap-1.5 text-xs text-white/75 px-3 py-1.5 bg-white dark:bg-neutral-900/10 rounded-lg">
+            <div className="flex items-center gap-1.5 text-xs text-primary-700 dark:text-white/75 px-3 py-1.5 bg-primary-50 dark:bg-neutral-900/10 rounded-lg">
               <Clock className="w-3.5 h-3.5" />
               <span>更新于 {lastFetched ? formatTime(lastFetched) : '--:--:--'}</span>
             </div>
             {/* 数据状态 */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
               dataLoading
-                ? 'bg-warning-500/20 text-white'
-                : 'bg-success-500/20 text-white'
+                ? 'bg-warning-500/20 text-warning-800 dark:text-warning-200'
+                : 'bg-success-500/20 text-success-800 dark:text-success-200'
             }`}>
               {dataLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
               {dataLoading ? '加载中' : '已连接'}
@@ -199,10 +199,10 @@ export default function AnalyticsPage() {
             {/* WebSocket 状态 */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
               wsConnected
-                ? 'bg-green-500/20 text-white'
+                ? 'bg-green-500/20 text-green-800 dark:text-green-300'
                 : wsConnecting
-                  ? 'bg-yellow-500/20 text-white'
-                  : 'bg-neutral-500/20 text-white/60'
+                  ? 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-300'
+                  : 'bg-neutral-500/20 text-neutral-700 dark:text-neutral-300'
             }`}>
               {wsConnected
                 ? <Wifi className="w-3.5 h-3.5 text-green-400" />
@@ -263,7 +263,7 @@ export default function AnalyticsPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-1.5 ${
               showFilters
-                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-300'
+                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-600'
                 : 'border-border text-text-secondary hover:bg-surface-hover'
             }`}
           >
@@ -283,7 +283,7 @@ export default function AnalyticsPage() {
                     <label key={category} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="rounded border-border text-primary-600"
+                        className="rounded border-border text-primary-700"
                         checked={filters.categories.includes(category)}
                         onChange={(e) => {
                           setFilters(prev => ({
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
                     <label key={status} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="rounded border-border text-primary-600"
+                        className="rounded border-border text-primary-700"
                         checked={filters.status.includes(status)}
                         onChange={(e) => {
                           setFilters(prev => ({
@@ -330,7 +330,7 @@ export default function AnalyticsPage() {
                       <label key={u.id} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          className="rounded border-border text-primary-600"
+                          className="rounded border-border text-primary-700"
                           checked={filters.users.includes(u.id)}
                           onChange={(e) => {
                             setFilters(prev => ({
@@ -386,7 +386,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-text-muted">{label}</p>
               <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <Icon size={14} className="text-primary-600 dark:text-primary-400" />
+                <Icon size={14} className="text-primary-700 dark:text-primary-600" />
               </div>
             </div>
             <p className="text-xl font-bold text-text-primary">{value}</p>
@@ -396,7 +396,7 @@ export default function AnalyticsPage() {
 
       {/* 错误提示 */}
       {dataError && (
-        <div className="p-3 rounded-lg bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-400 text-sm">
+        <div className="p-3 rounded-lg bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-600 text-sm">
           {dataError}
         </div>
       )}

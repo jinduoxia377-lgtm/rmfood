@@ -289,7 +289,7 @@ export function PromptOptimizer({
           />
 
           <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               字符数: {content.length} · 建议长度: 200-1500字符
             </p>
 
@@ -316,21 +316,21 @@ export function PromptOptimizer({
           {/* 总览卡片 */}
           <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
             <div className="text-center">
-              <p className="text-xs text-neutral-500 mb-1">原始分数</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原始分数</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_before)}`}>
                 {result.overall_score_before.toFixed(0)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-neutral-500 mb-1">优化后预估</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">优化后预估</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_after)}`}>
                 {result.overall_score_after.toFixed(0)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-neutral-500 mb-1">提升幅度</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">提升幅度</p>
               <p className="text-2xl font-bold text-success-600 flex items-center justify-center gap-1">
                 <TrendingUp size={18} />
                 +{result.score_improvement.toFixed(0)}
@@ -395,7 +395,7 @@ export function PromptOptimizer({
             {activeTab === 'issues' && (
               <div className="space-y-2">
                 {result.syntax_issues.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
+                  <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <CheckCircle2 size={48} className="mx-auto mb-2 text-success-500" />
                     <p>未发现语法问题 ✓</p>
                   </div>
@@ -406,7 +406,7 @@ export function PromptOptimizer({
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedIssueIndex === index
                           ? 'bg-secondary-50 border-blue-300 dark:bg-secondary-900/20'
-                          : 'bg-slate-50 hover:bg-neutral-100 border-transparent'
+                          : 'bg-slate-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800 border-transparent'
                       }`}
                        role="button" tabIndex={0} onClick={() =>
                         setSelectedIssueIndex(selectedIssueIndex === index ? null : index)
@@ -418,7 +418,7 @@ export function PromptOptimizer({
                           <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                             {issue.message}
                           </p>
-                          <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 line-clamp-2">
                             第{issue.line_number}行: {issue.snippet}
                           </p>
                           {selectedIssueIndex === index && issue.suggestion && (
@@ -445,13 +445,13 @@ export function PromptOptimizer({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                    <p className="text-xs text-neutral-500 mb-1">结构类型</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">结构类型</p>
                     <p className="text-lg font-semibold capitalize">
                       {result.structure_report.structure_type.replace('_', ' ')}
                     </p>
                   </div>
                   <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                    <p className="text-xs text-neutral-500 mb-1">总体得分</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">总体得分</p>
                     <p className={`text-lg font-semibold ${getScoreColor(result.structure_report.overall_score)}`}>
                       {result.structure_report.overall_score.toFixed(0)}/100
                     </p>
@@ -501,11 +501,11 @@ export function PromptOptimizer({
             {activeTab === 'effectiveness' && result.effectiveness_prediction && (
               <div className="space-y-4">
                 <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg text-center">
-                  <p className="text-xs text-neutral-500 mb-1">综合效果评分</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">综合效果评分</p>
                   <p className={`text-4xl font-bold ${getScoreColor(result.effectiveness_prediction.score)}`}>
                     {result.effectiveness_prediction.score.toFixed(0)}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     置信区间: [{result.effectiveness_prediction.confidence_interval[0]},{' '}
                     {result.effectiveness_prediction.confidence_interval[1]}]
                   </p>
@@ -551,8 +551,8 @@ export function PromptOptimizer({
             {activeTab === 'suggestions' && (
               <div className="space-y-3">
                 {result.suggestions.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
-                    <Sparkles size={48} className="mx-auto mb-2 text-neutral-400" />
+                  <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                    <Sparkles size={48} className="mx-auto mb-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     <p>暂无优化建议，您的提示词已经很棒了！</p>
                   </div>
                 ) : (
@@ -599,7 +599,7 @@ export function PromptOptimizer({
                                 <div className="p-2 bg-error-50 rounded font-mono line-clamp-2">
                                   <span className="text-error-600 font-bold">-</span> {suggestion.before}
                                 </div>
-                                <ChevronRight size={14} className="mx-auto text-neutral-400" />
+                                <ChevronRight size={14} className="mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                                 <div className="p-2 bg-success-50 rounded font-mono line-clamp-2">
                                   <span className="text-success-600 font-bold">+</span> {suggestion.after}
                                 </div>

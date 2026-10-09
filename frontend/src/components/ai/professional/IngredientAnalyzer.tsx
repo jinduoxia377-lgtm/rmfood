@@ -208,7 +208,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             onChange={(e) => this.setState({ searchQuery: e.target.value })}
             onKeyPress={(e) => e.key === 'Enter' && this.handleSearch()}
             placeholder="输入药材名称进行搜索..."
-            className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={searchLoading}
           />
           <button
@@ -251,7 +251,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 </span>
               ))}
             </div>
-            <p className="text-xs text-neutral-500">{herb.family}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{herb.family}</p>
           </div>
         ))}
       </div>
@@ -299,7 +299,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
           </div>
         </div>
 
-        <div className="border-b border-neutral-200">
+        <div className="border-b border-neutral-200 dark:border-neutral-700">
           <nav className="flex">
             {(['overview', 'chemistry', 'targets', 'diseases'] as const).map((tab) => (
               <button
@@ -523,7 +523,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
               </div>
               <div className="mb-3">
                 <p className="text-sm text-neutral-700">{target.proteinName}</p>
-                <p className="text-xs text-neutral-500 mt-1">UniProt: {target.uniprotId}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">UniProt: {target.uniprotId}</p>
               </div>
               <div className="flex flex-wrap gap-2 mb-2">
                 {target.pathways.map((pathway, pIdx) => (
@@ -602,12 +602,12 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b border-neutral-200 p-6 flex justify-between items-center">
+          <div className="sticky top-0 bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 p-6 flex justify-between items-center">
             <div>
               <h2 className="h2 text-neutral-900">{selectedCompound.name}</h2>
               {selectedCompound.englishName && <p className="text-neutral-600 italic">{selectedCompound.englishName}</p>}
             </div>
-            <button onClick={this.closeStructureModal} className="text-neutral-500 hover:text-neutral-700 transition-colors">
+            <button onClick={this.closeStructureModal} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -647,7 +647,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             {selectedCompound.smiles && (
               <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg mb-6">
                 <p className="text-sm text-neutral-600 mb-2">SMILES结构</p>
-                <p className="font-mono text-sm text-neutral-900 break-all bg-white p-3 rounded border">
+                <p className="font-mono text-sm text-neutral-900 break-all bg-white dark:bg-neutral-800 p-3 rounded border">
                   {selectedCompound.smiles}
                 </p>
               </div>

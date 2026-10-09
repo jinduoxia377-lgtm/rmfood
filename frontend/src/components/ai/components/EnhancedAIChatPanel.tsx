@@ -99,7 +99,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
   if (!data || ingredients.length === 0) {
     return (
       <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 text-center">
-        <Info className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+        <Info className="w-12 h-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-auto mb-3" />
         <p className="text-neutral-500 dark:text-neutral-400">
           检测到配方数据后将自动显示增强分析面板
         </p>
@@ -115,7 +115,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
          role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-primary-600" />
+          <Sparkles className="w-5 h-5 text-primary-700" />
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
             AI 增强分析系统
           </h3>
@@ -146,9 +146,9 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
             </>
           )}
           {isExpanded ? (
-            <Minimize2 className="w-4 h-4 text-neutral-500" />
+            <Minimize2 className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           ) : (
-            <Maximize2 className="w-4 h-4 text-neutral-500" />
+            <Maximize2 className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           )}
         </div>
       </div>
@@ -169,7 +169,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    ? 'border-primary-500 text-primary-700 dark:text-primary-600'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -474,7 +474,7 @@ const FormulaAnalysisTab: React.FC<FormulaAnalysisTabProps> = ({ formulaAnalysis
             <NutrientCard label="脂肪" value={nutrition.macronutrients.fat || 0} unit="g" />
             <NutrientCard label="纤维" value={nutrition.macronutrients.fiber || 0} unit="g" />
           </div>
-          <p className="text-xs text-neutral-500 mt-2">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
             置信度: {nutrition.confidence}%（基于已知成分营养数据库）
           </p>
         </div>
@@ -559,8 +559,8 @@ const StatCard: React.FC<{
 const NutrientCard: React.FC<{ label: string; value: number; unit: string }> = React.memo(({ label, value, unit }) => (
   <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-3 text-center">
     <div className="text-lg font-bold text-neutral-900 dark:text-white">{value}</div>
-    <div className="text-xs text-neutral-500">{unit}</div>
-    <div className="text-xs text-neutral-400 mt-1">{label}</div>
+    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{unit}</div>
+    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{label}</div>
   </div>
 ))
 
@@ -568,19 +568,19 @@ const NutrientCard: React.FC<{ label: string; value: number; unit: string }> = R
 
 function getScoreBadgeClass(level: string): string {
   switch (level) {
-    case 'excellent': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300'
-    case 'good': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300'
+    case 'excellent': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-600'
+    case 'good': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-600'
     case 'moderate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-    default: return 'bg-error-100 text-error-800 dark:bg-error-900/30 dark:text-error-300'
+    default: return 'bg-error-100 text-error-800 dark:bg-error-900/30 dark:text-error-600'
   }
 }
 
 function getScoreTextColor(level: string): string {
   switch (level) {
-    case 'excellent': return 'text-success-600 dark:text-success-400'
-    case 'good': return 'text-secondary-600 dark:text-secondary-400'
+    case 'excellent': return 'text-success-600 dark:text-success-600'
+    case 'good': return 'text-secondary-600 dark:text-secondary-600'
     case 'moderate': return 'text-yellow-600 dark:text-yellow-400'
-    default: return 'text-error-600 dark:text-error-400'
+    default: return 'text-error-600 dark:text-error-600'
   }
 }
 
@@ -593,9 +593,9 @@ function getScoreBarColor(score: number): string {
 
 function getOptimizationBadgeClass(type: string): string {
   switch (type) {
-    case 'increase': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300'
+    case 'increase': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-600'
     case 'decrease': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-    case 'optimal': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300'
+    case 'optimal': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-600'
     default: return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300'
   }
 }
@@ -620,7 +620,7 @@ interface SmartRecommendationsTabProps {
 }
 
 const IngredientDeepDiveTab: React.FC<IngredientDeepDiveTabProps> = () => (
-  <div className="text-center py-12 text-neutral-500">
+  <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <Microscope className="w-12 h-12 mx-auto mb-3 opacity-50" />
     <p>成分深度分析模块开发中...</p>
     <p className="text-sm mt-2">将包含：成分画像、对比分析、智能推荐</p>
@@ -628,7 +628,7 @@ const IngredientDeepDiveTab: React.FC<IngredientDeepDiveTabProps> = () => (
 )
 
 const SynergySimulationTab: React.FC<SynergySimulationTabProps> = () => (
-  <div className="text-center py-12 text-neutral-500">
+  <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <Network className="w-12 h-12 mx-auto mb-3 opacity-50" />
     <p>协同效果模拟模块开发中...</p>
     <p className="text-sm mt-2">将包含：动态雷达图、时间轴预测、场景优化</p>
@@ -636,7 +636,7 @@ const SynergySimulationTab: React.FC<SynergySimulationTabProps> = () => (
 )
 
 const SmartRecommendationsTab: React.FC<SmartRecommendationsTabProps> = () => (
-  <div className="text-center py-12 text-neutral-500">
+  <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
     <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-50" />
     <p>智能推荐系统开发中...</p>
     <p className="text-sm mt-2">将包含：个性化配方、剂量优化、禁忌检测</p>

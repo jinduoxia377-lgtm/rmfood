@@ -221,7 +221,7 @@ function VersionHistory({
           <Badge variant="info">{versions.length} 个版本</Badge>
 
           {branches.length > 0 && (
-            <span className="text-xs text-neutral-500 flex items-center gap-1">
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
               <GitBranch className="w-3.5 h-3.5" />
               {branches.length} 个分支
             </span>
@@ -297,7 +297,7 @@ function VersionHistory({
                     ? 'bg-success-500/20 text-success-400'
                     : line.type === 'removed'
                     ? 'bg-error-500/20 text-error-400'
-                    : 'text-neutral-400'
+                    : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                 }`}
               >
                 <span className="select-none w-12 text-right pr-4 text-neutral-600">
@@ -344,17 +344,17 @@ function VersionHistory({
                       className="mt-1 p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded"
                     >
                       {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-neutral-400" />
+                        <ChevronDown className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-neutral-400" />
+                        <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       )}
                     </button>
 
                     {/* 图标和信息 */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <CheckCircle2 className={`w-4 h-4 ${isCurrent ? 'text-primary-500' : 'text-neutral-300'}`} />
-                        <span className="font-mono text-xs text-neutral-500">
+                        <CheckCircle2 className={`w-4 h-4 ${isCurrent ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
+                        <span className="font-mono text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           {version.hash.slice(0, 7)}
                         </span>
 
@@ -368,7 +368,7 @@ function VersionHistory({
                         {version.tags?.map(tag => (
                           <span
                             key={tag}
-                            className="px-1.5 py-0.5 text-[10px] font-medium bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300 rounded"
+                            className="px-1.5 py-0.5 text-[10px] font-medium bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-600 rounded"
                           >
                             <Tag className="w-3 h-3 inline mr-0.5" />
                             {tag}
@@ -384,7 +384,7 @@ function VersionHistory({
                         {version.message}
                       </h4>
 
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-neutral-500">
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <span className="flex items-center gap-1">
                           <User className="w-3.5 h-3.5" />
                           {version.author}
@@ -441,7 +441,7 @@ function VersionHistory({
 
       {/* 空状态 */}
       {versions.length === 0 && (
-        <div className="p-8 text-center text-neutral-500">
+        <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <GitCommit className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm">暂无版本记录</p>
           <p className="text-xs mt-1">保存文档后将自动创建版本快照</p>
@@ -451,7 +451,7 @@ function VersionHistory({
       {/* 底部提示 */}
       {compareMode && !showDiffView && (
         <div className="p-3 bg-secondary-50 dark:bg-secondary-900/10 border-t border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-secondary-700 dark:text-secondary-300 flex items-center gap-2">
+          <p className="text-xs text-secondary-700 dark:text-secondary-600 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             请点击两个版本进行比较。当前已选: {compareTargetId ? '1 个目标' : '0 个'}
           </p>

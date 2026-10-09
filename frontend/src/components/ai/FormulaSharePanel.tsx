@@ -180,7 +180,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
         </div>
         <div>
           <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">分享配方</h3>
-          <p className="text-xs text-neutral-500">生成链接或二维码分享配方</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">生成链接或二维码分享配方</p>
         </div>
       </div>
 
@@ -223,7 +223,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -257,7 +257,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 type="checkbox"
                 checked={config.includeScores}
                 onChange={(e) => setConfig({ ...config, includeScores: e.target.checked })}
-                className="rounded border-neutral-300 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 dark:border-neutral-700 text-cyan-500 focus:ring-cyan-500"
               />
               包含评分信息
             </label>
@@ -266,7 +266,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 type="checkbox"
                 checked={config.includeIngredients}
                 onChange={(e) => setConfig({ ...config, includeIngredients: e.target.checked })}
-                className="rounded border-neutral-300 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 dark:border-neutral-700 text-cyan-500 focus:ring-cyan-500"
               />
               包含原料信息
             </label>
@@ -344,7 +344,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
             {showQRCode && QRCodeDataUrl && (
               <div className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700">
                 <img src={QRCodeDataUrl} alt="二维码" className="w-48 h-48" />
-                <p className="text-xs text-neutral-500 mt-2">扫描二维码访问配方</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">扫描二维码访问配方</p>
                 <button
                   onClick={() => {
                     const link = document.createElement('a');
@@ -362,12 +362,12 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
 
             {/* 预览 */}
             <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-              <p className="text-xs text-neutral-500 mb-2">分享预览</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">分享预览</p>
               <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(previewHtml) }} />
             </div>
 
             {/* 分享数据 */}
-            <div className="flex items-center justify-between text-xs text-neutral-500">
+            <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <div className="flex items-center gap-1">
                 <BarChart3 className="w-3.5 h-3.5" />
                 <span>访问次数: 0</span>

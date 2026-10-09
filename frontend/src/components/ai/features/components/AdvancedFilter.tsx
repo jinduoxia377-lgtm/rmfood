@@ -234,7 +234,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               置信度范围
             </div>
             {localFilters.confidenceRange && (
-              <span className="text-secondary-600 dark:text-secondary-400">
+              <span className="text-secondary-600 dark:text-secondary-600">
                 {localFilters.confidenceRange.min}% - {localFilters.confidenceRange.max}%
               </span>
             )}
@@ -253,7 +253,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               }}
               className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
-            <span className="text-xs text-neutral-500 w-10 text-right">{localFilters.confidenceRange?.min ?? 0}%</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-10 text-right">{localFilters.confidenceRange?.min ?? 0}%</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               }}
               className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
-            <span className="text-xs text-neutral-500 w-10 text-right">{localFilters.confidenceRange?.max ?? 100}%</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-10 text-right">{localFilters.confidenceRange?.max ?? 100}%</span>
           </div>
         </div>
 
@@ -288,7 +288,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 className={`px-3 py-1.5 rounded-md text-sm border transition-all ${
                   (option.value === 'custom' && localFilters.dateRange) ||
                   (option.value !== 'custom' && localFilters.dateRange)
-                    ? 'border-blue-500 bg-secondary-50 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300'
+                    ? 'border-blue-500 bg-secondary-50 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-600'
                     : 'border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-neutral-400'
                 }`}
               >
@@ -298,7 +298,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
           </div>
 
           {localFilters.dateRange && (
-            <div className="flex items-center gap-2 text-xs text-neutral-500 mt-1">
+            <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
               <span>{new Date(localFilters.dateRange.start).toLocaleDateString('zh-CN')}</span>
               <span>-</span>
               <span>{new Date(localFilters.dateRange.end).toLocaleDateString('zh-CN')}</span>
@@ -314,7 +314,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               成分数量
             </div>
             {localFilters.ingredientCountRange && (
-              <span className="text-secondary-600 dark:text-secondary-400">
+              <span className="text-secondary-600 dark:text-secondary-600">
                 {localFilters.ingredientCountRange.min} - {localFilters.ingredientCountRange.max} 种
               </span>
             )}
@@ -335,7 +335,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 placeholder="最少"
                 className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-neutral-400">-</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
               <input
                 type="number"
                 min="0"
@@ -349,7 +349,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 placeholder="最多"
                 className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <span className="text-xs text-neutral-500">种</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">种</span>
             </div>
           </div>
         </div>
@@ -360,7 +360,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
             <div className="flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
               <Tag size={14} />
               标签
-              <span className="text-neutral-400 normal-font">({availableTags.length} 个可用)</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] normal-font">({availableTags.length} 个可用)</span>
             </div>
 
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
@@ -372,7 +372,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                     onClick={() => handleTagToggle(tag)}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                       isSelected
-                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-2 ring-primary-500'
+                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-600 ring-2 ring-primary-500'
                         : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
@@ -384,20 +384,20 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
             </div>
 
             {availableTags.length > 20 && (
-              <div className="text-xs text-neutral-400 italic">还有 {availableTags.length - 20} 个标签未显示...</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">还有 {availableTags.length - 20} 个标签未显示...</div>
             )}
           </div>
         )}
 
         {/* 无可用标签提示 */}
         {availableTags.length === 0 && (
-          <div className="text-xs text-neutral-400 italic py-2 text-center">暂无可用标签（配方数据中未包含标签信息）</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic py-2 text-center">暂无可用标签（配方数据中未包含标签信息）</div>
         )}
       </div>
 
       {/* 底部操作栏 */}
       <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-        <div className="text-xs text-neutral-500">
+        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           {hasActiveFilters ? (
             <span>
               已启用 <strong>{Object.values(localFilters).filter(Boolean).length}</strong> 个筛选条件

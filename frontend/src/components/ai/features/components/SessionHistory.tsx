@@ -114,18 +114,18 @@ const SessionCard: React.FC<{
           <h3
             className={clsx(
               'text-sm font-medium truncate',
-              isActive ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-800 dark:text-neutral-200',
+              isActive ? 'text-primary-700 dark:text-primary-600' : 'text-neutral-800 dark:text-neutral-200',
             )}
           >
             {session.title || '未命名会话'}
           </h3>
 
           <div className="flex items-center gap-3 mt-1">
-            <span className="flex items-center gap-1 text-xs text-neutral-400">
+            <span className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <FileText className="w-3 h-3" />
               {session.message_count} 条消息
             </span>
-            <span className="flex items-center gap-1 text-xs text-neutral-400">
+            <span className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Clock className="w-3 h-3" />
               {formatDate(session.updated_at)} {formatTime(session.updated_at)}
             </span>
@@ -143,7 +143,7 @@ const SessionCard: React.FC<{
                 </span>
               ))}
               {session.tags.length > 3 && (
-                <span className="px-2 py-0.5 text-xs text-neutral-400">+{session.tags.length - 3}</span>
+                <span className="px-2 py-0.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{session.tags.length - 3}</span>
               )}
             </div>
           )}
@@ -166,7 +166,7 @@ const SessionCard: React.FC<{
           <ChevronRight
             className={clsx(
               'w-4 h-4 transition-transform duration-200',
-              isActive ? 'text-primary-500' : 'text-neutral-300 group-hover:text-neutral-400',
+              isActive ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
             )}
           />
         </div>
@@ -263,7 +263,7 @@ export function SessionHistory({
 
         {/* 搜索框 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="text"
             value={searchQuery}
@@ -283,7 +283,7 @@ export function SessionHistory({
         )}
 
         {!isLoading && filteredSessions.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
+          <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
             <p className="text-sm">暂无会话</p>
             <p className="text-xs mt-1">点击上方按钮创建新会话</p>
@@ -304,7 +304,7 @@ export function SessionHistory({
 
       {/* 底部统计 */}
       <div className="p-4 border-t border-neutral-200 dark:border-neutral-700">
-        <p className="text-xs text-neutral-400 text-center">共 {sessions.length} 个会话</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">共 {sessions.length} 个会话</p>
       </div>
     </div>
   );
