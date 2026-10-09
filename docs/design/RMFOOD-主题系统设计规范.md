@@ -1176,6 +1176,14 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 3. **视觉一致性结论（本轮审计记录，未做结构重构）**：本批散点文件控件复用情况与前七轮一致（多数已导入 UI 库，原生控件为历史习惯）；本轮按口径仅令牌化，未改控件结构。
 > **终态**：tsc 0 错（退出码 0）· `ai-full-scan` /ai 全量扫描 51 文件 / 156 处 → 0 文件 / 0 处（**/ai 域全量清零**）· 双模式渲染探针（settled）：亮 1 / 暗 1 不达标（与第七轮终态一致，优于早期 4/24 基线；剩余 2 项仍为 /ai 页主体层已知项）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 11.29s）· vitest 29/29。
 
+> **2026-10-09 /ai 页主体层收尾登记（第九样板轮，/ai 页对比度全量达标）**（提交 `6ca1ae2`，P0 对比度修复）：承接前八轮域样板轮（含第八轮 /ai 域全量清零 `b93d1ea`），对双模式渲染探针剩余的最后 2 处不达标（亮 1 / 暗 1）做主体层收尾，使 `/ai` 页对比度全量达标（用户「继续下一步建议任务」确认：主体层收尾轮）。审计方法：`ai-audit-settled.cjs` 双模式渲染探针定位 + 人工核查修复。
+> 1. **P0 对比度修复（3 文件 / 3 处核心 + 同文件顺手补全的令牌配对）**：
+>    - 主体层收尾：`AIAssistantPage` L485 ⌘K kbd（`text-neutral-400` → L0 双模式令牌 `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`，亮 neutral-700 6.47:1 / 暗 slate-400 7.87:1 均 ≥ 4.5）；`GlobalSearch` L169 ⌘K kbd（同模式）；`pro/MessageList` L252「开始新对话」空态标题（`text-neutral-800` 无 dark 配对 → 补 `dark:text-neutral-200`）
+>    - 同文件顺手补全（与主体层组件同处渲染树）：`AIAssistantPage` 关闭 X 图标 dark 配对 / 分组标题 500→600 / tab 未选中·选中 dark 前景；`GlobalSearch` 搜索结果行·标签 dark secondary-400→600×3 / 空态 Search 图标 dark 配对；`pro/MessageList` 错误信息 dark error-400→600
+>    全部不改交互行为，仅令牌配对 / 色阶加深。
+> 2. **结果：/ai 页双模式渲染探针 亮 0 / 暗 0 不达标** —— 前八轮遗留的最后 2 项（⌘K kbd + 开始新对话标题）全部达标，`/ai` 页（含主体层 + 12 子功能域）对比度全量达标。
+> **终态**：tsc 0 错（退出码 0）· 双模式渲染探针（settled）：**亮 0 / 暗 0 不达标**（此前亮 1 / 暗 1）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 1m 12s）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
