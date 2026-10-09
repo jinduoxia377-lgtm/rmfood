@@ -59,7 +59,7 @@ const BatchEditDialog: React.FC<BatchEditDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="px-6 py-4 border-b border-neutral-200">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">批量编辑</h3>
           <p className="mt-1 text-sm text-neutral-600">
             将修改 {selectedCount} 行数据的「{columnLabel}」字段
@@ -95,7 +95,7 @@ const BatchEditDialog: React.FC<BatchEditDialogProps> = ({
         <div className="px-6 py-4 bg-slate-50 dark:bg-neutral-800 rounded-b-lg flex justify-end space-x-3">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-slate-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             取消
           </button>
@@ -117,7 +117,7 @@ function renderBatchInput(
   value: any,
   onChange: (value: any) => void,
 ): React.ReactNode {
-  const baseClasses = "w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  const baseClasses = "w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
   switch (config.editorType) {
     case 'select':

@@ -192,13 +192,13 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
             </div>
             <p className="text-neutral-800 dark:text-neutral-200 text-sm">
               <span className="font-medium">{suggestion.herb1}</span>
-              <span className="mx-2 text-neutral-400">+</span>
+              <span className="mx-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+</span>
               <span className="font-medium">{suggestion.herb2}</span>
               <span className="mx-2">-</span>
               {suggestion.description}
             </p>
             {suggestion.alternative && (
-              <p className="text-sm text-neutral-500 mt-2">
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
                 建议替代：<span className="text-teal-600 font-medium">{suggestion.alternative}</span>
               </p>
             )}
@@ -270,7 +270,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
             {herbs.length > 0 && (
               <button
                 onClick={this.clearAllHerbs}
-                className="text-sm text-neutral-500 hover:text-error-500 flex items-center gap-1"
+                className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 flex items-center gap-1"
               >
                 <Trash2 className="w-4 h-4" />
                 清空全部
@@ -280,7 +280,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
 
           {herbs.length > 0 && herbs.length < 2 && (
             <div className="text-center py-8 bg-slate-50 dark:bg-slate-850 rounded-lg">
-              <AlertCircle className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
+              <AlertCircle className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400">请至少添加两种中药进行配伍检测</p>
             </div>
           )}
@@ -338,7 +338,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
 
           {!result && herbs.length >= 2 && (
             <div className="text-center py-8 bg-slate-50 dark:bg-slate-850 rounded-lg">
-              <BookOpen className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
+              <BookOpen className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400">点击检测按钮查看配伍结果</p>
             </div>
           )}
@@ -348,7 +348,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
           <div className="border-t border-neutral-100 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-neutral-900 dark:text-white">{selectedHerbInfo.herbName} - 配伍信息</h3>
-              <button onClick={this.closeHerbInfo} className="text-neutral-400 hover:text-neutral-600">
+              <button onClick={this.closeHerbInfo} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
                 <X className="w-5 h-5" />
               </button>
             </div>

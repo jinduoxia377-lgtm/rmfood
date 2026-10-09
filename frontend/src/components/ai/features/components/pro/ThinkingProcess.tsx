@@ -172,19 +172,19 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
                 {/* 内容 */}
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${isComplete ? 'text-neutral-700 dark:text-neutral-300' : 'text-warning-600 dark:text-warning-400'}`}>
+                    <span className={`text-xs font-medium ${isComplete ? 'text-neutral-700 dark:text-neutral-300' : 'text-warning-600 dark:text-warning-600'}`}>
                       {step.step}
                     </span>
                     {isComplete ? (
-                      <span className="text-[10px] text-neutral-400">✓</span>
+                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">✓</span>
                     ) : (
                       <span className="text-[10px] text-warning-500 animate-pulse">分析中...</span>
                     )}
                     {step.detail && (
                       <span className="ml-auto">
                         {isExpanded
-                          ? <ChevronDown className="w-3 h-3 text-neutral-300" />
-                          : <ChevronRight className="w-3 h-3 text-neutral-300" />
+                          ? <ChevronDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                          : <ChevronRight className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         }
                       </span>
                     )}
@@ -192,7 +192,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
                   <p className={`text-[11px] leading-relaxed mt-0.5 ${
                     isComplete
                       ? 'text-neutral-500 dark:text-neutral-400'
-                      : 'text-warning-600/70 dark:text-warning-400/70 animate-pulse'
+                      : 'text-warning-600/70 dark:text-warning-600/70 animate-pulse'
                   }`}>
                     {step.content}
                   </p>

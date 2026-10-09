@@ -43,11 +43,11 @@ interface ChatSidebarV4Props {
 const ALGORITHM_CONFIG: Record<AlgorithmType, {
   label: string; color: string; bgColor: string
 }> = {
-  'hybrid-nlp':     { label: 'NLP',    color: 'text-secondary-600 dark:text-secondary-400', bgColor: 'bg-secondary-100 dark:bg-secondary-900/30' },
+  'hybrid-nlp':     { label: 'NLP',    color: 'text-secondary-600 dark:text-secondary-600', bgColor: 'bg-secondary-100 dark:bg-secondary-900/30' },
   'rule-engine':    { label: '规则',   color: 'text-neutral-600 dark:text-neutral-400',     bgColor: 'bg-neutral-100 dark:bg-neutral-900/30' },
   'llm':            { label: 'LLM',    color: 'text-violet-600 dark:text-violet-400',       bgColor: 'bg-violet-100 dark:bg-violet-900/30' },
-  'bayesian':       { label: '贝叶斯', color: 'text-primary-600 dark:text-primary-400',     bgColor: 'bg-primary-100 dark:bg-primary-900/30' },
-  'knowledge-graph':{ label: '图谱',   color: 'text-warning-600 dark:text-warning-400',     bgColor: 'bg-warning-100 dark:bg-warning-900/30' },
+  'bayesian':       { label: '贝叶斯', color: 'text-primary-700 dark:text-primary-600',     bgColor: 'bg-primary-100 dark:bg-primary-900/30' },
+  'knowledge-graph':{ label: '图谱',   color: 'text-warning-600 dark:text-warning-600',     bgColor: 'bg-warning-100 dark:bg-warning-900/30' },
   'semantic-search':{ label: '搜索',   color: 'text-cyan-600 dark:text-cyan-400',           bgColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
   'ensemble':       { label: '集成',   color: 'text-rose-600 dark:text-rose-400',           bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
 }
@@ -102,7 +102,7 @@ function ConfidenceBar({ value, compact }: { value: number; compact?: boolean })
         <div className={`h-full ${color} rounded-full transition-all duration-500`}
           style={{ width: `${pct}%` }} />
       </div>
-      {!compact && <span className="text-[10px] text-neutral-400 w-6 text-right">{pct}%</span>}
+      {!compact && <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-6 text-right">{pct}%</span>}
     </div>
   )
 }
@@ -152,7 +152,7 @@ function StepCard({
         <div className="flex-1 min-w-0 pb-2">
           <div className="flex items-center gap-1 flex-wrap">
             <button onClick={onToggle}
-              className={`font-semibold text-neutral-800 dark:text-neutral-200 hover:text-primary-600 transition-colors truncate ${
+              className={`font-semibold text-neutral-800 dark:text-neutral-200 hover:text-primary-700 transition-colors truncate ${
                 compact ? 'text-xs' : 'text-xs'
               }`}
             >
@@ -164,8 +164,8 @@ function StepCard({
             )}
             {step.detail && (
               <button onClick={onToggle} className="ml-auto flex-shrink-0">
-                {isExpanded ? <ChevronDown className="w-3 h-3 text-neutral-400" />
-                            : <ChevronRight className="w-3 h-3 text-neutral-400" />}
+                {isExpanded ? <ChevronDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                            : <ChevronRight className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               </button>
             )}
           </div>
@@ -208,7 +208,7 @@ function StepCard({
                       </span>
                       {sub.algorithm && <AlgorithmBadge algorithm={sub.algorithm} compact />}
                     </div>
-                    <p className="text-[10px] text-neutral-400 line-clamp-1">{sub.content}</p>
+                    <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-1">{sub.content}</p>
                   </div>
                 </div>
               ))}
@@ -261,7 +261,7 @@ export default function ChatSidebarV4({
         <button
           onClick={() => setCollapsed(false)}
           className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg
-            text-neutral-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20
+            text-neutral-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20
             transition-all duration-200 group"
           title="显示 AI 思考过程"
         >
@@ -288,7 +288,7 @@ export default function ChatSidebarV4({
         {/* 头部 */}
         <div className="flex items-center justify-between gap-1">
           <button onClick={onToggle}
-            className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-700 transition-colors"
           >
             <Cpu className="w-3.5 h-3.5 text-primary-500" />
             <span className="truncate">AI 思考</span>
@@ -322,7 +322,7 @@ export default function ChatSidebarV4({
                 onClick={() => setFilterAlgorithm(a.key)}
                 className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors
                   ${filterAlgorithm === a.key
-                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-600'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
               >
                 {a.label}
@@ -347,8 +347,8 @@ export default function ChatSidebarV4({
 
         {steps.length === 0 && !isThinking && (
           <div className="text-center py-4">
-            <Brain className="w-6 h-6 text-neutral-300 dark:text-neutral-600 mx-auto mb-1.5" />
-            <p className="text-[10px] text-neutral-400">AI 思考过程将在此显示</p>
+            <Brain className="w-6 h-6 text-neutral-300 dark:text-neutral-400 mx-auto mb-1.5" />
+            <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">AI 思考过程将在此显示</p>
           </div>
         )}
 

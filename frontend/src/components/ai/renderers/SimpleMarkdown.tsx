@@ -101,7 +101,7 @@ function renderInline(text: string): string {
   return escapedText
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-neutral-900 dark:text-neutral-100">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="bg-neutral-100 dark:bg-neutral-800 text-primary-600 dark:text-primary-400 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-neutral-100 dark:bg-neutral-800 text-primary-700 dark:text-primary-600 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
 }
 
 function renderTable(tableContent: string): string {
@@ -133,7 +133,7 @@ function renderTable(tableContent: string): string {
       const isSticky = cIdx === 0 && hasRoleColumn
       const isHighlight = /君|臣|佐|使/i.test(cell)
       const cellClass = isHighlight
-        ? 'font-semibold text-primary-700 dark:text-primary-300'
+        ? 'font-semibold text-primary-700 dark:text-primary-600'
         : 'text-neutral-700 dark:text-neutral-300'
       const bgClass = isHighlight ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
       html += `<td class="px-3 py-2.5 text-sm ${isCenter ? 'text-center' : 'text-left'} ${cellClass} ${bgClass} ${cIdx < cells.length - 1 ? 'border-r border-neutral-100 dark:border-neutral-700/50' : ''} ${isSticky ? 'sticky left-0 z-10 ' + zebraClass : ''}">${renderInline(cell)}</td>`
@@ -194,8 +194,8 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
           const field = isFieldLine(block.content)
           if (field.isField) {
             return `<div class="my-3 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-100 dark:border-neutral-700/50">
-              <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">${field.fieldName}</span>
-              <span class="text-neutral-400 mx-1">:</span>
+              <span class="text-sm font-semibold text-primary-700 dark:text-primary-600">${field.fieldName}</span>
+              <span class="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-1">:</span>
               <span class="text-sm text-neutral-800 dark:text-neutral-200">${renderInline(field.fieldValue)}</span>
             </div>`
           }
@@ -258,7 +258,7 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
     // 消毒失败时返回安全占位符，不显示可能包含恶意脚本的内容
     return (
       <div className={`text-sm leading-[1.7] space-y-1 ${className}`}>
-        <span className="text-neutral-500 italic">[内容已过滤]</span>
+        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">[内容已过滤]</span>
       </div>
     )
   }

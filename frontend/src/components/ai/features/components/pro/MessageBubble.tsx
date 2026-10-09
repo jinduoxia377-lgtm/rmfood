@@ -120,13 +120,13 @@ function LinkMessageCard({ url }: { url: string }) {
 			<div className="p-3.5">
 				<div className="flex items-center gap-2 mb-2">
 					<div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-						<Link className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+						<Link className="w-3.5 h-3.5 text-primary-700 dark:text-primary-600" />
 					</div>
 					<div className="flex-1 min-w-0">
 						<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
 							{tryExtractTitle(url)}
 						</div>
-						<div className="text-xs text-neutral-400 dark:text-neutral-500 truncate flex items-center gap-1">
+						<div className="text-xs text-neutral-400 dark:text-neutral-400 truncate flex items-center gap-1">
 							{domain && (
 								<span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
 									{domainInitial}
@@ -140,7 +140,7 @@ function LinkMessageCard({ url }: { url: string }) {
 					href={url}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
 				>
 					<ExternalLink className="w-3 h-3" />
 					打开链接
@@ -156,7 +156,7 @@ function CodeMessageBlock({ code }: { code: string }) {
 		<div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-900 dark:bg-neutral-950 shadow-sm">
 			<div className="flex items-center justify-between px-4 py-2 bg-neutral-800 dark:bg-neutral-900 border-b border-neutral-700">
 				<div className="flex items-center gap-2">
-					<Code className="w-3.5 h-3.5 text-neutral-400" />
+					<Code className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
 					<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">代码</span>
 				</div>
 				<div className="flex gap-1.5">
@@ -225,7 +225,7 @@ function FileMessageCard({ filename }: { filename: string }) {
 				<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
 					{filename}
 				</div>
-				<div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+				<div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">
 					{ext} 格式文件
 				</div>
 			</div>
@@ -271,7 +271,7 @@ function renderMessageContent(
 		// 流式中：内容像结构化 JSON 但未完成 → 显示加载占位，避免展示原始 JSON
 		if (streaming && isLikelyStructured(msg.content)) {
 			return (
-				<div className="flex items-center gap-2 py-3 text-xs text-neutral-400 dark:text-neutral-500">
+				<div className="flex items-center gap-2 py-3 text-xs text-neutral-400 dark:text-neutral-400">
 					<RefreshCw className="w-3 h-3 animate-spin" />
 					正在生成配方方案…
 				</div>
@@ -306,7 +306,7 @@ function renderMessageContent(
 								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 									{parsed.chartJson.items.map((item: any, i: number) => (
 										<div key={i} className="surface-card rounded-lg p-3 text-center border border-neutral-100 shadow-sm">
-											<div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+											<div className="text-2xl font-bold text-primary-700 dark:text-primary-600">
 												{item.value}{item.unit || ''}
 											</div>
 											<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 truncate">{item.label}</div>
@@ -437,7 +437,7 @@ export function MessageBubble({
 								value={editContent}
 								onChange={(e) => setEditContent(e.target.value)}
 								aria-label="编辑消息"
-								className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg surface-card border border-neutral-300 text-neutral-800 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+								className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg surface-card border border-neutral-300 dark:border-neutral-700 text-neutral-800 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
 								autoFocus
 								onKeyDown={(e) => {
 									if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmEdit() }
@@ -465,7 +465,7 @@ export function MessageBubble({
 							{msg.sendStatus === 'sending' && msg.role === 'user' && !msg.error ? (
 								<div className="flex items-center gap-2.5">
 									<RefreshCw className="w-3 h-3 animate-spin text-primary-500" />
-									<span className="text-xs text-neutral-500">发送中...</span>
+									<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">发送中...</span>
 								</div>
 							) : msg.error ? (
 								<div className="flex items-center gap-2">
@@ -485,7 +485,7 @@ export function MessageBubble({
 										<div className="mb-2 p-2 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-100 dark:border-primary-800/30">
 											<div className="flex items-center gap-1.5 mb-1.5">
 												<RefreshCw className={`w-3 h-3 text-primary-500 ${delegationProgress.subtasks.some(s => s.status === 'running') ? 'animate-spin' : ''}`} />
-												<span className="text-xs font-medium text-primary-700 dark:text-primary-400">子任务执行中</span>
+												<span className="text-xs font-medium text-primary-700 dark:text-primary-600">子任务执行中</span>
 											</div>
 											<div className="space-y-0.5">
 												{delegationProgress.subtasks.map(st => (
@@ -494,7 +494,7 @@ export function MessageBubble({
 														{st.status === 'running' && <RefreshCw className="w-3 h-3 text-primary-500 animate-spin flex-shrink-0" />}
 														{st.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500 flex-shrink-0" />}
 														{st.status === 'pending' && <div className="w-3 h-3 rounded-full border-2 border-neutral-300 dark:border-neutral-600 flex-shrink-0" />}
-														<span className={st.status === 'completed' ? 'text-success-600 dark:text-success-400' : st.status === 'running' ? 'text-primary-600 dark:text-primary-400' : st.status === 'failed' ? 'text-error-600 dark:text-error-400' : 'text-neutral-500'}>
+														<span className={st.status === 'completed' ? 'text-success-600 dark:text-success-600' : st.status === 'running' ? 'text-primary-700 dark:text-primary-600' : st.status === 'failed' ? 'text-error-600 dark:text-error-600' : 'text-neutral-500'}>
 															{st.description}
 														</span>
 														{st.status === 'failed' && <span className="text-error-400 truncate">{st.error}</span>}

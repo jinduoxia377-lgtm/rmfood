@@ -69,7 +69,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
           onClick={() => setIsVisibleLocal(false)}
           className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
         >
-          <X className="w-3 h-3 text-neutral-400" />
+          <X className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 
@@ -86,19 +86,19 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
               hover:shadow-sm transition-all duration-200
               text-left"
           >
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium flex-shrink-0">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 font-medium flex-shrink-0">
               {sug.category}
             </span>
             <span className="text-xs text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200 truncate max-w-[200px]">
               {sug.question}
             </span>
-            <Send className="w-3 h-3 text-neutral-300 dark:text-neutral-600 group-hover:text-primary-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Send className="w-3 h-3 text-neutral-300 dark:text-neutral-400 group-hover:text-primary-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         ))}
       </div>
 
       {/* 手动输入提示 */}
-      <div className="mt-2 text-[10px] text-neutral-400 dark:text-neutral-500">
+      <div className="mt-2 text-[10px] text-neutral-400 dark:text-neutral-400">
         或直接输入您的问题...
       </div>
     </div>

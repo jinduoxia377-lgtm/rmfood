@@ -110,23 +110,23 @@ function EfficacyTagChip({
             />
           </div>
 
-          <div className="text-neutral-300 leading-relaxed">
+          <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">
             {meta.description}
           </div>
 
           <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-1.5 border-t border-neutral-600/50">
             <div>
-              <span className="text-neutral-400">分类：</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分类：</span>
               <span className="text-neutral-200">
                 {efficacyTagService.getTagCategories().find(c => c.category === category)?.name || category}
               </span>
             </div>
             <div>
-              <span className="text-neutral-400">可信度：</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">可信度：</span>
               <span className="text-yellow-400 ml-1">
                 {EVIDENCE_STARS[meta.evidenceLevel]}
               </span>
-              <span className="text-neutral-400 ml-1 text-[10px]">
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1 text-[10px]">
                 ({EvidencenLabel[meta.evidenceLevel]})
               </span>
             </div>
@@ -134,7 +134,7 @@ function EfficacyTagChip({
 
           {meta.relatedIngredients.length > 0 && (
             <div className="pt-1 border-t border-neutral-600/50">
-              <span className="text-neutral-400">相关成分：</span>
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关成分：</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {meta.relatedIngredients.slice(0, 4).map((ing, idx) => (
                   <span key={idx} className="bg-neutral-700 px-1.5 py-0.5 rounded text-[10px]">
@@ -142,7 +142,7 @@ function EfficacyTagChip({
                   </span>
                 ))}
                 {meta.relatedIngredients.length > 4 && (
-                  <span className="text-neutral-500 text-[10px]">+{meta.relatedIngredients.length - 4}</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-[10px]">+{meta.relatedIngredients.length - 4}</span>
                 )}
               </div>
             </div>

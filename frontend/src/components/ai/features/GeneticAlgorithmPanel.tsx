@@ -615,7 +615,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             ))}
           </div>
           {selectedEffects.length === 0 && (
-            <p className="text-xs text-warning-600 dark:text-warning-400 mt-2 flex items-center gap-1">
+            <p className="text-xs text-warning-600 dark:text-warning-600 mt-2 flex items-center gap-1">
               <Info className="w-3 h-3" />
               未选择功效时将使用默认值（免疫调节），建议至少选择一个目标
             </p>
@@ -773,7 +773,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                     checked={warmStartEnabled}
                     onChange={(e) => setWarmStartEnabled(e.target.checked)}
                     disabled={isRunning}
-                    className="rounded border-neutral-300"
+                    className="rounded border-neutral-300 dark:border-neutral-700"
                   />
                   启用Warm Start (上代最优配比初值)
                 </label>
@@ -1083,7 +1083,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           aria-live="polite"
         >
           {logs.length === 0 ? (
-            <div className="text-neutral-400 dark:text-neutral-500 flex items-center gap-2 h-full justify-center">
+            <div className="text-neutral-400 dark:text-neutral-400 flex items-center gap-2 h-full justify-center">
               <Info className="w-4 h-4" aria-hidden="true" />
               <span>日志将在运行时显示...</span>
             </div>
@@ -1092,12 +1092,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               <div
                 key={i}
                 className={`${
-                  log.level === 'error' ? 'text-error-500 dark:text-error-400' :
-                  log.level === 'warn' ? 'text-warning-500 dark:text-warning-400' :
+                  log.level === 'error' ? 'text-error-500 dark:text-error-600' :
+                  log.level === 'warn' ? 'text-warning-500 dark:text-warning-600' :
                   'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
-                <span className="text-neutral-400 dark:text-neutral-600 mr-2" aria-hidden="true">{log.time}</span>
+                <span className="text-neutral-400 dark:text-neutral-400 mr-2" aria-hidden="true">{log.time}</span>
                 {log.message}
               </div>
             ))

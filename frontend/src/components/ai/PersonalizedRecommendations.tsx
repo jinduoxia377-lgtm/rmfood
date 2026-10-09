@@ -31,10 +31,10 @@ export function PersonalizedRecommendations({
       <Card className="p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 border-primary-200 dark:border-primary-800/40">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
-            <Brain className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <Brain className="w-5 h-5 text-primary-700 dark:text-primary-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-primary-700 dark:text-primary-300 mb-1">
+            <h3 className="font-semibold text-primary-700 dark:text-primary-600 mb-1">
               个性化推荐
             </h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
@@ -42,11 +42,11 @@ export function PersonalizedRecommendations({
             </p>
             {frequentEffects.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-neutral-500">常用功效：</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">常用功效：</span>
                 {frequentEffects.map((effect) => (
                   <span
                     key={effect}
-                    className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full"
+                    className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-600 rounded-full"
                   >
                     {effect}
                   </span>
@@ -63,13 +63,13 @@ export function PersonalizedRecommendations({
     <Card className="p-4 bg-gradient-to-r from-accent-50 to-primary-50 dark:from-accent-900/20 dark:to-primary-900/20 border-accent-200 dark:border-accent-800/40">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg bg-accent-100 dark:bg-accent-900/40 flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+          <Sparkles className="w-4 h-4 text-accent-600 dark:text-accent-600" />
         </div>
         <div>
-          <h3 className="font-semibold text-accent-700 dark:text-accent-300">
+          <h3 className="font-semibold text-accent-700 dark:text-accent-600">
             为您推荐
           </h3>
-          <p className="text-xs text-neutral-500">基于您的历史偏好</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">基于您的历史偏好</p>
         </div>
       </div>
 
@@ -83,10 +83,10 @@ export function PersonalizedRecommendations({
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-medium text-accent-600 dark:text-accent-400">
+                  <span className="text-xs font-medium text-accent-600 dark:text-accent-600">
                     #{index + 1}
                   </span>
-                  <div className="flex items-center gap-1 text-xs text-neutral-500">
+                  <div className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <Clock className="w-3 h-3" />
                     {new Date(rec.createdAt).toLocaleDateString('zh-CN')}
                   </div>
@@ -96,14 +96,14 @@ export function PersonalizedRecommendations({
                   {rec.effects.map((effect) => (
                     <span
                       key={effect}
-                      className="text-xs px-1.5 py-0.5 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded"
+                      className="text-xs px-1.5 py-0.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 rounded"
                     >
                       {effect}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-neutral-500">
+                <div className="flex items-center gap-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <div className="flex items-center gap-1">
                     <Star className="w-3 h-3 text-warning-500" />
                     <span>{rec.scores.overall.toFixed(2)}</span>
@@ -153,7 +153,7 @@ export function PersonalizedRecommendations({
       </div>
 
       {recommendations.length > maxDisplay && (
-        <button className="w-full mt-3 text-xs text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors">
+        <button className="w-full mt-3 text-xs text-accent-600 dark:text-accent-600 hover:text-accent-700 dark:hover:text-accent-300 transition-colors">
           查看更多推荐 ({recommendations.length - maxDisplay})
         </button>
       )}

@@ -221,20 +221,20 @@ const DialogInput = memo(
                 className={cn(
                   'text-xs transition-colors',
                   isExceeded
-                    ? 'text-error-500 dark:text-error-400 font-semibold'
+                    ? 'text-error-500 dark:text-error-600 font-semibold'
                     : isOverLimit
                     ? 'text-orange-500'
-                    : 'text-neutral-400',
+                    : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                 )}
               >
                 {charCount}/{maxLength}
                 {isOverLimit && !isExceeded && (
-                  <span className="ml-1 text-neutral-400">即将达到限制</span>
+                  <span className="ml-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">即将达到限制</span>
                 )}
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-xs text-neutral-400">
+            <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <span className="hidden sm:inline-flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
                   Shift
@@ -245,7 +245,7 @@ const DialogInput = memo(
                 </kbd>
                 <span className="ml-1">换行</span>
               </span>
-              <span className="hidden sm:inline text-neutral-300">·</span>
+              <span className="hidden sm:inline text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
               <span className="hidden sm:inline-flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
                   Enter
@@ -260,7 +260,7 @@ const DialogInput = memo(
               {errors.map((error, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 text-error-500 dark:text-error-400 text-xs"
+                  className="flex items-center gap-2 text-error-500 dark:text-error-600 text-xs"
                   role="alert"
                   aria-live="polite"
                 >

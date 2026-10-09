@@ -98,7 +98,7 @@ function LanguageSwitcher({
             aria-checked={i18n.language === lang.code}
             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
               i18n.language === lang.code
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 shadow-sm'
+                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-600 shadow-sm'
                 : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-700'
             }`}
           >
@@ -133,7 +133,7 @@ function LanguageSwitcher({
           aria-label={t('settings.language')}
         >
           <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700">
-            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+            <p className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5" />
               {t('settings.language')}
             </p>
@@ -147,7 +147,7 @@ function LanguageSwitcher({
               aria-selected={i18n.language === lang.code}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors ${
                 i18n.language === lang.code
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600'
                   : 'hover:bg-slate-50 dark:hover:bg-neutral-700/50 text-neutral-700 dark:text-neutral-300'
               }`}
             >
@@ -155,7 +155,7 @@ function LanguageSwitcher({
                 <span className="text-lg">{lang.flag}</span>
                 <div className="text-left">
                   <div className="font-medium">{lang.name}</div>
-                  {showNativeName && <div className="text-xs text-neutral-500">{lang.nativeName}</div>}
+                  {showNativeName && <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{lang.nativeName}</div>}
                 </div>
               </div>
 

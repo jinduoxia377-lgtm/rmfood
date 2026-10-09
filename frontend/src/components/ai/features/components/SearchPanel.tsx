@@ -22,11 +22,11 @@ interface SearchPanelProps {
 const TYPE_CONFIG: Record<SearchResultType, { label: string; className: string }> = {
   article: {
     label: '文章',
-    className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
+    className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600',
   },
   research: {
     label: '研究',
-    className: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
+    className: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
   },
   case: {
     label: '案例',
@@ -34,15 +34,15 @@ const TYPE_CONFIG: Record<SearchResultType, { label: string; className: string }
   },
   faq: {
     label: 'FAQ',
-    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400',
+    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-600',
   },
 }
 
 function getRelevanceColor(relevance: number): string {
   const percentage = relevance * 100
-  if (percentage > 90) return 'text-success-600 dark:text-success-400'
+  if (percentage > 90) return 'text-success-600 dark:text-success-600'
   if (percentage > 70) return 'text-yellow-600 dark:text-yellow-400'
-  return 'text-error-600 dark:text-error-400'
+  return 'text-error-600 dark:text-error-600'
 }
 
 function getRelevanceLabel(relevance: number): string {
@@ -117,7 +117,7 @@ SearchResultItem.displayName = 'SearchResultItem'
 const EmptyState = memo(() => (
   <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
     <div className="w-16 h-16 mb-4 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
-      <Search className="w-8 h-8 text-neutral-400" />
+      <Search className="w-8 h-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
     </div>
     <h3 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">未找到相关结果</h3>
     <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-[240px]">
@@ -204,12 +204,12 @@ export const SearchPanel = memo<SearchPanelProps>(({
     >
       <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+          <Search className="w-4 h-4 text-primary-700 dark:text-primary-600" />
           <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">智能搜索</span>
           {isSearching && (
             <>
               <span className="text-sm text-neutral-500 dark:text-neutral-400">搜索中...</span>
-              <Loader2 className="w-4 h-4 animate-spin text-neutral-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </>
           )}
           {!isSearching && results.length > 0 && (
@@ -223,7 +223,7 @@ export const SearchPanel = memo<SearchPanelProps>(({
           className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
           aria-label="关闭搜索"
         >
-          <X className="w-4 h-4 text-neutral-400" />
+          <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 

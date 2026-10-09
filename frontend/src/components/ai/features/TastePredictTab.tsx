@@ -315,7 +315,7 @@ export function TastePredictTab() {
             <div className="text-center space-y-3 p-8">
               <Cherry className="w-16 h-16 mx-auto text-error-300 dark:text-error-600" />
               <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">等待输入配方...</h3>
-              <p className="text-sm text-neutral-500 max-w-md">
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
                 在左侧输入药材名称后，点击"本地预测"或"AI 分析"按钮， 此处将显示五味分布、口感评分和优化建议。
               </p>
             </div>
@@ -348,7 +348,7 @@ export function TastePredictTab() {
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">综合评分</h3>
                       <div className="flex items-baseline gap-2 mt-1">
                         <span className="text-4xl font-bold text-secondary-600">{(tasteResult.score * 100).toFixed(0)}</span>
-                        <span className="text-neutral-500">/ 100</span>
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/ 100</span>
                       </div>
                       <p className="text-sm text-neutral-600 mt-2">{tasteResult.description}</p>
                     </div>
@@ -363,7 +363,7 @@ export function TastePredictTab() {
                           }}
                         />
                         <span className="font-medium">{FIVE_TASTES_LABELS[tasteResult.dominantTaste]}</span>
-                        <span className="text-neutral-500">({tasteResult.dominantIntensity.toFixed(1)})</span>
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({tasteResult.dominantIntensity.toFixed(1)})</span>
                       </div>
                     </div>
 

@@ -303,7 +303,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
             type="text"
             value={customFilename}
             onChange={(e) => this.setState({ customFilename: e.target.value })}
-            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="输入文件名"
           />
         </div>

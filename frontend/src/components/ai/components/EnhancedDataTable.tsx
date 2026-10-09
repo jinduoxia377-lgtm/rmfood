@@ -42,9 +42,9 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 function DefaultEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-4" />
+      <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-400 mb-4" />
       <p className="text-neutral-500 dark:text-neutral-400 text-base font-medium">暂无数据</p>
-      <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">当前表格没有可显示的数据</p>
+      <p className="text-neutral-400 dark:text-neutral-400 text-sm mt-2">当前表格没有可显示的数据</p>
     </div>
   )
 }
@@ -138,7 +138,7 @@ export function EnhancedDataTable({
         header: '功效标签',
         cell: (info) => {
           const tags = info.getValue<EfficacyTag[]>()
-          if (!tags || tags.length === 0) return <span className="text-xs text-neutral-400">—</span>
+          if (!tags || tags.length === 0) return <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">—</span>
           return (
             <EfficacyTagList tags={tags} maxVisible={3} size="small" />
           )
@@ -151,7 +151,7 @@ export function EnhancedDataTable({
         header: '注意事项',
         cell: (info) => {
           const precautions = info.getValue<Precaution[]>()
-          if (!precautions || precautions.length === 0) return <span className="text-xs text-neutral-300">—</span>
+          if (!precautions || precautions.length === 0) return <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">—</span>
           return <PrecautionBadge precautions={precautions} size="sm" />
         },
         size: 100,
@@ -168,8 +168,8 @@ export function EnhancedDataTable({
         cell: (info) => {
           const source = info.getValue() as string
           const sourceConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-            TCM: { label: '药食同源', color: 'text-success-700 dark:text-success-400', bgColor: 'bg-success-50 dark:bg-success-900/20' },
-            PEPTIDE: { label: '食源性多肽', color: 'text-secondary-700 dark:text-secondary-400', bgColor: 'bg-secondary-50 dark:bg-secondary-900/20' },
+            TCM: { label: '药食同源', color: 'text-success-700 dark:text-success-600', bgColor: 'bg-success-50 dark:bg-success-900/20' },
+            PEPTIDE: { label: '食源性多肽', color: 'text-secondary-700 dark:text-secondary-600', bgColor: 'bg-secondary-50 dark:bg-secondary-900/20' },
             EXCIPIENT: { label: '辅料', color: 'text-neutral-700 dark:text-neutral-400', bgColor: 'bg-slate-50 dark:bg-neutral-800/50' },
           }
           const config = sourceConfig[source] ?? sourceConfig.TCM
@@ -190,7 +190,7 @@ export function EnhancedDataTable({
             className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             title="查看详情"
           >
-            <Table className="w-4 h-4 text-neutral-400" />
+            <Table className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         ),
         size: 60,
@@ -262,14 +262,14 @@ export function EnhancedDataTable({
             className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
             aria-label="关闭"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
           <div className="relative flex-1 max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <input
               type="search"
               value={globalFilter}
@@ -456,7 +456,7 @@ export function EnhancedDataTable({
 
 function SortIcon({ column }: { column: any }) {
   const sorted = column.getIsSorted()
-  if (!sorted) return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+  if (!sorted) return <ArrowUpDown className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity" />
   return sorted === 'asc' ? (
     <ArrowUp className="w-3.5 h-3.5 text-primary-500" />
   ) : (

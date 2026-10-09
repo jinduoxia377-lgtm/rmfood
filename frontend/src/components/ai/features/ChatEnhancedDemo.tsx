@@ -253,7 +253,7 @@ export function ChatEnhancedDemo({
         }`}>
           <h3 className="font-semibold mb-2">💾 内存</h3>
           <p className="text-sm">{memoryUsageMB.toFixed(1)} MB</p>
-          <p className="text-xs text-neutral-500">FPS: {currentFPS}</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">FPS: {currentFPS}</p>
           <p className={`text-xs font-medium ${
             fpsStatus === 'good' ? 'text-success-600' :
             fpsStatus === 'acceptable' ? 'text-yellow-600' : 'text-error-600'
@@ -292,7 +292,7 @@ export function ChatEnhancedDemo({
           <p className="text-sm">
             命中: {cacheStats.hits} | 未命中: {cacheStats.misses}
           </p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             命中率: {((cacheStats.hits / Math.max(1, cacheStats.hits + cacheStats.misses)) * 100).toFixed(1)}%
           </p>
         </div>
@@ -301,7 +301,7 @@ export function ChatEnhancedDemo({
       {/* 消息列表 */}
       <div className="border rounded-lg p-4 h-96 overflow-y-auto mb-4 bg-white dark:bg-neutral-900">
         {messages.length === 0 ? (
-          <div className="text-center text-neutral-400 mt-20">
+          <div className="text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-20">
             发送一条消息开始对话...
           </div>
         ) : (

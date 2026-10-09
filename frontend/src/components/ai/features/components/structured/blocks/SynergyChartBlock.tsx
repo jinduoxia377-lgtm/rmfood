@@ -17,10 +17,10 @@ function SynergyChartBlock({ data }: SynergyChartBlockProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
 
   const roleColors: Record<string, string> = {
-    '君': 'text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 border-primary-300 dark:border-primary-700',
-    '臣': 'text-secondary-600 dark:text-secondary-400 bg-secondary-100 dark:bg-secondary-900/30 border-secondary-300 dark:border-secondary-700',
-    '佐': 'text-accent-600 dark:text-accent-400 bg-accent-100 dark:bg-accent-900/30 border-accent-300 dark:border-accent-700',
-    '使': 'text-warning-600 dark:text-warning-400 bg-warning-100 dark:bg-warning-900/30 border-warning-300 dark:border-warning-700',
+    '君': 'text-primary-700 dark:text-primary-600 bg-primary-100 dark:bg-primary-900/30 border-primary-300 dark:border-primary-700',
+    '臣': 'text-secondary-600 dark:text-secondary-600 bg-secondary-100 dark:bg-secondary-900/30 border-secondary-300 dark:border-secondary-700',
+    '佐': 'text-accent-600 dark:text-accent-600 bg-accent-100 dark:bg-accent-900/30 border-accent-300 dark:border-accent-700',
+    '使': 'text-warning-600 dark:text-warning-600 bg-warning-100 dark:bg-warning-900/30 border-warning-300 dark:border-warning-700',
     '其他': 'text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700',
   }
 
@@ -47,8 +47,8 @@ function SynergyChartBlock({ data }: SynergyChartBlockProps) {
   if (nodes.length === 0) {
     return (
       <div className="mb-3 last:mb-0 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 text-center">
-        <Network className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">暂无配伍数据</p>
+        <Network className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
+        <p className="text-xs text-neutral-400 dark:text-neutral-400">暂无配伍数据</p>
       </div>
     )
   }
@@ -65,11 +65,11 @@ function SynergyChartBlock({ data }: SynergyChartBlockProps) {
         </div>
         <div className="flex items-center gap-1.5">
           {type === 'hierarchy' ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600">
               层级模式
             </span>
           ) : (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-600">
               网络模式
             </span>
           )}
@@ -123,7 +123,7 @@ function SynergyChartBlock({ data }: SynergyChartBlockProps) {
                     </div>
                   ))}
                   {edges.length > 5 && (
-                    <div className="text-[10px] text-neutral-400 dark:text-neutral-500 italic">
+                    <div className="text-[10px] text-neutral-400 dark:text-neutral-400 italic">
                       ... 还有 {edges.length - 5} 条关系
                     </div>
                   )}
@@ -143,7 +143,7 @@ function SynergyChartBlock({ data }: SynergyChartBlockProps) {
                   {node.label}
                 </span>
                 {edges.filter(e => e.from === node.id || e.to === node.id).length > 0 && (
-                  <span className="text-[10px] text-neutral-400">
+                  <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {edges.filter(e => e.from === node.id || e.to === node.id).length} 条关系
                   </span>
                 )}

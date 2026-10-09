@@ -203,7 +203,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <FileText className="w-5 h-5 text-primary-700 dark:text-primary-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">手动输入配方</h3>
@@ -249,7 +249,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
         <div className="mb-4 p-3 bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-warning-500 mt-0.5 shrink-0" />
-            <div className="text-sm text-warning-700 dark:text-warning-400">
+            <div className="text-sm text-warning-700 dark:text-warning-600">
               <p className="font-medium mb-1">请完善以下内容：</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {validationErrors.map((error, index) => (
@@ -264,7 +264,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
       {/* 分析错误提示 */}
       {result.error && (
         <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <div className="flex items-center gap-2 text-error-600 dark:text-error-400 text-sm">
+          <div className="flex items-center gap-2 text-error-600 dark:text-error-600 text-sm">
             <AlertTriangle className="w-4 h-4" />
             {result.error}
           </div>
@@ -329,7 +329,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
         <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-5 h-5 text-primary-500" />
-            <h4 className="font-medium text-primary-800 dark:text-primary-300">分析完成</h4>
+            <h4 className="font-medium text-primary-800 dark:text-primary-600">分析完成</h4>
           </div>
 
           {/* 雷达图 */}
@@ -366,7 +366,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
             </div>
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-3 text-center">
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">综合评分</p>
-              <p className="text-lg font-bold text-primary-600">
+              <p className="text-lg font-bold text-primary-700">
                 {((result.candidate.overall_score || 0) * 100).toFixed(0)}
               </p>
             </div>
@@ -394,7 +394,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
                   disabled={result.isLoading}
                 >
                   <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{formula.name}</div>
-                  <div className="text-xs text-neutral-500">{formatTime(formula.savedAt)}</div>
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTime(formula.savedAt)}</div>
                 </button>
                 <button
                   onClick={() => handleDeleteFormula(formula.id)}

@@ -212,7 +212,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-6 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Settings className="w-6 h-6 text-primary-600" />
+            <Settings className="w-6 h-6 text-primary-700" />
             报告设置
           </h2>
           <button
@@ -283,7 +283,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                 >
                   <div className="font-semibold mb-1">{template.name}</div>
                   <div className="text-sm text-neutral-600 dark:text-neutral-400">{template.description}</div>
-                  <div className="text-xs text-neutral-500 dark:text-neutral-500 mt-2">{template.modules.length} 个章节</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">{template.modules.length} 个章节</div>
                 </button>
               ))}
             </div>
@@ -306,11 +306,11 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                         type="checkbox"
                         checked={isEnabled}
                         onChange={() => toggleModule(type)}
-                        className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                        className="w-4 h-4 text-primary-700 rounded focus:ring-primary-500"
                       />
                       <span className="font-medium">{MODULE_TITLE_MAP[type]}</span>
                     </div>
-                    <span className="text-sm text-neutral-500">{config?.priority || '-'}</span>
+                    <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{config?.priority || '-'}</span>
                   </div>
                 );
               })}
@@ -353,10 +353,10 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
     <div className="bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-2xl p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary-600" />
+          <Sparkles className="w-5 h-5 text-primary-700" />
           正在生成报告...
         </h3>
-        <span className="text-2xl font-bold text-primary-600">{progress}%</span>
+        <span className="text-2xl font-bold text-primary-700">{progress}%</span>
       </div>
       <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
         <div
@@ -478,9 +478,9 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
       <div className="p-6">
         {!reportGenerated ? (
           <div className="text-center py-16 bg-slate-50 dark:bg-neutral-700 rounded-xl">
-            <AlertCircle className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
+            <AlertCircle className="w-16 h-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">报告未生成</h3>
-            <p className="text-neutral-500 mb-4">点击"生成报告"开始生成学术报告</p>
+            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">点击"生成报告"开始生成学术报告</p>
             <button
               onClick={handleGenerateReport}
               className="px-6 py-3 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
@@ -491,7 +491,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
         ) : (
           <div className="bg-slate-50 dark:bg-neutral-700 rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-200">报告预览</h3>
-            <div className="text-center py-8 text-neutral-500">
+            <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <FileDown className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>报告已生成，请使用"导出报告"功能下载完整报告</p>
               <p className="text-sm mt-2">已启用章节：{enabledModules.map((m) => MODULE_TITLE_MAP[m]).join('、')}</p>

@@ -358,7 +358,7 @@ function StabilityTimeSeries({
                   <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
                     {point.label}
                   </div>
-                  <div className="text-[11px] text-neutral-500">
+                  <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {new Date(point.timestamp).toLocaleDateString('zh-CN')}
                   </div>
                 </div>
