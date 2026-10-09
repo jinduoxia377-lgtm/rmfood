@@ -1144,6 +1144,15 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：thinking-viz 域多数组件（ThinkingVisualizerV3 10 原生 button / PromptLibrary 18 / RAGKnowledgePanel 7 / SuggestionPanel 7）普遍自造控件而非复用 UI 库 Button/Input，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
 > **终态**：tsc 0 错（退出码 0）· `thinking-audit-leaks` 漏配扫描 87 → 0 · 双模式渲染探针（settled）：亮 4 / 暗 24 不达标（与四个前序域完成时基线一致，余项均为 /ai 页主体层 ⌘K/ESC kbd 与横幅副标题，非本子域内部组件；本子域内部组件对比度已达标）· 14 门禁 13 pass / 0 fail / 0 skip / 1 合法 warn（GATE-09）· build ✅（vite 8.16s）· vitest 29/29。
 
+> **2026-10-08 /ai advanced-analysis + config 子域样板轮登记**（提交 `86f01b5`，主题令牌达标 + 视觉一致性）：承接 chat（426ecf3 + 4d951c8）、agent-workflow（0e5ef0f）、formula-generation（01d5dbe）、safety（f153d21）、thinking-viz（3017a94）域样板轮，复用同一模板对 **advanced-analysis + config（高级分析与配置）子域** 做第六轮专业规范审计与修复（用户「继续」确认：同模板推进下一子域）。审计方法：`advanced-audit-leaks.mjs` 字面灰阶无 `dark:` 配对漏配扫描 + `ai-audit-settled.cjs` 双模式渲染探针 + 视觉一致性人工核查。
+> 1. **P0 主题令牌化（13 文件 / 146 处字面灰阶无 dark: 配对漏配 → 0）**：
+>    - 高级肽设计与优化：`AdvancedPeptideDesign`（19 处：空态×2 / 候选方案 / Pareto前沿 / 指标说明 / 设计完成提示 / 功效信息 / 目标权重 / 统计与性质标签 / 活性预测）、`OptimizationAdvisor`（18 处：无优化空间 / 建议 desc / Chevron×2 / 调整建议 / 优化原理 / 置信度 / X×3 / 应用更改 / ArrowRight / 评分变化 / Clock / 建议标题 / desc）、`ParameterAdjustPanel`（8 处）、`NeuralGeneratePanel`（6 处）
+>    - 候选比较与版本管理：`MultiCandidateCompare`（13 处：空态 Card / 趋势图标 / 差异单元格 / 持平 / 状态一致 / 相差 N 味 / 数量相同 / 相差 N 个 / 分栏标题）、`FormulaVersionManager`（16 处：History 图标 / 自动创建版本提示 / 版本号 / 计数 / +N / 字段标签 / 提示文字 / desc）
+>    - 配置与模板：`ModelConfigPanel`（15 行内 75 处文本替换）、`TemplateGallery`（12 处）、`TemplateSelector`（7 处）、`StructureEditor`（16 处，含 `border-neutral-300` 补 dark 配对）、`FormulaTable`（8 处）、`ProfessionalReport`（6 处）、`AIGenerator`（3 处）
+>    全部 → `text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`（L0 双模式令牌）。批量脚本采用全局正则（`g` 标志）逐行替换所有文本灰阶 + 边框/背景类补 `dark:` 配对（`border-neutral-200/300` → `+dark:border-neutral-700`、`bg-white/slate-50 等` → `+dark:bg-neutral-800`），并跳过已有 `dark:` 配对的行；ModelConfigPanel 因一行内多处匹配致 147 行 diff（tsc 0 错 + build ✓ 已证明合法，无重复追加类）。
+> 2. **视觉一致性结论（本轮审计记录，未做结构重构）**：advanced-analysis 域多数组件已导入 UI 库，但 AdvancedPeptideDesign（15 原生 button/6 input）、FormulaVersionManager（15）、ProfessionalReport（12）、OptimizationAdvisor（12）、StructureEditor（7 button/5 input）仍自造控件，属历史代码习惯；本轮按口径仅做令牌化，未改控件结构（避免引入交互行为变化与回归风险）。UI 库收敛记入 §11.2 残余项，留待后续轮次。
+> **终态**：tsc 0 错（退出码 0）· `advanced-audit-leaks` 漏配扫描 146 → 0 · 双模式渲染探针（settled）：亮 1 / 暗 26 不达标（探针重跑后与五个前序域一致，均为 /ai 页主体层 SearchModal/CommandPalette 的 ⌘K/ESC kbd、页面导航 tab 标签、EmptyStateCard 快捷问题 的已知伪阳性——effectiveBg 走到未随 dark 切换的浅色背景；经逐项核对 26 项 className 均出自页面主体层 / chat 域 / SearchModal，无一来自本次改动的 13 个 advanced/config 组件）· 14 门禁 13 pass / 0 fail / 0 skip（首次并行跑时 GATE-05 一度报失败，系门禁读 dist/assets 时与 build 并行写入竞争的时序问题；单独干净重跑 13/0/0 通过，GATE-05 达标）/ 1 合法 warn（GATE-09）· build ✅（vite）· vitest 29/29。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
