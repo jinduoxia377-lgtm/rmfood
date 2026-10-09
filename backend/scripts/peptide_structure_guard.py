@@ -244,6 +244,22 @@ CHECKS = [
         r"ExternalSourceView",
         "前端：外部数据源检索子工具必须注册",
     ),
+    # 数据库 ↔ 分析 双向集成
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"onAnalyzeSequence",
+        "前端：数据库 Tab 必须提供 onAnalyzeSequence 回调（行内「分析」按钮）",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"handleAnalyzeFromDatabase",
+        "前端：主组件必须定义 handleAnalyzeFromDatabase（数据库→分析跳转）",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"在数据库中查看",
+        "前端：来源卡片必须提供「在数据库中查看」反向跳转",
+    ),
 ]
 
 

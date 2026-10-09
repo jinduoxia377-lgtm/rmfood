@@ -448,8 +448,8 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
 }
 
 // ─── 数据库查询组件 ───
-function DatabaseView() {
-  const [query, setQuery] = useState('');
+function DatabaseView({ onAnalyzeSequence, initialQuery }: { onAnalyzeSequence?: (seq: string) => void; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery || '');
   const [results, setResults] = useState<DatabasePeptide[]>([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -485,9 +485,9 @@ setLoading(true);
 
   useEffect(() => {
     handleLoadStats();
-    // 默认显示前20条
-    doSearch('', 1);
-  }, []);
+    // 有预填序列（来自分析 Tab 反向跳转）则按序列搜索，否则显示前20条
+    doSearch(initialQuery || '', 1);
+  }, [initialQuery]);
 
   const handleSearch = useCallback(() => {
 
@@ -547,6 +547,7 @@ setLoading(true);
                   <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -559,6 +560,18 @@ setLoading(true);
                       {p.activity_value ? `${p.activity_value} ${p.activity_unit}` : '-'}
                     </td>
                     <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
+                    <td className="px-3 py-2 text-center">
+                      {onAnalyzeSequence && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                          onClick={() => onAnalyzeSequence(p.sequence)}
+                        >
+                          <Beaker className="w-3.5 h-3.5 mr-1" />分析
+                        </Button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1920,6 +1933,28 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     }
   }, [sequence, nTerminal, cTerminal]);
 
+  // 数据库 Tab → 完整分析 Tab：预填序列并自动执行分析
+  const handleAnalyzeFromDatabase = useCallback((seq: string) => {
+    setSequence(seq.toUpperCase());
+    setActiveTab('analyze');
+    setTimeout(async () => {
+      try {
+        const res = await peptideStructureService.analyzePeptide(seq.toUpperCase());
+        setResult(res as PeptideAnalysisResult);
+        if (res.smiles) fetchMolecule3D(res.smiles);
+      } catch (e: any) {
+        setError(e.message || '分析失败');
+      }
+    }, 0);
+  }, [fetchMolecule3D]);
+
+  // 完整分析 Tab 来源卡片 → 数据库 Tab（预填搜索序列）
+  const [dbQuerySeed, setDbQuerySeed] = useState<string>('');
+  const handleGoDatabase = useCallback((seq: string) => {
+    setDbQuerySeed(seq);
+    setActiveTab('database');
+  }, []);
+
   // 序列转换
   const handleConvert = useCallback(async () => {
     if (!sequence || sequence.length < 2) {
@@ -2413,6 +2448,14 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                     )}
                   </div>
+                  <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                    <span className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                      数据来源：{result.source?.database || 'DFBP'} · 序列 {result.sequence}
+                    </span>
+                    <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={() => handleGoDatabase(result.sequence)}>
+                      <Database className="w-3 h-3 mr-1" />在数据库中查看
+                    </Button>
+                  </div>
                 </Card>
               )}
 
@@ -2518,7 +2561,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
       )}
 
       {/* 数据库 */}
-      {activeTab === 'database' && <DatabaseView />}
+      {activeTab === 'database' && <DatabaseView onAnalyzeSequence={handleAnalyzeFromDatabase} initialQuery={dbQuerySeed} />}
 
       {/* 对比分析 */}
       {activeTab === 'compare' && (
