@@ -136,6 +136,39 @@ CHECKS = [
         r"key: 'advanced', label: '高级工具'",
         "前端：高级工具 Tab 必须注册（水解/比对/定量三工具入口）",
     ),
+    # 协同 Tab 字段契约（synergy_matrix 而非 synergies）
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"result\.synergy_matrix \|\| \[\]\)\.flat\(\)",
+        "前端：协同 Tab 必须用 result.synergy_matrix（后端真实字段）",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"result\.top_combinations",
+        "前端：协同 Tab 必须用 result.top_combinations（非 ranked_herbs）",
+    ),
+    # 高级工具 Tab 六个子工具入口
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"SolubilityPredictorView",
+        "前端：溶解度预测子工具必须注册",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"VariantGeneratorView",
+        "前端：变体生成子工具必须注册",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"CustomOptimizerView",
+        "前端：自定义优化子工具必须注册",
+    ),
+    # service 自定义优化方法
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"customOptimize",
+        "前端 service：customOptimize 方法必须存在",
+    ),
 ]
 
 

@@ -1039,29 +1039,9 @@ function SynergyView() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
 
-  // 从后端动态获取药食同源药材列表
-  const [herbs, setHerbs] = useState<string[]>([]);
-  const [herbsLoading, setHerbsLoading] = useState(true);
-
-  useEffect(() => {
-    databaseApi.getFoodHomologyHerbs({ page: 1, page_size: 50 })
-      .then(res => {
-        const names = (res?.items ?? [])
-          .map((h: any) => h.name_cn || h.name || '')
-          .filter(Boolean)
-          .slice(0, 20);
-        setHerbs(names);
-      })
-      .catch(() => {
-        // fallback to defaults if API fails
-        setHerbs(['黄芪', '人参', '枸杞子', '山楂', '菊花', '葛根', '酸枣仁', '灵芝']);
-      })
-      .finally(() => setHerbsLoading(false));
-  }, []);
-
   const handleSynergy = useCallback(async () => {
     if (!peptideSeq.trim()) { setError('请输入肽序列'); return; }
-    const herbNames = herbInput ? herbInput.split(',').map(s => s.trim()).filter(Boolean) : herbs.slice(0, 4);
+    const herbNames = herbInput ? herbInput.split(',').map(s => s.trim()).filter(Boolean) : ['黄芪', '人参', '枸杞子', '山楂'];
     setLoading(true); setError(null); setResult(null);
     try {
       const res = await peptideStructureService.synergyAnalysis([peptideSeq.trim().toUpperCase()], herbNames);
@@ -1085,8 +1065,8 @@ function SynergyView() {
           <Input value={herbInput} onChange={e => setHerbInput(e.target.value)} placeholder="黄芪,人参,枸杞子" />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {herbs.map(h => (
-            <button key={h} onClick={() => setHerbInput(prev => prev.includes(h) ? prev.replace(h, '').replace(/,,?/, '') : (prev ? prev + ',' + h : h))}
+          {['黄芪', '人参', '枸杞子', '山楂', '菊花', '葛根', '酸枣仁', '灵芝'].map(h => (
+            <button key={h} onClick={() => setHerbInput(prev => prev.includes(h) ? prev.replace(h, '').replace(/,,?/, '').replace(/,$/, '') : (prev ? prev + ',' + h : h))}
               className="px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
               {h}
             </button>
@@ -1099,7 +1079,10 @@ function SynergyView() {
       {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {result && (
         <Card className="p-4 space-y-3">
-          <h3 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-primary"/>协同效应结果</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />协同效应结果</h3>
+            <span className="text-xs text-[var(--text-muted)]">分析: {result.peptides_analyzed ?? 0} 肽 × {result.herbs_analyzed ?? 0} 药材，综合协同 {(result.overall_synergy_score ?? 0).toFixed(3)}</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
@@ -1107,27 +1090,29 @@ function SynergyView() {
                 <th className="px-2 py-1.5 text-left">药材</th>
                 <th className="px-2 py-1.5 text-right">协同评分</th>
                 <th className="px-2 py-1.5 text-left">机制</th>
+                <th className="px-2 py-1.5 text-left">建议</th>
               </tr></thead>
               <tbody>
-                {(result.synergies || []).map((s: any, i: number) => (
+                {(result.synergy_matrix || []).flat().map((s: any, i: number) => (
                   <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
                     <td className="px-2 py-1.5 font-mono">{s.peptide}</td>
                     <td className="px-2 py-1.5">{s.herb}</td>
-                    <td className="px-2 py-1.5 text-right font-bold">{s.synergy_score?.toFixed(3)}</td>
+                    <td className="px-2 py-1.5 text-right font-bold">{(s.synergy_score ?? 0).toFixed(3)}</td>
                     <td className="px-2 py-1.5 text-[var(--text-muted)]">{s.mechanism || '-'}</td>
+                    <td className="px-2 py-1.5 text-[var(--text-muted)]">{s.recommendation || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {result.ranked_herbs && result.ranked_herbs.length > 0 && (
+          {result.top_combinations && result.top_combinations.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-[var(--text-muted)] mb-2">药材推荐排序</h4>
+              <h4 className="text-xs font-medium text-[var(--text-muted)] mb-2">最优组合</h4>
               <div className="space-y-1.5">
-                {result.ranked_herbs.slice(0, 5).map((h: any, i: number) => (
+                {result.top_combinations.slice(0, 5).map((c: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-xs p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
-                    <span className="font-medium">{i + 1}. {h.name}</span>
-                    <span className="font-mono text-primary">{h.score?.toFixed(3)}</span>
+                    <span className="font-mono font-medium">{c.peptide} + {c.herb}</span>
+                    <span className="font-mono text-primary">{(c.synergy_score ?? 0).toFixed(3)}</span>
                   </div>
                 ))}
               </div>
@@ -1139,22 +1124,27 @@ function SynergyView() {
   );
 }
 
-// ─── 高级工具组件（水解模拟 / 序列比对 / 定量预测）──────────────
+// ─── 高级工具组件（水解模拟 / 序列比对 / 定量预测 / 溶解度预测 / 变体生成 / 自定义优化）──────────────
 function AdvancedToolsView() {
-  const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative'>('hydrolysis');
+  const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative' | 'solubility' | 'variants' | 'customOpt'>('hydrolysis');
+
+  const tools = [
+    { key: 'hydrolysis' as const, label: '水解模拟' },
+    { key: 'align' as const, label: '序列比对' },
+    { key: 'quantitative' as const, label: '定量预测' },
+    { key: 'solubility' as const, label: '溶解度' },
+    { key: 'variants' as const, label: '变体生成' },
+    { key: 'customOpt' as const, label: '自定义优化' },
+  ];
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
-        {([
-          { key: 'hydrolysis' as const, label: '水解模拟' },
-          { key: 'align' as const, label: '序列比对' },
-          { key: 'quantitative' as const, label: '定量预测' },
-        ]).map(t => (
+      <div className="flex flex-wrap gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
+        {tools.map(t => (
           <button
             key={t.key}
             onClick={() => setTool(t.key)}
-            className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
               tool === t.key ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
             }`}
           >
@@ -1165,6 +1155,9 @@ function AdvancedToolsView() {
       {tool === 'hydrolysis' && <HydrolysisSimulator />}
       {tool === 'align' && <SequenceAligner />}
       {tool === 'quantitative' && <QuantitativePredictorView />}
+      {tool === 'solubility' && <SolubilityPredictorView />}
+      {tool === 'variants' && <VariantGeneratorView />}
+      {tool === 'customOpt' && <CustomOptimizerView />}
     </div>
   );
 }
@@ -1301,6 +1294,294 @@ function SequenceAligner() {
             </div>
           </div>
         </Card>
+      )}
+    </div>
+  );
+}
+
+// ── 溶解度预测 ──
+function SolubilityPredictorView() {
+  const [sequence, setSequence] = useState('');
+  const [phMin, setPhMin] = useState(2);
+  const [phMax, setPhMax] = useState(10);
+  const [temp, setTemp] = useState(25);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handlePredict = useCallback(async () => {
+    if (!sequence.trim()) { setError('请输入肽序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.predictSolubility([sequence.trim().toUpperCase()], phMin, phMax, temp);
+      setResult(res.data.predictions?.[0] ?? null);
+    } catch (e: any) {
+      setError(e.message || '溶解度预测失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequence, phMin, phMax, temp]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
+          <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">pH 下限</label>
+            <Input type="number" value={phMin} onChange={e => setPhMin(Number(e.target.value))} className="text-xs" min={0} max={14} />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">pH 上限</label>
+            <Input type="number" value={phMax} onChange={e => setPhMax(Number(e.target.value))} className="text-xs" min={0} max={14} />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">温度 °C</label>
+            <Input type="number" value={temp} onChange={e => setTemp(Number(e.target.value))} className="text-xs" min={0} max={100} />
+          </div>
+        </div>
+        <Button onClick={handlePredict} disabled={loading || !sequence.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>预测中...</> : '预测溶解度曲线'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <div className="space-y-3">
+          <Card className="p-4">
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">基础溶解度</div>
+                <div className="font-mono font-medium">{result.base_solubility?.toFixed(3)}</div>
+              </div>
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">最适 pH</div>
+                <div className="font-mono font-medium">{result.optimal_ph?.ph ?? '-'} (max {result.optimal_ph?.max_solubility?.toFixed(3)})</div>
+              </div>
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">等电点</div>
+                <div className="font-mono font-medium">{result.isoelectric_point ?? '-'}</div>
+              </div>
+            </div>
+          </Card>
+          {result.ph_profiles && result.ph_profiles.length > 0 && (
+            <Card className="p-4">
+              <h3 className="text-sm font-medium mb-2">pH 溶解度曲线</h3>
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-2 py-1.5 text-left">pH</th>
+                  <th className="px-2 py-1.5 text-right">mg/mL</th>
+                  <th className="px-2 py-1.5 text-left">电荷态</th>
+                  <th className="px-2 py-1.5 text-left">溶解度等级</th>
+                </tr></thead>
+                <tbody>
+                  {result.ph_profiles.map((p: any, i: number) => (
+                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                      <td className="px-2 py-1.5 font-mono">{p.ph?.toFixed(1)}</td>
+                      <td className="px-2 py-1.5 text-right font-mono">{p.solubility_mg_ml?.toFixed(3)}</td>
+                      <td className="px-2 py-1.5">{p.charge_state || '-'}</td>
+                      <td className="px-2 py-1.5 text-[var(--text-muted)]">{p.solubility_class || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 变体生成 ──
+function VariantGeneratorView() {
+  const [template, setTemplate] = useState('');
+  const [variantType, setVariantType] = useState('point');
+  const [numVariants, setNumVariants] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleGenerate = useCallback(async () => {
+    if (!template.trim()) { setError('请输入模板序列'); return; }
+    if (numVariants < 5) { setError('变体数必须 >= 5（后端约束）'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.generateVariants(template.trim().toUpperCase(), variantType, numVariants);
+      setResult(res.data);
+    } catch (e: any) {
+      setError(e.message || '变体生成失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [template, variantType, numVariants]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">模板序列</label>
+          <Input value={template} onChange={e => setTemplate(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">变体类型</label>
+            <select value={variantType} onChange={e => setVariantType(e.target.value)}
+              className="w-full text-xs p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <option value="point">点突变（替换）</option>
+              <option value="insertion">插入</option>
+              <option value="deletion">删除</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">变体数（≥5）</label>
+            <Input type="number" value={numVariants} onChange={e => setNumVariants(Number(e.target.value))} className="text-xs" min={5} max={50} />
+          </div>
+        </div>
+        <Button onClick={handleGenerate} disabled={loading || !template.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>生成中...</> : '生成结构变体库'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium">变体列表</h3>
+            <span className="text-xs text-[var(--text-muted)]">共 {result.total_generated} 个变体</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <th className="px-2 py-1.5 text-left">序列</th>
+                <th className="px-2 py-1.5 text-left">突变类型</th>
+                <th className="px-2 py-1.5 text-right">编辑距离</th>
+                <th className="px-2 py-1.5 text-right">相似度</th>
+                <th className="px-2 py-1.5 text-right">分子量</th>
+              </tr></thead>
+              <tbody>
+                {(result.variants || []).slice(0, 20).map((v: any, i: number) => (
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <td className="px-2 py-1.5 font-mono font-medium">{v.sequence}</td>
+                    <td className="px-2 py-1.5">{v.mutation_type || result.variant_type}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{v.edit_distance}</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{(v.similarity * 100).toFixed(1)}%</td>
+                    <td className="px-2 py-1.5 text-right font-mono">{v.molecular_weight?.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── 自定义优化（遗传算法）──
+function CustomOptimizerView() {
+  const [seed, setSeed] = useState('');
+  const [aceWeight, setAceWeight] = useState(0.5);
+  const [aoxWeight, setAoxWeight] = useState(0.5);
+  const [iterations, setIterations] = useState(20);
+  const [population, setPopulation] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleOptimize = useCallback(async () => {
+    if (!seed.trim()) { setError('请输入种子序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const weights: Record<string, number> = {};
+      if (aceWeight > 0) weights['ACE_inhibitory'] = aceWeight;
+      if (aoxWeight > 0) weights['antioxidant'] = aoxWeight;
+      const res = await peptideStructureService.customOptimize(seed.trim().toUpperCase(), weights, iterations, population);
+      setResult(res.data);
+    } catch (e: any) {
+      setError(e.message || '自定义优化失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [seed, aceWeight, aoxWeight, iterations, population]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">种子序列</label>
+          <Input value={seed} onChange={e => setSeed(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={50} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">ACE 抑制权重 ({aceWeight})</label>
+            <input type="range" min={0} max={1} step={0.1} value={aceWeight}
+              onChange={e => setAceWeight(Number(e.target.value))} className="w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">抗氧化权重 ({aoxWeight})</label>
+            <input type="range" min={0} max={1} step={0.1} value={aoxWeight}
+              onChange={e => setAoxWeight(Number(e.target.value))} className="w-full" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">迭代次数（1-100）</label>
+            <Input type="number" value={iterations} onChange={e => setIterations(Number(e.target.value))} className="text-xs" min={1} max={100} />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">种群大小（3-30）</label>
+            <Input type="number" value={population} onChange={e => setPopulation(Number(e.target.value))} className="text-xs" min={3} max={30} />
+          </div>
+        </div>
+        <Button onClick={handleOptimize} disabled={loading || !seed.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>优化中...</> : '遗传算法优化'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <div className="space-y-3">
+          <Card className="p-4">
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">优化序列</div>
+                <div className="font-mono font-medium text-primary">{result.optimized_sequence}</div>
+              </div>
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">最优得分</div>
+                <div className="font-mono font-medium">{result.best_score?.toFixed(3)}</div>
+              </div>
+              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="text-[var(--text-muted)]">提升幅度</div>
+                <div className="font-mono font-medium text-success-600">+{(result.improvement * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          </Card>
+          {result.optimization_history && result.optimization_history.length > 0 && (
+            <Card className="p-4">
+              <h3 className="text-sm font-medium mb-2">优化轨迹</h3>
+              <div className="max-h-48 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                    <th className="px-2 py-1.5 text-left">迭代</th>
+                    <th className="px-2 py-1.5 text-left">序列</th>
+                    <th className="px-2 py-1.5 text-right">得分</th>
+                  </tr></thead>
+                  <tbody>
+                    {result.optimization_history.map((h: any, i: number) => (
+                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                        <td className="px-2 py-1.5">{h.iteration}</td>
+                        <td className="px-2 py-1.5 font-mono">{h.sequence}</td>
+                        <td className="px-2 py-1.5 text-right font-mono">{h.score?.toFixed(4)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

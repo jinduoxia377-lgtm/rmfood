@@ -456,8 +456,12 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
   async synergyAnalysis(peptideSequences: string[], herbNames: string[]): Promise<{
     success: boolean;
     data: {
-      synergies: Array<{ peptide: string; herb: string; synergy_score: number; mechanism: string }>;
-      ranked_herbs: Array<{ name: string; score: number; reason: string }>;
+      peptides_analyzed: number;
+      herbs_analyzed: number;
+      synergy_matrix: Array<Array<{ peptide: string; herb: string; synergy_score: number; mechanism: string; recommendation: string }>>;
+      overall_synergy_score: number;
+      top_combinations: Array<{ peptide: string; herb: string; synergy_score: number }>;
+      recommendations: Array<string>;
     };
   }> {
     const response = await request.post('/api/v1/ai/peptide/advanced/analyze/synergy', {
@@ -490,9 +494,9 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
   }
 
   /**
-   * 生成结构变体
+   * 生成结构变体（后端约束：num_variants >= 5；variant_type: point/insertion/deletion）
    */
-  async generateVariants(template: string, variantType = 'point', numVariants = 20): Promise<{
+  async generateVariants(template: string, variantType = 'point', numVariants = 10): Promise<{
     success: boolean;
     data: {
       template: string;
@@ -510,6 +514,45 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
     const response = await request.post('/api/v1/ai/peptide/advanced/generate/variants', {
       template_sequence: template, variant_type: variantType, num_variants: numVariants,
     });
+    return response.data;
+  }
+
+  /**
+   * 自定义评分函数优化（遗传算法；约束：iterations 1-100，population_size 3-30）
+   */
+  async customOptimize(seedSequence: string, objectiveWeights: Record<string, number>,
+    iterations = 20, populationSize = 10, constraints?: Record<string, any>): Promise<{
+    success: boolean;
+    data: {
+      optimized_sequence: string;
+      best_score: number;
+      improvement: number;
+      iterations: number;
+      processing_time_ms: number;
+      optimization_history: Array<{ iteration: number; sequence: string; score: number }>;
+      analysis: Record<string, any>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/optimize/custom', {
+      seed_sequence: seedSequence, objective_weights: objectiveWeights,
+      iterations, population_size: populationSize, constraints,
+    });
+    return response.data;
+  }
+
+  /**
+   * 查询异步任务状态
+   */
+  async getTaskStatus(taskId: string): Promise<any> {
+    const response = await request.get(`/api/v1/ai/peptide/advanced/tasks/${taskId}`);
+    return response.data;
+  }
+
+  /**
+   * 高级功能能力清单
+   */
+  async getCapabilities(): Promise<any> {
+    const response = await request.get('/api/v1/ai/peptide/advanced/capabilities');
     return response.data;
   }
 
