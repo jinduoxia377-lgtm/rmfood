@@ -103,11 +103,11 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
       <div className="space-y-6">
         {/* Current Plan */}
         <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/30 rounded-xl border border-neutral-200 dark:border-neutral-800">
-          <span className="text-sm text-neutral-500">当前计划:</span>
-          <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400">
+          <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前计划:</span>
+          <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700">
             {PLAN_CONFIG.find(p => p.value === organization?.plan)?.label || organization?.plan}
           </span>
-          <span className="text-xs text-neutral-400">· {organization?.memberCount} 成员 · {organization?.teamCount} 团队</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">· {organization?.memberCount} 成员 · {organization?.teamCount} 团队</span>
         </div>
 
         {/* Plan Selection */}
@@ -120,7 +120,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
                 'relative rounded-xl border-2 p-5 text-left transition-all',
                 selectedPlan === plan.value
                   ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20 shadow-md'
-                  : 'border-neutral-200 hover:border-neutral-300',
+                  : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700',
                 plan.highlight && 'ring-2 ring-accent-500/30',
               )}
             >
@@ -136,7 +136,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
               <p className={cn('text-2xl font-bold mt-2', plan.value === 'enterprise' ? 'text-neutral-900' : 'text-secondary-600')}>
                 {plan.price}
               </p>
-              <p className="text-xs text-neutral-500 mt-1">{plan.desc}</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{plan.desc}</p>
               <div className="mt-4 space-y-1.5">
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">
                   成员: {plan.maxMembers > 0 ? `最多 ${plan.maxMembers} 人` : '不限'}
@@ -146,7 +146,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
               </div>
               <ul className="mt-4 space-y-1">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="text-xs text-neutral-500 flex items-center gap-1.5">
+                  <li key={i} className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
                     <CheckCircle className="w-3 h-3 text-success-500 shrink-0" />{f}
                   </li>
                 ))}
@@ -157,7 +157,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
 
         {/* DANGER: Downgrade warning */}
         {!canDowngrade() && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-900/20 rounded-lg px-4 py-3">
             <AlertCircle className="w-4 h-4 shrink-0" />
             当前成员数 ({organization?.memberCount}) 或团队数 ({organization?.teamCount}) 超过目标计划限制
           </div>
@@ -173,7 +173,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder={`输入 "确认升级至 ${PLAN_CONFIG.find(p => p.value === selectedPlan)?.label}" 确认`}
-            className="w-full px-3 py-2 rounded-lg border border-neutral-300 surface-card text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
+            className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 surface-card text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
           />
         </div>
 

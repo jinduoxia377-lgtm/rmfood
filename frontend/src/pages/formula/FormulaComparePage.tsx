@@ -62,7 +62,7 @@ export default function FormulaComparePage() {
               {leftId && (
                 <button
                   onClick={() => setLeftId(null)}
-                  className="text-xs text-neutral-400 hover:text-error-500 flex items-center gap-1"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 flex items-center gap-1"
                 >
                   <X size={12} />
                   清除
@@ -95,14 +95,14 @@ export default function FormulaComparePage() {
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-sm font-medium text-neutral-900 dark:text-white">{formula.name}</span>
-                              <p className="text-xs text-neutral-400">{formula.code}</p>
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formula.code}</p>
                             </div>
                             <StatusBadge status={formula.status} />
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-neutral-400">未找到配方</div>
+                      <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到配方</div>
                     )}
                   </div>
                 )}
@@ -111,7 +111,7 @@ export default function FormulaComparePage() {
               <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    <p className="text-sm font-medium text-primary-700 dark:text-primary-700">
                       {leftList.find((f: Formula) => f.id === leftId)?.name || `#${leftId}`}
                     </p>
                     <p className="text-xs text-primary-500">
@@ -130,9 +130,9 @@ export default function FormulaComparePage() {
           <CardContent className="p-4 flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-2">
-                <ArrowRight size={20} className="text-neutral-400" />
+                <ArrowRight size={20} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </div>
-              <p className="text-sm text-neutral-500">对比</p>
+              <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">对比</p>
             </div>
           </CardContent>
         </Card>
@@ -145,7 +145,7 @@ export default function FormulaComparePage() {
               {rightId && (
                 <button
                   onClick={() => setRightId(null)}
-                  className="text-xs text-neutral-400 hover:text-error-500 flex items-center gap-1"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 flex items-center gap-1"
                 >
                   <X size={12} />
                   清除
@@ -178,14 +178,14 @@ export default function FormulaComparePage() {
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-sm font-medium text-neutral-900 dark:text-white">{formula.name}</span>
-                              <p className="text-xs text-neutral-400">{formula.code}</p>
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formula.code}</p>
                             </div>
                             <StatusBadge status={formula.status} />
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-neutral-400">未找到配方</div>
+                      <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到配方</div>
                     )}
                   </div>
                 )}
@@ -194,7 +194,7 @@ export default function FormulaComparePage() {
               <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    <p className="text-sm font-medium text-primary-700 dark:text-primary-700">
                       {rightList.find((f: Formula) => f.id === rightId)?.name || `#${rightId}`}
                     </p>
                     <p className="text-xs text-primary-500">

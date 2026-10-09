@@ -116,7 +116,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
                     'transition-colors',
                     star <= displayRating
                       ? 'text-warning-500 fill-amber-500'
-                      : 'text-neutral-300 dark:text-neutral-600',
+                      : 'text-neutral-300 dark:text-neutral-400',
                   )}
                 />
               </button>
@@ -139,17 +139,17 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
                 <Star
                   key={star}
                   size={12}
-                  className={star <= Math.round(stats.average) ? 'text-warning-500 fill-amber-500' : 'text-neutral-300'}
+                  className={star <= Math.round(stats.average) ? 'text-warning-500 fill-amber-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                 />
               ))}
             </div>
-            <div className="text-xs text-neutral-500 mt-1">{stats.total} 人评分</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{stats.total} 人评分</div>
           </div>
 
           <div className="space-y-1">
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="flex items-center gap-2 text-xs">
-                <span className="w-3 text-neutral-500">{star}</span>
+                <span className="w-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{star}</span>
                 <Star size={10} className="text-warning-500 fill-amber-500" />
                 <div className="flex-1 h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
@@ -157,7 +157,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
                     style={{ width: `${stats.total > 0 ? (stats.distribution[star as keyof typeof stats.distribution] / stats.total) * 100 : 0}%` }}
                   />
                 </div>
-                <span className="w-6 text-neutral-400 text-right">
+                <span className="w-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">
                   {stats.distribution[star as keyof typeof stats.distribution]}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
               rows={3}
             />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {comment.length}/500
               </span>
               <div className="flex gap-2">
@@ -202,7 +202,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
 
         {/* 评价提示 */}
         {!userRating && (
-          <p className="text-sm text-neutral-500 text-center">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
             点击星星为配方评分，提交后将显示在评价中
           </p>
         )}
@@ -210,7 +210,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
         {/* 用户已评分提示 */}
         {userRating > 0 && !showCommentForm && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-neutral-500">
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               您已评 {userRating} 分
             </span>
             <Button

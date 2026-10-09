@@ -124,7 +124,7 @@ export function ReferenceLibrary() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="text"
             placeholder="搜索文献..."
@@ -180,7 +180,7 @@ export function ReferenceLibrary() {
 
       {selectedIds.size > 0 && (
         <div className="px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-between">
-          <span className="text-sm text-primary dark:text-primary-300">
+          <span className="text-sm text-primary dark:text-primary-700">
             已选择 {selectedIds.size} 项
           </span>
           <div className="flex gap-2">
@@ -316,10 +316,10 @@ export function ReferenceLibrary() {
           type="checkbox"
           checked={selectedIds.size === displayedReferences.length && displayedReferences.length > 0}
           onChange={handleSelectAll}
-          className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+          className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary focus:ring-primary"
         />
         <span className="text-sm text-neutral-600 dark:text-neutral-400">全选</span>
-        <span className="text-sm text-neutral-400 dark:text-neutral-500 ml-auto">
+        <span className="text-sm text-neutral-400 dark:text-neutral-400 ml-auto">
           共 {displayedReferences.length} 条文献
         </span>
       </div>
@@ -338,7 +338,7 @@ export function ReferenceLibrary() {
                 type="checkbox"
                 checked={selectedIds.has(ref.id)}
                 onChange={() => handleToggleSelect(ref.id)}
-                className="mt-1 w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                className="mt-1 w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary focus:ring-primary"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2">
@@ -347,7 +347,7 @@ export function ReferenceLibrary() {
                   </span>
                   <button
                     onClick={() => deleteReference(ref.id)}
-                    className="p-1 hover:bg-error-50 rounded text-neutral-400 hover:text-error-500"
+                    className="p-1 hover:bg-error-50 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -357,7 +357,7 @@ export function ReferenceLibrary() {
                   <User className="w-3 h-3" />
                   <span className="line-clamp-1">{ref.authors.join('、')}</span>
                 </div>
-                <div className="flex flex-wrap gap-3 text-sm text-neutral-400">
+                <div className="flex flex-wrap gap-3 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {ref.year && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -396,8 +396,8 @@ export function ReferenceLibrary() {
 
       {displayedReferences.length === 0 && (
         <div className="text-center py-12">
-          <BookOpen className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
-          <p className="text-neutral-400">暂无文献</p>
+          <BookOpen className="w-12 h-12 mx-auto mb-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+          <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无文献</p>
           <button
             onClick={() => setShowAddForm(true)}
             className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"

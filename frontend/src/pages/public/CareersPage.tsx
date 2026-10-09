@@ -45,7 +45,7 @@ export default function CareersPage() {
       {/* Hero */}
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">加入我们</span>
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">加入我们</span>
           <h1 className="text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-[1.15] text-slate-900 mb-6">
             与最优秀的人<br />一起做最有意义的事
           </h1>
@@ -58,7 +58,7 @@ export default function CareersPage() {
       {/* 在莱茵工作 */}
       <section style={{ background: '#fafafa' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider mb-6 text-slate-500">在莱茵分子工作</h2>
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider mb-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">在莱茵分子工作</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {[
               { title: '跨学科团队', desc: '来自中医药、计算生物学、AI 等领域的专业人士共同协作。' },
@@ -77,7 +77,7 @@ export default function CareersPage() {
       {/* 开放职位 */}
       <section style={{ background: '#fff' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wider mb-6 text-slate-500">开放职位</h2>
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider mb-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">开放职位</h2>
           <div className="space-y-3">
             {openings.map((job, i) => (
               <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
@@ -85,11 +85,11 @@ export default function CareersPage() {
                   <div>
                     <h3 className="text-[14px] font-semibold text-slate-900">{job.title}</h3>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[11px] text-slate-500">{job.department}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{job.department}</span>
                       <span className="text-slate-300">·</span>
-                      <span className="text-[11px] text-slate-500 flex items-center gap-1"><MapPin size={11} />{job.location}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1"><MapPin size={11} />{job.location}</span>
                       <span className="text-slate-300">·</span>
-                      <span className="text-[11px] text-slate-500">{job.type}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{job.type}</span>
                     </div>
                   </div>
                   <button className="shrink-0 text-[12px] font-medium px-4 py-2 rounded-md border transition-colors"
@@ -106,7 +106,7 @@ export default function CareersPage() {
                   <p className="text-[12px] text-slate-600 leading-relaxed mb-3">{job.desc}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {job.requirements.map(r => (
-                      <span key={r} className="text-[10px] px-2 py-0.5 rounded-sm" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>{r}</span>
+                      <span key={r} className="text-xs px-2 py-0.5 rounded-sm" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>{r}</span>
                     ))}
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export default function CareersPage() {
       <section style={{ background: '#0f172a' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h2 className="text-[1.25rem] font-bold text-white mb-3">没有找到合适的职位？</h2>
-          <p className="text-[13px] text-slate-400 mb-6 max-w-md mx-auto">
+          <p className="text-[13px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-6 max-w-md mx-auto">
             我们持续关注优秀人才。请将简历发送至 contact@rmfood.cn，我们会在收到后 5 个工作日内回复。
           </p>
           <a href="mailto:contact@rmfood.cn" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-[13px] font-semibold text-slate-900 transition-opacity hover:opacity-90" style={{ background: '#fff' }}>

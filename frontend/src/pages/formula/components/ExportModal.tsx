@@ -233,13 +233,13 @@ export function ExportModal({
         {error && (
           <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-error-700 dark:text-error-400">{error}</p>
+            <p className="text-sm text-error-700 dark:text-error-600">{error}</p>
           </div>
         )}
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Package className="w-4 h-4 text-neutral-500" />
+            <Package className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出范围</span>
           </div>
 
@@ -260,10 +260,10 @@ export function ExportModal({
                   checked={scope === option.value}
                   onChange={() => setScope(option.value)}
                   disabled={isExporting}
-                  className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-700 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-neutral-900 dark:text-white">{option.label}</span>
-                <span className="text-xs text-neutral-500 ml-auto">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">
                   ({option.getDescription({ totalCount, currentPageCount, filteredCount, selectedIds })})
                 </span>
               </label>
@@ -273,7 +273,7 @@ export function ExportModal({
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <FileSpreadsheet className="w-4 h-4 text-neutral-500" />
+            <FileSpreadsheet className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出格式</span>
           </div>
 
@@ -298,11 +298,11 @@ export function ExportModal({
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
-                  <Icon className={`w-7 h-7 mb-2 ${isSelected ? `text-${fmt.color}-600` : 'text-neutral-400'}`} />
+                  <Icon className={`w-7 h-7 mb-2 ${isSelected ? `text-${fmt.color}-600` : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                   <div className={`text-sm font-semibold ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
                     {fmt.label.split(' ')[0]}
                   </div>
-                  <div className="text-[11px] text-neutral-500 mt-0.5">
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
                     {(/\((.*)\)/.exec(fmt.label))?.[1]}
                   </div>
                 </button>
@@ -313,7 +313,7 @@ export function ExportModal({
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Settings className="w-4 h-4 text-neutral-500" />
+            <Settings className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出选项</span>
           </div>
 

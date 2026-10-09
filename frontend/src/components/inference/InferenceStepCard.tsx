@@ -20,11 +20,11 @@ const typeConfig: Record<InferenceStepType, { icon: typeof Lightbulb; label: str
 };
 
 const statusConfig: Record<InferenceStepStatus, { icon: typeof CheckCircle; label: string; color: string }> = {
-  [InferenceStepStatus.PENDING]: { icon: ChevronRight, label: '等待', color: 'text-neutral-400' },
+  [InferenceStepStatus.PENDING]: { icon: ChevronRight, label: '等待', color: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' },
   [InferenceStepStatus.RUNNING]: { icon: Loader2, label: '执行中', color: 'text-secondary-500 animate-spin' },
   [InferenceStepStatus.SUCCESS]: { icon: CheckCircle, label: '成功', color: 'text-success-500' },
   [InferenceStepStatus.FAILED]: { icon: XCircle, label: '失败', color: 'text-error-500' },
-  [InferenceStepStatus.SKIPPED]: { icon: SkipForward, label: '跳过', color: 'text-neutral-400' },
+  [InferenceStepStatus.SKIPPED]: { icon: SkipForward, label: '跳过', color: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' },
 };
 
 const toolTypeLabels: Record<ToolType, string> = {
@@ -114,14 +114,14 @@ const MemoizedInferenceStepCard = memo(({
 
         {/* 置信度 */}
         {confidence !== undefined && (
-          <span className="flex-shrink-0 text-xs text-neutral-500">
+          <span className="flex-shrink-0 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {(confidence * 100).toFixed(0)}%
           </span>
         )}
 
         {/* 执行耗时 */}
         {executionTime !== undefined && (
-          <span className="flex-shrink-0 text-xs text-neutral-400">
+          <span className="flex-shrink-0 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {executionTime}ms
           </span>
         )}
@@ -152,7 +152,7 @@ const MemoizedInferenceStepCard = memo(({
                 </div>
                 <div className="text-sm text-neutral-700">
                   <div className="font-medium">{toolCall.toolName}</div>
-                  <div className="text-xs text-neutral-500 mt-1">
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     类型: {toolTypeLabels[toolCall.toolType]}
                   </div>
                   {toolCall.description && (
@@ -218,7 +218,7 @@ const MemoizedInferenceStepCard = memo(({
                   </div>
                 )}
                 {toolResult.executionTime && (
-                  <div className="mt-2 text-xs text-neutral-500">
+                  <div className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     执行耗时: {toolResult.executionTime}ms
                   </div>
                 )}

@@ -26,7 +26,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">关于我们</span>
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">关于我们</span>
           <h1 className="text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-[1.15] text-slate-900 mb-6">
             解码生命分子<br />赋能科学创新
           </h1>
@@ -46,7 +46,7 @@ export default function AboutPage() {
                 <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '1.25rem' }}>
                   <IconComp size={18} style={{ color: '#059669', marginBottom: 8 }} />
                   <div className="text-2xl font-bold font-mono text-slate-900">{s.value}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{s.label}</div>
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{s.label}</div>
                 </div>
               );
             })}
@@ -57,12 +57,12 @@ export default function AboutPage() {
       {/* 发展历程 */}
       <section style={{ background: '#fff' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">发展历程</span>
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">发展历程</span>
           <h2 className="text-[1.5rem] font-bold text-slate-900 mb-8">关键里程碑</h2>
           <div className="space-y-0">
             {milestones.map((m, i) => (
               <div key={i} className="flex gap-6 py-5" style={{ borderBottom: i < milestones.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <span className="text-[13px] font-mono font-semibold w-12 shrink-0 text-slate-400 pt-0.5">{m.year}</span>
+                <span className="text-[13px] font-mono font-semibold w-12 shrink-0 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pt-0.5">{m.year}</span>
                 <p className="text-[13px] text-slate-700 leading-relaxed">{m.event}</p>
               </div>
             ))}
@@ -75,13 +75,13 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">使命</span>
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">使命</span>
               <p className="text-[14px] leading-[1.75] text-slate-700">
                 以人工智能驱动药食同源研发创新，降低配方研发门槛，让每一次创新都有据可依、有章可循。
               </p>
             </div>
             <div>
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">愿景</span>
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">愿景</span>
               <p className="text-[14px] leading-[1.75] text-slate-700">
                 成为全球领先的药食同源数字化研发平台，连接传统智慧与现代科技，加速功能性食品创新进程。
               </p>
