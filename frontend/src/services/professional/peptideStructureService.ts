@@ -514,26 +514,58 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
   }
 
   /**
-   * 水解模拟
+   * 水解模拟（后端读取查询参数，非 JSON body）
    */
-  async simulateHydrolysis(sequence: string): Promise<{
-    sequence: string;
-    fragments: Array<{ fragment: string; position: string; enzyme: string }>;
-    cleavage_sites: Array<{ position: number; enzyme: string; bond: string }>;
-  }> {
-    const response = await request.post('/api/v1/peptide-structure/hydrolysis/simulate', { sequence });
+  async simulateHydrolysis(sequence: string, enzymes = 'Pepsin,Trypsin'): Promise<
+    Array<{ sequence: string; position: number; enzyme: string; bond_type: string; cleavage_site: string }>
+  > {
+    const params = new URLSearchParams({ sequence, enzymes });
+    const response = await request.post(`/api/v1/peptide-structure/hydrolysis/simulate?${params}`);
     return response.data;
   }
 
   /**
-   * 定量活性预测（IC50）
+   * 两序列比对（Needleman-Wunsch，后端读取查询参数）
    */
-  async predictQuantitative(sequence: string): Promise<{
-    sequence: string;
-    ace_inhibition: { predicted_ic50_um: number; confidence: number; method: string };
-    antioxidant: { predicted_activity: number; confidence: number; method: string };
+  async alignSequences(seq1: string, seq2: string, matrix = 'BLOSUM62'): Promise<{
+    query_sequence: string;
+    subject_sequence: string;
+    alignment: string;
+    match_line: string;
+    identity: number;
+    similarity: number;
+    gaps: number;
+    score: number;
+    start_pos: number;
+    end_pos: number;
   }> {
-    const response = await request.post('/api/v1/peptide-structure/quantitative/predict', { sequence });
+    const params = new URLSearchParams({ sequences: `${seq1},${seq2}`, matrix });
+    const response = await request.post(`/api/v1/peptide-structure/evolution/align?${params}`);
+    return response.data;
+  }
+
+  /**
+   * 定量活性预测（后端读取查询参数，同步方法）
+   */
+  async predictQuantitative(sequence: string, model = 'QSAR'): Promise<{
+    sequence: string;
+    model: string;
+    ace_inhibition: {
+      sequence: string;
+      predicted_ic50: number;
+      ic50_unit: string;
+      confidence_interval: { lower: number; upper: number };
+      features: Record<string, number>;
+    };
+    antioxidant: {
+      sequence: string;
+      predicted_activity: number;
+      activity_unit: string;
+      confidence_interval: { lower: number; upper: number };
+    };
+  }> {
+    const params = new URLSearchParams({ sequence, model });
+    const response = await request.post(`/api/v1/peptide-structure/quantitative/predict?${params}`);
     return response.data;
   }
 }

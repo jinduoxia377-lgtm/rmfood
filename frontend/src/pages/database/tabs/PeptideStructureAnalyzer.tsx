@@ -160,7 +160,7 @@ interface DatabasePeptide {
   source_database: string;
 }
 
-type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'batch' | 'deep' | 'optimize' | 'synergy';
+type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'batch' | 'deep' | 'optimize' | 'synergy' | 'advanced';
 
 // ─── 工具函数 ───
 function getScoreColor(score: number): string {
@@ -1139,6 +1139,231 @@ function SynergyView() {
   );
 }
 
+// ─── 高级工具组件（水解模拟 / 序列比对 / 定量预测）──────────────
+function AdvancedToolsView() {
+  const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative'>('hydrolysis');
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
+        {([
+          { key: 'hydrolysis' as const, label: '水解模拟' },
+          { key: 'align' as const, label: '序列比对' },
+          { key: 'quantitative' as const, label: '定量预测' },
+        ]).map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTool(t.key)}
+            className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              tool === t.key ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tool === 'hydrolysis' && <HydrolysisSimulator />}
+      {tool === 'align' && <SequenceAligner />}
+      {tool === 'quantitative' && <QuantitativePredictorView />}
+    </div>
+  );
+}
+
+// ── 水解模拟 ──
+function HydrolysisSimulator() {
+  const [sequence, setSequence] = useState('');
+  const [enzymes, setEnzymes] = useState('Pepsin,Trypsin');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<Array<{ sequence: string; position: number; enzyme: string; bond_type: string; cleavage_site: string }> | null>(null);
+
+  const handleSimulate = useCallback(async () => {
+    if (!sequence.trim()) { setError('请输入肽序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.simulateHydrolysis(sequence.trim().toUpperCase(), enzymes);
+      setResult(res);
+    } catch (e: any) {
+      setError(e.message || '水解模拟失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequence, enzymes]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
+          <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">酶（逗号分隔）</label>
+          <Input value={enzymes} onChange={e => setEnzymes(e.target.value)} placeholder="Pepsin,Trypsin" />
+        </div>
+        <Button onClick={handleSimulate} disabled={loading || !sequence.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>模拟中...</> : '模拟水解'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <Card className="p-4">
+          <h3 className="text-sm font-medium mb-2">水解位点</h3>
+          {result.length === 0 ? <p className="text-xs text-[var(--text-muted)]">无显著水解位点</p> : (
+            <table className="w-full text-xs">
+              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <th className="px-2 py-1.5 text-left">位置</th>
+                <th className="px-2 py-1.5 text-left">酶</th>
+                <th className="px-2 py-1.5 text-left">键类型</th>
+                <th className="px-2 py-1.5 text-left">切割位点</th>
+              </tr></thead>
+              <tbody>
+                {result.map((r, i) => (
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <td className="px-2 py-1.5 font-mono">{r.position}</td>
+                    <td className="px-2 py-1.5">{r.enzyme}</td>
+                    <td className="px-2 py-1.5 font-mono">{r.bond_type}</td>
+                    <td className="px-2 py-1.5 font-mono">{r.cleavage_site}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── 序列比对 ──
+function SequenceAligner() {
+  const [seq1, setSeq1] = useState('');
+  const [seq2, setSeq2] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleAlign = useCallback(async () => {
+    if (!seq1.trim() || !seq2.trim()) { setError('请输入两条序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.alignSequences(seq1.trim().toUpperCase(), seq2.trim().toUpperCase());
+      setResult(res);
+    } catch (e: any) {
+      setError(e.message || '序列比对失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [seq1, seq2]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">序列 A</label>
+          <Input value={seq1} onChange={e => setSeq1(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">序列 B</label>
+          <Input value={seq2} onChange={e => setSeq2(e.target.value.toUpperCase())} placeholder="例如: RPYPIP" className="font-mono" maxLength={100} />
+        </div>
+        <Button onClick={handleAlign} disabled={loading || !seq1.trim() || !seq2.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>比对中...</> : 'Needleman-Wunsch 比对'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <Card className="p-4 space-y-3">
+          <div className="grid grid-cols-4 gap-2 text-xs">
+            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-[var(--text-muted)]">相似度</div>
+              <div className="font-mono font-medium">{(result.identity * 100).toFixed(1)}%</div>
+            </div>
+            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-[var(--text-muted)]">比对得分</div>
+              <div className="font-mono font-medium">{result.score}</div>
+            </div>
+            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-[var(--text-muted)]">缺失数</div>
+              <div className="font-mono font-medium">{result.gaps}</div>
+            </div>
+            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-[var(--text-muted)]">相似性</div>
+              <div className="font-mono font-medium">{(result.similarity * 100).toFixed(1)}%</div>
+            </div>
+          </div>
+          <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="text-xs text-[var(--text-muted)] mb-1">比对结果（| = 匹配，- = 缺失）</div>
+            <div className="font-mono text-xs space-y-0.5">
+              <div>{result.query_sequence}</div>
+              <div className="text-success-600">{result.match_line}</div>
+              <div>{result.subject_sequence}</div>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── 定量预测 ──
+function QuantitativePredictorView() {
+  const [sequence, setSequence] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handlePredict = useCallback(async () => {
+    if (!sequence.trim()) { setError('请输入肽序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.predictQuantitative(sequence.trim().toUpperCase());
+      setResult(res);
+    } catch (e: any) {
+      setError(e.message || '定量预测失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequence]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
+          <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
+        </div>
+        <Button onClick={handlePredict} disabled={loading || !sequence.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>预测中...</> : 'QSAR 定量预测'}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {result && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Card className="p-4">
+            <h3 className="text-sm font-medium mb-2">ACE 抑制 IC50</h3>
+            <div className="text-2xl font-bold font-mono">
+              {result.ace_inhibition.predicted_ic50.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.ace_inhibition.ic50_unit}</span>
+            </div>
+            <div className="text-xs text-[var(--text-muted)] mt-1">
+              95% CI: [{result.ace_inhibition.confidence_interval.lower.toFixed(3)}, {result.ace_inhibition.confidence_interval.upper.toFixed(3)}]
+            </div>
+          </Card>
+          <Card className="p-4">
+            <h3 className="text-sm font-medium mb-2">抗氧化活性</h3>
+            <div className="text-2xl font-bold font-mono">
+              {result.antioxidant.predicted_activity.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.antioxidant.activity_unit}</span>
+            </div>
+            <div className="text-xs text-[var(--text-muted)] mt-1">
+              95% CI: [{result.antioxidant.confidence_interval.lower.toFixed(3)}, {result.antioxidant.confidence_interval.upper.toFixed(3)}]
+            </div>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 主组件 ───
 interface PeptideStructureAnalyzerProps {
   initialTab?: TabType;
@@ -1156,7 +1381,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const urlTab = searchParams.get('tab') as TabType | null;
-    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy'].includes(urlTab)) {
+    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy', 'advanced'].includes(urlTab)) {
       return urlTab;
     }
     return initialTab;
@@ -1186,7 +1411,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   // 监听 URL 变化，更新 activeTab（处理外部导航场景）
   useEffect(() => {
     const urlTab = searchParams.get('tab') as TabType | null;
-    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy'].includes(urlTab)) {
+    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy', 'advanced'].includes(urlTab)) {
       setActiveTab(urlTab);
     }
   }, [searchParams]);
@@ -1349,6 +1574,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     { key: 'database', label: '数据库', icon: Database },
     { key: 'compare', label: '对比分析', icon: Compare },
     { key: 'history', label: '历史记录', icon: History },
+    { key: 'advanced', label: '高级工具', icon: FlaskConical },
   ];
 
   return (
@@ -1841,6 +2067,9 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
       {/* 历史记录 */}
       {activeTab === 'history' && <HistoryView />}
+
+      {/* 高级工具 */}
+      {activeTab === 'advanced' && <AdvancedToolsView />}
     </div>
   );
 }

@@ -114,6 +114,28 @@ CHECKS = [
         r"predictor\.predict_ace_ic50\(sequence\)",
         "quantitative/predict：路由必须调用 predict_ace_ic50",
     ),
+    # 前端 service 必须用查询参数（非 JSON body）调用三个高级端点
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"hydrolysis/simulate\?\$\{params\}",
+        "前端 service：hydrolysis/simulate 必须用查询参数",
+    ),
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"evolution/align\?\$\{params\}",
+        "前端 service：evolution/align 必须用查询参数",
+    ),
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"quantitative/predict\?\$\{params\}",
+        "前端 service：quantitative/predict 必须用查询参数",
+    ),
+    # 前端高级工具 Tab 必须注册
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"key: 'advanced', label: '高级工具'",
+        "前端：高级工具 Tab 必须注册（水解/比对/定量三工具入口）",
+    ),
 ]
 
 
