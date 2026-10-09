@@ -594,7 +594,7 @@ export default function FormulaEditPage() {
       {/* 并发冲突提示 */}
       {conflictDetected && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-3.5 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800">
-          <div className="flex items-start gap-2 text-sm text-warning-700 dark:text-warning-400 min-w-0">
+          <div className="flex items-start gap-2 text-sm text-warning-700 dark:text-warning-700 min-w-0">
             <AlertTriangle size={16} className="shrink-0 mt-0.5" />
             <span>
               该配方已被其他人修改（最后修改时间：{conflictInfo?.lastModified}）。如继续保存可能覆盖他人的更改。
@@ -614,7 +614,7 @@ export default function FormulaEditPage() {
       {/* 网络错误提示 */}
       {networkError && (
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800">
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
             <AlertCircle size={14} className="shrink-0" />
             {networkError}
           </div>
@@ -625,7 +625,7 @@ export default function FormulaEditPage() {
       )}
 
       {hasChanges && !isSubmitting && (
-        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800 text-sm text-warning-700 dark:text-warning-400">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800 text-sm text-warning-700 dark:text-warning-700">
           <div className="flex items-center gap-2">
             <AlertTriangle size={14} className="shrink-0" />
             您有未保存的变更，离开页面将丢失修改。
@@ -744,7 +744,7 @@ export default function FormulaEditPage() {
                       AI 成分推荐
                     </h3>
                     {recLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-neutral-500">
+                      <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin" />
                         正在分析推荐...
                       </div>
@@ -759,16 +759,16 @@ export default function FormulaEditPage() {
                           >
                             <div>
                               <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name}</p>
-                              <p className="text-xs text-neutral-500">{((rec as Record<string, unknown>).match_reasons as string[] ?? []).join(' · ') || ''}</p>
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{((rec as Record<string, unknown>).match_reasons as string[] ?? []).join(' · ') || ''}</p>
                             </div>
-                            <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
+                            <span className="text-xs font-medium text-primary-700 dark:text-primary-700">
                               {rec.score}分
                             </span>
                           </div>
                         )})}
                       </div>
                     ) : (
-                      <p className="text-sm text-neutral-500">暂无推荐结果，请添加功效标签</p>
+                      <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无推荐结果，请添加功效标签</p>
                     )}
                   </div>
                 )}
@@ -977,7 +977,7 @@ export default function FormulaEditPage() {
                           className={cn(
                             'px-2 py-1 text-xs transition-colors',
                             zoomLevel === zoom
-                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700'
                               : 'text-neutral-500 hover:bg-slate-50 dark:hover:bg-neutral-800',
                           )}
                         >
@@ -1041,8 +1041,8 @@ export default function FormulaEditPage() {
                                 )}
                               </div>
                               <div className="text-right">
-                                <span className="text-xs text-neutral-400">{ing.category}</span>
-                                {ing.dosage && <span className="ml-2 text-xs text-neutral-500">{ing.dosage}</span>}
+                                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.category}</span>
+                                {ing.dosage && <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.dosage}</span>}
                               </div>
                             </div>
                           ))}
@@ -1055,19 +1055,19 @@ export default function FormulaEditPage() {
                       </h3>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <span className="text-neutral-400">剂量</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">剂量</span>
                           <p className="text-neutral-900 dark:text-white">{previewData.dosage || '-'}</p>
                         </div>
                         <div>
-                          <span className="text-neutral-400">工艺</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">工艺</span>
                           <p className="text-neutral-900 dark:text-white">{previewData.processingMethod || '-'}</p>
                         </div>
                         <div>
-                          <span className="text-neutral-400">储藏条件</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">储藏条件</span>
                           <p className="text-neutral-900 dark:text-white">{previewData.storageConditions || '-'}</p>
                         </div>
                         <div>
-                          <span className="text-neutral-400">保质期</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">保质期</span>
                           <p className="text-neutral-900 dark:text-white">
                             {previewData.shelfLife ? `${previewData.shelfLife}天` : '-'}
                           </p>
@@ -1088,7 +1088,7 @@ export default function FormulaEditPage() {
                 深度分析
               </h3>
               {isRunningAnalysis && (
-                <span className="text-[10px] text-violet-500 flex items-center gap-0.5">
+                <span className="text-xs text-violet-500 flex items-center gap-0.5">
                   <RefreshCw size={10} className="animate-spin" /> 分析中...
                 </span>
               )}
@@ -1096,25 +1096,25 @@ export default function FormulaEditPage() {
             <div className="grid grid-cols-2 gap-2">
               {analysisSynergy && (
                 <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
-                  <p className="text-[10px] text-violet-600 dark:text-violet-400">协同指数 SI</p>
+                  <p className="text-xs text-violet-600 dark:text-violet-400">协同指数 SI</p>
                   <p className="text-sm font-bold text-violet-700 dark:text-violet-300">{analysisSynergy.overall_si?.toFixed(2) ?? '—'}</p>
                 </div>
               )}
               {analysisStability && (
                 <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400">货架期</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">货架期</p>
                   <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{analysisStability.predicted_shelf_life_months?.toFixed(0) ?? '—'}月</p>
                 </div>
               )}
               {analysisTaste && (
                 <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400">风味接受度</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">风味接受度</p>
                   <p className="text-sm font-bold text-amber-700 dark:text-amber-300">{analysisTaste.acceptability?.toFixed(2) ?? '—'}</p>
                 </div>
               )}
               {analysisSafety && (
                 <div className={`p-2 rounded-lg border ${analysisSafety.is_safe ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'}`}>
-                  <p className={`text-[10px] ${analysisSafety.is_safe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>安全性</p>
+                  <p className={`text-xs ${analysisSafety.is_safe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>安全性</p>
                   <p className={`text-sm font-bold ${analysisSafety.is_safe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
                     {analysisSafety.is_safe ? '✓ 安全' : '⚠ 风险'}
                   </p>
@@ -1122,7 +1122,7 @@ export default function FormulaEditPage() {
               )}
             </div>
             {(!analysisSynergy && !analysisStability && !analysisTaste && !analysisSafety) && ingredients.length >= 2 && (
-              <p className="text-[10px] text-neutral-400 text-center py-1">保存配方后将自动运行分析</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-1">保存配方后将自动运行分析</p>
             )}
           </div>
         </div>
@@ -1175,8 +1175,8 @@ export default function FormulaEditPage() {
                         {ing.is_food_homology && <Badge variant="success">药食同源</Badge>}
                       </div>
                       <div className="text-right">
-                        <span className="text-sm text-neutral-400">{ing.category}</span>
-                        {ing.dosage && <span className="ml-3 text-sm text-neutral-500">{ing.dosage}</span>}
+                        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.category}</span>
+                        {ing.dosage && <span className="ml-3 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.dosage}</span>}
                       </div>
                     </div>
                   ))}
@@ -1189,19 +1189,19 @@ export default function FormulaEditPage() {
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-neutral-400">剂量</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">剂量</span>
                   <p className="text-neutral-900 dark:text-white mt-1">{previewData.dosage || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-neutral-400">工艺</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">工艺</span>
                   <p className="text-neutral-900 dark:text-white mt-1">{previewData.processingMethod || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-neutral-400">储藏条件</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">储藏条件</span>
                   <p className="text-neutral-900 dark:text-white mt-1">{previewData.storageConditions || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-neutral-400">保质期</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">保质期</span>
                   <p className="text-neutral-900 dark:text-white mt-1">
                     {previewData.shelfLife ? `${previewData.shelfLife}天` : '-'}
                   </p>
@@ -1252,7 +1252,7 @@ function HerbSearchDropdown({
   if (loading) {
     return (
       <div className="absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden">
-        <div className="p-3 text-center text-sm text-neutral-400">
+        <div className="p-3 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
         </div>
       </div>
@@ -1262,7 +1262,7 @@ function HerbSearchDropdown({
   if (herbs.length === 0) {
     return (
       <div className="absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden">
-        <div className="p-3 text-center text-sm text-neutral-400">未找到匹配药材</div>
+        <div className="p-3 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配药材</div>
       </div>
     );
   }
@@ -1283,7 +1283,7 @@ function HerbSearchDropdown({
           <div className="flex items-center justify-between">
             <div>
               <span className="font-medium text-neutral-900 dark:text-white">{herb.name}</span>
-              {herb.category && <span className="ml-2 text-xs text-neutral-400">{herb.category}</span>}
+              {herb.category && <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{herb.category}</span>}
             </div>
             <div className="flex items-center gap-1.5">
               {herb.is_food_homology && (
@@ -1298,7 +1298,7 @@ function HerbSearchDropdown({
               )}
             </div>
           </div>
-          {herb.efficacy && <p className="text-xs text-neutral-400 mt-0.5 truncate">{herb.efficacy}</p>}
+          {herb.efficacy && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">{herb.efficacy}</p>}
         </button>
       ))}
     </div>

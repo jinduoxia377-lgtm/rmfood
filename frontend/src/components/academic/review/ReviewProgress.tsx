@@ -16,9 +16,9 @@ export function ReviewProgress() {
   if (!currentReview) {
     return (
       <div className="border rounded-lg p-8 text-center bg-white dark:bg-neutral-800">
-        <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
+        <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         <h3 className="text-lg font-semibold mb-2">暂无评审流程</h3>
-        <p className="text-neutral-500 mb-4">为您的报告创建评审流程，跟踪审核进度</p>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">为您的报告创建评审流程，跟踪审核进度</p>
         <button
           onClick={() => createReview('current-report')}
           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
@@ -38,7 +38,7 @@ export function ReviewProgress() {
       <div className="border rounded-lg p-6 bg-white dark:bg-neutral-800">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full ${statusLabels[currentStatus]?.bgColor || 'bg-neutral-100'} flex items-center justify-center`}>
+            <div className={`w-10 h-10 rounded-full ${statusLabels[currentStatus]?.bgColor || 'bg-neutral-100 dark:bg-neutral-800'} flex items-center justify-center`}>
               {currentStatus === 'approved' ? (
                 <CheckCircle className={`w-5 h-5 ${statusLabels[currentStatus]?.color || 'text-neutral-600'}`} />
               ) : currentStatus === 'in_progress' ? (
@@ -65,7 +65,7 @@ export function ReviewProgress() {
         </div>
 
         <div className="mb-2">
-          <div className="flex justify-between text-sm text-neutral-500 mb-1">
+          <div className="flex justify-between text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">
             <span>完成进度</span>
             <span>{progress}%</span>
           </div>
@@ -92,7 +92,7 @@ export function ReviewProgress() {
                       {statusLabels[stageStatus]?.label || '未知'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-neutral-500 mt-1">
+                  <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
                       {stage.reviewers?.length || 0} 位评审人
@@ -103,7 +103,7 @@ export function ReviewProgress() {
                     </span>
                   </div>
                 </div>
-                <div className="text-sm text-neutral-400">
+                <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {(stage.approvals || 0)}/{stage.requiredApprovals || 1} 已批准
                 </div>
               </div>
@@ -120,19 +120,19 @@ export function ReviewProgress() {
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-neutral-900 dark:text-white">{comments.length}</div>
-            <div className="text-xs text-neutral-500">总意见数</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总意见数</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-warning-500">
               {comments.filter((c: any) => c.status === 'pending').length}
             </div>
-            <div className="text-xs text-neutral-500">待处理</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">待处理</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-success-500">
               {comments.filter((c: any) => c.status === 'resolved').length}
             </div>
-            <div className="text-xs text-neutral-500">已解决</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">已解决</div>
           </div>
         </div>
       </div>

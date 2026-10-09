@@ -232,7 +232,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
         )}
       >
         <div className="pl-4">
-          <Search className="w-5 h-5 text-neutral-400" />
+          <Search className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </div>
 
         <input
@@ -260,7 +260,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
         {query && (
           <button
             onClick={handleClear}
-            className="p-1 mr-2 text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="p-1 mr-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -294,7 +294,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
           {/* 搜索建议 */}
           {suggestions.length > 0 && (
             <div className="p-2">
-              <div className="px-3 py-2 text-xs font-medium text-neutral-500">搜索建议</div>
+              <div className="px-3 py-2 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">搜索建议</div>
               {suggestions.map((suggestion) => (
                 <button
                   key={`${suggestion.type}-${suggestion.id}`}
@@ -306,9 +306,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   </span>
                   <span className="flex-1 text-neutral-700">{suggestion.text}</span>
                   {suggestion.hint && (
-                    <span className="text-sm text-neutral-400">{suggestion.hint}</span>
+                    <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{suggestion.hint}</span>
                   )}
-                  <ArrowRight className="w-4 h-4 text-neutral-300" />
+                  <ArrowRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 </button>
               ))}
             </div>
@@ -318,7 +318,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
           {(!query || suggestions.length === 0) && searchHistory.length > 0 && (
             <div className="p-2 border-t border-neutral-100">
               <div className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-2 text-xs font-medium text-neutral-500">
+                <div className="flex items-center gap-2 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <History className="w-3 h-3" />
                   搜索历史
                 </div>
@@ -327,7 +327,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                     searchService.clearSearchHistory();
                     setSearchHistory([]);
                   }}
-                  className="text-xs text-neutral-400 hover:text-error-500"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500"
                 >
                   清除
                 </button>
@@ -338,7 +338,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   onClick={() => handleSelectHistory(item)}
                   className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
                 >
-                  <Search className="w-4 h-4 text-neutral-400" />
+                  <Search className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   <span className="flex-1 text-neutral-700">{item.query}</span>
                 </button>
               ))}
@@ -348,7 +348,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
           {/* 热门搜索 */}
           {(!query || suggestions.length === 0) && popularSearches.length > 0 && (
             <div className="p-2 border-t border-neutral-100">
-              <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-neutral-500">
+              <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <TrendingUp className="w-3 h-3" />
                 热门搜索
               </div>
@@ -375,7 +375,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-neutral-500 hover:text-error-500 transition-colors"
+                className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors"
               >
                 清除全部筛选
               </button>
@@ -397,7 +397,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     (filters.types ?? []).includes(type)
                       ? 'border-blue-500 bg-secondary-container text-secondary-main'
-                      : 'border-neutral-200 text-neutral-600 hover:border-neutral-300',
+                      : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 hover:border-neutral-300 dark:border-neutral-700',
                   )}
                 >
                   {TYPE_CONFIG[type].label}
@@ -421,7 +421,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     selectedDateRange === option.value
                       ? 'border-blue-500 bg-secondary-container text-secondary-main'
-                      : 'border-neutral-200 text-neutral-600 hover:border-neutral-300',
+                      : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 hover:border-neutral-300 dark:border-neutral-700',
                   )}
                 >
                   {option.label}
@@ -451,7 +451,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-neutral-400">暂无标签筛选</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无标签筛选</div>
             )}
           </div>
 
@@ -466,7 +466,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, sortBy: e.target.value as SearchFilters['sortBy'] }))
                 }
-                className="px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-blue-500"
               >
                 <option value="relevance">相关性</option>
                 <option value="createdAt">创建时间</option>

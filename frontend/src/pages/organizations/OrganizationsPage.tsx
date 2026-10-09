@@ -370,7 +370,7 @@ export default function OrganizationsPage() {
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50',
                 )}
               >
-                <Icon className={cn('w-4 h-4', isTabActive(id) ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-500')} />
+                <Icon className={cn('w-4 h-4', isTabActive(id) ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
                 {label}
               </button>
             ))}
@@ -385,7 +385,7 @@ export default function OrganizationsPage() {
               <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <Building2 className="w-8 h-8 text-secondary-600 dark:text-secondary-400" />
+                    <Building2 className="w-8 h-8 text-secondary-600 dark:text-secondary-700" />
                     <TrendingUp className="w-4 h-4 text-success-600" />
                   </div>
                   <div className="text-3xl font-bold text-neutral-900 dark:text-white">{stats.totalOrgs}</div>
@@ -396,7 +396,7 @@ export default function OrganizationsPage() {
               <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <Users className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                    <Users className="w-8 h-8 text-primary-700 dark:text-primary-700" />
                     <TrendingUp className="w-4 h-4 text-success-600" />
                   </div>
                   <div className="text-3xl font-bold text-neutral-900 dark:text-white">
@@ -422,7 +422,7 @@ export default function OrganizationsPage() {
               <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <Zap className="w-8 h-8 text-warning-600 dark:text-warning-400" />
+                    <Zap className="w-8 h-8 text-warning-600 dark:text-warning-700" />
                     <span
                       className={`flex items-center text-xs font-medium ${stats.apiTrend.startsWith('+') ? 'text-success-600' : 'text-error-600'}`}
                     >
@@ -498,7 +498,7 @@ export default function OrganizationsPage() {
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                     {entry.name}
                   </span>
-                  <span className="text-xs text-neutral-400">{new Date(entry.visitedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(entry.visitedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
                 </a>
               ))}
             </div>
@@ -587,14 +587,14 @@ export default function OrganizationsPage() {
             {trashLoading ? (
               <Card>
                 <CardContent className="p-12 text-center">
-                  <Loader2 className="w-8 h-8 mx-auto text-neutral-300 animate-spin mb-4" />
-                  <p className="text-sm text-neutral-500">加载中...</p>
+                  <Loader2 className="w-8 h-8 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-spin mb-4" />
+                  <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</p>
                 </CardContent>
               </Card>
             ) : trashedOrganizations.length === 0 ? (
               <Card>
                 <CardContent className="p-16 text-center">
-                  <Trash2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
+                  <Trash2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-400 mb-4" />
                   <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">回收站为空</h3>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     已删除的组织会显示在这里，您可以恢复或永久删除它们。
@@ -606,11 +606,11 @@ export default function OrganizationsPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 dark:bg-neutral-800">
                     <tr>
-                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">组织名称</th>
-                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">Slug</th>
-                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">计划</th>
-                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">删除时间</th>
-                      <th className="px-5 py-4 text-right text-xs font-medium text-neutral-500 uppercase">操作</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">组织名称</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">Slug</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">计划</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">删除时间</th>
+                      <th className="px-5 py-4 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -624,17 +624,17 @@ export default function OrganizationsPage() {
                             <span className="font-medium text-neutral-900 dark:text-white">{org.name}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-sm text-neutral-500">@{org.slug}</td>
+                        <td className="px-5 py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">@{org.slug}</td>
                         <td className="px-5 py-4">
                           <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' :
-                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400' :
+                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700' :
+                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-700' :
                             'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
                           }`}>
                             {org.plan === 'free' ? '免费版' : org.plan === 'pro' ? '专业版' : '企业版'}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-sm text-neutral-500">
+                        <td className="px-5 py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           {new Date(org.updatedAt || org.createdAt).toLocaleDateString('zh-CN')}
                         </td>
                         <td className="px-5 py-4 text-right">
@@ -808,7 +808,7 @@ function OrganizationContent({
       {/* 搜索和筛选工具栏 */}
       <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
         <div className="relative flex-1 w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pointer-events-none" />
           <Input
             ref={searchInputRef}
             id="org-search-input"
@@ -825,7 +825,7 @@ function OrganizationContent({
             className={cn(
               'px-3 py-2 rounded-lg border transition-all flex items-center gap-2 text-sm',
               showFilters
-                ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300'
+                ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-700'
                 : 'border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800',
             )}
           >
@@ -845,7 +845,7 @@ function OrganizationContent({
                 className={cn(
                   'p-2 rounded-md transition-colors',
                   viewMode === mode
-                    ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600'
+                    ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700'
                     : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300',
                 )}
                 title={label}

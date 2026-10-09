@@ -64,8 +64,8 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           onClick={() => setActiveTab('matrix')}
           className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
             activeTab === 'matrix'
-              ? 'bg-white dark:bg-neutral-900 text-primary-600 shadow-sm'
-              : 'text-neutral-500 hover:text-text-primary'
+              ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
+              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
           }`}
         >
           <Shield className="w-4 h-4 mr-1.5" />
@@ -75,8 +75,8 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           onClick={() => setActiveTab('roles')}
           className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
             activeTab === 'roles'
-              ? 'bg-white dark:bg-neutral-900 text-primary-600 shadow-sm'
-              : 'text-neutral-500 hover:text-text-primary'
+              ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
+              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
           }`}
         >
           <Users className="w-4 h-4 mr-1.5" />
@@ -91,7 +91,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
             <table className="w-full min-w-[800px]">
               <thead className="bg-slate-50 dark:bg-neutral-800">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase w-32">角色</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase w-32">角色</th>
                   {RESOURCE_TYPES.map(resource => (
                     <th key={resource.key} colSpan={resource.actions.length} className="px-3 py-3 text-center text-xs font-semibold text-neutral-500 uppercase border-l border-neutral-200 dark:border-neutral-700">
                       {resource.label}
@@ -114,7 +114,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                   <tr key={role.code} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        {role.icon && <role.icon className="w-4 h-4 text-neutral-400" />}
+                        {role.icon && <role.icon className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                         <span className="font-medium text-neutral-900 dark:text-white">{role.name}</span>
                       </div>
                     </td>
@@ -130,7 +130,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                             {hasPermission ? (
                               <ShieldCheck className="w-4 h-4 mx-auto text-success-500" />
                             ) : (
-                              <ShieldOff className="w-4 h-4 mx-auto text-neutral-300" />
+                              <ShieldOff className="w-4 h-4 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                             )}
                           </td>
                         )
@@ -148,7 +148,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
               <ShieldCheck className="w-4 h-4 text-success-500" /> 有权限
             </div>
             <div className="flex items-center gap-1.5">
-              <ShieldOff className="w-4 h-4 text-neutral-300" /> 无权限
+              <ShieldOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 无权限
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
         <div className="space-y-4">
           {/* 系统角色 */}
           <div>
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">系统预定义角色</h3>
+            <h3 className="text-sm font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">系统预定义角色</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {SYSTEM_ROLES.map(role => {
                 const Icon = role.icon
@@ -182,9 +182,9 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                       }`} />
                     </div>
                     <h4 className="font-semibold text-neutral-900 dark:text-white mb-1">{role.name}</h4>
-                    <p className="text-xs text-neutral-500 line-clamp-2">{role.description}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2">{role.description}</p>
                     <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
-                      <span className="text-xs text-primary-600 font-medium cursor-pointer hover:underline">查看详情 →</span>
+                      <span className="text-xs text-primary-700 font-medium cursor-pointer hover:underline">查看详情 →</span>
                     </div>
                   </div>
                 )
@@ -195,7 +195,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           {/* 自定义角色 */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider">自定义角色</h3>
+              <h3 className="text-sm font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">自定义角色</h3>
               <button
                 onClick={handleCreateRole}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container transition-colors"
@@ -207,9 +207,9 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
 
             {roles.length === 0 ? (
               <div className="bg-slate-50 dark:bg-neutral-800 rounded-xl p-8 text-center">
-                <Key className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
-                <p className="text-neutral-500 text-sm">暂无自定义角色</p>
-                <p className="text-xs text-neutral-400 mt-1">点击上方按钮创建符合业务需求的定制角色</p>
+                <Key className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
+                <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">暂无自定义角色</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">点击上方按钮创建符合业务需求的定制角色</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -225,13 +225,13 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleEditRole(role)}
-                          className="p-1.5 text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => onDeleteRole(role.id || 0)}
-                          className="p-1.5 text-neutral-400 hover:text-error-600 hover:bg-error-50 rounded transition-colors"
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-600 hover:bg-error-50 rounded transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -239,7 +239,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                     </div>
                     <h4 className="font-medium text-neutral-900 dark:text-white truncate">{role.name}</h4>
                     {role.description && (
-                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{role.description}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 line-clamp-2">{role.description}</p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-1">
                       {(role.permissions || []).slice(0, 3).map((perm: string, i: number) => (
@@ -314,7 +314,7 @@ const RoleEditorModal: React.FC<{
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
             {role ? '编辑角色' : '创建新角色'}
           </h3>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600">
+          <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
             <X className="w-5 h-5" />
           </button>
         </div>

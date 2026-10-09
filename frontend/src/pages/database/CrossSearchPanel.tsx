@@ -207,7 +207,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
             <div>
               <h4 className="font-bold text-lg text-neutral-800">{result.herb.name_cn}</h4>
               {result.herb.name_latin && (
-                <p className="text-xs text-neutral-500 italic font-mono">{result.herb.name_latin}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic font-mono">{result.herb.name_latin}</p>
               )}
               <p className="text-xs text-neutral-600 mt-1 line-clamp-2">{result.herb.effects}</p>
             </div>
@@ -218,15 +218,15 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
           <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-blue-100">
             <div className="text-center">
               <div className="text-lg font-bold text-secondary-600">{result.match_summary.total_compounds}</div>
-              <div className="text-[10px] text-neutral-500">化合物</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">化合物</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-warning-600">{result.match_summary.matched_peptides}</div>
-              <div className="text-[10px] text-neutral-500">关联肽</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">关联肽</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-primary-600">{result.match_summary.high_relevance_peptides}</div>
-              <div className="text-[10px] text-neutral-500">高相关性</div>
+              <div className="text-lg font-bold text-primary-700">{result.match_summary.high_relevance_peptides}</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">高相关性</div>
             </div>
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         {/* 相关活性标签云 */}
         {result.related_peptides.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-neutral-400">相关活性:</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关活性:</span>
             {Array.from(new Set(result.related_peptides.map((p) => p.activity_type))).map((act) => (
               <span
                 key={act}
@@ -250,15 +250,15 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
           <div className="max-h-[480px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-slate-50 z-10">
-                <tr className="text-left border-b border-neutral-200">
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500">相关性</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500">序列</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500">来源</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500">活性</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500 text-right">活性值</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500 text-right">MW(Da)</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-neutral-500">水解酶</th>
+              <thead className="sticky top-0 bg-slate-50 dark:bg-neutral-800 z-10">
+                <tr className="text-left border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关性</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">序列</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">来源</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">活性</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">活性值</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">MW(Da)</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">水解酶</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,7 +280,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                       </td>
                       <td className="px-4 py-2">
                         <div className="text-xs text-neutral-700">{item.source_protein}</div>
-                        <div className="text-xs text-neutral-400">{item.source_organism}</div>
+                        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.source_organism}</div>
                       </td>
                       <td className="px-4 py-2">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[item.activity_type] || "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"}`}>
@@ -289,14 +289,14 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                       </td>
                       <td className="px-4 py-2 text-right font-mono text-sm">
                         <span className={Number(item.activity_value) < 10 ? "text-success-600 font-semibold" :
-                          Number(item.activity_value) < 100 ? "text-yellow-600" : "text-neutral-500"}>
+                          Number(item.activity_value) < 100 ? "text-yellow-600" : "text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"}>
                           {item.activity_value}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-right font-mono text-xs text-neutral-500">
+                      <td className="px-4 py-2 text-right font-mono text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {item.molecular_weight?.toFixed(1) || "-"}
                       </td>
-                      <td className="px-4 py-2 text-xs text-neutral-500">
+                      <td className="px-4 py-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {item.hydrolysis_enzyme}
                       </td>
                     </tr>
@@ -310,7 +310,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         {/* 代表性化合物 */}
         {result.compounds.length > 0 && (
           <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg px-4 py-3">
-            <p className="text-xs text-neutral-400 mb-1.5">代表性化合物:</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">代表性化合物:</p>
             <div className="flex gap-2 flex-wrap">
               {result.compounds.slice(0, 10).map((c, i) => (
                 <span
@@ -342,7 +342,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         />
         {/* 搜索图标 */}
         <svg
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -380,7 +380,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                 </span>
                 <span className="text-neutral-700 font-medium">{item.label}</span>
                 {item.sublabel && (
-                  <span className="text-xs text-neutral-400 ml-auto">{item.sublabel}</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{item.sublabel}</span>
                 )}
               </button>
             ))}
@@ -399,14 +399,14 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
       {loading && !result && (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full mr-3" />
-          <span className="text-neutral-500 text-sm">正在执行交叉检索...</span>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在执行交叉检索...</span>
         </div>
       )}
 
       {/* 搜索历史 */}
       {!result && searchHistory.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-neutral-400">最近搜索:</span>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">最近搜索:</span>
           {searchHistory.map((term) => (
             <button
               key={term}

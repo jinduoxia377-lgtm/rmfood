@@ -312,8 +312,8 @@ function CategoryTreeNode({
             )}
           </div>
         </td>
-        <td className="px-4 py-3 text-gray-500">{category.name_en || '-'}</td>
-        <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate" title={category.description || ''}>
+        <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{category.name_en || '-'}</td>
+        <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs max-w-[200px] truncate" title={category.description || ''}>
           {category.description || '-'}
         </td>
         <td className="px-4 py-3 text-right">
@@ -664,7 +664,7 @@ function TermManagementTab() {
       {/* 搜索和筛选 */}
       <div className="flex gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <Input
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
@@ -753,8 +753,8 @@ function TermManagementTab() {
                         </button>
                       </td>
                       <td className="px-4 py-3 font-medium">{term.term}</td>
-                      <td className="px-4 py-3 text-gray-500">{term.term_en || '-'}</td>
-                      <td className="px-4 py-3 text-gray-500">{term.pinyin || '-'}</td>
+                      <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.term_en || '-'}</td>
+                      <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.pinyin || '-'}</td>
                       <td className="px-4 py-3">
                         <Badge variant="neutral">
                           {categories.find((c) => c.id === term.category_id)?.name || '-'}
@@ -789,33 +789,33 @@ function TermManagementTab() {
                         <td colSpan={7} className="px-4 py-3 bg-gray-50 dark:bg-gray-900/30">
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                              <span className="text-gray-500 font-medium">定义：</span>
+                              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">定义：</span>
                               <span className="ml-1">{term.definition || '暂无'}</span>
                             </div>
                             <div>
-                              <span className="text-gray-500 font-medium">英文名：</span>
+                              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">英文名：</span>
                               <span className="ml-1">{term.term_en || '暂无'}</span>
                             </div>
                             {term.synonyms && term.synonyms.length > 0 && (
                               <div className="col-span-2">
-                                <span className="text-gray-500 font-medium">同义词：</span>
+                                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">同义词：</span>
                                 <span className="ml-1">{term.synonyms.join('、')}</span>
                               </div>
                             )}
                             {term.examples && term.examples.length > 0 && (
                               <div className="col-span-2">
-                                <span className="text-gray-500 font-medium">示例：</span>
+                                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">示例：</span>
                                 <span className="ml-1">{term.examples.join('、')}</span>
                               </div>
                             )}
                             {term.source && (
                               <div>
-                                <span className="text-gray-500 font-medium">来源：</span>
+                                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">来源：</span>
                                 <span className="ml-1">{term.source}</span>
                               </div>
                             )}
                             <div>
-                              <span className="text-gray-500 font-medium">置信度：</span>
+                              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">置信度：</span>
                               <span className="ml-1">{(term.confidence ?? 1).toFixed(2)}</span>
                             </div>
                           </div>
@@ -973,7 +973,7 @@ function VariantManagementTab() {
 
       {/* 按术语筛选 */}
       <div className="flex gap-3 items-center">
-        <span className="text-sm text-gray-500">按术语筛选：</span>
+        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">按术语筛选：</span>
         <select
           value={selectedTermId ?? ''}
           onChange={(e) => setSelectedTermId(e.target.value ? Number(e.target.value) : undefined)}
@@ -1025,7 +1025,7 @@ function VariantManagementTab() {
               {variants.map((v) => (
                 <tr key={v.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
                   <td className="px-4 py-3 font-medium">{v.variant}</td>
-                  <td className="px-4 py-3 text-gray-500">{v.term || `ID:${v.term_id}`}</td>
+                  <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{v.term || `ID:${v.term_id}`}</td>
                   <td className="px-4 py-3">
                     <Badge variant="neutral">{v.variant_type}</Badge>
                   </td>
@@ -1037,7 +1037,7 @@ function VariantManagementTab() {
                           style={{ width: `${(v.similarity ?? 0.8) * 100}%` }}
                         />
                       </div>
-                      <span className="text-xs text-gray-500">{(v.similarity ?? 0.8).toFixed(2)}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(v.similarity ?? 0.8).toFixed(2)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -1181,7 +1181,7 @@ function ValidationTab() {
                   ) : (
                     <Badge variant="danger">无效</Badge>
                   )}
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     置信度: {(validationResult.confidence || 0).toFixed(2)}
                   </span>
                 </div>
@@ -1190,7 +1190,7 @@ function ValidationTab() {
                 )}
                 {validationResult.suggestions && validationResult.suggestions.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500 mb-1">建议:</p>
+                    <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">建议:</p>
                     {validationResult.suggestions.map((s: string, i: number) => (
                       <p key={i} className="text-sm">• {s}</p>
                     ))}
@@ -1239,7 +1239,7 @@ function ValidationTab() {
                     )}
                     <span>{r.term || `条目 ${i + 1}`}</span>
                     {r.corrected_term && (
-                      <span className="text-gray-500 text-xs">→ {r.corrected_term}</span>
+                      <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">→ {r.corrected_term}</span>
                     )}
                   </div>
                 ))}

@@ -129,7 +129,7 @@ function StageCard({ result }: { result: ValidationStageResult }) {
   const config = STAGE_CONFIG[result.stage] || {
     label: result.stage.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     icon: FlaskConical,
-    color: 'text-neutral-500',
+    color: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
     description: '',
     weight: 0,
   }
@@ -170,7 +170,7 @@ function StageCard({ result }: { result: ValidationStageResult }) {
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm text-neutral-900 dark:text-white">{config.label}</span>
             {config.weight > 0 && (
-              <span className="text-xs text-neutral-400">×{config.weight}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">×{config.weight}</span>
             )}
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{config.description}</p>
@@ -186,11 +186,11 @@ function StageCard({ result }: { result: ValidationStageResult }) {
           )}>
             {result.score.toFixed(0)}
           </div>
-          <div className="text-xs text-neutral-400">{result.latency_ms.toFixed(0)}ms</div>
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{result.latency_ms.toFixed(0)}ms</div>
         </div>
 
         {/* 展开/折叠 */}
-        {expanded ? <ChevronUp size={16} className="text-neutral-400 flex-shrink-0" /> : <ChevronDown size={16} className="text-neutral-400 flex-shrink-0" />}
+        {expanded ? <ChevronUp size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" /> : <ChevronDown size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" />}
       </button>
 
       {/* 展开详情 */}
@@ -431,7 +431,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
               style={{ width: `${progress.progress_percent}%` }}
             />
           </div>
-          <div className="flex items-center gap-1 text-xs text-neutral-400">
+          <div className="flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Loader2 size={12} className="animate-spin" />
             <span>阶段 {progress.stage_index}/{progress.total_stages} · 当前: {progress.current_stage?.replace(/_/g, ' ')}</span>
           </div>
@@ -493,7 +493,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm text-neutral-900 dark:text-white">{cfg.label}</span>
-                    <span className="text-xs text-neutral-400">×{cfg.weight}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">×{cfg.weight}</span>
                   </div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">{cfg.description}</p>
                 </div>
@@ -503,7 +503,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
               </div>
             ))
           ) : (
-            <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
+            <div className="text-center py-12 text-neutral-400 dark:text-neutral-400">
               <FlaskConical size={40} className="mx-auto mb-3 opacity-50" />
               <p className="text-sm">点击上方「一键验证」开始全流程验证</p>
               <p className="text-xs mt-1">系统将自动执行安全性检查→兼容性检测→功效预测→稳定性预测→风味评分→协同效应分析</p>
@@ -534,7 +534,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                       <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
                         <td className="py-2 px-3 font-medium text-neutral-900 dark:text-white">{c.parameter}</td>
                         <td className="py-2 px-3 font-mono text-neutral-700 dark:text-neutral-300">
-                          {c.predicted_value.toFixed(2)} <span className="text-xs text-neutral-400">{c.unit}</span>
+                          {c.predicted_value.toFixed(2)} <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{c.unit}</span>
                         </td>
                         <td className="py-2 px-3 font-mono text-neutral-700 dark:text-neutral-300">
                           {c.measured_value?.toFixed(2) ?? '-'}
@@ -557,7 +557,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
+            <div className="text-center py-12 text-neutral-400 dark:text-neutral-400">
               <TrendingUp size={40} className="mx-auto mb-3 opacity-50" />
               <p className="text-sm">
                 {result
@@ -597,7 +597,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                           {React.createElement(OUTCOME_CONFIG[result!.outcome as keyof typeof OUTCOME_CONFIG]?.icon || Minus, { size: 12 })}
                           {OUTCOME_CONFIG[result!.outcome as keyof typeof OUTCOME_CONFIG]?.label}
                         </span>
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           耗时 {result!.total_latency_ms.toFixed(0)}ms
                         </span>
                       </div>
@@ -628,7 +628,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
               )}
             </>
           ) : (
-            <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
+            <div className="text-center py-12 text-neutral-400 dark:text-neutral-400">
               <FileText size={40} className="mx-auto mb-3 opacity-50" />
               <p className="text-sm">验证完成后将在此处展示完整报告</p>
             </div>
@@ -655,7 +655,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                 <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                   评分 {v.overall_score.toFixed(0)}
                 </span>
-                <span className="text-xs text-neutral-400 ml-auto">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">
                   {v.validation_id}
                 </span>
               </div>

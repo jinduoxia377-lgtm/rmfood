@@ -44,7 +44,7 @@ function StepIndicator({ currentStep }: { currentStep: ImportStep }) {
             >
               {isDone ? '✓' : s.icon}
             </div>
-            <span className={`text-[10px] hidden sm:block ${isActive ? 'text-orange-600 dark:text-orange-400 font-semibold' : 'text-neutral-400'}`}>
+            <span className={`text-xs hidden sm:block ${isActive ? 'text-orange-600 dark:text-orange-400 font-semibold' : 'text-neutral-400'}`}>
               {s.label}
             </span>
             {i < STEPS.length - 1 && (
@@ -108,7 +108,7 @@ function UploadStep({
         <p className="text-sm text-neutral-600 dark:text-neutral-300 font-medium">
           {dragOver ? '松开文件开始上传' : '拖拽文件到此处，或点击选择'}
         </p>
-        <p className="text-[10px] text-neutral-400 mt-1">支持 CSV、TSV、JSON、JSONL</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">支持 CSV、TSV、JSON、JSONL</p>
       </div>
 
       {/* File info */}
@@ -117,11 +117,11 @@ function UploadStep({
           <span className="text-sm">📄</span>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{file.name}</p>
-            <p className="text-[10px] text-neutral-400">{(file.size / 1024).toFixed(1)} KB</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(file.size / 1024).toFixed(1)} KB</p>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onFileSelect(null) }}
-            className="text-neutral-400 hover:text-red-500 text-xs"
+            className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-red-500 text-xs"
           >
             ✕
           </button>
@@ -169,15 +169,15 @@ function UploadStep({
 // ── Preview Step ─────────────────────────────────────────────────
 
 function PreviewStep({ data, totalRows }: { data: Record<string, unknown>[]; totalRows: number }) {
-  if (!data.length) return <p className="text-xs text-neutral-400 text-center py-4">暂无预览数据</p>
+  if (!data.length) return <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">暂无预览数据</p>
 
   const columns = Object.keys(data[0]).slice(0, 8)
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-neutral-500">共 {totalRows.toLocaleString()} 行，显示前 {Math.min(data.length, 10)} 行</p>
+      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {totalRows.toLocaleString()} 行，显示前 {Math.min(data.length, 10)} 行</p>
       <div className="overflow-auto max-h-[280px] custom-scrollbar rounded-lg border border-neutral-200 dark:border-neutral-700">
-        <table className="w-full text-[10px]">
+        <table className="w-full text-xs">
           <thead className="bg-slate-50 dark:bg-neutral-700/50 sticky top-0 z-10">
             <tr>{columns.map(c => (
               <th key={c} className="px-2 py-1.5 text-left font-semibold text-neutral-500 border-b border-neutral-200 dark:border-neutral-600 whitespace-nowrap">{c}</th>
@@ -251,7 +251,7 @@ function MappingStep({
       {/* Target config */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-semibold text-neutral-500 mb-1">目标表</label>
+          <label className="block text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">目标表</label>
           <select
             value={targetTable}
             onChange={e => onTargetChange(e.target.value)}
@@ -262,7 +262,7 @@ function MappingStep({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-neutral-500 mb-1">唯一标识字段</label>
+          <label className="block text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">唯一标识字段</label>
           <select
             value={idField}
             onChange={e => onIdFieldChange(e.target.value)}
@@ -276,8 +276,8 @@ function MappingStep({
       {/* Mapping rules */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-[10px] font-semibold text-neutral-500">字段映射规则</label>
-          <button onClick={addMapping} className="text-[10px] text-orange-500 hover:text-orange-600 font-medium">+ 添加映射</button>
+          <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">字段映射规则</label>
+          <button onClick={addMapping} className="text-xs text-orange-500 hover:text-orange-600 font-medium">+ 添加映射</button>
         </div>
 
         {mappings.map((m, i) => (
@@ -285,26 +285,26 @@ function MappingStep({
             <select
               value={m.source}
               onChange={e => updateMapping(i, 'source', e.target.value)}
-              className="flex-1 text-[10px] rounded border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1.5 py-1"
+              className="flex-1 text-xs rounded border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1.5 py-1"
             >
               <option value="">— 源列 —</option>
               {columns.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <span className="text-neutral-300">→</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">→</span>
             <select
               value={m.target}
               onChange={e => updateMapping(i, 'target', e.target.value)}
-              className="flex-1 text-[10px] rounded border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1.5 py-1"
+              className="flex-1 text-xs rounded border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1.5 py-1"
             >
               <option value="">— 目标字段 —</option>
               {TARGET_COLUMNS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <button onClick={() => removeMapping(i)} className="text-neutral-300 hover:text-red-400 text-xs">✕</button>
+            <button onClick={() => removeMapping(i)} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-red-400 text-xs">✕</button>
           </div>
         ))}
 
         {!mappings.length && (
-          <p className="text-[10px] text-neutral-400 text-center py-2">添加映射规则以将源列映射到目标字段</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-2">添加映射规则以将源列映射到目标字段</p>
         )}
       </div>
     </div>
@@ -320,7 +320,7 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
     <div className="space-y-4">
       {/* Progress bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-[10px] text-neutral-500">
+        <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span>处理进度</span>
           <span>{progress.progressPct.toFixed(1)}%</span>
         </div>
@@ -341,7 +341,7 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
 
       {/* Error message */}
       {errorMessage && (
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 text-[11px] text-red-600 dark:text-red-400">
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 text-xs text-red-600 dark:text-red-400">
           {errorMessage}
         </div>
       )}
@@ -358,7 +358,7 @@ function StatCard({ label, value, color }: { label: string; value: string; color
   return (
     <div className={`rounded-lg px-3 py-2 text-center ${colors[color] || colors.neutral}`}>
       <div className="text-lg font-bold">{value}</div>
-      <div className="text-[10px] opacity-70">{label}</div>
+      <div className="text-xs opacity-70">{label}</div>
     </div>
   )
 }

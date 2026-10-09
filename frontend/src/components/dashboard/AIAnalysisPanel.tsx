@@ -384,7 +384,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
-              <Brain size={20} className="text-accent-600 dark:text-accent-400" />
+              <Brain size={20} className="text-accent-600 dark:text-accent-700" />
             </div>
             <div>
               <CardTitle as="h3" className="text-sm font-semibold">AI 智能分析</CardTitle>
@@ -449,7 +449,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
-              <Brain size={20} className="text-accent-600 dark:text-accent-400" />
+              <Brain size={20} className="text-accent-600 dark:text-accent-700" />
             </div>
             <div>
               <CardTitle as="h3" className="text-sm font-semibold">AI 智能分析</CardTitle>
@@ -482,24 +482,24 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
               <>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
-                    <p className="text-xs text-secondary-700 dark:text-secondary-400 mb-1">成分分析</p>
+                    <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">成分分析</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">
                         {analysisResult.ingredient_analysis?.total_count ?? 0}
                       </span>
-                      <span className="text-xs text-neutral-500">成分</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">成分</span>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       {analysisResult.ingredient_analysis?.herb_count ?? 0} 药材, {analysisResult.ingredient_analysis?.peptide_count ?? 0} 肽
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
-                    <p className="text-xs text-success-700 dark:text-success-400 mb-1">功效预测</p>
+                    <p className="text-xs text-success-700 dark:text-success-600 mb-1">功效预测</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">
                         {Math.round((analysisResult.effect_prediction?.confidence_score ?? 0) * 100)}%
                       </span>
-                      <span className="text-xs text-neutral-500">置信度</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">置信度</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {(analysisResult.effect_prediction?.predicted_effects ?? []).slice(0, 3).map((effect, index) => (
@@ -527,7 +527,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                 </div>
 
                 <div className="p-4 rounded-lg bg-accent-50 dark:bg-accent-900/20">
-                  <h4 className="text-sm font-semibold mb-2 text-accent-700 dark:text-accent-400">市场分析</h4>
+                  <h4 className="text-sm font-semibold mb-2 text-accent-700 dark:text-accent-700">市场分析</h4>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-2">
                     <span className="font-medium">竞争优势：</span>
                     {analysisResult.market_analysis?.competitive_advantage ?? '无'}
@@ -560,7 +560,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <span className="font-medium">匹配原因：</span>{rec.match_reason}
                     </p>
                   </div>
@@ -588,38 +588,38 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
               <>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
-                    <p className="text-xs text-secondary-700 dark:text-secondary-400 mb-1">配方趋势</p>
+                    <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">配方趋势</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">
                         {trendPrediction.formulas.current}
                       </span>
-                      <span className="text-xs text-success-600">→ {trendPrediction.formulas.predicted}</span>
+                      <span className="text-xs text-success-700">→ {trendPrediction.formulas.predicted}</span>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       +{trendPrediction.formulas.change_percent}%
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
-                    <p className="text-xs text-success-700 dark:text-success-400 mb-1">实验趋势</p>
+                    <p className="text-xs text-success-700 dark:text-success-600 mb-1">实验趋势</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">
                         {trendPrediction.experiments.current}
                       </span>
-                      <span className="text-xs text-success-600">→ {trendPrediction.experiments.predicted}</span>
+                      <span className="text-xs text-success-700">→ {trendPrediction.experiments.predicted}</span>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       +{trendPrediction.experiments.change_percent}%
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-warning-50 dark:bg-warning-900/20">
-                    <p className="text-xs text-warning-700 dark:text-warning-400 mb-1">成功率</p>
+                    <p className="text-xs text-warning-700 dark:text-warning-700 mb-1">成功率</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">
                         {trendPrediction.success_rate.current}%
                       </span>
-                      <span className="text-xs text-success-600">→ {trendPrediction.success_rate.predicted}%</span>
+                      <span className="text-xs text-success-700">→ {trendPrediction.success_rate.predicted}%</span>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       +{trendPrediction.success_rate.change_percent}%
                     </p>
                   </div>
@@ -627,7 +627,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
 
                 <div className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <TrendingUp size={16} className="text-secondary-500" />
+                    <TrendingUp size={16} className="text-secondary-700" />
                     热门功效趋势
                   </h4>
                   <div className="space-y-2">
@@ -635,7 +635,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                       <div key={index} className="flex items-center justify-between">
                         <span className="text-sm text-neutral-700 dark:text-neutral-300">{item.effect}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-success-600">+{item.growth_rate}%</span>
+                          <span className="text-xs font-medium text-success-700">+{item.growth_rate}%</span>
                           <div className="w-20 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-success-500 rounded-full"
@@ -656,13 +656,13 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
             {experimentAnalysis?.status === 'no_data' ? (
               <div className="py-10 text-center">
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无实验数据可供分析</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">创建并完成后，实验分析将自动更新</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">创建并完成后，实验分析将自动更新</p>
               </div>
             ) : experimentAnalysis?.result_summary ? (
               <>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
-                    <p className="text-xs text-secondary-700 dark:text-secondary-400 mb-1">实验状态</p>
+                    <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">实验状态</p>
                     <div className="flex items-baseline gap-2">
                       <Badge
                         variant={experimentAnalysis.result_summary.overall_status === 'success' ? 'success' : 'danger'}
@@ -671,23 +671,23 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                         {experimentAnalysis.result_summary.overall_status === 'success' ? '成功' : '失败'}
                       </Badge>
                     </div>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       较基线提升 {experimentAnalysis.result_summary.comparison_to_baseline?.improvement ?? 0}%
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
-                    <p className="text-xs text-success-700 dark:text-success-400 mb-1">关键指标</p>
+                    <p className="text-xs text-success-700 dark:text-success-600 mb-1">关键指标</p>
                     <div className="space-y-1">
                       <div className="flex justify-between">
-                        <span className="text-xs text-neutral-500">有效性</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">有效性</span>
                         <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.effectiveness ?? 0}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs text-neutral-500">稳定性</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">稳定性</span>
                         <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.stability ?? 0}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs text-neutral-500">口感</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">口感</span>
                         <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.taste_score ?? 0}%</span>
                       </div>
                     </div>
@@ -710,11 +710,11 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                 </div>
 
                 <div className="p-4 rounded-lg bg-accent-50 dark:bg-accent-900/20">
-                  <h4 className="text-sm font-semibold mb-2 text-accent-700 dark:text-accent-400">下一步建议</h4>
+                  <h4 className="text-sm font-semibold mb-2 text-accent-700 dark:text-accent-700">下一步建议</h4>
                   <ul className="space-y-2">
                     {experimentAnalysis.recommendations.next_experiments.slice(0, 3).map((exp, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <TestTube size={14} className="text-accent-500 mt-0.5 shrink-0" />
+                        <TestTube size={14} className="text-accent-700 mt-0.5 shrink-0" />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300">{exp}</span>
                       </li>
                     ))}

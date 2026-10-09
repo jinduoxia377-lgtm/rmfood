@@ -262,7 +262,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-primary-600" />
+            <FileText className="w-5 h-5 text-primary-700" />
             <h2 id="operation-log-title" className="text-lg font-semibold text-neutral-900 dark:text-white">操作日志</h2>
             <Badge variant="neutral" size="sm">
               共 {total} 条
@@ -283,7 +283,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
               onClick={onClose}
               className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-neutral-500" />
+              <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </button>
           </div>
         </div>
@@ -357,7 +357,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
 
           <div className="flex items-center gap-2">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <input
                 type="text"
                 value={searchQuery}
@@ -378,7 +378,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
           ) : error ? (
             <div className="flex items-center justify-center h-64 text-error-600">加载失败，请重试</div>
           ) : filteredLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
+            <div className="flex flex-col items-center justify-center h-64 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <FileText className="w-12 h-12 mb-3 opacity-50" />
               <p className="text-sm">暂无日志记录</p>
             </div>
@@ -453,7 +453,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                     <td className="px-4 py-3">
                       <Tooltip content="查看详情">
                         <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded">
-                          <Eye className="w-4 h-4 text-neutral-500" />
+                          <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </button>
                       </Tooltip>
                     </td>
@@ -514,33 +514,33 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                   {/* Basic Info */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">操作时间</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作时间</label>
                       <div className="text-sm text-neutral-900 dark:text-white">
                         {new Date(log.created_at).toLocaleString('zh-CN')}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">操作人</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作人</label>
                       <div className="text-sm text-neutral-900 dark:text-white">
                         {log.operatorName} ({log.operatorRole})
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">操作类型</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作类型</label>
                       <div className="text-sm">{renderResultBadge(log.result)}</div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">IP 地址</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">IP 地址</label>
                       <div className="text-sm text-neutral-900 dark:text-white">{log.ip_address || '-'}</div>
                     </div>
                   </div>
 
                   {/* Target Info */}
                   <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">操作对象</label>
+                    <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作对象</label>
                     <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-3">
                       <p className="text-sm font-medium text-neutral-900 dark:text-white">{log.target_name}</p>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                         类型: {log.target_type} · ID: {log.target_id}
                       </p>
                     </div>
@@ -549,7 +549,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                   {/* Changes Diff */}
                   {log.details?.changes && Object.keys(log.details.changes).length > 0 && (
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-2">变更详情</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">变更详情</label>
                       <div className="space-y-2">
                         {Object.entries(log.details.changes).map(([key, change]) => (
                           <div key={key} className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-3">
@@ -571,9 +571,9 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                   {/* Error Message */}
                   {log.details?.error_message && (
                     <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">错误信息</label>
+                      <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">错误信息</label>
                       <div className="bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                        <p className="text-sm text-error-700 dark:text-error-300">{log.details.error_message}</p>
+                        <p className="text-sm text-error-700 dark:text-error-600">{log.details.error_message}</p>
                       </div>
                     </div>
                   )}
@@ -583,7 +583,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                     <div className="grid grid-cols-2 gap-4">
                       {log.details?.duration_ms && (
                         <div>
-                          <label className="block text-xs font-medium text-neutral-500 mb-1">执行耗时</label>
+                          <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">执行耗时</label>
                           <div className="text-sm text-neutral-900 dark:text-white">
                             {(log.details.duration_ms / 1000).toFixed(2)} 秒
                           </div>
@@ -591,7 +591,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                       )}
                       {log.details?.metadata && (
                         <div>
-                          <label className="block text-xs font-medium text-neutral-500 mb-1">元数据</label>
+                          <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">元数据</label>
                           <pre className="text-xs bg-slate-50 dark:bg-neutral-800 rounded p-2 overflow-auto max-h-32">
                             {JSON.stringify(log.details.metadata, null, 2)}
                           </pre>

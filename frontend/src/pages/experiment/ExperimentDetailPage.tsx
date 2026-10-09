@@ -137,9 +137,9 @@ function DataTable({
   if (data.length === 0) {
     return (
       <div className="text-center py-8">
-        <BarChart3 size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <BarChart3 size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
         <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无实验数据</p>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">点击「录入数据」开始记录实验数据</p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">点击「录入数据」开始记录实验数据</p>
       </div>
     )
   }
@@ -169,7 +169,7 @@ function DataTable({
               <td className="py-2.5 px-3 text-neutral-700 dark:text-neutral-300 font-mono">{d.value ?? '-'}</td>
               <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400">{d.unit ?? '-'}</td>
               <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400 max-w-[200px] truncate">{d.notes ?? '-'}</td>
-              <td className="py-2.5 px-3 text-xs text-neutral-400">
+              <td className="py-2.5 px-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {format(new Date(d.recorded_at ?? d.timestamp), 'MM-dd HH:mm', { locale: zhCN })}
               </td>
               <td className="py-2.5 px-3">
@@ -232,9 +232,9 @@ function DataView({
   if (!hasNumericData) {
     return (
       <div className="text-center py-8">
-        <TrendingUp size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <TrendingUp size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
         <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无可视化数据</p>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">录入数值型数据后将自动生成图表</p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">录入数值型数据后将自动生成图表</p>
       </div>
     )
   }
@@ -244,7 +244,7 @@ function DataView({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">{parameters.length} 个参数</span>
-          <span className="text-xs text-neutral-400 dark:text-neutral-500">|</span>
+          <span className="text-xs text-neutral-400 dark:text-neutral-400">|</span>
           <span className="text-xs text-neutral-500 dark:text-neutral-400">{numericData.length} 个数据点</span>
         </div>
         <div className="flex gap-1">
@@ -255,7 +255,7 @@ function DataView({
               className={cn(
                 'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                 chartType === type
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
             >
@@ -328,13 +328,13 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
     const Icon = experiment.status === 'failed' ? XCircle : Clock
     return (
       <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
-        <Icon size={20} className={experiment.status === 'failed' ? 'text-error-500' : 'text-neutral-400'} />
+        <Icon size={20} className={experiment.status === 'failed' ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'} />
         <div>
           <p className="text-sm font-medium text-neutral-900 dark:text-white">
             {experiment.status === 'failed' ? '实验已失败' : '实验已取消'}
           </p>
           {experiment.actual_start && (
-            <p className="text-xs text-neutral-500 mt-0.5">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
               开始于 {format(new Date(experiment.actual_start), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
               {experiment.actual_end && ` · 结束于 ${format(new Date(experiment.actual_end), 'yyyy-MM-dd HH:mm', { locale: zhCN })}`}
             </p>
@@ -349,7 +349,7 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
       <div className="flex-1">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">进度</span>
-          <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{progress}%</span>
+          <span className="text-xs font-bold text-primary-700 dark:text-primary-700">{progress}%</span>
         </div>
         <div className="h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
           <div
@@ -374,11 +374,11 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
               !isActive && !isDone && 'bg-slate-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700',
             )}>
               <Icon size={14} className={cn(
-                isDone ? 'text-success-500' : isActive ? 'text-primary-500' : 'text-neutral-300 dark:text-neutral-600',
+                isDone ? 'text-success-500' : isActive ? 'text-primary-500' : 'text-neutral-300 dark:text-neutral-400',
               )} />
               <span className={cn(
                 'text-xs font-medium',
-                isDone ? 'text-success-700 dark:text-success-400' : isActive ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-400',
+                isDone ? 'text-success-700 dark:text-success-600' : isActive ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400',
               )}>{step.label}</span>
             </div>
             {i < statusFlow.length - 1 && (
@@ -440,7 +440,7 @@ function BatchImportForm({
           <X size={16} />
         </button>
       </div>
-      <p className="text-xs text-neutral-500">粘贴 CSV 数据，格式：参数名,数值,单位,备注（首行为标题）</p>
+      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">粘贴 CSV 数据，格式：参数名,数值,单位,备注（首行为标题）</p>
       <textarea
         value={csvText}
         onChange={(e) => setCsvText(e.target.value)}
@@ -614,8 +614,8 @@ export default function ExperimentDetailPage() {
   if (!experiment) {
     return (
       <div className="max-w-5xl mx-auto text-center py-20">
-        <p className="text-neutral-500">实验不存在</p>
-        <Link to="/experiments" className="text-primary-600 text-sm mt-2 inline-block">返回列表</Link>
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实验不存在</p>
+        <Link to="/experiments" className="text-primary-700 text-sm mt-2 inline-block">返回列表</Link>
       </div>
     )
   }
@@ -680,7 +680,7 @@ export default function ExperimentDetailPage() {
             {experiment.formula_id && (
               <Link
                 to={`/formulas/${experiment.formula_id}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
               >
                 <FlaskConical size={12} />
                 关联配方
@@ -703,7 +703,7 @@ export default function ExperimentDetailPage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">实验进度</span>
-                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{progress}%</span>
+                  <span className="text-xs font-bold text-primary-700 dark:text-primary-700">{progress}%</span>
                 </div>
                 <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
@@ -745,7 +745,7 @@ export default function ExperimentDetailPage() {
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-start gap-2">
                 <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon size={14} className="text-neutral-400" />
+                  <Icon size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 </div>
                 <div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
@@ -953,7 +953,7 @@ export default function ExperimentDetailPage() {
                 </div>
               )}
               {!experiment.conclusions && !experiment.recommendations && (
-                <div className="col-span-2 py-4 text-center text-sm text-neutral-400">暂无结论和建议</div>
+                <div className="col-span-2 py-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无结论和建议</div>
               )}
             </div>
           )}
@@ -966,7 +966,7 @@ export default function ExperimentDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <Paperclip size={16} className="text-neutral-400" />
+                <Paperclip size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </div>
               <CardTitle as="h2">附件</CardTitle>
               <Badge variant="neutral" size="sm">{attachments.length}</Badge>
@@ -995,15 +995,15 @@ export default function ExperimentDetailPage() {
               {attachments.map((att: Attachment) => (
                 <div key={att.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 group">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Paperclip size={14} className="text-neutral-400 shrink-0" />
+                    <Paperclip size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
                     <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{att.file_name}</span>
-                    <span className="text-xs text-neutral-400 shrink-0">
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">
                       {(att.file_size / 1024).toFixed(1)} KB
                     </span>
                   </div>
                   <button
                     onClick={() => deleteAttachMut.mutate(att.id)}
-                    className="p-1 rounded text-neutral-400 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <X size={14} />
                   </button>
@@ -1011,7 +1011,7 @@ export default function ExperimentDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-center text-sm text-neutral-400">暂无附件</div>
+            <div className="py-6 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无附件</div>
           )}
         </CardContent>
       </Card>
@@ -1032,7 +1032,7 @@ export default function ExperimentDetailPage() {
               </div>
               <Link
                 to={`/formulas/${experiment.formula_id}`}
-                className="ml-auto text-xs text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
+                className="ml-auto text-xs text-primary-700 dark:text-primary-700 hover:underline flex items-center gap-1"
               >
                 查看配方 <ChevronRight size={12} />
               </Link>

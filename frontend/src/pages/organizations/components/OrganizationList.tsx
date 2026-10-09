@@ -45,10 +45,10 @@ interface OrganizationListProps {
 
 const PlanBadgeConfig = {
   free: { label: '免费版', className: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
-  pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' },
+  pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700' },
   enterprise: {
     label: '企业版',
-    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400',
+    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-700',
   },
 };
 
@@ -120,7 +120,7 @@ const OrganizationCard = memo(
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => onToggleSelect(org.id)}
-                className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
               />
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 {org.name.charAt(0)}
@@ -164,25 +164,25 @@ const OrganizationCard = memo(
             <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
               <Users className="w-5 h-5 mx-auto mb-1 text-secondary-500" />
               <p className="text-lg font-bold text-neutral-900 dark:text-white">{org.memberCount}</p>
-              <p className="text-xs text-neutral-500">成员</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">成员</p>
             </div>
             <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
               <Settings className="w-5 h-5 mx-auto mb-1 text-success-500" />
               <p className="text-lg font-bold text-neutral-900 dark:text-white">{org.teamCount}</p>
-              <p className="text-xs text-neutral-500">团队</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">团队</p>
             </div>
             <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
               <Clock className="w-5 h-5 mx-auto mb-1 text-accent-500" />
               <p className="text-sm font-bold text-neutral-900 dark:text-white">
                 {new Date(org.createdAt).toLocaleDateString('zh-CN', { month: 'short', year: 'numeric' })}
               </p>
-              <p className="text-xs text-neutral-500">创建于</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">创建于</p>
             </div>
           </div>
 
           {/* 底部操作区 */}
           <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
+            <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3">
               <span className="flex items-center gap-1">
                 <HardDrive className="w-3.5 h-3.5" />
                 存储: {(org.storageUsed / (1024 ** 3)).toFixed(1)}GB / {(org.storageLimit / (1024 ** 3)).toFixed(1)}GB
@@ -277,7 +277,7 @@ const OrganizationTableRow = memo(
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(org.id)}
-            className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
           />
         </td>
         <td className="px-5 py-4">
@@ -287,7 +287,7 @@ const OrganizationTableRow = memo(
             </div>
             <div className="min-w-0">
               <p className="font-medium text-neutral-900 dark:text-white truncate">{highlightText(org.name)}</p>
-              <p className="text-xs text-neutral-500 truncate">@{org.slug}</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">@{org.slug}</p>
             </div>
           </div>
         </td>
@@ -306,17 +306,17 @@ const OrganizationTableRow = memo(
                 style={{ width: `${Math.min(storagePercent, 100)}%` }}
               />
             </div>
-            <span className="text-xs text-neutral-500">{storagePercent.toFixed(0)}%</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{storagePercent.toFixed(0)}%</span>
           </div>
         </td>
         <td className="px-5 py-4">
           <RoleIcon role={org.myRole || 'member'} />
         </td>
-        <td className="px-5 py-4 text-sm text-neutral-500">{new Date(org.createdAt).toLocaleDateString('zh-CN')}</td>
+        <td className="px-5 py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(org.createdAt).toLocaleDateString('zh-CN')}</td>
         <td className="px-5 py-4">
           <button
             onClick={() => onNavigateToDetail(org.id)}
-            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            className="text-primary-700 hover:text-primary-700 text-sm font-medium"
           >
             管理
           </button>
@@ -368,7 +368,7 @@ const OrganizationCompactItem = memo(
           type="checkbox"
           checked={isSelected}
           onChange={() => onToggleSelect(org.id)}
-          className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+          className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
         />
 
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
@@ -379,7 +379,7 @@ const OrganizationCompactItem = memo(
           <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">{highlightText(org.name)}</p>
         </div>
 
-        <div className="hidden sm:flex items-center gap-6 text-xs text-neutral-500">
+        <div className="hidden sm:flex items-center gap-6 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span className="flex items-center gap-1">
             <Users className="w-3.5 h-3.5" /> {org.memberCount}
           </span>
@@ -391,7 +391,7 @@ const OrganizationCompactItem = memo(
 
         <button
           onClick={() => onNavigateToDetail(org.id)}
-          className="text-primary-600 hover:text-primary-700 text-sm font-medium flex-shrink-0"
+          className="text-primary-700 hover:text-primary-700 text-sm font-medium flex-shrink-0"
         >
           管理
         </button>
@@ -421,7 +421,7 @@ const Pagination = memo(
 
     return (
       <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-100 dark:border-neutral-700">
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span>每页</span>
           <select
             value={pageSize}
@@ -456,7 +456,7 @@ const Pagination = memo(
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded font-medium text-sm">
+          <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 rounded font-medium text-sm">
             {page}
           </span>
 
@@ -525,7 +525,7 @@ const CompactSkeleton = () => (
 // Empty 空状态
 const EmptyState = () => (
   <div className="text-center py-16">
-    <Building2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
+    <Building2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-400 mb-4" />
     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">暂无组织</h3>
     <p className="text-neutral-500 dark:text-neutral-400 mb-6">创建您的第一个组织开始使用</p>
     <button className="px-6 py-2.5 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors inline-flex items-center gap-2">
@@ -590,17 +590,17 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
     <div className="space-y-4">
       {/* 结果计数和全选 */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-3 text-sm text-neutral-500">
+        <div className="flex items-center gap-3 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
             />
             全选
           </label>
           <span>共找到 {total} 个组织</span>
-          {selectedIds.size > 0 && <span className="text-primary-600 font-medium">已选择 {selectedIds.size} 个</span>}
+          {selectedIds.size > 0 && <span className="text-primary-700 font-medium">已选择 {selectedIds.size} 个</span>}
         </div>
       </div>
 
@@ -628,17 +628,17 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
               <tr>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12"></th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">计划</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">成员</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">团队</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">存储</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">角色</th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider w-12"></th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">名称</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">计划</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">成员</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">团队</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">存储</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">角色</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">
                   创建时间
                 </th>
-                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
