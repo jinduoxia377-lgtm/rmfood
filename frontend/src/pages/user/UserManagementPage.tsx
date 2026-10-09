@@ -16,7 +16,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { adminApi } from '@/api/admin';
+import { adminApi, type PreRegisterRequest, type PreRegisterStatus } from '@/api/admin';
 import { UserRole } from '@/types';
 import { useAuthStore } from '@/stores/auth';
 import {
@@ -124,6 +124,14 @@ export default function UserManagementPage() {
   const [importErrorDetail, setImportErrorDetail] = useState<any[]>([]);
   const [showOpLogPanel, setShowOpLogPanel] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  // ── 账号申请（预注册）队列状态 ──
+  const [preRegTab, setPreRegTab] = useState<PreRegisterStatus>('pending');
+  const [preRegSearch, setPreRegSearch] = useState('');
+  const [preRegPage, setPreRegPage] = useState(1);
+  const [preRegPageSize] = useState(20);
+  const [preRegDetail, setPreRegDetail] = useState<PreRegisterRequest | null>(null);
+  const [preRegApproveForm, setPreRegApproveForm] = useState({ role: 'researcher', password: '' });
+  const [preRegRejectReason, setPreRegRejectReason] = useState('');
   const [detailTab, setDetailTab] = useState('info');
   const [tableDensity, setTableDensity] = useState<'comfortable' | 'compact'>('comfortable');
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
@@ -190,6 +198,74 @@ export default function UserManagementPage() {
       count: Number(d.count ?? d.value ?? d.total ?? 0),
     }));
   }, [userTrendData]);
+
+  // ── 账号申请（预注册）队列 ──
+  const { data: preRegData, isLoading: preRegLoading } = useQuery({
+    queryKey: ['pre-register-requests', preRegTab, preRegPage, preRegSearch],
+    queryFn: () =>
+      adminApi.listPreRegisterRequests({
+        page: preRegPage,
+        page_size: preRegPageSize,
+        status: preRegTab,
+        search: preRegSearch || undefined,
+      }),
+  });
+  const preRegItems = preRegData?.items ?? [];
+  const preRegStatusCounts = preRegData?.status_counts ?? { pending: 0, approved: 0, rejected: 0 };
+
+  const approvePreRegMutation = useMutation({
+    mutationFn: (vars: { requestId: number; role?: string; password?: string }) =>
+      adminApi.approvePreRegisterRequest(vars.requestId, {
+        role: vars.role,
+        password: vars.password || undefined,
+      }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['pre-register-requests'] });
+      qc.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success(
+        data.temp_password
+          ? `账号已开通：${data.username}，临时密码 ${data.temp_password}（请转告用户首次登录修改）`
+          : `账号已开通：${data.username}`,
+      );
+      setPreRegDetail(null);
+      setPreRegApproveForm({ role: 'researcher', password: '' });
+    },
+    onError: (e: any) => {
+      toast.error(e?.response?.data?.detail || '开通账号失败，请重试');
+    },
+  });
+
+  const rejectPreRegMutation = useMutation({
+    mutationFn: (vars: { requestId: number; reason?: string }) =>
+      adminApi.rejectPreRegisterRequest(vars.requestId, vars.reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pre-register-requests'] });
+      toast.success('申请已拒绝');
+      setPreRegDetail(null);
+      setPreRegRejectReason('');
+    },
+    onError: (e: any) => {
+      toast.error(e?.response?.data?.detail || '拒绝操作失败，请重试');
+    },
+  });
+
+  const roleLabelMap: Record<string, string> = {
+    guest: '访客',
+    researcher: '研究员',
+    formulator: '配方师',
+    reviewer: '审核员',
+    admin: '管理员',
+  };
+  const preRegStatusLabel: Record<PreRegisterStatus, string> = {
+    pending: '待审核',
+    approved: '已开通',
+    rejected: '已拒绝',
+  };
+  const preRegStatusColor: Record<PreRegisterStatus, string> = {
+    pending: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20',
+    approved: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/20',
+    rejected: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20',
+  };
 
   // P3-5: CDC 实时通知 - 用户变更时显示 toast
   useRealtimeEntity('users', useCallback((change: CDCChangeEvent) => {
@@ -717,7 +793,7 @@ export default function UserManagementPage() {
 
   const SortIcon = ({ field }: { field: SortField }) => (
     <span
-      className={`inline-flex ml-0.5 ${sortField === field ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-300 dark:text-neutral-600'}`}
+      className={`inline-flex ml-0.5 ${sortField === field ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-300 dark:text-neutral-400'}`}
     >
       {sortField === field && sortDir === 'desc' ? (
         <ChevronDown className="w-3 h-3" />
@@ -786,12 +862,32 @@ export default function UserManagementPage() {
               onClick={() => setShowOpLogPanel(!showOpLogPanel)}>
               操作日志
               {anomalyCount > 0 && (
-                <span className="ml-1.5 min-w-[18px] h-[18px] bg-white dark:bg-neutral-800 text-primary-600 text-[10px] font-bold rounded-full flex items-center justify-center px-1">{anomalyCount}</span>
+                <span className="ml-1.5 min-w-[18px] h-[18px] bg-white dark:bg-neutral-800 text-primary-700 text-xs font-bold rounded-full flex items-center justify-center px-1">{anomalyCount}</span>
               )}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* ── 账号申请待审核提醒横幅
+          问题背景: "账号申请"队列模块位于本页最底部, 首屏无任何提示,
+          管理员以为"用户管理看不到登录页提交的申请"。
+          修复: pending>0 时在页首高亮提醒, 点击平滑滚动直达队列模块 (#prereg-queue)。 */}
+      {preRegStatusCounts.pending > 0 && (
+        <button
+          type="button"
+          onClick={() =>
+            document.getElementById('prereg-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          className="w-full flex items-center gap-3 rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50 dark:bg-warning-900/20 px-5 py-3.5 text-left transition-colors hover:bg-warning-100/80 dark:hover:bg-warning-900/30"
+        >
+          <UserRoundPlus className="w-5 h-5 text-warning-600 dark:text-warning-700 shrink-0" />
+          <span className="flex-1 text-sm text-warning-800 dark:text-warning-200">
+            有 <strong className="font-bold">{preRegStatusCounts.pending}</strong> 条登录页提交的账号申请待审核
+          </span>
+          <span className="text-xs font-semibold text-warning-700 dark:text-warning-700">前往处理 →</span>
+        </button>
+      )}
 
       {/* ── Data Visualization Dashboard ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -800,7 +896,7 @@ export default function UserManagementPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-100 via-emerald-50 to-teal-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-teal-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <CheckCircle2 className="w-4.5 h-4.5 text-primary-600 dark:text-primary-400" />
+                  <CheckCircle2 className="w-4.5 h-4.5 text-primary-700 dark:text-primary-700" />
                 </div>
                 <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">活跃用户</span>
               </div>
@@ -812,7 +908,7 @@ export default function UserManagementPage() {
               {activeCount}
             </p>
             <Progress value={activeRate} max={100} variant="success" size="sm" className="mt-3" />
-            <p className="text-xs text-neutral-400 mt-1.5 font-medium">活跃率 {activeRate}%</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1.5 font-medium">活跃率 {activeRate}%</p>
           </CardContent>
         </Card>
 
@@ -821,7 +917,7 @@ export default function UserManagementPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-100 via-red-50 to-orange-50 dark:from-red-900/50 dark:via-red-900/30 dark:to-orange-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <ShieldAlert className="w-4.5 h-4.5 text-error-600 dark:text-error-400" />
+                  <ShieldAlert className="w-4.5 h-4.5 text-error-600 dark:text-error-600" />
                 </div>
                 <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">已禁用</span>
               </div>
@@ -839,7 +935,7 @@ export default function UserManagementPage() {
               size="sm"
               className="mt-3"
             />
-            <p className="text-xs text-neutral-400 mt-1.5 font-medium">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1.5 font-medium">
               占比 {users.length > 0 ? Math.round((inactiveCount / users.length) * 100) : 0}%
             </p>
           </CardContent>
@@ -850,7 +946,7 @@ export default function UserManagementPage() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-violet-50 dark:from-blue-900/50 dark:via-indigo-900/30 dark:to-violet-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <PieIcon className="w-4.5 h-4.5 text-secondary-600 dark:text-secondary-400" />
+                  <PieIcon className="w-4.5 h-4.5 text-secondary-600 dark:text-secondary-700" />
                 </div>
                 <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">角色分布</span>
               </div>
@@ -900,14 +996,14 @@ export default function UserManagementPage() {
                         <span className="font-semibold tabular-nums text-neutral-900 dark:text-white ml-auto">
                           {entry.value}
                         </span>
-                        <span className="text-neutral-400 tabular-nums">({pct}%)</span>
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">({pct}%)</span>
                       </div>
                     );
                   })}
                 </div>
               </div>
             ) : (
-              <div className="h-[150px] flex items-center justify-center text-neutral-300 dark:text-neutral-600 text-sm">
+              <div className="h-[150px] flex items-center justify-center text-neutral-300 dark:text-neutral-400 text-sm">
                 暂无数据
               </div>
             )}
@@ -924,9 +1020,9 @@ export default function UserManagementPage() {
               <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary-500" />
                 用户注册趋势
-                <span className="text-xs font-normal text-neutral-400">近 14 天</span>
+                <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">近 14 天</span>
               </h3>
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 总计 {registrationTrendChart.reduce((s: number, d: any) => s + d.count, 0)} 人
               </span>
             </div>
@@ -1025,57 +1121,57 @@ export default function UserManagementPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-neutral-700 dark:text-neutral-300">{log.action}</span>
-                        <span className="text-neutral-400">·</span>
-                        <span className="text-neutral-500 truncate">{log.target || log.username || '系统'}</span>
-                        <span className="ml-auto text-[10px] text-neutral-400 flex items-center gap-1">
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{log.target || log.username || '系统'}</span>
+                        <span className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
                           {expandedLogId === log.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                         </span>
                       </div>
-                      <p className="text-neutral-500 dark:text-neutral-400 mt-0.5 text-[11px] truncate">
+                      <p className="text-neutral-500 dark:text-neutral-400 mt-0.5 text-xs truncate">
                         {log.details || log.action}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-neutral-400">
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <Clock className="w-3 h-3" />
                         {log.created_at || log.timestamp}
-                        <span className="text-neutral-300">|</span>
+                        <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
                         <span className="font-mono">{log.username || log.operator || '—'}</span>
                         {log.user_role && (
                           <>
-                            <span className="text-neutral-300">|</span>
-                            <span className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px]">{log.user_role}</span>
+                            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
+                            <span className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-xs">{log.user_role}</span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
                   {expandedLogId === log.id && (
-                    <div className="mx-2 mb-2 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700 text-[11px] space-y-1.5">
+                    <div className="mx-2 mb-2 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700 text-xs space-y-1.5">
                       {log.entity_type && (
                         <div className="flex gap-2">
-                          <span className="text-neutral-400 shrink-0">实体类型:</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">实体类型:</span>
                           <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.entity_type}</span>
                         </div>
                       )}
                       {log.entity_id && (
                         <div className="flex gap-2">
-                          <span className="text-neutral-400 shrink-0">实体ID:</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">实体ID:</span>
                           <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.entity_id}</span>
                         </div>
                       )}
                       {log.ip_address && (
                         <div className="flex gap-2">
-                          <span className="text-neutral-400 shrink-0">IP地址:</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">IP地址:</span>
                           <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.ip_address}</span>
                         </div>
                       )}
                       {log.details && typeof log.details === 'string' && (
                         <div className="flex gap-2">
-                          <span className="text-neutral-400 shrink-0">详情:</span>
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">详情:</span>
                           <span className="text-neutral-600 dark:text-neutral-400 break-all">{log.details}</span>
                         </div>
                       )}
                       {log.details && typeof log.details === 'object' && (
-                        <pre className="mt-1 p-2 rounded bg-white dark:bg-neutral-900 font-mono text-[10px] overflow-x-auto text-neutral-600 dark:text-neutral-400">
+                        <pre className="mt-1 p-2 rounded bg-white dark:bg-neutral-900 font-mono text-xs overflow-x-auto text-neutral-600 dark:text-neutral-400">
                           {JSON.stringify(log.details, null, 2)}
                         </pre>
                       )}
@@ -1096,7 +1192,7 @@ export default function UserManagementPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-800/20 flex items-center justify-center">
-                  <Filter className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                  <Filter className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
                 </div>
                 筛选条件{' '}
               </h3>
@@ -1104,7 +1200,7 @@ export default function UserManagementPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs text-neutral-500 hover:text-danger-600"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-600"
                   onClick={() => {
                     setRoleFilter('all');
                     setStatusFilter('all');
@@ -1119,7 +1215,7 @@ export default function UserManagementPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-neutral-500">搜索</label>
+              <label className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">搜索</label>
               <Input
                 value={searchInput}
                 onChange={(e) => {
@@ -1127,13 +1223,13 @@ export default function UserManagementPage() {
                   setPage(1);
                 }}
                 placeholder="用户名、姓名、邮箱..."
-                prefix={<Search size={14} className="text-neutral-400" />}
+                prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">角色</label>
+              <label className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">角色</label>
               <Select
                 value={roleFilter}
                 onChange={(v) => {
@@ -1152,7 +1248,7 @@ export default function UserManagementPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">状态</label>
+              <label className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">状态</label>
               <Select
                 value={statusFilter}
                 onChange={(v) => {
@@ -1171,7 +1267,7 @@ export default function UserManagementPage() {
 
             {/* P3-4: 组织筛选 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">组织</label>
+              <label className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">组织</label>
               <Select
                 value={orgFilter !== null ? String(orgFilter) : 'all'}
                 onChange={(v) => {
@@ -1190,9 +1286,9 @@ export default function UserManagementPage() {
             </div>
 
             <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
-              <p className="text-[13px] font-medium text-neutral-500">显示设置</p>
+              <p className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">显示设置</p>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-neutral-500">每页数量</label>
+                <label className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">每页数量</label>
                 <Select
                   value={String(pageSize)}
                   onChange={(v) => {
@@ -1213,7 +1309,7 @@ export default function UserManagementPage() {
                   onClick={() => setTableDensity('comfortable')}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'comfortable'
-                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -1223,7 +1319,7 @@ export default function UserManagementPage() {
                   onClick={() => setTableDensity('compact')}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'compact'
-                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -1233,16 +1329,16 @@ export default function UserManagementPage() {
             </div>
 
             <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2.5">统计概览</p>
+              <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2.5">统计概览</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
+                  <span className="flex items-center gap-1.5 text-primary-700 dark:text-primary-700">
                     <span className="w-2 h-2 rounded-full bg-primary-500" /> 正常
                   </span>
                   <span className="font-semibold tabular-nums">{activeCount}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-error-500 dark:text-error-400">
+                  <span className="flex items-center gap-1.5 text-error-500 dark:text-error-600">
                     <span className="w-2 h-2 rounded-full bg-error-500" /> 已禁用
                   </span>
                   <span className="font-semibold tabular-nums">{inactiveCount}</span>
@@ -1259,8 +1355,8 @@ export default function UserManagementPage() {
             </div>
 
             <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <p className="text-[11px] text-neutral-400 leading-relaxed">
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[11px] font-mono">Ctrl+A</kbd>{' '}
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-xs font-mono">Ctrl+A</kbd>{' '}
                 全选 · 点击用户名查看详情{' '}
               </p>
             </div>
@@ -1272,9 +1368,9 @@ export default function UserManagementPage() {
           {/* Batch Action Bar */}
           {selectedIds.size > 0 && (
             <Alert className="rounded-xl border-primary-200 bg-gradient-to-r from-primary-50/80 to-blue-50/60 dark:border-primary-800 dark:from-primary-950/30 dark:to-blue-950/20 animate-in fade-in slide-in-from-bottom-2 duration-200 shadow-sm">
-              <Check className="w-4 h-4 text-primary-600" />
+              <Check className="w-4 h-4 text-primary-700" />
               <AlertTitle className="text-sm font-medium">
-                已选择 <strong className="text-primary-700 dark:text-primary-300">{selectedIds.size}</strong> 个用户
+                已选择 <strong className="text-primary-700 dark:text-primary-700">{selectedIds.size}</strong> 个用户
               </AlertTitle>
               <AlertDescription className="flex flex-wrap items-center gap-2 mt-2">
                 <Select
@@ -1306,7 +1402,7 @@ export default function UserManagementPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-primary-600 border-emerald-200 hover:bg-primary-50 dark:border-emerald-800 dark:hover:bg-primary-900/20"
+                  className="text-primary-700 border-emerald-200 hover:bg-primary-50 dark:border-emerald-800 dark:hover:bg-primary-900/20"
                   onClick={() => requestBatchStatusToggle(true)}
                   disabled={batchStatusMutation.isPending}
                 >
@@ -1330,7 +1426,7 @@ export default function UserManagementPage() {
                 >
                   <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量禁用
                 </Button>
-                <Button size="sm" variant="ghost" className="text-neutral-500" onClick={() => setSelectedIds(new Set())}>
+                <Button size="sm" variant="ghost" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" onClick={() => setSelectedIds(new Set())}>
                   取消选择
                 </Button>
               </AlertDescription>
@@ -1474,7 +1570,7 @@ export default function UserManagementPage() {
                             </td>
                             <td className={cellPadding}>
                               <button
-                                className="flex items-center gap-2.5 text-left hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 active:scale-[0.98] rounded-lg p-1 -m-1 hover:shadow-sm hover:bg-neutral-100 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/30"
+                                className="flex items-center gap-2.5 text-left hover:text-primary-700 dark:hover:text-primary-600 transition-all duration-200 active:scale-[0.98] rounded-lg p-1 -m-1 hover:shadow-sm hover:bg-neutral-100 dark:bg-neutral-800/80 dark:hover:bg-neutral-700/30"
                                 onClick={() => {
                                   setDetailUser(user);
                                   setDetailTab('info');
@@ -1496,7 +1592,7 @@ export default function UserManagementPage() {
                                     {hasAnomaly && <AlertTriangle className="w-3 h-3 ml-1 inline text-warning-500" />}
                                     {isLocked && <Lock className="w-3 h-3 ml-1 inline text-error-500" />}
                                   </p>
-                                  <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate max-w-[140px]">
+                                  <p className="text-xs text-neutral-400 dark:text-neutral-400 truncate max-w-[140px]">
                                     ID: {user.id}
                                   </p>
                                 </div>
@@ -1505,7 +1601,7 @@ export default function UserManagementPage() {
                             <td className={`${cellPadding} text-neutral-600 dark:text-neutral-300 hidden sm:table-cell`}>
                               <span className="truncate block max-w-[100px]">
                                 {user.full_name || (
-                                  <span className="text-neutral-300 dark:text-neutral-600 italic">未设置</span>
+                                  <span className="text-neutral-300 dark:text-neutral-400 italic">未设置</span>
                                 )}
                               </span>
                             </td>
@@ -1513,14 +1609,14 @@ export default function UserManagementPage() {
                               {user.email ? (
                                 <a
                                   href={`mailto:${user.email}`}
-                                  className="inline-flex items-center gap-1 text-neutral-500 dark:text-neutral-400 hover:text-primary-600 transition-colors truncate max-w-[180px]"
+                                  className="inline-flex items-center gap-1 text-neutral-500 dark:text-neutral-400 hover:text-primary-700 transition-colors truncate max-w-[180px]"
                                   title={user.email}
                                 >
                                   <Mail className="w-3.5 h-3.5 shrink-0" />
                                   <span className="truncate">{user.email}</span>
                                 </a>
                               ) : (
-                                <span className="text-neutral-300 dark:text-neutral-600 italic text-xs">-</span>
+                                <span className="text-neutral-300 dark:text-neutral-400 italic text-xs">-</span>
                               )}
                             </td>
                             <td className={`${cellPadding} text-center`}>
@@ -1583,7 +1679,7 @@ export default function UserManagementPage() {
                                         setActionMenuId(null);
                                       }}
                                     >
-                                      <FileText className="w-4 h-4 text-neutral-400" /> 查看详情
+                                      <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 查看详情
                                     </button>
                                     <button
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
@@ -1597,14 +1693,14 @@ export default function UserManagementPage() {
                                       }}
                                       disabled={isSelf}
                                     >
-                                      <UserCog className="w-4 h-4 text-neutral-400" /> 更改角色
+                                      <UserCog className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 更改角色
                                     </button>
                                     <div className="my-1 mx-3 border-t border-neutral-100 dark:border-neutral-700" />
                                     <button
                                       className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
                                         user.is_active
                                           ? 'text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20'
-                                          : 'text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20'
+                                          : 'text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20'
                                       }`}
                                       onClick={() => {
                                         requestStatusToggle(user);
@@ -1666,6 +1762,256 @@ export default function UserManagementPage() {
           </Card>
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          账号申请（预注册）队列管理
+          登录页"申请开通账号"通道 → POST /auth/pre-register 入队，
+          管理员在此审核通过（自动建号）/ 拒绝。
+          #prereg-queue: 页首待审核提醒横幅的锚点目标。
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="space-y-4" id="prereg-queue">
+        <Card>
+          <CardContent className="p-6 space-y-5">
+            {/* 队列标题 + 状态 Tab */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <UserRoundPlus className="w-5 h-5 text-primary-700 dark:text-primary-700" />
+                  账号申请
+                  {preRegStatusCounts.pending > 0 && (
+                    <span className="ml-1 min-w-[20px] h-5 px-1.5 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700 text-xs font-bold flex items-center justify-center">
+                      {preRegStatusCounts.pending}
+                    </span>
+                  )}
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  登录页提交的账号开通申请，审核通过后自动创建用户
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="搜索邮箱 / 姓名 / 部门…"
+                  value={preRegSearch}
+                  onChange={(e) => { setPreRegSearch(e.target.value); setPreRegPage(1); }}
+                  prefix={<Search className="w-4 h-4" />}
+                  size="sm"
+                  className="w-56"
+                />
+                <Tabs value={preRegTab} onValueChange={(v) => { setPreRegTab(v as PreRegisterStatus); setPreRegPage(1); }}>
+                  <TabsList>
+                    <TabsTrigger value="pending">待审核{preRegStatusCounts.pending ? ` (${preRegStatusCounts.pending})` : ''}</TabsTrigger>
+                    <TabsTrigger value="approved">已开通{preRegStatusCounts.approved ? ` (${preRegStatusCounts.approved})` : ''}</TabsTrigger>
+                    <TabsTrigger value="rejected">已拒绝{preRegStatusCounts.rejected ? ` (${preRegStatusCounts.rejected})` : ''}</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
+
+            {/* 队列表格 */}
+            {preRegLoading ? (
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : preRegItems.length === 0 ? (
+              <EmptyState
+                icon={<UserRoundPlus size={40} strokeWidth={1.5} />}
+                title={preRegTab === 'pending' ? '暂无待审核的申请' : `暂无${preRegStatusLabel[preRegTab]}的申请`}
+                description="登录页提交的账号申请会显示在此，审核通过后自动创建用户"
+              />
+            ) : (
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="w-full text-sm min-w-[760px]">
+                  <thead>
+                    <tr className="text-left text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-200/80 dark:border-neutral-700/60">
+                      <th className="py-2.5 px-3 font-medium">申请时间</th>
+                      <th className="py-2.5 px-3 font-medium">邮箱</th>
+                      <th className="py-2.5 px-3 font-medium">姓名</th>
+                      <th className="py-2.5 px-3 font-medium">部门</th>
+                      <th className="py-2.5 px-3 font-medium">状态</th>
+                      <th className="py-2.5 px-3 font-medium text-right">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preRegItems.map((req) => (
+                      <tr key={req.id} className="border-b border-neutral-100 dark:border-neutral-800/60 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/30 transition-colors">
+                        <td className="py-3 px-3 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                          {new Date(req.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="py-3 px-3 font-medium">{req.email}</td>
+                        <td className="py-3 px-3 text-neutral-600 dark:text-neutral-300">{req.full_name || '—'}</td>
+                        <td className="py-3 px-3 text-neutral-600 dark:text-neutral-300">{req.department || '—'}</td>
+                        <td className="py-3 px-3">
+                          <Badge variant={req.status === 'pending' ? 'warning' : req.status === 'approved' ? 'success' : 'danger'} size="sm">
+                            {preRegStatusLabel[req.status]}
+                            {req.status === 'rejected' && req.reject_reason && (
+                              <span className="ml-1 normal-case text-xs opacity-80">（{req.reject_reason.slice(0, 12)}{req.reject_reason.length > 12 ? '…' : ''}）</span>
+                            )}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          {req.status === 'pending' ? (
+                            <div className="inline-flex items-center gap-1.5">
+                              <Button
+                                variant="glass" size="sm"
+                                icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                                onClick={() => { setPreRegDetail(req); setPreRegApproveForm({ role: 'researcher', password: '' }); setPreRegRejectReason(''); }}
+                              >
+                                开通
+                              </Button>
+                              <Button
+                                variant="secondary" size="sm"
+                                icon={<X className="w-3.5 h-3.5" />}
+                                onClick={() => { setPreRegDetail(req); setPreRegRejectReason(''); }}
+                              >
+                                拒绝
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                              {req.status === 'approved' && req.user_id ? `→ 用户 #${req.user_id}` : '—'}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {preRegData && preRegData.total > preRegPageSize && (
+                  <div className="px-3 py-3 border-t border-neutral-200/80 dark:border-neutral-700/60 flex items-center justify-between">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                      共 <span className="font-medium text-neutral-700 dark:text-neutral-300">{preRegData.total}</span> 条
+                    </p>
+                    <Pagination
+                      page={preRegPage}
+                      pageSize={preRegPageSize}
+                      total={preRegData.total}
+                      onPageChange={setPreRegPage}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── 账号申请审核 Modal（开通 / 拒绝） ── */}
+      <Modal
+        open={!!preRegDetail}
+        onClose={() => setPreRegDetail(null)}
+        title={preRegDetail?.status === 'pending' ? '审核账号申请' : '申请详情'}
+        size="md"
+      >
+        {preRegDetail && (
+          <div className="space-y-5">
+            {/* 申请信息 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-primary-700 dark:text-primary-700" />
+                </div>
+                <div>
+                  <p className="font-medium">{preRegDetail.email}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {preRegDetail.full_name || '未填姓名'}{preRegDetail.department ? ` · ${preRegDetail.department}` : ''}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                申请时间：{new Date(preRegDetail.created_at).toLocaleString('zh-CN')}
+              </p>
+              {preRegDetail.status === 'rejected' && preRegDetail.reject_reason && (
+                <div className="rounded-lg bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 p-3 text-sm text-error-700 dark:text-error-600">
+                  <strong>拒绝原因：</strong>{preRegDetail.reject_reason}
+                </div>
+              )}
+              {preRegDetail.status === 'approved' && preRegDetail.user_id && (
+                <div className="rounded-lg bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 p-3 text-sm text-success-700 dark:text-success-600">
+                  <strong>已开通</strong>，对应用户 #{preRegDetail.user_id}
+                </div>
+              )}
+            </div>
+
+            {/* 待审核：操作区 */}
+            {preRegDetail.status === 'pending' && (
+              <div className="space-y-4 border-t border-neutral-200/80 dark:border-neutral-700/60 pt-4">
+                {/* 开通区 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-success-500" />
+                    开通账号
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">初始角色</label>
+                      <Select
+                        value={preRegApproveForm.role}
+                        onChange={(v) => setPreRegApproveForm((f) => ({ ...f, role: v }))}
+                        size="sm"
+                        className="w-full"
+                      >
+                        <option value="researcher">{roleLabelMap.researcher}</option>
+                        <option value="formulator">{roleLabelMap.formulator}</option>
+                        <option value="reviewer">{roleLabelMap.reviewer}</option>
+                        <option value="guest">{roleLabelMap.guest}</option>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400">初始密码（可选，留空则系统生成）</label>
+                      <Input
+                        value={preRegApproveForm.password}
+                        onChange={(e) => setPreRegApproveForm((f) => ({ ...f, password: e.target.value }))}
+                        placeholder="留空则系统生成临时密码"
+                        minLength={preRegApproveForm.password ? 8 : undefined}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    variant="glass"
+                    icon={<CheckCircle2 className="w-4 h-4" />}
+                    onClick={() => approvePreRegMutation.mutate({
+                      requestId: preRegDetail.id,
+                      role: preRegApproveForm.role,
+                      password: preRegApproveForm.password,
+                    })}
+                    disabled={approvePreRegMutation.isPending || (preRegApproveForm.password ? preRegApproveForm.password.length < 8 : false)}
+                  >
+                    确认开通并创建用户
+                  </Button>
+                </div>
+
+                {/* 拒绝区 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <X className="w-4 h-4 text-error-500" />
+                    或拒绝申请
+                  </div>
+                  <Input
+                    value={preRegRejectReason}
+                    onChange={(e) => setPreRegRejectReason(e.target.value)}
+                    placeholder="拒绝原因（可选，会记录到申请）"
+                  />
+                  <Button
+                    variant="secondary"
+                    icon={<X className="w-4 h-4" />}
+                    onClick={() => rejectPreRegMutation.mutate({
+                      requestId: preRegDetail.id,
+                      reason: preRegRejectReason,
+                    })}
+                    disabled={rejectPreRegMutation.isPending}
+                  >
+                    拒绝该申请
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* ── Detail Modal (Tabbed) ── */}
       <Modal open={!!detailUser} onClose={() => setDetailUser(null)} title="用户详情" size="lg">
@@ -1764,10 +2110,10 @@ export default function UserManagementPage() {
                           className={`flex items-start gap-2.5 p-2.5 rounded-lg ${highlight ? 'bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-neutral-800/50'}`}
                         >
                           <Icon
-                            className={`w-4 h-4 mt-0.5 shrink-0 ${highlight ? 'text-warning-500' : 'text-neutral-400'}`}
+                            className={`w-4 h-4 mt-0.5 shrink-0 ${highlight ? 'text-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}
                           />
                           <div className="min-w-0">
-                            <p className="text-xs text-neutral-400 dark:text-neutral-500">{label}</p>
+                            <p className="text-xs text-neutral-400 dark:text-neutral-400">{label}</p>
                             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">{value}</p>
                           </div>
                         </div>
@@ -1801,50 +2147,50 @@ export default function UserManagementPage() {
                       <div className="self-stretch w-full space-y-3 bg-white dark:bg-neutral-900/50 rounded-xl border border-primary-200 dark:border-primary-800/40 p-4">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">编辑用户资料</span>
-                          <button onClick={() => setEditProfileOpen(false)} className="text-neutral-400 hover:text-neutral-600">
+                          <button onClick={() => setEditProfileOpen(false)} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
                             <X className="w-4 h-4" />
                           </button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-xs text-neutral-500">邮箱</label>
+                            <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">邮箱</label>
                             <Input
                               value={editForm.email}
                               onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
                               placeholder="user@example.com"
-                              prefix={<Mail size={14} className="text-neutral-400" />}
+                              prefix={<Mail size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                               size="sm"
                               error={!!editErrors.email}
                             />
                             {editErrors.email && <p className="text-xs text-error-500">{editErrors.email}</p>}
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-neutral-500">姓名</label>
+                            <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">姓名</label>
                             <Input
                               value={editForm.full_name}
                               onChange={(e) => setEditForm((p) => ({ ...p, full_name: e.target.value }))}
                               placeholder="真实姓名"
-                              prefix={<UserCog size={14} className="text-neutral-400" />}
+                              prefix={<UserCog size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                               size="sm"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-neutral-500">电话</label>
+                            <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">电话</label>
                             <Input
                               value={editForm.phone}
                               onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
                               placeholder="手机号码"
-                              prefix={<Phone size={14} className="text-neutral-400" />}
+                              prefix={<Phone size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                               size="sm"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-neutral-500">部门</label>
+                            <label className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">部门</label>
                             <Input
                               value={editForm.department}
                               onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
                               placeholder="所属部门"
-                              prefix={<Building2 size={14} className="text-neutral-400" />}
+                              prefix={<Building2 size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                               size="sm"
                             />
                           </div>
@@ -1982,10 +2328,10 @@ export default function UserManagementPage() {
                                     : 'border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm'
                                 }`}
                               >
-                                {TgtIcon && <TgtIcon className="w-5 h-5 text-neutral-500" />}
+                                {TgtIcon && <TgtIcon className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                                 <div>
                                   <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</p>
-                                  <p className="text-[11px] text-neutral-400">{targetCfg?.description}</p>
+                                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{targetCfg?.description}</p>
                                 </div>
                               </button>
                             );
@@ -1999,17 +2345,17 @@ export default function UserManagementPage() {
                       <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/30">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                            <KeyRound className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                            <KeyRound className="w-4 h-4 text-primary-700 dark:text-primary-700" />
                           </div>
                           <div>
                             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">两步验证 (2FA)</p>
-                            <p className="text-[11px] text-neutral-400">增强账户安全，登录时需要额外验证码</p>
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">增强账户安全，登录时需要额外验证码</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                             (detailUser as any).totp_enabled
-                              ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
+                              ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
                               : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
                           }`}>
                             {(detailUser as any).totp_enabled ? '已启用' : '未启用'}
@@ -2044,15 +2390,15 @@ export default function UserManagementPage() {
                               className={`flex items-start gap-2.5 p-2 rounded-lg ${isActive ? 'bg-primary-50/50 dark:bg-primary-950/10 ring-1 ring-primary-200 dark:ring-primary-800' : ''}`}
                             >
                               <PermIcon
-                                className={`w-4 h-4 mt-0.5 shrink-0 ${isActive ? 'text-primary-600' : 'text-neutral-400'}`}
+                                className={`w-4 h-4 mt-0.5 shrink-0 ${isActive ? 'text-primary-700' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}
                               />
                               <div>
                                 <p
-                                  className={`text-xs font-medium ${isActive ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-600 dark:text-neutral-400'}`}
+                                  className={`text-xs font-medium ${isActive ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-600 dark:text-neutral-400'}`}
                                 >
                                   {cfg.label}
                                 </p>
-                                <p className="text-[11px] text-neutral-400">{cfg.description}</p>
+                                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{cfg.description}</p>
                               </div>
                             </div>
                           );
@@ -2069,7 +2415,7 @@ export default function UserManagementPage() {
                       <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                         <Clock className="w-4 h-4" /> 最近活动录{' '}
                       </h4>
-                      <span className="text-xs text-neutral-400">最近 7 天</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">最近 7 天</span>
                     </div>
 
                     <div className="relative pl-4 border-l-2 border-neutral-200/80 dark:border-neutral-700/60 space-y-0">
@@ -2100,7 +2446,7 @@ export default function UserManagementPage() {
                               <span
                                 className={`text-xs font-medium ${
                                   record.status === 'success'
-                                    ? 'text-primary-600'
+                                    ? 'text-primary-700'
                                     : record.status === 'failed'
                                       ? 'text-error-600'
                                       : 'text-warning-600'
@@ -2110,7 +2456,7 @@ export default function UserManagementPage() {
                               </span>
                               {record.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500" />}
                             </div>
-                            <div className="flex items-center gap-3 mt-1 text-[11px] text-neutral-400">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? record.time : d.toLocaleDateString('zh-CN'); })()}
@@ -2135,22 +2481,22 @@ export default function UserManagementPage() {
 
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700 grid grid-cols-3 gap-3">
                       <div className="text-center p-2 rounded-lg bg-primary-50 dark:bg-primary-900/10">
-                        <p className="text-lg font-bold text-primary-600 tabular-nums">
+                        <p className="text-lg font-bold text-primary-700 tabular-nums">
                           {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code === 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'success').length}
                         </p>
-                        <p className="text-[11px] text-primary-600/70">成功操作</p>
+                        <p className="text-xs text-primary-700/70">成功操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-error-50 dark:bg-error-900/10">
                         <p className="text-lg font-bold text-error-600 tabular-nums">
                           {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code !== 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'failed').length}
                         </p>
-                        <p className="text-[11px] text-error-600/70">失败操作</p>
+                        <p className="text-xs text-error-600/70">失败操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10">
                         <p className="text-lg font-bold text-warning-600 tabular-nums">
                           {detailUser && userActivityQuery.data?.items?.[0]?.created_at ? formatTimeAgo(userActivityQuery.data.items[0].created_at) : formatTimeAgo(MOCK_ACTIVITY_RECORDS[0]?.time || '')}
                         </p>
-                        <p className="text-[11px] text-warning-600/70">最近活动</p>
+                        <p className="text-xs text-warning-600/70">最近活动</p>
                       </div>
                     </div>
                   </div>
@@ -2172,9 +2518,9 @@ export default function UserManagementPage() {
             <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{confirmAction.description}</p>
             {confirmAction.currentValue && confirmAction.newValue && (
               <div className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-sm">
-                <span className="line-through text-neutral-400">{getRoleConfig(confirmAction.currentValue).label}</span>
-                <ChevronRight className="w-4 h-4 text-neutral-400" />
-                <span className="font-medium text-primary-600 dark:text-primary-400">
+                <span className="line-through text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{getRoleConfig(confirmAction.currentValue).label}</span>
+                <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                <span className="font-medium text-primary-700 dark:text-primary-700">
                   {getRoleConfig(confirmAction.newValue).label}
                 </span>
               </div>
@@ -2222,19 +2568,19 @@ export default function UserManagementPage() {
 
           <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl p-8 text-center hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
             <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleCSVImport} />
-            <Upload className="w-10 h-10 mx-auto text-neutral-400 mb-3" />
+            <Upload className="w-10 h-10 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               点击选择或拖拽 CSV 文件到此区域
             </p>
-            <p className="text-xs text-neutral-400 mb-4">支持 .csv 格式，最大 5MB</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">支持 .csv 格式，最大 5MB</p>
             <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
               <FileText className="w-4 h-4 mr-1.5" /> 选择文件
             </Button>
           </div>
 
-          <div className="text-xs text-neutral-400 space-y-1">
-            <p className="font-medium text-neutral-500">CSV 格式示例：</p>
-            <pre className="bg-slate-50 dark:bg-neutral-800/50 p-2.5 rounded-lg overflow-x-auto font-mono text-[11px] leading-relaxed">
+          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] space-y-1">
+            <p className="font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">CSV 格式示例：</p>
+            <pre className="bg-slate-50 dark:bg-neutral-800/50 p-2.5 rounded-lg overflow-x-auto font-mono text-xs leading-relaxed">
               {`username,full_name,email,role,department
 zhangsan,张三,zhang@example.com,researcher,研发部
 lisi,李四,li@example.com,analyst,数据部`}
@@ -2264,7 +2610,7 @@ lisi,李四,li@example.com,analyst,数据部`}
             >
               <AlertTriangle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-error-700 dark:text-error-400">
+                <p className="font-medium text-error-700 dark:text-error-600">
                   第 {err.row || '?'} 行 · {err.field || '未知字段'}
                 </p>
                 <p className="text-error-600/80 dark:text-error-500/70 mt-0.5">{err.message || String(err)}</p>
@@ -2293,7 +2639,7 @@ lisi,李四,li@example.com,analyst,数据部`}
           <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/10 border-blue-200/60 dark:border-blue-800/30">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/40 dark:to-primary-800/20 flex items-center justify-center shadow-md ring-1 ring-white/50 shrink-0 mt-0.5">
-                <UserRoundPlus className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                <UserRoundPlus className="w-4 h-4 text-primary-700 dark:text-primary-700" />
               </div>
               <div>
                 <AlertTitle className="text-sm">创建新用户账户</AlertTitle>
@@ -2322,7 +2668,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                   });
                 }}
                 placeholder="3-50位字母、数字或下划线"
-                prefix={<Hash size={14} className="text-neutral-400" />}
+                prefix={<Hash size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
                 error={!!createErrors.username}
                 className="focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
@@ -2347,7 +2693,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                     });
                   }}
                   placeholder="至少8个字符"
-                  prefix={<Lock size={14} className="text-neutral-400" />}
+                  prefix={<Lock size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                   size="sm"
                   error={!!createErrors.password}
                   className="h-10 pr-9 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
@@ -2378,7 +2724,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                   });
                 }}
                 placeholder="user@example.com"
-                prefix={<Mail size={14} className="text-neutral-400" />}
+                prefix={<Mail size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
                 error={!!createErrors.email}
                 className="h-10 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
@@ -2392,7 +2738,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                 value={createForm.full_name}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, full_name: e.target.value }))}
                 placeholder="真实姓名（可选）"
-                prefix={<UserCog size={14} className="text-neutral-400" />}
+                prefix={<UserCog size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
                 className="h-10 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
               />
@@ -2419,7 +2765,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                 value={createForm.department}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, department: e.target.value }))}
                 placeholder="所属部门（可选）"
-                prefix={<Building2 size={14} className="text-neutral-400" />}
+                prefix={<Building2 size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
                 className="focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
               />
@@ -2443,7 +2789,7 @@ lisi,李四,li@example.com,analyst,数据部`}
           </div>
 
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-700/30 border border-neutral-200/60 dark:border-neutral-700/40 rounded-xl p-3.5 ring-1 ring-slate-200/60 dark:ring-slate-700/40">
-            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
               <span className="inline-flex items-center gap-1 font-semibold text-neutral-700 dark:text-neutral-300">
                 <Zap className="w-3 h-3" /> 提示：{' '}
               </span>

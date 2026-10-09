@@ -200,9 +200,9 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
   if (!leftId && !rightId) {
     return (
       <div className="text-center py-12">
-        <Sparkles size={48} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
-        <p className="text-neutral-500">请从配方列表中选择两个配方进行对比</p>
-        <p className="text-xs text-neutral-400 mt-1">点击配方卡片上的对比按钮，或在配方详情页点击「对比」</p>
+        <Sparkles size={48} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请从配方列表中选择两个配方进行对比</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">点击配方卡片上的对比按钮，或在配方详情页点击「对比」</p>
       </div>
     )
   }
@@ -224,15 +224,15 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             ) : left ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <Link to={`/formulas/${left.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-600">
+                  <Link to={`/formulas/${left.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-700">
                     {left.name}
                   </Link>
                   <StatusBadge status={left.status} />
                 </div>
-                <p className="text-sm text-neutral-500">{left.code}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{left.code}</p>
               </>
             ) : (
-              <p className="text-neutral-400">选择配方 A</p>
+              <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">选择配方 A</p>
             )}
           </CardContent>
         </Card>
@@ -244,15 +244,15 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             ) : right ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <Link to={`/formulas/${right.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-600">
+                  <Link to={`/formulas/${right.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-700">
                     {right.name}
                   </Link>
                   <StatusBadge status={right.status} />
                 </div>
-                <p className="text-sm text-neutral-500">{right.code}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{right.code}</p>
               </>
             ) : (
-              <p className="text-neutral-400">选择配方 B</p>
+              <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">选择配方 B</p>
             )}
           </CardContent>
         </Card>
@@ -286,13 +286,13 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               { data: rightSynergyData, label: right?.name ?? 'B', loading: false },
             ].map(({ data, label, loading: _ }) => (
               <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
-                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 协同效应</p>
+                <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 协同效应</p>
                 {data ? (
                   <div>
                     <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">
                       {data.overall_si?.toFixed(2) ?? '—'}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-1">{data.pairs?.length ?? 0} 个成分对</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{data.pairs?.length ?? 0} 个成分对</p>
                   </div>
                 ) : (
                   <Skeleton className="h-6 w-16" />
@@ -308,13 +308,13 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               { data: rightStabilityData, label: right?.name ?? 'B' },
             ].map(({ data, label }) => (
               <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
-                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 稳定性</p>
+                <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 稳定性</p>
                 {data ? (
                   <div className="space-y-1">
                     <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                       {data.stability_score?.toFixed(0) ?? '—'}/100
                     </p>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       预测货架期: {data.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月
                     </p>
                     {((data as FormulaCompareData)?.risk_factors?.length ?? 0) > 0 && (
@@ -337,7 +337,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               { data: rightTasteData, label: right?.name ?? 'B' },
             ].map(({ data, label }) => (
               <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
-                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 风味</p>
+                <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 风味</p>
                 {data ? (
                   <div className="space-y-1">
                     <div className="flex gap-1">
@@ -351,12 +351,12 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                         return (
                           <div key={k} className="flex-1 text-center">
                             <div className={`h-2 rounded ${colors[k]} opacity-60`} style={{ height: `${Math.max(4, val * 24)}px` }} />
-                            <p className="text-[10px] text-neutral-400 mt-0.5">{labels[k]}</p>
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{labels[k]}</p>
                           </div>
                         )
                       })}
                     </div>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       平衡度: {data.balance_score?.toFixed(2) ?? '—'} · 接受度: {data.acceptability?.toFixed(2) ?? '—'}
                     </p>
                   </div>
@@ -374,13 +374,13 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               { data: rightCompatData, label: right?.name ?? 'B' },
             ].map(({ data, label }) => (
               <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
-                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 兼容性</p>
+                <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 兼容性</p>
                 {data ? (
                   <div>
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {data.overall_score?.toFixed(0) ?? '—'}/100
                     </p>
-                    <p className="text-xs text-neutral-400 mt-1">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       {(data as FormulaCompareData)?.passed_checks ?? 0}/{(data as FormulaCompareData)?.total_checks ?? 0} 项通过
                       {((data as FormulaCompareData)?.error_count ?? 0) > 0 && <span className="text-rose-500 ml-1">({(data as FormulaCompareData)?.error_count} 错误)</span>}
                     </p>
@@ -401,7 +401,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               <div key={label} className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 ${
                 data?.is_safe ? 'border-emerald-200 dark:border-emerald-800' : 'border-rose-200 dark:border-rose-800'
               }`}>
-                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 安全性</p>
+                <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 安全性</p>
                 {data ? (
                   <div className="flex items-center gap-2">
                     {data.is_safe ? (
@@ -415,7 +415,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                         <span className="text-sm font-medium text-rose-700 dark:text-rose-300">有风险</span>
                       </>
                     )}
-                    <span className="text-xs text-neutral-400 ml-auto">风险评分: {data.overall_risk_score?.toFixed(0) ?? '—'}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">风险评分: {data.overall_risk_score?.toFixed(0) ?? '—'}</span>
                   </div>
                 ) : (
                   <Skeleton className="h-5 w-16" />
@@ -429,30 +429,30 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
       {/* 指标对比 */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-neutral-500 mb-1.5">安全检查</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">安全检查</p>
           <div className="flex justify-center gap-3">
-            <span className={leftSafety.passed === true ? 'text-success-500' : leftSafety.passed === false ? 'text-error-500' : 'text-neutral-400'}>
+            <span className={leftSafety.passed === true ? 'text-success-500' : leftSafety.passed === false ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>
               {leftSafety.passed === null ? '-' : leftSafety.passed ? '通过' : '未通过'}
             </span>
-            <span className="text-neutral-300">vs</span>
-            <span className={rightSafety.passed === true ? 'text-success-500' : rightSafety.passed === false ? 'text-error-500' : 'text-neutral-400'}>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">vs</span>
+            <span className={rightSafety.passed === true ? 'text-success-500' : rightSafety.passed === false ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>
               {rightSafety.passed === null ? '-' : rightSafety.passed ? '通过' : '未通过'}
             </span>
           </div>
         </div>
         <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-neutral-500 mb-1.5">协同评分</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">协同评分</p>
           <div className="flex justify-center gap-3">
-            <span className="text-lg font-semibold text-primary-600">{leftSynergy ?? '-'}</span>
-            <span className="text-neutral-300">vs</span>
-            <span className="text-lg font-semibold text-primary-600">{rightSynergy ?? '-'}</span>
+            <span className="text-lg font-semibold text-primary-700">{leftSynergy ?? '-'}</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">vs</span>
+            <span className="text-lg font-semibold text-primary-700">{rightSynergy ?? '-'}</span>
           </div>
         </div>
         <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-neutral-500 mb-1.5">成分数量</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">成分数量</p>
           <div className="flex justify-center gap-3">
             <span className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">{left?.ingredients.length ?? 0}</span>
-            <span className="text-neutral-300">vs</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">vs</span>
             <span className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">{right?.ingredients.length ?? 0}</span>
           </div>
         </div>
@@ -508,19 +508,19 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           {/* 成分可视化 */}
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
             <div>
-              <p className="text-xs text-neutral-500 mb-2">配方 A 成分分布</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">配方 A 成分分布</p>
               {left && left.ingredients.length > 0 ? (
                 <CompositionChart ingredients={left.ingredients} compact />
               ) : (
-                <p className="text-sm text-neutral-400">暂无数据</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无数据</p>
               )}
             </div>
             <div>
-              <p className="text-xs text-neutral-500 mb-2">配方 B 成分分布</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">配方 B 成分分布</p>
               {right && right.ingredients.length > 0 ? (
                 <CompositionChart ingredients={right.ingredients} compact />
               ) : (
-                <p className="text-sm text-neutral-400">暂无数据</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无数据</p>
               )}
             </div>
           </div>
@@ -535,27 +535,27 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
         <CardContent className="p-3">
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <p className="text-xs text-neutral-500 mb-1.5">配方 A 独有</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">配方 A 独有</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.onlyLeft.length > 0 ? effectsComparison.onlyLeft.map(e => (
                   <Badge key={e} variant="info" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-neutral-400">无</span>}
+                )) : <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>}
               </div>
             </div>
             <div>
-              <p className="text-xs text-neutral-500 mb-1.5">共同功效</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">共同功效</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.shared.length > 0 ? effectsComparison.shared.map(e => (
                   <Badge key={e} variant="primary" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-neutral-400">无</span>}
+                )) : <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>}
               </div>
             </div>
             <div>
-              <p className="text-xs text-neutral-500 mb-1.5">配方 B 独有</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">配方 B 独有</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.onlyRight.length > 0 ? effectsComparison.onlyRight.map(e => (
                   <Badge key={e} variant="warning" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-neutral-400">无</span>}
+                )) : <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无</span>}
               </div>
             </div>
           </div>
@@ -571,11 +571,11 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           <CardContent className="p-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
-                <p className="text-xs text-neutral-500 mb-1">{left.name}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{left.name}</p>
                 <p className="text-sm text-neutral-700 dark:text-neutral-300">{left.description}</p>
               </div>
               <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
-                <p className="text-xs text-neutral-500 mb-1">{right.name}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{right.name}</p>
                 <p className="text-sm text-neutral-700 dark:text-neutral-300">{right.description}</p>
               </div>
             </div>

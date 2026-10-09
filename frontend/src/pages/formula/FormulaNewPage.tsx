@@ -418,7 +418,7 @@ export default function FormulaNewPage() {
                 style={{ width: `${formCompleteness.percent}%` }}
               />
             </div>
-            <span className="text-xs text-neutral-400 font-medium">{formCompleteness.percent}%</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">{formCompleteness.percent}%</span>
           </div>
           <Button
             variant="secondary"
@@ -437,7 +437,7 @@ export default function FormulaNewPage() {
       {/* 网络错误提示条 */}
       {networkError && (
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800">
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
             <AlertCircle size={14} className="shrink-0" />
             {networkError}
           </div>
@@ -547,7 +547,7 @@ export default function FormulaNewPage() {
                             setEffects([...effects, eff]);
                             clearFieldError('effects');
                           }}
-                          className="px-2.5 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-primary-300 hover:text-primary-600 dark:hover:border-primary-700 dark:hover:text-primary-400 transition-colors"
+                          className="px-2.5 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-primary-300 hover:text-primary-700 dark:hover:border-primary-700 dark:hover:text-primary-600 transition-colors"
                         >
                           + {eff}
                         </button>
@@ -576,10 +576,10 @@ export default function FormulaNewPage() {
                   <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
                     <Sparkles size={14} className="text-primary-500" />
                     AI 成分推荐
-                    <span className="text-xs text-neutral-400 ml-auto">点击可添加到配方</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">点击可添加到配方</span>
                   </h3>
                   {recLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                    <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin" />
                       正在分析推荐...
                     </div>
@@ -609,16 +609,16 @@ export default function FormulaNewPage() {
                         >
                           <div>
                             <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name ?? rec.name}</p>
-                            <p className="text-xs text-neutral-500">{((rec as Record<string, unknown>).match_reasons as string[] | undefined)?.join(' · ') || ''}</p>
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{((rec as Record<string, unknown>).match_reasons as string[] | undefined)?.join(' · ') || ''}</p>
                           </div>
-                          <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
+                          <span className="text-xs font-medium text-primary-700 dark:text-primary-700">
                             {rec.score}分
                           </span>
                         </div>
                       )})}
                     </div>
                   ) : (
-                    <p className="text-sm text-neutral-500">暂无推荐结果，请添加功效标签</p>
+                    <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无推荐结果，请添加功效标签</p>
                   )}
                 </div>
               )}
@@ -670,9 +670,9 @@ export default function FormulaNewPage() {
                   {/* 成分总览条 */}
                   <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg text-sm">
                     <div className="flex items-center gap-4">
-                      <span className="text-neutral-500">共 {ingredients.length} 种成分</span>
+                      <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {ingredients.length} 种成分</span>
                       {totalWeight > 0 && (
-                        <span className="text-primary-600 dark:text-primary-400 font-medium">总重 {totalWeight}g</span>
+                        <span className="text-primary-700 dark:text-primary-700 font-medium">总重 {totalWeight}g</span>
                       )}
                       {ingredients.length >= 2 && (
                         <span className="text-xs text-violet-500 flex items-center gap-1">
@@ -696,12 +696,12 @@ export default function FormulaNewPage() {
                         <div className="flex items-start gap-2">
                           {/* 拖拽手柄 */}
                           <div className="flex flex-col items-center pt-1 gap-0.5 shrink-0">
-                            <GripVertical size={14} className="text-neutral-300 dark:text-neutral-600" />
+                            <GripVertical size={14} className="text-neutral-300 dark:text-neutral-400" />
                             <button
                               type="button"
                               onClick={() => moveIngredient(index, 'up')}
                               disabled={index === 0}
-                              className="p-0.5 text-neutral-300 hover:text-neutral-500 disabled:opacity-30 transition-colors"
+                              className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] disabled:opacity-30 transition-colors"
                             >
                               <ChevronUp size={12} />
                             </button>
@@ -709,7 +709,7 @@ export default function FormulaNewPage() {
                               type="button"
                               onClick={() => moveIngredient(index, 'down')}
                               disabled={index === ingredients.length - 1}
-                              className="p-0.5 text-neutral-300 hover:text-neutral-500 disabled:opacity-30 transition-colors"
+                              className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] disabled:opacity-30 transition-colors"
                             >
                               <ChevronDown size={12} />
                             </button>
@@ -719,7 +719,7 @@ export default function FormulaNewPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm font-semibold text-neutral-900 dark:text-white">{ing.name}</span>
-                              <span className="text-xs text-neutral-400">{ing.category}</span>
+                              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.category}</span>
                               {ing.is_food_homology && (
                                 <Badge variant="success" size="sm">
                                   药食同源
@@ -733,7 +733,7 @@ export default function FormulaNewPage() {
                               <button
                                 type="button"
                                 onClick={() => removeIngredient(ing.id)}
-                                className="ml-auto p-1 text-neutral-300 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                                className="ml-auto p-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                               >
                                 <X size={14} />
                               </button>
@@ -795,7 +795,7 @@ export default function FormulaNewPage() {
               )}
 
               {ingredients.length === 0 && (
-                <div className="text-center py-8 text-sm text-neutral-400">
+                <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <Beaker size={32} className="mx-auto mb-2 text-neutral-200 dark:text-neutral-700" />
                   <p>搜索并添加药材到配方</p>
                   <p className="text-xs mt-1">支持 TCMSP 数据库中的 40+ 常用中药材</p>
@@ -864,7 +864,7 @@ export default function FormulaNewPage() {
           {/* 提交 */}
           <Card>
             <CardFooter className="border-t border-neutral-200 dark:border-neutral-700 pt-4 justify-between">
-              <div className="flex items-center gap-2 text-sm text-neutral-400">
+              <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {formCompleteness.percent === 100 ? (
                   <CheckCircle2 size={14} className="text-success-500" />
                 ) : (
@@ -905,7 +905,7 @@ export default function FormulaNewPage() {
           {/* 目标功效 */}
           {effects.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">目标功效</h4>
+              <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">目标功效</h4>
               <div className="flex flex-wrap gap-2">
                 {effects.map((eff, i) => (
                   <Badge key={i} variant="primary">
@@ -920,33 +920,33 @@ export default function FormulaNewPage() {
           {ingredients.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">成分组成</h4>
+                <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">成分组成</h4>
                 {totalWeight > 0 && (
-                  <span className="text-xs text-primary-600 dark:text-primary-400">总重 {totalWeight}g</span>
+                  <span className="text-xs text-primary-700 dark:text-primary-700">总重 {totalWeight}g</span>
                 )}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                      <th className="text-left py-2 px-2 text-xs text-neutral-500 font-medium">序号</th>
-                      <th className="text-left py-2 px-2 text-xs text-neutral-500 font-medium">成分</th>
-                      <th className="text-left py-2 px-2 text-xs text-neutral-500 font-medium">角色</th>
-                      <th className="text-left py-2 px-2 text-xs text-neutral-500 font-medium">用量</th>
-                      <th className="text-left py-2 px-2 text-xs text-neutral-500 font-medium">备注</th>
-                      <th className="text-center py-2 px-2 text-xs text-neutral-500 font-medium">药食同源</th>
+                      <th className="text-left py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">序号</th>
+                      <th className="text-left py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">成分</th>
+                      <th className="text-left py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">角色</th>
+                      <th className="text-left py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">用量</th>
+                      <th className="text-left py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">备注</th>
+                      <th className="text-center py-2 px-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">药食同源</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ingredients.map((ing, i) => (
                       <tr key={ing.id} className="border-b border-neutral-100 dark:border-neutral-800">
-                        <td className="py-2 px-2 text-neutral-400">{i + 1}</td>
+                        <td className="py-2 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{i + 1}</td>
                         <td className="py-2 px-2 font-medium text-neutral-900 dark:text-white">{ing.name}</td>
                         <td className="py-2 px-2 text-neutral-600 dark:text-neutral-400">{ing.role || '-'}</td>
                         <td className="py-2 px-2 text-neutral-600 dark:text-neutral-400 font-mono">
                           {ing.dosage_amount ? `${ing.dosage_amount}${ing.dosage_unit}` : '-'}
                         </td>
-                        <td className="py-2 px-2 text-neutral-500 text-xs">{ing.notes || '-'}</td>
+                        <td className="py-2 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{ing.notes || '-'}</td>
                         <td className="py-2 px-2 text-center">
                           {ing.is_food_homology ? (
                             <Badge variant="success" size="sm">
@@ -975,7 +975,7 @@ export default function FormulaNewPage() {
               { label: '保质期', value: shelfLife ? `${shelfLife} 天` : null },
             ].map(({ label, value }) => (
               <div key={label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
-                <p className="text-xs text-neutral-400">{label}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</p>
                 <p className="text-sm font-medium text-neutral-900 dark:text-white mt-0.5">{value ?? '未设置'}</p>
               </div>
             ))}
@@ -1023,7 +1023,7 @@ function HerbSearchDropdown({
   if (loading) {
     return (
       <div className="absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden">
-        <div className="p-3 text-center text-sm text-neutral-400">
+        <div className="p-3 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
         </div>
       </div>
@@ -1033,7 +1033,7 @@ function HerbSearchDropdown({
   if (herbs.length === 0) {
     return (
       <div className="absolute z-20 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden">
-        <div className="p-3 text-center text-sm text-neutral-400">未找到匹配药材</div>
+        <div className="p-3 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配药材</div>
       </div>
     );
   }
@@ -1054,7 +1054,7 @@ function HerbSearchDropdown({
           <div className="flex items-center justify-between">
             <div>
               <span className="font-medium text-neutral-900 dark:text-white">{herb.name}</span>
-              {herb.category && <span className="ml-2 text-xs text-neutral-400">{herb.category}</span>}
+              {herb.category && <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{herb.category}</span>}
             </div>
             <div className="flex items-center gap-1.5">
               {herb.is_food_homology && (
@@ -1069,7 +1069,7 @@ function HerbSearchDropdown({
               )}
             </div>
           </div>
-          {herb.efficacy && <p className="text-xs text-neutral-400 mt-0.5 truncate">{herb.efficacy}</p>}
+          {herb.efficacy && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">{herb.efficacy}</p>}
         </button>
       ))}
     </div>

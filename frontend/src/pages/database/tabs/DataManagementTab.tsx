@@ -164,7 +164,7 @@ function CircularProgress({
         />
       </svg>
       <span
-        className={`absolute text-sm font-bold ${value >= 80 ? 'text-primary-600' : value >= 60 ? 'text-warning-600' : 'text-error-600'}`}
+        className={`absolute text-sm font-bold ${value >= 80 ? 'text-primary-700' : value >= 60 ? 'text-warning-600' : 'text-error-600'}`}
       >
         {Math.round(value)}%
       </span>
@@ -620,7 +620,7 @@ export default function DataManagementTab() {
         label: '今日 API 调用次数',
         value: perfMetrics.apiCallsToday.toLocaleString(),
         icon: Zap,
-        color: 'text-primary-600 bg-primary-50 dark:bg-primary-950/40',
+        color: 'text-primary-700 bg-primary-50 dark:bg-primary-950/40',
         trend: 'up',
         trendValue: '+12.5%',
       },
@@ -628,7 +628,7 @@ export default function DataManagementTab() {
         label: '缓存命中率',
         value: `${perfMetrics.cacheHitRate.toFixed(1)}%`,
         icon: Cpu,
-        color: 'text-primary-600 bg-primary-50 dark:bg-emerald-950/40',
+        color: 'text-primary-700 bg-primary-50 dark:bg-emerald-950/40',
         trend: perfMetrics.cacheHitRate > 95 ? 'stable' : 'down',
       },
       {
@@ -665,13 +665,13 @@ export default function DataManagementTab() {
           className="hidden"
           onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
         />
-        <UploadCloud className={`w-12 h-12 mx-auto mb-3 ${isDragging ? 'text-primary-500' : 'text-neutral-400'}`} />
+        <UploadCloud className={`w-12 h-12 mx-auto mb-3 ${isDragging ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 leading-relaxed">
           {isDragging ? '释放文件以上传' : '拖拽文件到此处，或点击选择'}
         </p>
-        <p className="text-xs text-neutral-400 mt-1 leading-relaxed">支持 .xlsx .xls .csv .json 格式</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 leading-relaxed">支持 .xlsx .xls .csv .json 格式</p>
         {selectedFile && (
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/30 rounded-lg text-sm text-primary-700 dark:text-primary-400">
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/30 rounded-lg text-sm text-primary-700 dark:text-primary-700">
             <FileSpreadsheet className="w-4 h-4" />
             {selectedFile.name}
           </div>
@@ -737,7 +737,7 @@ export default function DataManagementTab() {
               >
                 {opt.label}
               </div>
-              <div className="text-xs mt-1 text-neutral-500 leading-relaxed">{opt.desc}</div>
+              <div className="text-xs mt-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">{opt.desc}</div>
             </button>
           ))}
         </div>
@@ -841,7 +841,7 @@ export default function DataManagementTab() {
               type="checkbox"
               checked={includeMetadata}
               onChange={(e) => setIncludeMetadata(e.target.checked)}
-              className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
             />
             <span className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
               包含元数据（导出时间、版本号等）
@@ -852,7 +852,7 @@ export default function DataManagementTab() {
               type="checkbox"
               checked={compressExport}
               onChange={(e) => setCompressExport(e.target.checked)}
-              className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+              className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
             />
             <span className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">压缩输出（减小文件体积）</span>
           </label>
@@ -892,11 +892,11 @@ export default function DataManagementTab() {
         <Card className="p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
-              <Save className="w-5 h-5 text-primary-600" />
+              <Save className="w-5 h-5 text-primary-700" />
             </div>
             <div className="min-w-0">
               <h4 className="font-semibold text-sm tracking-tight">创建备份</h4>
-              <p className="text-xs text-neutral-500 leading-relaxed">生成当前数据的完整快照</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">生成当前数据的完整快照</p>
             </div>
           </div>
           <Button
@@ -917,7 +917,7 @@ export default function DataManagementTab() {
             </div>
             <div className="min-w-0">
               <h4 className="font-semibold text-sm tracking-tight">从文件恢复</h4>
-              <p className="text-xs text-neutral-500 leading-relaxed">上传备份文件恢复数据</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">上传备份文件恢复数据</p>
             </div>
           </div>
           <input
@@ -963,7 +963,7 @@ export default function DataManagementTab() {
           最近备份记录
         </h4>
         {backups.length === 0 ? (
-          <div className="py-8 text-center text-neutral-400">
+          <div className="py-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Archive className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm">暂无备份记录</p>
           </div>
@@ -979,12 +979,12 @@ export default function DataManagementTab() {
                     <Badge variant="info" size="sm">
                       {b.id.slice(0, 8)}
                     </Badge>
-                    <span className="text-xs text-neutral-500">{b.timestamp}</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{b.timestamp}</span>
                   </div>
                   <p className="text-sm mt-1 text-neutral-700 dark:text-neutral-300 truncate leading-relaxed">
                     {b.description}
                   </p>
-                  <div className="flex gap-3 mt-1 text-xs text-neutral-400">
+                  <div className="flex gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span className="tabular-nums">{b.recordCount.toLocaleString()} 条</span>
                     <span className="tabular-nums">{b.dataSize}</span>
                   </div>
@@ -1032,7 +1032,7 @@ export default function DataManagementTab() {
         </h4>
         <div className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-sm">
           <p>
-            已选择 <strong className="text-primary-600 tabular-nums font-bold">{selectedRows.size}</strong> 条记录
+            已选择 <strong className="text-primary-700 tabular-nums font-bold">{selectedRows.size}</strong> 条记录
           </p>
         </div>
         <div className="flex gap-2">
@@ -1103,7 +1103,7 @@ export default function DataManagementTab() {
               <div className="text-lg font-bold text-neutral-700 dark:text-neutral-300 tabular-nums">
                 {validationResult.total}
               </div>
-              <div className="text-xs text-neutral-500">总计</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总计</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-success-50 dark:bg-green-950/20">
               <div className="text-lg font-bold text-success-600 tabular-nums">{validationResult.valid}</div>
@@ -1148,7 +1148,7 @@ export default function DataManagementTab() {
               strokeWidth={7}
             />
             <h4 className="font-semibold text-sm tracking-tight text-neutral-700 dark:text-neutral-300">{m.label}</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed">{m.desc}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">{m.desc}</p>
           </Card>
         ))}
       </div>
@@ -1187,7 +1187,7 @@ export default function DataManagementTab() {
                 ) : (
                   <AlertCircle className="w-4 h-4 text-warning-500 shrink-0" />
                 )}
-                <code className="text-xs font-mono text-neutral-500 w-20 shrink-0">{issue.recordId}</code>
+                <code className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-20 shrink-0">{issue.recordId}</code>
                 <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 w-24 shrink-0">
                   {issue.field}
                 </span>
@@ -1211,7 +1211,7 @@ export default function DataManagementTab() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <input
             type="text"
             placeholder="搜索日志..."
@@ -1227,7 +1227,7 @@ export default function DataManagementTab() {
               onClick={() => setLogTypeFilter(f.value)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                 logTypeFilter === f.value
-                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400'
+                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
               }`}
             >
@@ -1248,7 +1248,7 @@ export default function DataManagementTab() {
 
       <Card className="overflow-hidden">
         {filteredLogs.length === 0 ? (
-          <div className="py-8 text-center text-neutral-400">
+          <div className="py-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <ClipboardList className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm leading-relaxed">暂无操作记录</p>
           </div>
@@ -1257,22 +1257,22 @@ export default function DataManagementTab() {
             <table className="w-full text-sm leading-[1.375]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-neutral-800/50 text-left">
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     时间
                   </th>
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     操作者
                   </th>
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     类型
                   </th>
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     对象
                   </th>
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     结果
                   </th>
-                  <th className="px-4 py-2.5 font-semibold text-xs text-neutral-500 uppercase tracking-wider leading-[1.375]">
+                  <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     详情
                   </th>
                 </tr>
@@ -1280,7 +1280,7 @@ export default function DataManagementTab() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-4 py-2.5 text-xs font-mono text-neutral-500 whitespace-nowrap leading-[1.375] tabular-nums">
+                    <td className="px-4 py-2.5 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap leading-[1.375] tabular-nums">
                       {log.time}
                     </td>
                     <td className="px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 leading-[1.375]">
@@ -1314,7 +1314,7 @@ export default function DataManagementTab() {
                         <AlertCircle className="w-4 h-4 text-warning-500 inline" />
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-neutral-500 max-w-[200px] truncate leading-[1.375]">
+                    <td className="px-4 py-2.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-[200px] truncate leading-[1.375]">
                       {log.detail ?? '-'}
                     </td>
                   </tr>
@@ -1339,7 +1339,7 @@ export default function DataManagementTab() {
               {m.trend && (
                 <span
                   className={`flex items-center gap-0.5 text-xs font-medium ${
-                    m.trend === 'up' ? 'text-error-500' : m.trend === 'down' ? 'text-success-500' : 'text-neutral-400'
+                    m.trend === 'up' ? 'text-error-500' : m.trend === 'down' ? 'text-success-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                   }`}
                 >
                   {m.trend === 'up' ? (
@@ -1354,20 +1354,20 @@ export default function DataManagementTab() {
               )}
             </div>
             <div className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">{m.value}</div>
-            <div className="text-xs text-neutral-500 leading-relaxed">{m.label}</div>
+            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">{m.label}</div>
           </Card>
         ))}
       </div>
 
       <Card className="p-4 space-y-3">
         <h4 className="font-semibold text-sm mb-0 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary-600" />
+          <TrendingUp className="w-4 h-4 text-primary-700" />
           最近 1 小时查询量趋势
         </h4>
         <div className="h-[80px] flex items-center justify-center text-xs text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-100">
           暂无实时查询趋势数据，后续将接入搜索日志 API
         </div>
-        <div className="flex justify-between text-xs text-neutral-400">
+        <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span>60分钟前</span>
           <span>现在</span>
         </div>
@@ -1389,7 +1389,7 @@ export default function DataManagementTab() {
               <div key={item.name}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-neutral-600 dark:text-neutral-400">{item.name}</span>
-                  <span className="font-mono text-neutral-500 tabular-nums">{item.pct}%</span>
+                  <span className="font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{item.pct}%</span>
                 </div>
                 <div className="h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
@@ -1411,11 +1411,11 @@ export default function DataManagementTab() {
             {[
               { label: 'CPU 使用率', value: 34, color: 'text-secondary-600' },
               { label: '内存使用率', value: perfMetrics.memoryUsage, color: 'text-warning-600' },
-              { label: '磁盘 I/O', value: 22, color: 'text-primary-600' },
+              { label: '磁盘 I/O', value: 22, color: 'text-primary-700' },
               { label: '网络带宽', value: 15, color: 'text-accent-600' },
             ].map((r) => (
               <div key={r.label} className="flex items-center gap-3">
-                <span className="text-xs text-neutral-500 w-24 shrink-0 leading-[1.375]">{r.label}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-24 shrink-0 leading-[1.375]">{r.label}</span>
                 <div className="flex-1 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-neutral-400 dark:bg-neutral-600 rounded-full transition-all"
