@@ -189,7 +189,7 @@ const RANKING_TABS: {
     key: 'food-homology',
     label: '药食同源原料',
     icon: Leaf,
-    color: 'text-primary-600',
+    color: 'text-primary-700',
     bgGradient: 'from-emerald-500/10 to-teal-500/5',
   },
   {
@@ -394,7 +394,7 @@ const ProgressRing = React.memo<ProgressRingProps>(
             <span className="text-base font-bold tabular-nums leading-none" style={{ color }}>
               {clampedValue.toFixed(0)}
             </span>
-            {label && <span className="text-xs font-semibold text-neutral-500 mt-1 leading-none">{label}</span>}
+            {label && <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 leading-none">{label}</span>}
           </div>
         </div>
       </div>
@@ -436,7 +436,7 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BadgeCheck size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <BadgeCheck size={18} className="text-neutral-400 dark:text-neutral-400" />
           数据质量评分
         </CardTitle>
       </CardHeader>
@@ -485,7 +485,7 @@ const ActivityTimeline = React.memo(({ records }: { records: ActivityRecord[] })
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5">
         <h3 className="text-sm font-semibold tracking-tight text-neutral-800 mb-3">最近活动</h3>
-        <p className="text-xs text-neutral-400 text-center py-6 leading-[1.5]">暂无活动记录</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-6 leading-[1.5]">暂无活动记录</p>
       </div>
     );
   }
@@ -511,12 +511,12 @@ const ActivityTimeline = React.memo(({ records }: { records: ActivityRecord[] })
                   <span className="text-xs text-secondary-600 truncate max-w-[140px]" title={record.target}>
                     {record.target}
                   </span>
-                  <span className="text-[10px] text-neutral-400">
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                {record.detail && <p className="text-[10px] text-neutral-400 mt-0.5 truncate">{record.detail}</p>}
-                <p className="text-[10px] text-neutral-300 mt-0.5">操作人: {record.operator || '系统'}</p>
+                {record.detail && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">{record.detail}</p>}
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">操作人: {record.operator || '系统'}</p>
               </div>
             </div>
           );
@@ -557,7 +557,7 @@ const QuickActions = React.memo<QuickActionsProps>(
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-            <Zap size={18} className="text-neutral-400 dark:text-neutral-500" />
+            <Zap size={18} className="text-neutral-400 dark:text-neutral-400" />
             快速操作
           </CardTitle>
         </CardHeader>
@@ -566,7 +566,7 @@ const QuickActions = React.memo<QuickActionsProps>(
           <button
             onClick={onSyncAll}
             disabled={syncing}
-            className="group relative flex items-center gap-3 px-4 py-3.5 bg-secondary-50/80 dark:bg-secondary-500/5 text-secondary-700 dark:text-secondary-300 rounded-xl hover:bg-secondary-100 dark:hover:bg-secondary-500/10 disabled:opacity-40 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-secondary-50/80 dark:bg-secondary-500/5 text-secondary-700 dark:text-secondary-700 rounded-xl hover:bg-secondary-100 dark:hover:bg-secondary-500/10 disabled:opacity-40 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
             <div className="w-9 h-9 rounded-lg bg-secondary-100/80 dark:bg-secondary-500/10 flex items-center justify-center shrink-0">
               <RefreshCw className={`w-4.5 h-4.5 ${syncing ? 'animate-spin' : ''}`} />
@@ -576,7 +576,7 @@ const QuickActions = React.memo<QuickActionsProps>(
           <div className="relative group">
             <button
               onClick={() => {}}
-              className="w-full group/button relative flex items-center gap-3 px-4 py-3.5 bg-primary-50/80 dark:bg-primary-500/5 text-primary-700 dark:text-primary-300 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
+              className="w-full group/button relative flex items-center gap-3 px-4 py-3.5 bg-primary-50/80 dark:bg-primary-500/5 text-primary-700 dark:text-primary-700 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
             >
               <div className="w-9 h-9 rounded-lg bg-primary-100/80 dark:bg-primary-500/10 flex items-center justify-center shrink-0">
                 <Download className="w-4.5 h-4.5" />
@@ -593,7 +593,7 @@ const QuickActions = React.memo<QuickActionsProps>(
           </div>
           <button
             onClick={onQualityReport}
-            className="group relative flex items-center gap-3 px-4 py-3.5 bg-warning-50/80 dark:bg-warning-500/5 text-warning-700 dark:text-warning-300 rounded-xl hover:bg-warning-100 dark:hover:bg-warning-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-warning-50/80 dark:bg-warning-500/5 text-warning-700 dark:text-warning-700 rounded-xl hover:bg-warning-100 dark:hover:bg-warning-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
             <div className="w-9 h-9 rounded-lg bg-warning-100/80 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
               <BarChart3 className="w-4.5 h-4.5" />
@@ -637,7 +637,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <Gauge size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <Gauge size={18} className="text-neutral-400 dark:text-neutral-400" />
           性能指标
         </CardTitle>
       </CardHeader>
@@ -661,7 +661,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             color: 'emerald',
             gradient: 'from-emerald-50/70 to-emerald-50/20',
             border: 'border-emerald-100/60',
-            valueColor: 'text-primary-600',
+            valueColor: 'text-primary-700',
             unitColor: 'text-primary-400',
           },
           {
@@ -706,7 +706,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             {'subText' in metric && (
               <>
                 <div className="mt-2 flex items-center justify-center">
-                  <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-mono tabular-nums">{metric.subText}</span>
+                  <span className="text-xs text-neutral-400 dark:text-neutral-400 font-mono tabular-nums">{metric.subText}</span>
                 </div>
                 {'showBar' in metric && (
                   <div className="mt-2 w-full h-1 bg-neutral-200/60 dark:bg-neutral-700/60 rounded-full overflow-hidden">
@@ -780,7 +780,7 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <HeartPulse size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <HeartPulse size={18} className="text-neutral-400 dark:text-neutral-400" />
           口服生物利用度(OB)分布
         </CardTitle>
       </CardHeader>
@@ -832,7 +832,7 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <ShieldCheck size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <ShieldCheck size={18} className="text-neutral-400 dark:text-neutral-400" />
           类药性(DL)分布
         </CardTitle>
       </CardHeader>
@@ -895,7 +895,7 @@ const SeqLengthDistributionChart = React.memo(
       <Card className="h-full">
         <CardHeader className="pb-3">
           <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <Dna size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <Dna size={18} className="text-neutral-400 dark:text-neutral-400" />
           序列长度分布
         </CardTitle>
         </CardHeader>
@@ -912,7 +912,16 @@ const SeqLengthDistributionChart = React.memo(
                 return [`${value}`, '数量'];
               }}
             />
-            <Legend wrapperStyle={{ fontSize: 13, paddingTop: 12 }} iconType="circle" iconSize={10} />
+            {/* D-62：图例文字原先继承 series 颜色（primary-500 #10b981 白底 2.54:1、
+                accent-500 #8b5cf6 4.23:1），统一改用 --text-secondary。 */}
+            <Legend
+              wrapperStyle={{ fontSize: 13, paddingTop: 12 }}
+              iconType="circle"
+              iconSize={10}
+              formatter={(value: string) => (
+                <span style={{ color: 'var(--text-secondary, #475569)' }}>{value}</span>
+              )}
+            />
             <Bar
               yAxisId="left"
               dataKey="value"
@@ -930,7 +939,7 @@ const SeqLengthDistributionChart = React.memo(
               type="monotone"
               dataKey="cumulative"
               name="累计"
-              stroke="var(--color-accent-500)"
+              stroke="var(--color-accent-700, #6d28d9)"
               strokeWidth={2}
               dot={{ r: 4, fill: 'var(--color-tertiary, var(--color-accent-500))' }}
               activeDot={{ r: 6 }}
@@ -1279,7 +1288,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-3" />
-            <p className="text-neutral-500 text-sm">正在加载数据...</p>
+            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在加载数据...</p>
           </div>
         </div>
       );
@@ -1301,7 +1310,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
   // ---- Tab 1: 概览总览 (增强版) ----
   const renderOverviewTab = () => {
-    if (!overviewData?.summary) return <div className="p-10 text-center text-neutral-400">无数据</div>;
+    if (!overviewData?.summary) return <div className="p-10 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无数据</div>;
 
     const summary = overviewData.summary;
 
@@ -1379,7 +1388,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         <ActivityTimeline records={recentActivities} />
 
         {/* 底部信息栏 */}
-        <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
+        <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-1">
           <span>共 {summary.category_count ?? 0} 个药材分类</span>
           <span>共 {summary.activity_type_count ?? 0} 种活性类型</span>
           <span>更新时间: {overviewData.timestamp || '未知'}</span>
@@ -1408,11 +1417,11 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               <h3 className="text-[15px] font-bold tracking-tight text-neutral-800">
                 {subTab === 'food-homology' ? '药食同源原料热度排行' : '高活性肽活性排行'}
               </h3>
-              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-white dark:bg-neutral-900/80 rounded-md text-neutral-500 border border-neutral-200">
+              <span className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-white dark:bg-neutral-900/80 rounded-md text-neutral-500 border border-neutral-200">
                 TOP {Math.min(totalCount, 20)}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+            <div className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>实时数据</span>
             </div>
@@ -1462,10 +1471,10 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                   className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
                     isActive
                       ? `bg-white dark:bg-neutral-900 text-${tab.color.split('-')[1]}-600 shadow-sm`
-                      : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
+                      : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 hover:bg-white/50'
                   }`}
                 >
-                  <Icon className={`w-[17px] h-[17px] ${isActive ? tab.color : 'text-neutral-400'}`} />
+                  <Icon className={`w-[17px] h-[17px] ${isActive ? tab.color : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                   {tab.label}
                   {isActive && (
                     <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-current rounded-full opacity-60" />
@@ -1486,7 +1495,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                 <span className="text-lg font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
                   {currentData.length}
                 </span>
-                <span className="text-[13px] font-medium text-neutral-500">条记录</span>
+                <span className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">条记录</span>
               </div>
               <button
                 onClick={() => fetchRankingData(rankingSubTab)}
@@ -1511,10 +1520,10 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
           ) : currentData.length === 0 ? (
             <div className="p-16 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 mb-4">
-                <Trophy className="w-7 h-7 text-neutral-300" />
+                <Trophy className="w-7 h-7 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </div>
-              <p className="text-sm font-medium text-neutral-500">暂无排行数据</p>
-              <p className="text-xs text-neutral-400 mt-1">请稍后刷新或检查数据源连接</p>
+              <p className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无排行数据</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">请稍后刷新或检查数据源连接</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-50">
@@ -1551,18 +1560,18 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                             {herb.name_cn}
                           </span>
                           {herb.is_food_homology && (
-                            <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-semibold bg-primary-50 text-primary-600 rounded border border-emerald-200">
+                            <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-semibold bg-primary-50 text-primary-700 rounded border border-emerald-200">
                               <Leaf className="w-2.5 h-2.5" />
                               同源
                             </span>
                           )}
                           {isTop3 && (
                             <Crown
-                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-neutral-400' : 'text-orange-400'}`}
+                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-orange-400'}`}
                             />
                           )}
                         </div>
-                        <p className="text-[11px] text-neutral-400 mt-0.5 truncate">
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">
                           {herb.category} · {herb.name_latin}
                         </p>
                       </div>
@@ -1570,19 +1579,19 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       {/* 核心指标 */}
                       <div className="hidden md:flex items-center gap-5 shrink-0">
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">OB%</p>
-                          <p className="text-[14px] font-bold text-primary-600 tabular-nums font-mono">
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">OB%</p>
+                          <p className="text-[14px] font-bold text-primary-700 tabular-nums font-mono">
                             {Number(herb.ob_percent).toFixed(1)}
                           </p>
                         </div>
                         <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">化合物</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">化合物</p>
                           <p className="text-[14px] font-semibold text-secondary-600 tabular-nums">{herb.compound_count}</p>
                         </div>
                         <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">热度分</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">热度分</p>
                           <p className="text-[13px] font-medium text-orange-500 tabular-nums">
                             {Math.round(herb.heat_score)}
                           </p>
@@ -1591,14 +1600,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
                       {/* 移动端简化指标 */}
                       <div className="flex md:hidden items-center gap-2 shrink-0">
-                        <span className="px-2 py-1 text-[11px] font-bold bg-primary-50 text-primary-600 rounded-lg tabular-nums font-mono">
+                        <span className="px-2 py-1 text-xs font-bold bg-primary-50 text-primary-700 rounded-lg tabular-nums font-mono">
                           OB {Number(herb.ob_percent).toFixed(1)}%
                         </span>
                       </div>
 
                       {/* 箭头 */}
                       <ChevronRight
-                        className={`w-4 h-4 text-neutral-300 transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-secondary-400 opacity-100' : 'opacity-0'}`}
+                        className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-secondary-400 opacity-100' : 'opacity-0'}`}
                       />
                     </div>
                   );
@@ -1631,11 +1640,11 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                           </span>
                           {isTop3 && (
                             <Crown
-                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-neutral-400' : 'text-orange-400'}`}
+                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-orange-400'}`}
                             />
                           )}
                         </div>
-                        <p className="text-[11px] text-neutral-400 mt-0.5 truncate flex items-center gap-1">
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate flex items-center gap-1">
                           <Beaker className="w-3 h-3" />
                           {peptide.source_protein} · {peptide.hydrolysis_enzyme}
                         </p>
@@ -1644,31 +1653,31 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       {/* 核心指标 */}
                       <div className="hidden lg:flex items-center gap-5 shrink-0">
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">IC50</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">IC50</p>
                           <p className="text-[14px] font-bold text-violet-600 tabular-nums font-mono">
                             {peptide.activity_value}
-                            <span className="text-[10px] font-normal ml-0.5 text-neutral-400">
+                            <span className="text-xs font-normal ml-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                               {peptide.activity_unit}
                             </span>
                           </p>
                         </div>
                         <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">分子量</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">分子量</p>
                           <p className="text-[14px] font-semibold text-neutral-600 tabular-nums">
                             {peptide.molecular_weight?.toFixed(0) || '-'}
                           </p>
                         </div>
                         <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
-                          <p className="text-[11px] text-neutral-400 leading-none mb-0.5">长度</p>
-                          <p className="text-[14px] font-medium text-neutral-500 tabular-nums">{peptide.seq_length}aa</p>
+                          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">长度</p>
+                          <p className="text-[14px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{peptide.seq_length}aa</p>
                         </div>
                       </div>
 
                       {/* 移动端/平板简化 */}
                       <div className="flex lg:hidden items-center gap-2 shrink-0">
-                        <span className="px-2 py-1 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg tabular-nums font-mono">
+                        <span className="px-2 py-1 text-xs font-bold bg-violet-50 text-violet-600 rounded-lg tabular-nums font-mono">
                           IC50 {peptide.activity_value}
                           {peptide.activity_unit}
                         </span>
@@ -1676,7 +1685,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
                       {/* 箭头 */}
                       <ChevronRight
-                        className={`w-4 h-4 text-neutral-300 transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-violet-400 opacity-100' : 'opacity-0'}`}
+                        className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-violet-400 opacity-100' : 'opacity-0'}`}
                       />
                     </div>
                   );
@@ -1687,7 +1696,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
           {/* 底部信息栏 */}
           {currentData && currentData.length > 0 && (
-            <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800/80 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-400">
+            <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800/80 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
                   <Flame className="w-3 h-3 text-orange-400" />
@@ -1712,26 +1721,26 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
   // ---- Tab 3: 关联分析 ----
   const renderTrendsTab = () => {
-    if (!trendData) return <div className="p-10 text-center text-neutral-400">无数据</div>;
+    if (!trendData) return <div className="p-10 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无数据</div>;
 
     return (
       <div className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-4">
             <h4 className="text-xs font-semibold text-neutral-600 mb-2">OB vs DL 散点分布</h4>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {(trendData.ob_dl_scatter || []).length} 个数据点，按药食同源着色。 高OB值药材更利于口服吸收。
             </p>
           </div>
           <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-4">
             <h4 className="text-xs font-semibold text-neutral-600 mb-2">分子量 vs 活性值</h4>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {(trendData.mw_activity_scatter || []).length} 个数据点。 低分子量+高活性为理想候选区。
             </p>
           </div>
           <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-4">
             <h4 className="text-xs font-semibold text-neutral-600 mb-2">分类-功效热力图</h4>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {(trendData.category_effect_heatmap || []).length} 个分类-功效组合。 展示药材分类与功效的关联强度。
             </p>
           </div>
@@ -1744,7 +1753,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               <div key={key} className="flex items-center gap-2 text-neutral-600">
                 <span className="w-2 h-2 rounded-full bg-secondary-400" />
                 <span className="font-medium">{key}:</span>
-                <span className="text-neutral-500">{note}</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{note}</span>
               </div>
             ))}
           </div>
@@ -1756,7 +1765,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
   // ---- Tab 4: 数据质量 ----
   const renderQualityTab = () => {
     if (!qualityData?.herb_data || !qualityData.peptide_data)
-      return <div className="p-10 text-center text-neutral-400">无数据</div>;
+      return <div className="p-10 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">无数据</div>;
 
     const statusColors: Record<string, string> = {
       A: 'bg-success-100 text-success-700',
@@ -1783,13 +1792,13 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                 : 'bg-error-50 border-2 border-red-200'
           }`}
         >
-          <p className="text-sm text-neutral-500 mb-1">综合质量评分</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">综合质量评分</p>
           <p
             className={`text-5xl font-bold ${gradeColor((qualityData.overall_score ?? 0) >= 85 ? 'A' : (qualityData.overall_score ?? 0) >= 70 ? 'B' : 'C')}`}
           >
             {qualityData.overall_score ?? 0}
           </p>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
             药材质量: {qualityData.herb_data.quality_score ?? 0} ({qualityData.herb_data.grade || 'N/A'}) | 肽质量:{' '}
             {qualityData.peptide_data.quality_score ?? 0} ({qualityData.peptide_data.grade || 'N/A'})
           </p>
@@ -1805,23 +1814,23 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">总记录数</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总记录数</span>
                 <span className="font-medium">{qualityData.herb_data.total_records ?? 0}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">完整率</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">完整率</span>
                 <span className="font-medium text-secondary-600">{qualityData.herb_data.quality_score ?? 0}%</span>
               </div>
               {qualityData.herb_data.health_indicators && (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">有化合物数据</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">有化合物数据</span>
                     <span className="font-medium">
                       {qualityData.herb_data.health_indicators.with_compounds || 0} 条
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">有靶点数据</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">有靶点数据</span>
                     <span className="font-medium">{qualityData.herb_data.health_indicators.with_targets || 0} 条</span>
                   </div>
                 </>
@@ -1838,23 +1847,23 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">总记录数</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总记录数</span>
                 <span className="font-medium">{qualityData.peptide_data.total_records ?? 0}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">完整率</span>
+                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">完整率</span>
                 <span className="font-medium text-secondary-600">{qualityData.peptide_data.quality_score ?? 0}%</span>
               </div>
               {qualityData.peptide_data.health_indicators && (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">有活性值</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">有活性值</span>
                     <span className="font-medium">
                       {qualityData.peptide_data.health_indicators.has_activity_value || 0} 条
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-500">ACE抑制肽</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">ACE抑制肽</span>
                     <span className="font-medium">
                       {qualityData.peptide_data.health_indicators.ace_inhibitory_count || 0} 条
                     </span>
@@ -1892,7 +1901,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               className={`relative px-4 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 tracking-tight ${
                 activeTab === tab.key
                   ? 'bg-white dark:bg-neutral-900 text-secondary-600 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700 hover:bg-white/50'
+                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 hover:bg-white/50'
               }`}
             >
               {tab.label}
@@ -1906,14 +1915,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               type="checkbox"
               checked={autoRefresh}
               onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-[15px] h-[15px] rounded border-neutral-300 text-secondary-600 cursor-pointer accent-blue-600 mt-px"
+              className="w-[15px] h-[15px] rounded border-neutral-300 dark:border-neutral-700 text-secondary-600 cursor-pointer accent-blue-600 mt-px"
             />
             <span className="text-[13px] text-neutral-600 font-medium group-hover/refresh:text-neutral-800 transition-colors">
               自动刷新
             </span>
           </label>
 
-          <span className="text-[11px] text-neutral-400 font-mono tabular-nums px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md border border-neutral-200">
+          <span className="text-xs text-neutral-400 font-mono tabular-nums px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md border border-neutral-200">
             60s
           </span>
 
@@ -1929,7 +1938,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
           </button>
 
           {lastRefresh && (
-            <span className="text-[12px] text-neutral-400 font-normal tabular-nums flex items-center gap-1.5 ml-0.5">
+            <span className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-normal tabular-nums flex items-center gap-1.5 ml-0.5">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary-500"></span>

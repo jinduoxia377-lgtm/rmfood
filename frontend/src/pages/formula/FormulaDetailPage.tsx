@@ -1095,7 +1095,7 @@ export default function FormulaDetailPage() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-neutral-400">-</span>
+                            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
                           )}
                         </div>
                       )}
@@ -1148,7 +1148,7 @@ export default function FormulaDetailPage() {
                                 </Badge>
                               ))
                             ) : (
-                              <span className="text-neutral-400">-</span>
+                              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
                             )}
                           </div>
                         )}
@@ -1216,7 +1216,7 @@ export default function FormulaDetailPage() {
                   {/* 编辑操作按钮 */}
                   {isEditing && (
                     <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                      {!hasChanges && <p className="text-xs text-neutral-400 self-center mr-auto">没有修改</p>}
+                      {!hasChanges && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] self-center mr-auto">没有修改</p>}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1272,7 +1272,7 @@ export default function FormulaDetailPage() {
                         {synergyParsed && (
                           <div className="rounded-xl p-4 border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10">
                             <div className="flex items-center gap-2 mb-2">
-                              <Leaf size={16} className="text-primary-600" />
+                              <Leaf size={16} className="text-primary-700" />
                               <span className="font-semibold text-sm">协同分析</span>
                               {synergyParsed.score !== null && (
                                 <Badge variant="primary" size="sm">
@@ -1306,7 +1306,7 @@ export default function FormulaDetailPage() {
                       </h2>
                       <div className="flex items-center gap-2">
                         {totalDosage !== null && (
-                          <span className="text-sm text-neutral-500">
+                          <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             总用量:{' '}
                             <strong className="text-neutral-900 dark:text-white">{totalDosage.toFixed(2)}g</strong>
                           </span>
@@ -1330,13 +1330,13 @@ export default function FormulaDetailPage() {
                           <table className="w-full text-sm">
                             <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                               <tr>
-                                <th className="text-left p-3 text-neutral-500 font-medium w-12">#</th>
-                                <th className="text-left p-3 text-neutral-500 font-medium">成分名称</th>
-                                <th className="text-left p-3 text-neutral-500 font-medium">用量(g)</th>
-                                <th className="text-left p-3 text-neutral-500 font-medium">分类</th>
-                                <th className="text-left p-3 text-neutral-500 font-medium">来源</th>
-                                <th className="text-center p-3 text-neutral-500 font-medium w-24">药食同源</th>
-                                <th className="text-center p-3 text-neutral-500 font-medium w-20">操作</th>
+                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-12">#</th>
+                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">成分名称</th>
+                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">用量(g)</th>
+                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">分类</th>
+                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">来源</th>
+                                <th className="text-center p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-24">药食同源</th>
+                                <th className="text-center p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-20">操作</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1346,7 +1346,7 @@ export default function FormulaDetailPage() {
                                     key={ing.name}
                                     className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors"
                                   >
-                                    <td className="p-3 text-neutral-500">{i + 1}</td>
+                                    <td className="p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{i + 1}</td>
                                     <td className="p-3 text-neutral-900 dark:text-white font-medium">{ing.name}</td>
                                     <td className="p-3 text-neutral-600 dark:text-neutral-400">{ing.dosage}</td>
                                     <td className="p-3 text-neutral-600 dark:text-neutral-400">{ing.category}</td>
@@ -1365,7 +1365,7 @@ export default function FormulaDetailPage() {
                                     <td className="p-3 text-center">
                                       <button
                                         onClick={() => toggleIngredientExpand(ing.name)}
-                                        className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 transition-colors"
+                                        className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 transition-colors"
                                       >
                                         {expandedIngredients.has(ing.name) ? '收起' : '详情'}
                                       </button>
@@ -1377,19 +1377,19 @@ export default function FormulaDetailPage() {
                                       <td colSpan={7} className="p-4 bg-slate-50/50 dark:bg-neutral-800/30">
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                                           <div>
-                                            <p className="text-neutral-500 mb-1">性味归经</p>
+                                            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">性味归经</p>
                                             <p className="text-neutral-700 dark:text-neutral-300">-</p>
                                           </div>
                                           <div>
-                                            <p className="text-neutral-500 mb-1">化学成分</p>
+                                            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">化学成分</p>
                                             <p className="text-neutral-700 dark:text-neutral-300">-</p>
                                           </div>
                                           <div>
-                                            <p className="text-neutral-500 mb-1">药理作用</p>
+                                            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">药理作用</p>
                                             <p className="text-neutral-700 dark:text-neutral-300">-</p>
                                           </div>
                                           <div>
-                                            <p className="text-neutral-500 mb-1">注意事项</p>
+                                            <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">注意事项</p>
                                             <p className="text-neutral-700 dark:text-neutral-300">-</p>
                                           </div>
                                         </div>
@@ -1408,7 +1408,7 @@ export default function FormulaDetailPage() {
                         </div>
                       </>
                     ) : (
-                      <div className="py-12 text-center text-neutral-400">
+                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <BarChart3 size={48} className="mx-auto mb-3 opacity-50" />
                         <p>暂无成分数据</p>
                       </div>
@@ -1430,7 +1430,7 @@ export default function FormulaDetailPage() {
                     {/* 营养标签 */}
                     {nutritionLoading ? (
                       <div className="flex items-center justify-center py-12">
-                        <span className="text-sm text-neutral-500">加载营养数据中...</span>
+                        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载营养数据中...</span>
                       </div>
                     ) : nutritionLabelData ? (
                       <>
@@ -1460,7 +1460,7 @@ export default function FormulaDetailPage() {
                         {nutritionLabelData.warnings && nutritionLabelData.warnings.length > 0 && (
                           <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-900/10 rounded-lg">
                             {nutritionLabelData.warnings.map((w: string, i: number) => (
-                              <p key={i} className="text-sm text-warning-700 dark:text-warning-400">
+                              <p key={i} className="text-sm text-warning-700 dark:text-warning-700">
                                 ⚠ {w}
                               </p>
                             ))}
@@ -1468,7 +1468,7 @@ export default function FormulaDetailPage() {
                         )}
                       </>
                     ) : (
-                      <div className="py-12 text-center text-neutral-400">
+                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <Leaf size={48} className="mx-auto mb-3 opacity-50" />
                         <p>暂无营养数据</p>
                         <p className="text-xs mt-1">请确保配方包含已知药材</p>
@@ -1500,7 +1500,7 @@ export default function FormulaDetailPage() {
                             <div key={index} className="relative flex gap-4 pl-4">
                               {/* 时间线节点 */}
                               <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
-                                <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
+                                <span className="text-sm font-bold text-primary-700 dark:text-primary-700">
                                   {step.step_number}
                                 </span>
                               </div>
@@ -1511,7 +1511,7 @@ export default function FormulaDetailPage() {
                                   <h4 className="font-semibold text-neutral-900 dark:text-white">
                                     步骤 {step.step_number}
                                   </h4>
-                                  <div className="flex items-center gap-2 text-xs text-neutral-500">
+                                  <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                     {step.temperature && (
                                       <span className="px-2 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
                                         <Thermometer className="w-3 h-3 inline mr-0.5" />{step.temperature.min}-{step.temperature.max}
@@ -1519,7 +1519,7 @@ export default function FormulaDetailPage() {
                                       </span>
                                     )}
                                     {step.duration && (
-                                      <span className="px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-400">
+                                      <span className="px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-700">
                                         ⏱️ {step.duration.value}
                                         {step.duration.unit}
                                       </span>
@@ -1531,7 +1531,7 @@ export default function FormulaDetailPage() {
                                   {step.description}
                                 </p>
 
-                                <div className="flex items-center gap-4 text-xs text-neutral-500">
+                                <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                   {step.equipment && <span><Wrench className="w-3 h-3 inline mr-0.5" />设备: {step.equipment}</span>}
                                   {step.notes && <span><AlertOctagon className="w-3 h-3 inline mr-0.5" />{step.notes}</span>}
                                 </div>
@@ -1541,7 +1541,7 @@ export default function FormulaDetailPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-neutral-400">
+                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <ListOrdered size={48} className="mx-auto mb-3 opacity-50" />
                         <p>暂无制作步骤</p>
                       </div>
@@ -1603,10 +1603,10 @@ export default function FormulaDetailPage() {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-neutral-400">
+                                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                       {new Date(v.created_at).toLocaleString('zh-CN')}
                                     </span>
-                                    <span className="text-xs text-neutral-500">
+                                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                       by {v.changed_by_name || v.changed_by || '-'}
                                     </span>
                                   </div>
@@ -1679,7 +1679,7 @@ export default function FormulaDetailPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-neutral-400">
+                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <GitBranch size={48} className="mx-auto mb-3 opacity-50" />
                         <p>暂无版本记录</p>
                       </div>
@@ -1724,7 +1724,7 @@ export default function FormulaDetailPage() {
                             {/* 推荐头部 */}
                             <div className="flex items-start justify-between mb-3">
                               <h4 className="font-semibold text-neutral-900 dark:text-white line-clamp-2">{rec.name}</h4>
-                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-bold">
+                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 text-xs font-bold">
                                 {Math.round(rec.score * 100)}%
                               </div>
                             </div>
@@ -1744,7 +1744,7 @@ export default function FormulaDetailPage() {
                             </div>
 
                             {/* 关键成分预览 */}
-                            <div className="text-xs text-neutral-500 space-y-1">
+                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] space-y-1">
                               <p className="font-medium text-neutral-600 dark:text-neutral-400">关键成分:</p>
                               <div className="flex flex-wrap gap-1">
                                 {rec.ingredients.slice(0, 4).map((ing) => (
@@ -1758,7 +1758,7 @@ export default function FormulaDetailPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-neutral-400">
+                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <Sparkles size={48} className="mx-auto mb-3 opacity-50" />
                         <p className="mb-2">暂无推荐数据</p>
                         <p className="text-xs">点击"换一批"按钮加载相关推荐</p>
@@ -2048,7 +2048,7 @@ export default function FormulaDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <MessageSquare size={16} className="text-neutral-400" />
+              <MessageSquare size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </div>
             <CardTitle as="h2">评论</CardTitle>
             <Badge variant="neutral" size="sm">
@@ -2059,7 +2059,7 @@ export default function FormulaDetailPage() {
         <CardContent className="pt-0 space-y-4">
           {/* 发表评论 */}
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-xs font-bold shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 text-xs font-bold shrink-0 mt-0.5">
               {user?.fullName?.[0] ?? user?.username?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1">
@@ -2114,7 +2114,7 @@ export default function FormulaDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-center text-sm text-neutral-400">暂无评论，成为第一个评论者</div>
+            <div className="py-6 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无评论，成为第一个评论者</div>
           )}
         </CardContent>
       </Card>
@@ -2124,7 +2124,7 @@ export default function FormulaDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <Clock size={16} className="text-neutral-400" />
+              <Clock size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </div>
             <CardTitle as="h2">活动时间线</CardTitle>
           </div>
@@ -2157,9 +2157,9 @@ export default function FormulaDetailPage() {
         <CardContent className="pt-0">
           {experiments.length === 0 ? (
             <div className="text-center py-8">
-              <TestTubes size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+              <TestTubes size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
               <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无关联实验</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">创建实验来验证此配方的效果</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">创建实验来验证此配方的效果</p>
               <Link to={`/experiments/new?formula_id=${formulaId}`} className="mt-3 inline-block">
                 <Button size="sm" variant="secondary" icon={<Plus size={12} />}>
                   从此配方创建实验
@@ -2181,7 +2181,7 @@ export default function FormulaDetailPage() {
                     <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-violet-600 transition-colors truncate">
                       {exp.title}
                     </p>
-                    <p className="text-xs text-neutral-400">{exp.code}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{exp.code}</p>
                   </div>
                   <StatusBadge status={exp.status} />
                 </Link>
@@ -2203,7 +2203,7 @@ export default function FormulaDetailPage() {
 
           <div className="rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800 p-4">
             <p className="font-semibold text-error-900 dark:text-error-100 mb-2">将要删除的配方：</p>
-            <p className="text-error-700 dark:text-error-300 font-mono text-sm bg-white dark:bg-neutral-800 rounded px-2 py-1">
+            <p className="text-error-700 dark:text-error-600 font-mono text-sm bg-white dark:bg-neutral-800 rounded px-2 py-1">
               {formula.name}
             </p>
           </div>
@@ -2287,7 +2287,7 @@ export default function FormulaDetailPage() {
       >
         {selectingDiffSide ? (
           <div className="space-y-4">
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               选择要对比的版本（当前选择：
               {selectingDiffSide === 'left'
                 ? diffLeftVersion
@@ -2333,11 +2333,11 @@ export default function FormulaDetailPage() {
                       <span className="font-medium text-neutral-900 dark:text-white">
                         v{v.version_number || v.version_label}
                       </span>
-                      <span className="text-xs text-neutral-400">
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {new Date(v.created_at).toLocaleDateString('zh-CN')}
                       </span>
                     </div>
-                    {v.change_summary && <p className="text-xs text-neutral-500 mt-0.5">{v.change_summary}</p>}
+                    {v.change_summary && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{v.change_summary}</p>}
                   </button>
                 ))}
             </div>
