@@ -162,7 +162,8 @@ async def deep_analysis(
     **响应时间**: < 5s
     """
     try:
-        logger.info(f"开始深度分析 - 序列: {req.sequence}, 用户: {current_user.id}")
+        _uid = current_user.id if current_user else "anonymous"
+        logger.info(f"开始深度分析 - 序列: {req.sequence}, 用户: {_uid}")
 
         analyzer = get_advanced_analyzer()
         

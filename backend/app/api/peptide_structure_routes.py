@@ -4,10 +4,12 @@
 集成活性预测和安全性评估
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Literal
 import logging
+
+from .deps import get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -244,12 +246,25 @@ async def search_database(
         start = (page - 1) * page_size
         end = start + page_size
         paginated = results[start:end]
+        # 统计分布（基于全部匹配结果，而非当前页）
+        activity_distribution = {}
+        food_source_distribution = {}
+        for p in results:
+            d = p.to_dict()
+            _act = d.get("activity_type")
+            if _act:
+                activity_distribution[_act] = activity_distribution.get(_act, 0) + 1
+            _src = d.get("food_source")
+            if _src:
+                food_source_distribution[_src] = food_source_distribution.get(_src, 0) + 1
         return {
             "success": True,
             "total": total,
             "page": page,
             "page_size": page_size,
             "peptides": [p.to_dict() for p in paginated],
+            "activity_distribution": activity_distribution,
+            "food_source_distribution": food_source_distribution,
         }
     except Exception as e:
         logger.error(f"数据库搜索失败: {e}", exc_info=True)
@@ -382,6 +397,159 @@ async def smiles_to_3d(smiles: str):
         raise
     except Exception as e:
         logger.error(f"SMILES 转 3D 失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ─── 历史记录 API ────────────────────────────────────────────
+# 前端 peptideStructureService 调用 /peptide-structure/history* 三个端点，
+# 此前后端未注册，导致「历史记录」Tab 全部 404。此处补齐。
+
+
+def _serialize_history_item(item):
+    """把 PeptideAnalysis 记录映射为前端 HistoryRecord 结构。"""
+    details = getattr(item, 'details', None) or []
+
+    def _dim(dim_name):
+        for d in details:
+            raw = getattr(d, 'dimension_type', None)
+            name = raw.value if hasattr(raw, 'value') else str(raw)
+            if name and name.lower() == dim_name:
+                return getattr(d, 'data', None) or {}
+        return {}
+
+    basic = _dim('basic')
+    safety = _dim('safety')
+    bioactivity = _dim('bioactivity')
+    overall = _dim('overall')
+
+    def _bio(key):
+        node = bioactivity.get(key)
+        if isinstance(node, dict):
+            return node.get('score', 0.0)
+        if isinstance(node, (int, float)):
+            return float(node)
+        return bioactivity.get(key + '_score', 0.0) or 0.0
+
+    mw = basic.get('molecular_weight', 0.0) or 0.0
+    food = overall.get('food_score', safety.get('food_score', 0.0)) or 0.0
+
+    return {
+        'id': item.id,
+        'sequence': item.sequence,
+        'molecular_weight': mw,
+        'food_safety_score': food,
+        'ace_inhibition_score': _bio('ace_inhibition'),
+        'antioxidant_score': _bio('antioxidant'),
+        'antimicrobial_score': _bio('antimicrobial'),
+        'is_allergen': bool(safety.get('is_allergen', False)),
+        'is_toxic': bool(safety.get('is_toxic', False)),
+        'digestibility': safety.get('digestibility', 'unknown'),
+        'created_at': item.created_at.isoformat() if item.created_at else '',
+    }
+
+
+@router.get('/history', summary='查询分析历史记录')
+async def get_history(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sequence: Optional[str] = Query(None),
+    db=Depends(get_db_session),
+):
+    """分页查询分析历史。"""
+    try:
+        from sqlalchemy import select, func
+        from app.models.peptide_analysis import PeptideAnalysis
+
+        stmt = select(PeptideAnalysis).where(PeptideAnalysis.deleted_at.is_(None))
+        count_stmt = select(func.count(PeptideAnalysis.id)).where(
+            PeptideAnalysis.deleted_at.is_(None)
+        )
+        if sequence:
+            pattern = '%' + sequence + '%'
+            stmt = stmt.where(PeptideAnalysis.sequence.ilike(pattern))
+            count_stmt = count_stmt.where(PeptideAnalysis.sequence.ilike(pattern))
+
+        total = (await db.execute(count_stmt)).scalar() or 0
+        stmt = (
+            stmt.order_by(PeptideAnalysis.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+        rows = (await db.execute(stmt)).scalars().all()
+        return {
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'items': [_serialize_history_item(r) for r in rows],
+        }
+    except Exception as e:
+        logger.error('查询历史失败: %s', e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/history/statistics', summary='历史记录统计')
+async def get_history_statistics(db=Depends(get_db_session)):
+    """聚合统计历史分析记录。"""
+    try:
+        from sqlalchemy import select
+        from app.models.peptide_analysis import PeptideAnalysis
+
+        base = select(PeptideAnalysis).where(PeptideAnalysis.deleted_at.is_(None))
+        rows = (await db.execute(base)).scalars().all()
+        items = [_serialize_history_item(r) for r in rows]
+        total = len(items)
+
+        def _avg(key):
+            if not total:
+                return 0.0
+            return round(sum(i[key] for i in items) / total, 4)
+
+        bins = [0] * 10
+        for i in items:
+            idx = int(i['food_safety_score'] // 10)
+            idx = max(0, min(idx, 9))
+            bins[idx] += 1
+
+        return {
+            'total_analyses': total,
+            'avg_food_score': _avg('food_safety_score'),
+            'avg_molecular_weight': _avg('molecular_weight'),
+            'avg_ace_inhibition': _avg('ace_inhibition_score'),
+            'avg_antioxidant': _avg('antioxidant_score'),
+            'avg_antimicrobial': _avg('antimicrobial_score'),
+            'allergen_count': sum(1 for i in items if i['is_allergen']),
+            'toxic_count': sum(1 for i in items if i['is_toxic']),
+            'latest_analysis': max((i['created_at'] for i in items), default=''),
+            'score_distribution': [
+                {'bin': i * 10, 'count': c} for i, c in enumerate(bins)
+            ],
+        }
+    except Exception as e:
+        logger.error('历史统计失败: %s', e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete('/history/{record_id}', summary='删除历史记录')
+async def delete_history(record_id: int, db=Depends(get_db_session)):
+    """软删除指定历史记录。"""
+    try:
+        from datetime import datetime, timezone
+        from sqlalchemy import select
+        from app.models.peptide_analysis import PeptideAnalysis
+
+        row = (
+            await db.execute(
+                select(PeptideAnalysis).where(PeptideAnalysis.id == record_id)
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            raise HTTPException(status_code=404, detail='记录不存在')
+        row.deleted_at = datetime.now(timezone.utc)
+        await db.commit()
+        return {'success': True, 'message': '已删除'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error('删除历史失败: %s', e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
