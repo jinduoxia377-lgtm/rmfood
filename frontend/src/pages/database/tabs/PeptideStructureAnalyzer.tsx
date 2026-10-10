@@ -320,6 +320,136 @@ function BarChart({ data }: { data: PeptideAnalysisResult }) {
   return <ReactECharts option={option} style={{ height: 240 }} />;
 }
 
+// ─── 活性热力图（多肽 × 多目标矩阵）───
+function ActivityHeatmap({ results }: { results: PeptideAnalysisResult[] }) {
+  const objectives = ['ACE抑制', '抗氧化', '抗菌', '食品安全'];
+  const points: Array<[number, number, number, string]> = [];
+  results.forEach((r, row) => {
+    const vals = [
+      r.ace_inhibition.score,
+      r.antioxidant.score,
+      r.antimicrobial.score,
+      r.safety.food_score / 100,
+    ];
+    vals.forEach((v, col) => {
+      points.push([col, row, v, r.sequence]);
+    });
+  });
+  const option = {
+    title: {
+      text: '多肽 × 目标 活性热力图',
+      left: 'center',
+      top: 5,
+      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' },
+    },
+    tooltip: {
+      position: 'top',
+      formatter: (p: any) => `${p.data[3]}<br/>${objectives[p.data[0]]}: <b>${(p.data[2] * 100).toFixed(1)}%</b>`,
+    },
+    grid: { left: '8%', right: '10%', top: '18%', bottom: '15%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: objectives,
+      splitArea: { show: true },
+      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+    },
+    yAxis: {
+      type: 'category',
+      data: results.map(r => r.sequence),
+      splitArea: { show: true },
+      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11, fontFamily: 'monospace' },
+    },
+    visualMap: {
+      min: 0,
+      max: 1,
+      calculable: false,
+      orient: 'vertical',
+      right: 0,
+      top: 'center',
+      inRange: { color: ['#f1f5f9', '#bfdbfe', '#3b82f6', '#1d4ed8'] },
+      textStyle: { color: 'var(--text-secondary,#6B7280)', fontSize: 10 },
+      text: ['高', '低'],
+    },
+    series: [{
+      type: 'heatmap',
+      data: points,
+      label: {
+        show: true,
+        formatter: (p: any) => `${(p.data[2] * 100).toFixed(0)}%`,
+        fontSize: 10,
+        color: '#111827',
+      },
+      itemStyle: { borderColor: '#fff', borderWidth: 1 },
+      emphasis: { itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,0.3)' } },
+    }],
+  };
+  return <ReactECharts option={option} style={{ height: Math.max(240, results.length * 36 + 80) }} />;
+}
+
+// ─── Pareto 前沿二维散点图 ──
+function ParetoScatter({ points }: {
+  points: Array<{ sequence: string; objectives: Record<string, number>; rank: number }>;
+}) {
+  // 取前两个目标作为 X/Y 轴
+  const data = points.map(p => {
+    const keys = Object.keys(p.objectives);
+    return [
+      p.objectives[keys[0]] ?? 0,
+      p.objectives[keys[1]] ?? 0,
+      p.sequence,
+      p.rank,
+    ];
+  });
+  const k0 = Object.keys(points[0]?.objectives ?? {});
+  const option = {
+    title: {
+      text: 'Pareto 前沿（前 2 目标）',
+      left: 'center',
+      top: 5,
+      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' },
+    },
+    tooltip: {
+      formatter: (p: any) => `${p.data[2]}<br/>${k0[0]}: ${(p.data[0] * 100).toFixed(1)}%<br/>${k0[1] ?? '目标2'}: ${(p.data[1] * 100).toFixed(1)}%<br/>rank: ${p.data[3]}`,
+    },
+    grid: { left: '6%', right: '6%', bottom: '18%', top: '20%', containLabel: true },
+    xAxis: {
+      name: k0[0] ?? '目标1',
+      type: 'value',
+      min: 0,
+      max: 1,
+      nameTextStyle: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisLabel: { formatter: (v: number) => `${(v * 100).toFixed(0)}%`, color: 'var(--text-secondary,#6B7280)', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)', type: 'dashed' } },
+    },
+    yAxis: {
+      name: k0[1] ?? '目标2',
+      type: 'value',
+      min: 0,
+      max: 1,
+      nameTextStyle: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisLabel: { formatter: (v: number) => `${(v * 100).toFixed(0)}%`, color: 'var(--text-secondary,#6B7280)', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)', type: 'dashed' } },
+    },
+    series: [{
+      type: 'scatter',
+      data,
+      symbolSize: (val: any) => (val[3] === 0 ? 18 : 12),
+      itemStyle: {
+        color: (p: any) => (p.data[3] === 0 ? '#16a34a' : '#3b82f6'),
+        opacity: 0.85,
+      },
+      label: {
+        show: true,
+        formatter: (p: any) => p.data[2],
+        position: 'top',
+        fontSize: 9,
+        color: 'var(--text-secondary,#6B7280)',
+      },
+    }],
+  };
+  return <ReactECharts option={option} style={{ height: 280 }} />;
+}
+
 // ─── 对比分析组件 ───
 function ComparisonView({ sequences }: { sequences: string[] }) {
   const [results, setResults] = useState<PeptideAnalysisResult[]>([]);
@@ -359,6 +489,14 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
 
       {results.length > 0 && (
         <div className="space-y-4">
+          {/* 活性热力图 */}
+          <Card className="p-4">
+            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              活性热力图
+            </h3>
+            <ActivityHeatmap results={results} />
+          </Card>
           {/* 对比表格 */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -456,6 +594,11 @@ function DatabaseView({ onAnalyzeSequence, initialQuery }: { onAnalyzeSequence?:
   const [showAll, setShowAll] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number>(0); // 保存搜索结果总数
+  // 外部数据源检索状态
+  const [useOnline, setUseOnline] = useState(false);
+  const [extLoading, setExtLoading] = useState(false);
+  const [extResults, setExtResults] = useState<DatabasePeptide[]>([]);
+  const [extMeta, setExtMeta] = useState<{ seq: string; dbs: string[] } | null>(null);
   const PAGE_SIZE = 20;
 
   const doSearch = useCallback(async (q: string, p: number = 1) => {
@@ -472,6 +615,33 @@ setLoading(true);
       setLoading(false);
     }
   }, []);
+
+  // 外部数据源检索（DFBP 本地 7540 条 + BioPeptideDB 在线可选）
+  const doExternalSearch = useCallback(async (seq: string) => {
+    if (!seq.trim()) return;
+    setExtLoading(true); setExtResults([]); setExtMeta(null);
+    try {
+      const res = await peptideStructureService.externalSourceLookup(seq.trim().toUpperCase(), useOnline);
+      const mapped: DatabasePeptide[] = (res.records || []).map(r => ({
+        sequence: r.sequence,
+        source_protein: r.source_protein ?? undefined,
+        activity_type: r.activity_type ?? undefined,
+        activity_value: r.activity_value ?? undefined,
+        activity_unit: r.activity_unit ?? undefined,
+        molecular_weight: r.molecular_weight ?? undefined,
+        food_source: r.food_source ?? undefined,
+        source_database: r.source_database,
+      }));
+      setExtResults(mapped);
+      setExtMeta({ seq: seq.trim().toUpperCase(), dbs: res.databases_queried || [] });
+    } catch (e: any) {
+      console.error('外部检索失败:', e);
+      setExtResults([]);
+      setExtMeta({ seq: seq.trim().toUpperCase(), dbs: [] });
+    } finally {
+      setExtLoading(false);
+    }
+  }, [useOnline]);
 
   const handleLoadStats = useCallback(async () => {
     try {
@@ -514,7 +684,71 @@ setLoading(true);
         <Button variant="outline" onClick={() => doSearch('', 1)} disabled={loading}>
           显示全部
         </Button>
+
+        <Button
+          variant="ghost"
+          className="border border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300"
+          onClick={() => doExternalSearch(query)}
+          disabled={extLoading || !query}
+        >
+          {extLoading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>检索中...</> : <><Database className="w-4 h-4 mr-1" />外部检索</>}
+        </Button>
+        <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted,#9A9A9F)] cursor-pointer select-none">
+          <input type="checkbox" checked={useOnline} onChange={e => setUseOnline(e.target.checked)} className="accent-primary-500" />
+          BioPeptideDB 在线
+        </label>
       </div>
+
+      {/* 外部检索结果（并入表格，标注来源库） */}
+      {extMeta && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg text-xs">
+            <span className="text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+              <Database className="w-3.5 h-3.5" />
+              外部数据源：{extMeta.dbs.length > 0 ? extMeta.dbs.join(' + ') : '未配置在线源（仅查 DFBP 本地库）'}，命中 {extResults.length} 条
+            </span>
+            <button onClick={() => { setExtResults([]); setExtMeta(null); }} className="text-[var(--text-muted,#9A9A9F)] hover:text-neutral-700">清除</button>
+          </div>
+          {extResults.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                    {['序列', '来源库', '来源蛋白', '活性类型', '活性值', '食物来源', '操作'].map((h, i) => (
+                      <th key={i} className={i < 6 ? 'px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]' : 'px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]'}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {extResults.map((p, i) => (
+                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                      <td className="px-3 py-2 font-mono font-medium">{p.sequence}</td>
+                      <td className="px-3 py-2"><Badge variant="outline" size="sm">{p.source_database}</Badge></td>
+                      <td className="px-3 py-2 text-xs">{p.source_protein || '-'}</td>
+                      <td className="px-3 py-2 text-xs">{p.activity_type || '-'}</td>
+                      <td className="px-3 py-2 text-xs">{p.activity_value != null ? `${p.activity_value} ${p.activity_unit || ''}` : '-'}</td>
+                      <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
+                      <td className="px-3 py-2 text-center">
+                        {onAnalyzeSequence && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-primary" onClick={() => onAnalyzeSequence(p.sequence)}>
+                            <Beaker className="w-3.5 h-3.5 mr-1" />分析
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            !extLoading && (
+              <div className="text-center py-4 text-xs text-[var(--text-muted,#9A9A9F)]">
+                该序列未在外部数据源中命中（可能为合成序列或库中未收录）
+              </div>
+            )
+          )}
+        </div>
+      )}
 
       {/* 统计信息 */}
       {stats && (
@@ -767,31 +1001,84 @@ function BatchAnalysisView() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 异步任务状态
+  const [task, setTask] = useState<{ taskId: string; status: string; total: number; completed: number; progress: number } | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 轮询任务状态（完成即停）
+  const startPolling = useCallback((taskId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const st = await peptideStructureService.getBatchTaskStatus(taskId);
+        setTask({
+          taskId,
+          status: st.status,
+          total: st.total,
+          completed: st.completed,
+          progress: st.total > 0 ? Math.round((st.completed / st.total) * 100) : 0,
+        });
+        if (st.status === 'completed') {
+          // 用任务结果填充表格
+          const rows = (st.results || []).map(r => ({
+            ...r,
+            success: !!r && !!r.sequence,
+            result: r,
+          }));
+          setResults(rows);
+          setLoading(false);
+          stopPolling();
+        } else if (st.status === 'failed') {
+          setError(st.error || '批量任务失败');
+          setLoading(false);
+          stopPolling();
+        }
+      } catch (e) {
+        // 轮询瞬时失败不中断
+      }
+    }, 2000);
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
 
   const handleBatch = useCallback(async () => {
     const seqs = input.split('\n').map(s => s.trim().toUpperCase()).filter(Boolean);
     if (seqs.length === 0) { setError('请输入至少一条序列'); return; }
     if (seqs.length > 50) { setError('最多支持50条序列'); return; }
-    setLoading(true); setError(null); setResults([]);
+    setError(null); setResults([]);
+
+    // 少量序列走同步批量（快），超过 10 条走异步任务化
+    if (seqs.length <= 10) {
+      setLoading(true);
+      try {
+        const res = await peptideStructureService.batchAnalyze(seqs);
+        setResults((res.results || []).map(r => {
+          const ok = !!r && !!r.sequence && (r.molecular_weight ?? 0) > 0;
+          return { ...r, success: ok, result: ok ? r : null, error: ok ? undefined : '分析失败或序列无法解析' };
+        }));
+      } catch (e: any) {
+        setError(e.message || '批量分析失败');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 大量序列走异步：提交任务 → 轮询 /tasks/{id}
+    setLoading(true);
     try {
-      const res = await peptideStructureService.batchAnalyze(seqs);
-      // 后端返回扁平结构：{ success, count, results: [{sequence, molecular_weight, ...}] }
-      // 判定成功依据：存在 sequence 且解析出了分子量，而非无条件置 true
-      setResults((res.results || []).map(r => {
-        const ok = !!r && !!r.sequence && (r.molecular_weight ?? 0) > 0;
-        return {
-          ...r,
-          success: ok,
-          result: ok ? r : null,
-          error: ok ? undefined : '分析失败或序列无法解析',
-        };
-      }));
+      const submitted = await peptideStructureService.batchDeepAnalyze(seqs, 5);
+      setTask({ taskId: submitted.task_id, status: 'processing', total: seqs.length, completed: 0, progress: 0 });
+      startPolling(submitted.task_id);
     } catch (e: any) {
-      setError(e.message || '批量分析失败');
-    } finally {
+      setError(e.message || '批量任务提交失败');
       setLoading(false);
     }
-  }, [input]);
+  }, [input, startPolling]);
 
   return (
     <div className="space-y-4">
@@ -810,6 +1097,21 @@ function BatchAnalysisView() {
         </div>
       </Card>
       {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {/* 异步批量任务进度（>10 条序列走 /analyze/batch → 轮询 /tasks/{id}） */}
+      {task && task.status === 'processing' && (
+        <Card className="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">批量任务执行中</span>
+            <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{task.completed}/{task.total} · {task.progress}%</span>
+          </div>
+          <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+            <div className="bg-primary-500 h-2 rounded-full transition-all duration-500" style={{ width: `${task.progress}%` }} />
+          </div>
+          <p className="text-xs text-[var(--text-muted,#9A9A9F)]">
+            任务 {task.taskId.slice(0, 8)}… 已后台并发处理，完成后自动刷新结果表。
+          </p>
+        </Card>
+      )}
       {results.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -1084,6 +1386,9 @@ function OptimizeView() {
             <h3 className="text-sm font-medium flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary"/>Pareto 最优前沿</h3>
             <span className="text-xs text-[var(--text-muted)]">前沿点数: {result.pareto_frontier_size} / 处理: {result.total_processed}</span>
           </div>
+          {(result.pareto_points || []).length > 0 && (
+            <ParetoScatter points={result.pareto_points} />
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
@@ -1821,6 +2126,77 @@ interface PeptideStructureAnalyzerProps {
   initialTab?: TabType;
 }
 
+// 生成 Markdown 研发报告（含 pI、活性、安全、来源证据链）
+function buildPeptideReport(r: PeptideAnalysisResult): string {
+  const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+  const lines: string[] = [];
+  lines.push(`# 食源肽研发报告`);
+  lines.push(``);
+  lines.push(`> 生成时间：${now}`);
+  lines.push(``);
+  lines.push(`## 1. 序列与基本性质`);
+  lines.push(``);
+  lines.push(`| 项目 | 数值 |`);
+  lines.push(`| --- | --- |`);
+  lines.push(`| 序列 | \`${r.sequence}\` |`);
+  lines.push(`| 分子量 | ${r.molecular_weight.toFixed(2)} Da |`);
+  lines.push(`| 等电点 (pI) | ${r.isoelectric_point.toFixed(2)} |`);
+  lines.push(`| 疏水性 (Kyte-Doolittle) | ${r.hydrophobicity.toFixed(4)} |`);
+  if (r.smiles) lines.push(`| SMILES | \`${r.smiles}\` |`);
+  lines.push(``);
+  lines.push(`## 2. 活性预测（QSAR 规则模型）`);
+  lines.push(``);
+  lines.push(`| 活性 | 评分 | 等级 |`);
+  lines.push(`| --- | --- | --- |`);
+  const acts: Array<[string, ActivityScore | undefined]> = [
+    ['ACE 抑制', r.ace_inhibition],
+    ['抗氧化', r.antioxidant],
+    ['抗菌', r.antimicrobial],
+    ['DPP-IV 抑制', r.dpp4_inhibition],
+  ];
+  for (const [label, a] of acts) {
+    if (a) lines.push(`| ${label} | ${a.score.toFixed(3)} | ${a.level} |`);
+  }
+  lines.push(``);
+  lines.push(`## 3. 安全性评估`);
+  lines.push(``);
+  lines.push(`- 食品安全评分：**${r.safety.food_score.toFixed(0)}/100**`);
+  lines.push(`- 过敏原：${r.safety.is_allergen ? `是（${r.safety.allergen_source || '来源未知'}）` : '否'}`);
+  lines.push(`- 毒性：${r.safety.is_toxic ? `是（${r.safety.toxic_source || '来源未知'}）` : '否'}`);
+  lines.push(`- 消化性：${r.safety.digestibility}`);
+  lines.push(`- 综合风险等级：${r.safety.overall_risk || 'low'}`);
+  if (r.safety.warnings && r.safety.warnings.length > 0) {
+    lines.push(`- 安全警告：`);
+    for (const w of r.safety.warnings) lines.push(`  - ${w}`);
+  }
+  lines.push(``);
+  lines.push(`## 4. 口感预测`);
+  lines.push(``);
+  lines.push(`- 苦味指数：${(r.taste.bitterness * 100).toFixed(1)}%`);
+  lines.push(`- 鲜味潜力：${(r.taste.umami * 100).toFixed(1)}%`);
+  lines.push(``);
+  lines.push(`## 5. 来源与证据链`);
+  lines.push(``);
+  if (r.source?.food) lines.push(`- 食物来源：${r.source.food}`);
+  if (r.source?.database) lines.push(`- 数据库：${r.source.database}`);
+  if (r.source?.references && r.source.references.length > 0) {
+    lines.push(`- 文献参考：`);
+    for (const ref of r.source.references) lines.push(`  - ${ref}`);
+  }
+  if (!r.source?.food && !r.source?.database && (!r.source?.references || r.source.references.length === 0)) {
+    lines.push(`- （该序列未在 DFBP 库中收录，来源证据暂缺）`);
+  }
+  lines.push(``);
+  lines.push(`## 6. 方法学说明`);
+  lines.push(``);
+  lines.push(`- 理化性质：RDKit 精确计算分子量，Kyte-Doolittle 疏水标度，pKa 加权近似 pI。`);
+  lines.push(`- 活性预测：基于序列特征工程的规则化 QSAR（非深度学习），评分为相对活性强度 0–1。`);
+  lines.push(`- 安全性：过敏原/毒性白名单 + 消化酶抗性规则评估。`);
+  lines.push(``);
+  lines.push(`> 本报告由食源肽分析器自动生成，活性评分为预测值，供配方设计参考，不替代实验验证与临床评估。`);
+  return lines.join('\n');
+}
+
 export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: PeptideStructureAnalyzerProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sequence, setSequence] = useState('');
@@ -1954,6 +2330,21 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     setDbQuerySeed(seq);
     setActiveTab('database');
   }, []);
+
+  // 导出研发报告（Markdown）
+  const handleExportReport = useCallback(() => {
+    if (!result) return;
+    const md = buildPeptideReport(result);
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `peptide-report-${result.sequence}-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [result]);
 
   // 序列转换
   const handleConvert = useCallback(async () => {
@@ -2159,6 +2550,16 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
           {result && (
             <div className="space-y-4">
+              {/* 报告导出工具条 */}
+              <div className="flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                <div className="text-xs text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4" />
+                  分析完成，可导出研发报告（含 pI、活性、安全、来源证据链）
+                </div>
+                <Button size="sm" variant="outline" className="text-xs h-7" onClick={handleExportReport}>
+                  <Download className="w-3.5 h-3.5 mr-1" />导出报告
+                </Button>
+              </div>
               {/* 基本信息 */}
               <Card className="p-4">
                 <h3 className="text-sm font-medium mb-3 flex items-center gap-2">

@@ -260,6 +260,45 @@ CHECKS = [
         r"在数据库中查看",
         "前端：来源卡片必须提供「在数据库中查看」反向跳转",
     ),
+    # 第 1 项：报告导出
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"buildPeptideReport",
+        "前端：研发报告生成器 buildPeptideReport 必须存在",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"handleExportReport",
+        "前端：报告导出回调 handleExportReport 必须存在",
+    ),
+    # 第 2 项：批量分析异步化（>10 条走 /analyze/batch → 轮询 /tasks/{id}）
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"getBatchTaskStatus",
+        "前端：批量 Tab 必须轮询 getBatchTaskStatus（异步任务化）",
+    ),
+    # 第 3 项：图表增强（活性热力图 + Pareto 散点）
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"ActivityHeatmap",
+        "前端：活性热力图 ActivityHeatmap 必须注册",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"ParetoScatter",
+        "前端：Pareto 散点 ParetoScatter 必须注册",
+    ),
+    # 第 4 项：外部检索并入数据库 Tab
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"doExternalSearch",
+        "前端：数据库 Tab 必须提供外部检索 doExternalSearch",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"外部检索",
+        "前端：数据库 Tab 必须提供「外部检索」按钮",
+    ),
 ]
 
 
