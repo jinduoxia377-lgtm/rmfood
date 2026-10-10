@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Literal
 import logging
+import os
 
 from .deps import get_db_session
 
@@ -264,6 +265,122 @@ async def quantitative_predict(sequence: str, model: str = "QSAR"):
         raise
     except Exception as e:
         logger.error(f"定量预测失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 真实在线数据源状态 + 文献检索
+@router.get("/online-source/status", summary="在线数据源实测可达性状态")
+async def online_source_status():
+    """
+    实测各在线数据源可达性。不可达的数据源显式标记 offline，
+    绝不返回伪造记录；NCBI PubMed 可达时返回真实文献计数。
+    """
+    try:
+        from app.services.peptide_analyzer.real_source_client import get_real_source_client
+        client = get_real_source_client()
+        status = await client.get_status()
+        return status
+    except Exception as e:
+        logger.error(f"在线数据源状态探测失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/online-source/literature", summary="真实在线文献检索（NCBI PubMed）")
+async def online_source_literature(
+    activity_type: str = Query("ACE inhibitory peptide", description="活性类型关键词"),
+    limit: int = Query(5, ge=1, le=20, description="返回条数"),
+):
+    """
+    仅当 NCBI PubMed 实测可达时返回真实文献；不可达时返回空列表 + offline 标记。
+    诚实降级：绝不伪造文献记录。
+    """
+    try:
+        from app.services.peptide_analyzer.real_source_client import get_real_source_client
+        client = get_real_source_client()
+        probe = await client.ncbi.probe()
+        if not probe.get("reachable"):
+            return {
+                "success": True,
+                "reachable": False,
+                "references": [],
+                "note": "NCBI PubMed 当前不可达，未返回伪造文献。请检查网络后重试。",
+                "probe": probe,
+            }
+        refs = await client.search_references(activity_type=activity_type, limit=limit)
+        return {
+            "success": True,
+            "reachable": True,
+            "references": refs,
+            "note": f"返回 {len(refs)} 条真实 PubMed 文献（在线可达）",
+        }
+    except Exception as e:
+        logger.error(f"在线文献检索失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# 真实 ML 模型（DFBP 7540 条真实数据训练 + 权重持久化）
+@router.post("/ml-train", summary="用真实数据训练 ML 模型并持久化权重")
+async def ml_train(
+    target_activity: str = Query("ACE inhibitory", description="目标活性类型"),
+    epochs: int = Query(60, ge=10, le=200, description="训练轮数"),
+):
+    """
+    用 DFBP 真实 7540 条库中 activity_type 标签训练 SimpleNeuralNetwork，
+    验证后把权重持久化到 ml_artifacts/，返回训练指标（真实数据，非合成 40 条示例）。
+    """
+    try:
+        if len(target_activity) < 2:
+            raise HTTPException(status_code=422, detail="target_activity 至少 2 个字符")
+        from app.services.peptide_analyzer.real_ml_trainer import get_real_model_trainer
+        trainer = get_real_model_trainer(target_activity)
+        report = trainer.train(max_epochs=epochs)
+        return {"success": True, **report}
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"ML 训练失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ml-predict", summary="真实 ML 模型单序列预测")
+async def ml_predict(sequence: str, target_activity: str = Query("ACE inhibitory")):
+    """
+    用已训练（或加载持久化权重）的 ML 模型做单序列预测。
+    未训练/权重缺失时回退规则并显式标记 method=fallback_rule，绝不伪造 ML 结果。
+    """
+    try:
+        if not sequence or len(sequence) < 2:
+            raise HTTPException(status_code=422, detail="sequence 至少 2 个字符")
+        from app.services.peptide_analyzer.real_ml_trainer import get_real_model_trainer
+        trainer = get_real_model_trainer(target_activity)
+        result = trainer.predict(sequence)
+        return {"success": True, "sequence": sequence, **result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"ML 预测失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ml-status", summary="ML 模型状态（是否已训练 + 验证指标）")
+async def ml_status(target_activity: str = Query("ACE inhibitory")):
+    """返回 ML 模型当前状态：是否已加载权重、验证集 MAE/准确率、训练样本量"""
+    try:
+        from app.services.peptide_analyzer.real_ml_trainer import get_real_model_trainer
+        trainer = get_real_model_trainer(target_activity)
+        return {
+            "success": True,
+            "target_activity": target_activity,
+            "trained": trainer.trained,
+            "artifact_exists": os.path.exists(trainer.artifact_path) if hasattr(trainer, "artifact_path") else False,
+            "metrics": trainer.metrics,
+            "training_samples": trainer.training_set_size,
+            "note": "模型用 DFBP 真实数据训练；trained=False 时 /ml-predict 回退规则并标记 fallback_rule。",
+        }
+    except Exception as e:
+        logger.error(f"ML 状态查询失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

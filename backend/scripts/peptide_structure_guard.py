@@ -299,6 +299,37 @@ CHECKS = [
         r"外部检索",
         "前端：数据库 Tab 必须提供「外部检索」按钮",
     ),
+    # 下一阶段：真实在线数据源 + 真实 ML 模型
+    (
+        "backend/app/services/peptide_analyzer/real_source_client.py",
+        r"NCBIOnlineSource",
+        "真实数据源：NCBI 在线源客户端必须存在",
+    ),
+    (
+        "backend/app/services/peptide_analyzer/real_ml_trainer.py",
+        r"RealModelTrainer",
+        "真实 ML：用 DFBP 真实数据训练的 RealModelTrainer 必须存在",
+    ),
+    (
+        "backend/app/api/peptide_structure_routes.py",
+        r"/ml-train",
+        "真实 ML：/ml-train 端点必须注册",
+    ),
+    (
+        "backend/app/api/peptide_structure_routes.py",
+        r"/online-source/status",
+        "真实数据源：/online-source/status 端点必须注册",
+    ),
+    (
+        "frontend/src/services/professional/peptideStructureService.ts",
+        r"getOnlineSourceStatus",
+        "前端 service：getOnlineSourceStatus 方法必须存在",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"RealSourceStatusPanel",
+        "前端：真实数据源状态面板必须注册",
+    ),
 ]
 
 
