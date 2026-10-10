@@ -318,15 +318,16 @@ async def online_source_literature(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 真实 ML 模型（DFBP 7540 条真实数据训练 + 权重持久化）
+# 真实 ML 模型（DFBP 真实库 85% 子集训练 + 权重持久化）
 @router.post("/ml-train", summary="用真实数据训练 ML 模型并持久化权重")
 async def ml_train(
     target_activity: str = Query("ACE inhibitory", description="目标活性类型"),
     epochs: int = Query(60, ge=10, le=200, description="训练轮数"),
 ):
     """
-    用 DFBP 真实 7540 条库中 activity_type 标签训练 SimpleNeuralNetwork，
-    验证后把权重持久化到 ml_artifacts/，返回训练指标（真实数据，非合成 40 条示例）。
+    用 DFBP 真实库中标注记录 85% 子集训练 SimpleNeuralNetwork，
+    15% 留出验证，权重持久化到 ml_artifacts/，返回训练指标（真实数据，非合成示例）。
+    返回 library_size / training_samples / validation_samples 三者区分。
     """
     try:
         if len(target_activity) < 2:
@@ -376,8 +377,14 @@ async def ml_status(target_activity: str = Query("ACE inhibitory")):
             "trained": trainer.trained,
             "artifact_exists": os.path.exists(trainer.artifact_path) if hasattr(trainer, "artifact_path") else False,
             "metrics": trainer.metrics,
+            "library_size": trainer.library_size,
             "training_samples": trainer.training_set_size,
-            "note": "模型用 DFBP 真实数据训练；trained=False 时 /ml-predict 回退规则并标记 fallback_rule。",
+            "validation_samples": trainer.validation_set_size,
+            "note": (
+                f"模型用 DFBP 真实库 {trainer.library_size} 条标注记录中 85% 子集"
+                f"（{trainer.training_set_size} 训练 + {trainer.validation_set_size} 验证）训练；"
+                f"trained=False 时 /ml-predict 回退规则并标记 fallback_rule。"
+            ),
         }
     except Exception as e:
         logger.error(f"ML 状态查询失败: {e}", exc_info=True)

@@ -93,7 +93,9 @@ interface MLModelInfo {
   name: string;
   ace_score: number | null;
   method: 'ml' | 'fallback_rule' | 'unavailable';
+  library_size: number;
   training_samples: number;
+  validation_samples: number;
   validation_accuracy: number | null;
   honest_note?: string;
 }
@@ -2941,7 +2943,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                      训练样本 {result.ml_model.training_samples} 条（DFBP 真实库）· 模型 {result.ml_model.name}
+                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 → 训练 {result.ml_model.training_samples} 条 + 验证 {result.ml_model.validation_samples} 条（85/15 切分）
                       {result.ml_model.honest_note ? ` · ${result.ml_model.honest_note}` : ''}
                     </div>
                   </div>

@@ -50,7 +50,9 @@ class FoodPeptideAnalysis:
     # 真实 ML 模型（DFBP 7540 条真数据训练）并列分数
     ml_ace_score: Optional[float] = None      # 真实 ML 模型 ACE 抑制分（0-1）
     ml_method: str = "unavailable"            # ml / fallback_rule / unavailable
-    ml_training_samples: int = 0              # 训练样本量
+    ml_training_samples: int = 0              # 实际训练子集（85%）
+    ml_library_size: int = 0                 # DFBP 标注库总大小
+    ml_validation_set_size: int = 0           # 验证子集（15%）
     ml_validation_accuracy: Optional[float] = None
     ml_model_name: str = "PeptideRanker-Mini"
     
@@ -123,9 +125,15 @@ class FoodPeptideAnalysis:
                 "name": self.ml_model_name,
                 "ace_score": round(self.ml_ace_score, 4) if self.ml_ace_score is not None else None,
                 "method": self.ml_method,
+                "library_size": self.ml_library_size,
                 "training_samples": self.ml_training_samples,
+                "validation_samples": self.ml_validation_set_size,
                 "validation_accuracy": round(self.ml_validation_accuracy, 4) if self.ml_validation_accuracy is not None else None,
-                "honest_note": "真实 ML 模型：用 DFBP 7540 条真实数据训练；method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。"
+                "honest_note": (
+                    f"真实 ML 模型：用 DFBP 真实库 {self.ml_library_size} 条标注记录中 85% 子集"
+                    f"（{self.ml_training_samples} 训练 + {self.ml_validation_set_size} 验证）训练；"
+                    f"method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。"
+                ) if self.ml_library_size else "真实 ML 模型：用 DFBP 真实库标注数据训练；method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。",
             },
             
             "safety": {
@@ -451,6 +459,8 @@ class FoodPeptideAnalyzer:
             result.ml_ace_score = pred.get("score")
             result.ml_method = pred.get("method", "unavailable")
             result.ml_training_samples = trainer.training_set_size
+            result.ml_library_size = trainer.library_size
+            result.ml_validation_set_size = trainer.validation_set_size
             val = (trainer.metrics or {}).get("validation", {})
             if val:
                 result.ml_validation_accuracy = val.get("accuracy")

@@ -69,7 +69,9 @@ class RealModelTrainer:
         self.artifact_path = os.path.join(ARTIFACT_DIR, f"peptide_ranker_{target_activity.replace(' ', '_').lower()}.json")
         self.trained = False
         self.metrics: Dict[str, Any] = {}
-        self.training_set_size = 0
+        self.library_size = 0            # DFBP 标注库总大小
+        self.training_set_size = 0       # 实际训练子集（85%）
+        self.validation_set_size = 0     # 验证子集（15%）
         self._load_if_exists()
 
     def _load_if_exists(self):
@@ -89,6 +91,8 @@ class RealModelTrainer:
             self.metrics = payload.get("metrics", {})
             # 从持久化产物恢复训练样本量，避免重启后丢失
             self.training_set_size = payload.get("training_samples", 0)
+            self.validation_set_size = payload.get("validation_samples", 0)
+            self.library_size = payload.get("library_size", 0)
             self.trained = True
             logger.info(f"已加载 ML 模型权重: {self.artifact_path}")
         except Exception as e:
@@ -100,7 +104,9 @@ class RealModelTrainer:
         records = _load_real_training_set(self.target_activity)
         if len(records) < 20:
             raise ValueError(f"真实训练集不足（{len(records)} 条 < 20），ML 训练不可用")
-        self.training_set_size = len(records)
+        # 区分：library_size = DFBP 标注库总大小；training_set_size = 实际训练子集（85%）
+        self.library_size = len(records)
+        self.training_set_size = len(records)  # 暂存库大小，下面切分后覆盖为实际训练子集
 
         from app.services.peptide_analyzer.ml_models import AminoAcidEncoder
         X_all = [AminoAcidEncoder.extract_features(r["sequence"]) for r in records]
@@ -117,6 +123,9 @@ class RealModelTrainer:
         y_tr = [y_all[i] for i in train_idx]
         X_val = [X_all[i] for i in val_idx]
         y_val = [y_all[i] for i in val_idx]
+        # 实际训练子集（85%）vs 验证子集（15%），区别于库总大小
+        self.training_set_size = len(X_tr)
+        self.validation_set_size = len(X_val)
 
         self.model = self._nn_cls(input_size=12, hidden_sizes=[16, 8], output_size=1)
         self.model.train(X_tr, y_tr, epochs=max_epochs, lr=0.01)
@@ -138,12 +147,17 @@ class RealModelTrainer:
         self.trained = True
         return {
             "target_activity": self.target_activity,
+            "library_size": self.library_size,
             "training_samples": len(X_tr),
             "validation_samples": len(X_val),
             "metrics": self.metrics,
             "artifact": self.artifact_path,
             "model_type": "SimpleNeuralNetwork (pure-python MLP, Xavier init, SGD)",
-            "honest_note": "模型用 DFBP 真实 7540 条库中 activity_type 标签训练，非合成数据；验证指标见 metrics。",
+            "honest_note": (
+                f"模型用 DFBP 真实库 {self.library_size} 条标注记录中 85% 子集"
+                f"（{len(X_tr)} 条训练 + {len(X_val)} 条验证）训练，非合成数据；"
+                f"验证指标见 metrics。"
+            ),
         }
 
     def _persist(self):
@@ -155,7 +169,9 @@ class RealModelTrainer:
             "weights": self.model.weights,
             "biases": self.model.biases,
             "metrics": self.metrics,
+            "library_size": self.library_size,
             "training_samples": self.training_set_size,
+            "validation_samples": self.validation_set_size,
             "target_activity": self.target_activity,
             "saved_at": datetime.now(timezone.utc).isoformat(),
         }
