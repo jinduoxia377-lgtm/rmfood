@@ -24,40 +24,40 @@ const DEFAULT_ACTIONS: Action[] = [
     icon: Plus,
     title: '新建配方',
     desc: '药食同源配方',
-    iconBg: 'bg-primary-100 dark:bg-primary-900/30',
-    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-300/25',
+    iconColor: 'text-primary-700 dark:text-primary-700',
   },
   {
     to: '/experiments',
     icon: TestTubes,
     title: '实验管理',
     desc: '查看所有实验',
-    iconBg: 'bg-secondary-100 dark:bg-secondary-900/30',
-    iconColor: 'text-secondary-600 dark:text-secondary-400',
+    iconBg: 'bg-secondary-100 dark:bg-secondary-300/25',
+    iconColor: 'text-secondary-600 dark:text-secondary-700',
   },
   {
     to: '/formulas?status=pending_review',
     icon: Clock,
     title: '待审核配方',
     desc: '审核配方方案',
-    iconBg: 'bg-warning-100 dark:bg-warning-900/30',
-    iconColor: 'text-warning-600 dark:text-warning-400',
+    iconBg: 'bg-warning-100 dark:bg-warning-300/25',
+    iconColor: 'text-warning-600 dark:text-warning-700',
   },
   {
     to: '/ai',
     icon: Brain,
     title: 'AI智能助手',
     desc: '配方生成/分析',
-    iconBg: 'bg-accent-100 dark:bg-accent-900/30',
-    iconColor: 'text-accent-600 dark:text-accent-400',
+    iconBg: 'bg-accent-100 dark:bg-accent-300/25',
+    iconColor: 'text-accent-600 dark:text-accent-700',
   },
   {
     to: '/databases',
     icon: Database,
     title: '数据库检索',
     desc: 'TCMSP / DFBP',
-    iconBg: 'bg-info-100 dark:bg-info-900/30',
-    iconColor: 'text-info-600 dark:text-info-400',
+    iconBg: 'bg-info-100 dark:bg-info-300/25',
+    iconColor: 'text-info-600 dark:text-info-600',
   },
 ]
 
@@ -94,8 +94,8 @@ export const QuickActions: FC = () => {
           icon: ICON_MAP[a.icon] || Plus,
           title: a.title,
           desc: a.desc,
-          iconBg: 'bg-primary-100 dark:bg-primary-900/30',
-          iconColor: 'text-primary-600 dark:text-primary-400',
+          iconBg: 'bg-primary-100 dark:bg-primary-300/25',
+          iconColor: 'text-primary-700 dark:text-primary-700',
         }))
         setActions(mapped)
       } catch {
@@ -131,8 +131,8 @@ export const QuickActions: FC = () => {
       icon,
       title: draft.title.trim() || '自定义入口',
       desc: draft.desc.trim(),
-      iconBg: 'bg-accent-100 dark:bg-accent-900/30',
-      iconColor: 'text-accent-600 dark:text-accent-400',
+      iconBg: 'bg-accent-100 dark:bg-accent-300/25',
+      iconColor: 'text-accent-600 dark:text-accent-700',
     }
     saveActions([...actions, newAction])
     setShowAddModal(false)
@@ -146,10 +146,12 @@ export const QuickActions: FC = () => {
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">快捷操作</CardTitle>
+          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">快捷操作</CardTitle>
+          {/* A-10：原 min-h-[24px] 实测命中区仅 48×24，低于 WCAG 2.5.5 的 44×44。
+              抬到 44px 高，用 -my-3.5 / -mx-2 的负外边距抵消，保持视觉位置不变。 */}
           <button
             onClick={() => setEditMode(!editMode)}
-            className="text-xs text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center gap-1"
+            className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors flex items-center gap-1 min-h-[44px] px-2 -mx-2 -my-3.5"
             aria-label={editMode ? '完成编辑' : '编辑快捷操作'}
           >
             {editMode ? <Check size={12} /> : <Pencil size={12} />}
@@ -172,12 +174,12 @@ export const QuickActions: FC = () => {
                   <p className="font-medium text-neutral-900 dark:text-white text-sm truncate">{action.title}</p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{action.desc}</p>
                 </div>
-                <ArrowRight size={14} className="text-neutral-400 dark:text-neutral-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
+                <ArrowRight size={14} className="text-neutral-600 dark:text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors" />
               </Link>
               {editMode && (
                 <button
                   onClick={(e) => { e.preventDefault(); handleDelete(idx) }}
-                  className="absolute top-1 right-1 p-1 rounded bg-error-100 dark:bg-error-900/40 text-error-600 dark:text-error-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-1 right-1 p-1 rounded bg-error-100 dark:bg-error-300/30 text-error-600 dark:text-error-600 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="删除"
                 >
                   <Trash2 size={12} />
@@ -188,7 +190,7 @@ export const QuickActions: FC = () => {
           {editMode && (
             <button
               onClick={handleAddCustom}
-              className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-600 dark:hover:border-primary-500 dark:hover:text-primary-400 transition-colors text-sm"
+              className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-700 dark:hover:border-primary-500 dark:hover:text-primary-600 transition-colors text-sm"
             >
               <Plus size={14} />
               添加快捷入口
@@ -206,7 +208,7 @@ export const QuickActions: FC = () => {
       >
         <div className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">跳转路径 *</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">跳转路径 *</label>
             <Input
               value={draft.to}
               onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
@@ -214,7 +216,7 @@ export const QuickActions: FC = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">标题</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">标题</label>
             <Input
               value={draft.title}
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
@@ -222,7 +224,7 @@ export const QuickActions: FC = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">描述</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">描述</label>
             <Input
               value={draft.desc}
               onChange={(e) => setDraft((d) => ({ ...d, desc: e.target.value }))}
@@ -230,7 +232,7 @@ export const QuickActions: FC = () => {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">图标</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">图标</label>
             <select
               value={draft.iconKey}
               onChange={(e) => setDraft((d) => ({ ...d, iconKey: e.target.value }))}

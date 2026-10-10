@@ -22,13 +22,18 @@ const buttonVariants = cva(
         amber: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
         glass: 'backdrop-blur-md bg-white/90 dark:bg-neutral-900/10 border border-white/40 dark:border-neutral-500/30 text-neutral-800 dark:text-neutral-100 shadow-lg hover:bg-white dark:hover:bg-neutral-900/20',
       },
+      /* A-10 触控目标（10/10 判据）：原 h-9(36px) / h-8(32px) / icon 36×36
+         均低于 WCAG 2.5.5 的 44×44，实测仪表盘 18 个可交互元素不达标。
+         统一把最小触控区抬到 44×44；lg(h-11=44) / xl(h-12=48) 本就达标，保持不动。
+         `link` 变体用于行内链接时可在调用处用 size="none" 规避（见下方）。 */
       size: {
-        default: 'h-9 px-4 py-2 text-sm',
-        md: 'h-9 px-4 py-2 text-sm',
-        sm: 'h-8 rounded-full px-3 text-xs',
+        default: 'min-h-[44px] px-4 py-2 text-sm',
+        md: 'min-h-[44px] px-4 py-2 text-sm',
+        sm: 'min-h-[44px] rounded-full px-4 text-xs',
         lg: 'h-11 rounded-full px-8 text-base',
         xl: 'h-12 rounded-full px-10 text-base',
-        icon: 'h-9 w-9',
+        icon: 'min-w-[44px] min-h-[44px]',
+        none: '',
       },
     },
     defaultVariants: {

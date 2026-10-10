@@ -50,7 +50,7 @@ function JsonView({ data }: { data: Record<string, unknown> }) {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+        className="text-xs text-success-700 dark:text-success-600 hover:underline flex items-center gap-1"
       >
         <ChevronRight className="w-3 h-3" />
         展开参数 ({Object.keys(data).length} 项)
@@ -58,7 +58,7 @@ function JsonView({ data }: { data: Record<string, unknown> }) {
     )
   }
   return (
-    <div className="text-[11px] font-mono text-neutral-600 dark:text-neutral-400 mt-1 space-y-0.5">
+    <div className="text-xs font-mono text-neutral-600 dark:text-neutral-400 mt-1 space-y-0.5">
       {Object.entries(data).map(([k, v]) => (
         <div key={k} className="flex gap-2">
           <span className="text-neutral-800 dark:text-neutral-300">{k}:</span>
@@ -83,7 +83,7 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : isCompleted ? 'bg-emerald-500' : isError ? 'bg-red-500' : 'bg-neutral-400'}`} />
+          <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-success-500 animate-pulse' : isCompleted ? 'bg-success-500' : isError ? 'bg-error-500' : 'bg-neutral-400'}`} />
           <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{title}</span>
         </div>
         <button
@@ -102,30 +102,30 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
           <span className="text-sm font-mono font-medium text-neutral-800 dark:text-neutral-200">
             {selectedCall.name}
           </span>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-            isRunning ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
-            isCompleted ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-            isError ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+            isRunning ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-700' :
+            isCompleted ? 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700' :
+            isError ? 'bg-error-100 dark:bg-error-300/25 text-error-700 dark:text-error-700' :
             'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
           }`}>
             {isRunning ? '运行中' : isCompleted ? '已完成' : isError ? '错误' : '等待'}
           </span>
           {selectedCall.durationMs !== undefined && isCompleted && (
-            <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{selectedCall.durationMs}ms</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{selectedCall.durationMs}ms</span>
           )}
         </div>
 
         {/* 参数 */}
         <div>
-          <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">参数</div>
+          <div className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">参数</div>
           <JsonView data={selectedCall.arguments} />
         </div>
 
         {/* 结果 */}
         {selectedCall.result && (
           <div>
-            <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">结果</div>
-            <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2 text-[11px] font-mono text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+            <div className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-1">结果</div>
+            <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2 text-xs font-mono text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
               {selectedCall.result}
             </div>
           </div>
@@ -134,8 +134,8 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
         {/* 错误信息 */}
         {isError && selectedCall.result && (
           <div>
-            <div className="text-[10px] font-medium text-red-400 uppercase tracking-wider mb-1">错误信息</div>
-            <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-2 text-[11px] text-red-600 dark:text-red-400 whitespace-pre-wrap break-all">
+            <div className="text-xs font-medium text-error-400 uppercase tracking-wider mb-1">错误信息</div>
+            <div className="bg-error-50 dark:bg-error-300/15 rounded-lg p-2 text-xs text-error-600 dark:text-error-700 whitespace-pre-wrap break-all">
               {selectedCall.result}
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function DetailsPanel({ selectedCall, onClose, title = '工具调
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 text-[10px] text-neutral-400">
+      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-400">
         ID: {selectedCall.id}
       </div>
     </div>

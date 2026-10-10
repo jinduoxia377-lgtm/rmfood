@@ -216,7 +216,7 @@ export function SynergyFormulaDesigner() {
   // ==================== 渲染辅助函数 ====================
 
   const renderModeSwitcher = () => (
-    <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-blue-200 dark:border-neutral-700">
+    <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-900 rounded-xl border border-secondary-200 dark:border-neutral-700">
       <div>
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary-500" />
@@ -286,7 +286,7 @@ export function SynergyFormulaDesigner() {
                   )}
                 </div>
                 <span className={`text-xs font-medium text-center max-w-[80px] ${
-                  idx === currentStep ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-600 dark:text-neutral-400'
+                  idx === currentStep ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-600 dark:text-neutral-400'
                 }`}>
                   {s.title}
                 </span>
@@ -324,7 +324,7 @@ export function SynergyFormulaDesigner() {
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                     }`}
                   >
-                    <div className="flex items-center gap-3 text-primary-600 dark:text-primary-400 mb-2">
+                    <div className="flex items-center gap-3 text-primary-700 dark:text-primary-700 mb-2">
                       {option.icon}
                       <span className="font-medium">{option.label}</span>
                     </div>
@@ -350,20 +350,20 @@ export function SynergyFormulaDesigner() {
                   {ingredients.map((ing, idx) => (
                     <div
                       key={ing.name}
-                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
                         <FlaskConical className="w-5 h-5 text-primary-500" />
                         <div>
                           <p className="font-semibold text-neutral-900 dark:text-white">{ing.name}</p>
-                          <p className="text-sm text-neutral-500">{ing.category} • ¥{ing.cost_per_gram}/g</p>
+                          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.category} • ¥{ing.cost_per_gram}/g</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-mono font-bold text-lg text-primary-600">
+                        <p className="font-mono font-bold text-lg text-primary-700">
                           {ing.percentage.toFixed(1)}%
                         </p>
-                        <p className="text-sm text-neutral-500">{ing.amount_mg}mg</p>
+                        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.amount_mg}mg</p>
                       </div>
                     </div>
                   ))}
@@ -387,7 +387,7 @@ export function SynergyFormulaDesigner() {
                     <div key={key} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
-                        <span className="font-mono text-primary-600 font-bold">
+                        <span className="font-mono text-primary-700 font-bold">
                           {(objectives[key] * 100).toFixed(0)}%
                         </span>
                       </div>
@@ -411,7 +411,7 @@ export function SynergyFormulaDesigner() {
                     <div key={ing.name} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium text-neutral-700 dark:text-neutral-300">{ing.name}</span>
-                        <span className="font-mono font-bold text-primary-600">
+                        <span className="font-mono font-bold text-primary-700">
                           {ing.percentage.toFixed(1)}%
                         </span>
                       </div>
@@ -460,7 +460,7 @@ export function SynergyFormulaDesigner() {
                       <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {typeof value === 'number' ? (value * 100).toFixed(0) : value}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-1">{label}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{label}</p>
                     </Card>
                   ))}
                 </div>
@@ -471,7 +471,7 @@ export function SynergyFormulaDesigner() {
                   {generationResult.recommendations.slice(0, 5).map((rec: string, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
                     >
                       <ChevronRight className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
                       <p className="text-sm text-neutral-700 dark:text-neutral-300">{rec}</p>
@@ -565,7 +565,7 @@ export function SynergyFormulaDesigner() {
                 <div key={key} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span>{label}</span>
-                    <span className="font-mono text-primary-600">{defaultVal}%</span>
+                    <span className="font-mono text-primary-700">{defaultVal}%</span>
                   </div>
                   <Slider value={defaultVal} min={0} max={100} step={5} onChange={() => {}} />
                 </div>
@@ -633,7 +633,7 @@ export function SynergyFormulaDesigner() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-neutral-800">
+              <thead className="bg-neutral-50 dark:bg-neutral-800">
                 <tr>
                   <th className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-neutral-300">成分名称</th>
                   <th className="px-4 py-2 text-right font-medium text-neutral-700 dark:text-neutral-300">比例 (%)</th>
@@ -641,9 +641,9 @@ export function SynergyFormulaDesigner() {
                   <th className="px-4 py-2 text-right font-medium text-neutral-700 dark:text-neutral-300">成本 (¥)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {ingredients.map(ing => (
-                  <tr key={ing.name} className="hover:bg-slate-50 dark:hover:bg-neutral-800">
+                  <tr key={ing.name} className="hover:bg-neutral-50 dark:hover:bg-neutral-800">
                     <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{ing.name}</td>
                     <td className="px-4 py-3 text-right font-mono">{ing.percentage.toFixed(2)}</td>
                     <td className="px-4 py-3 text-right font-mono">{ing.amount_mg.toFixed(0)}</td>
@@ -654,7 +654,7 @@ export function SynergyFormulaDesigner() {
                 ))}
                 <tr className="bg-neutral-100 dark:bg-neutral-900 font-semibold">
                   <td className="px-4 py-3 text-neutral-900 dark:text-white">合计</td>
-                  <td className="px-4 py-3 text-right font-mono text-primary-600">
+                  <td className="px-4 py-3 text-right font-mono text-primary-700">
                     {ingredients.reduce((sum, ing) => sum + ing.percentage, 0).toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-right font-mono">
@@ -679,8 +679,8 @@ export function SynergyFormulaDesigner() {
               <ScatterChart className="w-5 h-5 text-primary-500" />
               Pareto 最优前沿
             </h3>
-            <div className="h-64 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
-              <p className="text-neutral-500">📊 Pareto 散点图 (待集成 ECharts)</p>
+            <div className="h-64 bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-900 rounded-lg flex items-center justify-center">
+              <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">📊 Pareto 散点图 (待集成 ECharts)</p>
             </div>
           </Card>
 
@@ -690,8 +690,8 @@ export function SynergyFormulaDesigner() {
               <PieChartIcon className="w-5 h-5 text-primary-500" />
               协同机制分布
             </h3>
-            <div className="h-64 bg-gradient-to-br from-green-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
-              <p className="text-neutral-500">🥧 机制贡献饼图 (待集成 ECharts)</p>
+            <div className="h-64 bg-gradient-to-br from-success-50 to-success-50 dark:from-neutral-800 dark:to-neutral-900 rounded-lg flex items-center justify-center">
+              <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">🥧 机制贡献饼图 (待集成 ECharts)</p>
             </div>
           </Card>
         </div>
@@ -709,7 +709,7 @@ export function SynergyFormulaDesigner() {
 
       {/* 性能指标 */}
       {generationResult && (
-        <div className="flex items-center justify-between p-4 bg-success-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-900">
+        <div className="flex items-center justify-between p-4 bg-success-50 dark:bg-success-950 rounded-lg border border-success-200 dark:border-success-900">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-success-600" />
             <span className="text-sm font-medium text-success-800 dark:text-success-200">

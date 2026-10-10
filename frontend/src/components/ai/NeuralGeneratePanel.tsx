@@ -184,7 +184,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         {announcement}
       </div>
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-300/20 flex items-center justify-center">
           <Brain className="w-5 h-5 text-primary-500" />
         </div>
         <div>
@@ -436,7 +436,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
 
       {mutation.isError && (
         <div className="mt-4 p-4 bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-lg">
-          <div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
+          <div className="flex items-center gap-2 text-danger-600 dark:text-danger-600">
             <AlertTriangle className="w-4 h-4" />
             <span className="text-sm">
               生成失败：

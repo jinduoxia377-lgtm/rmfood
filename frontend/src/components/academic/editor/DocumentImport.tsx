@@ -273,9 +273,9 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
       case 'markdown':
         return <FileCode className="w-12 h-12 text-secondary-500" />;
       case 'html':
-        return <FileCode className="w-12 h-12 text-orange-500" />;
+        return <FileCode className="w-12 h-12 text-warning-500" />;
       default:
-        return <FileText className="w-12 h-12 text-neutral-500" />;
+        return <FileText className="w-12 h-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />;
     }
   };
 
@@ -291,7 +291,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
             onClick={onClose}
             className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         </div>
 
@@ -312,12 +312,11 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
               type="file"
               accept=".md,.markdown,.txt,.html,.htm"
               onChange={handleFileSelect}
-              className="hidden"
-            />
+              className="hidden" aria-hidden="true" tabIndex={-1} />
 
             {importStatus === 'idle' && (
               <>
-                <Upload className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
+                <Upload className="w-12 h-12 mx-auto mb-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <p className="text-neutral-600 dark:text-neutral-400 mb-2">
                   拖拽文件到此处，或
                   <button
@@ -327,7 +326,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
                     点击选择
                   </button>
                 </p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   支持 .md、.txt、.html 格式，文件大小不超过 10MB
                 </p>
               </>
@@ -344,7 +343,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
                       style={{ width: `${importProgress}%` }}
                     />
                   </div>
-                  <p className="mt-2 text-sm text-neutral-500">正在解析文档... {importProgress}%</p>
+                  <p className="mt-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在解析文档... {importProgress}%</p>
                 </div>
               </>
             )}
@@ -353,14 +352,14 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
               <>
                 <CheckCircle className="w-12 h-12 mx-auto mb-4 text-success-500" />
                 <p className="mt-4 font-medium text-neutral-900 dark:text-neutral-100">导入成功！</p>
-                <p className="text-sm text-neutral-500">正在跳转到文档编辑...</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在跳转到文档编辑...</p>
               </>
             )}
 
             {importStatus === 'error' && (
               <>
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 text-error-500" />
-                <p className="mt-4 font-medium text-error-600 dark:text-error-400">{errorMessage}</p>
+                <p className="mt-4 font-medium text-error-600 dark:text-error-600">{errorMessage}</p>
                 <button
                   onClick={() => {
                     setImportStatus('idle');
@@ -375,7 +374,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
             )}
           </div>
 
-          <div className="mt-6 p-4 bg-slate-50 dark:bg-neutral-900 rounded-lg">
+          <div className="mt-6 p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
             <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2">导入说明</h3>
             <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
               <li>• Markdown 文件会根据 # 标题自动解析章节结构</li>

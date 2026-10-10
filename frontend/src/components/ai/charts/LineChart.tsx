@@ -36,12 +36,12 @@ export function LineChart({ data }: LineChartProps) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="month"
-            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 11 }}
+            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 12 }}
             label={{ value: '月份', position: 'bottom', offset: 0, fill: 'var(--text-secondary, #6E6E73)' }}
           />
           <YAxis
             domain={[0, 100]}
-            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 11 }}
+            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 12 }}
             label={{ value: '稳定性 (%)', angle: -90, position: 'left', fill: 'var(--text-secondary, #6E6E73)' }}
           />
           <Tooltip

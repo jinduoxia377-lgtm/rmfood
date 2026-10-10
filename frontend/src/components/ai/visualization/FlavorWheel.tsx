@@ -148,7 +148,7 @@ export function FlavorWheel({
           fill="#f8f9fa"
           stroke="#e9ecef"
           strokeWidth={2}
-          className="dark:fill-slate-800 dark:stroke-slate-700"
+          className="dark:fill-neutral-800 dark:stroke-neutral-700"
         />
 
         {/* 六个扇区 */}
@@ -225,7 +225,7 @@ export function FlavorWheel({
           fill="white"
           stroke="#e9ecef"
           strokeWidth={2}
-          className="dark:fill-slate-900 dark:stroke-slate-700"
+          className="dark:fill-neutral-900 dark:stroke-neutral-700"
         />
 
         {/* 中心文字 */}
@@ -234,7 +234,7 @@ export function FlavorWheel({
           y={center - 10}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-sm font-bold fill-slate-700 dark:fill-slate-300"
+          className="text-sm font-bold fill-neutral-700 dark:fill-neutral-300"
         >
           综合评分
         </text>
@@ -243,7 +243,7 @@ export function FlavorWheel({
           y={center + 15}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-2xl font-bold fill-blue-600 dark:fill-blue-400"
+          className="text-2xl font-bold fill-secondary-600 dark:fill-secondary-400"
         >
           {calculateBalanceScore(data).toFixed(1)}
         </text>

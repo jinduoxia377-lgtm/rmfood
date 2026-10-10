@@ -13,7 +13,9 @@ const badgeVariants = cva(
         outline: 'border-border text-foreground',
         success: 'border-transparent bg-success text-success-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
-        info: 'border-transparent bg-blue-500 text-white',
+        /* D-72：同 components/ui/Badge.tsx —— bg-secondary-500 + 白字仅 3.68:1，
+           且原生色板不随暗色主题反转。改用语义令牌。 */
+        info: 'border-transparent bg-info-700 dark:bg-info-300/25 text-white dark:text-info-700',
       },
     },
     defaultVariants: {

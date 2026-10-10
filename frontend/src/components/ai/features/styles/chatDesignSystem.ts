@@ -504,7 +504,7 @@ export const DESIGN_SCHEMES: Record<DesignScheme, DesignSchemeConfig> = {
       fontMono: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
       fontSizeBase: '14.5px',
       fontSizeSmall: '12px',
-      fontSizeTiny: '11px',
+      fontSizeTiny: '12px',
       lineHeight: '1.72',
       letterSpacing: '-0.01em',
       fontWeightNormal: '400',

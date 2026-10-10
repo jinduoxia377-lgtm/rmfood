@@ -54,7 +54,7 @@ const TokenGallery: React.FC = () => {
                     style={{ backgroundColor: hex }}
                   />
                   <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">{shade}</div>
-                  <div className="text-[10px] text-neutral-500 dark:text-neutral-500 truncate">{hex}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{hex}</div>
                 </div>
               ) : null,
             )}
@@ -73,7 +73,7 @@ const TokenGallery: React.FC = () => {
                     style={{ backgroundColor: hex }}
                   />
                   <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">{shade}</div>
-                  <div className="text-[10px] text-neutral-500 dark:text-neutral-500 truncate">{hex}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{hex}</div>
                 </div>
               ) : null,
             )}
@@ -92,7 +92,7 @@ const TokenGallery: React.FC = () => {
                     style={{ backgroundColor: hex }}
                   />
                   <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">{shade}</div>
-                  <div className="text-[10px] text-neutral-500 dark:text-neutral-500 truncate">{hex}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{hex}</div>
                 </div>
               ) : null,
             )}
@@ -110,9 +110,9 @@ const TokenGallery: React.FC = () => {
                   className="w-full h-12 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700"
                   style={{ backgroundColor: color.main }}
                 />
-                <div className="text-xs text-neutral-500 dark:text-neutral-500">{color.main}</div>
-                <div className="text-xs text-neutral-400 dark:text-neutral-500">BG: {color.bg}</div>
-                <div className="text-xs text-neutral-400 dark:text-neutral-500">TEXT: {color.text}</div>
+                <div className="text-xs text-neutral-500 dark:text-neutral-400">{color.main}</div>
+                <div className="text-xs text-neutral-400 dark:text-neutral-400">BG: {color.bg}</div>
+                <div className="text-xs text-neutral-400 dark:text-neutral-400">TEXT: {color.text}</div>
               </div>
             ))}
           </div>
@@ -133,7 +133,7 @@ const TokenGallery: React.FC = () => {
                 <div className="flex-1 text-neutral-900 dark:text-white" style={{ fontSize: size }}>
                   设计系统 {name} - {size}
                 </div>
-                <div className="w-24 text-right text-xs text-neutral-500 dark:text-neutral-500 font-mono">{size}</div>
+                <div className="w-24 text-right text-xs text-neutral-500 dark:text-neutral-400 font-mono">{size}</div>
               </div>
             ))}
           </div>
@@ -185,7 +185,7 @@ const TokenGallery: React.FC = () => {
               <div key={name} className="flex items-center gap-4">
                 <div className="w-24 text-sm text-neutral-600 dark:text-neutral-400 font-mono">--spacing-{name}</div>
                 <div className="h-4 bg-primary-500 rounded" style={{ width: `${pxValue}px` }} />
-                <div className="w-20 text-right text-xs text-neutral-500 dark:text-neutral-500 font-mono">{value}</div>
+                <div className="w-20 text-right text-xs text-neutral-500 dark:text-neutral-400 font-mono">{value}</div>
               </div>
             );
           })}
@@ -204,7 +204,7 @@ const TokenGallery: React.FC = () => {
                 style={{ borderRadius: value }}
               />
               <div className="mt-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">{name}</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-500">{value}</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">{value}</div>
             </div>
           ))}
         </div>
@@ -224,7 +224,7 @@ const TokenGallery: React.FC = () => {
                 <div className="w-8 h-8 bg-primary-500" />
               </div>
               <div className="mt-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">{name}</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-500 break-all">{value}</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 break-all">{value}</div>
             </div>
           ))}
         </div>

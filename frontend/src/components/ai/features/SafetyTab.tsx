@@ -340,7 +340,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
         </span>
         <span className={`font-medium ${
           passed
-            ? 'text-success-600 dark:text-success-400'
+            ? 'text-success-600 dark:text-success-600'
             : `text-${riskLevel.color}-600 dark:text-${riskLevel.color}-400`
         }`}>
           {complianceRate}%
@@ -360,7 +360,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
       <div className="flex items-center gap-2 mt-1">
         <Badge
           variant={passed ? 'success' : riskLevel.value === 'caution' ? 'warning' : 'danger'}
-          className="text-[10px]"
+          className="text-xs"
         >
           {riskLevel.label}
         </Badge>
@@ -390,19 +390,19 @@ function IssueList({ title, items, type }: IssueListProps) {
   const typeConfig = {
     error: {
       bgColor: 'bg-danger-100 dark:bg-danger-500/10',
-      textColor: 'text-danger-600 dark:text-danger-400',
+      textColor: 'text-danger-600 dark:text-danger-600',
       dotColor: 'text-danger-500',
       icon: XCircle,
     },
     warning: {
       bgColor: 'bg-warning-100 dark:bg-warning-500/10',
-      textColor: 'text-warning-600 dark:text-warning-400',
+      textColor: 'text-warning-600 dark:text-warning-700',
       dotColor: 'text-warning-500',
       icon: AlertTriangle,
     },
     info: {
       bgColor: 'bg-info-100 dark:bg-info-500/10',
-      textColor: 'text-info-600 dark:text-info-400',
+      textColor: 'text-info-600 dark:text-info-600',
       dotColor: 'text-info-500',
       icon: Info,
     },
@@ -633,8 +633,8 @@ export function SafetyTab({
           {/* 结果标题 */}
           <h3 className={`font-semibold text-lg flex items-center gap-2 ${
             safetyResult.passed
-              ? 'text-success-600 dark:text-success-400'
-              : 'text-danger-600 dark:text-danger-400'
+              ? 'text-success-600 dark:text-success-600'
+              : 'text-danger-600 dark:text-danger-600'
           }`}>
             {safetyResult.passed ? (
               <>
@@ -772,7 +772,7 @@ export function SafetyTab({
             {history.slice(0, 5).map(entry => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                  role="button" tabIndex={0} onClick={() => {
                   setSafetyResult(entry.result)
                   window.scrollTo({ top: 0, behavior: 'smooth' })

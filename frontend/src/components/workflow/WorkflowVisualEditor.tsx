@@ -529,7 +529,7 @@ export function WorkflowVisualEditor({
           stroke={isDark ? 'var(--text-secondary, #6E6E73)' : 'var(--border-subtle, rgba(0,0,0,0.06))'}
           strokeWidth="2"
           markerEnd="url(#arrowhead)"
-          className="transition-all hover:stroke-blue-500"
+          className="transition-all hover:stroke-secondary-500"
         />
         {/* 标签 */}
         {edge.label && (
@@ -556,7 +556,7 @@ export function WorkflowVisualEditor({
   }, [nodes])
 
   return (
-    <div className={cn('flex flex-col h-full bg-slate-50 dark:bg-neutral-900 rounded-xl overflow-hidden', className)}>
+    <div className={cn('flex flex-col h-full bg-neutral-50 dark:bg-neutral-900 rounded-xl overflow-hidden', className)}>
       {/* ── 工具栏 ── */}
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-3">
@@ -679,7 +679,7 @@ export function WorkflowVisualEditor({
             {/* 网格背景 */}
             <defs>
               <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E7EB" strokeWidth="0.5" className="dark:stroke-slate-700" />
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E7EB" strokeWidth="0.5" className="dark:stroke-neutral-700" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" opacity="0.5" />
@@ -695,7 +695,7 @@ export function WorkflowVisualEditor({
           {nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-4">
-                <GitBranch size={64} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+                <GitBranch size={64} className="mx-auto text-neutral-300 dark:text-neutral-400" />
                 <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
                   开始构建工作流
                 </h3>
@@ -811,7 +811,7 @@ export function WorkflowVisualEditor({
         >
           <div className="space-y-3 mt-4">
             {templatesLoading ? (
-              <div className="text-center py-8 text-neutral-400 text-sm">加载中...</div>
+              <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">加载中...</div>
             ) : templates.length > 0 ? (
               templates.map((template) => (
                 <Card
@@ -823,7 +823,7 @@ export function WorkflowVisualEditor({
                   <div className="flex items-start gap-3">
                     {(() => {
                       const TIcon = TEMPLATE_ICON_MAP[template.category] || Sparkles
-                      return <div className="shrink-0 opacity-75 text-primary-500 dark:text-primary-400"><TIcon size={18} /></div>
+                      return <div className="shrink-0 opacity-75 text-primary-500 dark:text-primary-700"><TIcon size={18} /></div>
                     })()}
                     <div className="flex-1">
                       <h4 className="font-semibold text-neutral-900 dark:text-white">
@@ -832,7 +832,7 @@ export function WorkflowVisualEditor({
                       <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                         {template.description}
                       </p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <span>{template.node_count} 个节点</span>
                         <span>·</span>
                         <span>{template.estimated_duration || '未知'}</span>
@@ -840,12 +840,12 @@ export function WorkflowVisualEditor({
                         <Badge size="sm" className="mt-0">{template.category.replace('_', ' ')}</Badge>
                       </div>
                     </div>
-                    <ChevronRight size={18} className="text-neutral-400 mt-1" />
+                    <ChevronRight size={18} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1" />
                   </div>
                 </Card>
               ))
             ) : (
-              <div className="text-center py-8 text-neutral-400 text-sm">暂无可用模板</div>
+              <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">暂无可用模板</div>
             )}
           </div>
         </Modal>

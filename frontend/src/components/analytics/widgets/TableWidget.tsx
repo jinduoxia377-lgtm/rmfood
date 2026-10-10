@@ -52,8 +52,8 @@ export const TableWidget: React.FC<Props> = ({
   const SortIcon = ({ col }: { col: string }) => {
     if (sortCol !== col) return <ChevronsUpDown className="w-3 h-3 text-text-muted" />
     return sortDir === 'asc'
-      ? <ChevronUp className="w-3 h-3 text-primary-600" />
-      : <ChevronDown className="w-3 h-3 text-primary-600" />
+      ? <ChevronUp className="w-3 h-3 text-primary-700" />
+      : <ChevronDown className="w-3 h-3 text-primary-700" />
   }
 
   if (rows.length === 0) {

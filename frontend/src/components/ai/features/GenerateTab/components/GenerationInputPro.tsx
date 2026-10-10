@@ -330,7 +330,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                   <Target className="w-3 h-3 text-primary" />
                 </div>
                 选择功效
-                <span className="text-caption font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px]">
+                <span className="text-caption font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
                   {selectionCount}/{VALIDATION.maxEffectSelection}
                 </span>
               </h3>
@@ -444,7 +444,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 text-caption text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-[10px]">{shortcuts.generate}</kbd>
+            <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">{shortcuts.generate}</kbd>
             <span>生成配方</span>
           </div>
           <button onClick={onFullReset} className="px-3 py-1.5 text-body-sm text-muted-foreground hover:text-foreground">重置</button>

@@ -242,7 +242,7 @@ const SocialPlatformButton: React.FC<{
       <div className={`text-white transition-transform ${isHovered ? 'scale-115' : ''}`}>{platform.icon}</div>
 
       {/* 名称 */}
-      <span className="text-[11px] font-medium text-white truncate max-w-full">{platform.name}</span>
+      <span className="text-xs font-medium text-white truncate max-w-full">{platform.name}</span>
 
       {/* 悬浮提示 */}
       {isHovered && (
@@ -283,7 +283,7 @@ const TabSwitcher: React.FC<{
             transition-all duration-200
             ${
               activeTab === tab.id
-                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-600 shadow-sm'
+                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
             }
           `}
@@ -712,7 +712,7 @@ export function ChatSharePanel({
         <div className="px-5 py-4 max-h-[400px] overflow-y-auto">
           {/* 错误提示 */}
           {error && (
-            <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2 animate-fade-in">
+            <div className="mb-4 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg flex items-start gap-2 animate-fade-in">
               <AlertCircle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
               <p className="text-sm text-error-700 dark:text-error-600">{error}</p>
               <button onClick={() => setError(null)} className="ml-auto text-error-500 hover:text-error-700">
@@ -737,7 +737,7 @@ export function ChatSharePanel({
               </div>
 
               {/* 快捷操作提示 */}
-              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-800 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg px-3 py-2">
                 <Shield className="w-3.5 h-3.5" />
                 <span>所有分享均通过官方 API 进行，安全可靠</span>
               </div>
@@ -748,7 +748,7 @@ export function ChatSharePanel({
           {finalConfig.showCopyLink && activeTab === 'link' && (
             <div className="space-y-4 animate-fade-in">
               {/* 链接预览 */}
-              <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-3">
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3">
                 <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">分享链接</label>
                 <div className="flex items-center gap-2">
                   <input
@@ -756,7 +756,8 @@ export function ChatSharePanel({
                     value={generatedLink}
                     readOnly
                     className="flex-1 px-3 py-2 text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-700 dark:text-neutral-300 font-mono truncate"
-                  />
+        aria-label="分享链接"
+      />
                   <button
                     onClick={handleCopyLink}
                     disabled={!generatedLink}
@@ -841,7 +842,7 @@ export function ChatSharePanel({
               {!showQRCode ? (
                 /* 生成按钮 */
                 <div className="flex flex-col items-center py-8">
-                  <div className="w-20 h-20 mb-4 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl flex items-center justify-center">
+                  <div className="w-20 h-20 mb-4 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 rounded-2xl flex items-center justify-center">
                     <QrCode className="w-10 h-10 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   </div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 text-center">
@@ -890,7 +891,7 @@ export function ChatSharePanel({
                   <div className="flex gap-2 w-full">
                     <button
                       onClick={handleDownloadQRCode}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-300/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       下载二维码
@@ -945,7 +946,7 @@ export function ChatSharePanel({
                       relative p-4 rounded-xl border-2 transition-all duration-200
                       ${
                         selectedExportFormat === item.format
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                           : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                       }
                       disabled:opacity-50
@@ -954,13 +955,13 @@ export function ChatSharePanel({
                     <div
                       className={`flex flex-col items-center gap-2 ${
                         selectedExportFormat === item.format
-                          ? 'text-primary-700 dark:text-primary-600'
+                          ? 'text-primary-700 dark:text-primary-700'
                           : 'text-neutral-600 dark:text-neutral-400'
                       }`}
                     >
                       {item.icon}
                       <span className="text-sm font-medium">{item.label}</span>
-                      <span className="text-[11px]">{item.desc}</span>
+                      <span className="text-xs">{item.desc}</span>
                     </div>
 
                     {selectedExportFormat === item.format && (
@@ -971,7 +972,7 @@ export function ChatSharePanel({
               </div>
 
               {/* 导出预览 */}
-              <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-3 max-h-32 overflow-y-auto">
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 max-h-32 overflow-y-auto">
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">导出内容预览：</p>
                 <pre className="text-xs text-neutral-700 dark:text-neutral-300 font-mono line-clamp-3">
                   {shareData.text.substring(0, 200)}...
@@ -982,7 +983,7 @@ export function ChatSharePanel({
               <button
                 onClick={() => handleExport(selectedExportFormat)}
                 disabled={isExporting}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/25 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[var(--color-success-surface)] to-[var(--color-success-surface-deep)] text-white font-medium rounded-lg hover:from-[var(--color-success-surface-deep)] hover:to-[var(--color-success-surface-deep)] transition-all shadow-lg shadow-success-500/25 disabled:opacity-50"
               >
                 {isExporting ? (
                   <>
@@ -1001,8 +1002,8 @@ export function ChatSharePanel({
         </div>
 
         {/* 底部信息栏 */}
-        <div className="px-5 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 rounded-b-2xl">
-          <div className="flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
+        <div className="px-5 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800 rounded-b-2xl">
+          <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
             <div className="flex items-center gap-1">
               <Shield className="w-3.5 h-3.5" />
               <span>安全分享</span>

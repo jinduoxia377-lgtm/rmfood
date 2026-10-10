@@ -41,7 +41,7 @@ export default function SearchBar({
               else if (e.key === 'Escape') { onClearSearch(); (e.target as HTMLInputElement).blur() }
             }}
             placeholder="搜索节点..."
-            className="flex-1 bg-transparent text-xs text-neutral-700 dark:text-neutral-300 placeholder-slate-400 outline-none min-w-0"
+            className="flex-1 bg-transparent text-xs text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 outline-none min-w-0"
           />
           {searchQuery && (
             <button onClick={onClearSearch} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0">

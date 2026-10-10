@@ -430,13 +430,13 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
          role="button" tabIndex={0} onClick={e => e.stopPropagation()}
       >
         {/* ===== 面板头部区域 - 移动端自适应 ===== */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900">
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 text-primary-700 shrink-0" />
             <h2 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-white">
               已识别的配方
             </h2>
-            <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-600">
+            <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700">
               {filteredAndSortedFormulas.length}/{formulaCount}
             </span>
           </div>
@@ -472,7 +472,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         </div>
 
         {/* 提示文本区域 */}
-        <div className="px-6 py-2 text-sm text-secondary-700 dark:text-secondary-600 bg-secondary-50 dark:bg-secondary-900/20 border-b border-blue-100 dark:border-blue-900/30">
+        <div className="px-6 py-2 text-sm text-secondary-700 dark:text-secondary-700 bg-secondary-50 dark:bg-secondary-300/20 border-b border-secondary-100 dark:border-secondary-900/30">
           支持中文/拼音/英文智能搜索 · 多条件组合筛选 · 多维度排序
         </div>
 
@@ -488,7 +488,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                 value={localSearchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-10 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg
-                         bg-slate-50 dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-blue-500
+                         bg-neutral-50 dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-secondary-500
                          focus:border-transparent outline-none transition-all"
               />
               {localSearchQuery && (
@@ -540,7 +540,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         </MobileBottomSheet>
 
         {/* ===== 排序控制栏 ===== */}
-        <div className="flex items-center gap-4 px-6 py-3 bg-slate-50 dark:bg-neutral-800 text-sm border-b border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center gap-4 px-6 py-3 bg-neutral-50 dark:bg-neutral-800 text-sm border-b border-neutral-200 dark:border-neutral-700">
           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
             <ArrowUpDown size={14} />
             排序:
@@ -549,7 +549,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           <select
             value={localSortBy}
             onChange={(e) => handleSortChange(e.target.value as FormulaSortField)}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm focus:ring-2 focus:ring-secondary-500 outline-none"
           >
             <option value="createdAt">创建时间</option>
             <option value="updatedAt">更新时间</option>
@@ -601,8 +601,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               </div>
 
               {selectedIds.size > 0 && (
-                <div className="sticky bottom-0 left-0 right-0 bg-primary-50 dark:bg-primary-900/20 border-t border-primary-200 dark:border-primary-800 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg shadow-lg mt-4 gap-2">
-                  <span className="text-sm font-medium text-primary-700 dark:text-primary-600">
+                <div className="sticky bottom-0 left-0 right-0 bg-primary-50 dark:bg-primary-300/20 border-t border-primary-200 dark:border-primary-800 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg shadow-lg mt-4 gap-2">
+                  <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
                     已选择 {selectedIds.size} 个配方
                   </span>
 
@@ -633,7 +633,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                       </button>
 
                       <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                        第 <strong className="text-secondary-600 dark:text-secondary-600">{currentPage}</strong> /
+                        第 <strong className="text-secondary-600 dark:text-secondary-700">{currentPage}</strong> /
                         共 <strong>{totalPages}</strong> 页
                         <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           (共 {filteredAndSortedFormulas.length} 个配方)
@@ -675,7 +675,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">暂未识别到任何配方</p>
                   <p className="text-sm mt-2 text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
                     继续对话并请求AI提供配方信息<br/>
-                    <span className="text-primary-700 dark:text-primary-600 font-medium">
+                    <span className="text-primary-700 dark:text-primary-700 font-medium">
                       （如："请给我一个抗氧化配方"）
                     </span>
                   </p>
@@ -686,7 +686,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         </div>
 
         {/* ===== 底部操作工具栏 ===== */}
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900/50 flex flex-col gap-3">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col gap-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               共 {formulaCount} 个配方{localSearchQuery || externalFilters ? ` | 显示 ${filteredAndSortedFormulas.length} 个` : ''} |

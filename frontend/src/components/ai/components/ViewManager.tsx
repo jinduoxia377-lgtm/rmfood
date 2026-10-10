@@ -60,10 +60,10 @@ function SortableList({
           onDragStart={() => handleDragStart(index)}
           onDragOver={(e) => handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
-          className={`flex items-center gap-2 px-2 py-1.5 bg-white dark:bg-slate-750 border rounded cursor-move transition-all ${
+          className={`flex items-center gap-2 px-2 py-1.5 bg-white dark:bg-neutral-750 border rounded cursor-move transition-all ${
             dragIndex === index
-              ? 'opacity-50 border-blue-400 shadow-lg scale-[1.02]'
-              : 'border-neutral-200 dark:border-neutral-600 hover:border-blue-300'
+              ? 'opacity-50 border-secondary-400 shadow-lg scale-[1.02]'
+              : 'border-neutral-200 dark:border-neutral-600 hover:border-secondary-300'
           }`}
         >
           {/* 拖拽手柄 */}
@@ -228,7 +228,7 @@ export function ViewManager({
           onClick={() => setActiveTab('edit')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'edit'
-              ? 'border-blue-500 text-secondary-600 dark:text-secondary-600'
+              ? 'border-secondary-500 text-secondary-600 dark:text-secondary-700'
               : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -238,7 +238,7 @@ export function ViewManager({
           onClick={() => setActiveTab('saved')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors relative ${
             activeTab === 'saved'
-              ? 'border-blue-500 text-secondary-600 dark:text-secondary-600'
+              ? 'border-secondary-500 text-secondary-600 dark:text-secondary-700'
               : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
@@ -295,8 +295,8 @@ export function ViewManager({
                     key={col.key}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
                       isVisible
-                        ? 'bg-secondary-50/30 dark:bg-secondary-900/10 border-blue-200 dark:border-blue-800'
-                        : 'bg-slate-50 dark:bg-slate-750 border-neutral-200 dark:border-neutral-600 opacity-60'
+                        ? 'bg-secondary-50/30 dark:bg-secondary-300/15 border-secondary-200 dark:border-secondary-800'
+                        : 'bg-neutral-50 dark:bg-neutral-750 border-neutral-200 dark:border-neutral-600 opacity-60'
                     }`}
                   >
                     {/* Checkbox */}
@@ -304,7 +304,7 @@ export function ViewManager({
                       type="checkbox"
                       checked={isVisible}
                       onChange={() => handleVisibilityToggle(col.key)}
-                      className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
                     />
 
                     {/* 列名 */}
@@ -336,7 +336,7 @@ export function ViewManager({
             </div>
 
             {/* 拖拽排序预览区 */}
-            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-750 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
+            <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-750 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">
                   列顺序 (拖拽调整)
@@ -360,7 +360,7 @@ export function ViewManager({
                   placeholder="新视图名称..."
                   value={viewName}
                   onChange={(e) => setViewName(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:ring-2 focus:ring-secondary-500"
                 />
                 <input
                   type="text"
@@ -389,8 +389,8 @@ export function ViewManager({
                   key={view.id}
                   className={`flex items-center justify-between p-3 rounded-lg border transition-colors group ${
                     view.id === currentView.id
-                      ? 'bg-secondary-50 dark:bg-secondary-900/20 border-blue-300 dark:border-blue-700'
-                      : 'bg-white dark:bg-slate-750 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
+                      ? 'bg-secondary-50 dark:bg-secondary-300/20 border-secondary-300 dark:border-secondary-700'
+                      : 'bg-white dark:bg-neutral-750 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -400,13 +400,13 @@ export function ViewManager({
                       </span>
 
                       {view.isDefault && (
-                        <span className="px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700 rounded">
                           默认
                         </span>
                       )}
 
                       {view.id === currentView.id && (
-                        <span className="px-1.5 py-0.5 text-xs bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600 rounded">
                           当前
                         </span>
                       )}
@@ -425,7 +425,7 @@ export function ViewManager({
                   <div className="flex items-center gap-1 ml-3">
                     <button
                       onClick={() => onViewChange(view)}
-                      className="px-2.5 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-900/20 dark:hover:bg-secondary-900/40 rounded-md transition-colors"
+                      className="px-2.5 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-300/20 dark:hover:bg-secondary-900/40 rounded-md transition-colors"
                     >
                       加载
                     </button>
@@ -460,7 +460,7 @@ export function ViewManager({
       </div>
 
       {/* 底部操作栏 */}
-      <div className="flex items-center justify-end gap-3 px-5 py-4 bg-slate-50 dark:bg-slate-750/50 border-t border-neutral-200 dark:border-neutral-700 rounded-b-lg">
+      <div className="flex items-center justify-end gap-3 px-5 py-4 bg-neutral-50 dark:bg-neutral-750/50 border-t border-neutral-200 dark:border-neutral-700 rounded-b-lg">
         <button
           onClick={handleExport}
           className="px-4 py-2 text-sm font-medium text-neutral-600 bg-white hover:bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600 border border-neutral-300 dark:border-neutral-600 rounded-lg transition-colors"
@@ -478,7 +478,7 @@ export function ViewManager({
         {activeTab === 'edit' && viewName.trim() && (
           <button
             onClick={handleSaveAsNew}
-            className="px-4 py-2 text-sm font-medium text-success-600 bg-success-50 hover:bg-success-100 dark:bg-success-900/20 dark:hover:bg-success-900/40 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-success-600 bg-success-50 hover:bg-success-100 dark:bg-success-300/20 dark:hover:bg-success-900/40 rounded-lg transition-colors"
           >
             💾 另存为新视图
           </button>

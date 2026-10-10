@@ -39,7 +39,7 @@ export default function DSActions({
   return (
     <div className="flex items-center gap-0.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
       {/* 时间戳 — DSH 风格：小字 muted */}
-      <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mr-1 font-mono select-none">
+      <span className="text-xs text-neutral-400 dark:text-neutral-400 mr-1 font-mono select-none">
         {time}
       </span>
 
@@ -51,7 +51,7 @@ export default function DSActions({
         aria-label="复制消息"
       >
         {copied
-          ? <Check className="w-3 h-3 text-emerald-500" />
+          ? <Check className="w-3 h-3 text-success-500" />
           : <Copy className="w-3 h-3" />
         }
       </button>

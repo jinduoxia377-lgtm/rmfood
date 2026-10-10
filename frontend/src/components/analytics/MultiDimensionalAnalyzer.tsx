@@ -242,8 +242,8 @@ export const MultiDimensionalAnalyzer: React.FC<{
             onClick={() => setShowConfigPanel(!showConfigPanel)}
             className={`px-3 py-1.5 text-sm rounded-lg border transition-all flex items-center gap-2 ${
               showConfigPanel
-                ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 text-primary-700 dark:text-primary-300'
-                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-text-primary hover:bg-slate-50 dark:hover:bg-neutral-800'
+                ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 text-primary-700 dark:text-primary-700'
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-text-primary hover:bg-neutral-50 dark:hover:bg-neutral-800'
             }`}
           >
             <Layers className="w-4 h-4" />
@@ -257,10 +257,10 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 px-3 py-1 rounded-lg">
                 {drillDownPath.map((path, index) => (
                   <React.Fragment key={index}>
-                    {index > 0 && <ChevronRight className="w-3 h-3 text-neutral-400" />}
+                    {index > 0 && <ChevronRight className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                     <button
                       onClick={() => setDrillDownPath(drillDownPath.slice(0, index + 1))}
-                      className="text-primary-600 hover:text-primary-700 font-medium"
+                      className="text-primary-700 hover:text-primary-700 font-medium"
                     >
                       {path}
                     </button>
@@ -268,7 +268,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                 ))}
                 <button
                   onClick={drillUp}
-                  className="ml-2 text-xs px-2 py-0.5 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded hover:bg-slate-50"
+                  className="ml-2 text-xs px-2 py-0.5 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded hover:bg-neutral-50"
                 >
                   返回
                 </button>
@@ -319,7 +319,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <ChevronRight className="w-4 h-4 rotate-0" /> 行维度
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.rows.map(dim => (
                   <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.dimensions.find(d => d.key === dim)?.label || dim}</span>
@@ -354,7 +354,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <ChevronDown className="w-4 h-4" /> 列维度
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.columns.map(dim => (
                   <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.dimensions.find(d => d.key === dim)?.label || dim}</span>
@@ -388,7 +388,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" /> 度量值
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.values.map(measure => (
                   <div key={measure} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.measures.find(m => m.key === measure)?.label || measure}</span>
@@ -431,14 +431,14 @@ export const MultiDimensionalAnalyzer: React.FC<{
             分析失败，请重试
           </div>
         ) : pivotData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96 text-neutral-400">
+          <div className="flex flex-col items-center justify-center h-96 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Table2 className="w-16 h-16 mb-3 opacity-50" />
             <p>请配置维度和度量以开始分析</p>
           </div>
         ) : (
           <div className="overflow-auto max-h-[600px]">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
+              <thead className="bg-neutral-50 dark:bg-neutral-800 sticky top-0 z-10">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-text-muted border-b border-r border-neutral-200 dark:border-neutral-700">
                     {config.rows.map(r => config.dimensions.find(d => d.key === r)?.label).join(' / ')}
@@ -463,12 +463,12 @@ export const MultiDimensionalAnalyzer: React.FC<{
                 }, []).map(rowLabel => (
                   <tr
                     key={rowLabel}
-                    className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors"
+                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                   >
                     <td className="px-4 py-3 font-medium text-text-primary border-r border-neutral-200 dark:border-neutral-700">
                       <button
                         onClick={() => drillDown([rowLabel])}
-                        className="hover:text-primary-600 transition-colors flex items-center gap-1"
+                        className="hover:text-primary-700 transition-colors flex items-center gap-1"
                       >
                         <ChevronRight className="w-3.5 h-3.5" />
                         {rowLabel}
@@ -503,7 +503,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-50 dark:bg-neutral-800">
+              <tfoot className="bg-neutral-50 dark:bg-neutral-800">
                 <tr>
                   <td className="px-4 py-3 font-bold text-text-primary border-t border-r border-neutral-200 dark:border-neutral-700">
                     总计
@@ -520,7 +520,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                       }
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-right font-bold text-primary-600 border-t border-neutral-200 dark:border-neutral-700">
+                  <td className="px-4 py-3 text-right font-bold text-primary-700 border-t border-neutral-200 dark:border-neutral-700">
                     {pivotData.reduce((sum, d) => sum + (d.value || 0), 0).toLocaleString()}
                   </td>
                 </tr>
@@ -531,7 +531,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
 
         {/* 统计信息栏 */}
         {pivotData.length > 0 && (
-          <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-text-muted">
+          <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-text-muted">
             <span>
               共 {pivotData.length} 个数据点 · {new Set(pivotData.map(d => d.rowLabel)).size} 行 × {new Set(pivotData.map(d => d.colLabel)).size} 列
             </span>

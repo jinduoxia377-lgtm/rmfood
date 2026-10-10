@@ -35,11 +35,11 @@ export function ToolCallDisplay({ tools, isLoading = false }: ToolCallDisplayPro
           >
             {/* 状态图标 */}
             {tool.status === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-success-500 flex-shrink-0" />
             ) : tool.status === 'failed' ? (
-              <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <XCircle className="w-4 h-4 text-error-500 flex-shrink-0" />
             ) : (
-              <Loader2 className="w-4 h-4 text-blue-500 animate-spin flex-shrink-0" />
+              <Loader2 className="w-4 h-4 text-secondary-500 animate-spin flex-shrink-0" />
             )}
 
             {/* 工具名称 */}
@@ -52,7 +52,7 @@ export function ToolCallDisplay({ tools, isLoading = false }: ToolCallDisplayPro
 
             {/* 错误信息 */}
             {tool.error && (
-              <span className="text-xs text-red-500 max-w-[200px] truncate" title={tool.error}>
+              <span className="text-xs text-error-500 max-w-[200px] truncate" title={tool.error}>
                 {tool.error}
               </span>
             )}

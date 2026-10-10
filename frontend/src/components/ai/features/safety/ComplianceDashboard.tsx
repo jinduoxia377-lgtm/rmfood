@@ -85,7 +85,7 @@ export function ComplianceDashboard({
 
   const getColorByRate = (rate: number) => {
     if (rate >= 80) return { stroke: 'var(--color-primary-400)', text: 'text-success-600', bg: 'bg-success-500' }
-    if (rate >= 50) return { stroke: '#D97706', text: 'text-yellow-600', bg: 'bg-yellow-500' }
+    if (rate >= 50) return { stroke: '#D97706', text: 'text-warning-600', bg: 'bg-warning-500' }
     return { stroke: '#FF3B30', text: 'text-error-600', bg: 'bg-error-500' }
   }
 

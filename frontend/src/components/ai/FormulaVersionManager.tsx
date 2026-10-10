@@ -244,8 +244,8 @@ export function FormulaVersionManager({
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-warning-600 dark:text-warning-400" />
+              <div className="w-10 h-10 rounded-full bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-warning-600 dark:text-warning-700" />
               </div>
               <div>
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">确认回滚</h3>
@@ -287,17 +287,17 @@ export function FormulaVersionManager({
       )}
 
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="px-4 py-3 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-secondary-600 dark:text-secondary-400" />
-              <span className="font-medium text-secondary-700 dark:text-secondary-300">版本历史</span>
+              <History className="w-4 h-4 text-secondary-600 dark:text-secondary-700" />
+              <span className="font-medium text-secondary-700 dark:text-secondary-700">版本历史</span>
               <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({versions.length}/{maxVersions})</span>
             </div>
             {selectedVersions.length === 2 && (
               <button
                 onClick={handleCompare}
-                className="flex items-center gap-1 px-2 py-1 text-xs bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-400 rounded-lg hover:bg-secondary-200 dark:hover:bg-secondary-900/60 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-secondary-100 dark:bg-secondary-300/30 text-secondary-600 dark:text-secondary-700 rounded-lg hover:bg-secondary-200 dark:hover:bg-secondary-900/60 transition-colors"
               >
                 <ArrowRightLeft className="w-3 h-3" />
                 对比
@@ -309,7 +309,7 @@ export function FormulaVersionManager({
 
         <div className="max-h-96 overflow-y-auto">
           {versionTimeline.map(({ version, branches }) => (
-            <div key={version.id} className="border-b border-slate-50 dark:border-neutral-800 last:border-b-0">
+            <div key={version.id} className="border-b border-neutral-50 dark:border-neutral-800 last:border-b-0">
               <VersionItem
                 version={version}
                 isSelected={selectedVersions.includes(version.id)}
@@ -461,8 +461,8 @@ function VersionItem({
 
   return (
     <div
-      className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer ${
-        isSelected ? 'bg-secondary-50 dark:bg-secondary-900/20' : ''
+      className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer ${
+        isSelected ? 'bg-secondary-50 dark:bg-secondary-300/20' : ''
       } ${isBranch ? 'border-l-0' : ''}`}
        role="button" tabIndex={0} onClick={onSelect}
     >
@@ -473,7 +473,7 @@ function VersionItem({
               isCurrent
                 ? 'bg-success-500 text-white'
                 : isBranch
-                ? 'bg-accent-100 dark:bg-accent-900/40 text-accent-600 dark:text-accent-400'
+                ? 'bg-accent-100 dark:bg-accent-300/30 text-accent-600 dark:text-accent-700'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
             }`}
           >
@@ -488,7 +488,7 @@ function VersionItem({
               {typeof version.formulaName === 'string' ? version.formulaName : '未知配方'}
             </h4>
             {isCurrent && (
-              <span className="text-[10px] px-1.5 py-0.5 bg-success-100 dark:bg-success-900/40 text-success-600 dark:text-success-400 rounded">
+              <span className="text-xs px-1.5 py-0.5 bg-success-100 dark:bg-success-300/30 text-success-600 dark:text-success-600 rounded">
                 当前
               </span>
             )}
@@ -501,17 +501,17 @@ function VersionItem({
             {version.effects.slice(0, 2).map((effect) => (
               <span
                 key={effect}
-                className="text-[10px] px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded"
+                className="text-xs px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded"
               >
                 {effect}
               </span>
             ))}
             {version.effects.length > 2 && (
-              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{version.effects.length - 2}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{version.effects.length - 2}</span>
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+          <div className="flex items-center gap-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {new Date(version.createdAt).toLocaleString('zh-CN', {
@@ -535,11 +535,11 @@ function VersionItem({
                   rows={3}
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <span className={`text-[10px] ${remarkText.length > 180 ? 'text-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
+                  <span className={`text-xs ${remarkText.length > 180 ? 'text-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                     {remarkText.length}/200
                   </span>
                   {isSaving && (
-                    <span className="text-[10px] text-secondary-500 flex items-center gap-1">
+                    <span className="text-xs text-secondary-500 flex items-center gap-1">
                       <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       自动保存中...
                     </span>
@@ -574,7 +574,7 @@ function VersionItem({
                     e.stopPropagation()
                     onView()
                   }}
-                  className="text-[10px] px-1.5 py-0.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded transition-colors"
+                  className="text-xs px-1.5 py-0.5 text-secondary-600 dark:text-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded transition-colors"
                 >
                   查看
                 </button>
@@ -585,7 +585,7 @@ function VersionItem({
                         e.stopPropagation()
                         onRollback()
                       }}
-                      className="text-[10px] px-1.5 py-0.5 text-success-600 dark:text-success-400 hover:bg-success-50 dark:hover:bg-success-900/20 rounded transition-colors flex items-center gap-0.5"
+                      className="text-xs px-1.5 py-0.5 text-success-600 dark:text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20 rounded transition-colors flex items-center gap-0.5"
                     >
                       <RotateCcw className="w-2.5 h-2.5" />
                       回滚
@@ -595,7 +595,7 @@ function VersionItem({
                         e.stopPropagation()
                         onBranch()
                       }}
-                      className="text-[10px] px-1.5 py-0.5 text-accent-600 dark:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 rounded transition-colors flex items-center gap-0.5"
+                      className="text-xs px-1.5 py-0.5 text-accent-600 dark:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/20 rounded transition-colors flex items-center gap-0.5"
                     >
                       <GitBranch className="w-2.5 h-2.5" />
                       分支
@@ -608,7 +608,7 @@ function VersionItem({
                       e.stopPropagation()
                       onToggleExportMenu()
                     }}
-                    className="text-[10px] px-1.5 py-0.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors flex items-center gap-0.5"
+                    className="text-xs px-1.5 py-0.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors flex items-center gap-0.5"
                   >
                     <Download className="w-2.5 h-2.5" />
                     导出
@@ -620,7 +620,7 @@ function VersionItem({
                           e.stopPropagation()
                           onExport('json')
                         }}
-                        className="w-full px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-neutral-700 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-xs text-left hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2"
                       >
                         <FileJson className="w-3.5 h-3.5 text-success-500" />
                         JSON 格式
@@ -630,7 +630,7 @@ function VersionItem({
                           e.stopPropagation()
                           onExport('markdown')
                         }}
-                        className="w-full px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-neutral-700 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-xs text-left hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2"
                       >
                         <FileText className="w-3.5 h-3.5 text-secondary-500" />
                         Markdown 格式
@@ -640,7 +640,7 @@ function VersionItem({
                           e.stopPropagation()
                           onExport('pdf')
                         }}
-                        className="w-full px-3 py-2 text-xs text-left hover:bg-slate-50 dark:hover:bg-neutral-700 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-xs text-left hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2"
                       >
                         <FileType className="w-3.5 h-3.5 text-error-500" />
                         PDF 格式
@@ -653,7 +653,7 @@ function VersionItem({
                     e.stopPropagation()
                     onStartEdit()
                   }}
-                  className="text-[10px] px-1.5 py-0.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors flex items-center gap-0.5"
+                  className="text-xs px-1.5 py-0.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors flex items-center gap-0.5"
                 >
                   <Edit3 className="w-2.5 h-2.5" />
                   备注
@@ -735,7 +735,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary-500 to-accent-500 flex items-center justify-center">
               <ArrowRightLeft className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -754,10 +754,10 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
         </div>
 
         <div className="flex gap-4 mb-6">
-          <div className="flex-1 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+          <div className="flex-1 p-4 bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-xl border border-secondary-200 dark:border-secondary-800">
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2 py-0.5 bg-secondary-container text-secondary-main text-xs font-bold rounded">v{version1.versionNumber}</span>
-              <span className="text-xs text-secondary-600 dark:text-secondary-400">旧版本</span>
+              <span className="text-xs text-secondary-600 dark:text-secondary-700">旧版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version1.formulaName === 'string' ? version1.formulaName : '未知配方'}</div>
             <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
@@ -775,10 +775,10 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
               <ArrowRightLeft className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </div>
           </div>
-          <div className="flex-1 p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+          <div className="flex-1 p-4 bg-gradient-to-br from-accent-50 to-danger-50 dark:from-accent-900/20 dark:to-danger-900/20 rounded-xl border border-accent-200 dark:border-accent-800">
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2 py-0.5 bg-accent-container text-accent-main text-xs font-bold rounded">v{version2.versionNumber}</span>
-              <span className="text-xs text-accent-600 dark:text-accent-400">新版本</span>
+              <span className="text-xs text-accent-600 dark:text-accent-700">新版本</span>
             </div>
             <div className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{typeof version2.formulaName === 'string' ? version2.formulaName : '未知配方'}</div>
             <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
@@ -803,18 +803,18 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
               <div key={score.dimension} className="flex items-center gap-3">
                 <span className="w-14 text-xs text-neutral-600 dark:text-neutral-400 font-medium">{score.dimension}</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <span className="w-10 text-xs text-secondary-600 dark:text-secondary-400 font-medium text-right">{score.v1.toFixed(2)}</span>
+                  <span className="w-10 text-xs text-secondary-600 dark:text-secondary-700 font-medium text-right">{score.v1.toFixed(2)}</span>
                   <div className="flex-1 h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full relative overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
+                      className="h-full bg-gradient-to-r from-secondary-400 to-secondary-600 rounded-full transition-all"
                       style={{ width: `${score.v1 * 100}%` }}
                     />
                     <div
-                      className="absolute top-0 h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all opacity-70"
+                      className="absolute top-0 h-full bg-gradient-to-r from-accent-400 to-accent-600 rounded-full transition-all opacity-70"
                       style={{ width: `${score.v2 * 100}%` }}
                     />
                   </div>
-                  <span className="w-10 text-xs text-accent-600 dark:text-accent-400 font-medium">{score.v2.toFixed(2)}</span>
+                  <span className="w-10 text-xs text-accent-600 dark:text-accent-700 font-medium">{score.v2.toFixed(2)}</span>
                 </div>
                 <span
                   className={`w-14 text-xs font-medium text-right ${
@@ -838,12 +838,12 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
             功效对比
           </h4>
           <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg border border-green-200 dark:border-green-800">
-              <div className="text-xs text-success-600 dark:text-success-400 mb-1">新增功效</div>
+            <div className="p-3 bg-success-50 dark:bg-success-300/20 rounded-lg border border-success-200 dark:border-success-800">
+              <div className="text-xs text-success-600 dark:text-success-600 mb-1">新增功效</div>
               <div className="flex flex-wrap gap-1">
                 {compareEffects.added.length > 0 ? (
                   compareEffects.added.map(e => (
-                    <span key={e} className="px-2 py-0.5 bg-success-100 dark:bg-success-900/40 text-success-700 dark:text-success-300 text-xs rounded">
+                    <span key={e} className="px-2 py-0.5 bg-success-100 dark:bg-success-300/30 text-success-700 dark:text-success-600 text-xs rounded">
                       {e}
                     </span>
                   ))
@@ -852,12 +852,12 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                 )}
               </div>
             </div>
-            <div className="p-3 bg-error-50 dark:bg-error-900/20 rounded-lg border border-red-200 dark:border-red-800">
-              <div className="text-xs text-error-600 dark:text-error-400 mb-1">移除功效</div>
+            <div className="p-3 bg-error-50 dark:bg-error-300/20 rounded-lg border border-error-200 dark:border-error-800">
+              <div className="text-xs text-error-600 dark:text-error-600 mb-1">移除功效</div>
               <div className="flex flex-wrap gap-1">
                 {compareEffects.removed.length > 0 ? (
                   compareEffects.removed.map(e => (
-                    <span key={e} className="px-2 py-0.5 bg-error-100 dark:bg-error-900/40 text-error-700 dark:text-error-300 text-xs rounded">
+                    <span key={e} className="px-2 py-0.5 bg-error-100 dark:bg-error-300/30 text-error-700 dark:text-error-600 text-xs rounded">
                       {e}
                     </span>
                   ))
@@ -866,7 +866,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                 )}
               </div>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
               <div className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">不变功效</div>
               <div className="flex flex-wrap gap-1">
                 {compareEffects.unchanged.length > 0 ? (
@@ -893,19 +893,19 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
               {addedCount > 0 && (
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-success-500"></span>
-                  <span className="text-success-600 dark:text-success-400">+{addedCount} 新增</span>
+                  <span className="text-success-600 dark:text-success-600">+{addedCount} 新增</span>
                 </span>
               )}
               {removedCount > 0 && (
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-error-500"></span>
-                  <span className="text-error-600 dark:text-error-400">-{removedCount} 移除</span>
+                  <span className="text-error-600 dark:text-error-600">-{removedCount} 移除</span>
                 </span>
               )}
               {modifiedCount > 0 && (
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-warning-500"></span>
-                  <span className="text-warning-600 dark:text-warning-400">±{modifiedCount} 修改</span>
+                  <span className="text-warning-600 dark:text-warning-700">±{modifiedCount} 修改</span>
                 </span>
               )}
             </div>
@@ -913,25 +913,25 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-neutral-800/50">
+                <tr className="bg-neutral-50 dark:bg-neutral-800/50">
                   <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">药材</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-secondary-600 dark:text-secondary-400 border border-neutral-200 dark:border-neutral-700">v{version1.versionNumber} 用量</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-secondary-600 dark:text-secondary-700 border border-neutral-200 dark:border-neutral-700">v{version1.versionNumber} 用量</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">角色</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700"></th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-accent-600 dark:text-accent-400 border border-neutral-200 dark:border-neutral-700">v{version2.versionNumber} 用量</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-accent-600 dark:text-accent-700 border border-neutral-200 dark:border-neutral-700">v{version2.versionNumber} 用量</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">角色</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">状态</th>
                 </tr>
               </thead>
               <tbody>
                 {compareIngredients.map((item, idx) => (
-                  <tr key={item.name} className={`${idx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-slate-50/50 dark:bg-neutral-800/30'} hover:bg-secondary-50/30 dark:hover:bg-secondary-900/10 transition-colors`}>
+                  <tr key={item.name} className={`${idx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50/50 dark:bg-neutral-800/30'} hover:bg-secondary-50/30 dark:hover:bg-secondary-900/10 transition-colors`}>
                     <td className="px-3 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700">
                       {item.name}
                     </td>
                     <td className={`px-3 py-2 text-sm text-center border border-neutral-200 dark:border-neutral-700 ${
                       item.status === 'removed' || item.status === 'modified'
-                        ? 'text-secondary-600 dark:text-secondary-400 bg-secondary-50/50 dark:bg-secondary-900/20'
+                        ? 'text-secondary-600 dark:text-secondary-700 bg-secondary-50/50 dark:bg-secondary-300/20'
                         : 'text-neutral-600 dark:text-neutral-400'
                     }`}>
                       {item.v1Dosage || '-'}
@@ -946,7 +946,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                     </td>
                     <td className={`px-3 py-2 text-sm text-center border border-neutral-200 dark:border-neutral-700 ${
                       item.status === 'added' || item.status === 'modified'
-                        ? 'text-accent-600 dark:text-accent-400 bg-accent-50/50 dark:bg-accent-900/20'
+                        ? 'text-accent-600 dark:text-accent-700 bg-accent-50/50 dark:bg-accent-300/20'
                         : 'text-neutral-600 dark:text-neutral-400'
                     }`}>
                       {item.v2Dosage || '-'}
@@ -958,11 +958,11 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
                       <span
                         className={`px-2 py-0.5 rounded text-xs font-medium ${
                           item.status === 'added'
-                            ? 'bg-success-100 text-success-700 dark:bg-success-900/40 dark:text-success-300'
+                            ? 'bg-success-100 text-success-700 dark:bg-success-300/30 dark:text-success-600'
                             : item.status === 'removed'
-                            ? 'bg-error-100 text-error-700 dark:bg-error-900/40 dark:text-error-300'
+                            ? 'bg-error-100 text-error-700 dark:bg-error-300/30 dark:text-error-600'
                             : item.status === 'modified'
-                            ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/40 dark:text-warning-300'
+                            ? 'bg-warning-100 text-warning-700 dark:bg-warning-300/30 dark:text-warning-700'
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
                         }`}
                       >

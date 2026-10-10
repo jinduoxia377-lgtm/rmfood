@@ -59,7 +59,7 @@ export const AnalysisMessageRenderer: React.FC<AnalysisMessageRendererProps> = (
   if (isAnalyzing) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary-600"></div>
         <span className="ml-2 text-neutral-600">正在分析意图...</span>
       </div>
     );
@@ -67,7 +67,7 @@ export const AnalysisMessageRenderer: React.FC<AnalysisMessageRendererProps> = (
 
   if (error) {
     return (
-      <div className="bg-error-50 border border-red-200 rounded-lg p-4">
+      <div className="bg-error-50 border border-error-200 rounded-lg p-4">
         <p className="text-error-800">分析错误: {error}</p>
       </div>
     );

@@ -60,8 +60,8 @@ export function DataUploadPanel({ onParseComplete }: Props) {
       <div
         className={`relative rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
           dragOver
-            ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
-            : 'border-gray-200 dark:border-gray-700 hover:border-violet-400'
+            ? 'border-accent-500 bg-accent-50 dark:bg-accent-300/20'
+            : 'border-neutral-200 dark:border-neutral-700 hover:border-accent-400'
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -75,19 +75,18 @@ export function DataUploadPanel({ onParseComplete }: Props) {
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) handleFileChange(f);
-          }}
-        />
+          }} aria-hidden="true" tabIndex={-1} />
 
         {file ? (
           <div className="space-y-2">
             <div className="text-3xl">📄</div>
-            <div className="font-medium text-gray-900 dark:text-gray-100">{file.name}</div>
+            <div className="font-medium text-neutral-900 dark:text-neutral-100">{file.name}</div>
             <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {(file.size / 1024).toFixed(1)} KB
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-xs text-violet-600 hover:text-violet-700 underline"
+              className="text-xs text-accent-600 hover:text-accent-700 underline"
             >
               更换文件
             </button>
@@ -97,7 +96,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
             <div className="text-4xl">🧪</div>
             <div>
               <span
-                className="text-violet-600 font-medium cursor-pointer hover:underline"
+                className="text-accent-600 font-medium cursor-pointer hover:underline"
                  role="button" tabIndex={0} onClick={() => fileInputRef.current?.click()}
               >
                 点击上传
@@ -114,7 +113,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
 
         {loading && (
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-            <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+            <span className="inline-block w-2 h-2 rounded-full bg-accent-500 animate-pulse" />
             解析中...
           </div>
         )}
@@ -122,7 +121,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
 
       {/* 错误提示 */}
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+        <div className="p-3 rounded-xl bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 text-sm text-error-600 dark:text-error-700">
           {error}
         </div>
       )}

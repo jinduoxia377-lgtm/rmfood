@@ -260,7 +260,7 @@ function VersionHistory({
       {/* Diff 视图 */}
       {showDiffView && diffLines.length > 0 && (
         <div className="border-b border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-neutral-700/50">
+          <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 dark:bg-neutral-700/50">
             <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               比较: {compareTarget?.hash.slice(0, 7)} → {selectedVersion?.hash.slice(0, 7)}
             </span>
@@ -317,7 +317,7 @@ function VersionHistory({
       )}
 
       {/* 版本列表 */}
-      <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
+      <div className="divide-y divide-neutral-200 dark:divide-neutral-700 max-h-[500px] overflow-y-auto">
         {versions.map((version, idx) => {
           const isSelected = version.id === selectedVersionId
           const isCurrent = version.id === currentVersionId
@@ -328,8 +328,8 @@ function VersionHistory({
           return (
             <div key={version.id}>
               <div
-                className={`p-4 hover:bg-slate-50 dark:hover:bg-neutral-700/30 transition-colors cursor-pointer ${
-                  isSelected ? 'bg-primary-50 dark:bg-primary-900/10' : ''
+                className={`p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors cursor-pointer ${
+                  isSelected ? 'bg-primary-50 dark:bg-primary-300/15' : ''
                 } ${isCurrent ? 'border-l-4 border-primary-500' : ''}`}
                  role="button" tabIndex={0} onClick={() => handleVersionClick(version)}
               >
@@ -359,7 +359,7 @@ function VersionHistory({
                         </span>
 
                         {branch && (
-                          <Badge variant="warning" className="text-[10px]">
+                          <Badge variant="warning" className="text-xs">
                             <GitBranch className="w-3 h-3 mr-1" />
                             {branch.name}
                           </Badge>
@@ -368,7 +368,7 @@ function VersionHistory({
                         {version.tags?.map(tag => (
                           <span
                             key={tag}
-                            className="px-1.5 py-0.5 text-[10px] font-medium bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-600 rounded"
+                            className="px-1.5 py-0.5 text-xs font-medium bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 rounded"
                           >
                             <Tag className="w-3 h-3 inline mr-0.5" />
                             {tag}
@@ -401,7 +401,7 @@ function VersionHistory({
 
               {/* 展开的详情面板 */}
               {isExpanded && (
-                <div className="px-4 pb-4 pl-16 bg-slate-50 dark:bg-neutral-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="px-4 pb-4 pl-16 bg-neutral-50 dark:bg-neutral-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
                   <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
@@ -450,8 +450,8 @@ function VersionHistory({
 
       {/* 底部提示 */}
       {compareMode && !showDiffView && (
-        <div className="p-3 bg-secondary-50 dark:bg-secondary-900/10 border-t border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-secondary-700 dark:text-secondary-600 flex items-center gap-2">
+        <div className="p-3 bg-secondary-50 dark:bg-secondary-300/15 border-t border-secondary-200 dark:border-secondary-800">
+          <p className="text-xs text-secondary-700 dark:text-secondary-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             请点击两个版本进行比较。当前已选: {compareTargetId ? '1 个目标' : '0 个'}
           </p>

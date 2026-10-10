@@ -16,16 +16,16 @@ interface Props {
 }
 
 const STATUS_CONFIG = {
-  compliant: { color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', label: '合规', icon: '✓' },
-  warning: { color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', label: '需注意', icon: '⚠' },
-  non_compliant: { color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', label: '不合规', icon: '✗' },
+  compliant: { color: 'text-success-600 dark:text-success-700', bg: 'bg-success-50 dark:bg-success-300/20', border: 'border-success-200 dark:border-success-800', label: '合规', icon: '✓' },
+  warning: { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意', icon: '⚠' },
+  non_compliant: { color: 'text-error-600 dark:text-error-700', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800', label: '不合规', icon: '✗' },
 };
 
 export function ComplianceBadge({ result, loading, compact, onFix }: Props) {
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-        <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+        <span className="inline-block w-2 h-2 rounded-full bg-accent-500 animate-pulse" />
         检查中...
       </div>
     );
@@ -49,12 +49,12 @@ export function ComplianceBadge({ result, loading, compact, onFix }: Props) {
             </span>
           </div>
           {!compact && result.violations.length > 0 && (
-            <div className="mt-1 text-xs text-red-500 dark:text-red-400 truncate">
+            <div className="mt-1 text-xs text-error-500 dark:text-error-700 truncate">
               {result.violations[0].message}
             </div>
           )}
           {!compact && result.suggestions.length > 0 && (
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               💡 {result.suggestions[0]}
             </div>
           )}
@@ -62,7 +62,7 @@ export function ComplianceBadge({ result, loading, compact, onFix }: Props) {
         {result.status !== 'compliant' && onFix && (
           <button
             onClick={onFix}
-            className="text-xs px-2 py-1 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-violet-400 transition-colors"
+            className="text-xs px-2 py-1 rounded-lg bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-accent-400 transition-colors"
           >
             自动修复
           </button>
@@ -77,25 +77,25 @@ export function ComplianceBadge({ result, loading, compact, onFix }: Props) {
  */
 export function ComplianceMeter({ result }: { result: ComplianceResult }) {
   const getColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success-500';
+    if (score >= 60) return 'bg-warning-500';
+    return 'bg-error-500';
   };
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
         <span>合规度</span>
         <span className="font-medium">{result.score}%</span>
       </div>
-      <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+      <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${getColor(result.score)}`}
           style={{ width: `${result.score}%` }}
         />
       </div>
       {result.violations.length > 0 && (
-        <div className="text-xs text-red-500 dark:text-red-400">
+        <div className="text-xs text-error-500 dark:text-error-700">
           {result.violations.length} 项违规
         </div>
       )}

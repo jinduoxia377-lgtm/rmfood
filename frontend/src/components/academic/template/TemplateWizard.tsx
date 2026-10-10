@@ -105,7 +105,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       {step === 3 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">确认信息</h2>
-          <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+          <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
             <p><strong>名称：</strong>{templateData.name}</p>
             <p><strong>分类：</strong>{categories.find(c => c.value === templateData.category)?.label}</p>
           </div>
@@ -115,7 +115,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       <div className="flex justify-between pt-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700"
         >
           取消
         </button>
@@ -123,7 +123,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
           {step > 1 && (
             <button
               onClick={handleBack}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700"
             >
               上一步
             </button>

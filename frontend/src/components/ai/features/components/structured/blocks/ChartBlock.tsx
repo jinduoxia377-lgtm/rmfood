@@ -64,7 +64,7 @@ function ChartBlock({ data }: ChartBlockProps) {
         {/* 标题栏 */}
         {title && (
           <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-neutral-100 dark:border-neutral-800
-            bg-gradient-to-r from-blue-50/60 to-transparent dark:from-blue-950/20 dark:to-transparent">
+            bg-gradient-to-r from-secondary-50/60 to-transparent dark:from-secondary-950/20 dark:to-transparent">
             <BarChart3 className="w-3.5 h-3.5 text-secondary-500" />
             <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{title}</span>
           </div>

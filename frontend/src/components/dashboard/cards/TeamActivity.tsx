@@ -48,8 +48,8 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users size={18} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
+            <Users size={18} className="text-secondary-600 dark:text-secondary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
           </div>
           {isWebSocketEnabled ? (
             <Badge variant="primary" size="sm">{onlineCount} 人在线</Badge>
@@ -63,17 +63,17 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
           <div className="py-8 flex flex-col items-center gap-2 text-center">
             {isWebSocketEnabled ? (
               <>
-                <Users size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <Users size={28} className="text-neutral-600 dark:text-neutral-400" />
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无团队活动</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
                   当协作者加入仪表盘或产生新的动态时，将在此实时显示
                 </p>
               </>
             ) : (
               <>
-                <WifiOff size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <WifiOff size={28} className="text-neutral-600 dark:text-neutral-400" />
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">实时连接未启用</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
                   仅展示最近动态（静态数据）。设置 VITE_WEBSOCKET_ENABLED=true 后可查看实时协作
                 </p>
               </>
@@ -87,9 +87,9 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
                 <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">当前在线</h4>
                 <div className="flex flex-wrap gap-2">
                   {onlineUsers.map(u => (
-                    <div key={u.userId} className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-xs">
+                    <div key={u.userId} className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-300/20 text-xs">
                       <span className={`w-2 h-2 rounded-full ${u.status === 'online' ? 'bg-success-500' : 'bg-warning-500'}`} />
-                      <span className="text-neutral-700 dark:text-neutral-300">{u.userName}</span>
+                      <span className="text-neutral-700 dark:text-neutral-400">{u.userName}</span>
                     </div>
                   ))}
                 </div>
@@ -105,8 +105,8 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
                 <div className="space-y-2">
                   {timeline.slice(0, 5).map(e => (
                     <div key={`${e.type}-${e.id}`} className="flex items-center justify-between text-xs">
-                      <span className="text-neutral-700 dark:text-neutral-300 truncate flex-1">{e.title}</span>
-                      <span className="text-neutral-400 dark:text-neutral-500 ml-2 shrink-0">
+                      <span className="text-neutral-700 dark:text-neutral-400 truncate flex-1">{e.title}</span>
+                      <span className="text-neutral-600 dark:text-neutral-400 ml-2 shrink-0">
                         {new Date(e.created_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>

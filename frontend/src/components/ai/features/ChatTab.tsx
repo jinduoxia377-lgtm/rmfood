@@ -209,12 +209,12 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           <div className="px-4 py-5 space-y-5">
             {/* 错误提示 */}
             {chatError && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-xl">
+              <div className="p-3 bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800/30 rounded-xl">
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-red-800 dark:text-red-300">对话出错</p>
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">
+                    <p className="text-sm font-medium text-error-800 dark:text-error-700">对话出错</p>
+                    <p className="text-xs text-error-600 dark:text-error-700 mt-0.5 truncate">
                       {chatError instanceof Error ? chatError.message : String(chatError)}
                     </p>
                     <div className="flex gap-2 mt-2">
@@ -271,14 +271,14 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
             {/* 生成中占位 */}
             {isStreaming && (
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-success-400 to-success-600 flex items-center justify-center flex-shrink-0">
                   <Leaf className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 py-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-success-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-success-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-success-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -291,12 +291,12 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           {/* 暂停条 */}
           {isStreaming && (
             <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50/50 dark:bg-neutral-900/50">
-              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
                 生成中
               </span>
               <button onClick={pauseStreaming}
-                className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-neutral-200 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+                className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neutral-200 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
                 <Pause className="w-2.5 h-2.5" />
                 暂停
               </button>
@@ -311,7 +311,7 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
             maxLength={2000}
             placeholder="描述您的配方需求..."
             modelName={llmModel || 'deepseek-chat'}
-            modelColor="text-emerald-500"
+            modelColor="text-success-500"
             attachments={attachments as DraftAttachment[]}
             onAddAttachment={handleAddAttachment}
             onRemoveAttachment={handleRemoveAttachment}
@@ -380,7 +380,7 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
         {/* 保存成功提示 */}
         {savedFormulaId && (
           <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
-            bg-emerald-500 text-white text-xs font-medium shadow-lg animate-fade-in">
+            bg-success-500 text-white text-xs font-medium shadow-lg animate-fade-in">
             ✓ 配方已保存到配方库
           </div>
         )}

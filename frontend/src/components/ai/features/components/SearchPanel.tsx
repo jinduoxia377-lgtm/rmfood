@@ -22,26 +22,26 @@ interface SearchPanelProps {
 const TYPE_CONFIG: Record<SearchResultType, { label: string; className: string }> = {
   article: {
     label: '文章',
-    className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600',
+    className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
   },
   research: {
     label: '研究',
-    className: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
+    className: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
   },
   case: {
     label: '案例',
-    className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    className: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
   },
   faq: {
     label: 'FAQ',
-    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-600',
+    className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
   },
 }
 
 function getRelevanceColor(relevance: number): string {
   const percentage = relevance * 100
   if (percentage > 90) return 'text-success-600 dark:text-success-600'
-  if (percentage > 70) return 'text-yellow-600 dark:text-yellow-400'
+  if (percentage > 70) return 'text-warning-600 dark:text-warning-700'
   return 'text-error-600 dark:text-error-600'
 }
 
@@ -83,8 +83,8 @@ const SearchResultItem = memo<SearchResultItemProps>(({ result, index: _index, o
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={`w-full px-4 py-3 text-left border-b border-neutral-100 dark:border-neutral-700 last:border-0 
-        hover:bg-slate-50 dark:hover:bg-neutral-700 transition-all duration-150
-        ${isSelected ? 'bg-primary-50 dark:bg-primary-900/10 border-l-4 border-l-primary-500' : 'border-l-4 border-l-transparent hover:border-l-primary-300'}
+        hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all duration-150
+        ${isSelected ? 'bg-primary-50 dark:bg-primary-300/15 border-l-4 border-l-primary-500' : 'border-l-4 border-l-transparent hover:border-l-primary-300'}
         focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-inset`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -93,7 +93,7 @@ const SearchResultItem = memo<SearchResultItemProps>(({ result, index: _index, o
             <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 truncate">
               {result.title}
             </span>
-            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${typeConfig.className}`}>
+            <span className={`px-1.5 py-0.5 rounded text-xs font-medium flex-shrink-0 ${typeConfig.className}`}>
               {typeConfig.label}
             </span>
           </div>
@@ -204,7 +204,7 @@ export const SearchPanel = memo<SearchPanelProps>(({
     >
       <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-primary-700 dark:text-primary-600" />
+          <Search className="w-4 h-4 text-primary-700 dark:text-primary-700" />
           <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">智能搜索</span>
           {isSearching && (
             <>
@@ -243,7 +243,7 @@ export const SearchPanel = memo<SearchPanelProps>(({
         )}
 
         {shouldVirtualize && (
-          <div className="px-4 py-3 text-center text-xs text-neutral-500 dark:text-neutral-400 bg-slate-50 dark:bg-neutral-700/50">
+          <div className="px-4 py-3 text-center text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700/50">
             显示前 {VIRTUALIZATION_THRESHOLD} 条结果，共 {results.length} 条
           </div>
         )}

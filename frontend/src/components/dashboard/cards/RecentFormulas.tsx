@@ -28,8 +28,8 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
       <Card className="overflow-hidden">
         <CardHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近配方</CardTitle>
-            <span className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold">查看全部</span>
+            <CardTitle as="h2" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近配方</CardTitle>
+            <span className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold">查看全部</span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -47,8 +47,8 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
     <Card className="overflow-hidden">
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
-          <Link to="/formulas" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
+          <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
+          <Link to="/formulas" className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold flex items-center gap-1 transition-colors min-h-[44px] px-2 -mx-2 -my-3.5">
             查看全部 <ArrowRight size={14} />
           </Link>
         </div>

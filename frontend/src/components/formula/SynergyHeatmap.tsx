@@ -14,16 +14,16 @@ interface SynergyHeatmapProps {
 
 export function SynergyHeatmap({ pairs, size = 'md' }: SynergyHeatmapProps) {
   const sizeClasses = {
-    sm: 'text-[10px] p-1',
+    sm: 'text-xs p-1',
     md: 'text-xs p-2',
     lg: 'text-sm p-3',
   };
 
   const getColor = (si: number | null) => {
     if (si === null || si === undefined) return 'bg-neutral-100 dark:bg-neutral-800';
-    if (si > 0.7) return 'bg-emerald-500';
-    if (si > 0.4) return 'bg-amber-500';
-    return 'bg-rose-500';
+    if (si > 0.7) return 'bg-success-500';
+    if (si > 0.4) return 'bg-warning-500';
+    return 'bg-danger-500';
   };
 
   const ingredientNames = useMemo(() => {
@@ -38,7 +38,7 @@ export function SynergyHeatmap({ pairs, size = 'md' }: SynergyHeatmapProps) {
 
   if (!pairs?.length) {
     return (
-      <div className="text-center py-4 text-sm text-neutral-400">
+      <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         暂无协同分析数据
       </div>
     );
@@ -85,10 +85,10 @@ export function SynergyHeatmap({ pairs, size = 'md' }: SynergyHeatmapProps) {
           ))}
         </tbody>
       </table>
-      <div className="flex items-center gap-4 mt-3 text-xs text-neutral-500">
-        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-rose-500 rounded"></div> 拮抗 (&lt;0.4)</span>
-        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500 rounded"></div> 弱协同 (0.4-0.7)</span>
-        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-500 rounded"></div> 强协同 (&gt;0.7)</span>
+      <div className="flex items-center gap-4 mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-danger-500 rounded"></div> 拮抗 (&lt;0.4)</span>
+        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-warning-500 rounded"></div> 弱协同 (0.4-0.7)</span>
+        <span className="flex items-center gap-1"><div className="w-3 h-3 bg-success-500 rounded"></div> 强协同 (&gt;0.7)</span>
       </div>
     </div>
   );

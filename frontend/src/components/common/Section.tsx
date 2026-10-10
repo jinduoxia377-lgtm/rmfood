@@ -21,7 +21,7 @@ export const Section: React.FC<SectionProps> = ({
   <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
     <button
       onClick={() => onToggle(id)}
-      className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-neutral-800/30 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+      className="w-full flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/30 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
     >
       <div className="flex items-center gap-3">
         <Icon size={20} className="text-neutral-500 dark:text-neutral-400" />

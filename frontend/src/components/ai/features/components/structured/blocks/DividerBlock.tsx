@@ -24,7 +24,7 @@ function DividerBlock({ data }: DividerBlockProps) {
     return (
       <div className="flex items-center gap-3 my-3">
         <div className={`flex-1 ${BORDER_STYLES[variant] || BORDER_STYLES.solid}`} />
-        <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap uppercase tracking-wider font-medium">
+        <span className="text-xs text-neutral-400 dark:text-neutral-400 whitespace-nowrap uppercase tracking-wider font-medium">
           {label}
         </span>
         <div className={`flex-1 ${BORDER_STYLES[variant] || BORDER_STYLES.solid}`} />

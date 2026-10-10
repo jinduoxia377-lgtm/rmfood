@@ -12,7 +12,7 @@ interface DosagePercentageBarProps {
 const SIZE_CONFIG = {
   small: {
     height: 'h-1.5',
-    fontSize: 'text-[10px]',
+    fontSize: 'text-xs',
     minWidth: 'min-w-[40px]',
   },
   medium: {
@@ -105,7 +105,7 @@ const DosagePercentageBar = memo(({
 
   if (percentage === null) {
     return (
-      <span className={`${SIZE_CONFIG[size].fontSize} text-neutral-400 dark:text-neutral-500`}>
+      <span className={`${SIZE_CONFIG[size].fontSize} text-neutral-400 dark:text-neutral-400`}>
         —
       </span>
     )
@@ -163,7 +163,7 @@ const DosagePercentageBar = memo(({
               用量占比: {displayPercentage}%
             </div>
             {absoluteAmount && (
-              <div className="text-neutral-300 dark:text-neutral-600 mt-0.5">
+              <div className="text-neutral-300 dark:text-neutral-400 mt-0.5">
                 绝对用量: {absoluteAmount.value.toFixed(2)} {absoluteAmount.unit}
               </div>
             )}

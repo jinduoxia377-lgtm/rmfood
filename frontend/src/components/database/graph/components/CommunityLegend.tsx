@@ -13,7 +13,7 @@ export default function CommunityLegend({ generatedCommunityColors, communities 
         const count = [...communities.values()].filter(v => v === Number(id)).length
         return (
           <span key={id} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full bg-white dark:bg-neutral-800 shadow-sm">
-            <span className="w-2 h-2 rounded-full ring-1 ring-white dark:ring-slate-900" style={{ backgroundColor: color }} />
+            <span className="w-2 h-2 rounded-full ring-1 ring-white dark:ring-neutral-900" style={{ backgroundColor: color }} />
             社群{Number(id)+1} ×{count}
           </span>
         )

@@ -61,7 +61,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
   if (!document) {
     return (
-      <div className="h-full flex items-center justify-center bg-slate-50 dark:bg-neutral-900">
+      <div className="h-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
         <div className="text-center text-neutral-500 dark:text-neutral-400">
           <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p>暂无文档</p>
@@ -73,9 +73,9 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
   return (
     <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
       {/* 工具栏 */}
-      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
         <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-neutral-500" />
+          <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">预览</span>
         </div>
         <div className="flex items-center gap-2">
@@ -235,12 +235,12 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                               />
                             ) : (
                               <div className="w-64 h-32 bg-neutral-200 dark:bg-neutral-700 rounded flex items-center justify-center">
-                                <span className="text-neutral-400">图片占位</span>
+                                <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">图片占位</span>
                               </div>
                             )}
                           </div>
                           <figcaption className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            <span className="font-medium text-secondary-600 dark:text-secondary-400">
+                            <span className="font-medium text-secondary-600 dark:text-secondary-700">
                               {figure.number || `图${chapterIndex + 1}-1`}
                             </span>
                             {' '}{figure.caption}
@@ -278,7 +278,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                             </tbody>
                           </table>
                           <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            <span className="font-medium text-secondary-600 dark:text-secondary-400">
+                            <span className="font-medium text-secondary-600 dark:text-secondary-700">
                               {table.number || `表${chapterIndex + 1}-1`}
                             </span>
                             {' '}{table.caption}
@@ -303,7 +303,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                     key={index}
                     className="text-sm text-neutral-700 dark:text-neutral-300 text-justify pl-8 -indent-8"
                   >
-                    <span className="text-secondary-600 dark:text-secondary-400 font-medium">[{index + 1}]</span>
+                    <span className="text-secondary-600 dark:text-secondary-700 font-medium">[{index + 1}]</span>
                     {' '}{ref}
                   </p>
                 ))}
@@ -323,7 +323,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
       </div>
 
       {/* 分页导航 */}
-      <div className="flex items-center justify-center gap-4 p-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+      <div className="flex items-center justify-center gap-4 p-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
         <button
           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
@@ -511,7 +511,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('> ')) {
       flushParagraph();
       elements.push(
-        <blockquote key={elements.length} className="border-l-4 border-blue-500 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4">
+        <blockquote key={elements.length} className="border-l-4 border-secondary-500 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4">
           {line.slice(2)}
         </blockquote>,
       );
@@ -540,7 +540,7 @@ function renderContent(content: string): React.ReactNode {
             </thead>
             <tbody>
               {bodyRows.map((row, i) => (
-                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-neutral-800">
+                <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-neutral-800">
                   {row.map((cell, j) => (
                     <td key={j} className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-neutral-700 dark:text-neutral-300">
                       {cell}

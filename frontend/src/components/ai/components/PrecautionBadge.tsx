@@ -81,7 +81,7 @@ const PrecautionBadge = memo(({ precautions, size = 'sm', onClick }: PrecautionB
       <>
         <span className={`${config.iconSize} ${pulseAnimation}`}>{icon}</span>
         {count > 1 && (
-          <span className="min-w-[16px] h-4 flex items-center justify-center bg-white dark:bg-neutral-900 rounded-full text-[10px] font-bold px-1" style={{ color }}>
+          <span className="min-w-[16px] h-4 flex items-center justify-center bg-white dark:bg-neutral-900 rounded-full text-xs font-bold px-1" style={{ color }}>
             {count}
           </span>
         )}

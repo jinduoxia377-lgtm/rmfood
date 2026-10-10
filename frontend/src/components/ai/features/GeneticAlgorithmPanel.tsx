@@ -574,7 +574,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
          ══════════════════════════════ */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-lg shadow-accent-500/25">
             <Dna className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -586,7 +586,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* --- 目标功效选择 --- */}
         <section aria-labelledby="ga-effects-heading" className="mb-6">
           <h3 id="ga-effects-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
-            <Target className="w-4 h-4 text-violet-500" />
+            <Target className="w-4 h-4 text-accent-500" />
             目标功效
             <Badge variant="neutral" size="sm">{selectedEffects.length} 已选</Badge>
           </h3>
@@ -604,9 +604,9 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 aria-checked={selectedEffects.includes(effect.id)}
                 aria-label={`功效: ${effect.label}`}
                 tabIndex={0}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 ${
                   selectedEffects.includes(effect.id)
-                    ? 'bg-violet-500 text-white shadow-sm shadow-violet-500/25'
+                    ? 'bg-accent-500 text-white shadow-sm shadow-accent-500/25'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
@@ -615,7 +615,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             ))}
           </div>
           {selectedEffects.length === 0 && (
-            <p className="text-xs text-warning-600 dark:text-warning-600 mt-2 flex items-center gap-1">
+            <p className="text-xs text-warning-600 dark:text-warning-700 mt-2 flex items-center gap-1">
               <Info className="w-3 h-3" />
               未选择功效时将使用默认值（免疫调节），建议至少选择一个目标
             </p>
@@ -643,7 +643,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* --- 算法参数网格 --- */}
         <section aria-labelledby="ga-params-heading" className="mb-6">
           <h3 id="ga-params-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-            <Settings2 className="w-4 h-4 text-violet-500" />
+            <Settings2 className="w-4 h-4 text-accent-500" />
             算法参数
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
@@ -726,7 +726,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* --- 混合模式开关 --- */}
         <section aria-labelledby="ga-hybrid-heading" className="mb-6">
           <h3 id="ga-hybrid-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
-            <Dna className="w-4 h-4 text-violet-500" />
+            <Dna className="w-4 h-4 text-accent-500" />
             混合优化模式
             <Badge variant={hybridMode ? "success" : "neutral"} size="sm">
               {hybridMode ? 'BinaryGA+MILP' : '标准GA'}
@@ -792,7 +792,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             </h3>
             <div className="space-y-2">
               {nutritionConstraints.map((constraint, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
                   <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 w-24">
                     {constraint.nutrient}
                   </span>
@@ -831,7 +831,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* --- 约束条件（可选）--- */}
         <section aria-labelledby="ga-constraints-heading">
           <h3 id="ga-constraints-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-            <Shield className="w-4 h-4 text-violet-500" />
+            <Shield className="w-4 h-4 text-accent-500" />
             约束条件
             <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
           </h3>
@@ -858,7 +858,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                       <button
                         onClick={() => removeExcludedIngredient(item)}
                         aria-label={`移除排除项: ${item}`}
-                        className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                        className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-error-400 rounded"
                       >
                         ×
                       </button>
@@ -889,7 +889,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* --- 基础配方（可选：用户指定的药材）--- */}
         <section aria-labelledby="ga-included-heading">
           <h3 id="ga-included-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-            <FlaskConical className="w-4 h-4 text-emerald-500" />
+            <FlaskConical className="w-4 h-4 text-success-500" />
             基础配方
             <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选，强制包含)</span>
           </h3>
@@ -916,7 +916,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                   <button
                     onClick={() => removeIncludedIngredient(item)}
                     aria-label={`移除配方项: ${item}`}
-                    className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                    className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-error-400 rounded"
                   >
                     ×
                   </button>
@@ -928,8 +928,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
         {/* ═══ 权重微调 ═══ */}
         <details className="group rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden mt-4">
-          <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
-            <SlidersHorizontal className="w-4 h-4 text-violet-500 flex-shrink-0" aria-hidden="true" />
+          <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal className="w-4 h-4 text-accent-500 flex-shrink-0" aria-hidden="true" />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">权重微调</span>
             <span className="ml-auto text-xs text-muted-foreground group-open:rotate-180 transition-transform duration-200">▼</span>
           </summary>
@@ -976,7 +976,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-2">
             {isStreamingMode ? (
-              <Wifi className="w-4 h-4 text-violet-500" aria-hidden="true" />
+              <Wifi className="w-4 h-4 text-accent-500" aria-hidden="true" />
             ) : (
               <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
@@ -1042,8 +1042,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           <div className="flex items-center gap-3">
             {isRunning && (
               <>
-                <Loader2 className="w-4 h-4 text-violet-500 animate-spin" aria-hidden="true" />
-                <span className="text-sm font-medium text-violet-600 dark:text-violet-400" role="status">
+                <Loader2 className="w-4 h-4 text-accent-500 animate-spin" aria-hidden="true" />
+                <span className="text-sm font-medium text-accent-600 dark:text-accent-700" role="status">
                   进化中...
                 </span>
               </>
@@ -1077,7 +1077,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* 实时日志区域 */}
         <div
           ref={logContainerRef}
-          className="bg-slate-50 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
+          className="bg-neutral-50 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
           role="log"
           aria-label="遗传算法运行日志"
           aria-live="polite"
@@ -1093,7 +1093,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 key={i}
                 className={`${
                   log.level === 'error' ? 'text-error-500 dark:text-error-600' :
-                  log.level === 'warn' ? 'text-warning-500 dark:text-warning-600' :
+                  log.level === 'warn' ? 'text-warning-500 dark:text-warning-700' :
                   'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
@@ -1179,7 +1179,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           {/* --- 进化曲线图 --- */}
           <Card className="p-6">
             <h3 id="ga-results-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-              <BarChart3 className="w-4 h-4 text-violet-500" />
+              <BarChart3 className="w-4 h-4 text-accent-500" />
               进化曲线
             </h3>
             <GAFitnessChart chartData={chartData} />
@@ -1190,7 +1190,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           {result && (
           <div>
             <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-violet-500" aria-hidden="true" />
+              <Sparkles className="w-5 h-5 text-accent-500" aria-hidden="true" />
               推荐方案
               <Badge variant="primary" size="sm">Top-{result.candidates.length}</Badge>
             </h3>

@@ -88,7 +88,7 @@ export default function BatchWeightList({
                 key={ing.id}
                 className={cn(
                   'border-b border-neutral-100 dark:border-neutral-800 transition-colors',
-                  checkedItems.has(idx) && 'bg-green-50 dark:bg-green-900/10',
+                  checkedItems.has(idx) && 'bg-success-50 dark:bg-success-300/15',
                 )}
               >
                 <td className="py-2 px-2 text-center">
@@ -97,7 +97,7 @@ export default function BatchWeightList({
                     className={cn(
                       'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                       checkedItems.has(idx)
-                        ? 'bg-green-500 border-green-500 text-white'
+                        ? 'bg-success-500 border-success-500 text-white'
                         : 'border-neutral-300 dark:border-neutral-600 hover:border-primary',
                     )}
                   >
@@ -137,7 +137,7 @@ export default function BatchWeightList({
 
         {/* All checked confirmation */}
         {allChecked && (
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <div className="mt-4 p-3 bg-success-50 dark:bg-success-300/20 rounded-lg flex items-center gap-2 text-sm text-success-700 dark:text-success-700">
             <CheckCircle2 size={16} />
             所有原料已称量完毕
           </div>

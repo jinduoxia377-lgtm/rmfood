@@ -335,8 +335,8 @@ export class ProblemDecomposer {
 
   getComplexityLevel(complexity: number): { label: string; color: string } {
     if (complexity >= 0.85) return { label: '极高复杂度', color: 'text-error-600 bg-error-50' }
-    if (complexity >= 0.7) return { label: '高复杂度', color: 'text-orange-600 bg-orange-50' }
-    if (complexity >= 0.5) return { label: '中等复杂度', color: 'text-yellow-600 bg-yellow-50' }
+    if (complexity >= 0.7) return { label: '高复杂度', color: 'text-warning-600 bg-warning-50' }
+    if (complexity >= 0.5) return { label: '中等复杂度', color: 'text-warning-600 bg-warning-50' }
     return { label: '基础复杂度', color: 'text-success-600 bg-success-50' }
   }
 }

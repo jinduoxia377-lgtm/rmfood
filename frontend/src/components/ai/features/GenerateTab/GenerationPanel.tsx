@@ -73,7 +73,7 @@ export function GenerationPanel({
                   <Sparkles className="w-3 h-3 text-white" />
                 </div>
                 {DEFAULTS.PLACEHOLDER_TEXTS.TITLE_SELECT_EFFECTS}
-                <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-primary-500/8 dark:bg-primary-500/16 text-primary-600 dark:text-primary-400">
+                <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-primary-500/8 dark:bg-primary-500/16 text-primary-700 dark:text-primary-700">
                   {selectionCount}/{MAX_EFFECT_SELECTION}
                 </span>
               </h3>
@@ -114,7 +114,7 @@ export function GenerationPanel({
                   >
                     {effect.label}
                     {effect.popular && !isSelected && (
-                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-warning-500/12 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400">
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-warning-500/12 dark:bg-warning-500/20 text-warning-600 dark:text-warning-700">
                         {DEFAULTS.PLACEHOLDER_TEXTS.BADGE_POPULAR}
                       </span>
                     )}

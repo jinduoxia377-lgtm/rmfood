@@ -67,14 +67,14 @@ export function ParetoFrontierChart({ solutions = [], size = 300 }: ParetoFronti
           </>
         )}
         {/* 坐标轴 */}
-        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" className="text-neutral-400" strokeWidth="1.5" />
-        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="currentColor" className="text-neutral-400" strokeWidth="1.5" />
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" strokeWidth="1.5" />
+        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="currentColor" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" strokeWidth="1.5" />
         {/* 标签 */}
-        <text x={width / 2} y={height - 10} textAnchor="middle" className="text-[10px] fill-neutral-500">功效得分</text>
-        <text x={12} y={height / 2} textAnchor="middle" transform={`rotate(-90, 12, ${height / 2})`} className="text-[10px] fill-neutral-500">安全得分</text>
+        <text x={width / 2} y={height - 10} textAnchor="middle" className="text-xs fill-neutral-500">功效得分</text>
+        <text x={12} y={height / 2} textAnchor="middle" transform={`rotate(-90, 12, ${height / 2})`} className="text-xs fill-neutral-500">安全得分</text>
       </svg>
       {validValues.length > 0 && (
-        <div className="flex items-center justify-between text-xs text-neutral-500">
+        <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <span>解数: {validValues.length}</span>
           <span>非支配解: {validValues.filter((p: any) => p.rank === 1).length}</span>
         </div>

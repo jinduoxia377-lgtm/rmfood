@@ -104,12 +104,12 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  const getStatusColor = () => {
  switch (status) {
  case'connected':
- return'text-success-600 dark:text-success-400'
+ return'text-success-600 dark:text-success-600'
  case'connecting':
  case'reconnecting':
- return'text-warning-600 dark:text-warning-400'
+ return'text-warning-600 dark:text-warning-700'
  case'error':
- return'text-error-600 dark:text-error-400'
+ return'text-error-600 dark:text-error-600'
  default:
  return'text-text-muted'
  }
@@ -155,7 +155,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  <CardHeader>
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <Pocket size={20} className="text-secondary-600 dark:text-secondary-400" />
+ <Pocket size={20} className="text-secondary-600 dark:text-secondary-700" />
  <CardTitle as="h3" className="text-sm font-semibold">WebSocket 状态监控</CardTitle>
  </div>
  <div className="flex items-center gap-1" title={networkStatus ==='online' ?'网络正常' :'网络离线'}>
@@ -271,18 +271,18 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
 
  {/* 连接信息 */}
  <div className="grid grid-cols-2 gap-4 mb-4">
- <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
+ <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-100 dark:border-secondary-800/30">
  <div className="flex items-center gap-2 mb-2">
- <AlertTriangle size={16} className="text-secondary-600 dark:text-secondary-400" />
- <span className="text-xs font-medium text-secondary-800 dark:text-secondary-300">连接信息</span>
+ <AlertTriangle size={16} className="text-secondary-600 dark:text-secondary-700" />
+ <span className="text-xs font-medium text-secondary-800 dark:text-secondary-700">连接信息</span>
  </div>
  <div className="space-y-1">
  <div className="flex items-center justify-between">
- <span className="text-xs text-secondary-600 dark:text-secondary-400">连接时间</span>
+ <span className="text-xs text-secondary-600 dark:text-secondary-700">连接时间</span>
  <span className="text-xs font-medium">{connectionTime ||'未连接'}</span>
  </div>
  <div className="flex items-center justify-between">
- <span className="text-xs text-secondary-600 dark:text-secondary-400">重连次数</span>
+ <span className="text-xs text-secondary-600 dark:text-secondary-700">重连次数</span>
  <span className="text-xs font-medium">{reconnectAttempts}</span>
  </div>
  </div>

@@ -32,12 +32,12 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
 
   if (!result.feasible) {
     return (
-      <div className="rounded-xl border border-rose-200 dark:border-rose-800 p-4 bg-rose-50 dark:bg-rose-900/20">
-        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 mb-2">
+      <div className="rounded-xl border border-danger-200 dark:border-danger-800 p-4 bg-danger-50 dark:bg-danger-300/20">
+        <div className="flex items-center gap-2 text-danger-600 dark:text-danger-700 mb-2">
           <AlertTriangle size={16} />
           <span className="font-medium">优化不可行</span>
         </div>
-        <p className="text-sm text-rose-600 dark:text-rose-400">
+        <p className="text-sm text-danger-600 dark:text-danger-700">
           约束条件过紧，无法找到可行解。请放宽营养约束或调整剂量范围。
         </p>
       </div>
@@ -45,13 +45,13 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
   }
 
   return (
-    <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-4">
+    <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50 dark:bg-success-300/20 p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+        <div className="flex items-center gap-2 text-success-700 dark:text-success-600">
           <CheckCircle2 size={16} />
           <span className="font-medium">优化成功</span>
         </div>
-        <span className="text-xs text-emerald-600 dark:text-emerald-400">
+        <span className="text-xs text-success-700 dark:text-success-600">
           {result.solve_time_ms?.toFixed(0) ?? 0}ms
         </span>
       </div>
@@ -59,20 +59,20 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
       {/* 核心指标 */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="text-center">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">最小成本</p>
-          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+          <p className="text-xs text-success-700 dark:text-success-600">最小成本</p>
+          <p className="text-lg font-bold text-success-700 dark:text-success-700">
             ¥{result.min_cost?.toFixed(2) ?? '0.00'}
           </p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">总剂量</p>
-          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+          <p className="text-xs text-success-700 dark:text-success-600">总剂量</p>
+          <p className="text-lg font-bold text-success-700 dark:text-success-700">
             {result.total_dosage_g?.toFixed(0) ?? 0}g
           </p>
         </div>
         <div className="text-center">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">成分数</p>
-          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+          <p className="text-xs text-success-700 dark:text-success-600">成分数</p>
+          <p className="text-lg font-bold text-success-700 dark:text-success-700">
             {result.ratios ? Object.keys(result.ratios).length : 0}
           </p>
         </div>
@@ -84,7 +84,7 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
           <button
             type="button"
             onClick={() => setShowDetails(!showDetails)}
-            className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline mb-2"
+            className="text-xs text-success-700 dark:text-success-600 hover:underline mb-2"
           >
             {showDetails ? '收起详情' : '展开配比详情'}
           </button>

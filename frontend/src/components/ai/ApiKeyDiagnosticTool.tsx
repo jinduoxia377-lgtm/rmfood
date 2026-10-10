@@ -325,26 +325,26 @@ export default function ApiKeyDiagnosticTool() {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">存储来源</p>
               <Badge variant={diagnostic.source === 'none' ? 'danger' : 'neutral'}>
                 {diagnostic.source || '未配置'}
               </Badge>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原始长度</p>
               <p className="text-lg font-bold">{diagnostic.keyLength} 字符</p>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">隐藏字符</p>
               <p className={`text-lg font-bold ${diagnostic.hiddenCharsRemoved > 0 ? 'text-error-600' : 'text-success-600'}`}>
                 {diagnostic.hiddenCharsRemoved} 个
               </p>
             </div>
 
-            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">格式有效性</p>
               {diagnostic.isValidFormat ? (
                 <CheckCircle2 className="w-6 h-6 text-success-600" />

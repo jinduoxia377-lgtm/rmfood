@@ -166,7 +166,7 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
 
         {/* Recommendation */}
         {precaution.recommendation && (
-          <div className="mt-2 p-2 rounded bg-secondary-50 dark:bg-secondary-900/20 border-l-2" style={{ borderColor: color }}>
+          <div className="mt-2 p-2 rounded bg-secondary-50 dark:bg-secondary-300/20 border-l-2" style={{ borderColor: color }}>
             <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
               <span className="font-medium">建议：</span>
               {precaution.recommendation}
@@ -189,10 +189,10 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
           <div className="mt-2 space-y-1">
             {precaution.triggerConditions.map((condition, idx) => (
               <div key={idx} className="flex items-start gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
-                <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${condition.isHardLimit ? 'bg-error-500' : 'bg-yellow-500'}`} />
+                <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${condition.isHardLimit ? 'bg-error-500' : 'bg-warning-500'}`} />
                 <span>{condition.description}</span>
                 {condition.isHardLimit && (
-                  <span className="px-1.5 py-0.5 bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-600 rounded text-[10px] font-medium">
+                  <span className="px-1.5 py-0.5 bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-600 rounded text-xs font-medium">
                     硬性限制
                   </span>
                 )}

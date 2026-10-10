@@ -22,7 +22,7 @@ export function AgentMessageList({
 }: AgentMessageListProps) {
   if (messages.length === 0 && !isRunning) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-neutral-500">
+      <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-neutral-400">
         <Bot className="w-12 h-12 mb-4 opacity-50" />
         <p className="text-lg font-medium">开始新的对话</p>
         <p className="text-sm mt-2">输入您的问题，AI Agent 将自动调用工具完成分析</p>
@@ -89,7 +89,7 @@ export function AgentMessageList({
       {/* 执行统计 */}
       {executedCount > 0 && (
         <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pt-2 border-t">
-          <CheckCircle2 className="w-3 h-3 text-green-500" />
+          <CheckCircle2 className="w-3 h-3 text-success-500" />
           <span>已完成 {executedCount} 次执行</span>
         </div>
       )}

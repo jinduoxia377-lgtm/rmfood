@@ -239,7 +239,7 @@ export function PromptOptimizer({
         return <XCircle size={16} className="text-error-600" />
       case 'warning':
       case 'major':
-        return <AlertTriangle size={16} className="text-yellow-600" />
+        return <AlertTriangle size={16} className="text-warning-600" />
       default:
         return <Info size={16} className="text-secondary-600" />
     }
@@ -247,7 +247,7 @@ export function PromptOptimizer({
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-success-600'
-    if (score >= 70) return 'text-yellow-600'
+    if (score >= 70) return 'text-warning-600'
     return 'text-error-600'
   }
 
@@ -314,7 +314,7 @@ export function PromptOptimizer({
       {result && (
         <Card className="p-4">
           {/* 总览卡片 */}
-          <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-lg">
             <div className="text-center">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原始分数</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_before)}`}>
@@ -344,7 +344,7 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('issues')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'issues'
-                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-secondary-600 text-secondary-600'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -356,7 +356,7 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('structure')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'structure'
-                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-secondary-600 text-secondary-600'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -368,7 +368,7 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('effectiveness')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'effectiveness'
-                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-secondary-600 text-secondary-600'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -380,7 +380,7 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('suggestions')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'suggestions'
-                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-secondary-600 text-secondary-600'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -405,8 +405,8 @@ export function PromptOptimizer({
                       key={`${issue.rule_id}-${index}`}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedIssueIndex === index
-                          ? 'bg-secondary-50 border-blue-300 dark:bg-secondary-900/20'
-                          : 'bg-slate-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800 border-transparent'
+                          ? 'bg-secondary-50 border-secondary-300 dark:bg-secondary-300/20'
+                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800 border-transparent'
                       }`}
                        role="button" tabIndex={0} onClick={() =>
                         setSelectedIssueIndex(selectedIssueIndex === index ? null : index)
@@ -444,13 +444,13 @@ export function PromptOptimizer({
             {activeTab === 'structure' && result.structure_report && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">结构类型</p>
                     <p className="text-lg font-semibold capitalize">
                       {result.structure_report.structure_type.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">总体得分</p>
                     <p className={`text-lg font-semibold ${getScoreColor(result.structure_report.overall_score)}`}>
                       {result.structure_report.overall_score.toFixed(0)}/100
@@ -460,7 +460,7 @@ export function PromptOptimizer({
 
                 <div className="space-y-2">
                   {Object.entries(result.structure_report.sections).map(([name, section]) => (
-                    <div key={name} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-800 rounded">
+                    <div key={name} className="flex items-center justify-between p-2 bg-neutral-50 dark:bg-neutral-800 rounded">
                       <span className="text-sm font-medium">{name}</span>
                       <div className="flex items-center gap-2">
                         {section.is_present ? (
@@ -500,7 +500,7 @@ export function PromptOptimizer({
             {/* 效果预测 */}
             {activeTab === 'effectiveness' && result.effectiveness_prediction && (
               <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg text-center">
+                <div className="p-4 bg-gradient-to-r from-success-50 to-success-50 rounded-lg text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">综合效果评分</p>
                   <p className={`text-4xl font-bold ${getScoreColor(result.effectiveness_prediction.score)}`}>
                     {result.effectiveness_prediction.score.toFixed(0)}
@@ -526,7 +526,7 @@ export function PromptOptimizer({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 p-3 bg-yellow-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-3 bg-warning-50 rounded-lg">
                   <div>
                     <p className="text-xs font-semibold text-success-700 mb-1">✨ 优势特征</p>
                     <ul className="space-y-0.5">
@@ -536,7 +536,7 @@ export function PromptOptimizer({
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-orange-700 mb-1">⚡ 提升空间</p>
+                    <p className="text-xs font-semibold text-warning-700 mb-1">⚡ 提升空间</p>
                     <ul className="space-y-0.5">
                       {result.effectiveness_prediction.weaknesses.map((w, i) => (
                         <li key={i} className="text-xs text-neutral-600">• {w}</li>
@@ -577,8 +577,8 @@ export function PromptOptimizer({
                         key={suggestion.id}
                         className={`p-3 rounded-lg border ${
                           appliedFixes.has(suggestion.id)
-                            ? 'bg-success-50 border-green-200'
-                            : 'bg-slate-50 dark:bg-neutral-800 border-neutral-200'
+                            ? 'bg-success-50 border-success-200'
+                            : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -654,7 +654,7 @@ export function PromptOptimizer({
               </div>
 
               {showOptimizedVersion && (
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-lg max-h-[400px] overflow-y-auto">
+                <div className="p-4 bg-gradient-to-br from-success-50 to-success-50 dark:from-success-900/10 dark:to-success-900/10 rounded-lg max-h-[400px] overflow-y-auto">
                   <pre className="text-sm whitespace-pre-wrap font-mono leading-relaxed">
                     {result.optimized_content}
                   </pre>

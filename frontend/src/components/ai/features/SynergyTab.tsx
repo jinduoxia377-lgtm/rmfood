@@ -294,13 +294,13 @@ export function SynergyTab() {
 
         {/* 禁忌警告 */}
         {contraindicationWarnings.length > 0 && (
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700/50 rounded-xl p-4 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="bg-warning-50 dark:bg-warning-300/20 border border-warning-300 dark:border-warning-700/50 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-warning-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-amber-700 dark:text-amber-400 text-sm">
+              <p className="font-medium text-warning-700 dark:text-warning-700 text-sm">
                 发现十八反禁忌组合
               </p>
-              <ul className="mt-2 space-y-1 text-sm text-amber-600 dark:text-amber-500">
+              <ul className="mt-2 space-y-1 text-sm text-warning-600 dark:text-warning-700">
                 {contraindicationWarnings.map((w, i) => (
                   <li key={i}>⚠ {w.a} + {w.b}：{w.type}</li>
                 ))}
@@ -321,11 +321,11 @@ export function SynergyTab() {
         <div className="space-y-5 animate-fade-in">
           {/* 摘要卡片 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-900/10">
+            <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-300/15">
               <div className="text-2xl font-bold text-primary-700">{synergyResult.score ?? 0}</div>
               <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合协同评分</div>
             </div>
-            <div className="border border-success-200 dark:border-success-800 rounded-xl p-4 bg-success-50/50 dark:bg-success-900/10">
+            <div className="border border-success-200 dark:border-success-800 rounded-xl p-4 bg-success-50/50 dark:bg-success-300/15">
               <div className="text-2xl font-bold text-success-600">
                 {synergyResult.synergy_pairs?.length ?? 0}
               </div>
@@ -379,7 +379,7 @@ export function SynergyTab() {
                           const step = Math.min(5, Math.max(1, Math.round(intensity * 5)));
                           const tier = [100, 200, 300, 400, 500][step - 1];
                           bgClass = `bg-primary-${tier}/15 dark:bg-primary-${tier}/30`;
-                          textColor = 'text-primary-700 dark:text-primary-600';
+                          textColor = 'text-primary-700 dark:text-primary-700';
                           content = cell.value.toFixed(2);
                         } else if (cell.type === 'antagonism') {
                           bgClass = 'bg-danger-100 dark:bg-danger-500/20';
@@ -428,8 +428,8 @@ export function SynergyTab() {
 
           {/* 协同配对详情 */}
           {synergyResult.synergy_pairs && synergyResult.synergy_pairs.length > 0 && (
-            <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-5 bg-primary-50/30 dark:bg-primary-900/10">
-              <h4 className="font-semibold text-primary-700 dark:text-primary-600 mb-3">
+            <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-5 bg-primary-50/30 dark:bg-primary-300/15">
+              <h4 className="font-semibold text-primary-700 dark:text-primary-700 mb-3">
                 协同配对列表
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -439,7 +439,7 @@ export function SynergyTab() {
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm flex-1">{p.a}</span>
                     <span className="text-primary-500 font-medium">+</span>
                     <span className="text-neutral-700 dark:text-neutral-300 text-sm flex-1">{p.b}</span>
-                    <span className="text-xs font-mono text-primary-700 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded">
+                    <span className="text-xs font-mono text-primary-700 bg-primary-50 dark:bg-primary-300/25 px-2 py-1 rounded">
                       {p.score.toFixed(2)}
                     </span>
                   </div>
@@ -450,7 +450,7 @@ export function SynergyTab() {
 
           {/* 配伍禁忌详情 */}
           {synergyResult.antagonism_warnings && synergyResult.antagonism_warnings.length > 0 && (
-            <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-5 bg-danger-50/30 dark:bg-danger-900/10">
+            <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-5 bg-danger-50/30 dark:bg-danger-300/15">
               <h4 className="font-semibold text-danger-700 dark:text-danger-600 mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 配伍禁忌警告

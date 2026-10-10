@@ -149,7 +149,7 @@ export function TagMultiSelect({
         aria-labelledby="tag-select-label"
         aria-describedby="tag-select-desc"
         className={cn(
-          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
+          'w-full min-h-[44px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
           'bg-white dark:bg-neutral-900 text-sm text-left',
           'hover:border-primary-400 dark:hover:border-primary-600 transition-colors',
           'flex flex-wrap gap-1.5 items-center',
@@ -160,8 +160,10 @@ export function TagMultiSelect({
         <span id="tag-select-desc" className="sr-only">
           {open ? '已打开标签选择下拉菜单' : '点击打开标签选择下拉菜单'}
         </span>
+        {/* A-35：占位文案原为 neutral-400(#94a3b8)，白底仅 2.56:1。
+            占位符同样承载信息，WCAG 对比度要求对它一视同仁。 */}
         {selectedTags.length === 0 ? (
-          <span className="text-neutral-400 dark:text-neutral-500">{placeholder}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">{placeholder}</span>
         ) : (
           selectedTags.map((tag) => (
             <Badge
@@ -178,7 +180,7 @@ export function TagMultiSelect({
                   e.stopPropagation()
                   removeTag(tag.id)
                 }}
-                className="hover:text-error-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                className="hover:text-error-500 focus:outline-none focus:ring-2 focus:ring-error-500 focus:ring-offset-1 rounded"
                 aria-label={`移除标签 ${tag.name}`}
               >
                 <X size={10} />
@@ -226,11 +228,11 @@ export function TagMultiSelect({
             onScroll={handleScroll}
           >
             {loading ? (
-              <div className="p-4 text-center text-sm text-neutral-400">
+              <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
               </div>
             ) : tags.length === 0 ? (
-              <div className="p-4 text-center text-sm text-neutral-400">
+              <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {search ? '未找到匹配标签' : '暂无标签数据'}
               </div>
             ) : (
@@ -263,8 +265,8 @@ export function TagMultiSelect({
                         tabIndex={isSelected ? 0 : -1}
                         className={cn(
                           'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer',
-                          'hover:bg-slate-50 dark:hover:bg-neutral-800',
-                          isSelected && 'bg-primary-50 dark:bg-primary-900/20',
+                          'hover:bg-neutral-50 dark:hover:bg-neutral-800',
+                          isSelected && 'bg-primary-50 dark:bg-primary-300/20',
                         )}
                         style={{ height: `${ITEM_HEIGHT}px` }}
                       >
@@ -274,16 +276,16 @@ export function TagMultiSelect({
                             tagVariant === 'primary' && 'bg-primary-500',
                             tagVariant === 'success' && 'bg-primary-500',
                             tagVariant === 'warning' && 'bg-warning-500',
-                            tagVariant === 'info' && 'bg-sky-500',
+                            tagVariant === 'info' && 'bg-info-500',
                             tagVariant === 'neutral' && 'bg-neutral-400',
                           )}
                         />
-                        <TagIcon size={12} className="text-neutral-400" />
+                        <TagIcon size={12} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         <span
                           className={cn(
                             'flex-1 truncate',
                             isSelected
-                              ? 'text-primary-700 dark:text-primary-400 font-medium'
+                              ? 'text-primary-700 dark:text-primary-700 font-medium'
                               : 'text-neutral-700 dark:text-neutral-300',
                           )}
                         >
@@ -295,7 +297,7 @@ export function TagMultiSelect({
                           </span>
                         )}
                         {(tag.usageCount ?? 0) > 0 && (
-                          <span className="text-xs text-neutral-400">
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             {(tag.usageCount ?? 0)}次
                           </span>
                         )}

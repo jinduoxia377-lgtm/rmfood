@@ -36,20 +36,20 @@ export function RAGSourcesBanner({
     <div className="mx-4 mt-2">
       <div className={clsx(
         'rounded-lg border text-sm transition-all duration-200',
-        'bg-primary-50/80 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/30',
+        'bg-primary-50/80 dark:bg-success-950/20 border-success-200 dark:border-success-900/30',
       )}>
         {/* 头部信息栏 */}
         <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 min-w-0">
-            <Database className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400 shrink-0" />
-            <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
+            <Database className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700 shrink-0" />
+            <span className="text-xs font-medium text-primary-700 dark:text-primary-700">
               知识库参考
             </span>
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded">
+            <span className="px-1.5 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700 rounded">
               {chunks.length} 个片段
             </span>
             {sources.length > 0 && (
-              <span className="text-[10px] text-primary-500 dark:text-primary-500 hidden sm:inline truncate">
+              <span className="text-xs text-primary-500 dark:text-primary-700 hidden sm:inline truncate">
                 来自 {sources.length} 个文档
               </span>
             )}
@@ -82,14 +82,14 @@ export function RAGSourcesBanner({
 
         {/* 展开的详情列表 */}
         {expanded && (
-          <div className="border-t border-emerald-200 dark:border-emerald-900/30 px-3 py-2 space-y-1.5 max-h-32 overflow-y-auto">
+          <div className="border-t border-success-200 dark:border-success-900/30 px-3 py-2 space-y-1.5 max-h-32 overflow-y-auto">
             {sources.map((source, i) => {
               const matchCount = chunks.filter(c => c.source === source).length
               return (
-                <div key={i} className="flex items-center gap-2 text-[11px]">
+                <div key={i} className="flex items-center gap-2 text-xs">
                   <FileText className="w-3 h-3 text-primary-500 shrink-0" />
-                  <span className="text-primary-700 dark:text-primary-300 truncate">{source}</span>
-                  <span className="text-primary-400 dark:text-primary-500 shrink-0 ml-auto">
+                  <span className="text-primary-700 dark:text-primary-700 truncate">{source}</span>
+                  <span className="text-primary-400 dark:text-primary-700 shrink-0 ml-auto">
                     {matchCount} 个匹配
                   </span>
                 </div>

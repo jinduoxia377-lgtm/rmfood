@@ -21,17 +21,17 @@ const TREND_ICONS = {
 }
 
 const TREND_COLORS = {
-  up: 'text-primary-500 dark:text-primary-400',
-  down: 'text-error-500 dark:text-error-400',
-  stable: 'text-neutral-400 dark:text-neutral-500',
+  up: 'text-primary-500 dark:text-primary-700',
+  down: 'text-error-500 dark:text-error-600',
+  stable: 'text-neutral-400 dark:text-neutral-400',
 }
 
 function getValueColor(value: string | number): string {
   const num = typeof value === 'number' ? value : parseFloat(String(value))
   if (isNaN(num)) return 'text-neutral-800 dark:text-neutral-200'
-  if (num >= 0.8) return 'text-primary-600 dark:text-primary-400'
-  if (num >= 0.5) return 'text-warning-600 dark:text-warning-400'
-  if (num > 0) return 'text-error-600 dark:text-error-400'
+  if (num >= 0.8) return 'text-primary-700 dark:text-primary-700'
+  if (num >= 0.5) return 'text-warning-600 dark:text-warning-700'
+  if (num > 0) return 'text-error-600 dark:text-error-600'
   return 'text-neutral-800 dark:text-neutral-200'
 }
 
@@ -147,7 +147,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 text-neutral-300 dark:text-neutral-600">
+      <div className="flex flex-col items-center justify-center py-6 text-neutral-300 dark:text-neutral-400">
         <BarChart3 className="w-8 h-8 mb-2 opacity-50" />
         <p className="text-xs">暂无指标数据</p>
       </div>
@@ -173,7 +173,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
         {canShowRadar && (
           <button
             onClick={() => setShowRadar(!showRadar)}
-            className="flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+            className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-500 dark:hover:text-primary-600 transition-colors"
           >
             <CircleDot className="w-3 h-3" />
             <span>{showRadar ? '切换卡片' : '雷达图'}</span>
@@ -198,9 +198,9 @@ function MetricsBlock({ data }: MetricsBlockProps) {
             // 背景色：从预设色板循环
             const bgColors = [
               'bg-primary-50/60 dark:bg-primary-950/30',
-              'bg-secondary-50/60 dark:bg-blue-950/30',
-              'bg-primary-50/60 dark:bg-emerald-950/30',
-              'bg-accent-50/60 dark:bg-purple-950/30',
+              'bg-secondary-50/60 dark:bg-secondary-950/30',
+              'bg-primary-50/60 dark:bg-success-950/30',
+              'bg-accent-50/60 dark:bg-accent-950/30',
             ]
 
             return (
@@ -212,7 +212,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
               >
                 {/* 标签行 */}
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium truncate">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium truncate">
                     {item.label}
                   </span>
                   {TrendIcon && (
@@ -226,7 +226,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
                     {displayValue}
                   </span>
                   {item.unit && (
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
+                    <span className="text-xs text-neutral-400 dark:text-neutral-400 font-medium">
                       {item.unit}
                     </span>
                   )}

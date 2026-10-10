@@ -199,9 +199,9 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
 
         {/* 当前状态指示器 */}
         {selectedEffects.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-full border border-primary-200 dark:border-primary-800">
-            <CheckCircle className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
-            <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-300/20 rounded-full border border-primary-200 dark:border-primary-800">
+            <CheckCircle className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
+            <span className="text-xs font-medium text-primary-700 dark:text-primary-700">
               已选 {selectionCount}/{VALIDATION.maxEffectSelection} 个功效
             </span>
           </div>
@@ -213,13 +213,13 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
         <div className="space-y-4 animate-fade-in">
           {/* 快捷模板 */}
           {showQuickTemplates && (
-            <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800/30">
+            <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-900/10 dark:to-warning-900/10 rounded-xl border border-warning-200 dark:border-warning-800/30">
               <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-medium text-amber-800 dark:text-amber-300">快捷模板</span>
+                <Lightbulb className="w-4 h-4 text-warning-600 dark:text-warning-700" />
+                <span className="text-sm font-medium text-warning-800 dark:text-warning-700">快捷模板</span>
                 <button 
                   onClick={() => setShowQuickTemplates(false)}
-                  className="ml-auto text-amber-500 hover:text-amber-700"
+                  className="ml-auto text-warning-500 hover:text-warning-700"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -229,7 +229,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                   <button
                     key={template.id}
                     onClick={() => handleQuickTemplateClick(template)}
-                    className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md transition-all duration-200"
+                    className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-warning-400 dark:hover:border-warning-600 hover:shadow-md transition-all duration-200"
                   >
                     <span className="text-xl">{template.icon}</span>
                     <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{template.name}</span>
@@ -244,7 +244,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             {/* 聊天记录区 */}
             <div className="max-h-64 overflow-y-auto p-4 space-y-3">
               {chatHistory.length === 0 ? (
-                <div className="text-center py-8 text-neutral-400 dark:text-neutral-500">
+                <div className="text-center py-8 text-neutral-400 dark:text-neutral-400">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p className="text-sm">描述您的健康需求，AI将为您生成个性化配方</p>
                   <p className="text-xs mt-1">例如："我最近经常熬夜，容易疲劳，想调理身体"</p>
@@ -303,15 +303,15 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
 
           {/* 选择结果展示 */}
           {selectedEffects.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-3 bg-success-50 dark:bg-success-900/10 rounded-xl border border-success-200 dark:border-success-800/30">
-              <span className="text-xs font-medium text-success-700 dark:text-success-400 flex items-center gap-1">
+            <div className="flex flex-wrap gap-2 p-3 bg-success-50 dark:bg-success-300/15 rounded-xl border border-success-200 dark:border-success-800/30">
+              <span className="text-xs font-medium text-success-700 dark:text-success-600 flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" />
                 AI已为您选择：
               </span>
               {selectedEffects.map((effect) => (
                 <span
                   key={effect.id}
-                  className="text-xs px-2 py-1 bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 rounded-full"
+                  className="text-xs px-2 py-1 bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600 rounded-full"
                 >
                   {effect.label}
                 </span>
@@ -339,7 +339,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                   }`}
                 >
                   {category}
-                  {hasSelected && <span className="ml-1 text-[10px]">✓</span>}
+                  {hasSelected && <span className="ml-1 text-xs">✓</span>}
                 </button>
               )
             })}
@@ -349,11 +349,11 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <Target className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                  <Target className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
                 </div>
                 {DEFAULTS.PLACEHOLDER_TEXTS.TITLE_SELECT_EFFECTS}
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 text-white shadow-sm">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-accent-surface-deep)] text-white shadow-sm">
                   {selectionCount}/{VALIDATION.maxEffectSelection}
                 </span>
               </h3>
@@ -403,7 +403,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                     <span className="relative flex items-center gap-1.5">
                       {effect.label}
                       {effect.popular && !isSelected && (
-                        <span className="text-[10px] px-1 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-400 font-semibold">
+                        <span className="text-xs px-1 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-700 font-semibold">
                           热
                         </span>
                       )}
@@ -467,7 +467,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             loading={isGenerating}
             icon={useLlm && llmAvailable ? <Zap className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             size="lg"
-            className="min-w-[180px] rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary-500 via-indigo-500 to-purple-500 hover:from-primary-600 hover:via-indigo-600 hover:to-purple-600"
+            className="min-w-[180px] rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary-500 via-accent-500 to-accent-500 hover:from-primary-600 hover:via-accent-600 hover:to-accent-600"
           >
             {useLlm && llmAvailable
               ? DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_AI_GENERATE
@@ -476,7 +476,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
           </Button>
 
           {selectedEffects.length > 0 && (
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 hidden sm:inline">
+            <span className="text-xs text-neutral-400 dark:text-neutral-400 hidden sm:inline">
               ✓ {selectedEffects.length} 个功效已选择
             </span>
           )}

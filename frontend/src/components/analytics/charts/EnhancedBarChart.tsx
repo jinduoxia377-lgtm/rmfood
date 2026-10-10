@@ -147,7 +147,7 @@ export function EnhancedBarChart({
         >
           {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={themeColors.surfaceVariant} opacity={0.3} horizontal={false} />}
 
-          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} />
+          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} />
           <YAxis
             type="category"
             dataKey="name"
@@ -195,8 +195,8 @@ export function EnhancedBarChart({
       >
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={themeColors.surfaceVariant} opacity={0.3} vertical={false} />}
 
-        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} />
-        <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} width={55} />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} />
+        <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} width={55} />
 
         <Tooltip content={<CustomTooltip />} animationDuration={200} cursor={{ fill: `${themeColors.primary}08` }} />
 

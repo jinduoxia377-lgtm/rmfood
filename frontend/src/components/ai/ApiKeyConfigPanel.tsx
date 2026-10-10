@@ -324,7 +324,7 @@ export function ApiKeyConfigPanel({
       {isConfigured && !apiKey ? (
         <div className="space-y-4">
           {/* 配置信息卡片 */}
-          <div className="p-4 rounded-lg bg-success-50 dark:bg-success-900/10 border border-success-200 dark:border-success-800/40">
+          <div className="p-4 rounded-lg bg-success-50 dark:bg-success-300/15 border border-success-200 dark:border-success-800/40">
             <div className="flex items-start justify-between">
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
@@ -395,9 +395,9 @@ export function ApiKeyConfigPanel({
           </div>
 
           {/* 安全说明 */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-200 dark:border-secondary-800/40">
             <Info className="w-4 h-4 text-secondary-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-secondary-700 dark:text-secondary-600">
+            <div className="text-sm text-secondary-700 dark:text-secondary-700">
               <p className="font-medium">安全提示</p>
               <ul className="mt-1 space-y-1 text-xs list-disc list-inside">
                 <li>API Key 使用 AES-256-GCM 军事级加密存储在本地浏览器中</li>
@@ -452,7 +452,7 @@ export function ApiKeyConfigPanel({
                       validationResult.strength === 'medium' ? 'warning' :
                       'danger'
                     }
-                    className="text-[10px]"
+                    className="text-xs"
                   >
                     {validationResult.strength === 'strong' ? '强' :
                      validationResult.strength === 'medium' ? '中' : '弱'}
@@ -508,16 +508,16 @@ export function ApiKeyConfigPanel({
           {/* 帮助信息 */}
           <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
             {/* 交叉引导文案 */}
-            <div className="mb-3 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
-              <p className="text-xs text-secondary-700 dark:text-secondary-600 font-medium mb-1">
+            <div className="mb-3 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-200 dark:border-secondary-800/40">
+              <p className="text-xs text-secondary-700 dark:text-secondary-700 font-medium mb-1">
                 💡 这是<strong>快速配置</strong>入口（推荐大多数用户使用）
               </p>
-              <ul className="text-xs text-secondary-600 dark:text-secondary-600 space-y-1 list-disc list-inside">
+              <ul className="text-xs text-secondary-600 dark:text-secondary-700 space-y-1 list-disc list-inside">
                 <li>✅ 适合首次配置或只想快速开始使用的用户</li>
                 <li>✅ 使用 AES-256-GCM 军事级加密保护</li>
                 <li>✅ 配置会自动同步到系统所有模块</li>
               </ul>
-              <p className="text-xs text-secondary-500 dark:text-secondary-600 mt-2">
+              <p className="text-xs text-secondary-500 dark:text-secondary-700 mt-2">
                 📌 如需管理多个模型或调整高级参数（temperature/timeout等），
                 请前往页面顶部的<strong>"配置管理"</strong>标签页。
               </p>
@@ -528,7 +528,7 @@ export function ApiKeyConfigPanel({
                 如何获取 DeepSeek API Key？
               </summary>
 
-              <div className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-xs space-y-2">
+              <div className="mt-2 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-xs space-y-2">
                 <ol className="list-decimal list-inside space-y-1 text-neutral-600 dark:text-neutral-400">
                   <li>访问 <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">DeepSeek 开放平台</a></li>
                   <li>注册/登录账号</li>
@@ -538,7 +538,7 @@ export function ApiKeyConfigPanel({
                   <li>粘贴到上方输入框并点击保存</li>
                 </ol>
 
-                <p className="text-warning-600 dark:text-warning-600 mt-2">
+                <p className="text-warning-600 dark:text-warning-700 mt-2">
                   ⚠️ 请确保账户余额充足，API 调用可能产生费用
                 </p>
               </div>

@@ -128,10 +128,10 @@ const ThinkingStepItem: React.FC<{
 
   const getStatusColor = (status: ThinkingStep['status']) => {
     switch (status) {
-      case 'pending': return 'text-neutral-400 border-neutral-200 dark:text-neutral-500 dark:border-neutral-700'
-      case 'processing': return 'text-secondary-500 border-blue-300 dark:text-secondary-400 dark:border-blue-600'
-      case 'completed': return 'text-success-500 border-green-300 dark:text-success-400 dark:border-green-600'
-      case 'error': return 'text-error-500 border-red-300 dark:text-error-400 dark:border-red-600'
+      case 'pending': return 'text-neutral-400 border-neutral-200 dark:text-neutral-400 dark:border-neutral-700'
+      case 'processing': return 'text-secondary-500 border-secondary-300 dark:text-secondary-700 dark:border-secondary-600'
+      case 'completed': return 'text-success-500 border-success-300 dark:text-success-600 dark:border-success-600'
+      case 'error': return 'text-error-500 border-error-300 dark:text-error-600 dark:border-error-600'
       default: return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] border-neutral-300'
     }
   }
@@ -144,8 +144,8 @@ const ThinkingStepItem: React.FC<{
   return (
     <div className={`
       p-4 rounded-xl border transition-all duration-300
-      ${isActive ? 'bg-secondary-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-sm scale-[1.01]' : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800'}
-      ${step.status === 'error' ? 'bg-error-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' : ''}
+      ${isActive ? 'bg-secondary-50/50 dark:bg-secondary-950/20 border-secondary-200 dark:border-secondary-800 shadow-sm scale-[1.01]' : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800'}
+      ${step.status === 'error' ? 'bg-error-50 dark:bg-error-950/20 border-error-200 dark:border-error-800' : ''}
     `}>
       {/* 标题行 */}
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -261,10 +261,10 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
   const isOverLimit = maxLength && charCount > maxLength
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-950">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-950">
       {/* ========== AI思考过程展示区 ========== */}
       {isThinkingVisible && (
-        <div className="border-b border-neutral-200 dark:border-neutral-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-950">
           {/* 标题栏 */}
           <div
             className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors"
@@ -310,7 +310,7 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
 
       {/* ========== 错误提示区 ========== */}
       {error && (
-        <div className="px-4 py-3 bg-error-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/50">
+        <div className="px-4 py-3 bg-error-50 dark:bg-error-950/30 border-b border-error-200 dark:border-error-900/50">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-error-500 shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -350,7 +350,7 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
       </div>
 
       {/* ========== 底部状态条（可选，可增强版本） ========== */}
-      <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+      <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-4">
             <span>字数: {charCount}/{maxLength}</span>

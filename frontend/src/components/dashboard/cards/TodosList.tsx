@@ -57,16 +57,16 @@ export const TodosList: FC<Props> = ({ items, loading }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ClipboardList size={18} className="text-warning-500" />
-            <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>待办事项</CardTitle>
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>待办事项</CardTitle>
           </div>
           {/* C-05：统一「查看全部」入口 */}
-          <Link to="/formulas?status=pending_review" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
+          <Link to="/formulas?status=pending_review" className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold flex items-center gap-1 transition-colors min-h-[44px] px-2 -mx-2 -my-3.5">
             查看全部 <ArrowRight size={14} />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
+        <div className="divide-y divide-neutral-100 dark:divide-neutral-800/40">
           {items.length === 0 ? (
             <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">暂无待办事项</div>
           ) : (
@@ -74,7 +74,7 @@ export const TodosList: FC<Props> = ({ items, loading }) => {
               <Link
                 key={`${todo.type}-${todo.id}`}
                 to={todo.type === 'review_formula' ? `/formulas/${todo.id}` : `/experiments/${todo.id}`}
-                className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors duration-200 cursor-pointer"
+                className="block px-6 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors duration-200 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
@@ -84,9 +84,9 @@ export const TodosList: FC<Props> = ({ items, loading }) => {
                   )} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-neutral-900 dark:text-white truncate">{todo.title}</p>
-                    <p className="text-xs text-neutral-400 mt-1">{todo.detail}</p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">{todo.detail}</p>
                   </div>
-                  <ArrowRight size={14} className="text-neutral-400 dark:text-neutral-500 shrink-0" />
+                  <ArrowRight size={14} className="text-neutral-600 dark:text-neutral-400 shrink-0" />
                 </div>
               </Link>
             ))

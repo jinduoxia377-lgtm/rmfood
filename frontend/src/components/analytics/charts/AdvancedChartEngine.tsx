@@ -103,7 +103,7 @@ const CHART_COLORS = [
   'var(--color-warning, #FF9F0A)', // amber
   'var(--color-error, #FF3B30)', // red
   'var(--color-info, var(--color-secondary-500))', // cyan
-  'var(--color-pink-500, #D946EF)', // pink
+  'var(--color-danger-500, #D946EF)', // pink
   'var(--color-success, var(--color-primary-400))', // lime
 ];
 
@@ -113,9 +113,9 @@ const DARK_CHART_COLORS = [
   'var(--color-accent-400, #C090FF)', // lighter violet
   'var(--color-warning-400, #F59E0B)', // lighter amber
   'var(--color-danger-400, #EF4444)', // lighter red
-  'var(--color-cyan-400, #67E8F9)', // lighter cyan
-  'var(--color-pink-400, #EC4899)', // lighter pink
-  'var(--color-lime-400, #A3E635)', // lighter lime
+  'var(--color-info-400, #67E8F9)', // lighter cyan
+  'var(--color-danger-400, #EC4899)', // lighter pink
+  'var(--color-success-400, #A3E635)', // lighter lime
 ];
 
 interface CustomTooltipProps {
@@ -138,7 +138,7 @@ function CustomTooltip({ active, payload, label, dark }: CustomTooltipProps) {
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center gap-2 text-sm">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className={dark ? 'text-neutral-300' : 'text-neutral-700'}>{entry.name}:</span>
+          <span className={dark ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-neutral-700'}>{entry.name}:</span>
           <span className={`font-semibold ${dark ? 'text-white' : 'text-neutral-900'}`}>
             {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </span>
@@ -194,7 +194,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
   // Loading 状态
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[200px] bg-slate-50 dark:bg-neutral-800 rounded-lg">
+      <div className="flex items-center justify-center h-full min-h-[200px] bg-neutral-50 dark:bg-neutral-800 rounded-lg">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-text-muted">加载中...</p>
@@ -206,8 +206,8 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
   // Error 状态
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[200px] bg-error-50 dark:bg-error-900/20 rounded-lg">
-        <p className="text-error-600 dark:text-error-400">{error}</p>
+      <div className="flex items-center justify-center h-full min-h-[200px] bg-error-50 dark:bg-error-300/20 rounded-lg">
+        <p className="text-error-600 dark:text-error-600">{error}</p>
       </div>
     );
   }
@@ -215,7 +215,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
   // Empty 状态
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[200px] bg-slate-50 dark:bg-neutral-800 rounded-lg">
+      <div className="flex items-center justify-center h-full min-h-[200px] bg-neutral-50 dark:bg-neutral-800 rounded-lg">
         <p className="text-text-muted">{emptyState || '暂无数据'}</p>
       </div>
     );
@@ -295,7 +295,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
           <ResponsiveContainer width={responsive ? '100%' : undefined} height={height}>
             <PieChart>
               {tooltip.enabled && <Tooltip content={<CustomTooltip dark={isDark} />} />}
-              <Pie
+              <Pie rootTabIndex={-1}
                 data={series.map((s) => ({
                   name: s.name,
                   value: data.reduce((sum, row) => sum + (Number(row[s.dataKey]) || 0), 0),
@@ -398,7 +398,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
 
       default:
         return (
-          <div className="flex items-center justify-center h-full min-h-[200px] bg-slate-50 dark:bg-neutral-800 rounded-lg">
+          <div className="flex items-center justify-center h-full min-h-[200px] bg-neutral-50 dark:bg-neutral-800 rounded-lg">
             <p className="text-text-muted">不支持的图表类型: {type}</p>
           </div>
         );

@@ -244,7 +244,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
         </button>
 
         {showAdvanced && (
-          <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4 space-y-3">
+          <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4 space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -303,7 +303,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
             type="text"
             value={customFilename}
             onChange={(e) => this.setState({ customFilename: e.target.value })}
-            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
             placeholder="输入文件名"
           />
         </div>

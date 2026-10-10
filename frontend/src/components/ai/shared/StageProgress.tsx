@@ -39,11 +39,11 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
             <div className="flex items-center gap-3 p-2 rounded bg-white dark:bg-neutral-800">
               {/* 状态图标 */}
               {stage.success ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-success-500 flex-shrink-0" />
               ) : !stage.success && stage.error ? (
-                <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <XCircle className="w-4 h-4 text-error-500 flex-shrink-0" />
               ) : isRunning && index === stages.length - 1 ? (
-                <Loader2 className="w-4 h-4 text-blue-500 animate-spin flex-shrink-0" />
+                <Loader2 className="w-4 h-4 text-secondary-500 animate-spin flex-shrink-0" />
               ) : (
                 <div className="w-4 h-4 flex-shrink-0" />
               )}
@@ -69,7 +69,7 @@ export function StageProgress({ stages, isRunning = false }: StageProgressProps)
 
             {/* 错误信息 */}
             {stage.error && (
-              <div className="ml-7 text-xs text-red-500">{stage.error}</div>
+              <div className="ml-7 text-xs text-error-500">{stage.error}</div>
             )}
 
             {/* 连接线 */}

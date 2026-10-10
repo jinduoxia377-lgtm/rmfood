@@ -163,9 +163,9 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
       case 'synergy':
         return 'bg-accent-500';
       case 'taste':
-        return 'bg-yellow-500';
+        return 'bg-warning-500';
       case 'stability':
-        return 'bg-orange-500';
+        return 'bg-warning-500';
       case 'complete':
         return 'bg-primary-500';
       case 'error':
@@ -202,8 +202,8 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
       {/* 头部工具栏 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <FileText className="w-5 h-5 text-primary-700 dark:text-primary-600" />
+          <div className="p-2 bg-primary-100 dark:bg-primary-300/25 rounded-lg">
+            <FileText className="w-5 h-5 text-primary-700 dark:text-primary-700" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">手动输入配方</h3>
@@ -246,10 +246,10 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
 
       {/* 验证错误提示 */}
       {validationErrors.length > 0 && (
-        <div className="mb-4 p-3 bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+        <div className="mb-4 p-3 bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800 rounded-lg">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-warning-500 mt-0.5 shrink-0" />
-            <div className="text-sm text-warning-700 dark:text-warning-600">
+            <div className="text-sm text-warning-700 dark:text-warning-700">
               <p className="font-medium mb-1">请完善以下内容：</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {validationErrors.map((error, index) => (
@@ -263,7 +263,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
 
       {/* 分析错误提示 */}
       {result.error && (
-        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
           <div className="flex items-center gap-2 text-error-600 dark:text-error-600 text-sm">
             <AlertTriangle className="w-4 h-4" />
             {result.error}
@@ -279,7 +279,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
           value={formulaName}
           onChange={(e) => setFormulaName(e.target.value)}
           placeholder="请输入配方名称"
-          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         />
       </div>
 
@@ -307,7 +307,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
 
       {/* 分析进度条 */}
       {result.isLoading && (
-        <div className="mb-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+        <div className="mb-4 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
               {getProgressIcon()}
@@ -326,10 +326,10 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
 
       {/* 分析结果预览 */}
       {showPreview && result.candidate && (
-        <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg animate-fade-in">
+        <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-300/20 border border-success-200 dark:border-success-800 rounded-lg animate-fade-in">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-5 h-5 text-primary-500" />
-            <h4 className="font-medium text-primary-800 dark:text-primary-600">分析完成</h4>
+            <h4 className="font-medium text-primary-800 dark:text-primary-700">分析完成</h4>
           </div>
 
           {/* 雷达图 */}
@@ -354,7 +354,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
             </div>
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-3 text-center">
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">口感评分</p>
-              <p className="text-lg font-bold text-yellow-600">
+              <p className="text-lg font-bold text-warning-600">
                 {((result.candidate.taste_score || 0) * 100).toFixed(0)}
               </p>
             </div>
@@ -386,7 +386,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
             {recentFormulas.map((formula) => (
               <div
                 key={formula.id}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
+                className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
               >
                 <button
                   onClick={() => handleLoadFormula(formula)}

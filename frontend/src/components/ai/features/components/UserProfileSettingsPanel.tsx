@@ -90,7 +90,7 @@ function TagSelector<T extends string>({
         <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">{label}</span>
         <button
           onClick={() => setEditing(!editing)}
-          className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-700 transition-colors"
+          className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 transition-colors"
         >
           {editing ? <Check className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
           {editing ? '完成' : '编辑'}
@@ -106,9 +106,9 @@ function TagSelector<T extends string>({
               key={opt.key}
               disabled={!editing}
               onClick={() => toggle(opt.key)}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all duration-200 ${
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${
                 isSelected
-                  ? 'bg-primary-100 dark:bg-primary-900/30 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-600'
+                  ? 'bg-primary-100 dark:bg-primary-300/25 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-700'
                   : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400'
               } ${editing ? 'cursor-pointer hover:shadow-sm' : 'cursor-default'}`}
             >
@@ -262,12 +262,12 @@ export function UserProfileSettingsPanel({ onClose }: UserProfileSettingsPanelPr
           </div>
 
           {/* 自动提取提示 */}
-          <div className="p-3 rounded-lg bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-800/30">
+          <div className="p-3 rounded-lg bg-primary-50 dark:bg-primary-300/15 border border-primary-100 dark:border-primary-800/30">
             <div className="flex items-center gap-1.5 mb-1">
               <HeartPulse className="w-3.5 h-3.5 text-primary-500" />
-              <span className="text-[10px] font-semibold text-primary-700 dark:text-primary-600">AI 自动提取</span>
+              <span className="text-xs font-semibold text-primary-700 dark:text-primary-700">AI 自动提取</span>
             </div>
-            <p className="text-[10px] text-primary-700/80 dark:text-primary-600/80 leading-relaxed">
+            <p className="text-xs text-primary-700/80 dark:text-primary-700/80 leading-relaxed">
               系统会从您的对话内容中自动学习健康偏好。您可以在这里查看和修正自动识别的结果。
               {profile.recentPreferences && (
                 <span className="block mt-1 opacity-75">
@@ -297,7 +297,7 @@ export function UserProfileSettingsPanel({ onClose }: UserProfileSettingsPanelPr
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-primary-500 to-emerald-500
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-success-surface-deep)]
                 text-white text-xs font-semibold hover:shadow-md active:scale-[0.98] transition-all"
             >
               {saved ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}

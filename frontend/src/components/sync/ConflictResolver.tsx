@@ -55,23 +55,23 @@ export interface ConflictResolverProps {
 const conflictTypeConfig = {
   content_conflict: {
     label: '内容冲突',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
+    color: 'text-warning-600',
+    bgColor: 'bg-warning-50',
+    borderColor: 'border-warning-200',
     icon: AlertTriangle,
   },
   delete_modify_conflict: {
     label: '删除-修改冲突',
     color: 'text-error-600',
     bgColor: 'bg-error-50',
-    borderColor: 'border-red-200',
+    borderColor: 'border-error-200',
     icon: XCircle,
   },
   structural_conflict: {
     label: '结构冲突',
     color: 'text-accent-600',
     bgColor: 'bg-accent-50',
-    borderColor: 'border-purple-200',
+    borderColor: 'border-accent-200',
     icon: AlertCircle,
   },
 };
@@ -221,7 +221,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
       return (
         <div className="space-y-1">
           {value.map((item, idx) => (
-            <div key={idx} className="text-sm bg-slate-50 dark:bg-neutral-800 px-2 py-1 rounded">
+            <div key={idx} className="text-sm bg-neutral-50 dark:bg-neutral-800 px-2 py-1 rounded">
               {typeof item === 'object' ? JSON.stringify(item, null, 2) : String(item)}
             </div>
           ))}
@@ -231,7 +231,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
     if (typeof value === 'object') {
       return (
-        <pre className="text-xs bg-slate-50 dark:bg-neutral-800 p-2 rounded overflow-auto max-h-40">{JSON.stringify(value, null, 2)}</pre>
+        <pre className="text-xs bg-neutral-50 dark:bg-neutral-800 p-2 rounded overflow-auto max-h-40">{JSON.stringify(value, null, 2)}</pre>
       );
     }
 
@@ -270,7 +270,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     ? 'bg-success-100 text-success-700'
                     : conflict.status === 'auto_resolved'
                       ? 'bg-secondary-100 text-secondary-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                      : 'bg-warning-100 text-warning-700'
                 }`}
               >
                 {conflict.status === 'resolved'
@@ -362,8 +362,8 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     }}
                     className={`px-3 py-2 text-sm rounded-lg border transition-all ${
                       selectedResolution[conflict.id] === 'local'
-                        ? 'border-blue-500 bg-secondary-50 text-secondary-700'
-                        : 'border-neutral-300 dark:border-neutral-700 hover:border-blue-300'
+                        ? 'border-secondary-500 bg-secondary-50 text-secondary-700'
+                        : 'border-neutral-300 dark:border-neutral-700 hover:border-secondary-300'
                     }`}
                   >
                     <User className="w-4 h-4 inline mr-1" />
@@ -377,8 +377,8 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                     }}
                     className={`px-3 py-2 text-sm rounded-lg border transition-all ${
                       selectedResolution[conflict.id] === 'server'
-                        ? 'border-green-500 bg-success-50 text-success-700'
-                        : 'border-neutral-300 dark:border-neutral-700 hover:border-green-300'
+                        ? 'border-success-500 bg-success-50 text-success-700'
+                        : 'border-neutral-300 dark:border-neutral-700 hover:border-success-300'
                     }`}
                   >
                     <Server className="w-4 h-4 inline mr-1" />
@@ -391,7 +391,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                         e.stopPropagation();
                         onAutoResolve(conflict.id);
                       }}
-                      className="px-3 py-2 text-sm rounded-lg border border-purple-300 hover:bg-accent-50 text-accent-700 transition-all"
+                      className="px-3 py-2 text-sm rounded-lg border border-accent-300 hover:bg-accent-50 text-accent-700 transition-all"
                     >
                       <RefreshCw className="w-4 h-4 inline mr-1" />
                       自动解决 ({strategyLabels[conflict.recommendedStrategy]})
@@ -486,7 +486,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
       {pendingConflicts.length > 0 && (
         <div className="space-y-3">
           <h3 className="font-semibold text-neutral-800 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+            <AlertTriangle className="w-5 h-5 text-warning-500" />
             待解决的冲突 ({pendingConflicts.length})
           </h3>
           {pendingConflicts.map(renderConflictCard)}

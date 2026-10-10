@@ -14,8 +14,8 @@ const TYPE_CONFIG: Record<SearchResultType, { label: string; color: string }> = 
   formula: { label: '配方', color: 'bg-secondary-100 text-secondary-700' },
   experiment: { label: '实验', color: 'bg-accent-100 text-accent-700' },
   herb: { label: '中药', color: 'bg-success-100 text-success-700' },
-  peptide: { label: '肽', color: 'bg-orange-100 text-orange-700' },
-  knowledge: { label: '知识', color: 'bg-pink-100 text-pink-700' },
+  peptide: { label: '肽', color: 'bg-warning-100 text-warning-700' },
+  knowledge: { label: '知识', color: 'bg-danger-100 text-danger-700' },
 };
 
 interface SearchBarProps {
@@ -227,7 +227,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
       <div
         className={clsx(
           'relative flex items-center gap-3 bg-white dark:bg-neutral-900 border rounded-lg shadow-sm transition-all duration-200',
-          'focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200',
+          'focus-within:border-secondary-500 focus-within:ring-2 focus-within:ring-secondary-200',
           isFocused && 'shadow-md',
         )}
       >
@@ -254,7 +254,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
             }
           }}
           placeholder="搜索配方、实验、中药、肽..."
-          className="flex-1 py-3 bg-transparent border-none outline-none text-neutral-700 placeholder-slate-400"
+          className="flex-1 py-3 bg-transparent border-none outline-none text-neutral-700 placeholder-neutral-400"
         />
 
         {query && (
@@ -299,7 +299,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={`${suggestion.type}-${suggestion.id}`}
                   onClick={() => handleSelectSuggestion(suggestion)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:bg-neutral-800 transition-colors text-left"
                 >
                   <span className={clsx('px-2 py-0.5 text-xs rounded-full', TYPE_CONFIG[suggestion.type].color)}>
                     {TYPE_CONFIG[suggestion.type].label}
@@ -336,7 +336,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={item.id}
                   onClick={() => handleSelectHistory(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:bg-neutral-800 transition-colors text-left"
                 >
                   <Search className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   <span className="flex-1 text-neutral-700">{item.query}</span>
@@ -356,9 +356,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 <button
                   key={item.id}
                   onClick={() => handleSelectHistory(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:bg-neutral-800 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:bg-neutral-800 transition-colors text-left"
                 >
-                  <TrendingUp className="w-4 h-4 text-orange-400" />
+                  <TrendingUp className="w-4 h-4 text-warning-400" />
                   <span className="flex-1 text-neutral-700">{item.query}</span>
                 </button>
               ))}
@@ -369,7 +369,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
 
       {/* 筛选面板 */}
       {showFilterPanel && (
-        <div className="mt-3 p-4 bg-slate-50 dark:bg-neutral-800 rounded-xl border border-neutral-200">
+        <div className="mt-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-neutral-700">筛选条件</h3>
             {hasActiveFilters && (
@@ -396,7 +396,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   className={clsx(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     (filters.types ?? []).includes(type)
-                      ? 'border-blue-500 bg-secondary-container text-secondary-main'
+                      ? 'border-secondary-500 bg-secondary-container text-secondary-main'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 hover:border-neutral-300 dark:border-neutral-700',
                   )}
                 >
@@ -420,7 +420,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                   className={clsx(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     selectedDateRange === option.value
-                      ? 'border-blue-500 bg-secondary-container text-secondary-main'
+                      ? 'border-secondary-500 bg-secondary-container text-secondary-main'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 hover:border-neutral-300 dark:border-neutral-700',
                   )}
                 >
@@ -441,10 +441,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 {(filters.tags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm"
+                    className="flex items-center gap-1 px-3 py-1 bg-warning-100 text-warning-700 rounded-full text-sm"
                   >
                     {tag}
-                    <button onClick={() => removeTag(tag)} className="hover:text-yellow-900">
+                    <button onClick={() => removeTag(tag)} className="hover:text-warning-900">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -466,7 +466,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, sortBy: e.target.value as SearchFilters['sortBy'] }))
                 }
-                className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-blue-500"
+                className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:border-secondary-500"
               >
                 <option value="relevance">相关性</option>
                 <option value="createdAt">创建时间</option>

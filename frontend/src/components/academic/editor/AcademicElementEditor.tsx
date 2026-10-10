@@ -255,7 +255,8 @@ function hello() {
                   onChange={(e) => handleUpdateCode(element.id, element.language, e.target.value, element.caption || '')}
                   className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   rows={6}
-                />
+        aria-label="代码"
+      />
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-600 mb-1">标题（可选）</label>
@@ -292,7 +293,7 @@ function hello() {
             <button
               type="button"
               onClick={handleInsertFormula}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Variable className="w-4 h-4 text-secondary-500" />
               插入公式
@@ -300,7 +301,7 @@ function hello() {
             <button
               type="button"
               onClick={handleInsertTable}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Table className="w-4 h-4 text-success-500" />
               插入表格
@@ -308,7 +309,7 @@ function hello() {
             <button
               type="button"
               onClick={handleInsertCode}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:bg-neutral-800 flex items-center gap-2"
             >
               <Code2 className="w-4 h-4 text-accent-500" />
               插入代码块
@@ -316,7 +317,7 @@ function hello() {
             <button
               type="button"
               onClick={() => setShowInsertMenu(false)}
-              className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:bg-neutral-800 text-neutral-500 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-500 flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               取消
@@ -372,7 +373,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
           <thead>
             <tr>
               {headers.map((header, index) => (
-                <th key={index} className="border border-neutral-300 px-3 py-2 bg-slate-50 dark:bg-neutral-800">
+                <th key={index} className="border border-neutral-300 px-3 py-2 bg-neutral-50 dark:bg-neutral-800">
                   <input
                     type="text"
                     value={header}
@@ -382,7 +383,8 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                       onUpdate(newHeaders, rows, caption);
                     }}
                     className="w-full bg-transparent border-none outline-none text-sm font-medium"
-                  />
+        aria-label={`表头第${index + 1}列`}
+      />
                   {headers.length > 1 && (
                     <button
                       type="button"
@@ -394,7 +396,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                   )}
                 </th>
               ))}
-              <th className="border border-neutral-300 px-2 py-2 bg-slate-50 dark:bg-neutral-800">
+              <th className="border border-neutral-300 px-2 py-2 bg-neutral-50 dark:bg-neutral-800">
                 <button
                   type="button"
                   onClick={addColumn}
@@ -422,7 +424,8 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                         }
                       }}
                       className="w-full bg-transparent border-none outline-none text-sm"
-                    />
+        aria-label={`第${rowIndex + 1}行第${cellIndex + 1}列`}
+      />
                   </td>
                 ))}
                 <td className="border border-neutral-300 dark:border-neutral-700 px-2 py-2">

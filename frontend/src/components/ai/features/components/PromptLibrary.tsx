@@ -113,7 +113,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 'w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all duration-150',
                 'hover:bg-neutral-100 dark:hover:bg-neutral-700/50',
                 isSelected
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 font-medium'
                   : 'text-neutral-700 dark:text-neutral-300',
               )}
               style={{ paddingLeft: `${level * 16 + 12}px` }}
@@ -245,9 +245,9 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         )}
       >
         {/* ===== 头部栏 ===== */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-violet-500 flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-lg">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -291,7 +291,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         {/* ===== 主体内容区 ===== */}
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧：分类导航 */}
-          <aside className="w-64 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto p-4 bg-slate-50/50 dark:bg-neutral-800/30">
+          <aside className="w-64 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto p-4 bg-neutral-50/50 dark:bg-neutral-800/30">
             <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3 px-3">
               分类导航
             </h3>
@@ -301,7 +301,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
               className={cn(
                 'w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg mb-1 transition-all duration-150',
                 !promptManager.selectedCategory
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium'
+                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 font-medium'
                   : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50',
               )}
             >
@@ -339,7 +339,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 className={cn(
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   activeTab === 'library'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                 )}
               >
@@ -351,7 +351,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 className={cn(
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors relative',
                   activeTab === 'recommendations'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                 )}
               >
@@ -368,7 +368,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                 className={cn(
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   activeTab === 'favorites'
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                 )}
               >
@@ -386,7 +386,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
                   placeholder="搜索提示词（标题、描述、标签）..."
                   value={promptManager.searchQuery}
                   onChange={(e) => promptManager.searchTemplates(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-400 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-400 transition-all"
                 />
                 {promptManager.searchQuery && (
                   <button
@@ -542,7 +542,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
               <label className="flex items-center gap-2 px-4 py-2 bg-secondary-container hover:bg-secondary-container text-secondary-main rounded-lg text-sm font-medium cursor-pointer transition-colors">
                 <Upload className="w-4 h-4" />
                 导入文件
-                <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+                <input type="file" accept=".json" onChange={handleImport} className="hidden" aria-hidden="true" tabIndex={-1} />
               </label>
 
               <button
@@ -590,7 +590,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
         'border-neutral-200 dark:border-neutral-700',
         'hover:border-primary-300 dark:hover:border-primary-600',
         'hover:shadow-lg hover:shadow-primary-500/10',
-        template.isFavorite && 'ring-2 ring-yellow-400/30 dark:ring-yellow-500/20',
+        template.isFavorite && 'ring-2 ring-warning-400/30 dark:ring-warning-500/20',
       )}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -618,8 +618,8 @@ const PromptCard: React.FC<PromptCardProps> = ({
               className={cn(
                 'w-4 h-4',
                 template.isFavorite
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-yellow-400',
+                  ? 'fill-warning-400 text-warning-400'
+                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-warning-400',
               )}
             />
           </button>
@@ -639,7 +639,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
           {template.variables.map(v => (
             <span
               key={v.name}
-              className="inline-flex items-center px-2 py-0.5 bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300 text-xs font-mono rounded-md"
+              className="inline-flex items-center px-2 py-0.5 bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 text-xs font-mono rounded-md"
             >
               {'{{'}{v.label}{'}}'}
             </span>
@@ -671,7 +671,7 @@ const PromptCard: React.FC<PromptCardProps> = ({
             使用 {template.usageCount} 次
           </span>
           {template.isBuiltin && (
-            <span className="px-1.5 py-0.5 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded text-[11px] font-medium">
+            <span className="px-1.5 py-0.5 bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 rounded text-xs font-medium">
               内置
             </span>
           )}
@@ -739,27 +739,27 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   const reasonLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     frequently_used: {
       label: '高频使用',
-      color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300',
+      color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
       icon: <TrendingUp className="w-3.5 h-3.5" />,
     },
     context_match: {
       label: '最近活跃',
-      color: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300',
+      color: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
       icon: <Clock className="w-3.5 h-3.5" />,
     },
     trending: {
       label: '上升趋势',
-      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+      color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
       icon: <Zap className="w-3.5 h-3.5" />,
     },
     similar_to_history: {
       label: '上下文匹配',
-      color: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300',
+      color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
       icon: <Sparkles className="w-3.5 h-3.5" />,
     },
     new_and_relevant: {
       label: '新模板',
-      color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+      color: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700',
       icon: <Star className="w-3.5 h-3.5" />,
     },
   }
@@ -776,7 +776,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         className={cn(
           'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold',
           rank <= 3
-            ? 'bg-gradient-to-br from-primary-500 to-violet-500 text-white shadow-lg'
+            ? 'bg-gradient-to-br from-primary-500 to-accent-500 text-white shadow-lg'
             : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400',
         )}
       >
@@ -801,10 +801,10 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
 
       {/* 分数 */}
       <div className="text-right shrink-0">
-        <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
+        <div className="text-lg font-bold text-primary-700 dark:text-primary-700">
           {recommendation.score}
         </div>
-        <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分</div>
+        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分</div>
       </div>
     </button>
   )
@@ -833,7 +833,7 @@ const VariableEditorModal: React.FC<VariableEditorModalProps> = ({
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
       <div className="w-full max-w-lg mx-4 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {/* 头部 */}
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-primary-50 to-white dark:from-primary-900/20 dark:to-slate-900">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-primary-50 to-white dark:from-primary-900/20 dark:to-neutral-900">
           <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
             填写模板变量
           </h3>
@@ -896,7 +896,7 @@ const VariableEditorModal: React.FC<VariableEditorModalProps> = ({
         </div>
 
         {/* 操作按钮 */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30">
           <button
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"

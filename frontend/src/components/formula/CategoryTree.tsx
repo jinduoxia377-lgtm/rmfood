@@ -181,14 +181,15 @@ export function CategoryTree({
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
+          'w-full min-h-[44px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
           'bg-white dark:bg-neutral-900 text-sm text-left',
           'hover:border-primary-400 dark:hover:border-primary-600 transition-colors',
           'flex flex-wrap gap-1.5 items-center',
         )}
       >
+        {/* A-35：占位文案原为 neutral-400，白底 2.56:1 不达标 */}
         {selectedCategories.length === 0 ? (
-          <span className="text-neutral-400 dark:text-neutral-500">{placeholder}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">{placeholder}</span>
         ) : (
           selectedCategories.map((cat) => (
             <Badge key={cat.id} variant="primary" size="sm" className="gap-1">
@@ -239,11 +240,11 @@ export function CategoryTree({
             onScroll={handleScroll}
           >
             {loading ? (
-              <div className="p-4 text-center text-sm text-neutral-400">
+              <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
               </div>
             ) : flatData.length === 0 ? (
-              <div className="p-4 text-center text-sm text-neutral-400">
+              <div className="p-4 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {search ? '未找到匹配分类' : '暂无分类数据'}
               </div>
             ) : (
@@ -264,14 +265,14 @@ export function CategoryTree({
                         key={node.id}
                         className={cn(
                           'flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer',
-                          'hover:bg-slate-50 dark:hover:bg-neutral-800',
-                          isSelected && 'bg-primary-50 dark:bg-primary-900/20',
+                          'hover:bg-neutral-50 dark:hover:bg-neutral-800',
+                          isSelected && 'bg-primary-50 dark:bg-primary-300/20',
                         )}
                         style={{ paddingLeft: `${12 + indent * 16}px`, height: `${ITEM_HEIGHT}px` }}
                          role="button" tabIndex={0} onClick={() => hasChildren ? toggleExpand(node.id) : toggleSelect(node.id)}
                       >
                         {hasChildren ? (
-                          <span className="text-neutral-400">
+                          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                           </span>
                         ) : (
@@ -284,14 +285,14 @@ export function CategoryTree({
                           className={cn(
                             'flex-1 truncate',
                             isSelected
-                              ? 'text-primary-700 dark:text-primary-400 font-medium'
+                              ? 'text-primary-700 dark:text-primary-700 font-medium'
                               : 'text-neutral-700 dark:text-neutral-300',
                           )}
                         >
                           {node.name}
                         </span>
                         {node.formulaCount !== undefined && node.formulaCount > 0 && (
-                          <span className="text-xs text-neutral-400">{node.formulaCount}</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{node.formulaCount}</span>
                         )}
                         {isSelected && (
                           <span className="w-2 h-2 rounded-full bg-primary-500" />

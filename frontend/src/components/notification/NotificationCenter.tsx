@@ -55,7 +55,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   collaboration: <MessageSquare className="w-4 h-4 text-secondary-500" />,
   workflow: <Workflow className="w-4 h-4 text-warning-500" />,
   security: <Shield className="w-4 h-4 text-error-500" />,
-  billing: <AlertCircle className="w-4 h-4 text-yellow-500" />,
+  billing: <AlertCircle className="w-4 h-4 text-warning-500" />,
   ai_generation: <Sparkles className="w-4 h-4 text-accent-500" />,
   system: <Globe className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />,
 }
@@ -230,7 +230,7 @@ export function NotificationCenter() {
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+        className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
         aria-label="通知中心"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -279,17 +279,24 @@ export function NotificationCenter() {
 
           {/* Settings Panel */}
           {showSettings && (
-            <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
+            <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
               <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">通知设置</h4>
               <div className="space-y-2">
+                {/* A-36：这三个复选框原先的 aria-label 与可见文字【整体错位一格】
+                    （"通知设置"配"启用通知"、"启用通知"配"邮件通知"…）。
+                    按 HTML-AAM，aria-label 优先于祖先 <label>，所以屏幕阅读器念出来的
+                    全是错名字 —— 这种错比缺失更隐蔽。逐个对齐为可见文字。 */}
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-<input aria-label="通知设置" type="checkbox" defaultChecked className="rounded" />                  <span>启用通知</span>
+                  <input aria-label="启用通知" type="checkbox" defaultChecked className="rounded" />
+                  <span>启用通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-<input aria-label="启用通知" type="checkbox" defaultChecked className="rounded" />                  <span>邮件通知</span>
+                  <input aria-label="邮件通知" type="checkbox" defaultChecked className="rounded" />
+                  <span>邮件通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-<input aria-label="邮件通知" type="checkbox" defaultChecked className="rounded" />                  <span>实时推送</span>
+                  <input aria-label="实时推送" type="checkbox" defaultChecked className="rounded" />
+                  <span>实时推送</span>
                 </label>
                 <div className="flex items-center gap-2 pt-2">
                   <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
@@ -297,13 +304,15 @@ export function NotificationCenter() {
                     type="time"
                     defaultValue="22:00"
                     className="text-sm border rounded px-2 py-1 w-28"
-                  />
+        aria-label="免打扰开始时间"
+      />
                   <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">至</span>
                   <input
                     type="time"
                     defaultValue="08:00"
                     className="text-sm border rounded px-2 py-1 w-28"
-                  />
+        aria-label="免打扰结束时间"
+      />
                   <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">免打扰时段</span>
                 </div>
               </div>
@@ -354,7 +363,7 @@ export function NotificationCenter() {
           <div className="max-h-[480px] overflow-y-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-3">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</span>
               </div>
             ) : notifications.length === 0 ? (
@@ -363,12 +372,12 @@ export function NotificationCenter() {
                 <p className="text-sm">暂无{activeTab === 'unread' ? '未读' : ''}通知</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`group relative px-4 py-3 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
-                      notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-slate-50/50 dark:bg-neutral-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-900/10'
+                    className={`group relative px-4 py-3 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
+                      notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-neutral-50/50 dark:bg-neutral-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-300/15'
                     }`}
                   >
                     <div className="flex gap-3">
@@ -457,7 +466,7 @@ export function NotificationCenter() {
 
           {/* Footer with Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
               <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 第 {page} / {totalPages} 页
               </span>
@@ -481,7 +490,7 @@ export function NotificationCenter() {
           )}
 
           {/* Quick Link to Full Page */}
-          <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-800/30 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800/30 border-t border-neutral-200 dark:border-neutral-700">
             <a
               href="/notifications"
               className="block text-center text-sm text-secondary-600 hover:text-secondary-700 py-1"

@@ -58,14 +58,14 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
       >
         {/* 状态指示器 — DSH 风格：纯圆点 */}
         <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
-          isThinking ? 'bg-emerald-500 animate-pulse' :
-          isComplete ? 'bg-emerald-500' :
-          isPartial ? 'bg-amber-500' :
+          isThinking ? 'bg-success-500 animate-pulse' :
+          isComplete ? 'bg-success-500' :
+          isPartial ? 'bg-warning-500' :
           'bg-neutral-400'
         }`} />
 
         {/* 摘要文字 — DSH 风格：简洁文本 */}
-        <span className="text-[11px] text-neutral-500 dark:text-neutral-400 flex-1 truncate">
+        <span className="text-xs text-neutral-500 dark:text-neutral-400 flex-1 truncate">
           {isThinking
             ? '正在思考…'
             : isComplete
@@ -74,7 +74,7 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
                 ? `思考中 · ${completedCount}/${steps.length} 步`
                 : '思考过程'}
           {elapsedMs !== undefined && !isThinking && (
-            <span className="text-neutral-400 dark:text-neutral-500 ml-1">· {formatDuration(elapsedMs)}</span>
+            <span className="text-neutral-400 dark:text-neutral-400 ml-1">· {formatDuration(elapsedMs)}</span>
           )}
         </span>
 
@@ -93,7 +93,7 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
           {steps.map((step, i) => (
             <div
               key={i}
-              className={`flex items-start gap-1.5 py-0.5 text-[11px] ${
+              className={`flex items-start gap-1.5 py-0.5 text-xs ${
                 step.status === 'thinking' ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' :
                 step.status === 'complete' ? 'text-neutral-600 dark:text-neutral-300' :
                 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
@@ -102,10 +102,10 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
               {/* 步骤状态 */}
               <span className="flex-shrink-0 w-3 h-3 flex items-center justify-center mt-0.5">
                 {step.status === 'complete' && (
-                  <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                  <span className="w-1 h-1 rounded-full bg-success-500" />
                 )}
                 {step.status === 'thinking' && (
-                  <Loader2 className="w-2.5 h-2.5 text-emerald-500 animate-spin" />
+                  <Loader2 className="w-2.5 h-2.5 text-success-500 animate-spin" />
                 )}
                 {step.status === 'pending' && (
                   <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
@@ -115,7 +115,7 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
               <span className="flex-1 min-w-0 truncate">
                 <span className="font-medium">{step.step}</span>
                 {step.content && (
-                  <span className="text-neutral-400 dark:text-neutral-500 ml-1">{step.content}</span>
+                  <span className="text-neutral-400 dark:text-neutral-400 ml-1">{step.content}</span>
                 )}
               </span>
             </div>
@@ -123,8 +123,8 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
 
           {/* 流式思考中 — 追加动态行 */}
           {isThinking && (
-            <div className="flex items-center gap-1.5 py-0.5 text-[11px] text-[color:var(--text-muted)]">
-              <Loader2 className="w-2.5 h-2.5 text-emerald-500 animate-spin flex-shrink-0" />
+            <div className="flex items-center gap-1.5 py-0.5 text-xs text-[color:var(--text-muted)]">
+              <Loader2 className="w-2.5 h-2.5 text-success-500 animate-spin flex-shrink-0" />
               <span>正在分析配方需求…</span>
             </div>
           )}

@@ -119,11 +119,11 @@ export function AcademicEditor() {
 
       <div className="flex items-center justify-between p-3 border-t border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50 dark:hover:bg-neutral-700">
+          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-50 dark:hover:bg-neutral-700">
             <Undo className="w-4 h-4" />
             撤销
           </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50 dark:hover:bg-neutral-700">
+          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-50 dark:hover:bg-neutral-700">
             <Redo className="w-4 h-4" />
             重做
           </button>

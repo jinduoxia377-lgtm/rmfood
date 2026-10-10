@@ -188,7 +188,7 @@ function ChapterItem({
           isSelected
             ? 'bg-primary/10 text-primary'
             : isItemSelected
-            ? 'bg-secondary-50 dark:bg-secondary-900/20'
+            ? 'bg-secondary-50 dark:bg-secondary-300/20'
             : 'hover:bg-neutral-100 dark:bg-neutral-800 text-neutral-700',
         )}
         style={{ paddingLeft: `${depth * 16 + 12}px` }}
@@ -243,7 +243,8 @@ function ChapterItem({
               }}
               className="w-full px-2 py-1 text-sm border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
               autoFocus
-            />
+        aria-label="章节名称"
+      />
           ) : (
             <span className="truncate flex items-center gap-2">
               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{chapter.order}.</span>
@@ -302,7 +303,7 @@ function ChapterItem({
                 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors',
                 selectedChapterId === section.id
                   ? 'bg-primary/5 text-primary'
-                  : 'hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600',
+                  : 'hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-600',
               )}
               style={{ paddingLeft: `${depth * 16 + 24}px` }}
                role="button" tabIndex={0} onClick={() => onSelect(section.id)}

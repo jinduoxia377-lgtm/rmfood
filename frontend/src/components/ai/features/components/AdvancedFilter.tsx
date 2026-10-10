@@ -32,11 +32,11 @@ interface AdvancedFilterProps {
 
 /** 质量等级选项 */
 const QUALITY_GRADE_OPTIONS = [
-  { value: 'A', label: 'A级', color: 'text-success-600 bg-success-100 dark:bg-success-900/30' },
-  { value: 'B', label: 'B级', color: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-900/30' },
-  { value: 'C', label: 'C级', color: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30' },
-  { value: 'D', label: 'D级', color: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30' },
-  { value: 'F', label: 'F级', color: 'text-error-600 bg-error-100 dark:bg-error-900/30' },
+  { value: 'A', label: 'A级', color: 'text-success-600 bg-success-100 dark:bg-success-300/25' },
+  { value: 'B', label: 'B级', color: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-300/25' },
+  { value: 'C', label: 'C级', color: 'text-warning-600 bg-warning-100 dark:bg-warning-300/25' },
+  { value: 'D', label: 'D级', color: 'text-warning-600 bg-warning-100 dark:bg-warning-300/25' },
+  { value: 'F', label: 'F级', color: 'text-error-600 bg-error-100 dark:bg-error-300/25' },
 ];
 
 /** 时间范围选项 */
@@ -234,7 +234,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               置信度范围
             </div>
             {localFilters.confidenceRange && (
-              <span className="text-secondary-600 dark:text-secondary-600">
+              <span className="text-secondary-600 dark:text-secondary-700">
                 {localFilters.confidenceRange.min}% - {localFilters.confidenceRange.max}%
               </span>
             )}
@@ -251,7 +251,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 const max = localFilters.confidenceRange?.max ?? 100;
                 handleConfidenceRangeChange(Math.min(min, max), max);
               }}
-              className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-secondary-500"
+              aria-label="置信度下限"
             />
             <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-10 text-right">{localFilters.confidenceRange?.min ?? 0}%</span>
           </div>
@@ -267,7 +268,8 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 const min = localFilters.confidenceRange?.min ?? 0;
                 handleConfidenceRangeChange(min, Math.max(min, max));
               }}
-              className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              className="flex-1 h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-secondary-500"
+              aria-label="置信度上限"
             />
             <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-10 text-right">{localFilters.confidenceRange?.max ?? 100}%</span>
           </div>
@@ -288,7 +290,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                 className={`px-3 py-1.5 rounded-md text-sm border transition-all ${
                   (option.value === 'custom' && localFilters.dateRange) ||
                   (option.value !== 'custom' && localFilters.dateRange)
-                    ? 'border-blue-500 bg-secondary-50 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-600'
+                    ? 'border-secondary-500 bg-secondary-50 text-secondary-700 dark:bg-secondary-300/20 dark:text-secondary-700'
                     : 'border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-neutral-400'
                 }`}
               >
@@ -314,7 +316,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
               成分数量
             </div>
             {localFilters.ingredientCountRange && (
-              <span className="text-secondary-600 dark:text-secondary-600">
+              <span className="text-secondary-600 dark:text-secondary-700">
                 {localFilters.ingredientCountRange.min} - {localFilters.ingredientCountRange.max} 种
               </span>
             )}
@@ -333,7 +335,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                   handleIngredientCountChange(min, Math.max(min, max));
                 }}
                 placeholder="最少"
-                className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-secondary-500"
               />
               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
               <input
@@ -347,7 +349,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                   handleIngredientCountChange(Math.min(min, max), max);
                 }}
                 placeholder="最多"
-                className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-neutral-700 outline-none focus:ring-2 focus:ring-secondary-500"
               />
               <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">种</span>
             </div>
@@ -372,7 +374,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
                     onClick={() => handleTagToggle(tag)}
                     className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                       isSelected
-                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-600 ring-2 ring-primary-500'
+                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700 ring-2 ring-primary-500'
                         : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >

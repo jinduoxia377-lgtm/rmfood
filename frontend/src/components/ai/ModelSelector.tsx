@@ -52,8 +52,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* icon: rounded-xl w-10 h-10 — matches SectionHeader icon pattern */}
-          <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-            <Brain className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center flex-shrink-0">
+            <Brain className="w-5 h-5 text-primary-700 dark:text-primary-700" />
           </div>
           <div>
             {/* text-sm font-semibold — matches StatCard label pattern (was font-semibold=500) */}

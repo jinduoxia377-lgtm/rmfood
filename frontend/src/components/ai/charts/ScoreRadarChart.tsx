@@ -95,7 +95,7 @@ export function ScoreRadarChart({ synergyScore, tasteScore, stabilityScore, over
             <span className="text-2xl font-bold" style={{ color: scoreColor }}>
               {((overallScore ?? 0) * 100).toFixed(0)}
             </span>
-            <span className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>综合</span>
+            <span className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>综合</span>
           </div>
         </div>
       </div>

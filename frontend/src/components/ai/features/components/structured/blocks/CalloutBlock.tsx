@@ -32,38 +32,38 @@ const CALLOUT_STYLES: Record<string, {
   info: {
     icon: Info,
     label: '信息',
-    containerClass: 'bg-secondary-50 dark:bg-blue-950/30',
-    iconColor: 'text-secondary-500 dark:text-secondary-400',
-    titleColor: 'text-secondary-700 dark:text-secondary-300',
-    textColor: 'text-secondary-600/80 dark:text-secondary-300/80',
-    borderColor: 'border-blue-200 dark:border-blue-800',
+    containerClass: 'bg-secondary-50 dark:bg-secondary-950/30',
+    iconColor: 'text-secondary-500 dark:text-secondary-700',
+    titleColor: 'text-secondary-700 dark:text-secondary-700',
+    textColor: 'text-secondary-600/80 dark:text-secondary-700/80',
+    borderColor: 'border-secondary-200 dark:border-secondary-800',
   },
   success: {
     icon: CheckCircle,
     label: '分析结果',
-    containerClass: 'bg-primary-50 dark:bg-emerald-950/30',
-    iconColor: 'text-primary-500 dark:text-primary-400',
-    titleColor: 'text-primary-700 dark:text-primary-300',
-    textColor: 'text-primary-600/80 dark:text-primary-300/80',
-    borderColor: 'border-emerald-200 dark:border-emerald-800',
+    containerClass: 'bg-primary-50 dark:bg-success-950/30',
+    iconColor: 'text-primary-500 dark:text-primary-700',
+    titleColor: 'text-primary-700 dark:text-primary-700',
+    textColor: 'text-primary-700/80 dark:text-primary-700/80',
+    borderColor: 'border-success-200 dark:border-success-800',
   },
   warning: {
     icon: AlertTriangle,
     label: '注意事项',
-    containerClass: 'bg-warning-50 dark:bg-amber-950/30',
-    iconColor: 'text-warning-500 dark:text-warning-400',
-    titleColor: 'text-warning-700 dark:text-warning-300',
-    textColor: 'text-warning-600/80 dark:text-warning-300/80',
-    borderColor: 'border-amber-200 dark:border-amber-800',
+    containerClass: 'bg-warning-50 dark:bg-warning-950/30',
+    iconColor: 'text-warning-500 dark:text-warning-700',
+    titleColor: 'text-warning-700 dark:text-warning-700',
+    textColor: 'text-warning-600/80 dark:text-warning-700/80',
+    borderColor: 'border-warning-200 dark:border-warning-800',
   },
   summary: {
     icon: FileText,
     label: '总结',
-    containerClass: 'bg-warning-50/60 dark:bg-amber-950/20',
-    iconColor: 'text-warning-600 dark:text-warning-400',
-    titleColor: 'text-warning-800 dark:text-warning-300',
+    containerClass: 'bg-warning-50/60 dark:bg-warning-950/20',
+    iconColor: 'text-warning-600 dark:text-warning-700',
+    titleColor: 'text-warning-800 dark:text-warning-700',
     textColor: 'text-neutral-600 dark:text-neutral-400',
-    borderColor: 'border-amber-200/80 dark:border-amber-800/60',
+    borderColor: 'border-warning-200/80 dark:border-warning-800/60',
   },
 }
 
@@ -101,10 +101,10 @@ function CalloutBlock({ data }: CalloutBlockProps) {
               className="flex-shrink-0 p-1 rounded hover:bg-white dark:bg-neutral-900/20 transition-colors"
               title="复制内容"
             >
-              {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 opacity-50 hover:opacity-100" />}
+              {copied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3 opacity-50 hover:opacity-100" />}
             </button>
           </div>
-          <p className={`text-[11px] leading-relaxed mt-0.5 ${style.textColor}`}>
+          <p className={`text-xs leading-relaxed mt-0.5 ${style.textColor}`}>
             {content}
           </p>
         </div>
@@ -115,7 +115,7 @@ function CalloutBlock({ data }: CalloutBlockProps) {
           <button
             onClick={() => setShowDetails(prev => !prev)}
             className="flex items-center gap-1 px-3 py-1.5 w-full text-left
-              text-[10px] text-neutral-400 dark:text-neutral-500
+              text-xs text-neutral-400 dark:text-neutral-400
               hover:bg-black/5 dark:hover:bg-white dark:bg-neutral-900/5 transition-colors"
           >
             {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -124,7 +124,7 @@ function CalloutBlock({ data }: CalloutBlockProps) {
           {showDetails && (
             <div className="px-3 pb-2 space-y-1">
               {details.map((detail, i) => (
-                <p key={i} className={`text-[10px] leading-relaxed pl-6 ${style.textColor} opacity-80`}>
+                <p key={i} className={`text-xs leading-relaxed pl-6 ${style.textColor} opacity-80`}>
                   • {detail}
                 </p>
               ))}

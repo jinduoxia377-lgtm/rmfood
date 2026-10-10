@@ -13,10 +13,10 @@ interface InferenceStepCardProps {
 }
 
 const typeConfig: Record<InferenceStepType, { icon: typeof Lightbulb; label: string; color: string }> = {
-  [InferenceStepType.THOUGHT]: { icon: Lightbulb, label: '思考', color: 'bg-warning-100 text-warning-800 border-amber-200' },
-  [InferenceStepType.ACTION]: { icon: Cog, label: '行动', color: 'bg-secondary-100 text-secondary-800 border-blue-200' },
-  [InferenceStepType.OBSERVATION]: { icon: Eye, label: '观察', color: 'bg-success-100 text-success-800 border-green-200' },
-  [InferenceStepType.SUMMARY]: { icon: FileText, label: '总结', color: 'bg-accent-100 text-accent-800 border-purple-200' },
+  [InferenceStepType.THOUGHT]: { icon: Lightbulb, label: '思考', color: 'bg-warning-100 text-warning-800 border-warning-200' },
+  [InferenceStepType.ACTION]: { icon: Cog, label: '行动', color: 'bg-secondary-100 text-secondary-800 border-secondary-200' },
+  [InferenceStepType.OBSERVATION]: { icon: Eye, label: '观察', color: 'bg-success-100 text-success-800 border-success-200' },
+  [InferenceStepType.SUMMARY]: { icon: FileText, label: '总结', color: 'bg-accent-100 text-accent-800 border-accent-200' },
 };
 
 const statusConfig: Record<InferenceStepStatus, { icon: typeof CheckCircle; label: string; color: string }> = {
@@ -65,7 +65,7 @@ const MemoizedInferenceStepCard = memo(({
     <div
       className={clsx(
         'group rounded-lg border transition-all duration-200 cursor-pointer',
-        isActive ? 'border-blue-400 bg-secondary-50 shadow-md' : 'border-neutral-200 bg-white dark:bg-neutral-900 hover:border-neutral-300 hover:shadow-sm',
+        isActive ? 'border-secondary-400 bg-secondary-50 shadow-md' : 'border-neutral-200 bg-white dark:bg-neutral-900 hover:border-neutral-300 hover:shadow-sm',
         depth > 0 && 'ml-6 border-l-4',
       )}
       onClick={handleClick}
@@ -136,7 +136,7 @@ const MemoizedInferenceStepCard = memo(({
       >
         <div className="px-4 pb-4 pt-0">
           {/* 内容区域 */}
-          <div className="pl-15 mt-3 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+          <div className="pl-15 mt-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
             <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">
               {content}
             </p>
@@ -145,7 +145,7 @@ const MemoizedInferenceStepCard = memo(({
           {/* 工具调用信息（仅Action类型） */}
           {type === InferenceStepType.ACTION && toolCall && (
             <div className="mt-3 pl-15">
-              <div className="p-3 bg-secondary-50 rounded-lg border border-blue-100">
+              <div className="p-3 bg-secondary-50 rounded-lg border border-secondary-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Cog className="w-4 h-4 text-secondary-600" />
                   <span className="text-sm font-medium text-secondary-800">工具调用</span>
@@ -187,8 +187,8 @@ const MemoizedInferenceStepCard = memo(({
               <div className={clsx(
                 'p-3 rounded-lg border',
                 toolResult.success
-                  ? 'bg-success-50 border-green-100'
-                  : 'bg-error-50 border-red-100',
+                  ? 'bg-success-50 border-success-100'
+                  : 'bg-error-50 border-error-100',
               )}>
                 <div className="flex items-center gap-2 mb-2">
                   {toolResult.success ? (

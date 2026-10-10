@@ -155,7 +155,7 @@ function ConditionRow({
       case 'select':
         return (
           <select
-            className="w-40 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-40 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
             value={condition.value ?? ''}
             onChange={(e) => onChange({ value: e.target.value })}
           >
@@ -172,7 +172,7 @@ function ConditionRow({
         return (
           <input
             type="number"
-            className="w-32 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500"
+            className="w-32 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500"
             placeholder={selectedField.placeholder || '输入数值'}
             value={condition.value ?? ''}
             onChange={(e) => onChange({ value: parseFloat(e.target.value) || 0 })}
@@ -185,10 +185,11 @@ function ConditionRow({
         return (
           <input
             type="date"
-            className="w-40 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500"
+            className="w-40 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500"
             value={condition.value || ''}
             onChange={(e) => onChange({ value: e.target.value })}
-          />
+        aria-label={selectedField.label}
+      />
         );
 
       case 'text':
@@ -196,7 +197,7 @@ function ConditionRow({
         return (
           <input
             type="text"
-            className="flex-1 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500"
             placeholder={selectedField.placeholder || '输入筛选值...'}
             value={condition.value ?? ''}
             onChange={(e) => onChange({ value: e.target.value })}
@@ -217,8 +218,8 @@ function ConditionRow({
           })}
           className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
             condition.logicOperator === 'AND'
-              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-600'
-              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700'
+              : 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700'
           }`}
         >
           {condition.logicOperator}
@@ -227,7 +228,7 @@ function ConditionRow({
 
       {/* 字段选择 */}
       <select
-        className="w-36 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500"
+        className="w-36 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500"
         value={condition.fieldKey}
         onChange={(e) => handleFieldChange(e.target.value)}
       >
@@ -241,7 +242,7 @@ function ConditionRow({
 
       {/* 操作符选择 */}
       <select
-        className="w-28 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500"
+        className="w-28 px-2 py-1.5 text-sm border border-neutral-300 rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600 focus:ring-2 focus:ring-secondary-500"
         value={condition.operator}
         onChange={(e) => handleOperatorChange(e.target.value as FilterOperator)}
       >
@@ -290,7 +291,7 @@ function ConditionGroupRenderer({
   depth?: number;
 }) {
   return (
-    <div className={`space-y-2 ${depth > 0 ? 'ml-4 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg' : ''}`}>
+    <div className={`space-y-2 ${depth > 0 ? 'ml-4 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg' : ''}`}>
       {group.conditions.map((item, index) => {
         if ('conditions' in item) {
           // 嵌套组
@@ -307,7 +308,7 @@ function ConditionGroupRenderer({
                   className={`px-2 py-0.5 text-xs font-medium rounded ${
                     item.logicOperator === 'AND'
                       ? 'bg-secondary-100 text-secondary-700'
-                      : 'bg-orange-100 text-orange-700'
+                      : 'bg-warning-100 text-warning-700'
                   }`}
                 >
                   {item.logicOperator}
@@ -357,7 +358,7 @@ function ConditionGroupRenderer({
       <div className="flex items-center gap-2 pt-2">
         <button
           onClick={onAddCondition}
-          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-900/20 dark:hover:bg-secondary-900/40 rounded-md transition-colors"
+          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-300/20 dark:hover:bg-secondary-900/40 rounded-md transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -368,7 +369,7 @@ function ConditionGroupRenderer({
         {depth < 2 && (
           <button
             onClick={onAddSubGroup}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 hover:bg-accent-100 dark:bg-accent-900/20 dark:hover:bg-accent-900/40 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 hover:bg-accent-100 dark:bg-accent-300/20 dark:hover:bg-accent-900/40 rounded-md transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -490,7 +491,7 @@ export function FilterBuilder({
               />
               <button
                 onClick={handleSaveCurrentFilter}
-                className="px-2 py-1 text-xs font-medium text-success-600 bg-success-50 hover:bg-success-100 dark:bg-success-900/20 rounded transition-colors"
+                className="px-2 py-1 text-xs font-medium text-success-600 bg-success-50 hover:bg-success-100 dark:bg-success-300/20 rounded transition-colors"
               >
                 💾 保存
               </button>
@@ -528,7 +529,7 @@ export function FilterBuilder({
           <div className="mt-4 pt-4 border-t border-dashed border-neutral-300 dark:border-neutral-600">
             <button
               onClick={handleAddCondition}
-              className="w-full py-2 text-sm font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-900/20 dark:hover:bg-secondary-900/40 rounded-lg transition-colors"
+              className="w-full py-2 text-sm font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-300/20 dark:hover:bg-secondary-900/40 rounded-lg transition-colors"
             >
               + 添加第一个筛选条件
             </button>
@@ -541,7 +542,7 @@ export function FilterBuilder({
         <div className="border-t border-neutral-200 dark:border-neutral-700">
           <button
             onClick={() => setShowSavedPanel(!showSavedPanel)}
-            className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-750 transition-colors"
           >
             <span>已保存的方案 ({savedFilters.length})</span>
             <svg
@@ -559,7 +560,7 @@ export function FilterBuilder({
               {savedFilters.map(filter => (
                 <div
                   key={filter.id}
-                  className="flex items-center justify-between px-3 py-2 text-xs bg-slate-50 dark:bg-slate-750 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
+                  className="flex items-center justify-between px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-750 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
                 >
                   <button
                     onClick={() => handleLoadFilter(filter)}

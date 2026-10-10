@@ -18,8 +18,8 @@ export const ErrorCard: FC<ErrorCardProps> = ({ title, message, onRetry, classNa
   <Card className={cn('overflow-hidden', className)}>
     <CardContent className="p-6">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center shrink-0">
-          <AlertTriangle size={16} className="text-warning-600 dark:text-warning-400" />
+        <div className="w-8 h-8 rounded-lg bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center shrink-0">
+          <AlertTriangle size={16} className="text-warning-600 dark:text-warning-700" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">{title}</p>

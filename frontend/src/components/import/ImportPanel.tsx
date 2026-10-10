@@ -36,19 +36,19 @@ function StepIndicator({ currentStep }: { currentStep: ImportStep }) {
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 isActive
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30'
+                  ? 'bg-warning-500 text-white shadow-md shadow-warning-200 dark:shadow-warning-900/30'
                   : isDone
-                    ? 'bg-green-500 text-white'
+                    ? 'bg-success-500 text-white'
                     : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-400'
               }`}
             >
               {isDone ? '✓' : s.icon}
             </div>
-            <span className={`text-xs hidden sm:block ${isActive ? 'text-orange-600 dark:text-orange-400 font-semibold' : 'text-neutral-400'}`}>
+            <span className={`text-xs hidden sm:block ${isActive ? 'text-warning-600 dark:text-warning-700 font-semibold' : 'text-neutral-400'}`}>
               {s.label}
             </span>
             {i < STEPS.length - 1 && (
-              <div className={`w-4 h-0.5 mx-1 ${isDone ? 'bg-green-500' : 'bg-neutral-200 dark:bg-neutral-600'}`} />
+              <div className={`w-4 h-0.5 mx-1 ${isDone ? 'bg-success-500' : 'bg-neutral-200 dark:bg-neutral-600'}`} />
             )}
           </div>
         )
@@ -99,11 +99,11 @@ function UploadStep({
         onClick={() => inputRef.current?.click()}
         className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
           dragOver
-            ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/10 scale-[1.02]'
-            : 'border-neutral-200 dark:border-neutral-600 hover:border-orange-300 dark:hover:border-orange-700'
+            ? 'border-warning-400 bg-warning-50 dark:bg-warning-300/15 scale-[1.02]'
+            : 'border-neutral-200 dark:border-neutral-600 hover:border-warning-300 dark:hover:border-warning-700'
         }`}
       >
-        <input ref={inputRef} type="file" accept=".csv,.tsv,.json,.jsonl" className="hidden" onChange={handleFileChange} />
+        <input ref={inputRef} type="file" accept=".csv,.tsv,.json,.jsonl" className="hidden" onChange={handleFileChange} aria-hidden="true" tabIndex={-1} />
         <div className="text-3xl mb-2">{dragOver ? '📂' : '📥'}</div>
         <p className="text-sm text-neutral-600 dark:text-neutral-300 font-medium">
           {dragOver ? '松开文件开始上传' : '拖拽文件到此处，或点击选择'}
@@ -121,7 +121,7 @@ function UploadStep({
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onFileSelect(null) }}
-            className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-red-500 text-xs"
+            className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 text-xs"
           >
             ✕
           </button>
@@ -158,7 +158,7 @@ function UploadStep({
       <button
         onClick={handleUpload}
         disabled={!file}
-        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:from-orange-600 hover:to-amber-600 transition-all shadow-md shadow-orange-200 dark:shadow-orange-900/20"
+        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-warning-surface)] to-[var(--color-warning-surface-deep)] text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:from-[var(--color-warning-surface-deep)] hover:to-[var(--color-warning-surface-deep)] transition-all shadow-md shadow-warning-200 dark:shadow-warning-900/20"
       >
         上传并继续
       </button>
@@ -178,14 +178,14 @@ function PreviewStep({ data, totalRows }: { data: Record<string, unknown>[]; tot
       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {totalRows.toLocaleString()} 行，显示前 {Math.min(data.length, 10)} 行</p>
       <div className="overflow-auto max-h-[280px] custom-scrollbar rounded-lg border border-neutral-200 dark:border-neutral-700">
         <table className="w-full text-xs">
-          <thead className="bg-slate-50 dark:bg-neutral-700/50 sticky top-0 z-10">
+          <thead className="bg-neutral-50 dark:bg-neutral-700/50 sticky top-0 z-10">
             <tr>{columns.map(c => (
               <th key={c} className="px-2 py-1.5 text-left font-semibold text-neutral-500 border-b border-neutral-200 dark:border-neutral-600 whitespace-nowrap">{c}</th>
             ))}</tr>
           </thead>
           <tbody>
             {data.slice(0, 10).map((row, i) => (
-              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-neutral-700/20">
+              <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/20">
                 {columns.map(c => (
                   <td key={c} className="px-2 py-1 text-neutral-600 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-700/30 truncate max-w-[140px]">
                     {String(row[c] ?? '').slice(0, 40)}
@@ -277,7 +277,7 @@ function MappingStep({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">字段映射规则</label>
-          <button onClick={addMapping} className="text-xs text-orange-500 hover:text-orange-600 font-medium">+ 添加映射</button>
+          <button onClick={addMapping} className="text-xs text-warning-500 hover:text-warning-600 font-medium">+ 添加映射</button>
         </div>
 
         {mappings.map((m, i) => (
@@ -299,7 +299,7 @@ function MappingStep({
               <option value="">— 目标字段 —</option>
               {TARGET_COLUMNS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <button onClick={() => removeMapping(i)} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-red-400 text-xs">✕</button>
+            <button onClick={() => removeMapping(i)} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-400 text-xs">✕</button>
           </div>
         ))}
 
@@ -326,7 +326,7 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
         </div>
         <div className="h-2 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-orange-400 to-amber-400 transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-warning-400 to-warning-400 transition-all duration-500"
             style={{ width: `${progress.progressPct}%` }}
           />
         </div>
@@ -341,7 +341,7 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
 
       {/* Error message */}
       {errorMessage && (
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 text-xs text-red-600 dark:text-red-400">
+        <div className="bg-error-50 dark:bg-error-300/20 rounded-lg px-3 py-2 text-xs text-error-600 dark:text-error-700">
           {errorMessage}
         </div>
       )}
@@ -352,8 +352,8 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   const colors: Record<string, string> = {
     neutral: 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300',
-    green: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-    red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400',
+    green: 'bg-success-50 dark:bg-success-300/20 text-success-600 dark:text-success-700',
+    red: 'bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-700',
   }
   return (
     <div className={`rounded-lg px-3 py-2 text-center ${colors[color] || colors.neutral}`}>
@@ -418,12 +418,12 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[560px] max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-b border-orange-100/50 dark:border-orange-900/30 shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-950/50 dark:to-warning-950/50 border-b border-warning-100/50 dark:border-warning-900/30 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-lg">📥</span>
-            <span className="text-sm font-bold text-orange-700 dark:text-orange-300">数据导入向导</span>
+            <span className="text-sm font-bold text-warning-700 dark:text-warning-700">数据导入向导</span>
           </div>
-          <button onClick={onClose} className="w-6 h-6 rounded flex items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-800/30 text-neutral-400 transition-colors">✕</button>
+          <button onClick={onClose} className="w-6 h-6 rounded flex items-center justify-center hover:bg-warning-100 dark:hover:bg-warning-800/30 text-neutral-400 transition-colors">✕</button>
         </div>
 
         {/* Body */}
@@ -451,7 +451,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={() => goToStep('mapping')}
                   disabled={!previewData?.length}
-                  className="flex-1 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-semibold disabled:opacity-40 hover:from-orange-600 hover:to-amber-600 transition-all"
+                  className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[var(--color-warning-surface)] to-[var(--color-warning-surface-deep)] text-white text-xs font-semibold disabled:opacity-40 hover:from-[var(--color-warning-surface-deep)] hover:to-[var(--color-warning-surface-deep)] transition-all"
                 >
                   下一步 → 字段映射
                 </button>
@@ -480,7 +480,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
                 <button
                   onClick={handleRun}
                   disabled={mappings.length === 0}
-                  className="flex-1 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-semibold disabled:opacity-40 hover:from-orange-600 hover:to-amber-600 transition-all"
+                  className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[var(--color-warning-surface)] to-[var(--color-warning-surface-deep)] text-white text-xs font-semibold disabled:opacity-40 hover:from-[var(--color-warning-surface-deep)] hover:to-[var(--color-warning-surface-deep)] transition-all"
                 >
                   🚀 开始导入
                 </button>
@@ -507,7 +507,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
             {(step === 'done' || step === 'error') && (
               <button
                 onClick={clear}
-                className="flex-1 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-semibold hover:from-orange-600 hover:to-amber-600 transition-all"
+                className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[var(--color-warning-surface)] to-[var(--color-warning-surface-deep)] text-white text-xs font-semibold hover:from-[var(--color-warning-surface-deep)] hover:to-[var(--color-warning-surface-deep)] transition-all"
               >
                 关闭
               </button>

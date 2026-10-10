@@ -37,6 +37,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className,
           )}
           maxLength={maxLength}
+          /* A-25：与 components/ui/Input.tsx 同步 —— 未显式指定 aria-label /
+             aria-labelledby 时，回退用 placeholder 作为可访问名称（WCAG 4.1.2）。 */
+          aria-label={
+            props['aria-label'] ??
+            (props['aria-labelledby']
+              ? undefined
+              : typeof props.placeholder === 'string' && props.placeholder ? props.placeholder : undefined)
+          }
           value={value}
           {...props}
         />

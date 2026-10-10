@@ -16,7 +16,7 @@ export default function SearchHistoryPanel({ searchHistory, onSelectTerm, onClea
         <button
           key={`${term}-${idx}`}
           onClick={() => onSelectTerm(term)}
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors"
         >
           <svg className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate">{term}</span>

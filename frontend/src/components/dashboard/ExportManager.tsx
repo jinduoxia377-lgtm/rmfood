@@ -120,15 +120,15 @@ export function ExportManager({ data, className }: ExportManagerProps) {
   const getFormatColor = (format: string) => {
     switch (format) {
       case 'csv':
-        return 'text-success-600 dark:text-success-400'
+        return 'text-success-700 dark:text-success-600'
       case 'xlsx':
-        return 'text-secondary-600 dark:text-secondary-400'
+        return 'text-secondary-600 dark:text-secondary-700'
       case 'pdf':
-        return 'text-error-600 dark:text-error-400'
+        return 'text-error-600 dark:text-error-600'
       case 'json':
-        return 'text-warning-600 dark:text-warning-400'
+        return 'text-warning-600 dark:text-warning-700'
       case 'png':
-        return 'text-accent-600 dark:text-accent-400'
+        return 'text-accent-600 dark:text-accent-700'
       default:
         return 'text-neutral-600 dark:text-neutral-400'
     }
@@ -137,13 +137,13 @@ export function ExportManager({ data, className }: ExportManagerProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'text-success-600 dark:text-success-400'
+        return 'text-success-700 dark:text-success-600'
       case 'processing':
-        return 'text-secondary-600 dark:text-secondary-400'
+        return 'text-secondary-600 dark:text-secondary-700'
       case 'failed':
-        return 'text-error-600 dark:text-error-400'
+        return 'text-error-600 dark:text-error-600'
       case 'pending':
-        return 'text-warning-600 dark:text-warning-400'
+        return 'text-warning-600 dark:text-warning-700'
       default:
         return 'text-neutral-600 dark:text-neutral-400'
     }
@@ -169,8 +169,8 @@ export function ExportManager({ data, className }: ExportManagerProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Download size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold">数据导出</CardTitle>
+            <Download size={20} className="text-secondary-600 dark:text-secondary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold">数据导出</CardTitle>
           </div>
           <Badge size="sm">{exportTasks.length}</Badge>
         </div>
@@ -207,7 +207,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
 
               {/* 格式特定选项 */}
               {exportFormat === 'csv' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">CSV 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -229,7 +229,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'xlsx' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Excel 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -247,7 +247,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'pdf' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">PDF 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -281,7 +281,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'png' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">PNG 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -297,6 +297,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                           pngOptions: { ...prev.pngOptions, scale: parseFloat(e.target.value) },
                         }))}
                         className="w-full"
+                        aria-label="缩放比例"
                       />
                     </div>
                   </div>
@@ -304,7 +305,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'json' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">JSON 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -320,6 +321,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                           jsonOptions: { ...prev.jsonOptions, indent: parseInt(e.target.value) },
                         }))}
                         className="w-full"
+                        aria-label="缩进空格"
                       />
                     </div>
                   </div>
@@ -377,13 +379,13 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <Clock size={14} className="text-neutral-400" />
+                          <Clock size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                           <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             {new Date(task.createdAt).toLocaleString()}
                           </span>
                           {task.completedAt && (
                             <>
-                              <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                              <span className="text-xs text-neutral-300 dark:text-neutral-400">·</span>
                               <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                 完成于 {new Date(task.completedAt).toLocaleTimeString()}
                               </span>
@@ -427,7 +429,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">确认导出</h3>
               <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600">
                   <div className="flex items-center gap-3">
                     <div className={getFormatColor(exportFormat)}>
                       {getFormatIcon(exportFormat)}

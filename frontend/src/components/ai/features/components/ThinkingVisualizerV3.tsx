@@ -113,7 +113,7 @@ function ConfidenceBar({ confidence, size = 'sm' }: { confidence: number; size?:
       <div className={`flex-1 ${h} bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden`}>
         <div className={`${h} ${getColor()} transition-all duration-700 ease-out rounded-full`} style={{ width: `${Math.max(safeConfidence * 100, 5)}%` }} />
       </div>
-      <span className={`text-xs font-medium text-neutral-500 dark:text-neutral-400 w-10 text-right tabular-nums ${size === 'md' ? '' : 'text-[10px]'}`}>
+      <span className={`text-xs font-medium text-neutral-500 dark:text-neutral-400 w-10 text-right tabular-nums ${size === 'md' ? '' : 'text-xs'}`}>
         {Math.round(safeConfidence * 100)}%
       </span>
     </div>
@@ -142,7 +142,7 @@ function DimensionBadge({ dimension }: { dimension: ThinkingDimension }) {
   const cfg = DIMENSION_CONFIG[dimension as keyof typeof DIMENSION_CONFIG] || DIMENSION_CONFIG['technical'] || { color: 'text-neutral-500', bgColor: 'bg-neutral-100 dark:bg-neutral-800', label: String(dimension || '未知'), icon: 'Tag' }
   const DimIcon = ICON_MAP[cfg.icon] || Tag
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${cfg.color} ${cfg.bgColor}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${cfg.color} ${cfg.bgColor}`}>
       <DimIcon className="w-2.5 h-2.5" />
       {cfg.label}
     </span>
@@ -172,12 +172,12 @@ class StepCardErrorBoundary extends React.Component<{ children: React.ReactNode 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-3 rounded-xl border border-amber-200 bg-warning-50/50 dark:border-amber-800 dark:bg-amber-950/20 ml-[var(--depth-px,0px)]">
-          <div className="flex items-center gap-2 text-warning-600 dark:text-warning-400">
+        <div className="p-3 rounded-xl border border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-950/20 ml-[var(--depth-px,0px)]">
+          <div className="flex items-center gap-2 text-warning-600 dark:text-warning-700">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span className="text-xs">步骤渲染异常</span>
           </div>
-          <p className="text-[10px] text-warning-500 mt-1 font-mono">{this.state.error?.message}</p>
+          <p className="text-xs text-warning-500 mt-1 font-mono">{this.state.error?.message}</p>
         </div>
       )
     }
@@ -206,16 +206,16 @@ const StepCardV3: React.FC<{
     <div className={``} style={{ marginLeft: `${depth * 20}px` }}>
       <div
         className={`group relative p-3.5 rounded-xl border transition-all duration-300 ${
-          isActive ? `${typeCfg.borderColor} ${typeCfg.bgColor} shadow-md scale-[1.01] ring-2 ring-offset-1 ring-blue-200 dark:ring-blue-800` :
+          isActive ? `${typeCfg.borderColor} ${typeCfg.bgColor} shadow-md scale-[1.01] ring-2 ring-offset-1 ring-secondary-200 dark:ring-secondary-800` :
           `border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-200 dark:hover:border-neutral-700`
-        } ${step.status === 'error' ? 'border-red-200 bg-error-50/50 dark:bg-red-950/20' : ''}
-        ${step.metadata?.userFeedback === 'approved' ? 'ring-1 ring-emerald-300' : ''}
-        ${step.metadata?.userFeedback === 'rejected' ? 'ring-1 ring-red-300 opacity-60' : ''}
+        } ${step.status === 'error' ? 'border-error-200 bg-error-50/50 dark:bg-error-950/20' : ''}
+        ${step.metadata?.userFeedback === 'approved' ? 'ring-1 ring-success-300' : ''}
+        ${step.metadata?.userFeedback === 'rejected' ? 'ring-1 ring-error-300 opacity-60' : ''}
         `}
       >
         {step.status === 'processing' && (
           <div className="absolute inset-0 bg-white/40 dark:bg-neutral-900/40 rounded-xl flex items-center justify-center z-10 backdrop-blur-[1px]">
-            <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400">
+            <div className="flex items-center gap-2 text-secondary-600 dark:text-secondary-700">
               <Clock className="w-4 h-4 animate-spin" />
               <span className="text-xs font-medium">思考中...</span>
             </div>
@@ -234,7 +234,7 @@ const StepCardV3: React.FC<{
                 <DimensionBadge dimension={safeDimension} />
                 <StatusDot status={step.status} />
                 {step.branchId && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-50 text-violet-600 font-mono">branch:{step.branchId.slice(0, 6)}</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-accent-50 text-accent-600 font-mono">branch:{step.branchId.slice(0, 6)}</span>
                 )}
               </div>
 
@@ -260,17 +260,17 @@ const StepCardV3: React.FC<{
 
             <div className="flex items-center gap-2 mt-2">
               {step.evidence && Array.isArray(step.evidence) && step.evidence.length > 0 && (
-                <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
                   <FileText className="w-2.5 h-2.5" />{step.evidence.length} 条证据
                 </span>
               )}
               {step.metadata?.durationMs != null && (
-                <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-0.5">
                   <Timer className="w-2.5 h-2.5" />{(step.metadata.durationMs / 1000).toFixed(1)}s
                 </span>
               )}
               {(step.childrenIds && step.childrenIds.length > 0) && !isExpanded && (
-                <span className="text-[10px] text-secondary-500 cursor-pointer hover:underline"  role="button" tabIndex={0} onClick={onToggle}>
+                <span className="text-xs text-secondary-500 cursor-pointer hover:underline"  role="button" tabIndex={0} onClick={onToggle}>
                   {step.childrenIds.length} 个子步骤 →
                 </span>
               )}
@@ -284,17 +284,17 @@ const StepCardV3: React.FC<{
 
             {isExpanded && step.evidence && Array.isArray(step.evidence) && step.evidence.length > 0 && (
               <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5">
-                <div className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 flex items-center gap-1 mb-1.5">
+                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 flex items-center gap-1 mb-1.5">
                   <Database className="w-3 h-3" /> 证据链
                 </div>
                 {step.evidence.map((ev, evIdx) => (
-                  <div key={ev?.id || `ev-${evIdx}`} className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
+                  <div key={ev?.id || `ev-${evIdx}`} className="flex items-start gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800">
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
                       (ev?.credibility ?? 0) >= 0.8 ? 'bg-primary-400' : (ev?.credibility ?? 0) >= 0.5 ? 'bg-warning-400' : 'bg-error-400'
                     }`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{ev?.title || '未知证据'}</p>
-                      {ev?.snippet && <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-1">{ev.snippet}</p>}
+                      {ev?.snippet && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-1">{ev.snippet}</p>}
                     </div>
                     <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{Math.round((ev?.relevance ?? 0) * 100)}%</span>
                   </div>
@@ -335,10 +335,10 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const priorityColors = {
-    critical: 'border-l-red-500 bg-error-50/30 dark:bg-red-950/20',
-    high: 'border-l-orange-500 bg-orange-50/30 dark:bg-orange-950/20',
-    medium: 'border-l-yellow-500 bg-yellow-50/30 dark:bg-yellow-950/20',
-    low: 'border-l-green-500 bg-success-50/30 dark:bg-green-950/20',
+    critical: 'border-l-red-500 bg-error-50/30 dark:bg-error-950/20',
+    high: 'border-l-warning-500 bg-warning-50/30 dark:bg-warning-950/20',
+    medium: 'border-l-warning-500 bg-warning-50/30 dark:bg-warning-950/20',
+    low: 'border-l-green-500 bg-success-50/30 dark:bg-success-950/20',
   }
   const priorityLabels = { critical: '关键', high: '高', medium: '中', low: '低' }
   if (!decomposition || !decomposition.subProblems || !Array.isArray(decomposition.subProblems) || decomposition.subProblems.length === 0) {
@@ -351,7 +351,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
         <div className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
           拆解为 {decomposition.subProblems.length} 个子问题
         </div>
-        <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           总复杂度: {(decomposition.totalEstimatedComplexity * 100).toFixed(0)}%
         </div>
       </div>
@@ -370,26 +370,26 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
               <button onClick={() => setExpandedId(isExp ? null : sp.id)}
                 className="w-full text-left p-3 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
                 <div className="flex items-start gap-2.5">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold text-neutral-500 shrink-0 mt-0.5">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold text-neutral-500 shrink-0 mt-0.5">
                     {idx + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${dimCfg.color} ${dimCfg.bgColor}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${dimCfg.color} ${dimCfg.bgColor}`}>
                         <DimIcon className="w-2.5 h-2.5 inline mr-0.5" />{dimCfg.label}
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                         sp.priority === 'critical' ? 'bg-error-100 text-error-600' :
-                        sp.priority === 'high' ? 'bg-orange-100 text-orange-600' :
-                        sp.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-success-100 text-success-600'
+                        sp.priority === 'high' ? 'bg-warning-100 text-warning-600' :
+                        sp.priority === 'medium' ? 'bg-warning-100 text-warning-700' : 'bg-success-100 text-success-600'
                       }`}>{priorityLabels[sp.priority]}</span>
                     </div>
                     <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 truncate">{sp.title}</p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5">{sp.description}</p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">复杂度 {(sp.estimatedComplexity * 100).toFixed(0)}%</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">复杂度 {(sp.estimatedComplexity * 100).toFixed(0)}%</span>
                       {deps.length > 0 && (
-                        <span className="text-[10px] text-secondary-500 flex items-center gap-0.5">
+                        <span className="text-xs text-secondary-500 flex items-center gap-0.5">
                           <ArrowRight className="w-2.5 h-2.5" />依赖 {deps.length} 项
                         </span>
                       )}
@@ -405,11 +405,11 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
                 <div className="px-3 pb-3 pt-0 border-t border-neutral-100 dark:border-neutral-800 mt-1">
                   {deps.length > 0 && (
                     <div className="mt-2 space-y-1">
-                      <div className="text-[10px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">依赖关系</div>
+                      <div className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">依赖关系</div>
                       {deps.map((d, i) => {
                         const targetSp = decomposition.subProblems.find(s => s.id === d.to)
                         return (
-                          <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded bg-slate-50 dark:bg-neutral-800/50">
+                          <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded bg-neutral-50 dark:bg-neutral-800/50">
                             <ArrowRight className={`w-3 h-3 ${d.relation === 'requires' ? 'text-error-400' : 'text-secondary-400'}`} />
                             <span className="text-neutral-600 dark:text-neutral-400">{targetSp?.title || d.to}</span>
                             <span className={`text-[9px] ml-auto ${d.relation === 'requires' ? 'text-error-400' : 'text-secondary-400'}`}>
@@ -468,7 +468,7 @@ function DimensionsView({ steps }: { steps: ThinkingStepV3[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{cfg.label}</p>
-                <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{completedCount}/{items.length} 完成</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{completedCount}/{items.length} 完成</p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">{Math.round(avgConfidence * 100)}%</span>
@@ -478,12 +478,12 @@ function DimensionsView({ steps }: { steps: ThinkingStepV3[] }) {
               {items.map(item => (
                 <div key={item.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
                   item.status === 'completed' ? 'bg-white/60 dark:bg-neutral-800/40' :
-                  item.status === 'processing' ? 'bg-secondary-50/60 dark:bg-secondary-900/20' :
-                  'bg-slate-50/60 dark:bg-neutral-800/20'
+                  item.status === 'processing' ? 'bg-secondary-50/60 dark:bg-secondary-300/20' :
+                  'bg-neutral-50/60 dark:bg-neutral-800/20'
                 }`}>
                   <StatusDot status={item.status} />
                   <span className="flex-1 truncate text-neutral-600 dark:text-neutral-400">{item.title}</span>
-                  <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{Math.round(item.confidence * 100)}%</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{Math.round(item.confidence * 100)}%</span>
                 </div>
               ))}
             </div>
@@ -564,20 +564,20 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-neutral-100 dark:border-neutral-800 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-500 via-accent-500 to-danger-500">
         <div className="flex items-center gap-2.5 text-white cursor-pointer"  role="button" tabIndex={0} onClick={onToggleVisibility}>
           <div className="p-1.5 bg-white dark:bg-neutral-900/20 rounded-lg backdrop-blur-sm">
             <Brain className="w-5 h-5" />
           </div>
           <div>
             <h3 className="font-semibold text-sm">AI 思考过程 V3</h3>
-            <p className="text-[11px] text-white/80">
+            <p className="text-xs text-white/80">
               {stats.total} 步骤 · {stats.completed} 完成 · {stats.dimensions.length} 维度
             </p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-white/70 hidden sm:inline">{stats.avgConfidence > 0 ? `均置信度 ${Math.round(stats.avgConfidence * 100)}%` : ''}</span>
+          <span className="text-xs text-white/70 hidden sm:inline">{stats.avgConfidence > 0 ? `均置信度 ${Math.round(stats.avgConfidence * 100)}%` : ''}</span>
           <button onClick={onToggleVisibility} className="p-1.5 hover:bg-white dark:bg-neutral-900/10 rounded-lg transition-colors">
             <ChevronDown className="w-4 h-4 text-white/80" />
           </button>
@@ -585,7 +585,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
       </div>
 
       {/* Toolbar */}
-      <div className="px-4 py-2 bg-slate-50/80 dark:bg-neutral-800/50 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="px-4 py-2 bg-neutral-50/80 dark:bg-neutral-800/50 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center justify-between gap-2">
           {/* View Mode Tabs */}
           <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
@@ -596,9 +596,9 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
               return (
                 <button key={vm.type} onClick={() => !isDisabled && setViewMode(vm.type)}
                   disabled={isDisabled}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                     isActive ? 'bg-white dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 shadow-sm' :
-                    isDisabled ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed' :
+                    isDisabled ? 'text-neutral-300 dark:text-neutral-400 cursor-not-allowed' :
                     'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                   }`}
                   title={vm.label}>
@@ -613,14 +613,14 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
             <Filter className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
             <button onClick={() => onDimensionFilterChange?.('all')}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors shrink-0 ${
-                activeDimensionFilter === 'all' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-neutral-500 hover:text-neutral-700'
+              className={`px-2 py-0.5 rounded text-xs font-medium transition-colors shrink-0 ${
+                activeDimensionFilter === 'all' ? 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' : 'text-neutral-500 hover:text-neutral-700'
               }`}>全部</button>
             {allDimensions.slice(0, 4).map(dim => {
               const cfg = DIMENSION_CONFIG[dim]
               return (
                 <button key={dim} onClick={() => onDimensionFilterChange?.(dim)}
-                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors shrink-0 ${
+                  className={`px-2 py-0.5 rounded text-xs font-medium transition-colors shrink-0 ${
                     activeDimensionFilter === dim ? `${cfg.bgColor} ${cfg.color}` : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700'
                   }`}>{cfg.label}</button>
               )
@@ -650,9 +650,9 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
                 ))}
                 {legacySteps && legacySteps.length > 0 && (
                   <div className="pt-3 mt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700">
-                    <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2 px-1">兼容模式 — 传统步骤</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2 px-1">兼容模式 — 传统步骤</p>
                     {legacySteps.map(ls => (
-                      <div key={ls.id} className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/30 border border-neutral-100 dark:border-neutral-800 ml-4">
+                      <div key={ls.id} className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-100 dark:border-neutral-800 ml-4">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{ls.title}</span>
                           <StatusDot status={ls.status} />
@@ -670,7 +670,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
         {viewMode === 'timeline' && (
           <div className="p-4">
             <div className="relative">
-              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-300 via-purple-300 to-pink-300 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700" />
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-accent-300 via-accent-300 to-danger-300 dark:from-accent-700 dark:via-accent-700 dark:to-danger-700" />
               <div className="space-y-1">
                 {steps && Array.isArray(steps) && [...steps].sort((a, b) => (a.metadata?.timestamp || 0) - (b.metadata?.timestamp || 0)).map((step, idx) => {
                   const typeCfg = STEP_TYPE_CONFIG[step.type] || STEP_TYPE_CONFIG['analysis']
@@ -678,18 +678,18 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
                   return (
                     <div key={step.id} data-step-id={step.id} className="relative pl-10 pb-3 group">
                       <div className={`absolute left-2 w-5 h-5 rounded-full border-2 flex items-center justify-center z-10 ${
-                        step.status === 'completed' ? 'bg-primary-500 border-emerald-200' :
-                        step.status === 'processing' ? 'bg-secondary-500 border-blue-200 animate-pulse' :
+                        step.status === 'completed' ? 'bg-primary-500 border-success-200' :
+                        step.status === 'processing' ? 'bg-secondary-500 border-secondary-200 animate-pulse' :
                         'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600'
                       }`}>
                         <TypeIcon className="w-2.5 h-2.5 text-white" />
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-neutral-800/40 border border-transparent group-hover:border-neutral-200 dark:group-hover:border-neutral-700 transition-all">
+                      <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/40 border border-transparent group-hover:border-neutral-200 dark:group-hover:border-neutral-700 transition-all">
                         <div className="flex items-center justify-between mb-0.5">
                           <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{step.title}</span>
-                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </div>
-                        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1">{step.description}</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">{step.description}</p>
                       </div>
                     </div>
                   )
@@ -718,16 +718,16 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
 
       {/* Progress Footer */}
       {steps && Array.isArray(steps) && steps.length > 0 && (
-        <div className="px-4 py-2.5 bg-slate-50/80 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400 mb-1.5">
+        <div className="px-4 py-2.5 bg-neutral-50/80 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">
             <span className="flex items-center gap-2">
-              <Zap className="w-3 h-3 text-indigo-400" />
+              <Zap className="w-3 h-3 text-accent-400" />
               思考进度
             </span>
             <span>{stats.completed} / {stats.total} 步骤完成</span>
           </div>
           <div className="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-700 ease-out rounded-full"
+            <div className="h-full bg-gradient-to-r from-accent-500 via-accent-500 to-danger-500 transition-all duration-700 ease-out rounded-full"
               style={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }} />
           </div>
           <div className="flex items-center justify-between mt-1.5">

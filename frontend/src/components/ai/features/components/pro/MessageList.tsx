@@ -51,7 +51,7 @@ const QUICK_ACTIONS = [
 	{ Icon: Leaf, title: '补气药材', desc: '药食同源目录里有哪些常用的补气药材？', color: 'text-primary-500' },
 	{ Icon: Handshake, title: '配伍协同', desc: '黄芪和党参配伍有什么协同作用？', color: 'text-secondary-500' },
 	{ Icon: Dna, title: '活性肽', desc: '功能性食品中常用的活性肽有哪些来源？', color: 'text-accent-500' },
-	{ Icon: Shield, title: '抗氧化', desc: '设计一款抗氧化保健食品需要注意什么？', color: 'text-rose-500' },
+	{ Icon: Shield, title: '抗氧化', desc: '设计一款抗氧化保健食品需要注意什么？', color: 'text-danger-500' },
 ]
 
 export function MessageList({
@@ -336,7 +336,7 @@ export function MessageList({
 			{/* 跳到底部按钮 */}
 			{showScrollBtn && (
 				<button onClick={scrollToBottom}
-					className="sticky bottom-3 left-1/2 -translate-x-1/2 min-h-[36px] px-4 py-2 rounded-full surface-overlay80 backdrop-blur-md border border-neutral-200/60/60 shadow-lg shadow-slate-200/50 dark:shadow-black/20 text-xs font-medium text-neutral-600 flex items-center gap-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:bg-white hover:border-primary-300/60 dark:hover:border-primary-600/40 active:translate-y-0 animate-fade-in"
+					className="sticky bottom-3 left-1/2 -translate-x-1/2 min-h-[36px] px-4 py-2 rounded-full surface-overlay80 backdrop-blur-md border border-neutral-200/60/60 shadow-lg shadow-neutral-200/50 dark:shadow-black/20 text-xs font-medium text-neutral-600 flex items-center gap-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:bg-white hover:border-primary-300/60 dark:hover:border-primary-600/40 active:translate-y-0 animate-fade-in"
 				>
 					<ChevronDown className="w-4 h-4" />
 					<span>回到最新</span>

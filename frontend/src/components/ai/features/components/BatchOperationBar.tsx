@@ -85,7 +85,7 @@ const EXPORT_FORMATS: { value: ExportFormat; label: string; description: string 
  * 固定在底部显示，采用 sticky 定位。
  *
  * 样式规范：
- * - 背景：bg-primary-50 dark:bg-primary-900/20
+ * - 背景：bg-primary-50 dark:bg-primary-300/20
  * - 边框：border-t border-primary-200
  * - 圆角：rounded-b-xl
  * - 阴影：shadow-lg
@@ -170,7 +170,7 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
     <>
       {/* 批量操作栏 - 移动端底部固定全宽 */}
       <div className={cn(
-        "bg-primary-50 dark:bg-primary-900/20 border-t border-primary-200 dark:border-primary-800 shadow-lg z-40",
+        "bg-primary-50 dark:bg-primary-300/20 border-t border-primary-200 dark:border-primary-800 shadow-lg z-40",
         "fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto px-3 py-2 sm:px-6 sm:py-4 rounded-b-xl sm:rounded-b-none",
       )}>
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
@@ -178,7 +178,7 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={isAllSelected ? onClearSelection : onSelectAll}
-              className={`flex items-center gap-1.5 sm:gap-2 font-medium text-primary-700 dark:text-primary-300 hover:text-primary-900 dark:hover:text-primary-100 transition-colors min-h-[44px] sm:min-h-0 ${
+              className={`flex items-center gap-1.5 sm:gap-2 font-medium text-primary-700 dark:text-primary-700 hover:text-primary-900 dark:hover:text-primary-100 transition-colors min-h-[44px] sm:min-h-0 ${
                 compact ? 'text-xs' : 'text-sm'
               }`}
               title={isAllSelected ? '取消全选' : '全选所有'}
@@ -281,7 +281,7 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
                         <button
                           key={tag}
                           onClick={() => handleAddTag(tag)}
-                          className="px-2 py-1 sm:px-2.5 sm:py-1 text-xs font-medium rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
+                          className="px-2 py-1 sm:px-2.5 sm:py-1 text-xs font-medium rounded-full bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700 hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
                         >
                           {tag}
                         </button>
@@ -362,17 +362,17 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-error-600 dark:text-error-400" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-error-100 dark:bg-error-300/25 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-error-600 dark:text-error-600" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
                   确认删除
                 </h3>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">
-                  确定要删除选中的 <strong className="text-error-600 dark:text-error-400">{selectedCount}</strong> 个配方吗？
+                  确定要删除选中的 <strong className="text-error-600 dark:text-error-600">{selectedCount}</strong> 个配方吗？
                 </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   此操作不可撤销，请谨慎操作。
                 </p>
               </div>

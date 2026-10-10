@@ -72,7 +72,7 @@ const DEFAULT_CONFIG = {
   simulationAlphaDecay: 0.02,
   zoomExtent: [0.2, 4] as [number, number],
   colors: {
-    node: ['var(--color-primary-500, #10b981)', 'var(--color-primary-400, #34d399)', 'var(--color-emerald-500, #10b981)', 'var(--color-teal-500, #14b8a6)', 'var(--color-cyan-500, #06b6d4)', 'var(--color-sky-500, #0ea5e9)'],
+    node: ['var(--color-primary-500, #10b981)', 'var(--color-primary-400, #34d399)', 'var(--color-emerald-500, #10b981)', 'var(--color-teal-500, #14b8a6)', 'var(--color-info-500, #06b6d4)', 'var(--color-sky-500, #0ea5e9)'],
     link: 'var(--color-slate-400, #9CA3AF)',
     linkHighlight: 'var(--color-secondary, #0A84FF)',
     background: 'var(--color-white, #FFFFFF)',
@@ -185,7 +185,7 @@ const KnowledgeGraph = memo(({
       .data(nodes)
       .enter().append('text')
       .text((d: GraphNode) => d.label)
-      .attr('font-size', '11px')
+      .attr('font-size', '12px')
       .attr('fill', DEFAULT_CONFIG.colors.text)
       .attr('text-anchor', 'middle')
       .attr('dy', '.35em')
@@ -332,21 +332,21 @@ const KnowledgeGraph = memo(({
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
           <button
             onClick={handleZoomIn}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="放大"
           >
             <ZoomIn className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="缩小"
           >
             <ZoomOut className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
           <button
             onClick={handleResetZoom}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="重置视图"
           >
             <RotateCcw className="w-4 h-4 text-[var(--text-secondary)]" />
@@ -398,7 +398,7 @@ const KnowledgeGraph = memo(({
 
           {selectedNode.category && (
             <div className="mb-2">
-              <span className="inline-block px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
+              <span className="inline-block px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700 rounded-full">
                 {selectedNode.category}
               </span>
             </div>

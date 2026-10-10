@@ -110,7 +110,7 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
     <div
       className={`group/session flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-all duration-150 ${
         isActive
-          ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'
+          ? 'bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800'
           : 'hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-transparent'
       }`}
       onContextMenu={onContextMenu}
@@ -126,13 +126,13 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
           )}
           <span className={`text-sm font-medium truncate ${
             isActive
-              ? 'text-primary-700 dark:text-primary-600'
+              ? 'text-primary-700 dark:text-primary-700'
               : 'text-neutral-900 dark:text-neutral-100'
           }`}>
             {session.title || '新对话'}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-400">
+        <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-400 dark:text-neutral-400">
           <MessageSquare className="w-3 h-3" />
           <span>{session.messageCount} 条消息</span>
           <Clock className="w-3 h-3 ml-1" />
@@ -489,7 +489,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
               onClick={() => handleSessionClick(session.id)}
               className={`w-full p-2 mb-1 rounded-lg transition-colors ${
                 session.id === activeSessionId
-                  ? 'bg-primary-100 dark:bg-primary-900/30'
+                  ? 'bg-primary-100 dark:bg-primary-300/25'
                   : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'
               }`}
               title={session.title}
@@ -498,7 +498,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                 session.id === activeSessionId ? 'text-primary-700' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
               }`} />
               {session.pinned && (
-                <span className="block text-[10px] mt-0.5">📌</span>
+                <span className="block text-xs mt-0.5">📌</span>
               )}
             </button>
           ))}
@@ -544,7 +544,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索会话..."
-            className="w-full pl-9 pr-8 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-slate-50 dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+            className="w-full pl-9 pr-8 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
           />
           {searchQuery && (
             <button
@@ -562,7 +562,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
         {/* 置顶会话 */}
         {pinnedSessions.length > 0 && (
           <div className="px-3 pt-2 pb-1">
-            <div className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-400 uppercase tracking-wider mb-1 px-2">
+            <div className="text-xs font-semibold text-neutral-400 dark:text-neutral-400 uppercase tracking-wider mb-1 px-2">
               置顶 ({pinnedSessions.length})
             </div>
             {pinnedSessions.map(session => (
@@ -580,7 +580,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
         {/* 普通会话 */}
         <div className="px-3 py-2">
           {normalSessions.length > 0 && pinnedSessions.length > 0 && (
-            <div className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-400 uppercase tracking-wider mb-1 px-2">
+            <div className="text-xs font-semibold text-neutral-400 dark:text-neutral-400 uppercase tracking-wider mb-1 px-2">
               最近 ({normalSessions.length})
             </div>
           )}
@@ -614,7 +614,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       </div>
 
       {/* 底部统计 */}
-      <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900/50">
+      <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50">
         <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
@@ -627,7 +627,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
             </span>
           </div>
           {stats.pinnedCount > 0 && (
-            <span className="flex items-center gap-1 text-warning-600 dark:text-warning-600">
+            <span className="flex items-center gap-1 text-warning-600 dark:text-warning-700">
               📌 {stats.pinnedCount}
             </span>
           )}
@@ -743,7 +743,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                 {sessions.find(s => s.id === selectedSessionId)?.tags.map(tag => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-600 text-xs rounded-full"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 text-xs rounded-full"
                   >
                     {tag}
                     <button

@@ -102,7 +102,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {results.map((r) => (
                 <button
                   key={r.id}
-                  className="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                  className="w-full text-left px-4 py-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                   onClick={handleClose}
                 >
                   <div className="flex items-center gap-3">

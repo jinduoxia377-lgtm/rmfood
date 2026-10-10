@@ -39,17 +39,22 @@ export interface TooltipWrapperProps {
   position?: 'top' | 'bottom' | 'left' | 'right'
   delay?: number
   className?: string
+  /* A-23：旧注释称 react-popper@1.3.7 的 Anchor 不支持 asChild 会崩溃，但当前依赖
+     是 @radix-ui/react-tooltip@^1.2.16（基于 floating-ui），Trigger 完整支持 asChild。
+     开启后 Trigger 不再额外渲染一层 <button>，避免「按钮套按钮」这种无效 HTML
+     （/formulas 快捷键悬浮按钮曾出现：外层 button 无可读名称且只有 38×38）。
+     默认开启；children 不是单个 React 元素（文本/数组/Fragment）时自动退回包裹模式，
+     避免 Slot 收到非法子元素而崩溃。 */
+  asChild?: boolean
 }
 
-function TooltipWrapper({ content, children, position = 'top', delay = 300, className = '' }: TooltipWrapperProps) {
+function TooltipWrapper({ content, children, position = 'top', delay = 300, className = '', asChild = true }: TooltipWrapperProps) {
   const hasContent = content != null && content !== ''
+  const canForward = React.isValidElement(children) && !Array.isArray(children)
   return (
     <TooltipProvider delayDuration={delay}>
       <TooltipRoot>
-        {/* 不使用 asChild：react-popper@1.3.7 的 Anchor 组件不支持 asChild prop，
-            会导致 Slot 收到非 React element 子元素而崩溃。
-            改为使用 display:contents 的 span 包裹，视觉上透明不影响布局。 */}
-        <TooltipTrigger>{children}</TooltipTrigger>
+        <TooltipTrigger asChild={asChild && canForward}>{children}</TooltipTrigger>
         {hasContent && (
           <TooltipContent side={position} className={className}>
             {content}

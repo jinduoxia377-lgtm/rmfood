@@ -113,19 +113,19 @@ const ROLE_CONFIG = {
   owner: {
     label: '所有者',
     icon: Crown,
-    color: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700',
+    color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
     description: '拥有全部权限',
   },
   admin: {
     label: '管理员',
     icon: Shield,
-    color: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-600',
+    color: 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600',
     description: '除删除团队外的全部权限',
   },
   member: {
     label: '成员',
     icon: UserCheck,
-    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
+    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
     description: '读写权限',
   },
   guest: {
@@ -309,7 +309,7 @@ export function TeamManagement({ className }: { className?: string }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索团队..."
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
             />
           </div>
         </div>
@@ -318,7 +318,7 @@ export function TeamManagement({ className }: { className?: string }) {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredTeams.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-4">
@@ -331,14 +331,14 @@ export function TeamManagement({ className }: { className?: string }) {
               )}
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
               {filteredTeams.map((team) => (
                 <button
                   key={team.id}
                   onClick={() => setSelectedTeamId(team.id)}
                   className={cn(
-                    'w-full p-4 text-left hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors',
-                    selectedTeamId === team.id && 'bg-secondary-50 dark:bg-secondary-900/10 border-r-2 border-blue-500',
+                    'w-full p-4 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors',
+                    selectedTeamId === team.id && 'bg-secondary-50 dark:bg-secondary-300/15 border-r-2 border-secondary-500',
                   )}
                 >
                   <div className="flex items-start justify-between">
@@ -382,7 +382,7 @@ export function TeamManagement({ className }: { className?: string }) {
           </div>
         ) : !teamDetail ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -495,11 +495,11 @@ export function TeamManagement({ className }: { className?: string }) {
                         return (
                           <div
                             key={member.id}
-                            className="flex items-center gap-4 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors group"
+                            className="flex items-center gap-4 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group"
                           >
                             {/* 头像 */}
                             <div className="relative">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] flex items-center justify-center text-white font-medium">
                                 {member.username.charAt(0).toUpperCase()}
                               </div>
                               {member.is_online && (
@@ -589,7 +589,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">邀请方式</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <Card
-                        className="cursor-pointer hover:border-blue-300 transition-colors"
+                        className="cursor-pointer hover:border-secondary-300 transition-colors"
                         onClick={() => setShowInviteModal(true)}
                       >
                         <CardContent className="p-4">
@@ -600,7 +600,7 @@ export function TeamManagement({ className }: { className?: string }) {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-green-300 transition-colors"
+                        className="cursor-pointer hover:border-success-300 transition-colors"
                         onClick={handleGenerateLink}
                       >
                         <CardContent className="p-4">
@@ -612,7 +612,7 @@ export function TeamManagement({ className }: { className?: string }) {
                     </div>
 
                     {inviteLink && (
-                      <div className="mt-4 p-4 bg-success-50 dark:bg-success-900/10 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="mt-4 p-4 bg-success-50 dark:bg-success-300/15 rounded-lg border border-success-200 dark:border-success-800">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-success-800 dark:text-success-600 mb-2">
@@ -791,7 +791,7 @@ function InviteMemberModal({
               className={cn(
                 'p-3 rounded-lg border text-center transition-all',
                 inviteMethod === method.key
-                  ? 'border-blue-500 bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600'
+                  ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20 text-secondary-600'
                   : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300',
               )}
             >

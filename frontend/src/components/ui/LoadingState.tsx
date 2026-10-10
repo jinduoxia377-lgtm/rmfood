@@ -40,7 +40,7 @@ export function LoadingState({
  style={{ animationDuration:'1s' }}
  />
  <div className="absolute inset-0 flex items-center justify-center">
- <span className="text-h2 font-semibold text-primary-600">
+ <span className="text-h2 font-semibold text-primary-700">
  {progress}%
  </span>
  </div>

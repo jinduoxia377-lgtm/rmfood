@@ -34,8 +34,8 @@ export default function AnnotationRenderer({ annotations, onRemoveAnnotation }: 
             </svg>
           ) : null}
           <div className="relative">
-            <div className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300 dark:border-yellow-700/50 rounded-lg shadow-sm whitespace-nowrap">
-              <span className="text-[10px] font-medium text-yellow-800 dark:text-yellow-200">{anno.text}</span>
+            <div className="px-2 py-1 bg-warning-100 dark:bg-warning-300/30 border border-warning-300 dark:border-warning-700/50 rounded-lg shadow-sm whitespace-nowrap">
+              <span className="text-xs font-medium text-warning-800 dark:text-warning-200">{anno.text}</span>
             </div>
             <button onClick={() => onRemoveAnnotation(anno.id)}
               className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-neutral-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none">

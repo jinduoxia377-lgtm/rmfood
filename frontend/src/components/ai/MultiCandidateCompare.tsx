@@ -73,10 +73,10 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
   const getCellClass = (diff: 'up' | 'down' | 'same', isBest: boolean) => {
     const baseClass = 'text-center px-3 py-2 text-sm';
     if (isBest && diff === 'same') {
-      return `${baseClass} bg-success-50/50 dark:bg-success-900/20 font-semibold text-success-600`;
+      return `${baseClass} bg-success-50/50 dark:bg-success-300/20 font-semibold text-success-600`;
     }
     if (diff === 'up') {
-      return `${baseClass} bg-danger-50/30 dark:bg-danger-900/10 text-danger-600 dark:text-danger-400`;
+      return `${baseClass} bg-danger-50/30 dark:bg-danger-300/15 text-danger-600 dark:text-danger-600`;
     }
     if (diff === 'down') {
       return `${baseClass} text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]`;
@@ -155,7 +155,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
                   key={i}
                   className={`px-4 py-3 text-center text-xs font-bold border-b-2 border-primary-300 dark:border-primary-600 ${
                     selectedIndex === i
-                      ? 'bg-primary-100/50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600'
+                      ? 'bg-primary-100/50 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700'
                       : 'text-primary-800 dark:text-primary-200'
                   }`}
                 >
@@ -200,7 +200,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
               return (
                 <tr
                   key={dim.key}
-                  className={`${dimIdx % 2 === 0 ? 'bg-white dark:bg-neutral-800' : 'bg-slate-50/50 dark:bg-neutral-900/30'} hover:bg-primary-50/20 transition-colors`}
+                  className={`${dimIdx % 2 === 0 ? 'bg-white dark:bg-neutral-800' : 'bg-neutral-50/50 dark:bg-neutral-900/30'} hover:bg-primary-50/20 transition-colors`}
                 >
                   <td className="px-4 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 border-r border-neutral-100 dark:border-neutral-700">
                     {dim.label}
@@ -255,7 +255,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
               </td>
             </tr>
 
-            <tr className={`bg-slate-50/50 dark:bg-neutral-900/30 hover:bg-primary-50/20 transition-colors`}>
+            <tr className={`bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-primary-50/20 transition-colors`}>
               <td className="px-4 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 border-r border-neutral-100 dark:border-neutral-700">
                 药材数量
               </td>
@@ -310,8 +310,8 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
                 key={i}
                 className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${
                   diff.type === 'added'
-                    ? 'bg-success-50/50 dark:bg-success-900/20 text-success-600 dark:text-success-400'
-                    : 'bg-danger-50/50 dark:bg-danger-900/20 text-danger-600 dark:text-danger-400'
+                    ? 'bg-success-50/50 dark:bg-success-300/20 text-success-600 dark:text-success-600'
+                    : 'bg-danger-50/50 dark:bg-danger-300/20 text-danger-600 dark:text-danger-600'
                 }`}
               >
                 {diff.type === 'added' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -327,7 +327,7 @@ export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedI
           <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">药材组成</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {candidates.map((c, i) => (
-              <div key={i} className="bg-slate-50/50 dark:bg-neutral-800/50 rounded-lg p-3">
+              <div key={i} className="bg-neutral-50/50 dark:bg-neutral-800/50 rounded-lg p-3">
                 <div className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">
                   方案 {i + 1}: {typeof c.formula_name === 'string' ? c.formula_name : '未知配方'}
                 </div>

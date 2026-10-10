@@ -80,7 +80,7 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
           'relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200',
           isDragging
             ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-slate-50 dark:hover:bg-neutral-800/50',
+            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
           isUploading && 'pointer-events-none opacity-60',
         )}
       >
@@ -123,8 +123,8 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
         <div className={clsx(
           'flex items-start gap-2 p-3 rounded-lg text-sm',
           uploadResult.type === 'success'
-            ? 'bg-success-50 dark:bg-green-950/30 text-success-700 dark:text-success-400'
-            : 'bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-400',
+            ? 'bg-success-50 dark:bg-success-950/30 text-success-700 dark:text-success-600'
+            : 'bg-error-50 dark:bg-error-950/30 text-error-700 dark:text-error-600',
         )}>
           {uploadResult.type === 'success'
             ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />

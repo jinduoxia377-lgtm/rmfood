@@ -79,7 +79,7 @@ const RADAR_DIMENSIONS = [
   { key: 'compliance', label: '合规性' },
 ];
 
-const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-blue-500, #3b82f6)', 'var(--color-amber-500, #f59e0b)', 'var(--color-red-500, #ef4444)', 'var(--color-emerald-500, #10b981)', 'var(--color-pink-500, #ec4899)'];
+const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-blue-500, #3b82f6)', 'var(--color-amber-500, #f59e0b)', 'var(--color-red-500, #ef4444)', 'var(--color-emerald-500, #10b981)', 'var(--color-danger-500, #ec4899)'];
 
 type DisplayMode = 'absolute' | 'percentage' | 'rank';
 
@@ -267,11 +267,11 @@ export function CandidateComparison({
 
         <div className="flex items-center gap-2">
           {/* 排序控制 */}
-          <div className="flex items-center gap-1 bg-slate-50 dark:bg-neutral-800 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-neutral-50 dark:bg-neutral-800 rounded-lg p-1">
             <button
               onClick={() => setSortBy('score')}
               className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                sortBy === 'score' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600' : 'text-neutral-500'
+                sortBy === 'score' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700' : 'text-neutral-500'
               }`}
             >
               评分 {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
@@ -279,7 +279,7 @@ export function CandidateComparison({
             <button
               onClick={() => setSortBy('cost')}
               className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                sortBy === 'cost' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600' : 'text-neutral-500'
+                sortBy === 'cost' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700' : 'text-neutral-500'
               }`}
             >
               成本 {sortBy === 'cost' && (sortOrder === 'desc' ? '↓' : '↑')}
@@ -332,7 +332,7 @@ export function CandidateComparison({
                 onClick={() => onSelect?.(candidate.id)}
                 className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${
                   selectedIds.includes(candidate.id)
-                    ? 'border-emerald-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-lg'
+                    ? 'border-success-500 bg-primary-50/50 dark:bg-primary-300/15 shadow-lg'
                     : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600'
                 }`}
               >
@@ -399,11 +399,11 @@ export function CandidateComparison({
 
                 {/* 操作按钮 */}
                 <div className="flex gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 dark:bg-secondary-900/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 rounded-lg transition-colors">
+                  <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 dark:bg-secondary-300/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 rounded-lg transition-colors">
                     <Eye className="w-3 h-3" />
                     详情
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-900/20 hover:bg-accent-100 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
+                  <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-300/20 hover:bg-accent-100 dark:hover:bg-accent-900/30 rounded-lg transition-colors">
                     <GitCompare className="w-3 h-3" />
                     对比
                   </button>
@@ -412,7 +412,7 @@ export function CandidateComparison({
                       e.stopPropagation();
                       onApply?.(candidate);
                     }}
-                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 dark:bg-primary-300/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
                   >
                     <CheckCircle2 className="w-3 h-3" />
                     应用
@@ -520,7 +520,7 @@ export function CandidateComparison({
                     {ingredientComparison.map((row, idx) => (
                       <tr
                         key={idx}
-                        className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+                        className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                       >
                         <td className="py-2 px-4 font-medium text-neutral-900 dark:text-white">{row.name}</td>
                         {row.entries.map((entry, entryIdx) => {
@@ -531,16 +531,16 @@ export function CandidateComparison({
                           let content = '-';
 
                           if (entry.isNew) {
-                            cellClass = 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400';
+                            cellClass = 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600';
                             content = `${entry.amount}${'%'}`;
                           } else if (entry.isRemoved) {
-                            cellClass = 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-400 line-through';
+                            cellClass = 'bg-error-100 dark:bg-error-300/25 text-error-700 dark:text-error-600 line-through';
                             content = `${entry.amount}${'%'}`;
                           } else if (diffPercent > 5) {
-                            cellClass = 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400';
+                            cellClass = 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700';
                             content = `${entry.amount}% ↑+${diffPercent.toFixed(1)}%`;
                           } else if (diffPercent < -5) {
-                            cellClass = 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-400';
+                            cellClass = 'bg-error-100 dark:bg-error-300/25 text-error-700 dark:text-error-600';
                             content = `${entry.amount}% ↓${diffPercent.toFixed(1)}%`;
                           } else {
                             content = `${entry.amount}%`;
@@ -646,7 +646,7 @@ export function CandidateComparison({
                 <span>已选中方案</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 bg-orange-500" style={{ borderTop: '2px dashed var(--color-warning, #FF9F0A)' }} />
+                <div className="w-8 h-0.5 bg-warning-500" style={{ borderTop: '2px dashed var(--color-warning, #FF9F0A)' }} />
                 <span>Pareto 最优边界</span>
               </div>
             </div>

@@ -101,7 +101,7 @@ function renderInline(text: string): string {
   return escapedText
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-neutral-900 dark:text-neutral-100">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="bg-neutral-100 dark:bg-neutral-800 text-primary-700 dark:text-primary-600 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-neutral-100 dark:bg-neutral-800 text-primary-700 dark:text-primary-700 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
 }
 
 function renderTable(tableContent: string): string {
@@ -121,21 +121,21 @@ function renderTable(tableContent: string): string {
   headerCells.forEach((cell, idx) => {
     const isCenter = /组分类型|角色|用量|单袋用量|100份用量|作用定位|核心依据/i.test(cell)
     const isSticky = idx === 0 && hasRoleColumn
-    html += `<th class="px-3 py-3.5 ${isCenter ? 'text-center' : 'text-left'} text-xs font-bold text-primary-800 dark:text-primary-200 border-b-2 border-primary-300 dark:border-primary-600 tracking-wide uppercase ${isSticky ? 'sticky left-0 bg-primary-100/90 dark:bg-primary-900/60 z-10' : ''}">${renderInline(cell)}</th>`
+    html += `<th class="px-3 py-3.5 ${isCenter ? 'text-center' : 'text-left'} text-xs font-bold text-primary-800 dark:text-primary-200 border-b-2 border-primary-300 dark:border-primary-600 tracking-wide uppercase ${isSticky ? 'sticky left-0 bg-primary-100/90 dark:bg-primary-300/40 z-10' : ''}">${renderInline(cell)}</th>`
   })
   html += '</tr></thead><tbody>'
   bodyRows.forEach((row, idx) => {
     const cells = parseCells(row)
-    const zebraClass = idx % 2 === 0 ? 'bg-white dark:bg-neutral-800' : 'bg-slate-50/70 dark:bg-neutral-900/30'
+    const zebraClass = idx % 2 === 0 ? 'bg-white dark:bg-neutral-800' : 'bg-neutral-50/70 dark:bg-neutral-900/30'
     html += `<tr class="${zebraClass} hover:bg-primary-50/40 dark:hover:bg-primary-900/20 transition-colors duration-150">`
     cells.forEach((cell, cIdx) => {
       const isCenter = cIdx === 0 || /用量|剂量/.test(headerCells[cIdx] ?? '')
       const isSticky = cIdx === 0 && hasRoleColumn
       const isHighlight = /君|臣|佐|使/i.test(cell)
       const cellClass = isHighlight
-        ? 'font-semibold text-primary-700 dark:text-primary-600'
+        ? 'font-semibold text-primary-700 dark:text-primary-700'
         : 'text-neutral-700 dark:text-neutral-300'
-      const bgClass = isHighlight ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
+      const bgClass = isHighlight ? 'bg-primary-50/50 dark:bg-primary-300/20' : ''
       html += `<td class="px-3 py-2.5 text-sm ${isCenter ? 'text-center' : 'text-left'} ${cellClass} ${bgClass} ${cIdx < cells.length - 1 ? 'border-r border-neutral-100 dark:border-neutral-700/50' : ''} ${isSticky ? 'sticky left-0 z-10 ' + zebraClass : ''}">${renderInline(cell)}</td>`
     })
     html += '</tr>'
@@ -178,7 +178,7 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
         case 'separator':
           return `<div class="my-5 border-t-2 border-dashed border-neutral-200 dark:border-neutral-700"></div>`
         case 'quote':
-          return `<blockquote class="my-3 pl-4 pr-3 py-2 border-l-4 border-primary-400 bg-primary-50/50 dark:bg-primary-900/10 rounded-r-lg italic text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">${renderInline(block.content.replace(/\n/g, '<br />'))}</blockquote>`
+          return `<blockquote class="my-3 pl-4 pr-3 py-2 border-l-4 border-primary-400 bg-primary-50/50 dark:bg-primary-300/15 rounded-r-lg italic text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">${renderInline(block.content.replace(/\n/g, '<br />'))}</blockquote>`
         case 'table':
           return renderTable(block.content)
         case 'list': {
@@ -193,8 +193,8 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
         case 'paragraph': {
           const field = isFieldLine(block.content)
           if (field.isField) {
-            return `<div class="my-3 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-100 dark:border-neutral-700/50">
-              <span class="text-sm font-semibold text-primary-700 dark:text-primary-600">${field.fieldName}</span>
+            return `<div class="my-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-100 dark:border-neutral-700/50">
+              <span class="text-sm font-semibold text-primary-700 dark:text-primary-700">${field.fieldName}</span>
               <span class="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-1">:</span>
               <span class="text-sm text-neutral-800 dark:text-neutral-200">${renderInline(field.fieldValue)}</span>
             </div>`

@@ -81,7 +81,7 @@ export function ReviewProgress() {
           {currentReview.stages.map((stage: any, index: number) => {
             const stageStatus = stage.status as string;
             return (
-              <div key={stage.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-neutral-700 rounded-lg">
+              <div key={stage.id} className="flex items-center gap-4 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
                   {index + 1}
                 </div>

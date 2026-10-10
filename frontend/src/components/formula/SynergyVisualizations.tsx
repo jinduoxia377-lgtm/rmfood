@@ -117,13 +117,13 @@ export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'm
 
     switch (cell.intensity) {
       case 'high':
-        return 'bg-gradient-to-br from-green-400 to-emerald-500 text-white';
+        return 'bg-gradient-to-br from-success-400 to-success-500 text-white';
       case 'medium':
-        return 'bg-gradient-to-br from-blue-300 to-blue-400 text-white';
+        return 'bg-gradient-to-br from-secondary-300 to-secondary-400 text-white';
       case 'low':
-        return 'bg-gradient-to-br from-yellow-200 to-amber-300 text-neutral-800';
+        return 'bg-gradient-to-br from-warning-200 to-warning-300 text-neutral-800';
       case 'negative':
-        return 'bg-gradient-to-br from-red-200 to-red-300 text-neutral-800';
+        return 'bg-gradient-to-br from-error-200 to-error-300 text-neutral-800';
       default:
         return 'bg-neutral-100 dark:bg-neutral-800';
     }
@@ -140,7 +140,7 @@ export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'm
       {/* 标题栏 */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <Thermometer className="w-5 h-5 text-orange-500" />
+          <Thermometer className="w-5 h-5 text-warning-500" />
           成分协同效应热力图
         </h3>
 
@@ -151,7 +151,7 @@ export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'm
             <span>强协同</span>
             <span className="w-3 h-3 rounded bg-secondary-400 ml-2" />
             <span>中等</span>
-            <span className="w-3 h-3 rounded bg-yellow-300 ml-2" />
+            <span className="w-3 h-3 rounded bg-warning-300 ml-2" />
             <span>弱协同</span>
             <span className="w-3 h-3 rounded bg-error-300 ml-2" />
             <span>拮抗</span>
@@ -247,7 +247,7 @@ export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'm
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
               <span className="text-neutral-600">综合协同指数:</span>
-              <span className="ml-2 font-mono font-bold text-primary-600">
+              <span className="ml-2 font-mono font-bold text-primary-700">
                 {(selectedCell.value * 100).toFixed(1)}%
               </span>
             </div>
@@ -308,7 +308,7 @@ export function MechanismPieChart({ mechanisms, dominant }: MechanismPieChartPro
     pk_interaction: 'var(--color-secondary, #0A84FF)', // blue
     gibbs_stability: 'var(--color-tertiary, var(--color-accent-500))', // purple
     network_pharmacology: 'var(--color-warning, #FF9F0A)', // orange
-    taste_matrix: 'var(--color-pink-500, #D946EF)', // pink
+    taste_matrix: 'var(--color-danger-500, #D946EF)', // pink
   };
 
   const total = Object.values(mechanisms).reduce((sum, val) => sum + val, 0);
@@ -357,7 +357,7 @@ export function MechanismPieChart({ mechanisms, dominant }: MechanismPieChartPro
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-        <PieIcon className="w-5 h-5 text-pink-500" />
+        <PieIcon className="w-5 h-5 text-danger-500" />
         协同机制贡献分布
       </h3>
 
@@ -409,7 +409,7 @@ export function MechanismPieChart({ mechanisms, dominant }: MechanismPieChartPro
           ))}
 
           {/* 中心圆（甜甜圈效果） */}
-          <circle cx="100" cy="100" r="40" fill="white" className="dark:fill-slate-900" />
+          <circle cx="100" cy="100" r="40" fill="white" className="dark:fill-neutral-900" />
 
           {/* 中心文字 */}
           <text
@@ -419,7 +419,7 @@ export function MechanismPieChart({ mechanisms, dominant }: MechanismPieChartPro
             fontSize="14"
             fontWeight="bold"
             fill="#374151"
-            className="dark:fill-slate-100"
+            className="dark:fill-neutral-100"
           >
             SI
           </text>
@@ -501,7 +501,7 @@ export function ParetoScatterChart({
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <ScatterChart className="w-5 h-5 text-indigo-500" />
+          <ScatterChart className="w-5 h-5 text-accent-500" />
           Pareto 最优前沿
         </h3>
 
@@ -518,7 +518,7 @@ export function ParetoScatterChart({
               </option>
             ))}
           </select>
-          <span className="text-neutral-400">vs</span>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">vs</span>
           {/* Y轴选择 */}
           <select
             value={yAxis}
@@ -546,7 +546,7 @@ export function ParetoScatterChart({
               y2={280}
               stroke="#E5E7EB"
               strokeDasharray="4,4"
-              className="dark:stroke-slate-700"
+              className="dark:stroke-neutral-700"
             />
             <line
               x1={40}
@@ -555,7 +555,7 @@ export function ParetoScatterChart({
               y2={toSvgY(yMin + (yMax - yMin) * tick)}
               stroke="#E5E7EB"
               strokeDasharray="4,4"
-              className="dark:stroke-slate-700"
+              className="dark:stroke-neutral-700"
             />
           </g>
         ))}
@@ -642,11 +642,11 @@ export function ParetoScatterChart({
       {/* 图例说明 */}
       <div className="mt-4 flex items-center justify-center gap-6 text-xs text-neutral-600 dark:text-neutral-400">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-indigo-500" />
+          <div className="w-3 h-3 rounded-full bg-accent-500" />
           <span>Pareto 最优解 ({points.length}个)</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-indigo-300 ring-2 ring-indigo-500" />
+          <div className="w-3 h-3 rounded-full bg-accent-300 ring-2 ring-accent-500" />
           <span>当前选择</span>
         </div>
       </div>

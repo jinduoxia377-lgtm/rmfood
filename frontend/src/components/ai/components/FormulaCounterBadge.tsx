@@ -25,7 +25,7 @@ function getBadgeColor(count: number): string {
   if (count > 0 && count < 5) {
     return 'bg-secondary-container text-secondary-main dark:bg-secondary-container'
   }
-  return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white dark:from-emerald-600 dark:to-teal-700'
+  return 'bg-gradient-to-r from-success-500 to-success-600 text-white dark:from-success-600 dark:to-success-700'
 }
 
 const FormulaCounterBadgeComponent = ({
@@ -135,8 +135,8 @@ const FormulaCounterBadgeComponent = ({
           ${isHovered ? 'scale-110 shadow-lg' : 'scale-100 shadow-md'}
           ${isBouncing ? 'animate-bounce-custom' : ''}
           ${isPulsing ? 'animate-pulse-glow-custom' : ''}
-          focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2
-          dark:focus:ring-blue-500 dark:focus:ring-offset-slate-800
+          focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:ring-offset-2
+          dark:focus:ring-secondary-500 dark:focus:ring-offset-neutral-800
           cursor-pointer select-none
           overflow-hidden
         `}
@@ -176,7 +176,7 @@ const FormulaCounterBadgeComponent = ({
                 <span
                   className="
                     w-4 h-4 rounded-full bg-secondary-500 flex-shrink-0
-                    flex items-center justify-center text-[10px] font-bold
+                    flex items-center justify-center text-xs font-bold
                     group-hover:bg-secondary-400 transition-colors
                   "
                 >
@@ -193,7 +193,7 @@ const FormulaCounterBadgeComponent = ({
           </ul>
 
           {formulas.length > 3 && (
-            <div className="mt-2 pt-2 border-t border-neutral-700 dark:border-neutral-600 text-center text-neutral-400 text-[11px]">
+            <div className="mt-2 pt-2 border-t border-neutral-700 dark:border-neutral-600 text-center text-neutral-400 text-xs">
               还有 {formulas.length - 3} 个配方...
             </div>
           )}

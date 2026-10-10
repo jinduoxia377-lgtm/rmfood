@@ -19,7 +19,7 @@ interface PieChartProps {
 }
 
 export function PieChart({ data }: PieChartProps) {
-  const COLORS = ['var(--color-secondary, #0A84FF)', 'var(--color-tertiary, var(--color-accent-500))', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-error, #FF3B30)', 'var(--color-pink-500, #D946EF)']
+  const COLORS = ['var(--color-secondary, #0A84FF)', 'var(--color-tertiary, var(--color-accent-500))', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-error, #FF3B30)', 'var(--color-danger-500, #D946EF)']
 
   const total = data.reduce((sum, item) => sum + item.value, 0)
 
@@ -27,7 +27,7 @@ export function PieChart({ data }: PieChartProps) {
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart>
-          <Pie
+          <Pie rootTabIndex={-1}
             data={data}
             cx="50%"
             cy="50%"

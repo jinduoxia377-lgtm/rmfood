@@ -125,9 +125,9 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
     const isTouched = touched.has(key)
 
     const baseClassName =
-      'w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500' +
+      'w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-500' +
       (readOnly ? ' bg-neutral-100 dark:bg-neutral-800 cursor-not-allowed' : '') +
-      (hasError && isTouched ? ' border-red-500' : ' border-neutral-300 dark:border-neutral-700')
+      (hasError && isTouched ? ' border-error-500' : ' border-neutral-300 dark:border-neutral-700')
 
     switch (item.type) {
       case 'string':
@@ -153,7 +153,8 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
             min={item.validation?.min}
             max={item.validation?.max}
             step="any"
-          />
+        aria-label={item.label}
+      />
         )
 
       case 'boolean':
@@ -161,7 +162,7 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
               checked={value as boolean}
               onChange={(e) => handleSettingChange(key, e.target.checked)}
               disabled={readOnly}

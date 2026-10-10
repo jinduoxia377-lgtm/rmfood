@@ -26,7 +26,7 @@ export function ConfirmDialog({
   const variantStyles = {
     default: 'bg-primary-container hover:bg-primary-container text-primary-main',
     danger: 'bg-error-600 hover:bg-error-700 text-white',
-    warning: 'bg-yellow-500 hover:bg-yellow-600 text-black',
+    warning: 'bg-warning-500 hover:bg-warning-600 text-black',
   }
 
   const handleBackdropClick = (e: React.MouseEvent) => {

@@ -116,11 +116,11 @@ function LinkMessageCard({ url }: { url: string }) {
 	return (
 		<div className="group/link relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-900/50 hover:shadow-md transition-all duration-200">
 			{/* 顶部装饰条 */}
-			<div className="h-1 bg-gradient-to-r from-primary-500 to-indigo-500 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200" />
+			<div className="h-1 bg-gradient-to-r from-primary-500 to-accent-500 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200" />
 			<div className="p-3.5">
 				<div className="flex items-center gap-2 mb-2">
-					<div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-						<Link className="w-3.5 h-3.5 text-primary-700 dark:text-primary-600" />
+					<div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center flex-shrink-0">
+						<Link className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
 					</div>
 					<div className="flex-1 min-w-0">
 						<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
@@ -140,7 +140,7 @@ function LinkMessageCard({ url }: { url: string }) {
 					href={url}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
 				>
 					<ExternalLink className="w-3 h-3" />
 					打开链接
@@ -205,15 +205,15 @@ function ImageMessageCard({ src }: { src: string }) {
 function FileMessageCard({ filename }: { filename: string }) {
 	const ext = extractExtension(filename)
 	const extColors: Record<string, string> = {
-		PDF: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-		DOC: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-		DOCX: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-		XLS: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-		XLSX: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-		PNG: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-		JPG: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-		MP4: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-		ZIP: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+		PDF: 'bg-error-100 text-error-600 dark:bg-error-300/25 dark:text-error-700',
+		DOC: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700',
+		DOCX: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700',
+		XLS: 'bg-success-100 text-success-600 dark:bg-success-300/25 dark:text-success-700',
+		XLSX: 'bg-success-100 text-success-600 dark:bg-success-300/25 dark:text-success-700',
+		PNG: 'bg-accent-100 text-accent-600 dark:bg-accent-300/25 dark:text-accent-700',
+		JPG: 'bg-accent-100 text-accent-600 dark:bg-accent-300/25 dark:text-accent-700',
+		MP4: 'bg-warning-100 text-warning-600 dark:bg-warning-300/25 dark:text-warning-700',
+		ZIP: 'bg-warning-100 text-warning-600 dark:bg-warning-300/25 dark:text-warning-700',
 	}
 	const colorClass = extColors[ext] || 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
 	return (
@@ -306,7 +306,7 @@ function renderMessageContent(
 								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 									{parsed.chartJson.items.map((item: any, i: number) => (
 										<div key={i} className="surface-card rounded-lg p-3 text-center border border-neutral-100 shadow-sm">
-											<div className="text-2xl font-bold text-primary-700 dark:text-primary-600">
+											<div className="text-2xl font-bold text-primary-700 dark:text-primary-700">
 												{item.value}{item.unit || ''}
 											</div>
 											<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 truncate">{item.label}</div>
@@ -482,10 +482,10 @@ export function MessageBubble({
 								<>
 									{/* Task 6: 子智能体委托进度 */}
 									{delegationProgress && delegationProgress.subtasks.length > 0 && (
-										<div className="mb-2 p-2 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-100 dark:border-primary-800/30">
+										<div className="mb-2 p-2 bg-primary-50 dark:bg-primary-300/15 rounded-lg border border-primary-100 dark:border-primary-800/30">
 											<div className="flex items-center gap-1.5 mb-1.5">
 												<RefreshCw className={`w-3 h-3 text-primary-500 ${delegationProgress.subtasks.some(s => s.status === 'running') ? 'animate-spin' : ''}`} />
-												<span className="text-xs font-medium text-primary-700 dark:text-primary-600">子任务执行中</span>
+												<span className="text-xs font-medium text-primary-700 dark:text-primary-700">子任务执行中</span>
 											</div>
 											<div className="space-y-0.5">
 												{delegationProgress.subtasks.map(st => (
@@ -494,7 +494,7 @@ export function MessageBubble({
 														{st.status === 'running' && <RefreshCw className="w-3 h-3 text-primary-500 animate-spin flex-shrink-0" />}
 														{st.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500 flex-shrink-0" />}
 														{st.status === 'pending' && <div className="w-3 h-3 rounded-full border-2 border-neutral-300 dark:border-neutral-600 flex-shrink-0" />}
-														<span className={st.status === 'completed' ? 'text-success-600 dark:text-success-600' : st.status === 'running' ? 'text-primary-700 dark:text-primary-600' : st.status === 'failed' ? 'text-error-600 dark:text-error-600' : 'text-neutral-500'}>
+														<span className={st.status === 'completed' ? 'text-success-600 dark:text-success-600' : st.status === 'running' ? 'text-primary-700 dark:text-primary-700' : st.status === 'failed' ? 'text-error-600 dark:text-error-600' : 'text-neutral-500'}>
 															{st.description}
 														</span>
 														{st.status === 'failed' && <span className="text-error-400 truncate">{st.error}</span>}
@@ -527,7 +527,7 @@ export function MessageBubble({
 						<span className="chat-action-time">{formatTime(msg.timestamp)}</span>
 						<button onClick={handleCopy} className="chat-action-btn" title="复制">
 							{(msg.id === (copiedId ?? (globalThis as unknown as { __chatCopiedId?: string }).__chatCopiedId))
-								? <Check className="w-3 h-3 text-emerald-500" />
+								? <Check className="w-3 h-3 text-success-500" />
 								: <Copy className="w-3 h-3" />}
 						</button>
 						{msg.role === 'user' && (

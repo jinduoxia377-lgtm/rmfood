@@ -37,49 +37,49 @@ const STAGE_CONFIG: Record<string, {
   safety_check: {
     label: '安全性检查',
     icon: ShieldCheck,
-    color: 'text-rose-500',
+    color: 'text-danger-500',
     description: 'GB 16740 / ADI / UL 阈值比对',
     weight: 0.25,
   },
   compatibility_check: {
     label: '兼容性检测',
     icon: Network,
-    color: 'text-amber-500',
+    color: 'text-warning-500',
     description: '4层架构成分相互作用分析',
     weight: 0.20,
   },
   efficacy_prediction: {
     label: '功效预测',
     icon: Activity,
-    color: 'text-blue-500',
+    color: 'text-secondary-500',
     description: 'PopPK/PD 模型模拟',
     weight: 0.20,
   },
   stability_prediction: {
     label: '稳定性预测',
     icon: Thermometer,
-    color: 'text-purple-500',
+    color: 'text-accent-500',
     description: '货架期与降解速率模拟',
     weight: 0.15,
   },
   taste_prediction: {
     label: '风味评分',
     icon: Zap,
-    color: 'text-pink-500',
+    color: 'text-danger-500',
     description: '感官特性预测',
     weight: 0.10,
   },
   synergy_analysis: {
     label: '协同效应分析',
     icon: Network,
-    color: 'text-cyan-500',
+    color: 'text-info-500',
     description: '网络药理学预测',
     weight: 0.10,
   },
   data_comparison: {
     label: '数据对比',
     icon: TrendingUp,
-    color: 'text-emerald-500',
+    color: 'text-success-500',
     description: '预测值 vs 实测值对比',
     weight: 0.10,
   },
@@ -88,9 +88,9 @@ const STAGE_CONFIG: Record<string, {
 // ── 结论样式 ──────────────────────────────────────────────────────────────
 
 const OUTCOME_CONFIG = {
-  passed: { label: '通过', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700', icon: CheckCircle2 },
-  conditional: { label: '有条件通过', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-300 dark:border-amber-700', icon: AlertTriangle },
-  failed: { label: '未通过', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border-rose-300 dark:border-rose-700', icon: XCircle },
+  passed: { label: '通过', color: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700 border-success-300 dark:border-success-700', icon: CheckCircle2 },
+  conditional: { label: '有条件通过', color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700 border-warning-300 dark:border-warning-700', icon: AlertTriangle },
+  failed: { label: '未通过', color: 'bg-danger-100 text-danger-700 dark:bg-danger-300/25 dark:text-danger-700 border-danger-300 dark:border-danger-700', icon: XCircle },
   inconclusive: { label: '待验证', color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700', icon: Minus },
 } as const
 
@@ -141,9 +141,9 @@ function StageCard({ result }: { result: ValidationStageResult }) {
       'rounded-xl border transition-all duration-200',
       result.success
         ? result.passed
-          ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10'
-          : 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10'
-        : 'border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-900/10',
+          ? 'border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-300/15'
+          : 'border-warning-200 dark:border-warning-800 bg-warning-50/50 dark:bg-warning-300/15'
+        : 'border-danger-200 dark:border-danger-800 bg-danger-50/50 dark:bg-danger-300/15',
     )}>
       <button
         onClick={() => setExpanded(!expanded)}
@@ -154,9 +154,9 @@ function StageCard({ result }: { result: ValidationStageResult }) {
           'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
           result.success
             ? result.passed
-              ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
-              : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
-            : 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400',
+              ? 'bg-success-100 dark:bg-success-300/30 text-success-700 dark:text-success-600'
+              : 'bg-warning-100 dark:bg-warning-300/30 text-warning-600 dark:text-warning-700'
+            : 'bg-danger-100 dark:bg-danger-300/30 text-danger-600 dark:text-danger-700',
         )}>
           {result.success
             ? result.passed
@@ -180,9 +180,9 @@ function StageCard({ result }: { result: ValidationStageResult }) {
         <div className="text-right flex-shrink-0">
           <div className={cn(
             'text-lg font-bold',
-            result.score >= 70 ? 'text-emerald-600 dark:text-emerald-400' :
-            result.score >= 50 ? 'text-amber-600 dark:text-amber-400' :
-            'text-rose-600 dark:text-rose-400',
+            result.score >= 70 ? 'text-success-700 dark:text-success-600' :
+            result.score >= 50 ? 'text-warning-600 dark:text-warning-700' :
+            'text-danger-600 dark:text-danger-700',
           )}>
             {result.score.toFixed(0)}
           </div>
@@ -201,7 +201,7 @@ function StageCard({ result }: { result: ValidationStageResult }) {
           )}
           {result.warnings.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-amber-600 dark:text-amber-400">警告</p>
+              <p className="text-xs font-medium text-warning-600 dark:text-warning-700">警告</p>
               {result.warnings.map((w, i) => (
                 <p key={i} className="text-xs text-neutral-600 dark:text-neutral-400 pl-2">⚠ {w}</p>
               ))}
@@ -209,7 +209,7 @@ function StageCard({ result }: { result: ValidationStageResult }) {
           )}
           {result.errors.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-rose-600 dark:text-rose-400">错误</p>
+              <p className="text-xs font-medium text-danger-600 dark:text-danger-700">错误</p>
               {result.errors.map((e, i) => (
                 <p key={i} className="text-xs text-neutral-600 dark:text-neutral-400 pl-2">✗ {e}</p>
               ))}
@@ -256,8 +256,8 @@ function ComparisonChart({ comparisons }: { comparisons: PredictionComparison[] 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-neutral-700" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-          <YAxis tick={{ fontSize: 11 }} />
+          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} />
           <Tooltip
             contentStyle={{
               backgroundColor: 'var(--neutral-900)',
@@ -476,14 +476,14 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                 className={cn(
                   'rounded-xl border p-3 flex items-center gap-3',
                   progress.current_stage === key
-                    ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/10'
+                    ? 'border-secondary-300 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-300/15'
                     : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50',
                 )}
               >
                 <div className={cn(
                   'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
                   progress.current_stage === key
-                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 animate-pulse'
+                    ? 'bg-secondary-100 dark:bg-secondary-300/30 text-secondary-700 dark:text-secondary-700 animate-pulse'
                     : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-400',
                 )}>
                   {progress.current_stage === key
@@ -498,7 +498,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">{cfg.description}</p>
                 </div>
                 {progress.current_stage === key && (
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">执行中...</span>
+                  <span className="text-xs text-secondary-700 dark:text-secondary-700 font-medium">执行中...</span>
                 )}
               </div>
             ))
@@ -541,14 +541,14 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
                         </td>
                         <td className={cn(
                           'py-2 px-3 font-mono',
-                          c.within_tolerance ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
+                          c.within_tolerance ? 'text-success-700 dark:text-success-600' : 'text-danger-600 dark:text-danger-700',
                         )}>
                           {c.deviation_percent.toFixed(1)}%
                         </td>
                         <td className="py-2 px-3">
                           {c.within_tolerance
-                            ? <CheckCircle2 size={14} className="text-emerald-500" />
-                            : <XCircle size={14} className="text-rose-500" />}
+                            ? <CheckCircle2 size={14} className="text-success-500" />
+                            : <XCircle size={14} className="text-danger-500" />}
                         </td>
                       </tr>
                     ))}

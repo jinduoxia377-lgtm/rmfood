@@ -54,9 +54,9 @@ const WORKFLOW_STAGES: Record<string, { label: string; icon: React.ReactNode; de
 }
 
 const STAGE_COLORS: Record<string, string> = {
-  running: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-  success: 'text-success-500 bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800',
-  failed: 'text-error-500 bg-error-50 dark:bg-error-900/20 border-error-200 dark:border-error-800',
+  running: 'text-secondary-500 bg-secondary-50 dark:bg-secondary-300/20 border-secondary-200 dark:border-secondary-800',
+  success: 'text-success-500 bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800',
+  failed: 'text-error-500 bg-error-50 dark:bg-error-300/20 border-error-200 dark:border-error-800',
   pending: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/30 border-neutral-200 dark:border-neutral-700',
 }
 
@@ -93,7 +93,7 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
           {currentWorkflow.label}工作流
         </span>
         {isRunning && (
-          <span className="flex items-center gap-1 text-xs text-blue-500 animate-pulse">
+          <span className="flex items-center gap-1 text-xs text-secondary-500 animate-pulse">
             <Loader2 className="w-3 h-3 animate-spin" />
             执行中
           </span>
@@ -113,13 +113,13 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
                 {stage.status === 'failed' && <XCircle className="w-4 h-4" />}
                 {stage.status === 'running' && <Loader2 className="w-4 h-4 animate-spin" />}
                 {stage.status === 'pending' && <Circle className="w-4 h-4" />}
-                <span className="text-[11px] font-medium text-center leading-tight">{stage.label}</span>
+                <span className="text-xs font-medium text-center leading-tight">{stage.label}</span>
                 {stage.latencyMs > 0 && (
                   <span className="text-[9px] opacity-60">{stage.latencyMs}ms</span>
                 )}
               </div>
               {index < renderedStages.length - 1 && (
-                <ChevronRight className="w-4 h-4 text-neutral-300 dark:text-neutral-600 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-neutral-300 dark:text-neutral-400 flex-shrink-0" />
               )}
             </React.Fragment>
           )

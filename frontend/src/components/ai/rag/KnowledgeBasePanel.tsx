@@ -76,17 +76,17 @@ function QualityMetrics({ stats, docCount }: { stats: RAGStats; docCount: number
       </h3>
       <div className="grid grid-cols-3 gap-3 text-center">
         <div>
-          <div className="text-base font-bold text-primary-600 dark:text-primary-400">
+          <div className="text-base font-bold text-primary-700 dark:text-primary-700">
             {stats.total_docs ?? docCount}
           </div>
           <div className="text-xs text-[var(--text-muted)]">文档数</div>
         </div>
         <div>
-          <div className="text-base font-bold text-secondary-600 dark:text-secondary-400">{stats.total_chunks}</div>
+          <div className="text-base font-bold text-secondary-600 dark:text-secondary-700">{stats.total_chunks}</div>
           <div className="text-xs text-[var(--text-muted)]">知识块</div>
         </div>
         <div>
-          <div className="text-base font-bold text-accent-600 dark:text-accent-400">{stats.embedding_dim || 768}</div>
+          <div className="text-base font-bold text-accent-600 dark:text-accent-700">{stats.embedding_dim || 768}</div>
           <div className="text-xs text-[var(--text-muted)]">维度</div>
         </div>
       </div>
@@ -188,9 +188,9 @@ function SearchTester() {
             <div className="text-center py-4 text-sm text-[var(--text-muted)]">未找到匹配结果</div>
           ) : (
             results.map((r, i) => (
-              <div key={i} className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 space-y-1">
+              <div key={i} className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-primary-600 dark:text-primary-400">
+                  <span className="font-semibold text-primary-700 dark:text-primary-700">
                     相似度: {(r.similarity * 100).toFixed(1)}%
                   </span>
                   <span className="text-[var(--text-muted)]">{r.doc_filename}</span>
@@ -319,10 +319,10 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Database className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          <Database className="w-5 h-5 text-primary-700 dark:text-primary-700" />
           <h2 className="text-base font-bold tracking-tight text-[var(--text-primary)] dark:text-white">知识库</h2>
           {stats && (
-            <span className="px-2 py-0.5 text-xs font-semibold bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-semibold bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-700 rounded-full">
               {stats.total_chunks} 个文档块
             </span>
           )}
@@ -388,7 +388,7 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
             暂无文档，请上传 PDF、TXT、CSV 或 Markdown 文件
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {docs.map((doc) => (
               <div key={doc} className="flex items-center justify-between py-2.5 group">
                 <div className="flex items-center gap-2 min-w-0">
@@ -398,7 +398,7 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
                 <button
                   onClick={() => handleDelete(doc)}
                   disabled={deletingFile === doc}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-error-50 dark:hover:bg-red-950/30 transition-all"
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-error-50 dark:hover:bg-error-950/30 transition-all"
                   title={`删除 ${doc}`}
                 >
                   {deletingFile === doc ? (

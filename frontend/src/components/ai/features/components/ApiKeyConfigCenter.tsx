@@ -304,7 +304,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
 
       {/* 错误提示 */}
       {errors.global && (
-        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {errors.global}
         </div>
@@ -329,12 +329,12 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                 }}
                 className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
                   selectedProvider === provider.id
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md scale-105'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20 shadow-md scale-105'
                     : 'border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
                 }`}
               >
                 <span className="text-lg sm:text-2xl">{provider.icon}</span>
-                <div className="text-[10px] sm:text-xs font-medium mt-1 hidden sm:block">{provider.name}</div>
+                <div className="text-xs sm:text-xs font-medium mt-1 hidden sm:block">{provider.name}</div>
               </button>
             ))}
           </div>
@@ -355,7 +355,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                   }}
                   placeholder={`${currentProvider?.name} API Key...`}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-primary-500 ${
-                    errors.input ? 'border-red-300' : 'border-neutral-300 dark:border-neutral-600'
+                    errors.input ? 'border-error-300' : 'border-neutral-300 dark:border-neutral-600'
                   }`}
                 />
                 <button
@@ -394,7 +394,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
           </div>
 
           {/* 帮助提示 */}
-          <div className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1 p-3 bg-slate-50 dark:bg-neutral-700/50 rounded-lg">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1 p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
             <p className="font-medium">💡 安全提示</p>
             <ul className="list-disc list-inside space-y-0.5 ml-1">
               <li>所有密钥使用 AES-256-GCM 军事级加密</li>
@@ -431,8 +431,8 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                     key={keyData.id}
                     className={`p-3 sm:p-4 rounded-lg border transition-all ${
                       keyData.isValid
-                        ? 'border-green-200 dark:border-green-800 bg-success-50 dark:bg-success-900/10'
-                        : 'border-neutral-200 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-700/50'
+                        ? 'border-success-200 dark:border-success-800 bg-success-50 dark:bg-success-300/15'
+                        : 'border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700/50'
                     }`}
                   >
                     {/* 头部信息 */}
@@ -471,7 +471,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                       <button
                         onClick={() => handleTestConnection(keyData.id)}
                         disabled={testingId === keyData.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 hover:bg-secondary-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 disabled:opacity-50"
                       >
                         {testingId === keyData.id ? (
                           <>
@@ -502,7 +502,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
 
                     {/* 错误建议 */}
                     {testResult?.suggestion && (
-                      <div className="mt-2 p-2 bg-orange-50 dark:bg-orange-900/20 rounded text-xs text-orange-700 dark:text-orange-300 flex items-start gap-1">
+                      <div className="mt-2 p-2 bg-warning-50 dark:bg-warning-300/20 rounded text-xs text-warning-700 dark:text-warning-700 flex items-start gap-1">
                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                         {testResult.suggestion}
                       </div>

@@ -73,14 +73,14 @@ export function EffectTrendChart({
     <div className="w-full overflow-x-auto">
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="min-w-[280px]">
         {/* Y 轴 */}
-        <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="currentColor" className="text-neutral-300 dark:text-neutral-600" strokeWidth={1} />
+        <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="currentColor" className="text-neutral-300 dark:text-neutral-400" strokeWidth={1} />
         {/* X 轴 */}
-        <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH} stroke="currentColor" className="text-neutral-300 dark:text-neutral-600" strokeWidth={1} />
+        <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH} stroke="currentColor" className="text-neutral-300 dark:text-neutral-400" strokeWidth={1} />
 
         {/* Y 轴刻度 */}
         {[0, 0.25, 0.5, 0.75, 1].map((f) => (
           <g key={f}>
-            <line x1={padL - 4} y1={toY(maxY * f)} x2={padL} y2={toY(maxY * f)} stroke="currentColor" className="text-neutral-300 dark:text-neutral-600" />
+            <line x1={padL - 4} y1={toY(maxY * f)} x2={padL} y2={toY(maxY * f)} stroke="currentColor" className="text-neutral-300 dark:text-neutral-400" />
             <text x={padL - 6} y={toY(maxY * f)} textAnchor="end" dominantBaseline="middle" className="text-[9px] fill-neutral-400 dark:fill-neutral-500">
               {(maxY * f).toFixed(0)}
             </text>
@@ -129,7 +129,7 @@ export function EffectTrendChart({
           <>
             <line x1={peakPt[0]} y1={peakPt[1]} x2={peakPt[0]} y2={padT + plotH} stroke="rgba(139, 92, 246, 0.4)" strokeWidth={1} strokeDasharray="3,3" />
             <circle cx={peakPt[0]} cy={peakPt[1]} r={4} fill="#8b5cf6" stroke="white" strokeWidth={1.5} />
-            <text x={peakPt[0]} y={peakPt[1] - 8} textAnchor="middle" className="text-[8px] fill-violet-600 dark:fill-violet-400 font-medium">
+            <text x={peakPt[0]} y={peakPt[1] - 8} textAnchor="middle" className="text-[8px] fill-accent-600 dark:fill-accent-400 font-medium">
               Cmax {peakConcentration?.toFixed(2)}
             </text>
           </>

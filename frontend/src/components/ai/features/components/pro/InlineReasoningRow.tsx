@@ -28,12 +28,12 @@ interface InlineReasoningRowProps {
 
 // 算法标签映射
 const ALGORITHM_BADGES: Record<string, { label: string; color: string }> = {
-  'hybrid-nlp':    { label: 'NLP',    color: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400' },
+  'hybrid-nlp':    { label: 'NLP',    color: 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700' },
   'rule-engine':   { label: '规则',   color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400' },
-  'llm':           { label: 'LLM',    color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400' },
-  'bayesian':      { label: '贝叶斯', color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
-  'semantic-search': { label: '搜索', color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400' },
-  'ensemble':      { label: '集成',   color: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400' },
+  'llm':           { label: 'LLM',    color: 'bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700' },
+  'bayesian':      { label: '贝叶斯', color: 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-700' },
+  'semantic-search': { label: '搜索', color: 'bg-info-100 dark:bg-info-300/25 text-info-700 dark:text-info-700' },
+  'ensemble':      { label: '集成',   color: 'bg-danger-100 dark:bg-danger-300/25 text-danger-700 dark:text-danger-700' },
 }
 
 function formatDuration(ms: number): string {
@@ -72,22 +72,22 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
       >
         {/* 状态指示器 */}
         <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-          isThinking ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-emerald-500'
+          isThinking ? 'bg-success-100 dark:bg-success-300/25' : 'bg-success-500'
         }`}>
           {isThinking ? (
-            <Loader2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 animate-spin" />
+            <Loader2 className="w-3 h-3 text-success-700 dark:text-success-600 animate-spin" />
           ) : (
-            <Brain className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+            <Brain className="w-3 h-3 text-success-700 dark:text-success-600" />
           )}
         </div>
 
         {/* 摘要文字 */}
         <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+          <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
             {isThinking ? 'AI 正在分析...' : '思考过程'}
           </span>
           {!isThinking && steps.length > 0 && (
-            <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1.5">
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1.5">
               {completedCount}/{steps.length} 步
               {elapsedMs !== undefined && ` · ${formatDuration(elapsedMs)}`}
             </span>
@@ -131,7 +131,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
               >
                 {/* 步骤状态图标 */}
                 <div className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-0.5 ${
-                  isComplete ? 'bg-emerald-500' : isThinking ? 'bg-amber-400 animate-pulse' : 'bg-neutral-300 dark:bg-neutral-600'
+                  isComplete ? 'bg-success-500' : isThinking ? 'bg-warning-400 animate-pulse' : 'bg-neutral-300 dark:bg-neutral-600'
                 }`}>
                   {isComplete ? (
                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,11 +146,11 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
 
                 {/* 步骤内容 */}
                 <div className="flex-1 min-w-0">
-                  <span className={`font-medium ${isComplete ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-500 dark:text-neutral-500'}`}>
+                  <span className={`font-medium ${isComplete ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                     {step.step}
                   </span>
                   {step.content && (
-                    <span className="text-neutral-500 dark:text-neutral-500 ml-1.5 truncate">
+                    <span className="text-neutral-500 dark:text-neutral-400 ml-1.5 truncate">
                       {step.content}
                     </span>
                   )}
@@ -169,7 +169,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
           {/* 流式思考中 — 追加提示 */}
           {isThinking && (
             <div className="flex items-center gap-1.5 py-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
+              <Loader2 className="w-3 h-3 animate-spin text-success-500" />
               <span>正在处理...</span>
             </div>
           )}

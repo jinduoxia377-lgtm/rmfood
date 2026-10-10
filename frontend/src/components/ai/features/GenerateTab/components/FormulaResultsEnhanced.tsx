@@ -154,19 +154,19 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
       {stats && showStats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 rounded-xl border border-primary-100 dark:border-primary-800/30">
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">{stats.total}</div>
+            <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">{stats.total}</div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">生成配方数</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-success-600 dark:text-success-400">{stats.avgScore.toFixed(1)}</div>
+            <div className="text-2xl font-bold text-success-600 dark:text-success-600">{stats.avgScore.toFixed(1)}</div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">平均得分</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-warning-600 dark:text-warning-400">{stats.maxScore.toFixed(1)}</div>
+            <div className="text-2xl font-bold text-warning-600 dark:text-warning-700">{stats.maxScore.toFixed(1)}</div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">最高得分</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-info-600 dark:text-info-400">{stats.passedSafety}/{stats.total}</div>
+            <div className="text-2xl font-bold text-info-600 dark:text-info-600">{stats.passedSafety}/{stats.total}</div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">安全通过</div>
           </div>
           <button
@@ -197,7 +197,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* 分类筛选 */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-neutral-800 rounded-xl">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
             <Filter className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
             <select
               value={selectedCategory}
@@ -226,7 +226,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
           </div>
 
           {/* 排序选项 */}
-          <div className="flex items-center gap-1 bg-slate-50 dark:bg-neutral-800 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-neutral-50 dark:bg-neutral-800 rounded-xl p-1">
             <button
               onClick={() => onToggleSort('score')}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
@@ -257,8 +257,8 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
             onClick={() => setShowOptimizationAdvisor(!showOptimizationAdvisor)}
             className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${
               showOptimizationAdvisor
-                ? 'shadow-md bg-warning-500/10 dark:bg-warning-500/16 text-warning-600 dark:text-warning-400'
-                : 'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                ? 'shadow-md bg-warning-500/10 dark:bg-warning-500/16 text-warning-600 dark:text-warning-700'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
             }`}
           >
             <Lightbulb className="w-3.5 h-3.5" />
@@ -270,8 +270,8 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
             onClick={() => setShowSharePanel(!showSharePanel)}
             className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${
               showSharePanel
-                ? 'shadow-md bg-cyan-500/10 dark:bg-cyan-500/16 text-cyan-600 dark:text-cyan-400'
-                : 'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                ? 'shadow-md bg-info-500/10 dark:bg-info-500/16 text-info-600 dark:text-info-700'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -281,7 +281,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
           {/* 导出 */}
           <div className="relative group">
             <button
-              className="px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md"
             >
               <Download className="w-3.5 h-3.5" />
               {t('ai.formula.generateTab.export')}
@@ -375,11 +375,11 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
       {/* 结果展示区域 */}
       {filteredResults.length === 0 ? (
         <div className="text-center py-16 bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-700">
-          <Filter className="w-12 h-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
+          <Filter className="w-12 h-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-400" />
           <h3 className="text-lg font-medium text-neutral-600 dark:text-neutral-400 mb-2">
             暂无匹配的配方
           </h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-500">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             尝试调整筛选条件或重新生成配方
           </p>
         </div>

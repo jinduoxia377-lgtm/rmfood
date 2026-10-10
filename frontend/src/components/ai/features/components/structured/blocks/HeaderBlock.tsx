@@ -45,7 +45,7 @@ function HeaderBlock({ data }: HeaderBlockProps) {
           {metadata.map((item, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 text-[10px] text-neutral-400 dark:text-neutral-500"
+              className="inline-flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-400"
             >
               <Info className="w-2.5 h-2.5" />
               <span className="font-medium">{item.label}:</span>

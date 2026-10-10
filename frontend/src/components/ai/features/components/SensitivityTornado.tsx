@@ -76,7 +76,7 @@ interface SensitivityTornadoProps {
 const SENSITIVITY_COLORS = {
   positive: 'var(--color-primary, var(--color-primary-400))',
   negative: 'var(--color-error, #FF3B30)',
-  neutral: 'var(--color-slate-500, #6B7280)',
+  neutral: 'var(--color-neutral-500, #6B7280)',
   highlight: 'var(--color-secondary, #0A84FF)',
 };
 
@@ -174,7 +174,7 @@ function SensitivityTornado({
                 </div>
               </div>
               {factor.description && (
-                <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 text-[11px] text-neutral-500">
+                <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 text-xs text-neutral-500">
                   {factor.description}
                 </p>
               )}
@@ -260,7 +260,7 @@ function SensitivityTornado({
             <XAxis
               type="number"
               domain={['dataMin - 0.05', 'dataMax + 0.05']}
-              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
+              tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }}
               tickFormatter={(value: number) => `${(value * 100).toFixed(0)}%`}
             />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-gray-700, #374151)' }} width={80} />
@@ -324,12 +324,12 @@ function SensitivityTornado({
                   type="category"
                   dataKey="x"
                   name="因素 X"
-                  tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
+                  tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }}
                   angle={-45}
                   textAnchor="end"
                   height={70}
                 />
-                <YAxis type="category" dataKey="y" name="因素 Y" tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }} width={60} />
+                <YAxis type="category" dataKey="y" name="因素 Y" tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }} width={60} />
                 <ZAxis type="number" dataKey="z" range={[50, 400]} name="效应大小" />
                 <Tooltip content={<ScatterTooltipContent />} cursor={{ strokeDasharray: '3 3' }} />
 
@@ -356,7 +356,7 @@ function SensitivityTornado({
                         ? 'var(--color-error, #FF3B30)'
                         : payload.significance === 'medium'
                           ? 'var(--color-warning, #FF9F0A)'
-                          : 'var(--color-slate-500, #6B7280)';
+                          : 'var(--color-neutral-500, #6B7280)';
 
                     return (
                       <circle
@@ -382,14 +382,14 @@ function SensitivityTornado({
               <span className="w-3 h-3 rounded-full bg-error-500" /> 高显著性
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-yellow-500" /> 中等显著性
+              <span className="w-3 h-3 rounded-full bg-warning-500" /> 中等显著性
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-neutral-50 dark:bg-neutral-8000" /> 低显著性
             </span>
             {optimalRegion && (
               <span className="flex items-center gap-1.5 ml-auto">
-                <span className="w-8 h-4 bg-success-500/15 border border-dashed border-green-500 rounded" />
+                <span className="w-8 h-4 bg-success-500/15 border border-dashed border-success-500 rounded" />
                 最优区域
               </span>
             )}
@@ -404,7 +404,7 @@ function SensitivityTornado({
           {sortedFactors.slice(0, 10).map((factor, idx) => (
             <div
               key={factor.id}
-              className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg"
                role="button" tabIndex={0} onClick={() => onFactorClick?.(factor)}
               style={{ cursor: 'pointer' }}
             >
@@ -417,7 +417,7 @@ function SensitivityTornado({
               </span>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">{factor.name}</div>
-                <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(factor.sensitivity * 100).toFixed(1)}%</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(factor.sensitivity * 100).toFixed(1)}%</div>
               </div>
             </div>
           ))}

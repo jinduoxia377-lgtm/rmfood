@@ -121,7 +121,7 @@ export function TasteRadarChart({
           {showGrid && (
             <PolarGrid
               stroke="#e5e7eb"
-              className="dark:stroke-slate-700"
+              className="dark:stroke-neutral-700"
             />
           )}
 
@@ -140,10 +140,10 @@ export function TasteRadarChart({
             domain={[0, 100]}
             tick={{
               fill: '#9ca3af',
-              fontSize: 11,
+              fontSize: 12,
             }}
             axisLine={false}
-            className="dark:text-neutral-500"
+            className="dark:text-neutral-400"
           />
 
           {/* 主数据 */}

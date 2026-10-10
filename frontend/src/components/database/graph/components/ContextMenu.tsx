@@ -38,12 +38,12 @@ export default function ContextMenu({
             聚焦此节点
           </button>
           <button onClick={() => onAction('selectNeighbors', contextMenu.node!)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-secondary-50 dark:hover:bg-blue-950/30 transition-colors">
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-secondary-50 dark:hover:bg-secondary-950/30 transition-colors">
             <svg className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
             选中邻居节点
           </button>
           <button onClick={() => onAction('hide', contextMenu.node!)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-error-50 dark:hover:bg-red-950/30 transition-colors">
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-error-50 dark:hover:bg-error-950/30 transition-colors">
             <svg className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
             隐藏此类型
           </button>
@@ -55,7 +55,7 @@ export default function ContextMenu({
             已选中 {selectedNodesCount} 个节点
           </div>
           <button onClick={() => onAction('exportSubgraph')}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-primary-50 dark:hover:bg-emerald-950/30 transition-colors">
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-primary-50 dark:hover:bg-success-950/30 transition-colors">
             <svg className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             导出子图数据
           </button>
@@ -73,14 +73,14 @@ export default function ContextMenu({
       </div>
       {communitiesSize > 0 ? (
         <button onClick={onClearCommunities}
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-warning-50 dark:hover:bg-amber-950/30 transition-colors">
+          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-warning-50 dark:hover:bg-warning-950/30 transition-colors">
           <svg className="w-3.5 h-3.5 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
           关闭社群着色 ({communitiesSize}个社群)
         </button>
       ) : (
         <button onClick={onDetectCommunities}
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors">
-          <svg className="w-3.5 h-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
+          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-accent-50 dark:hover:bg-accent-950/30 transition-colors">
+          <svg className="w-3.5 h-3.5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
           社群自动检测着色
         </button>
       )}

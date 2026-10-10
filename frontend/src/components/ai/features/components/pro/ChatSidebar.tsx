@@ -35,10 +35,10 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
 }
 
 const STEP_COLORS: Record<string, string> = {
-  '问题理解': 'from-blue-500 to-blue-600',
-  '知识检索': 'from-violet-500 to-violet-600',
-  '推理分析': 'from-amber-500 to-orange-600',
-  '配方设计': 'from-emerald-500 to-emerald-600',
+  '问题理解': 'from-secondary-500 to-secondary-600',
+  '知识检索': 'from-accent-500 to-accent-600',
+  '推理分析': 'from-warning-500 to-warning-600',
+  '配方设计': 'from-success-500 to-success-600',
   '生成回答': 'from-primary-500 to-primary-600',
 }
 
@@ -51,7 +51,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
     <div
       role="complementary"
       aria-label="AI 思考过程"
-      className="border-l border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-900/50 w-72 flex-shrink-0 overflow-y-auto hidden lg:block"
+      className="border-l border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50 w-72 flex-shrink-0 overflow-y-auto hidden lg:block"
     >
       <div className="p-3 space-y-3">
         {/* 头部 */}
@@ -61,7 +61,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
             <span>AI 思考过程</span>
             {isThinking && <Loader2 className="w-3.5 h-3.5 text-primary-500 animate-spin" />}
           </div>
-          <span className="text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+          <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
             {steps.filter(s => s.status === 'complete').length}/{steps.length}
           </span>
         </button>
@@ -109,9 +109,9 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
                     flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center
                     transition-all duration-300
                     ${isComplete
-                      ? 'bg-gradient-to-br ' + (STEP_COLORS[step.step] || 'from-slate-400 to-slate-500') + ' text-white'
+                      ? 'bg-gradient-to-br ' + (STEP_COLORS[step.step] || 'from-neutral-400 to-neutral-500') + ' text-white'
                       : isProcessing
-                        ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white animate-pulse'
+                        ? 'bg-gradient-to-br from-warning-400 to-warning-500 text-white animate-pulse'
                         : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
                     }
                   `}>
@@ -131,16 +131,16 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
                       {step.detail && (
                         isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />
                       )}
-                      {isProcessing && <span className="text-[10px] text-warning-500 ml-1">思考中...</span>}
+                      {isProcessing && <span className="text-xs text-warning-500 ml-1">思考中...</span>}
                     </button>
 
-                    <p className={`text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2 ${isProcessing ? 'animate-pulse' : ''}`}>
+                    <p className={`text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2 ${isProcessing ? 'animate-pulse' : ''}`}>
                       {step.content}
                     </p>
 
                     {/* 展开的详细信息 */}
                     {isExpanded && step.detail && (
-                      <div className="mt-1.5 p-2 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700 text-[11px] text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">
+                      <div className="mt-1.5 p-2 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700 text-xs text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">
                         {step.detail}
                       </div>
                     )}

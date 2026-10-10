@@ -79,15 +79,15 @@ export default function DetailPanel({
 
         {/* 快速统计条 */}
         <div className="grid grid-cols-3 gap-1.5 mt-3">
-          <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
             <div className="text-[8px] text-neutral-400 dark:text-neutral-400">关联数</div>
           </div>
-          <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.neighbors.length}</div>
             <div className="text-[8px] text-neutral-400 dark:text-neutral-400">邻居</div>
           </div>
-          <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
             <div className="text-[8px] text-neutral-400 dark:text-neutral-400">类型</div>
           </div>
@@ -157,10 +157,10 @@ export default function DetailPanel({
       </div>
 
       {/* 面板底部操作栏 */}
-      <div className="px-4 py-2.5 border-t border-neutral-200/70 dark:border-neutral-700/50 bg-slate-50/50 dark:bg-neutral-800/30 flex gap-2">
+      <div className="px-4 py-2.5 border-t border-neutral-200/70 dark:border-neutral-700/50 bg-neutral-50/50 dark:bg-neutral-800/30 flex gap-2">
         <button
           onClick={() => onNodeClick?.(selectedNode)}
-          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] hover:from-[var(--color-primary-surface-deep)] hover:to-[var(--color-primary-surface-deep)] text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
         >
           查看完整详情
         </button>
@@ -186,7 +186,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
     <div className="p-3 space-y-3">
       {/* 节点ID */}
       {selectedNode.id && selectedNode.id !== selectedNode.label && (
-        <div className="text-xs text-neutral-400 dark:text-neutral-400 font-mono bg-slate-50 dark:bg-neutral-800/40 rounded-lg px-2 py-1.5 break-all">
+        <div className="text-xs text-neutral-400 dark:text-neutral-400 font-mono bg-neutral-50 dark:bg-neutral-800/40 rounded-lg px-2 py-1.5 break-all">
           ID: {selectedNode.id}
         </div>
       )}
@@ -206,7 +206,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
         </button>
         <button
           onClick={() => onSetDetailTab('connections')}
-          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-secondary-50 dark:hover:bg-blue-950/30 transition-colors group"
+          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-950/30 transition-colors group"
           title="查看所有连接"
         >
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -218,7 +218,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           onClick={() => {
             onNodeClick?.({ ...selectedNode, properties: { ...selectedNode.properties, _action: 'highlight_neighbors' } })
           }}
-          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-warning-50 dark:hover:bg-amber-950/30 transition-colors group"
+          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-warning-50 dark:hover:bg-warning-950/30 transition-colors group"
           title="高亮邻居节点"
         >
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -228,7 +228,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
         </button>
         <button
           onClick={() => onSetSelectedNode(null)}
-          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-error-50 dark:hover:bg-red-950/30 transition-colors group"
+          className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-error-50 dark:hover:bg-error-950/30 transition-colors group"
           title="关闭面板"
         >
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -251,7 +251,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
                 <button
                   key={neighbor.id || neighbor.label}
                   onClick={() => onSetSelectedNode(neighbor)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors text-left group/item"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors text-left group/item"
                 >
                   <span className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover/item:scale-150" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                   <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate flex-1 font-medium group-hover/item:text-neutral-900 dark:group-hover/item:text-neutral-100">{neighbor.label}</span>
@@ -301,7 +301,7 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                   const nconf = TYPE_CONFIG[node.type]
                   const econf = EDGE_COLORS[edge.type as keyof typeof EDGE_COLORS]
                   return (
-                    <div key={`in-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
+                    <div key={`in-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-neutral-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                         <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
@@ -330,7 +330,7 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                   const nconf = TYPE_CONFIG[node.type]
                   const econf = EDGE_COLORS[edge.type as keyof typeof EDGE_COLORS]
                   return (
-                    <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
+                    <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-neutral-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
                         <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
                         <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
@@ -413,7 +413,7 @@ function DetailPropertiesTab({ selectedNode }: { selectedNode: GraphNode }) {
           }
 
           return (
-            <div key={key} className="flex justify-between items-center text-xs group px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors">
+            <div key={key} className="flex justify-between items-center text-xs group px-2 py-1.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors">
               <span className="text-neutral-500 dark:text-neutral-400 shrink-0" title={key}>
                 {keyLabelMap[key] || key}
               </span>

@@ -91,10 +91,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="w-12 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-700 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-primary-600 shadow-sm">
                 </div>
               </div>
-              <span className="text-neutral-600 dark:text-neutral-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+              <span className="text-neutral-600 dark:text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
                 {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_ENABLE_AI_ENHANCEMENT}
               </span>
-              <Badge variant="neutral" className="text-[10px] px-1.5 py-0.5">
+              <Badge variant="neutral" className="text-xs px-1.5 py-0.5">
                 {modelStatus?.llm?.provider || 'local'}
               </Badge>
             </label>

@@ -18,10 +18,10 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
           <AlertTriangle className="w-4 h-4 text-danger-600" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-danger-700 dark:text-danger-400">
+          <p className="text-sm font-medium text-danger-700 dark:text-danger-600">
             {DEFAULTS.PLACEHOLDER_TEXTS.ERROR_NOTICE_TITLE}
           </p>
-          <p className="text-sm text-danger-600 dark:text-danger-400 mt-0.5">
+          <p className="text-sm text-danger-600 dark:text-danger-600 mt-0.5">
             {message}
           </p>
           <button

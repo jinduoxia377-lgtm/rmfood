@@ -179,7 +179,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
   private renderEvidenceBadge(level: string) {
     const styles: Record<string, string> = {
       strong: 'bg-success-100 text-success-800',
-      moderate: 'bg-yellow-100 text-yellow-800',
+      moderate: 'bg-warning-100 text-warning-800',
       weak: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600',
     };
 
@@ -207,7 +207,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
           className="w-full flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--color-success-surface)] to-[var(--color-success-surface-deep)] flex items-center justify-center text-white">
               {category.icon}
             </div>
             <div className="text-left">
@@ -229,7 +229,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             {category.items.map((item) => (
               <div
                 key={item.id}
-                className="bg-slate-50 dark:bg-slate-850 rounded-lg p-4 border border-neutral-100 dark:border-neutral-700"
+                className="bg-neutral-50 dark:bg-neutral-850 rounded-lg p-4 border border-neutral-100 dark:border-neutral-700"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -247,7 +247,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                           {item.targets.map((target) => (
                             <span
                               key={target.uniprotId}
-                              className="px-2 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 rounded text-xs"
+                              className="px-2 py-1 bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 rounded text-xs"
                             >
                               {target.geneSymbol}
                             </span>
@@ -262,7 +262,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                           {item.diseases.map((disease) => (
                             <span
                               key={disease.diseaseId}
-                              className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-600 rounded text-xs"
+                              className="px-2 py-1 bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 rounded text-xs"
                             >
                               {disease.diseaseName}
                             </span>
@@ -286,7 +286,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
     if (this.props.loading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-success-600"></div>
           <span className="ml-3 text-neutral-600 dark:text-neutral-400">正在分析功效...</span>
         </div>
       );
@@ -305,27 +305,27 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
 
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-5">
+        <div className="bg-gradient-to-r from-success-500 to-success-600 px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white dark:bg-neutral-900/20 flex items-center justify-center">
               <BookOpen className="w-7 h-7 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">{herb.name}</h2>
-              <p className="text-teal-100 text-sm">{herb.latinName}</p>
+              <p className="text-success-100 text-sm">{herb.latinName}</p>
             </div>
           </div>
         </div>
 
         <div className="p-6">
           <div className="flex flex-wrap gap-2 mb-6">
-            <span className="px-3 py-1 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-600 rounded-full text-sm">
+            <span className="px-3 py-1 bg-error-100 dark:bg-error-300/25 text-error-700 dark:text-error-600 rounded-full text-sm">
               药性：{herb.properties.nature}
             </span>
             {herb.properties.flavor.map((flavor, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm"
+                className="px-3 py-1 bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700 rounded-full text-sm"
               >
                 味{flavor}
               </span>
@@ -333,7 +333,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             {herb.properties.meridian.map((meridian, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600 rounded-full text-sm"
+                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 rounded-full text-sm"
               >
                 归{meridian}经
               </span>
@@ -346,7 +346,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
 
           {efficacyCategories.map((category) => this.renderCategory(category))}
 
-          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-850 rounded-lg border border-neutral-100 dark:border-neutral-700">
+          <div className="mt-6 p-4 bg-neutral-50 dark:bg-neutral-850 rounded-lg border border-neutral-100 dark:border-neutral-700">
             <h4 className="font-medium text-neutral-900 dark:text-white mb-2">使用注意</h4>
             <div className="space-y-2">
               {herb.contraindications.length > 0 && (
@@ -359,7 +359,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
               )}
               {herb.sideEffects.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  <p className="text-sm font-medium text-warning-600 dark:text-warning-700">
                     不良反应：
                   </p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -370,9 +370,9 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-800">
-            <h4 className="font-medium text-teal-800 dark:text-teal-200 mb-2">推荐用量</h4>
-            <p className="text-sm text-teal-700 dark:text-teal-300">
+          <div className="mt-4 p-4 bg-success-50 dark:bg-success-300/20 rounded-lg border border-success-200 dark:border-success-800">
+            <h4 className="font-medium text-success-800 dark:text-success-200 mb-2">推荐用量</h4>
+            <p className="text-sm text-success-700 dark:text-success-700">
               {herb.dosage.amount} {herb.dosage.unit}，{herb.dosage.preparations.join('、')}
             </p>
           </div>

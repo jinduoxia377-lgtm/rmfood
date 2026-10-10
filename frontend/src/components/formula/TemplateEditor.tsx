@@ -67,7 +67,7 @@ export function TemplateEditor({ open, onClose, template, onSuccess }: TemplateE
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               {template ? '编辑模板' : '创建模板'}
             </h2>
-            <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600">
+            <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
               <X size={20} />
             </button>
           </div>
@@ -137,7 +137,7 @@ export function TemplateEditor({ open, onClose, template, onSuccess }: TemplateE
               {formData.effects.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {formData.effects.map((eff, idx) => (
-                    <span key={idx} className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs">
+                    <span key={idx} className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 text-xs">
                       {eff}
                       <button onClick={() => setFormData(prev => ({ ...prev, effects: prev.effects.filter((_, i) => i !== idx) }))}>
                         <X size={12} />

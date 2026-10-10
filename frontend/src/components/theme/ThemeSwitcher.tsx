@@ -246,7 +246,7 @@ export function ThemeSwitcher({
                       />
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium text-text-primary truncate">{theme.name}</div>
-                        <div className="text-[10px] text-text-secondary">{theme.mode}</div>
+                        <div className="text-xs text-text-secondary">{theme.mode}</div>
                       </div>
                     </button>
                   );

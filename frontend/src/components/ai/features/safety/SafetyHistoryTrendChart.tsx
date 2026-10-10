@@ -36,14 +36,14 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
   const trend = latestRate > firstRate + 2 ? 'up' : latestRate < firstRate - 2 ? 'down' : 'stable'
 
   const getTrendIcon = () => {
-    if (trend === 'up') return <TrendingUp className="w-3 h-3 text-emerald-500" />
-    if (trend === 'down') return <TrendingDown className="w-3 h-3 text-red-500" />
+    if (trend === 'up') return <TrendingUp className="w-3 h-3 text-success-500" />
+    if (trend === 'down') return <TrendingDown className="w-3 h-3 text-error-500" />
     return <Minus className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
   }
 
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-emerald-500'
-    if (trend === 'down') return 'text-red-500'
+    if (trend === 'up') return 'text-success-500'
+    if (trend === 'down') return 'text-error-500'
     return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
   }
 
@@ -54,7 +54,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
           <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">安全趋势</span>
         </div>
-        <p className="text-sm text-neutral-400 dark:text-neutral-500 py-8 text-center">
+        <p className="text-sm text-neutral-400 dark:text-neutral-400 py-8 text-center">
           至少需要 2 条历史记录才能显示趋势
         </p>
       </div>

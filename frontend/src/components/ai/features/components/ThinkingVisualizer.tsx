@@ -59,7 +59,7 @@ const stepTypeConfig = {
     icon: Brain,
     color: 'bg-secondary-500',
     bgColor: 'bg-secondary-50',
-    borderColor: 'border-blue-200',
+    borderColor: 'border-secondary-200',
     textColor: 'text-secondary-700',
     label: '语义分析',
   },
@@ -67,7 +67,7 @@ const stepTypeConfig = {
     icon: Search,
     color: 'bg-success-500',
     bgColor: 'bg-success-50',
-    borderColor: 'border-green-200',
+    borderColor: 'border-success-200',
     textColor: 'text-success-700',
     label: '信息检索',
   },
@@ -75,24 +75,24 @@ const stepTypeConfig = {
     icon: GitBranch,
     color: 'bg-accent-500',
     bgColor: 'bg-accent-50',
-    borderColor: 'border-purple-200',
+    borderColor: 'border-accent-200',
     textColor: 'text-accent-700',
     label: '逻辑推理',
   },
   decision: {
     icon: Target,
-    color: 'bg-orange-500',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
-    textColor: 'text-orange-700',
+    color: 'bg-warning-500',
+    bgColor: 'bg-warning-50',
+    borderColor: 'border-warning-200',
+    textColor: 'text-warning-700',
     label: '决策制定',
   },
   generation: {
     icon: Sparkles,
-    color: 'bg-pink-500',
-    bgColor: 'bg-pink-50',
-    borderColor: 'border-pink-200',
-    textColor: 'text-pink-700',
+    color: 'bg-danger-500',
+    bgColor: 'bg-danger-50',
+    borderColor: 'border-danger-200',
+    textColor: 'text-danger-700',
     label: '内容生成',
   },
 }
@@ -100,7 +100,7 @@ const stepTypeConfig = {
 const ConfidenceBar: React.FC<{ confidence: number }> = ({ confidence }) => {
   const getColor = () => {
     if (confidence >= 0.8) return 'bg-success-500'
-    if (confidence >= 0.5) return 'bg-yellow-500'
+    if (confidence >= 0.5) return 'bg-warning-500'
     return 'bg-error-500'
   }
 
@@ -242,7 +242,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
     <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 cursor-pointer"
+        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-500 cursor-pointer"
          role="button" tabIndex={0} onClick={onToggleVisibility}
       >
         <div className="flex items-center gap-2 text-white">
@@ -292,7 +292,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
 
       {/* Progress Indicator */}
       {isVisible && steps.length > 0 && (
-        <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-100">
+        <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-100">
           <div className="flex items-center justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span>思考进度</span>
             <span>
@@ -301,7 +301,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
           </div>
           <div className="mt-2 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-accent-500 to-accent-500 transition-all duration-500"
               style={{
                 width: `${(steps.filter(s => s.status === 'completed').length / steps.length) * 100}%`,
               }}

@@ -525,12 +525,12 @@ export function OptimizationAdvisor({
   return (
     <>
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="px-4 py-3 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-900/20 dark:to-warning-900/20 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-warning-600 dark:text-warning-400" />
-              <span className="font-medium text-warning-700 dark:text-warning-300">智能优化建议</span>
-              <span className="text-xs px-1.5 py-0.5 bg-warning-100 dark:bg-warning-900/40 text-warning-700 dark:text-warning-400 rounded-full">
+              <Lightbulb className="w-4 h-4 text-warning-600 dark:text-warning-700" />
+              <span className="font-medium text-warning-700 dark:text-warning-700">智能优化建议</span>
+              <span className="text-xs px-1.5 py-0.5 bg-warning-100 dark:bg-warning-300/30 text-warning-700 dark:text-warning-700 rounded-full">
                 {suggestions.length}条
               </span>
             </div>
@@ -586,7 +586,7 @@ export function OptimizationAdvisor({
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">暂无明显的优化空间</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-50 dark:divide-slate-800">
+            <div className="divide-y divide-neutral-50 dark:divide-neutral-800">
               {suggestions.map((suggestion) => (
                 <SuggestionItem
                   key={suggestion.id}
@@ -603,7 +603,7 @@ export function OptimizationAdvisor({
         </div>
 
         {suggestions.length > 0 && appliedSuggestions.size < suggestions.length && (
-          <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50">
+          <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
             <button
               onClick={handleApplyAll}
               disabled={appliedSuggestions.size === suggestions.length}
@@ -639,24 +639,24 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
   }[suggestion.type]
 
   const TypeColor = {
-    ingredient: 'text-rose-500',
+    ingredient: 'text-danger-500',
     dosage: 'text-secondary-500',
-    taste: 'text-pink-500',
+    taste: 'text-danger-500',
     stability: 'text-warning-500',
     cost: 'text-success-500',
     safety: 'text-error-500',
   }[suggestion.type]
 
   const PriorityBadge = {
-    high: { label: '高', class: 'bg-error-100 text-error-700 dark:bg-error-900/40 dark:text-error-400' },
-    medium: { label: '中', class: 'bg-warning-100 text-warning-700 dark:bg-warning-900/40 dark:text-warning-400' },
+    high: { label: '高', class: 'bg-error-100 text-error-700 dark:bg-error-300/30 dark:text-error-600' },
+    medium: { label: '中', class: 'bg-warning-100 text-warning-700 dark:bg-warning-300/30 dark:text-warning-700' },
     low: { label: '低', class: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
   }[suggestion.priority]
 
   return (
-    <div className={`transition-colors ${isApplied ? 'bg-success-50 dark:bg-success-900/10' : ''}`}>
+    <div className={`transition-colors ${isApplied ? 'bg-success-50 dark:bg-success-300/15' : ''}`}>
       <div
-        className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+        className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
          role="button" tabIndex={0} onClick={onToggle}
       >
         <div className={`w-8 h-8 rounded-lg ${isApplied ? 'bg-success-100' : 'bg-neutral-100 dark:bg-neutral-800'} flex items-center justify-center shrink-0`}>
@@ -680,7 +680,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
           {suggestion.expectedImprovement && (
             <div className="flex items-center gap-1 mt-1.5">
               <TrendingUp className="w-3 h-3 text-success-500" />
-              <span className="text-xs text-success-600 dark:text-success-400">
+              <span className="text-xs text-success-600 dark:text-success-600">
                 预期提升: +{(suggestion.expectedImprovement * 100).toFixed(0)}%
               </span>
             </div>
@@ -711,7 +711,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
                   e.stopPropagation()
                   onApply()
                 }}
-                className="px-2 py-1 text-xs bg-warning-100 dark:bg-warning-900/40 text-warning-700 dark:text-warning-400 rounded hover:bg-warning-200 dark:hover:bg-warning-900/60 transition-colors"
+                className="px-2 py-1 text-xs bg-warning-100 dark:bg-warning-300/30 text-warning-700 dark:text-warning-700 rounded hover:bg-warning-200 dark:hover:bg-warning-900/60 transition-colors"
               >
                 应用
               </button>
@@ -722,7 +722,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
       {isExpanded && (
         <div className="px-4 pb-3 pl-14 animate-fade-in">
-          <div className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg space-y-2">
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg space-y-2">
             {suggestion.currentValue && suggestion.suggestedValue && (
               <div>
                 <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">调整建议：</span>
@@ -746,11 +746,11 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
               <div className="flex items-center gap-2">
                 <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-cyan-500 rounded-full"
+                    className="h-full bg-info-500 rounded-full"
                     style={{ width: `${suggestion.confidence * 100}%` }}
                   />
                 </div>
-                <span className="text-xs font-medium text-cyan-600 dark:text-cyan-400">
+                <span className="text-xs font-medium text-info-600 dark:text-info-700">
                   {(suggestion.confidence * 100).toFixed(0)}%
                 </span>
               </div>
@@ -772,11 +772,11 @@ interface SuggestionPreviewPanelProps {
 
 function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCancel }: SuggestionPreviewPanelProps) {
   return (
-    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-secondary-50 dark:bg-secondary-900/20 animate-fade-in">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-secondary-50 dark:bg-secondary-300/20 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4 text-secondary-500" />
-          <span className="text-sm font-medium text-secondary-700 dark:text-secondary-300">效果预览</span>
+          <span className="text-sm font-medium text-secondary-700 dark:text-secondary-700">效果预览</span>
         </div>
         <button
           onClick={onCancel}
@@ -851,11 +851,11 @@ function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: S
   const isSafetyRelated = suggestion.type === 'safety' || suggestion.priority === 'high'
 
   return (
-    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-warning-50 dark:bg-warning-900/20 animate-fade-in">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-warning-50 dark:bg-warning-300/20 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-warning-500" />
-          <span className="text-sm font-medium text-warning-700 dark:text-warning-300">确认应用建议</span>
+          <span className="text-sm font-medium text-warning-700 dark:text-warning-700">确认应用建议</span>
         </div>
         <button
           onClick={onCancel}
@@ -866,9 +866,9 @@ function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: S
       </div>
 
       {isSafetyRelated && (
-        <div className="mb-3 p-2 bg-error-100 dark:bg-error-900/40 rounded-lg flex items-start gap-2">
+        <div className="mb-3 p-2 bg-error-100 dark:bg-error-300/30 rounded-lg flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-error-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-error-700 dark:text-error-300">
+          <p className="text-xs text-error-700 dark:text-error-600">
             此建议涉及安全性或高优先级更改，请确认后再应用。
           </p>
         </div>
@@ -911,7 +911,7 @@ interface SuggestionHistoryPanelProps {
 
 function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistoryPanelProps) {
   return (
-    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
@@ -945,9 +945,9 @@ function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistor
                   )}
                   <span className={`text-xs px-1.5 py-0.5 rounded ${
                     entry.suggestion.priority === 'high'
-                      ? 'bg-error-100 text-error-700 dark:bg-error-900/40 dark:text-error-400'
+                      ? 'bg-error-100 text-error-700 dark:bg-error-300/30 dark:text-error-600'
                       : entry.suggestion.priority === 'medium'
-                      ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/40 dark:text-warning-400'
+                      ? 'bg-warning-100 text-warning-700 dark:bg-warning-300/30 dark:text-warning-700'
                       : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
                   }`}>
                     {entry.suggestion.priority === 'high' ? '高' : entry.suggestion.priority === 'medium' ? '中' : '低'}
@@ -991,10 +991,10 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
   ] as const
 
   const getScoreLevel = (score: number) => {
-    if (score >= 0.8) return { label: '优秀', class: 'text-success-600 dark:text-success-400' }
-    if (score >= 0.6) return { label: '良好', class: 'text-secondary-600 dark:text-secondary-400' }
-    if (score >= 0.4) return { label: '一般', class: 'text-warning-600 dark:text-warning-400' }
-    return { label: '需改进', class: 'text-error-600 dark:text-error-400' }
+    if (score >= 0.8) return { label: '优秀', class: 'text-success-600 dark:text-success-600' }
+    if (score >= 0.6) return { label: '良好', class: 'text-secondary-600 dark:text-secondary-700' }
+    if (score >= 0.4) return { label: '一般', class: 'text-warning-600 dark:text-warning-700' }
+    return { label: '需改进', class: 'text-error-600 dark:text-error-600' }
   }
 
   return (
@@ -1034,12 +1034,12 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
         })}
       </div>
 
-      <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+      <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-300/20 rounded-lg">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-4 h-4 text-primary-500 mt-0.5" />
           <div>
-            <p className="text-xs font-medium text-primary-700 dark:text-primary-600">优化建议</p>
-            <p className="text-xs text-primary-700 dark:text-primary-600 mt-0.5">
+            <p className="text-xs font-medium text-primary-700 dark:text-primary-700">优化建议</p>
+            <p className="text-xs text-primary-700 dark:text-primary-700 mt-0.5">
               配方整体表现良好，建议重点关注口感优化，可通过添加天然甜味剂提升适口性。
             </p>
           </div>

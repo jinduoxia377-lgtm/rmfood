@@ -14,43 +14,43 @@ const STAGE_CONFIG = {
   idle: {
     label: '等待中',
     color: 'bg-neutral-400',
-    gradient: 'from-slate-400 to-slate-500',
+    gradient: 'from-neutral-400 to-neutral-500',
     icon: null,
   },
   preparing: {
     label: '准备中',
     color: 'bg-secondary-500',
-    gradient: 'from-blue-400 to-blue-600',
+    gradient: 'from-secondary-400 to-secondary-600',
     icon: Loader2,
   },
   generating: {
     label: '生成配方',
-    color: 'bg-cyan-500',
-    gradient: 'from-cyan-400 to-cyan-600',
+    color: 'bg-info-500',
+    gradient: 'from-info-400 to-info-600',
     icon: Loader2,
   },
   optimizing: {
     label: '优化方案',
-    color: 'bg-orange-500',
-    gradient: 'from-orange-400 to-orange-600',
+    color: 'bg-warning-500',
+    gradient: 'from-warning-400 to-warning-600',
     icon: Loader2,
   },
   validating: {
     label: '验证安全',
     color: 'bg-accent-500',
-    gradient: 'from-purple-400 to-purple-600',
+    gradient: 'from-accent-400 to-accent-600',
     icon: Loader2,
   },
   complete: {
     label: '生成完成',
     color: 'bg-success-500',
-    gradient: 'from-green-400 to-green-600',
+    gradient: 'from-success-400 to-success-600',
     icon: CheckCircle2,
   },
   error: {
     label: '生成失败',
     color: 'bg-error-500',
-    gradient: 'from-red-400 to-red-600',
+    gradient: 'from-error-400 to-error-600',
     icon: AlertCircle,
   },
 }
@@ -132,12 +132,12 @@ export function GenerationProgressPanel({
               </div>
             )}
             {!config.icon && progress.stage === 'complete' && (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-green-400 to-green-600">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-success-400 to-success-600">
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
             )}
             {!config.icon && progress.stage === 'error' && (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-red-400 to-red-600">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-error-400 to-error-600">
                 <AlertCircle className="w-4 h-4 text-white" />
               </div>
             )}
@@ -203,7 +203,7 @@ export function GenerationProgressPanel({
 
           <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
             <span>{progress.message}</span>
-            <span className="font-medium text-primary-600 dark:text-primary-400">{progress.progress}%</span>
+            <span className="font-medium text-primary-700 dark:text-primary-700">{progress.progress}%</span>
           </div>
 
           <div className="flex justify-between mt-1.5">
@@ -240,14 +240,14 @@ export function GenerationProgressPanel({
         </div>
 
         {progress.stage === 'complete' && (
-          <div className="flex items-center gap-2 text-sm text-success-600 dark:text-success-400">
+          <div className="flex items-center gap-2 text-sm text-success-600 dark:text-success-600">
             <CheckCircle2 className="w-4 h-4" />
             <span>{progress.message || '配方生成成功'}</span>
           </div>
         )}
 
         {progress.stage === 'error' && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
             <AlertCircle className="w-4 h-4" />
             <span>{progress.message || '生成失败，请重试'}</span>
           </div>

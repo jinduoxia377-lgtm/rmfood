@@ -43,11 +43,11 @@ export function RadarChartSection({ result }: RadarChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
           <PolarGrid />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11 }} />
+          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
           <PolarRadiusAxis angle={30} domain={[0, 1]} tick={{ fontSize: 10 }} />
           <Radar name="平均得分" dataKey="A" stroke="var(--color-primary-500, #10b981)" fill="var(--color-primary-500, #10b981)" fillOpacity={0.3} />
           <Tooltip formatter={(value: number) => value?.toFixed(3)} />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
         </RadarChart>
       </ResponsiveContainer>
     </div>
@@ -77,19 +77,19 @@ export function ScatterChartSection({ scatterData, axisX, axisY }: ScatterChartP
             type="number"
             dataKey="x"
             name={axisX}
-            label={{ value: axisX, position: 'insideBottom', offset: -5, fontSize: 11 }}
+            label={{ value: axisX, position: 'insideBottom', offset: -5, fontSize: 12 }}
           />
           <YAxis
             type="number"
             dataKey="y"
             name={axisY}
-            label={{ value: axisY, angle: -90, position: 'insideLeft', offset: -5, fontSize: 11 }}
+            label={{ value: axisY, angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
           />
           <Tooltip
             cursor={{ strokeDasharray: '3 3' }}
             formatter={(value: number, name: string) => [value?.toFixed(4), name]}
           />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
           <Scatter name="候选方案" data={scatterData} line>
             {scatterData.map((entry, index) => (
               <Cell

@@ -35,7 +35,7 @@ export default function LayoutIndicator({ localLayout, showLayoutMenu, onToggleL
   return (
     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
       <div
-        className="px-3 py-1 rounded-full text-[10px] font-medium bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-white dark:hover:bg-neutral-700 transition-colors"
+        className="px-3 py-1 rounded-full text-xs font-medium bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-white dark:hover:bg-neutral-700 transition-colors"
          role="button" tabIndex={0} onClick={onToggleLayoutMenu}
       >
         布局: {LAYOUT_NAMES[localLayout]}
@@ -45,9 +45,9 @@ export default function LayoutIndicator({ localLayout, showLayoutMenu, onToggleL
         <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200/60 dark:border-neutral-700/60 p-1.5 min-w-[140px] z-50 animate-fade-in">
           {LAYOUT_OPTIONS.map(([key, label, icon]) => (
             <button key={key} onClick={() => onSwitchLayout(key)}
-              className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${localLayout === key ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'hover:bg-slate-50 dark:hover:bg-neutral-700/50 text-neutral-600 dark:text-neutral-300'}`}>
+              className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${localLayout === key ? 'bg-primary-50 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-neutral-600 dark:text-neutral-300'}`}>
               <span>{icon}</span><span>{label}</span>
-              {localLayout === key && <span className="ml-auto text-[10px]">✓</span>}
+              {localLayout === key && <span className="ml-auto text-xs">✓</span>}
             </button>
           ))}
         </div>

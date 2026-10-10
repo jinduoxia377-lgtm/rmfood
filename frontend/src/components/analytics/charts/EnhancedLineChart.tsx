@@ -117,9 +117,9 @@ export function EnhancedLineChart({
       <RechartsLineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: showBrush ? 50 : 0 }}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={themeColors.surfaceVariant} opacity={0.4} />}
 
-        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} />
 
-        <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} width={55} />
+        <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} width={55} />
 
         <Tooltip content={<CustomTooltip />} animationDuration={200} />
 

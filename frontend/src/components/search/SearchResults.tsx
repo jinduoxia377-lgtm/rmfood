@@ -13,8 +13,8 @@ const TYPE_ICON_CONFIG: Record<SearchResultType, { icon: React.ReactNode; color:
   formula: { icon: <FileText className="w-5 h-5" />, color: 'bg-secondary-100 text-secondary-600' },
   experiment: { icon: <FlaskConical className="w-5 h-5" />, color: 'bg-accent-100 text-accent-600' },
   herb: { icon: <Leaf className="w-5 h-5" />, color: 'bg-success-100 text-success-600' },
-  peptide: { icon: <Dna className="w-5 h-5" />, color: 'bg-orange-100 text-orange-600' },
-  knowledge: { icon: <Lightbulb className="w-5 h-5" />, color: 'bg-pink-100 text-pink-600' },
+  peptide: { icon: <Dna className="w-5 h-5" />, color: 'bg-warning-100 text-warning-600' },
+  knowledge: { icon: <Lightbulb className="w-5 h-5" />, color: 'bg-danger-100 text-danger-600' },
 };
 
 // 类型标签配置
@@ -22,8 +22,8 @@ const TYPE_LABEL_CONFIG: Record<SearchResultType, { label: string; color: string
   formula: { label: '配方', color: 'bg-secondary-500' },
   experiment: { label: '实验', color: 'bg-accent-500' },
   herb: { label: '中药', color: 'bg-success-500' },
-  peptide: { label: '肽', color: 'bg-orange-500' },
-  knowledge: { label: '知识', color: 'bg-pink-500' },
+  peptide: { label: '肽', color: 'bg-warning-500' },
+  knowledge: { label: '知识', color: 'bg-danger-500' },
 };
 
 interface SearchResultsProps {
@@ -115,7 +115,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent" />
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-secondary-500 border-t-transparent" />
       </div>
     );
   }
@@ -167,8 +167,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
              role="button" tabIndex={0} onClick={() => onSelect(item)}
             className={clsx(
               'group relative flex items-start gap-4 p-4 bg-white dark:bg-neutral-900 border rounded-xl cursor-pointer transition-all duration-200',
-              'hover:shadow-md hover:border-blue-200',
-              selectedItems.has(item.id) && 'ring-2 ring-blue-500 border-blue-500',
+              'hover:shadow-md hover:border-secondary-200',
+              selectedItems.has(item.id) && 'ring-2 ring-secondary-500 border-secondary-500',
             )}
           >
             {/* 选择复选框 */}
@@ -178,8 +178,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                 className={clsx(
                   'mt-1 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                   selectedItems.has(item.id)
-                    ? 'bg-secondary-container border-blue-500 text-secondary-main'
-                    : 'border-neutral-300 dark:border-neutral-700 hover:border-blue-400',
+                    ? 'bg-secondary-container border-secondary-500 text-secondary-main'
+                    : 'border-neutral-300 dark:border-neutral-700 hover:border-secondary-400',
                 )}
               >
                 {selectedItems.has(item.id) && <Check className="w-3 h-3" />}

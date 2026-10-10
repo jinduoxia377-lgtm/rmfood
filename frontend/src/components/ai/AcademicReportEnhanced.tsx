@@ -235,7 +235,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={metadata.title || ''}
                   onChange={(e) => updateMetadataField('title', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-                />
+        aria-label="报告标题"
+      />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">作者</label>
@@ -244,7 +245,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={Array.isArray(metadata.authors) ? metadata.authors.join('、') : metadata.authors || ''}
                   onChange={(e) => updateMetadataField('authors', e.target.value.split('、'))}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-                />
+        aria-label="作者"
+      />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">单位</label>
@@ -253,7 +255,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={metadata.institution || ''}
                   onChange={(e) => updateMetadataField('institution', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-                />
+        aria-label="单位"
+      />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">关键词</label>
@@ -262,7 +265,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={Array.isArray(metadata.keywords) ? metadata.keywords.join('、') : metadata.keywords || ''}
                   onChange={(e) => updateMetadataField('keywords', e.target.value.split('、'))}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-                />
+        aria-label="关键词"
+      />
               </div>
             </div>
           </section>
@@ -299,7 +303,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                 return (
                   <div
                     key={type}
-                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-700 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <input
@@ -376,7 +380,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl overflow-hidden">
       {/* 标题栏 */}
-      <div className="bg-gradient-to-r from-primary-600 via-primary-500 to-accent-600 p-6 text-white">
+      <div className="bg-gradient-to-r from-[var(--color-primary-surface)] via-[var(--color-primary-surface)] to-[var(--color-accent-surface-deep)] p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-1">学术报告生成器</h1>
@@ -477,7 +481,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
       {/* 报告预览 */}
       <div className="p-6">
         {!reportGenerated ? (
-          <div className="text-center py-16 bg-slate-50 dark:bg-neutral-700 rounded-xl">
+          <div className="text-center py-16 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
             <AlertCircle className="w-16 h-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">报告未生成</h3>
             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">点击"生成报告"开始生成学术报告</p>
@@ -489,7 +493,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             </button>
           </div>
         ) : (
-          <div className="bg-slate-50 dark:bg-neutral-700 rounded-xl p-6">
+          <div className="bg-neutral-50 dark:bg-neutral-700 rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-200">报告预览</h3>
             <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <FileDown className="w-12 h-12 mx-auto mb-4 opacity-50" />

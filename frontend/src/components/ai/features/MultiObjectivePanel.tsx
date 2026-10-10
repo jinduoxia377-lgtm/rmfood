@@ -873,7 +873,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
          ══════════════════════════════ */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-lg shadow-accent-500/25">
             <GitBranch className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -928,7 +928,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             id="mo-objectives-heading"
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
           >
-            <Target className="w-4 h-4 text-indigo-500" />
+            <Target className="w-4 h-4 text-accent-500" />
             优化目标配置
             <Badge variant="neutral" size="sm">
               {currentPresetObjectives.length} 个目标
@@ -941,7 +941,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               {customObjectives.map((obj, idx) => (
                 <div
                   key={obj.id}
-                  className="flex flex-wrap items-end gap-3 p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700"
+                  className="flex flex-wrap items-end gap-3 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700"
                 >
                   <div className="flex-1 min-w-[140px]">
                     <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">目标名称</label>
@@ -1019,7 +1019,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               </div>
 
               {customObjectives.length >= 2 && (
-                <p className="text-xs text-warning-600 dark:text-warning-400 mt-2 flex items-center gap-1">
+                <p className="text-xs text-warning-600 dark:text-warning-700 mt-2 flex items-center gap-1">
                   <Info className="w-3 h-3" />
                   权重将自动归一化，实际使用比例 = 权重值 / 总权重
                 </p>
@@ -1031,12 +1031,12 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               {currentPresetObjectives.map((obj, idx) => (
                 <div
                   key={`${selectedPreset}-${idx}`}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-100 dark:border-indigo-900/20"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent-50/50 to-accent-50/50 dark:from-accent-900/10 dark:to-accent-900/10 border border-accent-100 dark:border-accent-900/20"
                 >
                   <div
                     className={cn(
                       'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold',
-                      obj.direction === 'maximize' ? 'bg-primary-500' : 'bg-orange-500',
+                      obj.direction === 'maximize' ? 'bg-primary-500' : 'bg-warning-500',
                     )}
                   >
                     {obj.direction === 'maximize' ? '↑' : '↓'}
@@ -1046,12 +1046,12 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{obj.key}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
+                    <span className="text-sm font-bold tabular-nums text-accent-600 dark:text-accent-700">
                       {obj.weight.toFixed(2)}
                     </span>
                     <div className="w-12 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full mt-1 overflow-hidden">
                       <div
-                        className="h-full bg-indigo-500 rounded-full transition-all"
+                        className="h-full bg-accent-500 rounded-full transition-all"
                         style={{ width: `${Math.min(obj.weight * 100, 100)}%` }}
                       />
                     </div>
@@ -1068,7 +1068,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             id="mo-effects-heading"
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3"
           >
-            <Target className="w-4 h-4 text-indigo-500" />
+            <Target className="w-4 h-4 text-accent-500" />
             目标功效
             <Badge variant="neutral" size="sm">
               {selectedEffects.length} 已选
@@ -1091,9 +1091,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 aria-label={`功效: ${effect.label}`}
                 tabIndex={0}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800',
+                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800',
                   selectedEffects.includes(effect.id)
-                    ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/25'
+                    ? 'bg-accent-500 text-white shadow-sm shadow-accent-500/25'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700',
                 )}
               >
@@ -1109,7 +1109,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             id="mo-params-heading"
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
           >
-            <Settings2 className="w-4 h-4 text-indigo-500" />
+            <Settings2 className="w-4 h-4 text-accent-500" />
             算法参数
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
@@ -1179,7 +1179,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             id="mo-constraints-heading"
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
           >
-            <Shield className="w-4 h-4 text-indigo-500" />
+            <Shield className="w-4 h-4 text-accent-500" />
             约束条件
             <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
           </h3>
@@ -1218,7 +1218,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       <button
                         onClick={() => removeExcludedIngredient(item)}
                         aria-label={`移除排除项: ${item}`}
-                        className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                        className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-error-400 rounded"
                       >
                         ×
                       </button>
@@ -1252,7 +1252,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             id="mo-included-heading"
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
           >
-            <FlaskConical className="w-4 h-4 text-emerald-500" />
+            <FlaskConical className="w-4 h-4 text-success-500" />
             基础配方
             <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选，强制包含)</span>
           </h3>
@@ -1292,7 +1292,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   <button
                     onClick={() => removeIncludedIngredient(item)}
                     aria-label={`移除配方项: ${item}`}
-                    className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                    className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-error-400 rounded"
                   >
                     ×
                   </button>
@@ -1311,7 +1311,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-2">
             {isStreamingMode ? (
-              <Wifi className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+              <Wifi className="w-4 h-4 text-accent-500" aria-hidden="true" />
             ) : (
               <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
@@ -1359,8 +1359,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           <div className="flex items-center gap-3">
             {isRunning && (
               <>
-                <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" aria-hidden="true" />
-                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400" role="status">
+                <Loader2 className="w-4 h-4 text-accent-500 animate-spin" aria-hidden="true" />
+                <span className="text-sm font-medium text-accent-600 dark:text-accent-700" role="status">
                   优化中...
                 </span>
               </>
@@ -1394,13 +1394,13 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         {/* 实时日志区域 */}
         <div
           ref={logContainerRef}
-          className="bg-slate-50 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
+          className="bg-neutral-50 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
           role="log"
           aria-label="多目标优化运行日志"
           aria-live="polite"
         >
           {logs.length === 0 ? (
-            <div className="text-neutral-400 dark:text-neutral-500 flex items-center gap-2 h-full justify-center">
+            <div className="text-neutral-400 dark:text-neutral-400 flex items-center gap-2 h-full justify-center">
               <Info className="w-4 h-4" aria-hidden="true" />
               <span>日志将在运行时显示...</span>
             </div>
@@ -1410,13 +1410,13 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 key={i}
                 className={cn(
                   log.level === 'error'
-                    ? 'text-error-500 dark:text-error-400'
+                    ? 'text-error-500 dark:text-error-600'
                     : log.level === 'warn'
-                      ? 'text-warning-500 dark:text-warning-400'
+                      ? 'text-warning-500 dark:text-warning-700'
                       : 'text-neutral-600 dark:text-neutral-400',
                 )}
               >
-                <span className="text-neutral-400 dark:text-neutral-600 mr-2" aria-hidden="true">
+                <span className="text-neutral-400 dark:text-neutral-400 mr-2" aria-hidden="true">
                   {log.time}
                 </span>
                 {log.message}
@@ -1498,7 +1498,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               id="mo-results-heading"
               className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
             >
-              <BarChart3 className="w-4 h-4 text-indigo-500" />
+              <BarChart3 className="w-4 h-4 text-accent-500" />
               进化曲线
             </h3>
             {chartData.length > 0 ? (
@@ -1576,14 +1576,14 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-100, #F3F4F6)" />
-                      <XAxis dataKey="generation" tick={{ fontSize: 11 }} stroke="var(--color-slate-300, #D1D5DB)" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="var(--color-slate-300, #D1D5DB)" domain={[0, 1]} />
+                      <XAxis dataKey="generation" tick={{ fontSize: 12 }} stroke="var(--color-slate-300, #D1D5DB)" />
+                      <YAxis tick={{ fontSize: 12 }} stroke="var(--color-slate-300, #D1D5DB)" domain={[0, 1]} />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: 'var(--card-bg, #fff)',
                           border: '1px solid var(--border-color, #e5e7eb)',
                           borderRadius: '6px',
-                          fontSize: '11px',
+                          fontSize: '12px',
                         }}
                         formatter={(value: number) => [value.toFixed(4), '多样性']}
                       />
@@ -1607,7 +1607,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                  <GitBranch className="w-4 h-4 text-indigo-500" />
+                  <GitBranch className="w-4 h-4 text-accent-500" />
                   Pareto 前沿散点图
                   <Badge variant="primary" size="sm">
                     {scatterData.length} 点
@@ -1657,7 +1657,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       name={axisX}
                       domain={['auto', 'auto']}
                       label={{ value: axisX, position: 'insideBottomRight', offset: -5 }}
-                      tick={{ fontSize: 11 }}
+                      tick={{ fontSize: 12 }}
                     />
                     <YAxis
                       type="number"
@@ -1665,7 +1665,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       name={axisY}
                       domain={['auto', 'auto']}
                       label={{ value: axisY, angle: -90, position: 'insideLeft' }}
-                      tick={{ fontSize: 11 }}
+                      tick={{ fontSize: 12 }}
                     />
                     <Tooltip
                       formatter={(value: number, _name: string) => [
@@ -1764,7 +1764,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       }),
                     )}
                   </svg>
-                  <div className="flex items-center justify-between mt-1 text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
                     <span>低密度</span>
                     <div className="flex items-center gap-0.5">
                       <span className="w-3 h-2 rounded-sm bg-secondary-100" />
@@ -1787,7 +1787,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 {/* 1.1 平行坐标图 */}
                 <Card className="p-6">
                   <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-                    <Crosshair className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                    <Crosshair className="w-4 h-4 text-accent-500" aria-hidden="true" />
                     平行坐标图
                     <Badge variant="primary" size="sm">
                       {parallelConfig.displayCandidates.length} 条线
@@ -1811,7 +1811,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 {/* 1.2 雷达图 */}
                 <Card className="p-6">
                   <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
-                    <Target className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                    <Target className="w-4 h-4 text-accent-500" aria-hidden="true" />
                     候选方案雷达图
                     {selectedCandidate !== null ? (
                       <Badge variant="success" size="sm">
@@ -1826,7 +1826,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart data={radarData}>
                           <PolarGrid stroke="var(--color-slate-200, #E5E7EB)" />
-                          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11 }} />
+                          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
                           <PolarRadiusAxis axisLine={false} tickCount={4} tick={{ fontSize: 10 }} />
                           <Radar
                             name="当前方案"
@@ -1845,13 +1845,13 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                             strokeDasharray="4 4"
                             strokeWidth={1}
                           />
-                          <Legend wrapperStyle={{ fontSize: '11px' }} />
+                          <Legend wrapperStyle={{ fontSize: '12px' }} />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: 'var(--card-bg, #fff)',
                               border: '1px solid var(--border-color, #e5e7eb)',
                               borderRadius: '8px',
-                              fontSize: '11px',
+                              fontSize: '12px',
                             }}
                             formatter={(value: number) => [value.toFixed(4), undefined]}
                           />
@@ -1870,8 +1870,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           {/* 1.3 权重微调器 */}
           {result?.objectives_config && result.objectives_config.length > 0 && mode !== 'pareto' && (
             <details className="group rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
-              <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
-                <SlidersHorizontal className="w-4 h-4 text-indigo-500 flex-shrink-0" aria-hidden="true" />
+              <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+                <SlidersHorizontal className="w-4 h-4 text-accent-500 flex-shrink-0" aria-hidden="true" />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">权重微调</span>
                 <span className="ml-auto text-xs text-muted-foreground group-open:rotate-180 transition-transform duration-200">
                   ▼
@@ -1918,7 +1918,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           {result?.best_by_objective && result.best_by_objective.length > 0 && (
             <div>
               <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-indigo-500" aria-hidden="true" />
+                <Sparkles className="w-5 h-5 text-accent-500" aria-hidden="true" />
                 各目标最优解
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1952,7 +1952,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-indigo-500" aria-hidden="true" />
+                  <Sparkles className="w-5 h-5 text-accent-500" aria-hidden="true" />
                   Pareto 候选方案
                   <Badge variant="primary" size="sm">
                     {result.candidates.length} 个
@@ -2002,7 +2002,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
                   <table className="w-full text-sm" role="table">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-neutral-800/80">
+                      <tr className="bg-neutral-50 dark:bg-neutral-800/80">
                         <th className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 w-12">
                           #
                         </th>
@@ -2012,7 +2012,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                         {(result.objectives_config ?? []).map((obj) => (
                           <th
                             key={obj.key}
-                            className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 cursor-pointer hover:text-indigo-600 select-none"
+                            className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 cursor-pointer hover:text-accent-600 select-none"
                             onClick={() => handleSort(obj.key)}
                           >
                             <span className="inline-flex items-center gap-1">
@@ -2022,7 +2022,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                           </th>
                         ))}
                         <th
-                          className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 cursor-pointer hover:text-indigo-600 select-none"
+                          className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 cursor-pointer hover:text-accent-600 select-none"
                           onClick={() => handleSort('overall_fitness')}
                         >
                           <span className="inline-flex items-center gap-1">
@@ -2035,9 +2035,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                       {sortedCandidates.map((cand, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors">
+                        <tr key={idx} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                           <td className="px-3 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{idx + 1}</td>
                           <td className="px-3 py-3">
                             <Badge
@@ -2083,9 +2083,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
           {/* ═══ 任务3: 历史记录折叠面板 ═══ */}
           <details className="group mt-6 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
-            <summary className="flex items-center justify-between cursor-pointer px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2">
-                <History className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                <History className="w-4 h-4 text-accent-500" aria-hidden="true" />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">运行历史记录</span>
               </span>
               <div className="flex items-center gap-2">

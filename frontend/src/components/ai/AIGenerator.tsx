@@ -345,7 +345,7 @@ export function AIGenerator({
             </button>
 
             {showSettings && (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                 {/* 创造性滑块 */}
                 <div>
                   <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
@@ -360,9 +360,8 @@ export function AIGenerator({
                     onChange={(e) =>
                       setParams((p) => ({ ...p, creativity: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-blue-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
+                    className="w-full accent-secondary-600" aria-label="滑块" />
+                  <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                     <span>保守</span>
                     <span>创新</span>
                   </div>
@@ -474,7 +473,7 @@ export function AIGenerator({
 
       {/* 错误提示 */}
       {error && (
-        <div className="p-3 bg-error-50 border border-red-200 rounded-lg text-error-700 text-sm">
+        <div className="p-3 bg-error-50 border border-error-200 rounded-lg text-error-700 text-sm">
           ⚠️ 生成失败: {error}
         </div>
       )}
@@ -524,7 +523,7 @@ export function AIGenerator({
 
           <div
             ref={resultRef}
-            className="min-h-[120px] max-h-[500px] overflow-y-auto p-3 bg-slate-50 dark:bg-neutral-900 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono"
+            className="min-h-[120px] max-h-[500px] overflow-y-auto p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono"
           >
             {result || (isGenerating ? '正在生成...' : '')}
             {isStreaming && !result && (
@@ -558,7 +557,7 @@ export function AIGenerator({
               {history.map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <button

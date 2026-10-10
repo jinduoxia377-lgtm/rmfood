@@ -16,7 +16,7 @@ import type { MultiObjectiveResponse } from '@/api/ai'
 // ─── Pareto 颜色工具 ───
 
 export function getParetoColor(rank: number): string {
-  const colors = ['var(--color-yellow-400, #F59E0B)', 'var(--color-slate-400, #9CA3AF)', 'var(--color-blue-400, #6ECAFF)', 'var(--color-violet-400, #C090FF)', 'var(--color-emerald-400, #4ADE80)', 'var(--color-red-400, #EF4444)'];
+  const colors = ['var(--color-warning-400, #F59E0B)', 'var(--color-slate-400, #9CA3AF)', 'var(--color-blue-400, #6ECAFF)', 'var(--color-violet-400, #C090FF)', 'var(--color-emerald-400, #4ADE80)', 'var(--color-red-400, #EF4444)'];
   return colors[Math.min(rank, colors.length) - 1] || 'var(--color-slate-400, #9CA3AF)';
 }
 
@@ -81,7 +81,7 @@ export function ParallelCoordinatesChart({
               x={axisXPositions[i]}
               y={labelY}
               textAnchor="middle"
-              className="text-[10px] fill-slate-500 dark:fill-slate-400"
+              className="text-xs fill-neutral-500 dark:fill-neutral-400"
               fill="currentColor"
             >
               {obj.name}
@@ -90,7 +90,7 @@ export function ParallelCoordinatesChart({
               cx={axisXPositions[i] - 8}
               cy={labelY - 3}
               r={3}
-              fill={obj.direction === 'maximize' ? 'var(--color-primary, var(--color-primary-400))' : 'var(--color-orange-500, #EA580C)'}
+              fill={obj.direction === 'maximize' ? 'var(--color-primary, var(--color-primary-400))' : 'var(--color-warning-500, #EA580C)'}
             />
             <line
               x1={axisXPositions[i]}
@@ -160,7 +160,7 @@ export function ParallelCoordinatesChart({
         {/* Hover tooltip */}
         {hoveredIdx !== null && candidates[hoveredIdx] && (
           <foreignObject x={8} y={4} width={180} height={80}>
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 text-[11px]">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 text-xs">
               <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
                 方案 #{hoveredIdx + 1} · R{candidates[hoveredIdx].pareto_rank}
               </p>
@@ -214,7 +214,7 @@ export function MOParamSlider({ label, value, min, max, step, onChange, displayF
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{label}</label>
-        <span className="text-sm font-semibold tabular-nums text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md">
+        <span className="text-sm font-semibold tabular-nums text-accent-600 dark:text-accent-700 bg-accent-50 dark:bg-accent-300/20 px-2 py-0.5 rounded-md">
           {displayValue}
         </span>
       </div>
@@ -226,7 +226,7 @@ export function MOParamSlider({ label, value, min, max, step, onChange, displayF
         onChange={onChange}
         aria-label={`${label}，当前值 ${displayValue}，范围 ${min}-${max}`}
       />
-      {description && <p className="text-xs text-neutral-400 dark:text-neutral-500">{description}</p>}
+      {description && <p className="text-xs text-neutral-400 dark:text-neutral-400">{description}</p>}
     </div>
   )
 }
@@ -241,12 +241,12 @@ interface MOStatCardProps {
 }
 
 const MO_COLOR_MAP: Record<MOStatCardProps['color'], { bg: string; text: string; iconBg: string }> = {
-  indigo: { bg: 'bg-indigo-50 dark:bg-indigo-900/15', text: 'text-indigo-600 dark:text-indigo-400', iconBg: 'bg-indigo-100 dark:bg-indigo-900/30' },
-  blue:   { bg: 'bg-secondary-50 dark:bg-secondary-900/15', text: 'text-secondary-600 dark:text-secondary-400', iconBg: 'bg-secondary-100 dark:bg-secondary-900/30' },
-  green:  { bg: 'bg-success-50 dark:bg-success-900/15', text: 'text-success-600 dark:text-success-400', iconBg: 'bg-success-100 dark:bg-success-900/30' },
-  amber:  { bg: 'bg-warning-50 dark:bg-warning-900/15', text: 'text-warning-600 dark:text-warning-400', iconBg: 'bg-warning-100 dark:bg-warning-900/30' },
-  purple: { bg: 'bg-accent-50 dark:bg-accent-900/15',  text: 'text-accent-600 dark:text-accent-400',  iconBg: 'bg-accent-100 dark:bg-accent-900/30' },
-  teal:   { bg: 'bg-teal-50 dark:bg-teal-900/15',    text: 'text-teal-600 dark:text-teal-400',    iconBg: 'bg-teal-100 dark:bg-teal-900/30' },
+  indigo: { bg: 'bg-accent-50 dark:bg-accent-300/18', text: 'text-accent-600 dark:text-accent-700', iconBg: 'bg-accent-100 dark:bg-accent-300/25' },
+  blue:   { bg: 'bg-secondary-50 dark:bg-secondary-300/18', text: 'text-secondary-600 dark:text-secondary-700', iconBg: 'bg-secondary-100 dark:bg-secondary-300/25' },
+  green:  { bg: 'bg-success-50 dark:bg-success-300/18', text: 'text-success-600 dark:text-success-600', iconBg: 'bg-success-100 dark:bg-success-300/25' },
+  amber:  { bg: 'bg-warning-50 dark:bg-warning-300/18', text: 'text-warning-600 dark:text-warning-700', iconBg: 'bg-warning-100 dark:bg-warning-300/25' },
+  purple: { bg: 'bg-accent-50 dark:bg-accent-300/18',  text: 'text-accent-600 dark:text-accent-700',  iconBg: 'bg-accent-100 dark:bg-accent-300/25' },
+  teal:   { bg: 'bg-success-50 dark:bg-success-300/18',    text: 'text-success-600 dark:text-success-700',    iconBg: 'bg-success-100 dark:bg-success-300/25' },
 }
 
 export function MOStatCard({ icon, label, value, color }: MOStatCardProps) {
@@ -277,21 +277,21 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
 
   const rankColor =
     candidate.pareto_rank === 1
-      ? 'from-yellow-400 to-amber-500'
+      ? 'from-warning-400 to-warning-500'
       : candidate.pareto_rank === 2
-        ? 'from-slate-300 to-slate-400'
+        ? 'from-neutral-300 to-neutral-400'
         : candidate.pareto_rank === 3
-          ? 'from-amber-600 to-amber-700'
-          : 'from-slate-400 to-slate-500'
+          ? 'from-warning-600 to-warning-700'
+          : 'from-neutral-400 to-neutral-500'
 
   return (
     <article
-      className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-200 overflow-hidden"
+      className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-accent-200 dark:hover:border-accent-800 transition-all duration-200 overflow-hidden"
       aria-label={`Pareto 方案第 ${rank} 名，Rank-${candidate.pareto_rank}，适应度 ${candidate.overall_fitness.toFixed(4)}`}
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full text-left p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-inset"
+        className="w-full text-left p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-inset"
         aria-expanded={expanded}
       >
         <div className="flex items-start justify-between gap-4">
@@ -337,7 +337,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
                   className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-xs text-neutral-700 dark:text-neutral-300"
                 >
                   {ing.name_cn}
-                  <span className="text-neutral-400 dark:text-neutral-500">{ing.dosage}g</span>
+                  <span className="text-neutral-400 dark:text-neutral-400">{ing.dosage}g</span>
                 </span>
               ))}
             </div>
@@ -353,10 +353,10 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
                     className="w-3 rounded-t-sm opacity-80"
                     style={{
                       height: `${Math.max(Math.abs(val) * 48, 4)}px`,
-                      backgroundColor: obj.direction === 'maximize' ? 'var(--color-primary-500, var(--color-primary-400))' : 'var(--color-orange-500, #EA580C)',
+                      backgroundColor: obj.direction === 'maximize' ? 'var(--color-primary-500, var(--color-primary-400))' : 'var(--color-warning-500, #EA580C)',
                     }}
                   />
-                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap truncate w-8 text-center">
+                  <span className="text-xs text-neutral-400 dark:text-neutral-400 whitespace-nowrap truncate w-8 text-center">
                     {obj.name.slice(0, 3)}
                   </span>
                 </div>
@@ -379,16 +379,16 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
               return (
                 <div
                   key={obj.key}
-                  className="flex items-center gap-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2"
+                  className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2"
                 >
                   <span
                     className={cn(
                       'w-2 h-2 rounded-full',
-                      obj.direction === 'maximize' ? 'bg-primary-500' : 'bg-orange-500',
+                      obj.direction === 'maximize' ? 'bg-primary-500' : 'bg-warning-500',
                     )}
                   />
                   <div>
-                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500">{obj.name}</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-400">{obj.name}</p>
                     <p className="text-sm font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
                       {val.toFixed(4)}
                     </p>
@@ -396,10 +396,10 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
                 </div>
               )
             })}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2">
-              <Zap className="w-2 h-2 text-violet-500" />
+            <div className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2">
+              <Zap className="w-2 h-2 text-accent-500" />
               <div>
-                <p className="text-[10px] text-neutral-400 dark:text-neutral-500">拥挤距离</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400">拥挤距离</p>
                 <p className="text-sm font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
                   {candidate.crowding_distance.toFixed(4)}
                 </p>
@@ -408,8 +408,8 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
           </div>
 
           {candidate.explanation && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/20">
-              <h5 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1.5">
+            <div className="bg-accent-50 dark:bg-accent-300/15 rounded-lg p-4 border border-accent-100 dark:border-accent-900/20">
+              <h5 className="text-xs font-semibold text-accent-600 dark:text-accent-700 mb-2 flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5" aria-hidden="true" />
                 方案解析
               </h5>

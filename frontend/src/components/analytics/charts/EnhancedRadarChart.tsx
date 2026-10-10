@@ -124,7 +124,7 @@ export function EnhancedRadarChart({
           dataKey="subject"
           tick={{
             fill: themeColors.textSecondary,
-            fontSize: 11,
+            fontSize: 12,
             fontFamily: 'inherit',
           }}
         />

@@ -161,11 +161,11 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
   const getStatusColor = (status: IntegrationStatus) => {
     switch (status) {
       case 'active':
-        return 'text-success-600 dark:text-success-400'
+        return 'text-success-700 dark:text-success-600'
       case 'inactive':
         return 'text-neutral-500 dark:text-neutral-400'
       case 'error':
-        return 'text-error-600 dark:text-error-400'
+        return 'text-error-600 dark:text-error-600'
     }
   }
 
@@ -198,8 +198,8 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Settings size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold">API集成管理</CardTitle>
+            <Settings size={20} className="text-secondary-600 dark:text-secondary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold">API集成管理</CardTitle>
           </div>
           <Button
             variant="primary"
@@ -249,17 +249,17 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           认证: {integration.authType}
                         </span>
-                        <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-neutral-300 dark:text-neutral-400">·</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           同步: {integration.syncConfig.enabled ? `${integration.syncConfig.interval}分钟` : '禁用'}
                         </span>
                         {integration.syncConfig.lastSync && (
                           <>
-                            <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
-                            <span className="text-xs text-neutral-400">
+                            <span className="text-xs text-neutral-300 dark:text-neutral-400">·</span>
+                            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                               上次同步: {new Date(integration.syncConfig.lastSync).toLocaleString()}
                             </span>
                           </>
@@ -414,7 +414,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
               {/* 认证配置 */}
               {newIntegration.authType === 'api_key' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">API Key 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -442,7 +442,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'basic' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Basic Auth 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -471,7 +471,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'bearer' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Bearer Token 配置</h4>
                   <div>
                     <label>Token</label>
@@ -487,7 +487,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'oauth2' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">OAuth 2.0 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -699,7 +699,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
                 {/* 认证配置 */}
                 {editingIntegration.authType === 'api_key' && (
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                  <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                     <h4 className="text-sm font-medium mb-2">API Key 配置</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -841,14 +841,14 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">测试结果</h3>
               <div className="space-y-4">
-                <div className={`p-4 rounded-lg border ${testResult.success ? 'bg-success-50 dark:bg-success-900/20 border-green-200 dark:border-green-800' : 'bg-error-50 dark:bg-error-900/20 border-red-200 dark:border-red-800'}`}>
+                <div className={`p-4 rounded-lg border ${testResult.success ? 'bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800' : 'bg-error-50 dark:bg-error-300/20 border-error-200 dark:border-error-800'}`}>
                   <div className="flex items-center gap-2">
                     {testResult.success ? (
-                      <CheckCircle2 size={24} className="text-success-600 dark:text-success-400" />
+                      <CheckCircle2 size={24} className="text-success-700 dark:text-success-600" />
                     ) : (
-                      <AlertCircle size={24} className="text-error-600 dark:text-error-400" />
+                      <AlertCircle size={24} className="text-error-600 dark:text-error-600" />
                     )}
-                    <h4 className={`text-lg font-medium ${testResult.success ? 'text-success-800 dark:text-success-300' : 'text-error-800 dark:text-error-300'}`}>
+                    <h4 className={`text-lg font-medium ${testResult.success ? 'text-success-800 dark:text-success-600' : 'text-error-800 dark:text-error-600'}`}>
                       {testResult.success ? '测试成功' : '测试失败'}
                     </h4>
                   </div>
@@ -866,7 +866,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                     </p>
                   )}
                   {testResult.error && (
-                    <p className="mt-1 text-xs text-error-500 dark:text-error-400">
+                    <p className="mt-1 text-xs text-error-500 dark:text-error-600">
                       错误: {testResult.error}
                     </p>
                   )}
