@@ -586,6 +586,88 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
     return response.data;
   }
 
+  // ─── 真实在线数据源 + 真实 ML 模型 ──────────────────────
+
+  /**
+   * 在线数据源实测可达性状态（诚实探测，不伪造）
+   */
+  async getOnlineSourceStatus(): Promise<{
+    checked_at: string;
+    sources: Array<{ name: string; url: string; reachable: boolean; latency_ms: number | null; note: string }>;
+    online_source_count: number;
+    offline_source_count: number;
+    note: string;
+  }> {
+    const response = await request.get(`${this.baseUrl}/online-source/status`);
+    return response.data;
+  }
+
+  /**
+   * 真实在线文献检索（NCBI PubMed，可达时返回真实文献，不可达时诚实降级为空）
+   */
+  async getOnlineLiterature(activityType = 'ACE inhibitory peptide', limit = 5): Promise<{
+    success: boolean;
+    reachable: boolean;
+    references: Array<{ pmid: string; title: string; journal: string; pubdate: string; authors: string[]; doi: string | null; url: string; source_database: string }>;
+    note: string;
+    probe?: any;
+  }> {
+    const params = new URLSearchParams({ activity_type: activityType, limit: String(limit) });
+    const response = await request.get(`${this.baseUrl}/online-source/literature?${params}`);
+    return response.data;
+  }
+
+  /**
+   * 用真实 DFBP 数据训练 ML 模型并持久化权重
+   */
+  async trainMLModel(targetActivity = 'ACE inhibitory', epochs = 60): Promise<{
+    success: boolean;
+    target_activity: string;
+    training_samples: number;
+    validation_samples: number;
+    metrics: { train: { mae: number; accuracy: number }; validation: { mae: number; accuracy: number }; pos_ratio_train: number; neg_ratio_train: number };
+    artifact: string;
+    model_type: string;
+    honest_note: string;
+  }> {
+    const params = new URLSearchParams({ target_activity: targetActivity, epochs: String(epochs) });
+    const response = await request.post(`${this.baseUrl}/ml-train?${params}`);
+    return response.data;
+  }
+
+  /**
+   * 真实 ML 模型单序列预测（未训练时诚实标记 fallback_rule）
+   */
+  async predictML(sequence: string, targetActivity = 'ACE inhibitory'): Promise<{
+    success: boolean;
+    sequence: string;
+    score: number;
+    method: 'ml' | 'fallback_rule';
+    target_activity: string;
+    features: Record<string, number>;
+  }> {
+    const params = new URLSearchParams({ sequence, target_activity: targetActivity });
+    const response = await request.post(`${this.baseUrl}/ml-predict?${params}`);
+    return response.data;
+  }
+
+  /**
+   * ML 模型状态（是否已训练 + 验证指标）
+   */
+  async getMLStatus(targetActivity = 'ACE inhibitory'): Promise<{
+    success: boolean;
+    target_activity: string;
+    trained: boolean;
+    artifact_exists: boolean;
+    metrics: Record<string, any>;
+    training_samples: number;
+    note: string;
+  }> {
+    const params = new URLSearchParams({ target_activity: targetActivity });
+    const response = await request.get(`${this.baseUrl}/ml-status?${params}`);
+    return response.data;
+  }
+
   /**
    * 水解模拟（后端读取查询参数，非 JSON body）
    */
