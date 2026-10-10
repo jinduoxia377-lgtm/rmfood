@@ -256,7 +256,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             onChange={(e) => this.setState({ sequence: e.target.value.toUpperCase() })}
             placeholder="例如: LVGQDPVHPF"
             className={`w-full h-32 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 font-mono text-lg ${
-              validationError ? 'border-red-500 focus:ring-red-500' : 'border-neutral-300 dark:border-neutral-700 focus:ring-blue-500'
+              validationError ? 'border-error-500 focus:ring-error-500' : 'border-neutral-300 dark:border-neutral-700 focus:ring-secondary-500'
             }`}
             disabled={this.state.loading}
           />
@@ -300,14 +300,14 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
     const aminoAcidColors: Record<string, string> = {
       A: 'bg-success-200', R: 'bg-error-200', N: 'bg-secondary-200', D: 'bg-error-200',
-      C: 'bg-yellow-200', E: 'bg-error-200', Q: 'bg-secondary-200', G: 'bg-neutral-200',
+      C: 'bg-warning-200', E: 'bg-error-200', Q: 'bg-secondary-200', G: 'bg-neutral-200',
       H: 'bg-secondary-200', I: 'bg-success-200', L: 'bg-success-200', K: 'bg-error-200',
-      M: 'bg-yellow-200', F: 'bg-success-200', P: 'bg-neutral-200', S: 'bg-neutral-200',
+      M: 'bg-warning-200', F: 'bg-success-200', P: 'bg-neutral-200', S: 'bg-neutral-200',
       T: 'bg-neutral-200', W: 'bg-accent-200', Y: 'bg-accent-200', V: 'bg-success-200',
     };
 
     return (
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-6">
+      <div className="bg-gradient-to-r from-accent-50 to-secondary-50 rounded-lg p-4 mb-6">
         <h3 className="text-sm font-medium text-neutral-700 mb-2">序列预览</h3>
         <div className="flex flex-wrap gap-1">
           {sequence.split('').map((aa, idx) => (
@@ -386,13 +386,13 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-neutral-700">无规卷曲</span>
-                <span className="text-sm font-semibold text-orange-600">
+                <span className="text-sm font-semibold text-warning-600">
                   {analysis.secondaryStructure.coil.toFixed(1)}%
                 </span>
               </div>
               <div className="w-full bg-neutral-200 rounded-full h-3">
                 <div
-                  className="bg-orange-600 h-3 rounded-full transition-all"
+                  className="bg-warning-600 h-3 rounded-full transition-all"
                   style={{ width: `${Math.min(analysis.secondaryStructure.coil, 100)}%` }}
                 />
               </div>
@@ -423,7 +423,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
               const info = aminoAcidInfo[aa];
 
               return (
-                <div key={aa} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-3 hover:shadow-md transition-shadow">
+                <div key={aa} className="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-3 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-bold text-neutral-900">{aa}</span>
                     <span className="text-lg font-semibold text-secondary-600">{count}</span>
@@ -447,7 +447,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-neutral-900">氨基酸分类统计</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
               <h4 className="font-semibold text-secondary-900 mb-2">疏水性氨基酸</h4>
               <div className="flex gap-2 flex-wrap">
                 {['A', 'V', 'I', 'L', 'M', 'F', 'W'].filter(aa => analysis.aminoAcidComposition[aa])
@@ -458,7 +458,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                   ))}
               </div>
             </div>
-            <div className="bg-error-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-error-50 border border-error-200 rounded-lg p-4">
               <h4 className="font-semibold text-error-900 mb-2">带电氨基酸</h4>
               <div className="flex gap-2 flex-wrap">
                 {['R', 'K', 'H'].filter(aa => analysis.aminoAcidComposition[aa]).length > 0 && (
@@ -489,7 +489,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                 )}
               </div>
             </div>
-            <div className="bg-success-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-success-50 border border-success-200 rounded-lg p-4">
               <h4 className="font-semibold text-success-900 mb-2">极性氨基酸</h4>
               <div className="flex gap-2 flex-wrap">
                 {['S', 'T', 'N', 'Q', 'Y', 'C'].filter(aa => analysis.aminoAcidComposition[aa])
@@ -511,12 +511,12 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
     if (bioactivityPredictions.length === 0) {
       return (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <svg className="w-12 h-12 text-yellow-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-warning-50 border border-warning-200 rounded-lg p-6 text-center">
+          <svg className="w-12 h-12 text-warning-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="text-lg font-semibold text-yellow-900 mb-2">未预测到生物活性</h3>
-          <p className="text-sm text-yellow-700">
+          <h3 className="text-lg font-semibold text-warning-900 mb-2">未预测到生物活性</h3>
+          <p className="text-sm text-warning-700">
             根据当前序列特征，未能预测出常见的生物活性类型
           </p>
         </div>
@@ -525,13 +525,13 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
     const bioactivityColors: Record<string, string> = {
       antioxidant: 'bg-accent-500',
-      antihypertensive: 'bg-cyan-500',
-      antimicrobial: 'bg-teal-500',
+      antihypertensive: 'bg-info-500',
+      antimicrobial: 'bg-success-500',
       immunomodulatory: 'bg-success-500',
-      opioid: 'bg-pink-500',
-      'collagen synthesis': 'bg-orange-500',
-      antidiabetic: 'bg-yellow-500',
-      'ACE inhibitory': 'bg-indigo-500',
+      opioid: 'bg-danger-500',
+      'collagen synthesis': 'bg-warning-500',
+      antidiabetic: 'bg-warning-500',
+      'ACE inhibitory': 'bg-accent-500',
     };
 
     return (
@@ -556,12 +556,12 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {prediction.predictedIC50 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3">
                   <p className="text-xs text-neutral-600 mb-1">预测IC50</p>
                   <p className="text-lg font-bold text-secondary-900">{prediction.predictedIC50} μM</p>
                 </div>
               )}
-              <div className="bg-success-50 border border-green-200 rounded-lg p-3">
+              <div className="bg-success-50 border border-success-200 rounded-lg p-3">
                 <p className="text-xs text-neutral-600 mb-1">相关多肽</p>
                 <p className="text-sm font-semibold text-success-900">
                   {prediction.relatedPeptides.length} 个
@@ -586,20 +586,20 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
     const structureColors: Record<string, string> = {
       'H': 'bg-secondary',
       'E': 'bg-success-500',
-      'C': 'bg-orange-500',
+      'C': 'bg-warning-500',
     };
 
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
+        <div className="bg-gradient-to-r from-accent-50 to-accent-50 border border-accent-200 rounded-lg p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-lg font-semibold text-indigo-900 mb-1">结构预测结果</h3>
-              <p className="text-sm text-indigo-700">基于序列特征的结构预测</p>
+              <h3 className="text-lg font-semibold text-accent-900 mb-1">结构预测结果</h3>
+              <p className="text-sm text-accent-700">基于序列特征的结构预测</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-neutral-600 mb-1">预测置信度</p>
-              <p className="text-2xl font-bold text-indigo-600">
+              <p className="text-2xl font-bold text-accent-600">
                 {(structurePrediction.confidence * 100).toFixed(1)}%
               </p>
             </div>
@@ -625,7 +625,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
+            <div className="bg-secondary-50 rounded-lg p-3 text-center">
               <p className="text-2xl font-bold text-secondary-600 mb-1">
                 {analysis.secondaryStructure.helix.toFixed(0)}%
               </p>
@@ -637,8 +637,8 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
               </p>
               <p className="text-xs text-neutral-600">β-折叠 (E)</p>
             </div>
-            <div className="bg-orange-50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-orange-600 mb-1">
+            <div className="bg-warning-50 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-warning-600 mb-1">
                 {analysis.secondaryStructure.coil.toFixed(0)}%
               </p>
               <p className="text-xs text-neutral-600">无规卷曲 (C)</p>
@@ -682,7 +682,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                     <div
                       className={`h-2 rounded-full ${
                         value > 0.6 ? 'bg-success-600' :
-                        value > 0.4 ? 'bg-yellow-600' :
+                        value > 0.4 ? 'bg-warning-600' :
                         'bg-error-600'
                       }`}
                       style={{ width: `${value * 100}%` }}
@@ -712,7 +712,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
 
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+        <div className="bg-gradient-to-r from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] text-white p-6">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold mb-2">分析结果</h2>
@@ -752,7 +752,7 @@ class PeptideAnalyzer extends ProfessionalBaseComponent<PeptideAnalyzerProps, Pe
                 onClick={() => this.setState({ activeTab: tab })}
                 className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                   activeTab === tab
-                    ? 'border-blue-600 text-secondary-600'
+                    ? 'border-secondary-600 text-secondary-600'
                     : 'border-transparent text-neutral-600 hover:text-neutral-800'
                 }`}
               >

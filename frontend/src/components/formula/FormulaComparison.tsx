@@ -29,7 +29,7 @@ export function FormulaComparison({ formulas }: FormulaComparisonProps) {
             <div className="space-y-1 text-sm">
               {Object.entries(formula.data[0] || {}).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="text-gray-600">{key}:</span>
+                  <span className="text-neutral-600">{key}:</span>
                   <span className="font-medium">{(value * 100).toFixed(1)}%</span>
                 </div>
               ))}

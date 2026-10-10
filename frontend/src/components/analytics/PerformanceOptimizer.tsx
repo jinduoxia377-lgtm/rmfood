@@ -209,7 +209,8 @@ export function Pagination({
           onChange={(e) => setInputPage(Number(e.target.value))}
           onKeyDown={(e) => e.key === 'Enter' && handleJumpToPage()}
           className="w-16 px-2 py-1 input text-center"
-        />
+        aria-label="跳转页码"
+      />
         <button
           onClick={handleJumpToPage}
           className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 rounded text-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
@@ -349,12 +350,12 @@ export function MemoryMonitor() {
 
   return (
     <div className={`fixed bottom-4 right-4 p-3 rounded-lg shadow-lg border z-50 transition-all ${
-      isCritical ? 'bg-error-50 dark:bg-error-900/20 border-red-200 dark:border-red-800' :
-      isWarning ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
+      isCritical ? 'bg-error-50 dark:bg-error-300/20 border-error-200 dark:border-error-800' :
+      isWarning ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800' :
       'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700'
     }`}>
       <div className="flex items-center gap-2 mb-2">
-        <MemoryStick className={`w-4 h-4 ${isCritical ? 'text-error-500' : isWarning ? 'text-yellow-500' : 'text-success-500'}`} />
+        <MemoryStick className={`w-4 h-4 ${isCritical ? 'text-error-500' : isWarning ? 'text-warning-500' : 'text-success-500'}`} />
         <span className="text-xs font-semibold">内存使用</span>
       </div>
 
@@ -367,7 +368,7 @@ export function MemoryMonitor() {
         <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all ${
-              isCritical ? 'bg-error-500' : isWarning ? 'bg-yellow-500' : 'bg-success-500'
+              isCritical ? 'bg-error-500' : isWarning ? 'bg-warning-500' : 'bg-success-500'
             }`}
             style={{ width: `${Math.min(usagePercent, 100)}%` }}
           />
@@ -379,7 +380,7 @@ export function MemoryMonitor() {
       </div>
 
       {isCritical && (
-        <p className="text-[10px] text-error-600 mt-2 font-medium">
+        <p className="text-xs text-error-600 mt-2 font-medium">
           ⚠️ 内存使用过高，建议刷新页面或关闭部分标签页
         </p>
       )}

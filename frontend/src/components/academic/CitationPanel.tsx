@@ -218,7 +218,7 @@ export function CitationPanel({
                   onClick={() => handleStyleChange(key as CitationStyle)}
                   className={cn(
                     'w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors',
-                    citationStyle === key ? 'bg-primary-50 dark:bg-primary-900/20 text-primary' : 'text-neutral-700 dark:text-neutral-300',
+                    citationStyle === key ? 'bg-primary-50 dark:bg-primary-300/20 text-primary' : 'text-neutral-700 dark:text-neutral-300',
                   )}
                 >
                   <div className="font-medium">{config.label}</div>
@@ -249,7 +249,7 @@ export function CitationPanel({
 
     {/* 批量操作栏 */}
     {selectedIds.size > 0 && (
-      <div className="px-3 py-2 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800 flex items-center justify-between">
+      <div className="px-3 py-2 bg-primary-50 dark:bg-primary-300/20 border-b border-primary-200 dark:border-primary-800 flex items-center justify-between">
         <span className="text-sm text-primary dark:text-primary-700">
           已选择 {selectedIds.size} 项
         </span>
@@ -304,9 +304,9 @@ export function CitationPanel({
               className={cn(
                 'p-3 rounded-lg border cursor-pointer transition-colors',
                 selectedCitation?.id === citation.id
-                  ? 'border-primary bg-primary-50 dark:bg-primary-900/20'
+                  ? 'border-primary bg-primary-50 dark:bg-primary-300/20'
                   : selectedIds.has(citation.id)
-                    ? 'border-primary/50 bg-primary-50/50 dark:bg-primary-900/10'
+                    ? 'border-primary/50 bg-primary-50/50 dark:bg-primary-300/15'
                     : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
               )}
                role="button" tabIndex={0} onClick={() => setSelectedCitation(citation)}
@@ -350,7 +350,7 @@ export function CitationPanel({
     </div>
 
     {/* 参考文献预览 */}
-    <div className="p-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+    <div className="p-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">参考文献预览</span>
@@ -367,7 +367,7 @@ export function CitationPanel({
           <div key={index} className={cn(
             'pl-3 border-l-2 py-1 transition-colors',
             previewCitation && ref.includes(previewCitation.title)
-              ? 'border-primary bg-primary-50/50 dark:bg-primary-900/20'
+              ? 'border-primary bg-primary-50/50 dark:bg-primary-300/20'
               : 'border-neutral-300 dark:border-neutral-600',
           )}>
             {ref}
@@ -389,7 +389,7 @@ export function CitationPanel({
             <X className="w-5 h-5"/>
           </button>
         </div>
-        <textarea value={bibtexContent} onChange={(e) => setBibtexContent(e.target.value)} placeholder="粘贴BibTeX内容..." className="w-full h-48 p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"/>
+        <textarea value={bibtexContent} onChange={(e) => setBibtexContent(e.target.value)} placeholder="粘贴BibTeX内容..." className="w-full h-48 p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"/>
         <div className="flex gap-2 mt-4">
           <button onClick={() => setShowImportModal(false)} className="flex-1 px-4 py-2 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors">
             取消
@@ -477,7 +477,7 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
       </div>
 
       {errors.length > 0 && (
-        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
           <div className="flex items-center gap-2 text-error-600 dark:text-error-600 mb-2">
             <AlertCircle className="w-4 h-4"/>
             <span className="text-sm font-medium">请修正以下错误</span>
@@ -518,7 +518,7 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {formData.authors.map((author, index) => (<span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 dark:bg-primary-900/50 text-primary rounded-full text-sm">
+            {formData.authors.map((author, index) => (<span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 dark:bg-primary-300/35 text-primary rounded-full text-sm">
               {author}
               <button type="button" onClick={() => removeAuthor(index)} className="hover:text-error-500">
                 <X className="w-3 h-3"/>
@@ -582,7 +582,9 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               访问日期
             </label>
-            <input type="date" value={formData.accessedDate} onChange={(e) => setFormData({ ...formData, accessedDate: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"/>
+            <input type="date" value={formData.accessedDate} onChange={(e) => setFormData({ ...formData, accessedDate: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        aria-label="访问日期"
+      />
           </div>
         </>)}
 

@@ -96,7 +96,7 @@ export const ImageWithLazyLoad: React.FC<ImageWithLazyLoadProps> = ({
   }
 
   const defaultPlaceholder = (
-    <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%] animate-shimmer" />
+    <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200 bg-[length:200%_100%] animate-shimmer" />
   )
 
   const defaultError = (

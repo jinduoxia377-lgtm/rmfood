@@ -70,7 +70,7 @@ const EXPORT_FORMAT_CONFIG: Record<ExportFormat, { icon: React.ReactNode; label:
   [ExportFormat.WORD]: { icon: <FileText className="w-4 h-4" />, label: 'Word', color: 'text-secondary-600 hover:bg-secondary-50' },
   [ExportFormat.EXCEL]: { icon: <FileSpreadsheet className="w-4 h-4" />, label: 'Excel', color: 'text-success-600 hover:bg-success-50' },
   [ExportFormat.CSV]: { icon: <FileSpreadsheet className="w-4 h-4" />, label: 'CSV', color: 'text-accent-600 hover:bg-accent-50' },
-  [ExportFormat.JSON]: { icon: <FileText className="w-4 h-4" />, label: 'JSON', color: 'text-orange-600 hover:bg-orange-50' },
+  [ExportFormat.JSON]: { icon: <FileText className="w-4 h-4" />, label: 'JSON', color: 'text-warning-600 hover:bg-warning-50' },
 }
 
 // ==================== Component ====================
@@ -214,7 +214,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
   }
 
   const renderCoverPage = () => (
-    <div className="min-h-[600px] flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 rounded-lg p-12">
+    <div className="min-h-[600px] flex flex-col items-center justify-center bg-gradient-to-br from-secondary-50 to-accent-100 dark:from-neutral-800 dark:to-neutral-900 rounded-lg p-12">
       <div className="text-center space-y-6">
         <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">
           {report?.title || 'RMFOOD 专业分析报告'}
@@ -259,7 +259,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             {
               label: '配方名称',
               value: formulaName,
-              icon: <Lightbulb className="w-6 h-6 text-yellow-500" />,
+              icon: <Lightbulb className="w-6 h-6 text-warning-500" />,
               highlight: true,
             },
             {
@@ -270,42 +270,42 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             {
               label: '推荐指数',
               value: `${recommendationScore}%`,
-              icon: <Star className="w-6 h-6 text-orange-500" />,
+              icon: <Star className="w-6 h-6 text-warning-500" />,
             },
           ].map((item, idx) => (
-            <div key={idx} className={`bg-white dark:bg-neutral-800 p-6 rounded-lg shadow border border-neutral-200 dark:border-neutral-700 ${item.highlight ? 'ring-2 ring-blue-100 dark:ring-blue-900/30' : ''}`}>
+            <div key={idx} className={`bg-white dark:bg-neutral-800 p-6 rounded-lg shadow border border-neutral-200 dark:border-neutral-700 ${item.highlight ? 'ring-2 ring-secondary-100 dark:ring-secondary-900/30' : ''}`}>
               <div className="flex items-center gap-2 mb-2">
                 {item.icon}
                 <h4 className="font-semibold text-neutral-700 dark:text-neutral-300">{item.label}</h4>
               </div>
-              <p className={`text-neutral-600 dark:text-neutral-400 ${item.highlight ? 'font-medium text-secondary-600 dark:text-secondary-400' : ''}`}>{item.value}</p>
+              <p className={`text-neutral-600 dark:text-neutral-400 ${item.highlight ? 'font-medium text-secondary-600 dark:text-secondary-700' : ''}`}>{item.value}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-secondary-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-blue-500">
+        <div className="bg-secondary-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-secondary-500">
           <h4 className="font-semibold mb-3 text-secondary-900 dark:text-secondary-200">📋 配方概览</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">{ingredientCount}</p>
+              <p className="text-3xl font-bold text-secondary-600 dark:text-secondary-700">{ingredientCount}</p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">成分数量</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-success-600 dark:text-success-400">{sources.length}</p>
+              <p className="text-3xl font-bold text-success-600 dark:text-success-600">{sources.length}</p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">来源类型</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-accent-600 dark:text-accent-400">{totalDosage > 0 ? totalDosage.toFixed(1) : 'N/A'}</p>
+              <p className="text-3xl font-bold text-accent-600 dark:text-accent-700">{totalDosage > 0 ? totalDosage.toFixed(1) : 'N/A'}</p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">总用量</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{recommendationScore}%</p>
+              <p className="text-3xl font-bold text-warning-600 dark:text-warning-700">{recommendationScore}%</p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">推荐度</p>
             </div>
           </div>
 
           {sources.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+            <div className="mt-3 pt-3 border-t border-secondary-200 dark:border-secondary-800">
               <p className="text-sm text-secondary-800 dark:text-secondary-200">
                 <strong>成分来源分布：</strong>{sources.join('、') || '待分析'}
               </p>
@@ -314,7 +314,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         </div>
 
         {(keyFindings.length > 0 || content.summary) && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800 p-6 rounded-lg border-l-4 border-green-500">
+          <div className="bg-gradient-to-r from-success-50 to-success-50 dark:from-neutral-800 dark:to-neutral-800 p-6 rounded-lg border-l-4 border-success-500">
             <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200">✨ 摘要概述</h4>
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
               {content.summary || `本报告针对"${formulaName}"进行了全面分析，包含${ingredientCount}种有效成分。`}
@@ -353,7 +353,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       <div className="space-y-6">
         {formulaData ? (
           <>
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-800 p-4 rounded-lg border border-secondary-200 dark:border-secondary-800">
               <h3 className="font-bold text-lg text-secondary-900 dark:text-secondary-200 mb-2 flex items-center gap-2">
                 <FlaskConical className="w-5 h-5" />
                 {formulaData.name || '未命名配方'}
@@ -369,7 +369,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(statistics).map(([key, value]) => (
                   <div key={key} className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow text-center border border-neutral-200 dark:border-neutral-700">
-                    <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">{String(value)}</p>
+                    <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-700">{String(value)}</p>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{key}</p>
                   </div>
                 ))}
@@ -377,29 +377,29 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             )}
 
             {formulaData.ingredients && formulaData.ingredients.length > 0 && (
-              <div className="bg-yellow-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-yellow-500">
-                <h4 className="font-semibold mb-2 text-yellow-900 dark:text-yellow-200">📊 成分统计</h4>
+              <div className="bg-warning-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-warning-500">
+                <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200">📊 成分统计</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                   <div>
                     <span className="text-neutral-600 dark:text-neutral-400">总成分数：</span>
-                    <strong className="text-yellow-800 dark:text-yellow-200">{formulaData.ingredients.length} 种</strong>
+                    <strong className="text-warning-800 dark:text-warning-200">{formulaData.ingredients.length} 种</strong>
                   </div>
                   <div>
                     <span className="text-neutral-600 dark:text-neutral-400">唯一成分：</span>
-                    <strong className="text-yellow-800 dark:text-yellow-200">{new Set(formulaData.ingredients.map((i: { name: string }) => i.name)).size} 种</strong>
+                    <strong className="text-warning-800 dark:text-warning-200">{new Set(formulaData.ingredients.map((i: { name: string }) => i.name)).size} 种</strong>
                   </div>
                   <div>
                     <span className="text-neutral-600 dark:text-neutral-400">来源数：</span>
-                    <strong className="text-yellow-800 dark:text-yellow-200">
+                    <strong className="text-warning-800 dark:text-warning-200">
                       {[...new Set(formulaData.ingredients.map((i: any) => i.source).filter(Boolean))].length} 类
                     </strong>
                   </div>
                 </div>
 
                 {formulaData.confidence && (
-                  <div className="mt-3 pt-3 border-t border-yellow-200 dark:border-yellow-800">
+                  <div className="mt-3 pt-3 border-t border-warning-200 dark:border-warning-800">
                     <span className="text-neutral-600 dark:text-neutral-400">解析置信度：</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-200 rounded-full text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success-100 dark:bg-success-300/25 text-success-800 dark:text-success-200 rounded-full text-xs font-medium">
                       {(formulaData.confidence * 100).toFixed(0)}%
                       <Star className="w-3 h-3" />
                     </span>
@@ -409,11 +409,11 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             )}
           </>
         ) : (
-          <div className="bg-yellow-50 dark:bg-neutral-800 p-8 rounded-lg text-center">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+          <div className="bg-warning-50 dark:bg-neutral-800 p-8 rounded-lg text-center">
+            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-warning-500" />
             <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-2">暂无配方数据</h3>
             <p className="text-neutral-600 dark:text-neutral-400 mb-4">请在对话中生成配方后查看详细数据</p>
-            <div className="inline-block bg-yellow-100 dark:bg-yellow-900/30 px-4 py-2 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
+            <div className="inline-block bg-warning-100 dark:bg-warning-300/25 px-4 py-2 rounded-lg text-sm text-warning-800 dark:text-warning-200">
               💡 提示：可以让AI以表格形式提供配方信息
             </div>
           </div>
@@ -426,7 +426,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     <div className="space-y-4">
       {(section.content?.ingredients || []).map((ingredient: any, idx: number) => (
         <details key={idx} className="bg-white dark:bg-neutral-800 rounded-lg shadow border border-neutral-200 dark:border-neutral-700 group">
-          <summary className="p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750 flex items-center justify-between">
+          <summary className="p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-750 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ChevronRight className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-open:rotate-90 transition-transform" />
               <div>
@@ -464,7 +464,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         <>
           <SynergyRadarChart data={section.content.radarData} height={400} showLegend interactive />
 
-          <div className="bg-success-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-green-500">
+          <div className="bg-success-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-success-500">
             <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200">协同机制说明</h4>
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
               {section.content.mechanismDescription || '各成分间存在显著的协同增效作用，能够提升整体配方的生物利用度和功效表现。'}
@@ -472,11 +472,11 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           </div>
 
           {section.content?.warnings && section.content.warnings.length > 0 && (
-            <div className="bg-error-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-red-500">
+            <div className="bg-error-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-error-500">
               <h4 className="font-semibold mb-2 text-error-900 dark:text-error-200 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" /> 潜在相互作用警告
               </h4>
-              <ul className="list-disc list-inside space-y-1 text-error-800 dark:text-error-300">
+              <ul className="list-disc list-inside space-y-1 text-error-800 dark:text-error-600">
                 {section.content.warnings.map((warning: string, idx: number) => (
                   <li key={idx}>{warning}</li>
                 ))}
@@ -485,8 +485,8 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           )}
         </>
       ) : (
-        <div className="bg-yellow-50 dark:bg-neutral-800 p-6 rounded-lg text-center">
-          <Network className="w-12 h-12 mx-auto mb-3 text-yellow-500" />
+        <div className="bg-warning-50 dark:bg-neutral-800 p-6 rounded-lg text-center">
+          <Network className="w-12 h-12 mx-auto mb-3 text-warning-500" />
           <p className="text-neutral-600 dark:text-neutral-400">暂无协同分析数据</p>
         </div>
       )}
@@ -531,9 +531,9 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       )}
 
       {section.content?.precautions && (
-        <div className="bg-orange-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-orange-500">
-          <h4 className="font-semibold mb-2 text-orange-900 dark:text-orange-200">注意事项</h4>
-          <ul className="list-disc list-inside space-y-1 text-orange-800 dark:text-orange-300">
+        <div className="bg-warning-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-warning-500">
+          <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200">注意事项</h4>
+          <ul className="list-disc list-inside space-y-1 text-warning-800 dark:text-warning-700">
             {section.content.precautions.map((precaution: string, idx: number) => (
               <li key={idx}>{precaution}</li>
             ))}
@@ -561,8 +561,8 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white">术语表</h4>
           <div className="grid gap-3">
             {section.content.glossary.map((term: any, idx: number) => (
-              <div key={idx} className="flex gap-3 bg-slate-50 dark:bg-neutral-800 p-3 rounded">
-                <span className="font-semibold text-secondary-600 dark:text-secondary-400 min-w-[120px]">{term.term}</span>
+              <div key={idx} className="flex gap-3 bg-neutral-50 dark:bg-neutral-800 p-3 rounded">
+                <span className="font-semibold text-secondary-600 dark:text-secondary-700 min-w-[120px]">{term.term}</span>
                 <span className="text-neutral-600 dark:text-neutral-400 text-sm">{term.definition}</span>
               </div>
             ))}
@@ -612,7 +612,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
               关闭
             </button>
             {onClose && (
-              <button onClick={() => { onClose?.(); setTimeout(() => window.location.reload(), 100) }} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+              <button onClick={() => { onClose?.(); setTimeout(() => window.location.reload(), 100) }} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                 刷新页面
               </button>
             )}
@@ -629,12 +629,12 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     return (
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl p-8 text-center">
-          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-warning-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">报告数据不完整</h3>
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">生成的报告缺少必要的数据内容。</p>
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200"><strong>可能的原因：</strong></p>
-            <ul className="list-disc list-inside mt-2 text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+          <div className="bg-warning-50 dark:bg-warning-300/20 rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm text-warning-800 dark:text-warning-200"><strong>可能的原因：</strong></p>
+            <ul className="list-disc list-inside mt-2 text-sm text-warning-700 dark:text-warning-700 space-y-1">
               <li>对话中尚未包含配方或分析内容</li>
               <li>AI回复中的数据格式无法识别</li>
               <li>网络请求失败导致数据丢失</li>
@@ -644,7 +644,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <button onClick={handleClose} className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
               关闭
             </button>
-            <button onClick={() => window.location.reload()} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+            <button onClick={() => window.location.reload()} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
               重试生成
             </button>
           </div>
@@ -660,7 +660,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       <div className="bg-white dark:bg-neutral-900 w-full max-w-7xl h-[95vh] rounded-xl shadow-2xl flex flex-col overflow-hidden print:h-auto print:shadow-none print:rounded-none">
 
         {/* Header Toolbar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 print:hidden">
           <div className="flex items-center gap-3 flex-1">
             {isEditing ? (
               <div className="flex items-center gap-2 flex-1">
@@ -668,7 +668,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-secondary-500"
                   placeholder="输入报告标题..."
                 />
                 <button onClick={handleSaveTitle} className="p-2 text-success-600 hover:bg-success-50 dark:hover:bg-success-900 rounded-lg">
@@ -718,7 +718,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
         {/* Export Progress */}
         {exportState.isExporting && (
-          <div className="px-6 py-3 bg-secondary-50 dark:bg-neutral-800 border-b border-blue-200 dark:border-blue-900 print:hidden">
+          <div className="px-6 py-3 bg-secondary-50 dark:bg-neutral-800 border-b border-secondary-200 dark:border-secondary-900 print:hidden">
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 animate-spin text-secondary-600" />
               <span className="text-sm text-secondary-800 dark:text-secondary-200 font-medium">
@@ -727,12 +727,12 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
               <span className="text-sm font-bold text-secondary-600">{exportState.progress}%</span>
               <div className="flex-1 bg-secondary-200 dark:bg-secondary-900 rounded-full h-2.5 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300 ease-out"
+                  className="bg-gradient-to-r from-secondary-500 to-secondary-600 h-full rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${exportState.progress}%` }}
                 ></div>
               </div>
             </div>
-            <p className="text-xs text-secondary-600 dark:text-secondary-400 mt-2 ml-8">
+            <p className="text-xs text-secondary-600 dark:text-secondary-700 mt-2 ml-8">
               {exportState.progress < 30 && '📊 正在准备数据...'}
               {exportState.progress >= 30 && exportState.progress < 60 && '✍️ 正在生成文档内容...'}
               {exportState.progress >= 60 && exportState.progress < 90 && '📦 正在打包文件...'}
@@ -743,7 +743,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
         {/* Success Message */}
         {exportState.progress === 100 && !exportState.isExporting && !exportState.error && (
-          <div className="px-6 py-3 bg-success-50 dark:bg-success-900/20 border-b border-green-200 dark:border-green-800 print:hidden animate-fadeIn">
+          <div className="px-6 py-3 bg-success-50 dark:bg-success-300/20 border-b border-success-200 dark:border-success-800 print:hidden animate-fadeIn">
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-success-600" />
               <span className="text-sm font-medium text-success-800 dark:text-success-200 flex-1">
@@ -761,7 +761,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
         {/* Error Message */}
         {exportState.error && (
-          <div className="px-6 py-3 bg-error-50 dark:bg-neutral-800 border-b border-red-200 dark:border-red-900 print:hidden">
+          <div className="px-6 py-3 bg-error-50 dark:bg-neutral-800 border-b border-error-200 dark:border-error-900 print:hidden">
             <p className="text-sm text-error-800 dark:text-error-200 flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
               {exportState.error}
@@ -773,7 +773,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         {/* Main Content Area */}
         <div className="flex flex-1 overflow-hidden print:block">
           {/* Left Sidebar Navigation */}
-          <nav className="w-56 bg-slate-50 dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto print:hidden">
+          <nav className="w-56 bg-neutral-50 dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto print:hidden">
             <div className="p-4">
               <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">目录导航</h3>
               <ul className="space-y-1">

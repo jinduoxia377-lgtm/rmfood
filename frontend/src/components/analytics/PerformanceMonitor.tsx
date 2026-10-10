@@ -29,13 +29,13 @@ function PerformanceCard({ title, value, status, icon, subtitle }: PerformanceCa
   const getStatusStyles = () => {
     switch (status) {
       case 'good':
-        return 'bg-success-50 border-green-200 text-success-800';
+        return 'bg-success-50 border-success-200 text-success-800';
       case 'needs-improvement':
-        return 'bg-warning-50 border-amber-200 text-warning-800';
+        return 'bg-warning-50 border-warning-200 text-warning-800';
       case 'poor':
-        return 'bg-error-50 border-red-200 text-error-800';
+        return 'bg-error-50 border-error-200 text-error-800';
       default:
-        return 'bg-slate-50 dark:bg-neutral-800 border-neutral-200 text-neutral-800';
+        return 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 text-neutral-800';
     }
   };
 
@@ -48,7 +48,7 @@ function PerformanceCard({ title, value, status, icon, subtitle }: PerformanceCa
       case 'poor':
         return 'text-error-500';
       default:
-        return 'text-neutral-500';
+        return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
     }
   };
 
@@ -125,7 +125,7 @@ function FPSIndicator({ fps }: FPSIndicatorProps) {
       <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
         <div className={`h-full ${getBarColor()} transition-all duration-300`} style={{ width: `${percentage}%` }} />
       </div>
-      <div className="flex justify-between text-xs text-neutral-400 mt-1">
+      <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
         <span>0</span>
         <span>30</span>
         <span>60</span>
@@ -142,7 +142,7 @@ function ResourceTiming({ loadTime }: ResourceTimingProps) {
   const isFast = loadTime <= DEFAULT_THRESHOLDS.resourceLoad;
 
   return (
-    <div className={`p-4 rounded-lg border ${isFast ? 'bg-success-50 border-green-200' : 'bg-error-50 border-red-200'}`}>
+    <div className={`p-4 rounded-lg border ${isFast ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200'}`}>
       <div className="flex items-center gap-2 mb-2">
         <Zap className={`w-5 h-5 ${isFast ? 'text-success-500' : 'text-error-500'}`} />
         <span className="text-sm font-medium text-neutral-700">资源加载时间</span>
@@ -191,9 +191,9 @@ export default function PerformanceMonitor() {
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-6">
       <div className="flex items-center gap-3 mb-6">
-        <Gauge className="w-6 h-6 text-primary-600" />
+        <Gauge className="w-6 h-6 text-primary-700" />
         <h2 className="text-xl font-bold text-neutral-800">性能监控</h2>
-        <span className="ml-auto text-sm text-neutral-500">{new Date(report.timestamp).toLocaleTimeString('zh-CN')}</span>
+        <span className="ml-auto text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(report.timestamp).toLocaleTimeString('zh-CN')}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -252,7 +252,7 @@ export default function PerformanceMonitor() {
         </div>
       </div>
 
-      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+      <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
         <h4 className="text-sm font-semibold text-neutral-700 mb-2">FPS 统计</h4>
         <div className="flex justify-between text-sm">
           <span className="text-neutral-600">

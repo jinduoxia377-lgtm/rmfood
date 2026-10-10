@@ -20,10 +20,10 @@ export const SuccessMessage: React.FC<SuccessMessageProps> = ({
           <CheckCircle className="w-4 h-4 text-success-600" />
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-semibold text-success-700 dark:text-success-300">
+          <h4 className="text-sm font-semibold text-success-700 dark:text-success-600">
             {DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_TITLE}
           </h4>
-          <p className="text-sm text-success-600 dark:text-success-400 mt-0.5">
+          <p className="text-sm text-success-600 dark:text-success-600 mt-0.5">
             {`${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_PREFIX} ${formulaName} ${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_SUFFIX} (ID: ${formulaId})`}
           </p>
           <button

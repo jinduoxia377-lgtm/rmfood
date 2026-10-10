@@ -38,7 +38,7 @@ const SIZE_CONFIG: Record<TagSize, {
   md: {
     height: 'h-8',
     padding: 'px-4 py-2',
-    fontSize: 'text-[13px]',
+    fontSize: 'text-sm',
     fontWeight: 'font-medium',
     iconSize: 16,
     closeSize: 14,
@@ -183,7 +183,7 @@ function ChatTag({
             relative z-10 ml-1 rounded-full p-0.5
             text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800/80
             transition-all duration-150 ease-out
-            focus:outline-none focus:ring-2 focus:ring-slate-300
+            focus:outline-none focus:ring-2 focus:ring-neutral-300
             opacity-0 group-hover:opacity-100
           "
           aria-label={`移除 ${label}`}

@@ -58,31 +58,31 @@ const SOURCE_CONFIG: Record<IngredientSource, {
 }> = {
   [IngredientSource.TCM]: {
     label: '药食同源',
-    color: 'text-success-600 dark:text-success-400',
-    bgColor: 'bg-success-50 dark:bg-success-900/20',
+    color: 'text-success-600 dark:text-success-600',
+    bgColor: 'bg-success-50 dark:bg-success-300/20',
     borderColor: 'border-l-success-500',
     icon: <Leaf className="w-3.5 h-3.5" />,
   },
   [IngredientSource.PEPTIDE]: {
     label: '食源性多肽',
-    color: 'text-primary-700 dark:text-primary-600',
-    bgColor: 'bg-primary-50 dark:bg-primary-900/20',
+    color: 'text-primary-700 dark:text-primary-700',
+    bgColor: 'bg-primary-50 dark:bg-primary-300/20',
     borderColor: 'border-l-primary-500',
     icon: <Dna className="w-3.5 h-3.5" />,
   },
   [IngredientSource.EXCIPIENT]: {
     label: '辅料',
     color: 'text-neutral-600 dark:text-neutral-400',
-    bgColor: 'bg-slate-50 dark:bg-neutral-800/50',
+    bgColor: 'bg-neutral-50 dark:bg-neutral-800/50',
     borderColor: 'border-l-slate-400',
     icon: <Package className="w-3.5 h-3.5" />,
   },
 }
 
 const SEVERITY_CONFIG: Record<string, { color: string; label: string }> = {
-  low: { color: 'text-info-600 bg-info-50 dark:bg-info-900/30', label: '提示' },
-  medium: { color: 'text-warning-600 bg-warning-50 dark:bg-warning-900/30', label: '注意' },
-  high: { color: 'text-danger-600 bg-danger-50 dark:bg-danger-900/30', label: '警告' },
+  low: { color: 'text-info-600 bg-info-50 dark:bg-info-300/25', label: '提示' },
+  medium: { color: 'text-warning-600 bg-warning-50 dark:bg-warning-300/25', label: '注意' },
+  high: { color: 'text-danger-600 bg-danger-50 dark:bg-danger-300/25', label: '警告' },
 }
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -136,7 +136,7 @@ const IngredientRow = memo(({
 
     return parts.map((part, i) =>
       regex.test(part) ? (
-        <mark key={i} className="bg-yellow-200 dark:bg-yellow-600/40 px-0.5 rounded">
+        <mark key={i} className="bg-warning-200 dark:bg-warning-600/40 px-0.5 rounded">
           {part}
         </mark>
       ) : (
@@ -152,8 +152,8 @@ const IngredientRow = memo(({
         className={`
           group relative border-b border-neutral-100 dark:border-neutral-700/50
           transition-all duration-150 ease-in-out
-          ${index % 2 === 0 ? 'bg-white dark:bg-neutral-900/30' : 'bg-slate-50/50 dark:bg-neutral-800/20'}
-          ${isHovered ? 'bg-secondary-50/50 dark:bg-secondary-900/10 shadow-sm' : ''}
+          ${index % 2 === 0 ? 'bg-white dark:bg-neutral-900/30' : 'bg-neutral-50/50 dark:bg-neutral-800/20'}
+          ${isHovered ? 'bg-secondary-50/50 dark:bg-secondary-300/15 shadow-sm' : ''}
           ${sourceConfig.borderColor} border-l-4
           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:z-10
         `}
@@ -200,7 +200,7 @@ const IngredientRow = memo(({
 
             {tagMatchStatus === 'error' && matchError && (
               <span
-                className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-400 border border-red-200 dark:border-red-800"
+                className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-600 border border-error-200 dark:border-error-800"
                 title={`⚠️ 匹配失败: ${matchError}`}
               >
                 ⚠️ 匹配失败
@@ -278,7 +278,7 @@ const IngredientRow = memo(({
       </tr>
 
       {isExpanded && (
-        <tr className="bg-secondary-50/30 dark:bg-secondary-900/5">
+        <tr className="bg-secondary-50/30 dark:bg-secondary-300/10">
           <td colSpan={6} className="px-6 py-4">
             <IngredientDetail ingredient={ingredient} />
           </td>
@@ -621,7 +621,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
     return (
       <div className="w-full overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
         <table className="w-full" role="table" aria-label="配方表格加载中">
-          <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
+          <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
             <tr>
               {['成分名称', '用量', '功效标签', '注意事项', '来源分类', ''].map((header, i) => (
                 <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
@@ -639,9 +639,9 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
   if (!hasValidData) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
-        <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-4" />
+        <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-400 mb-4" />
         <p className="text-neutral-500 dark:text-neutral-400 text-base font-medium">暂无配方数据</p>
-        <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">请生成或导入配方数据后查看</p>
+        <p className="text-neutral-400 dark:text-neutral-400 text-sm mt-2">请生成或导入配方数据后查看</p>
       </div>
     )
   }
@@ -658,7 +658,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg
                        bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100
-                       placeholder-slate-400 dark:placeholder-slate-500
+                       placeholder-neutral-400 dark:placeholder-neutral-500
                        focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500
                        transition-all duration-200"
             aria-label="搜索成分"
@@ -699,7 +699,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                 px-2.5 py-1 text-xs rounded-full transition-all duration-200
                 border
                 ${selectedTags.has(tag)
-                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 border-primary-300 dark:border-primary-700'
+                  ? 'bg-primary-50 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 border-primary-300 dark:border-primary-700'
                   : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300 dark:hover:border-neutral-500'
                 }
               `}
@@ -711,7 +711,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
           {selectedTags.size > 0 && (
             <button
               onClick={() => setSelectedTags(new Set())}
-              className="text-xs text-primary-700 dark:text-primary-600 hover:underline"
+              className="text-xs text-primary-700 dark:text-primary-700 hover:underline"
             >
               清除全部
             </button>
@@ -726,7 +726,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
           aria-label={`${safeData.title || '配方'}成分列表`}
           aria-rowcount={filteredAndSortedData.length}
         >
-          <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
+          <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
             <tr>
               <th
                 scope="col"
@@ -791,12 +791,12 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
             {filteredAndSortedData.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <Search className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
+                    <Search className="w-8 h-8 text-neutral-300 dark:text-neutral-400" />
                     <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
                       {safeData.ingredients?.length === 0
                         ? '暂无成分数据'
@@ -804,22 +804,22 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                     </p>
                     {safeData.ingredients?.length > 0 && (
                       <>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                        <p className="text-xs text-neutral-400 dark:text-neutral-400">
                           当前有 {safeData.ingredients.length} 条数据被筛选条件隐藏
                           {(searchQuery || selectedTags.size > 0 || selectedSources.size !== Object.values(IngredientSource).length) && '，请检查以下条件：'}
                         </p>
                         {searchQuery && (
-                          <p className="text-xs text-primary-700 dark:text-primary-600">
+                          <p className="text-xs text-primary-700 dark:text-primary-700">
                             搜索关键词: "{searchQuery}"
                           </p>
                         )}
                         {selectedSources.size !== Object.values(IngredientSource).length && (
-                          <p className="text-xs text-warning-600 dark:text-warning-400">
+                          <p className="text-xs text-warning-600 dark:text-warning-700">
                             已排除 {Object.values(IngredientSource).length - selectedSources.size} 个来源分类
                           </p>
                         )}
                         {selectedTags.size > 0 && (
-                          <p className="text-xs text-info-600 dark:text-info-400">
+                          <p className="text-xs text-info-600 dark:text-info-600">
                             已选择 {selectedTags.size} 个功效标签筛选
                           </p>
                         )}
@@ -831,7 +831,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                         setSelectedSources(new Set(Object.values(IngredientSource)))
                         setSelectedTags(new Set())
                       }}
-                      className="mt-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                      className="mt-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
                     >
                       重置所有筛选条件
                     </button>
@@ -895,13 +895,13 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
       </div>
 
       {isDev && (
-        <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="mt-4 p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-lg border border-secondary-200 dark:border-secondary-800">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-secondary-800 dark:text-secondary-300 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-secondary-800 dark:text-secondary-700 flex items-center gap-2">
               <span className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
               调试面板 (仅开发模式)
             </h4>
-            <span className="text-xs text-secondary-600 dark:text-secondary-400 font-mono">FormulaTable Debug</span>
+            <span className="text-xs text-secondary-600 dark:text-secondary-700 font-mono">FormulaTable Debug</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
@@ -928,7 +928,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
             </div>
           </div>
           {safeData.ingredients?.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+            <div className="mt-3 pt-3 border-t border-secondary-200 dark:border-secondary-800">
               <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">数据来源分布：</div>
               <div className="flex flex-wrap gap-2">
                 {Object.values(IngredientSource).map((source) => {

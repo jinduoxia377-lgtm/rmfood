@@ -352,7 +352,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                   </Badge>
                 ))}
                 {template.tags.length > 3 && (
-                  <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.tags.length - 3}</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.tags.length - 3}</span>
                 )}
               </div>
             )}
@@ -388,7 +388,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
       {!isLoading &&
         viewMode === 'list' &&
         templates.map((template) => (
-          <Card key={template.id} className="p-4 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group">
+          <Card key={template.id} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group">
             <div className="flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-accent-600 transition-colors">
@@ -399,7 +399,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
 
               <div className="flex items-center gap-3 flex-shrink-0">
                 {template.rating && (
-                  <span className="text-sm font-medium text-yellow-600 flex items-center gap-1">
+                  <span className="text-sm font-medium text-warning-600 flex items-center gap-1">
                     <Star size={14} fill="currentColor" />
                     {template.rating.toFixed(1)}
                   </span>
@@ -521,7 +521,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                           }
                           placeholder={`输入${varName}...`}
                         />
-                        <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">示例值请参考模板说明</p>
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">示例值请参考模板说明</p>
                       </div>
                     ))}
                   </div>
@@ -569,10 +569,10 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                   )}
 
                   {renderResult.warnings.length > 0 && (
-                    <div className="mb-3 p-3 bg-yellow-50 rounded-lg">
-                      <p className="text-xs font-medium text-yellow-700 mb-1">警告：</p>
+                    <div className="mb-3 p-3 bg-warning-50 rounded-lg">
+                      <p className="text-xs font-medium text-warning-700 mb-1">警告：</p>
                       {renderResult.warnings.map((warn, i) => (
-                        <p key={i} className="text-xs text-yellow-600">
+                        <p key={i} className="text-xs text-warning-600">
                           • {warn}
                         </p>
                       ))}
@@ -580,7 +580,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
                   )}
 
                   {renderResult.success && (
-                    <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg max-h-[400px] overflow-y-auto">
+                    <div className="p-4 bg-gradient-to-br from-success-50 to-success-50 rounded-lg max-h-[400px] overflow-y-auto">
                       <pre className="text-sm whitespace-pre-wrap leading-relaxed font-mono">
                         {renderResult.content}
                       </pre>

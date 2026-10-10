@@ -115,7 +115,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
               onClick={() => setActiveTab(key)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
                 activeTab === key
-                  ? 'text-primary-700 dark:text-primary-600 border-b-2 border-primary-500'
+                  ? 'text-primary-700 dark:text-primary-700 border-b-2 border-primary-500'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
               }`}
             >
@@ -132,7 +132,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
             <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               {formulaName}
             </div>
-            <div className="text-[10px] text-neutral-400 dark:text-neutral-400">
+            <div className="text-xs text-neutral-400 dark:text-neutral-400">
               基于药食同源目录的辅助调理配方
             </div>
           </div>
@@ -145,7 +145,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
                   onClick={handleGenerateLink}
                   disabled={generating}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-                    bg-gradient-to-r from-primary-500 to-emerald-500 text-white text-sm font-medium
+                    bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-success-surface-deep)] text-white text-sm font-medium
                     hover:shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {generating ? (
@@ -164,11 +164,12 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
                       readOnly
                       value={shareUrl}
                       className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700
-                        bg-neutral-50 dark:bg-neutral-800 text-[10px] text-neutral-500 font-mono truncate"
-                    />
+                        bg-neutral-50 dark:bg-neutral-800 text-xs text-neutral-500 font-mono truncate"
+        aria-label="分享链接"
+      />
                     <button
                       onClick={handleCopyLink}
-                      className="p-2 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-500
+                      className="p-2 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-500
                         hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors"
                     >
                       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -176,14 +177,14 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
                   </div>
                   <div className="flex gap-2">
                     <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
-                      bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-medium
-                      hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
+                      bg-success-50 dark:bg-success-300/20 text-success-600 dark:text-success-700 text-xs font-medium
+                      hover:bg-success-100 dark:hover:bg-success-900/40 transition-colors">
                       <MessageCircle className="w-3.5 h-3.5" />
                       微信分享
                     </button>
                     <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
-                      bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium
-                      hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                      bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 text-xs font-medium
+                      hover:bg-secondary-100 dark:hover:bg-secondary-900/40 transition-colors">
                       <Mail className="w-3.5 h-3.5" />
                       邮件发送
                     </button>
@@ -196,8 +197,8 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
           {/* JSON Tab */}
           {activeTab === 'json' && (
             <div className="space-y-3">
-              <pre className="max-h-40 overflow-auto p-3 rounded-lg bg-neutral-900 text-green-400
-                text-[10px] font-mono leading-relaxed">
+              <pre className="max-h-40 overflow-auto p-3 rounded-lg bg-neutral-900 text-success-400
+                text-xs font-mono leading-relaxed">
                 {JSON.stringify(content, null, 2)}
               </pre>
               <button
@@ -206,7 +207,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
                   bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-sm
                   hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-success-500" /> : <Copy className="w-4 h-4" />}
                 {copied ? '已复制到剪贴板' : '复制 JSON'}
               </button>
             </div>
@@ -216,7 +217,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
           {activeTab === 'qr' && (
             <div className="space-y-4">
               <ShareQRCode url={shareUrl || '#'} />
-              <p className="text-center text-[10px] text-neutral-400 dark:text-neutral-400">
+              <p className="text-center text-xs text-neutral-400 dark:text-neutral-400">
                 扫描下方二维码查看配方详情
               </p>
               <button

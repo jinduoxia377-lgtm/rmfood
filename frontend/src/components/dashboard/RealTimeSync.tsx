@@ -67,24 +67,24 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'create':
-        return <Database size={16} className="text-success-600" />
+        return <Database size={16} className="text-success-700" />
       case 'update':
         return <RefreshCw size={16} className="text-secondary-600" />
       case 'delete':
         return <Database size={16} className="text-error-600" />
       default:
-        return <Activity size={16} className="text-neutral-500" />
+        return <Activity size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
     }
   }
 
   const getActionColor = (type: string) => {
     switch (type) {
       case 'create':
-        return 'text-success-600 dark:text-success-400'
+        return 'text-success-700 dark:text-success-600'
       case 'update':
-        return 'text-secondary-600 dark:text-secondary-400'
+        return 'text-secondary-600 dark:text-secondary-700'
       case 'delete':
-        return 'text-error-600 dark:text-error-400'
+        return 'text-error-600 dark:text-error-600'
       default:
         return 'text-neutral-600 dark:text-neutral-400'
     }
@@ -108,8 +108,8 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Activity size={20} className="text-primary-600 dark:text-primary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold">实时数据同步</CardTitle>
+            <Activity size={20} className="text-primary-700 dark:text-primary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold">实时数据同步</CardTitle>
           </div>
           {isWebSocketEnabled
             ? <Badge variant="primary" size="sm">{syncCount}</Badge>
@@ -120,7 +120,7 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         {/* 同步状态 */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Clock size={16} className="text-neutral-500" />
+            <Clock size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <span className="text-sm text-neutral-600 dark:text-neutral-400">
               最后同步: {lastUpdate || '从未'}
             </span>
@@ -136,7 +136,11 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
               {isSyncing ? '同步中...' : '手动同步'}
             </Button>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500" title="设置 VITE_WEBSOCKET_ENABLED=true 后可启用实时同步">
+            /* A-42：暗色画布最暗处是墨绿渐变，neutral-400(#94a3b8) 落在上面只有 3.79:1；
+               提到 neutral-300(#cbd5e1) 后为 6.5:1。亮色侧由 A-38b 的全局下限兜底。
+               注意这里必须是普通块注释，不能写成 JSX 注释 —— 三元分支的括号内是表达式
+               位置，再包一层花括号会被当成第二个子节点，tsc 直接报 TS1005。 */
+            <span className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-300" title="设置 VITE_WEBSOCKET_ENABLED=true 后可启用实时同步">
               <WifiOff size={14} />
               实时连接未启用
             </span>
@@ -163,9 +167,9 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
                         <span className={`text-sm font-medium ${getActionColor(item.type)}`}>
                           {getActionText(item.type)} {item.entity}
                         </span>
-                        <span className="text-xs text-neutral-400">{item.timestamp}</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.timestamp}</span>
                       </div>
-                      <p className="text-xs text-neutral-500 mt-1 truncate">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 truncate">
                         {item.entity === 'formula' && item.data.name}
                         {item.entity === 'experiment' && item.data.title}
                         {item.entity === 'user' && item.data.name}
@@ -179,16 +183,16 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         </div>
 
         {/* 同步说明 */}
-        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-100 dark:border-secondary-800/30">
           <div className="flex items-start gap-3">
             {isWebSocketEnabled ? (
-              <RefreshCw size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
+              <RefreshCw size={18} className="text-secondary-600 dark:text-secondary-700 flex-shrink-0 mt-0.5" />
             ) : (
-              <WifiOff size={18} className="text-neutral-400 flex-shrink-0 mt-0.5" />
+              <WifiOff size={18} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0 mt-0.5" />
             )}
             <div>
-              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">实时同步说明</h4>
-              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-700 mb-1">实时同步说明</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-700 space-y-1">
                 {isWebSocketEnabled ? (
                   <>
                     <li>• 系统会自动同步数据变更</li>

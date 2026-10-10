@@ -51,7 +51,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
     <div className="mt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="w-full flex items-center justify-between py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 rounded-lg px-1"
+        className="w-full flex items-center justify-between py-3 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-lg px-1"
       >
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4" style={{ color: 'var(--color-primary-500)' }} />
@@ -61,7 +61,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
           {patentSynergyScores.quality_level && (
             <Badge
               variant="neutral"
-              className="text-[10px]"
+              className="text-xs"
               style={{ backgroundColor: getQualityLevelColor(patentSynergyScores.quality_level).bg }}
             >
               {patentSynergyScores.quality_level}
@@ -78,42 +78,42 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
       {showDetails && (
         <div className="pb-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <FlaskConical className="w-4 h-4" style={{ color: 'var(--color-primary, var(--color-primary-400))' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">药效增强</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.bliss_independence * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <Target className="w-4 h-4" style={{ color: 'var(--color-secondary, #0A84FF)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">药代动力学</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.pk_interaction * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <Activity className="w-4 h-4" style={{ color: 'var(--color-warning, #FF9F0A)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">结构稳定性</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.gibbs_stability * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <Network className="w-4 h-4" style={{ color: 'var(--color-tertiary, var(--color-accent-500))' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">靶点通路</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.network_pharmacology * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
-              <Palette className="w-4 h-4" style={{ color: 'var(--color-pink-500, #D946EF)' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+              <Palette className="w-4 h-4" style={{ color: 'var(--color-danger-500, #D946EF)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">感官品质</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.taste_matrix * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <Sparkles className="w-4 h-4" style={{ color: 'var(--color-primary, var(--color-primary-400))' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">综合协同指数</p>

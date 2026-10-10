@@ -486,7 +486,7 @@ export default function GraphPanelLayout({
 
       {/* v7.4: Box Selection Overlay */}
       {isSelecting && selectionBox && (
-        <div className="absolute border-2 border-dashed border-primary-500 bg-primary-100/20 dark:bg-primary-900/20 rounded pointer-events-none z-30"
+        <div className="absolute border-2 border-dashed border-primary-500 bg-primary-100/20 dark:bg-primary-300/20 rounded pointer-events-none z-30"
           style={{ left: Math.min(selectionBox.x1, selectionBox.x2), top: Math.min(selectionBox.y1, selectionBox.y2),
             width: Math.abs(selectionBox.x2 - selectionBox.x1), height: Math.abs(selectionBox.y2 - selectionBox.y1) }} />
       )}
@@ -504,8 +504,8 @@ export default function GraphPanelLayout({
 
       {/* v7.6: Path Animation Indicator */}
       {pathAnimation && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-45 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg">
-          <span className="text-[11px] font-medium text-white">{pathAnimation.pathNodes.length} nodes · {pathAnimation.pathEdges.length} edges</span>
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-45 px-4 py-2 rounded-xl bg-gradient-to-r from-accent-600 to-accent-600 shadow-lg">
+          <span className="text-xs font-medium text-white">{pathAnimation.pathNodes.length} nodes · {pathAnimation.pathEdges.length} edges</span>
         </div>
       )}
 
@@ -518,7 +518,7 @@ export default function GraphPanelLayout({
       {showMinimap && filteredData.filteredNodes.length > 0 && (
         <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-neutral-900/92 backdrop-blur-sm rounded-lg border border-neutral-200/70 dark:border-neutral-700/50 shadow-md overflow-hidden" style={{ width: 160, height: 110 }}>
           <div className="flex items-center justify-between px-2 py-1 border-b border-neutral-100 dark:border-neutral-700/40">
-            <span className="text-[8px] font-semibold text-neutral-500 uppercase tracking-wider">导航图</span>
+            <span className="text-[8px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">导航图</span>
             <button onClick={() => setShowMinimap(false)} title="关闭小地图"><span className="text-xs">✕</span></button>
           </div>
           <MinimapCanvas nodes={filteredData.filteredNodes} edges={filteredData.filteredEdges} width={158} height={94}
@@ -722,7 +722,7 @@ export default function GraphPanelLayout({
 
       {/* v7.8: Adding annotation indicator */}
       {isAddingAnnotation && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 px-3 py-1.5 rounded-lg bg-warning-500 text-white text-[11px] animate-pulse">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 px-3 py-1.5 rounded-lg bg-warning-500 text-white text-xs animate-pulse">
           ✏️ 点击图谱添加标注 — 按 Esc 取消
         </div>
       )}

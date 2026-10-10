@@ -81,10 +81,10 @@ const COLOR_MAP: Record<string, string> = {
   gray: 'bg-neutral-400',
   blue: 'bg-secondary-500',
   purple: 'bg-accent-500',
-  cyan: 'bg-cyan-500',
+  cyan: 'bg-info-500',
   amber: 'bg-warning-500',
   emerald: 'bg-primary-500',
-  teal: 'bg-teal-500',
+  teal: 'bg-success-500',
   green: 'bg-success-500',
   red: 'bg-error-500',
 }
@@ -222,11 +222,11 @@ export function GenerationProgress({
             {progress.subTasks.map((task) => (
               <div key={task.id} className="flex items-center gap-3 text-sm">
                 <span>{STATUS_ICONS[task.status]}</span>
-                <span className={`flex-1 ${task.status === 'failed' ? 'text-error-600 dark:text-error-400' : task.status === 'completed' ? 'text-neutral-500 dark:text-neutral-400 line-through' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                <span className={`flex-1 ${task.status === 'failed' ? 'text-error-600 dark:text-error-600' : task.status === 'completed' ? 'text-neutral-500 dark:text-neutral-400 line-through' : 'text-neutral-700 dark:text-neutral-300'}`}>
                   {task.name}
                 </span>
                 {task.status === 'running' && task.total != null && (
-                  <span className="text-xs text-secondary-600 dark:text-secondary-400 font-medium">
+                  <span className="text-xs text-secondary-600 dark:text-secondary-700 font-medium">
                     ({task.current || 0}/{task.total})
                   </span>
                 )}
@@ -244,7 +244,7 @@ export function GenerationProgress({
             {progress.canPause && progress.stage !== 'paused' && onPause && (
               <button
                 onClick={onPause}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-warning-700 bg-warning-50 dark:bg-warning-900/20 hover:bg-warning-100 dark:hover:bg-warning-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-warning-700 bg-warning-50 dark:bg-warning-300/20 hover:bg-warning-100 dark:hover:bg-warning-900/30 rounded-lg transition-colors"
               >
                 <Pause className="w-3.5 h-3.5" />
                 暂停
@@ -254,7 +254,7 @@ export function GenerationProgress({
             {progress.stage === 'paused' && onResume && (
               <button
                 onClick={onResume}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-300/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
               >
                 <Play className="w-3.5 h-3.5" />
                 继续
@@ -268,7 +268,7 @@ export function GenerationProgress({
                     onCancel()
                   }
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-error-700 bg-error-50 dark:bg-error-900/20 hover:bg-error-100 dark:hover:bg-error-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-error-700 bg-error-50 dark:bg-error-300/20 hover:bg-error-100 dark:hover:bg-error-900/30 rounded-lg transition-colors"
               >
                 <Square className="w-3.5 h-3.5" />
                 取消
@@ -278,7 +278,7 @@ export function GenerationProgress({
             {progress.stage === 'failed' && onRetry && (
               <button
                 onClick={onRetry}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-secondary-700 bg-secondary-50 dark:bg-secondary-900/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-secondary-700 bg-secondary-50 dark:bg-secondary-300/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 rounded-lg transition-colors"
               >
                 <Loader2 className="w-3.5 h-3.5" />
                 重试
@@ -326,7 +326,7 @@ export function GenerationProgress({
                         log.level === 'ERROR'
                           ? 'text-error-400'
                           : log.level === 'WARN'
-                          ? 'text-yellow-400'
+                          ? 'text-warning-400'
                           : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                       }`}
                     >
@@ -336,8 +336,8 @@ export function GenerationProgress({
                           log.level === 'ERROR'
                             ? 'text-error-500'
                             : log.level === 'WARN'
-                            ? 'text-yellow-500'
-                            : 'text-cyan-400'
+                            ? 'text-warning-500'
+                            : 'text-info-400'
                         }
                       >
                         [{log.level}]

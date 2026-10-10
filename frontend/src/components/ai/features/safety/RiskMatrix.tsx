@@ -39,7 +39,7 @@ const DEFAULT_HAZARD_TYPES: HazardType[] = [
 ]
 
 const COLOR_CONFIG = {
-  unknown: { fill: 'var(--color-slate-200, #E5E7EB)', text: 'var(--color-slate-500, #6B7280)' },
+  unknown: { fill: 'var(--color-slate-200, #E5E7EB)', text: 'var(--color-neutral-500, #6B7280)' },
   low: { fill: 'var(--color-primary, var(--color-primary-400))', text: 'var(--color-green-900, #065F46)' },
   medium: { fill: 'var(--color-warning, #FF9F0A)', text: 'var(--color-amber-800, #D97706)' },
   high: { fill: 'var(--color-error, #FF3B30)', text: 'var(--color-red-800, #DC2626)' },
@@ -146,7 +146,7 @@ export function RiskMatrix({
           </div>
         )}
         {hazard.suggestion && (
-          <div className="mt-2 p-2 bg-secondary-50 dark:bg-secondary-900/20 rounded text-sm text-secondary-800 dark:text-secondary-200">
+          <div className="mt-2 p-2 bg-secondary-50 dark:bg-secondary-300/20 rounded text-sm text-secondary-800 dark:text-secondary-200">
             <span className="font-medium">建议: </span>{hazard.suggestion}
           </div>
         )}
@@ -174,7 +174,7 @@ export function RiskMatrix({
         .attr('y', HEADER_HEIGHT / 2)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
-        .attr('font-size', '11px')
+        .attr('font-size', '12px')
         .attr('font-weight', '600')
         .attr('fill', 'var(--color-gray-700, #374151)')
         .attr('transform', `rotate(-45, ${x + CELL_SIZE / 2}, ${HEADER_HEIGHT / 2})`)
@@ -189,7 +189,7 @@ export function RiskMatrix({
         .attr('y', y + CELL_SIZE / 2)
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'middle')
-        .attr('font-size', '11px')
+        .attr('font-size', '12px')
         .attr('fill', 'var(--color-gray-700, #374151)')
         .text(ingredient.name.length > 8 ? ingredient.name.substring(0, 8) + '...' : ingredient.name)
 

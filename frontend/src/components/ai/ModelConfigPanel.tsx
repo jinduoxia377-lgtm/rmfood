@@ -781,7 +781,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       {success && (
         <Alert
           variant="default"
-          className="mb-6 bg-success-50 border-success-200 text-success-700 dark:bg-success-500/10 dark:border-success-500/20 dark:text-success-400"
+          className="mb-6 bg-success-50 border-success-200 text-success-700 dark:bg-success-500/10 dark:border-success-500/20 dark:text-success-600"
         >
           <Check className="w-4 h-4 text-success-500" />
           <AlertTitle>成功</AlertTitle>
@@ -791,34 +791,34 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
 
       {/* localStorage 状态指示器 */}
       {configs[activeTab]?.apiKey && (
-        <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40">
-          <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+        <div className="mb-4 p-3 rounded-lg bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800/40">
+          <p className="text-xs text-success-700 dark:text-success-700 flex items-center gap-2">
             <Check className="w-3 h-3" />
             本地存储中已保存 API 密钥（长度：{configs[activeTab].apiKey.length} 字符）
           </p>
         </div>
       )}
       {!configs[activeTab]?.apiKey && activeTab === 'llm' && (
-        <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+        <div className="mb-4 p-3 rounded-lg bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800/40">
+          <p className="text-xs text-warning-700 dark:text-warning-700">
             ⚠️ 当前 LLM 配置中无 API 密钥，请在上方输入框中输入并保存
           </p>
         </div>
       )}
 
       {/* 交叉引导文案 */}
-      <div className="mb-6 p-4 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/40">
-        <p className="text-sm font-medium text-warning-700 dark:text-warning-300 mb-2 flex items-center gap-1">
+      <div className="mb-6 p-4 rounded-lg bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/40">
+        <p className="text-sm font-medium text-warning-700 dark:text-warning-700 mb-2 flex items-center gap-1">
           <Info className="w-4 h-4" />
           这是<strong>高级配置</strong>入口（适合开发者/高级用户）
         </p>
-        <ul className="text-xs text-warning-600 dark:text-warning-400 space-y-1 list-disc list-inside mb-2">
+        <ul className="text-xs text-warning-600 dark:text-warning-700 space-y-1 list-disc list-inside mb-2">
           <li>✅ 支持多模型管理 (DeepSeek/OpenAI/智谱/通义等)</li>
           <li>✅ 可调整高级参数 (temperature/timeout/max_tokens)</li>
           <li>✅ 适合需要精细控制的场景</li>
         </ul>
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-200 dark:border-amber-800/40">
-          <p className="text-xs text-warning-500 dark:text-warning-400">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-warning-200 dark:border-warning-800/40">
+          <p className="text-xs text-warning-500 dark:text-warning-700">
             📌 如果只是想快速开始使用，可在<strong>"智能对话"</strong>页面底部快速配置。
           </p>
           <Button
@@ -862,17 +862,17 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
         {modelTabs.map((tab) => (
           <TabsContent key={tab.value} value={tab.value}>
             <div className="space-y-6">
-              <div className="p-4 rounded-lg bg-primary-50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800/40">
-                <h3 className="font-medium text-primary-700 dark:text-primary-600 mb-2">{tab.label}</h3>
+              <div className="p-4 rounded-lg bg-primary-50 dark:bg-primary-300/15 border border-primary-200 dark:border-primary-800/40">
+                <h3 className="font-medium text-primary-700 dark:text-primary-700 mb-2">{tab.label}</h3>
                 <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{tab.description}</p>
               </div>
 
               <div className="space-y-4">
                 {tab.value === 'llm' && (
-                  <div className="p-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/40">
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-secondary-200 dark:border-secondary-800/40">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <Shield className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+                        <Shield className="w-5 h-5 text-secondary-600 dark:text-secondary-700" />
                         <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">
                           启用 AES-256-GCM 安全加密存储
                         </label>
@@ -891,7 +891,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                       />
                     </div>
                     {useSecureStorage && (
-                      <p className="text-xs text-secondary-600 dark:text-secondary-400 mt-2 ml-7">
+                      <p className="text-xs text-secondary-600 dark:text-secondary-700 mt-2 ml-7">
                         ✨ API Key 将使用军事级加密算法存储，即使浏览器缓存被窃取也无法解密。
                       </p>
                     )}
@@ -948,7 +948,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                         </button>
                       </div>
                       {validationErrors.apiKey && (
-                        <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
+                        <p className="text-xs text-danger-600 dark:text-danger-600">{validationErrors.apiKey}</p>
                       )}
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {llmProvider === 'deepseek' && '获取 DeepSeek API 密钥: https://platform.deepseek.com'}
@@ -994,7 +994,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                         </button>
                       </div>
                       {validationErrors.apiKey && (
-                        <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
+                        <p className="text-xs text-danger-600 dark:text-danger-600">{validationErrors.apiKey}</p>
                       )}
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">API 密钥（可选，部分模型无需密钥）</p>
                     </div>
@@ -1096,12 +1096,12 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       <div className="mt-4">
         <button
           onClick={() => setShowAuditLog((v) => !v)}
-          className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-400 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
         >
           <History className="w-4 h-4" />
           配置变更审计日志
           {auditLogs.length > 0 && (
-            <Badge variant="neutral" className="text-[10px]">{auditLogs.length}</Badge>
+            <Badge variant="neutral" className="text-xs">{auditLogs.length}</Badge>
           )}
         </button>
         {showAuditLog && (
@@ -1135,7 +1135,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
                           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{log.userId}</span>
                           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
-                          <Badge variant="neutral" className="text-[10px]">{log.userRole}</Badge>
+                          <Badge variant="neutral" className="text-xs">{log.userRole}</Badge>
                         </div>
                         <div className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
                           {new Date(log.timestamp).toLocaleString('zh-CN')}

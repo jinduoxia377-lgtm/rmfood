@@ -104,8 +104,8 @@ const SUB_MODELS = [
 function PageHeader() {
   return (
     <div className="flex items-center gap-3 pb-3 mb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-      <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
-        <Settings className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+      <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center flex-shrink-0">
+        <Settings className="w-5 h-5 text-primary-700 dark:text-primary-700" />
       </div>
       <div>
         <h1 className="text-base font-bold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -173,22 +173,28 @@ function HealthDashboard() {
   const [llmFetching, setLlmFetching] = useState(false);
   const [llmBackendLoading, setLlmBackendLoading] = useState(false);
 
-  /** P0 功能 #2：从后端加载全局配置（apiKey 绝不写回本地，仅回填 baseUrl/model/provider） */
+  /** D-7 修复：从后端加载改为读当前用户的 user-key 状态（与 saveUserLlmKey 保存目标一致，闭环打通）。
+   *  不再读全局 admin 配置，避免「加载全局、保存个人」的读写目标断裂。
+   *  apiKey 为脱敏值，绝不写回本地，需用户重新填写后保存。 */
   const handleLlmLoadFromBackend = useCallback(async () => {
     setLlmBackendLoading(true);
     setLlmMsg(null);
     try {
-      const backendCfg = await ConfigManager.loadFromBackend('llm');
-      if (!backendCfg) {
-        setLlmMsg({ type: 'error', text: '后端未返回 LLM 配置（可能未登录或无配置）' });
+      const status = await ConfigManager.getUserLlmKeyStatus();
+      if (!status.success) {
+        setLlmMsg({ type: 'error', text: '查询个人密钥状态失败（可能未登录）' });
         return;
       }
-      if (backendCfg.baseUrl) setLlmBaseUrl(backendCfg.baseUrl);
-      if (backendCfg.provider) setLlmProvider(backendCfg.provider);
-      if (backendCfg.model) setLlmModel(backendCfg.model);
+      if (!status.configured) {
+        setLlmMsg({ type: 'success', text: '您尚未配置个人 LLM 密钥，请在下方填写后保存' });
+        return;
+      }
+      if (status.base_url && status.base_url !== '(使用提供商默认)') setLlmBaseUrl(status.base_url);
+      if (status.provider) setLlmProvider(status.provider);
+      if (status.model) setLlmModel(status.model);
       setLlmMsg({
         type: 'success',
-        text: `已从后端加载配置（provider=${backendCfg.provider || '—'}, model=${backendCfg.model || '—'}），密钥需重新填写后保存`,
+        text: `已加载您的个人密钥配置（provider=${status.provider || '—'}, model=${status.model || '—'}, 密钥 ${status.api_key_masked || '***'}），如需更换请重新填写密钥后保存`,
       });
     } finally {
       setLlmBackendLoading(false);
@@ -351,8 +357,8 @@ function HealthDashboard() {
     <section aria-label="模型健康监控" className="mb-4">
       <SectionHeader
         icon={<Activity className="w-5 h-5" />}
-        iconBg="bg-emerald-100 dark:bg-emerald-900/30"
-        iconColor="text-emerald-600 dark:text-emerald-400"
+        iconBg="bg-success-100 dark:bg-success-300/25"
+        iconColor="text-success-700 dark:text-success-600"
         title="模型健康监控"
         subtitle={`实时状态 · 每 15s 刷新 · ${isConnected ? '轮询正常' : '轮询失败'}`}
         action={
@@ -380,17 +386,17 @@ function HealthDashboard() {
         <div className="lg:col-span-2 rounded-xl border bg-white dark:bg-neutral-900 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"
           style={{ borderColor: 'var(--border-color)' }}>
           {/* 状态色带 — 与页面 Tab 分组顶部强调色条一致: h-[2px] + left-4 right-4 + rounded-full */}
-          <div className={`h-[2px] mx-4 rounded-full transition-colors duration-200 ${isLlmActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+          <div className={`h-[2px] mx-4 rounded-full transition-colors duration-200 ${isLlmActive ? 'bg-success-500' : 'bg-warning-500'}`} />
           <div className="px-5 pt-4 pb-5">
             {/* 头部 */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-          isLlmActive ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+          isLlmActive ? 'bg-success-100 dark:bg-success-300/25' : 'bg-warning-100 dark:bg-warning-300/25'
         }`}>
                   {isLlmActive
-                    ? <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    : <CircleAlert className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    ? <CheckCircle2 className="w-5 h-5 text-success-700 dark:text-success-600" />
+                    : <CircleAlert className="w-5 h-5 text-warning-600 dark:text-warning-700" />
                   }
                 </div>
                 <div>
@@ -403,10 +409,10 @@ function HealthDashboard() {
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                   isLlmActive
-                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                    ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-700'
+                    : 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                 }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isLlmActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isLlmActive ? 'bg-success-500 animate-pulse' : 'bg-warning-500'}`} />
                   {isLlmActive ? '运行中' : '未配置'}
                 </span>
                 <button
@@ -421,9 +427,9 @@ function HealthDashboard() {
 
             {/* 快捷配置面板 */}
             {showLlmQuick && (
-              <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 space-y-3">
+              <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-300/15 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 dark:text-primary-400">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 dark:text-primary-700">
                     <Key className="w-3.5 h-3.5" />LLM API 配置
                   </div>
                   <button
@@ -433,7 +439,7 @@ function HealthDashboard() {
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150 disabled:opacity-50"
                   >
                     {llmBackendLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Database className="w-3 h-3" />}
-                    从后端加载
+                    加载个人密钥
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -509,7 +515,7 @@ function HealthDashboard() {
                   </p>
                 </div>
                 {llmMsg && (
-                  <p className={`text-sm ${llmMsg.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <p className={`text-sm ${llmMsg.type === 'success' ? 'text-success-700 dark:text-success-600' : 'text-error-600 dark:text-error-700'}`}>
                     {llmMsg.text}
                   </p>
                 )}
@@ -566,7 +572,7 @@ function HealthDashboard() {
             )}
             {!isLlmActive && llmStatus?.suggestion && (
               <div
-                className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300"
+                className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/40 text-warning-800 dark:text-warning-700"
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 {llmStatus.suggestion}
@@ -582,7 +588,7 @@ function HealthDashboard() {
             const isActive = s?.status === 'active';
             return (
               <div key={key} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:border-[var(--border-color)] hover:shadow-sm transition-all duration-150">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-success-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>{label}</div>
                   <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{desc}</div>
@@ -603,7 +609,7 @@ function HealthDashboard() {
             <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>模型响应质量</span>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
               {isConnected
-                ? <><Wifi className="w-3.5 h-3.5 text-emerald-500" /><span>轮询中</span></>
+                ? <><Wifi className="w-3.5 h-3.5 text-success-500" /><span>轮询中</span></>
                 : <><WifiOff className="w-3.5 h-3.5" /><span>连接失败</span></>
               }
             </div>
@@ -614,17 +620,17 @@ function HealthDashboard() {
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{m.model}</span>
                   <span className={`text-sm font-semibold tabular-nums ${
-                    m.success_rate >= 98 ? 'text-emerald-600 dark:text-emerald-400'
-                    : m.success_rate >= 95 ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-red-600 dark:text-red-400'
+                    m.success_rate >= 98 ? 'text-success-700 dark:text-success-600'
+                    : m.success_rate >= 95 ? 'text-warning-600 dark:text-warning-700'
+                    : 'text-error-600 dark:text-error-700'
                   }`}>{m.success_rate}%</span>
                 </div>
                 <div className="h-1.5 rounded-full overflow-hidden bg-[var(--border-color)]">
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${
-                      m.success_rate >= 98 ? 'bg-emerald-500'
-                      : m.success_rate >= 95 ? 'bg-amber-500'
-                      : 'bg-red-500'
+                      m.success_rate >= 98 ? 'bg-success-500'
+                      : m.success_rate >= 95 ? 'bg-warning-500'
+                      : 'bg-error-500'
                     }`}
                     style={{ width: `${m.success_rate}%` }}
                   />
@@ -683,8 +689,8 @@ function DefaultModelSection() {
     <section aria-label="默认模型选择" className="mb-4">
       <SectionHeader
         icon={<Settings className="w-5 h-5" />}
-        iconBg="bg-blue-100 dark:bg-blue-900/30"
-        iconColor="text-blue-600 dark:text-blue-400"
+        iconBg="bg-secondary-100 dark:bg-secondary-300/25"
+        iconColor="text-secondary-700 dark:text-secondary-700"
         title="默认模型"
         subtitle="选择各业务场景使用的默认 AI 模型"
       />
@@ -692,10 +698,10 @@ function DefaultModelSection() {
         <div className="lg:col-span-2">
           <ModelSelector modelType={selectedModel} onModelChange={handleModelSelect} onParamsChange={() => {}} />
           {saveMsg && (
-            <div className="mt-3 px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-2">
+            <div className="mt-3 px-3 py-2 rounded-lg text-sm font-semibold bg-success-50 dark:bg-success-300/20 text-success-700 dark:text-success-700 border border-success-200 dark:border-success-800/40 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               {saveMsg}
-              {backendSync === 'fail' && <span className="ml-auto text-xs font-normal text-amber-600 dark:text-amber-400">（未同步至后端，仅本地缓存）</span>}
+              {backendSync === 'fail' && <span className="ml-auto text-xs font-normal text-warning-600 dark:text-warning-700">（未同步至后端，仅本地缓存）</span>}
             </div>
           )}
         </div>
@@ -706,17 +712,17 @@ function DefaultModelSection() {
               <button key={value} onClick={() => handleModelSelect(value)} disabled={saving}
                 className={`w-full text-left p-4 rounded-xl border transition-all duration-150 ${
                   isSelected
-                    ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 shadow-sm ring-1 ring-primary-500/20'
+                    ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-300/20 shadow-sm ring-1 ring-primary-500/20'
                     : 'border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:border-[var(--border-color)] hover:shadow-sm'
                 }`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    isSelected ? 'bg-primary-100 dark:bg-primary-900/40' : 'bg-neutral-100 dark:bg-neutral-800'
+                    isSelected ? 'bg-primary-100 dark:bg-primary-300/30' : 'bg-neutral-100 dark:bg-neutral-800'
                   }`}>
                     {icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-semibold leading-none ${isSelected ? 'text-primary-700 dark:text-primary-300' : ''}`} style={{ color: isSelected ? 'var(--color-primary-700)' : 'var(--text-primary)' }}>{label}</div>
+                    <div className={`text-sm font-semibold leading-none ${isSelected ? 'text-primary-700 dark:text-primary-700' : ''}`} style={{ color: isSelected ? 'var(--color-primary-700)' : 'var(--text-primary)' }}>{label}</div>
                     <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{desc}</div>
                   </div>
                   {isSelected && <CheckCircle2 className="w-4 h-4 text-primary-500 flex-shrink-0" />}
@@ -918,13 +924,13 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
         className="py-3 hover:no-underline"
       >
         <div className="flex items-center gap-4 w-full">
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : isUnconfigured ? 'bg-amber-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-success-500' : isUnconfigured ? 'bg-warning-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            isActive ? 'bg-emerald-100 dark:bg-emerald-900/30'
-              : isUnconfigured ? 'bg-amber-100 dark:bg-amber-900/30'
+            isActive ? 'bg-success-100 dark:bg-success-300/25'
+              : isUnconfigured ? 'bg-warning-100 dark:bg-warning-300/25'
               : 'bg-neutral-100 dark:bg-neutral-800'
           }`}>
-            <span className={isActive ? 'text-emerald-600 dark:text-emerald-400' : isUnconfigured ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--text-disabled)]'}>
+            <span className={isActive ? 'text-success-700 dark:text-success-600' : isUnconfigured ? 'text-warning-600 dark:text-warning-700' : 'text-[var(--text-disabled)]'}>
               {modelInfo.icon}
             </span>
           </div>
@@ -939,8 +945,8 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
               </span>
             )}
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-              isActive ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                : isUnconfigured ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+              isActive ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-700'
+                : isUnconfigured ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary)] dark:text-[var(--text-muted)]'
             }`}>
               {isActive ? '活跃' : isUnconfigured ? '未配置' : '规则模式'}
@@ -1000,7 +1006,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 API 密钥 {modelKey === 'llm' ? '' : '(可选)'}
               </label>
               {configs[modelKey]?.apiKey && (
-                <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs text-success-700 dark:text-success-600">
                   ✓ {configs[modelKey]!.apiKey!.length} 字符已保存
                 </span>
               )}
@@ -1019,7 +1025,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
               </button>
             </div>
             {modelKey === 'llm' && llmLegacyKey && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <p className="text-xs text-warning-600 dark:text-warning-700 flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 该密钥为历史明文存储（未经编码入库），请重新输入以启用安全编码保护
               </p>
@@ -1076,7 +1082,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
               <Trash2 className="w-3.5 h-3.5" />重置
             </button>
             {msg && (
-              <span className={`text-sm ${msg.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span className={`text-sm ${msg.type === 'success' ? 'text-success-700 dark:text-success-600' : 'text-error-600 dark:text-error-700'}`}>
                 {msg.text}
               </span>
             )}
@@ -1103,8 +1109,8 @@ function AdvancedConfigSection() {
     <section aria-label="高级配置" className="mb-4">
       <SectionHeader
         icon={<ShieldAlert className="w-5 h-5" />}
-        iconBg="bg-amber-100 dark:bg-amber-900/30"
-        iconColor="text-amber-600 dark:text-amber-400"
+        iconBg="bg-warning-100 dark:bg-warning-300/25"
+        iconColor="text-warning-600 dark:text-warning-700"
         title="高级配置"
         subtitle="API 密钥、连接参数和技术指标"
       />
@@ -1151,7 +1157,7 @@ function CompactionAndEventSourcing() {
         className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
       >
         <div className="flex items-center gap-2.5">
-          <Lock className="w-4 h-4 text-purple-500" />
+          <Lock className="w-4 h-4 text-accent-500" />
           <span>Compaction 与事件溯源</span>
           <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted)]">高级</span>
         </div>
@@ -1167,23 +1173,23 @@ function CompactionAndEventSourcing() {
             <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-purple-500" />
+                  <Lock className="w-3.5 h-3.5 text-accent-500" />
                   <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Compaction 指标</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   metrics.health.status === 'healthy'
-                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                    ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-700'
+                    : 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                 }`}>
                   {metrics.health.status === 'healthy' ? '正常' : '告警'}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: '总压缩次数', value: metrics.metrics.totalCompactions, color: 'text-primary-600 dark:text-primary-400' },
-                  { label: '平均耗时', value: `${Math.round(metrics.metrics.avgCompactionTime)}ms`, color: 'text-emerald-600 dark:text-emerald-400' },
-                  { label: '锁等待', value: `${Math.round(metrics.metrics.avgLockWaitTime)}ms`, color: metrics.metrics.avgLockWaitTime > 500 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400' },
-                  { label: '超时次数', value: metrics.metrics.lockTimeoutCount, color: metrics.metrics.lockTimeoutCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' },
+                  { label: '总压缩次数', value: metrics.metrics.totalCompactions, color: 'text-primary-700 dark:text-primary-700' },
+                  { label: '平均耗时', value: `${Math.round(metrics.metrics.avgCompactionTime)}ms`, color: 'text-success-700 dark:text-success-600' },
+                  { label: '锁等待', value: `${Math.round(metrics.metrics.avgLockWaitTime)}ms`, color: metrics.metrics.avgLockWaitTime > 500 ? 'text-error-600 dark:text-error-700' : 'text-warning-600 dark:text-warning-700' },
+                  { label: '超时次数', value: metrics.metrics.lockTimeoutCount, color: metrics.metrics.lockTimeoutCount > 0 ? 'text-error-600 dark:text-error-700' : 'text-success-700 dark:text-success-600' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
                     <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>
@@ -1194,7 +1200,7 @@ function CompactionAndEventSourcing() {
                 <div className="mt-4 space-y-2">
                   <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] dark:text-[var(--text-muted)]">最近告警</div>
                   {metrics.recentAlerts.slice(0, 3).map((alert, idx) => (
-                    <div key={idx} className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400">
+                    <div key={idx} className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/40 text-warning-700 dark:text-warning-700">
                       <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="flex-1 truncate">{alert.message}</span>
                       <span className="text-xs flex-shrink-0 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
@@ -1209,7 +1215,7 @@ function CompactionAndEventSourcing() {
             {/* 事件溯源 */}
             <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
               <div className="flex items-center gap-2 mb-4">
-                <Database className="w-3.5 h-3.5 text-blue-500" />
+                <Database className="w-3.5 h-3.5 text-secondary-500" />
                 <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>事件溯源统计</span>
               </div>
               {esLoading ? (
@@ -1218,9 +1224,9 @@ function CompactionAndEventSourcing() {
                 <>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: '会话数', value: esData?.session_count ?? 0, color: 'text-primary-600 dark:text-primary-400' },
-                      { label: '事件总数', value: esData?.total_events ?? 0, color: 'text-emerald-600 dark:text-emerald-400' },
-                      { label: '存储大小', value: `${(esData?.db_size_kb ?? 0).toFixed(1)} KB`, color: 'text-purple-600 dark:text-purple-400' },
+                      { label: '会话数', value: esData?.session_count ?? 0, color: 'text-primary-700 dark:text-primary-700' },
+                      { label: '事件总数', value: esData?.total_events ?? 0, color: 'text-success-700 dark:text-success-600' },
+                      { label: '存储大小', value: `${(esData?.db_size_kb ?? 0).toFixed(1)} KB`, color: 'text-accent-600 dark:text-accent-700' },
                     ].map(({ label, value, color }) => (
                       <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
                         <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>

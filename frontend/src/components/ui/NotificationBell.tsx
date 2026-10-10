@@ -15,11 +15,11 @@ import { format } from'date-fns';
 import { zhCN } from'date-fns/locale';
 
 const TYPE_COLORS: Record<string, string> = {
- system:'bg-neutral-100 text-text-secondary',
- formula_review:'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
- experiment_complete:'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
- ai_task_done:'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400',
- data_sync:'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+ system:'bg-neutral-100 dark:bg-neutral-800 text-text-secondary',
+ formula_review:'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+ experiment_complete:'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+ ai_task_done:'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
+ data_sync:'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -92,13 +92,13 @@ export default function NotificationBell() {
  </button>
 
  {open && (
- <div className="absolute right-0 top-full mt-2 w-96 max-h-[480px] flex flex-col surface-card rounded-2xl shadow-2xl border border-neutral-200 z-50 overflow-hidden">
+ <div className="absolute right-0 top-full mt-2 w-96 max-h-[480px] flex flex-col surface-card rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-50 overflow-hidden">
  <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
  <div className="flex items-center gap-2">
  <Bell size={16} className="text-text-disabled" />
  <span className="font-semibold text-sm text-text-primary dark:text-white">通知</span>
  {unreadCount > 0 && (
- <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+ <span className="px-1.5 py-0.5 rounded-full bg-error-100 text-error-600 text-xs font-medium">
  {unreadCount} 条未读
  </span>
  )}
@@ -107,7 +107,7 @@ export default function NotificationBell() {
  <button
  onClick={() => markAllReadMutation.mutate()}
  disabled={markAllReadMutation.isPending}
- className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 disabled:opacity-50 transition-colors"
+ className="flex items-center gap-1 text-xs text-secondary-600 hover:text-secondary-700 dark:text-secondary-700 disabled:opacity-50 transition-colors"
  >
  <CheckCheck size={14} />
  全部已读
@@ -126,15 +126,15 @@ export default function NotificationBell() {
  key={notif.id}
  onClick={() => handleNotificationClick(notif)}
  className={cn(
-'w-full text-left px-4 py-3 border-b border-slate-50/50',
+'w-full text-left px-4 py-3 border-b border-neutral-50/50',
 'hover:bg-neutral-default/50 transition-colors',
- isActive ?'bg-blue-50/50 dark:bg-blue-900/10' :'',
+ isActive ?'bg-secondary-50/50 dark:bg-secondary-300/15' :'',
  )}
  >
  <div className="flex items-start gap-3">
  <span
  className={cn(
-'shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium',
+'shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-xs font-medium',
  TYPE_COLORS[notif.type] || TYPE_COLORS.system,
  )}
  >
@@ -159,12 +159,12 @@ export default function NotificationBell() {
  {notif.message}
  </p>
  )}
- <p className="text-[10px] text-text-disabled mt-1">
+ <p className="text-xs text-text-disabled mt-1">
  {notif.createdAt && format(new Date(notif.createdAt),'MM-dd HH:mm', { locale: zhCN })}
  </p>
  </div>
  {isActive && (
- <span className="shrink-0 mt-2 w-2 h-2 rounded-full bg-blue-500" />
+ <span className="shrink-0 mt-2 w-2 h-2 rounded-full bg-secondary-500" />
  )}
  </div>
  </button>

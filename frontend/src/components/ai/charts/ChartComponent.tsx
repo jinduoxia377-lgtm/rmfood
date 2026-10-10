@@ -82,7 +82,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
           <h4 className="text-sm font-medium mb-3">{options.title || '饼图'}</h4>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
+              <Pie rootTabIndex={-1}
                 data={data}
                 cx="50%"
                 cy="50%"

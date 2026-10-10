@@ -42,8 +42,8 @@ export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
-          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-            <PieChartIcon size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
             配方状态分布
           </CardTitle>
         </CardHeader>
@@ -58,8 +58,8 @@ export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
-          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-            <PieChartIcon size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
             配方状态分布
           </CardTitle>
         </CardHeader>
@@ -73,15 +73,15 @@ export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
   return (
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <PieChartIcon size={18} className="text-neutral-400 dark:text-neutral-500" />
+        <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
           配方状态分布
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value"
+            <Pie rootTabIndex={-1} data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value"
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               labelLine={{ stroke: 'var(--text-muted)', strokeWidth: 0.8, opacity: 0.5 }}>
               {data.map((entry) => (

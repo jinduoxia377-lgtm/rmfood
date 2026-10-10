@@ -56,8 +56,8 @@ interface FlavorWheel3DProps {
 // ===== 常量配置 =====
 
 const DEFAULT_DIMENSIONS: Omit<FlavorDimension, 'value'>[] = [
-  { id: 'sour', label: '酸', color: 'var(--color-yellow-400, #F59E0B)' },
-  { id: 'sweet', label: '甜', color: 'var(--color-pink-500, #D946EF)' },
+  { id: 'sour', label: '酸', color: 'var(--color-warning-400, #F59E0B)' },
+  { id: 'sweet', label: '甜', color: 'var(--color-danger-500, #D946EF)' },
   { id: 'bitter', label: '苦', color: 'var(--color-amber-600, #d97706)' },
   { id: 'spicy', label: '辣', color: 'var(--color-error, #FF3B30)' },
   { id: 'umami', label: '鲜', color: 'var(--color-primary, var(--color-primary-400))' },
@@ -319,21 +319,21 @@ const FlavorWheel3D = memo(({
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
           <button
             onClick={handleZoomIn}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="放大"
           >
             <ZoomIn className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="缩小"
           >
             <ZoomOut className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleReset}
-            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
             title="重置视图"
           >
             <RotateCcw className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />

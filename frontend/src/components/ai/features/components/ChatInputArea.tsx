@@ -157,7 +157,7 @@ export const ChatInputArea = memo(
     return (
       <div className="border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900/95 sticky bottom-0 left-0 right-0 z-40 backdrop-blur-md">
         {(state.deepThinking || state.smartSearch) && (
-          <div className="px-4 py-2 bg-gradient-to-r from-primary-50 to-indigo-50 dark:from-primary-900/20 dark:to-indigo-900/20 border-b border-primary-100 dark:border-primary-800/50">
+          <div className="px-4 py-2 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 border-b border-primary-100 dark:border-primary-800/50">
             <div className="max-w-4xl mx-auto flex items-center gap-4 text-xs">
               {state.deepThinking && (
                 <div className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
@@ -173,7 +173,7 @@ export const ChatInputArea = memo(
                 </div>
               )}
               {state.smartSearch && (
-                <div className="flex items-center gap-1.5 text-primary-700 dark:text-primary-600">
+                <div className="flex items-center gap-1.5 text-primary-700 dark:text-primary-700">
                   <Search className="w-3.5 h-3.5" />
                   <span>智能搜索模式已启用</span>
                   <button
@@ -251,7 +251,7 @@ export const ChatInputArea = memo(
                   return (
                     <div
                       key={attachment.id}
-                      className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-neutral-700 rounded-lg group"
+                      className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-700 rounded-lg group"
                     >
                       {attachment.preview ? (
                         <img
@@ -268,7 +268,7 @@ export const ChatInputArea = memo(
                         <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
                           {attachment.name}
                         </div>
-                        <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(attachment.size / 1024).toFixed(1)} KB</div>
+                        <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(attachment.size / 1024).toFixed(1)} KB</div>
                       </div>
                       <button
                         onClick={() => state.removeAttachment(attachment.id)}
@@ -289,7 +289,7 @@ export const ChatInputArea = memo(
             <div className="mb-3 bg-white rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden shadow-sm">
               {/* 标题栏 */}
               <div
-                className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 cursor-pointer hover:opacity-95 transition-opacity"
+                className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 cursor-pointer hover:opacity-95 transition-opacity"
                  role="button" tabIndex={0} onClick={onToggleThinking}
               >
                 <div className="flex items-center gap-2">
@@ -308,8 +308,8 @@ export const ChatInputArea = memo(
               <div className="px-4 py-6">
                 {thinkingSteps.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center mb-3">
-                      <Sparkles className="w-7 h-7 text-indigo-400" />
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-100 to-accent-100 dark:from-accent-900/30 dark:to-accent-900/30 flex items-center justify-center mb-3">
+                      <Sparkles className="w-7 h-7 text-accent-400" />
                     </div>
                     <p className="text-sm font-medium">AI正在准备思考...</p>
                   </div>
@@ -320,12 +320,12 @@ export const ChatInputArea = memo(
                         key={step.id}
                         className={`p-3 rounded-xl border transition-all duration-300 ${
                           step.status === 'processing'
-                            ? 'bg-secondary-50 border-blue-200 dark:bg-secondary-900/20 dark:border-blue-800'
+                            ? 'bg-secondary-50 border-secondary-200 dark:bg-secondary-300/20 dark:border-secondary-800'
                             : step.status === 'completed'
-                              ? 'bg-success-50 border-green-200 dark:bg-success-900/20 dark:border-green-800'
+                              ? 'bg-success-50 border-success-200 dark:bg-success-300/20 dark:border-success-800'
                               : step.status === 'error'
-                                ? 'bg-error-50 border-red-200 dark:bg-error-900/20 dark:border-red-800'
-                                : 'bg-slate-50 border-neutral-200 dark:bg-neutral-800/50 dark:border-neutral-700'
+                                ? 'bg-error-50 border-error-200 dark:bg-error-300/20 dark:border-error-800'
+                                : 'bg-neutral-50 border-neutral-200 dark:bg-neutral-800/50 dark:border-neutral-700'
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">
@@ -373,9 +373,9 @@ export const ChatInputArea = memo(
             id="chat-input-container"
             className={`flex items-center bg-white dark:bg-neutral-900 rounded-xl border transition-all duration-200 ease-out overflow-hidden ${
               state.isFocused
-                ? 'border-indigo-400 dark:border-indigo-400 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-500/20'
+                ? 'border-accent-400 dark:border-accent-400 shadow-md shadow-accent-500/10 ring-1 ring-accent-500/20'
                 : 'border-neutral-200 dark:border-neutral-700 shadow-sm'
-            } ${state.showFormatError ? 'border-red-400 dark:border-red-400 shadow-md shadow-red-500/10 ring-1 ring-red-500/20' : ''} ${state.isDragging ? 'border-indigo-400 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10 shadow-md shadow-indigo-500/15' : ''}`}
+            } ${state.showFormatError ? 'border-error-400 dark:border-error-400 shadow-md shadow-error-500/10 ring-1 ring-error-500/20' : ''} ${state.isDragging ? 'border-accent-400 dark:border-accent-400 bg-accent-50/50 dark:bg-accent-300/15 shadow-md shadow-accent-500/15' : ''}`}
           >
             <div className="flex items-center gap-0.5 pl-2 sm:pl-3">
               <button
@@ -415,7 +415,7 @@ export const ChatInputArea = memo(
                   <Paperclip className="w-4 h-4" />
                 </button>
                 {state.attachments.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-container text-primary-main text-[10px] rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-container text-primary-main text-xs rounded-full flex items-center justify-center font-medium">
                     {state.attachments.length}
                   </span>
                 )}
@@ -470,7 +470,7 @@ export const ChatInputArea = memo(
               <button
                 onClick={() => state.setShowSuggestions(!state.showSuggestions)}
                 disabled={disabled || isStreaming}
-                className={`p-2.5 sm:p-3 transition-all duration-200 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 ${state.showSuggestions ? 'text-primary-700 dark:text-primary-600' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'} ${disabled || isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`p-2.5 sm:p-3 transition-all duration-200 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 ${state.showSuggestions ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'} ${disabled || isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="智能建议"
                 aria-label="智能建议"
                 aria-pressed={state.showSuggestions}
@@ -483,7 +483,7 @@ export const ChatInputArea = memo(
                 disabled={!canSend}
                 className={`h-11 w-11 sm:h-11 sm:w-11 rounded-full transition-all duration-300 flex items-center justify-center ${
                   canSend
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg hover:scale-105 cursor-pointer'
+                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white shadow-md hover:shadow-lg hover:scale-105 cursor-pointer'
                     : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
                 } ${!canSend ? 'opacity-50' : ''}`}
                 aria-label={isStreaming ? '发送中...' : '发送消息'}
@@ -513,7 +513,7 @@ export const ChatInputArea = memo(
                 disabled={isStreaming}
                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
                   state.deepThinking
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25'
+                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-lg shadow-accent-500/25'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:shadow-md'
                 } ${isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={state.deepThinking ? '关闭专业分析模式' : '启用专业分析模式 - 深度解析配方原理'}
@@ -528,8 +528,8 @@ export const ChatInputArea = memo(
                 disabled={isStreaming}
                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
                   state.smartSearch
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                    : 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:shadow-md'
+                    ? 'bg-gradient-to-r from-success-500 to-success-600 text-white shadow-lg shadow-success-500/25'
+                    : 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:shadow-md'
                 } ${isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={state.smartSearch ? '关闭知识库检索' : '启用知识库检索 - 搜索配方数据库'}
                 aria-pressed={state.smartSearch}
@@ -543,7 +543,7 @@ export const ChatInputArea = memo(
             <div className="flex items-center gap-3 sm:gap-4">
               {state.inputBehavior.showCharCount && maxLength && (
                 <div
-                  className={`text-xs sm:text-sm transition-colors flex items-center gap-1 ${isExceeded ? 'text-error-500 dark:text-error-600 font-semibold' : isOverLimit ? 'text-orange-500' : 'text-neutral-400'}`}
+                  className={`text-xs sm:text-sm transition-colors flex items-center gap-1 ${isExceeded ? 'text-error-500 dark:text-error-600 font-semibold' : isOverLimit ? 'text-warning-500' : 'text-neutral-400'}`}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -555,26 +555,26 @@ export const ChatInputArea = memo(
                   </svg>
                   {state.charCount}/{maxLength}
                   {isOverLimit && !isExceeded && (
-                    <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full">
+                    <span className="hidden sm:inline text-xs px-1.5 py-0.5 bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700 rounded-full">
                       接近上限
                     </span>
                   )}
                 </div>
               )}
 
-              <div className="hidden md:flex items-center gap-2 text-[11px] text-neutral-400 bg-slate-50 dark:bg-neutral-800 px-2.5 py-1 rounded-md">
+              <div className="hidden md:flex items-center gap-2 text-xs text-neutral-400 bg-neutral-50 dark:bg-neutral-800 px-2.5 py-1 rounded-md">
                 <span className="inline-flex items-center gap-1">
-                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
+                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
                     ⇧
                   </kbd>
-                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
+                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
                     ↵
                   </kbd>
                   <span>换行</span>
                 </span>
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
                 <span className="inline-flex items-center gap-1">
-                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
+                  <kbd className="px-1 py-0.5 bg-white dark:bg-neutral-700 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-600 shadow-sm">
                     ↵
                   </kbd>
                   <span>发送</span>

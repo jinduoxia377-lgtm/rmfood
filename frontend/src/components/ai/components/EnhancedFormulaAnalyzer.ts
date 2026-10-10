@@ -577,10 +577,10 @@ export function useEnhancedFormulaAnalysis(data: FormulaTableData | null) {
   const nutrition = useMemo(() => data ? estimateNutrition(data.ingredients || []) : null, [data])
 
   const getScoreColor = useCallback((score: number) => {
-    if (score >= 85) return 'text-success-600 dark:text-success-400'
-    if (score >= 70) return 'text-secondary-600 dark:text-secondary-400'
-    if (score >= 55) return 'text-yellow-600 dark:text-yellow-400'
-    return 'text-error-600 dark:text-error-400'
+    if (score >= 85) return 'text-success-600 dark:text-success-600'
+    if (score >= 70) return 'text-secondary-600 dark:text-secondary-700'
+    if (score >= 55) return 'text-warning-600 dark:text-warning-700'
+    return 'text-error-600 dark:text-error-600'
   }, [])
 
   const getScoreLabel = useCallback((level: FormulaScore['level']) => {

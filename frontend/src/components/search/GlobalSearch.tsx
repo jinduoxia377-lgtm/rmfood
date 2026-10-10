@@ -187,7 +187,7 @@ export function GlobalSearch() {
                 className="flex-1 bg-transparent outline-none text-lg text-neutral-900 dark:text-white placeholder:text-neutral-400"
               />
               {(query || isSearching) && (
-                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin" />
               )}
               <button
                 onClick={() => {
@@ -261,13 +261,13 @@ export function GlobalSearch() {
                 <div>
                   {/* 类型标签切换 */}
                   {totalResults > 0 && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 overflow-x-auto">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 overflow-x-auto">
                       <button
                         onClick={() => setActiveType(null)}
                         className={cn(
                           'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                           !activeType
-                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700'
+                            ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700'
                             : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                         )}
                       >
@@ -281,7 +281,7 @@ export function GlobalSearch() {
                           className={cn(
                             'px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                             activeType === type
-                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700'
+                              ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700'
                               : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700',
                           )}
                         >
@@ -292,7 +292,7 @@ export function GlobalSearch() {
                   )}
 
                   {/* 结果列表 */}
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
                     {Object.entries(results)
                       .filter(([type]) => !activeType || activeType === type)
                       .map(([type, items]) => (
@@ -301,7 +301,7 @@ export function GlobalSearch() {
                             <button
                               key={`${type}-${item.id}`}
                               onClick={() => handleSelect(item)}
-                              className="flex items-start gap-3 w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/50 text-left transition-colors group"
+                              className="flex items-start gap-3 w-full px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-left transition-colors group"
                             >
                               <div
                                 className={cn(
@@ -354,7 +354,7 @@ export function GlobalSearch() {
                               <button
                                 key={i}
                                 onClick={() => setQuery(s)}
-                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-sm text-secondary-600 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
+                                className="px-3 py-1.5 rounded-full bg-secondary-50 dark:bg-secondary-300/20 text-sm text-secondary-600 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
                               >
                                 {s}
                               </button>
@@ -370,7 +370,7 @@ export function GlobalSearch() {
 
             {/* 底部操作栏 */}
             {query && (
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-3">
                   <button className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 transition-colors">
                     <SlidersHorizontal size={14} /> 高级筛选
@@ -418,10 +418,10 @@ function getTypeIcon(type: string, size = 16) {
 
 function getTypeColor(type: string): string {
   const colors: Record<string, string> = {
-    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-700',
-    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-700',
-    workflow: 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-600',
-    ingredient: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+    formula: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700',
+    experiment: 'bg-accent-100 text-accent-600 dark:bg-accent-300/25 dark:text-accent-700',
+    workflow: 'bg-success-100 text-success-600 dark:bg-success-300/25 dark:text-success-600',
+    ingredient: 'bg-warning-100 text-warning-600 dark:bg-warning-300/25 dark:text-warning-700',
     user: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400',
   };
   return colors[type] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600';
@@ -436,7 +436,7 @@ function highlightText(text: string, query: string): React.ReactNode {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800/40 text-inherit rounded px-0.5">
+          <mark key={i} className="bg-warning-200 dark:bg-warning-800/40 text-inherit rounded px-0.5">
             {part}
           </mark>
         ) : (

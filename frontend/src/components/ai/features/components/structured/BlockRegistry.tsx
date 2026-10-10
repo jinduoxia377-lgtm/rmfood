@@ -50,7 +50,7 @@ export function renderBlock(block: ContentBlock, index: number): React.ReactNode
 
   if (!Component) {
     return (
-      <div key={index} className="py-2 text-center text-[10px] text-neutral-300 dark:text-neutral-600">
+      <div key={index} className="py-2 text-center text-xs text-neutral-300 dark:text-neutral-400">
         不支持的区块类型: {block.type}
       </div>
     )

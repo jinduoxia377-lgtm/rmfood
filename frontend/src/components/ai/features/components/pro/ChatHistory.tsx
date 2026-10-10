@@ -94,7 +94,7 @@ export default function ChatHistory({
   if (!isVisible) return null
 
   return (
-    <div className="w-60 border-r border-neutral-200 dark:border-neutral-700 bg-slate-50/80 dark:bg-neutral-900/80 flex flex-col flex-shrink-0">
+    <div className="w-60 border-r border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-900/80 flex flex-col flex-shrink-0">
       {/* 头部 */}
       <div className="p-3 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center justify-between mb-2">
@@ -115,7 +115,7 @@ export default function ChatHistory({
         {sortedSessions.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="w-6 h-6 text-neutral-300 dark:text-neutral-400 mx-auto mb-2" />
-            <p className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无历史对话</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无历史对话</p>
           </div>
         ) : (
           sortedSessions.map(session => {
@@ -127,7 +127,7 @@ export default function ChatHistory({
                 key={session.id}
                 className={`group relative rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-primary-50 dark:bg-primary-900/20 ring-1 ring-primary-200 dark:ring-primary-800'
+                    ? 'bg-primary-50 dark:bg-primary-300/20 ring-1 ring-primary-200 dark:ring-primary-800'
                     : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/50'
                 }`}
               >
@@ -140,7 +140,8 @@ export default function ChatHistory({
                       onKeyDown={e => { if (e.key === 'Enter') confirmRename(session.id); if (e.key === 'Escape') setEditingId(null) }}
                       className="flex-1 text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-primary-400"
                       autoFocus
-                    />
+        aria-label="会话标题"
+      />
                     <button onClick={() => confirmRename(session.id)} className="p-0.5 text-success-500 hover:text-success-600"><Check className="w-3.5 h-3.5" /></button>
                     <button onClick={() => setEditingId(null)} className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300"><X className="w-3.5 h-3.5" /></button>
                   </div>
@@ -158,9 +159,9 @@ export default function ChatHistory({
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Clock className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTime(session.timestamp)}</span>
-                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
-                          <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{session.messageCount}条</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTime(session.timestamp)}</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{session.messageCount}条</span>
                         </div>
                       </div>
                     </div>

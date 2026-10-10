@@ -408,7 +408,7 @@ describe('FormulaCard - 配方卡片组件', () => {
       )
 
       const badge = screen.getByText(/置信度/)
-      expect(badge.className).toContain('text-yellow-600')
+      expect(badge.className).toContain('text-warning-600')
     })
 
     it('低置信度(<70%)应该显示红色', () => {

@@ -123,10 +123,10 @@ function EfficacyTagChip({
             </div>
             <div>
               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">可信度：</span>
-              <span className="text-yellow-400 ml-1">
+              <span className="text-warning-400 ml-1">
                 {EVIDENCE_STARS[meta.evidenceLevel]}
               </span>
-              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1 text-[10px]">
+              <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1 text-xs">
                 ({EvidencenLabel[meta.evidenceLevel]})
               </span>
             </div>
@@ -137,21 +137,21 @@ function EfficacyTagChip({
               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关成分：</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {meta.relatedIngredients.slice(0, 4).map((ing, idx) => (
-                  <span key={idx} className="bg-neutral-700 px-1.5 py-0.5 rounded text-[10px]">
+                  <span key={idx} className="bg-neutral-700 px-1.5 py-0.5 rounded text-xs">
                     {ing}
                   </span>
                 ))}
                 {meta.relatedIngredients.length > 4 && (
-                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-[10px]">+{meta.relatedIngredients.length - 4}</span>
+                  <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">+{meta.relatedIngredients.length - 4}</span>
                 )}
               </div>
             </div>
           )}
 
           {meta.contraindications && meta.contraindications.length > 0 && (
-            <div className="pt-1 border-t border-red-900/50">
-              <span className="text-error-400 text-[10px] font-medium">⚠️ 注意：</span>
-              <span className="text-error-300/80 text-[10px] ml-1">
+            <div className="pt-1 border-t border-error-900/50">
+              <span className="text-error-400 text-xs font-medium">⚠️ 注意：</span>
+              <span className="text-error-300/80 text-xs ml-1">
                 {meta.contraindications.join('；')}
               </span>
             </div>

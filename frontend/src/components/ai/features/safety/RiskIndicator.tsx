@@ -37,7 +37,7 @@ export function RiskIndicator({
 
   const riskLevel = useMemo(() => {
     if (score >= thresholds.low) return { level: 'low', color: 'var(--color-primary-400)', label: '低风险', bgClass: 'bg-success-500' }
-    if (score >= thresholds.medium) return { level: 'medium', color: '#D97706', label: '中风险', bgClass: 'bg-yellow-500' }
+    if (score >= thresholds.medium) return { level: 'medium', color: '#D97706', label: '中风险', bgClass: 'bg-warning-500' }
     return { level: 'high', color: '#FF3B30', label: '高风险', bgClass: 'bg-error-500' }
   }, [score, thresholds])
 
@@ -59,7 +59,7 @@ export function RiskIndicator({
               <span>{factor.name}</span>
               <span className={`font-medium ${
                 factor.value >= 80 ? 'text-success-600' :
-                factor.value >= 50 ? 'text-yellow-600' : 'text-error-600'
+                factor.value >= 50 ? 'text-warning-600' : 'text-error-600'
               }`}>
                 {factor.value}%
               </span>

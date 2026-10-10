@@ -175,8 +175,8 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FileText size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold">模板管理</CardTitle>
+            <FileText size={20} className="text-secondary-600 dark:text-secondary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold">模板管理</CardTitle>
           </div>
           <Badge size="sm">{templates.length}</Badge>
         </div>
@@ -236,11 +236,11 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       卡片数量: {template.layout.cards.length}
                     </span>
-                    <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-xs text-neutral-300 dark:text-neutral-400">·</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       最后更新: {new Date(template.updatedAt).toLocaleTimeString()}
                     </span>
                   </div>
@@ -282,9 +282,9 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">导入模板</h3>
               {importError && (
-                <div className="p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800/30 mb-4">
-                  <h4 className="text-sm font-medium text-error-800 dark:text-error-300 mb-1">导入失败</h4>
-                  <p className="text-xs text-error-600 dark:text-error-400">{importError}</p>
+                <div className="p-3 rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800/30 mb-4">
+                  <h4 className="text-sm font-medium text-error-800 dark:text-error-600 mb-1">导入失败</h4>
+                  <p className="text-xs text-error-600 dark:text-error-600">{importError}</p>
                 </div>
               )}
               <div className="space-y-4">
@@ -296,8 +296,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                   type="file"
                   accept=".json"
                   onChange={handleImportTemplate}
-                  className="w-full p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
-                />
+                  className="w-full p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg" aria-label="选择文件" />
               </div>
               <div className="flex gap-2 mt-6 justify-end">
                 <Button variant="secondary" onClick={() => setIsImportDialogOpen(false)}>
@@ -317,9 +316,9 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   将当前仪表板布局导出为JSON模板文件
                 </p>
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-3">
-                    <FileText size={24} className="text-secondary-600 dark:text-secondary-400" />
+                    <FileText size={24} className="text-secondary-600 dark:text-secondary-700" />
                     <div>
                       <p className="text-sm font-medium text-neutral-900 dark:text-white">
                         {currentLayout.name}
@@ -365,9 +364,9 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                     onChange={(e) => setTemplateDescription(e.target.value)}
                   />
                 </div>
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-3">
-                    <Share2 size={24} className="text-secondary-600 dark:text-secondary-400" />
+                    <Share2 size={24} className="text-secondary-600 dark:text-secondary-700" />
                     <div>
                       <p className="text-sm font-medium text-neutral-900 dark:text-white">
                         当前布局
@@ -396,12 +395,12 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         )}
 
         {/* 使用提示 */}
-        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-100 dark:border-secondary-800/30">
           <div className="flex items-start gap-3">
-            <FileText size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
+            <FileText size={18} className="text-secondary-600 dark:text-secondary-700 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">模板管理提示</h4>
-              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-700 mb-1">模板管理提示</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-700 space-y-1">
                 <li>• 保存当前布局为模板，方便后续快速应用</li>
                 <li>• 导入/导出模板，实现布局的备份和分享</li>
                 <li>• 应用模板会覆盖当前仪表板布局</li>

@@ -208,7 +208,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             onChange={(e) => this.setState({ searchQuery: e.target.value })}
             onKeyPress={(e) => e.key === 'Enter' && this.handleSearch()}
             placeholder="输入药材名称进行搜索..."
-            className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
             disabled={searchLoading}
           />
           <button
@@ -240,13 +240,13 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
           <div
             key={herb.id}
              role="button" tabIndex={0} onClick={() => this.handleHerbSelect(herb)}
-            className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all"
+            className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg cursor-pointer hover:shadow-lg hover:border-secondary-500 transition-all"
           >
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">{herb.name}</h3>
             <p className="text-sm text-neutral-600 italic mb-2">{herb.latinName}</p>
             <div className="flex flex-wrap gap-2 mb-2">
               {herb.properties.flavor.map((flavor, idx) => (
-                <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
+                <span key={idx} className="px-2 py-1 bg-warning-100 text-warning-800 text-xs rounded">
                   {flavor}
                 </span>
               ))}
@@ -267,7 +267,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
+        <div className="bg-gradient-to-r from-[var(--color-secondary-surface)] to-[var(--color-secondary-surface-deep)] text-white p-6">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold mb-2">{selectedHerb.name}</h2>
@@ -307,7 +307,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 onClick={() => this.setState({ activeTab: tab })}
                 className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                   activeTab === tab
-                    ? 'border-blue-600 text-secondary-600'
+                    ? 'border-secondary-600 text-secondary-600'
                     : 'border-transparent text-neutral-600 hover:text-neutral-800'
                 }`}
               >
@@ -342,14 +342,14 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
         <div>
           <h3 className="text-lg font-semibold mb-3 text-neutral-900">基本信息</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">科属</p>
               <p className="font-medium text-neutral-900">{selectedHerb.family}</p>
             </div>
-            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">性味</p>
               <div className="flex gap-2">
-                <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded">
+                <span className="px-3 py-1 bg-warning-100 text-warning-800 rounded">
                   {selectedHerb.properties.nature}
                 </span>
                 {selectedHerb.properties.flavor.map((flavor, idx) => (
@@ -359,7 +359,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 ))}
               </div>
             </div>
-            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">归经</p>
               <div className="flex flex-wrap gap-2">
                 {selectedHerb.properties.meridian.map((meridian, idx) => (
@@ -369,7 +369,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 ))}
               </div>
             </div>
-            <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
+            <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg">
               <p className="text-sm text-neutral-600 mb-1">毒性</p>
               <p className="font-medium text-neutral-900">{selectedHerb.properties.toxicity || '无'}</p>
             </div>
@@ -394,7 +394,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
         <div>
           <h3 className="text-lg font-semibold mb-3 text-neutral-900">用法用量</h3>
-          <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg">
+          <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg">
             <p className="text-2xl font-bold text-secondary-600 mb-2">
               {selectedHerb.dosage.amount} {selectedHerb.dosage.unit}
             </p>
@@ -410,7 +410,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
         <div>
           <h3 className="text-lg font-semibold mb-3 text-neutral-900">禁忌与副作用</h3>
-          <div className="bg-error-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-error-50 border border-error-200 rounded-lg p-4">
             <h4 className="font-semibold text-error-900 mb-2">禁忌</h4>
             <ul className="list-disc list-inside text-error-800 space-y-1">
               {selectedHerb.contraindications.map((item, idx) => (
@@ -418,9 +418,9 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
               ))}
             </ul>
           </div>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
-            <h4 className="font-semibold text-yellow-900 mb-2">副作用</h4>
-            <ul className="list-disc list-inside text-yellow-800 space-y-1">
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mt-4">
+            <h4 className="font-semibold text-warning-900 mb-2">副作用</h4>
+            <ul className="list-disc list-inside text-warning-800 space-y-1">
               {selectedHerb.sideEffects.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
@@ -443,7 +443,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
       <div className="space-y-6">
         <div
            role="button" tabIndex={0} onClick={() => this.handleCompoundClick(chemistry)}
-          className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow"
+          className="bg-gradient-to-r from-success-50 to-secondary-50 border border-success-200 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex justify-between items-start mb-4">
             <div>
@@ -484,7 +484,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
             <h3 className="text-lg font-semibold mb-3 text-neutral-900">信号通路</h3>
             <div className="flex flex-wrap gap-2">
               {chemistry.pathways.map((pathway, idx) => (
-                <span key={idx} className="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full text-sm">
+                <span key={idx} className="px-4 py-2 bg-accent-100 text-accent-800 rounded-full text-sm">
                   {pathway}
                 </span>
               ))}
@@ -637,15 +637,15 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
                 </div>
               )}
               {selectedCompound.structure && (
-                <div className="bg-orange-50 p-4 rounded-lg">
+                <div className="bg-warning-50 p-4 rounded-lg">
                   <p className="text-sm text-neutral-600 mb-1">结构类型</p>
-                  <p className="text-xl font-semibold text-orange-900">{selectedCompound.structure}</p>
+                  <p className="text-xl font-semibold text-warning-900">{selectedCompound.structure}</p>
                 </div>
               )}
             </div>
 
             {selectedCompound.smiles && (
-              <div className="bg-slate-50 dark:bg-neutral-800 p-4 rounded-lg mb-6">
+              <div className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-lg mb-6">
                 <p className="text-sm text-neutral-600 mb-2">SMILES结构</p>
                 <p className="font-mono text-sm text-neutral-900 break-all bg-white dark:bg-neutral-800 p-3 rounded border">
                   {selectedCompound.smiles}
@@ -655,32 +655,32 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {selectedCompound.absorption && (
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-yellow-900 mb-2">吸收</h4>
+                <div className="bg-warning-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-warning-900 mb-2">吸收</h4>
                   <p className="text-sm text-neutral-700">{selectedCompound.absorption}</p>
                 </div>
               )}
               {selectedCompound.distribution && (
-                <div className="bg-indigo-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-indigo-900 mb-2">分布</h4>
+                <div className="bg-accent-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-accent-900 mb-2">分布</h4>
                   <p className="text-sm text-neutral-700">{selectedCompound.distribution}</p>
                 </div>
               )}
               {selectedCompound.metabolism && (
-                <div className="bg-pink-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-pink-900 mb-2">代谢</h4>
+                <div className="bg-danger-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-danger-900 mb-2">代谢</h4>
                   <p className="text-sm text-neutral-700">{selectedCompound.metabolism}</p>
                 </div>
               )}
               {selectedCompound.excretion && (
-                <div className="bg-cyan-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-cyan-900 mb-2">排泄</h4>
+                <div className="bg-info-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-info-900 mb-2">排泄</h4>
                   <p className="text-sm text-neutral-700">{selectedCompound.excretion}</p>
                 </div>
               )}
               {selectedCompound.halfLife && (
-                <div className="bg-teal-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-teal-900 mb-2">半衰期</h4>
+                <div className="bg-success-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-success-900 mb-2">半衰期</h4>
                   <p className="text-sm text-neutral-700">{selectedCompound.halfLife}</p>
                 </div>
               )}

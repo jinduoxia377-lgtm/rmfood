@@ -19,28 +19,28 @@ const PHASE_COLORS: Record<TimelinePhase, {
   dot: string
 }> = {
   '初期': {
-    bg: 'bg-blue-50 dark:bg-blue-900/20',
-    border: 'border-blue-200 dark:border-blue-800',
-    text: 'text-blue-700 dark:text-blue-300',
-    dot: 'bg-blue-500',
+    bg: 'bg-secondary-50 dark:bg-secondary-300/20',
+    border: 'border-secondary-200 dark:border-secondary-800',
+    text: 'text-secondary-700 dark:text-secondary-700',
+    dot: 'bg-secondary-500',
   },
   '中期': {
-    bg: 'bg-primary-50 dark:bg-emerald-900/20',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    dot: 'bg-emerald-500',
+    bg: 'bg-primary-50 dark:bg-success-300/20',
+    border: 'border-success-200 dark:border-success-800',
+    text: 'text-success-700 dark:text-success-700',
+    dot: 'bg-success-500',
   },
   '后期': {
-    bg: 'bg-amber-50 dark:bg-amber-900/20',
-    border: 'border-amber-200 dark:border-amber-800',
-    text: 'text-amber-700 dark:text-amber-300',
-    dot: 'bg-amber-500',
+    bg: 'bg-warning-50 dark:bg-warning-300/20',
+    border: 'border-warning-200 dark:border-warning-800',
+    text: 'text-warning-700 dark:text-warning-700',
+    dot: 'bg-warning-500',
   },
   '巩固': {
-    bg: 'bg-purple-50 dark:bg-purple-900/20',
-    border: 'border-purple-200 dark:border-purple-800',
-    text: 'text-purple-700 dark:text-purple-300',
-    dot: 'bg-purple-500',
+    bg: 'bg-accent-50 dark:bg-accent-300/20',
+    border: 'border-accent-200 dark:border-accent-800',
+    text: 'text-accent-700 dark:text-accent-700',
+    dot: 'bg-accent-500',
   },
 }
 
@@ -57,8 +57,8 @@ function TimelineBlock({ data }: TimelineBlockProps) {
   if (items.length === 0) {
     return (
       <div className="mb-3 last:mb-0 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 text-center">
-        <Calendar className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">暂无疗程数据</p>
+        <Calendar className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
+        <p className="text-xs text-neutral-400 dark:text-neutral-400">暂无疗程数据</p>
       </div>
     )
   }
@@ -73,7 +73,7 @@ function TimelineBlock({ data }: TimelineBlockProps) {
             {title || '服用周期'}
           </span>
         </div>
-        <span className="text-xs px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium">
+        <span className="text-xs px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 font-medium">
           {duration_days} 天
         </span>
       </div>
@@ -87,7 +87,7 @@ function TimelineBlock({ data }: TimelineBlockProps) {
               return (
                 <div
                   key={phase.key}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border ${colors.bg} ${colors.border} ${colors.text}`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.border} ${colors.text}`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
                   {phase.label}
@@ -122,10 +122,10 @@ function TimelineBlock({ data }: TimelineBlockProps) {
 
                   {/* 日期标签 */}
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${phaseColors.bg} ${phaseColors.text}`}>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${phaseColors.bg} ${phaseColors.text}`}>
                       第 {item.day} 天
                     </span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${phaseColors.bg} ${phaseColors.border} ${phaseColors.text}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full border ${phaseColors.bg} ${phaseColors.border} ${phaseColors.text}`}>
                       {item.phase}
                     </span>
                   </div>
@@ -161,7 +161,7 @@ function TimelineBlock({ data }: TimelineBlockProps) {
                       {item.notes && (
                         <div className="flex items-start gap-1.5 text-xs">
                           <AlertCircle className="w-3 h-3 text-warning-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-warning-600 dark:text-warning-400">{item.notes}</span>
+                          <span className="text-warning-600 dark:text-warning-700">{item.notes}</span>
                         </div>
                       )}
                     </div>
@@ -174,8 +174,8 @@ function TimelineBlock({ data }: TimelineBlockProps) {
 
         {/* 结束标记 */}
         <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-center">
-          <div className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          <div className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-400">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success-500" />
             <span>疗程结束 · 建议复查指标</span>
           </div>
         </div>

@@ -50,7 +50,9 @@ interface UseFocusTrapReturn {
  *
  *   return (
  *     <div ref={containerRef} role="dialog" aria-modal="true">
- *       <input data-autofocus />
+ *       data-autofocus 是纯技术性的焦点落点，不是给用户的控件 ——
+ *       必须配 aria-hidden + tabIndex={-1}，否则会出现一个没有名字的可聚焦元素
+ *       <input data-autofocus aria-hidden="true" tabIndex={-1} />
  *       <button onClick={onClose}>关闭</button>
  *     </div>
  *   )

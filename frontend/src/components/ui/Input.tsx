@@ -11,9 +11,9 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 }
 
 const sizeClasses: Record<NonNullable<InputProps['size']>, string> = {
-  sm: 'h-8 text-xs',
-  md: 'h-9 text-sm',
-  lg: 'h-10 text-sm',
+  sm: 'min-h-[44px] text-xs',
+  md: 'min-h-[44px] text-sm',
+  lg: 'min-h-[44px] text-sm',
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -33,7 +33,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           ref={ref}
           className={cn(
-            'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+            'flex min-h-[44px] w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
             sizeClasses[size],
             prefix && 'pl-9',
             suffix && 'pr-9',
@@ -43,6 +43,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className,
           )}
           maxLength={maxLength}
+          /* A-25：全站大量输入框只写了 placeholder 而没有可访问名称 —— placeholder
+             在获取焦点后会被真实输入覆盖，且部分屏幕阅读器不朗读，不能充当名称
+             （WCAG 4.1.2）。这里在调用方未显式指定 aria-label / aria-labelledby 时，
+             回退用 placeholder 作为可访问名称：比"完全匿名"好，且不改变视觉。
+             调用方若有更准确的语义（如"搜索配方名称"）应显式传 aria-label 覆盖。 */
+          aria-label={
+            props['aria-label'] ??
+            (props['aria-labelledby']
+              ? undefined
+              : typeof props.placeholder === 'string' && props.placeholder ? props.placeholder : undefined)
+          }
           aria-invalid={!!error}
           aria-describedby={typeof error === 'string' && error && props.id ? `${props.id}-error` : undefined}
           {...props}

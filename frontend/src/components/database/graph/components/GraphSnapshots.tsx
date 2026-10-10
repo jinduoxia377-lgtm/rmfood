@@ -21,7 +21,7 @@ export default function GraphSnapshots({ graphSnapshots }: GraphSnapshotsProps) 
       </div>
       <div className="space-y-0.5 max-h-[80px] overflow-y-auto custom-scrollbar">
         {graphSnapshots.slice(-5).reverse().map(snap => (
-          <div key={snap.id} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-slate-50 dark:hover:bg-neutral-700/30 cursor-pointer group">
+          <div key={snap.id} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-neutral-50 dark:hover:bg-neutral-700/30 cursor-pointer group">
             <span className="w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0" />
             <span className="text-[9px] text-neutral-600 dark:text-neutral-400 truncate flex-1">{snap.label}</span>
             <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hidden group-hover:inline">{snap.nodeCount}节点</span>

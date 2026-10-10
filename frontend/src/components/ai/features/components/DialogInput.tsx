@@ -180,12 +180,12 @@ const DialogInput = memo(
         <div className="flex flex-col w-full">
           <div
             className={cn(
-              'flex items-center bg-slate-50 dark:bg-neutral-800 rounded-full border-2 transition-all duration-300 overflow-hidden shadow-sm',
+              'flex items-center bg-neutral-50 dark:bg-neutral-800 rounded-full border-2 transition-all duration-300 overflow-hidden shadow-sm',
               isFocused
                 ? 'border-primary-500 dark:border-primary-500 shadow-lg shadow-primary-500/15'
                 : 'border-neutral-200 dark:border-neutral-700',
               hasError
-                ? 'border-red-500 dark:border-red-500 shadow-lg shadow-red-500/15'
+                ? 'border-error-500 dark:border-error-500 shadow-lg shadow-error-500/15'
                 : '',
               disabled || isLoading ? 'opacity-60' : '',
               className,
@@ -223,7 +223,7 @@ const DialogInput = memo(
                   isExceeded
                     ? 'text-error-500 dark:text-error-600 font-semibold'
                     : isOverLimit
-                    ? 'text-orange-500'
+                    ? 'text-warning-500'
                     : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                 )}
               >
@@ -236,18 +236,18 @@ const DialogInput = memo(
 
             <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <span className="hidden sm:inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-700">
                   Shift
                 </kbd>
                 <span>+</span>
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-700">
                   Enter
                 </kbd>
                 <span className="ml-1">换行</span>
               </span>
               <span className="hidden sm:inline text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
               <span className="hidden sm:inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-xs font-mono border border-neutral-200 dark:border-neutral-700">
                   Enter
                 </kbd>
                 <span className="ml-1">发送</span>

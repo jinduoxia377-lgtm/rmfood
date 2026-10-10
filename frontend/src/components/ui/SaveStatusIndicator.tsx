@@ -29,17 +29,17 @@ const STATUS_CONFIG: Record<SaveStatus, {
  saving: {
  icon: Loader2,
  label:'保存中...',
- className:'text-secondary-500 dark:text-secondary-400',
+ className:'text-secondary-500 dark:text-secondary-700',
  },
  saved: {
  icon: CheckCircle2,
  label:'已保存',
- className:'text-primary-600 dark:text-primary-400',
+ className:'text-primary-700 dark:text-primary-700',
  },
  error: {
  icon: CloudOff,
  label:'保存失败',
- className:'text-danger-500 dark:text-danger-400',
+ className:'text-danger-500 dark:text-danger-600',
  },
 }
 

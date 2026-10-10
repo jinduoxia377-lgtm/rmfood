@@ -296,7 +296,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
           </button>
           <button
             onClick={() => setShowExplanation(!showExplanation)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showExplanation ? 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-900/30 dark:text-accent-300 dark:border-accent-800' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showExplanation ? 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-300/25 dark:text-accent-700 dark:border-accent-800' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
           >
             <FlaskConical className="w-3.5 h-3.5" />配方方解
           </button>

@@ -84,8 +84,8 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
             <div className="text-xl font-bold">{total}</div>
             <div className="text-xs text-[var(--text-muted)]">总计</div>
           </div>
-          <div className="bg-green-50 rounded-lg border border-green-200 p-3 text-center">
-            <div className="text-xl font-bold text-green-600">{items.filter((i: PeptideBatchCOA) => i.qualified).length}</div>
+          <div className="bg-success-50 rounded-lg border border-success-200 p-3 text-center">
+            <div className="text-xl font-bold text-success-600">{items.filter((i: PeptideBatchCOA) => i.qualified).length}</div>
             <div className="text-xs text-[var(--text-muted)]">合格</div>
           </div>
           <div className="bg-white dark:bg-neutral-900 rounded-lg border p-3 text-center">
@@ -167,7 +167,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={e => { e.stopPropagation(); setEditingCOA(coa); setShowCreate(true); }}
-                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-blue-50 text-[var(--text-muted)] hover:text-blue-600"
+                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-secondary-50 text-[var(--text-muted)] hover:text-secondary-600"
                   title="编辑"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -179,7 +179,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
                       deleteMutation.mutate(coa.id);
                     }
                   }}
-                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-red-50 text-[var(--text-muted)] hover:text-red-600"
+                  className="p-1 bg-white dark:bg-neutral-900 rounded-lg shadow-sm hover:bg-error-50 text-[var(--text-muted)] hover:text-error-600"
                   title="删除"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

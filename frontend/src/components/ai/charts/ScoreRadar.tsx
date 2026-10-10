@@ -38,7 +38,7 @@ export function ScoreRadar({ scores, size = 160, theme = 'light' }: ScoreRadarPr
     <ResponsiveContainer width={size} height={size}>
       <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
         <PolarGrid stroke={colors.grid} />
-        <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: colors.axis }} />
+        <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 12, fill: colors.axis }} />
         <PolarRadiusAxis angle={90} domain={[0, 1]} tick={false} axisLine={false} />
         <Radar
           name="评分"

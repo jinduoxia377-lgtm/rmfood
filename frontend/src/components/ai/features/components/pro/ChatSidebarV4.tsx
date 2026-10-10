@@ -43,13 +43,13 @@ interface ChatSidebarV4Props {
 const ALGORITHM_CONFIG: Record<AlgorithmType, {
   label: string; color: string; bgColor: string
 }> = {
-  'hybrid-nlp':     { label: 'NLP',    color: 'text-secondary-600 dark:text-secondary-600', bgColor: 'bg-secondary-100 dark:bg-secondary-900/30' },
+  'hybrid-nlp':     { label: 'NLP',    color: 'text-secondary-600 dark:text-secondary-700', bgColor: 'bg-secondary-100 dark:bg-secondary-300/25' },
   'rule-engine':    { label: '规则',   color: 'text-neutral-600 dark:text-neutral-400',     bgColor: 'bg-neutral-100 dark:bg-neutral-900/30' },
-  'llm':            { label: 'LLM',    color: 'text-violet-600 dark:text-violet-400',       bgColor: 'bg-violet-100 dark:bg-violet-900/30' },
-  'bayesian':       { label: '贝叶斯', color: 'text-primary-700 dark:text-primary-600',     bgColor: 'bg-primary-100 dark:bg-primary-900/30' },
-  'knowledge-graph':{ label: '图谱',   color: 'text-warning-600 dark:text-warning-600',     bgColor: 'bg-warning-100 dark:bg-warning-900/30' },
-  'semantic-search':{ label: '搜索',   color: 'text-cyan-600 dark:text-cyan-400',           bgColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
-  'ensemble':       { label: '集成',   color: 'text-rose-600 dark:text-rose-400',           bgColor: 'bg-rose-100 dark:bg-rose-900/30' },
+  'llm':            { label: 'LLM',    color: 'text-accent-600 dark:text-accent-700',       bgColor: 'bg-accent-100 dark:bg-accent-300/25' },
+  'bayesian':       { label: '贝叶斯', color: 'text-primary-700 dark:text-primary-700',     bgColor: 'bg-primary-100 dark:bg-primary-300/25' },
+  'knowledge-graph':{ label: '图谱',   color: 'text-warning-600 dark:text-warning-700',     bgColor: 'bg-warning-100 dark:bg-warning-300/25' },
+  'semantic-search':{ label: '搜索',   color: 'text-info-600 dark:text-info-700',           bgColor: 'bg-info-100 dark:bg-info-300/25' },
+  'ensemble':       { label: '集成',   color: 'text-danger-600 dark:text-danger-700',           bgColor: 'bg-danger-100 dark:bg-danger-300/25' },
 }
 
 const STEP_ALGORITHM: Record<string, AlgorithmType> = {
@@ -79,7 +79,7 @@ function AlgorithmBadge({ algorithm, confidence, compact }: {
   if (!cfg) return null
   return (
     <span className={`inline-flex items-center gap-0.5 rounded font-medium ${cfg.color} ${cfg.bgColor} ${
-      compact ? 'text-[9px] px-1 py-0' : 'text-[10px] px-1.5 py-0.5'
+      compact ? 'text-[9px] px-1 py-0' : 'text-xs px-1.5 py-0.5'
     }`}>
       <span>{cfg.label}</span>
       {confidence !== undefined && !compact && (
@@ -102,7 +102,7 @@ function ConfidenceBar({ value, compact }: { value: number; compact?: boolean })
         <div className={`h-full ${color} rounded-full transition-all duration-500`}
           style={{ width: `${pct}%` }} />
       </div>
-      {!compact && <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-6 text-right">{pct}%</span>}
+      {!compact && <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-6 text-right">{pct}%</span>}
     </div>
   )
 }
@@ -138,9 +138,9 @@ function StepCard({
           transition-all duration-300 ring-1 ring-offset-1
           ${compact ? 'w-5 h-5' : 'w-6 h-6'}
           ${isComplete ? 'bg-primary-container text-primary-main ring-primary-200 dark:ring-primary-800'
-            : isProcessing ? 'bg-warning-container text-warning-main ring-amber-200 dark:ring-amber-800 animate-pulse'
-            : isError ? 'bg-error-container text-error-main ring-red-200 dark:ring-red-800'
-            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 ring-slate-200 dark:ring-slate-700'}
+            : isProcessing ? 'bg-warning-container text-warning-main ring-warning-200 dark:ring-warning-800 animate-pulse'
+            : isError ? 'bg-error-container text-error-main ring-error-200 dark:ring-error-800'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 ring-neutral-200 dark:ring-neutral-700'}
         `}>
           {isComplete ? <CheckCircle2 className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
             : isProcessing ? <Loader2 className={compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
@@ -176,7 +176,7 @@ function StepCard({
           )}
 
           {/* 内容描述 */}
-          <p className={`text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 ${
+          <p className={`text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 ${
             compact ? 'line-clamp-1' : 'line-clamp-2'
           } ${isProcessing ? 'animate-pulse' : ''}`}>
             {step.content}
@@ -185,7 +185,7 @@ function StepCard({
           {/* 展开详情 */}
           {isExpanded && step.detail && (
             <div className="mt-1.5 p-1.5 bg-white dark:bg-neutral-800 rounded border border-neutral-100
-              dark:border-neutral-700 text-[11px] text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap"
+              dark:border-neutral-700 text-xs text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap"
             >
               {step.detail}
             </div>
@@ -203,12 +203,12 @@ function StepCard({
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 flex-wrap">
-                      <span className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300">
+                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                         {sub.step}
                       </span>
                       {sub.algorithm && <AlgorithmBadge algorithm={sub.algorithm} compact />}
                     </div>
-                    <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-1">{sub.content}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-1">{sub.content}</p>
                   </div>
                 </div>
               ))}
@@ -280,7 +280,7 @@ export default function ChatSidebarV4({
 
   // 展开模式：完整侧栏（宽度 w-64 = 256px，比原来 320px 缩小 20%）
   return (
-    <div className="border-l border-neutral-200 dark:border-neutral-700 bg-slate-50/50
+    <div className="border-l border-neutral-200 dark:border-neutral-700 bg-neutral-50/50
       dark:bg-neutral-900/50 w-64 flex-shrink-0 overflow-y-auto
       transition-all duration-300 hidden xl:block"
     >
@@ -322,7 +322,7 @@ export default function ChatSidebarV4({
                 onClick={() => setFilterAlgorithm(a.key)}
                 className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors
                   ${filterAlgorithm === a.key
-                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-600'
+                    ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
               >
                 {a.label}
@@ -348,7 +348,7 @@ export default function ChatSidebarV4({
         {steps.length === 0 && !isThinking && (
           <div className="text-center py-4">
             <Brain className="w-6 h-6 text-neutral-300 dark:text-neutral-400 mx-auto mb-1.5" />
-            <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">AI 思考过程将在此显示</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">AI 思考过程将在此显示</p>
           </div>
         )}
 

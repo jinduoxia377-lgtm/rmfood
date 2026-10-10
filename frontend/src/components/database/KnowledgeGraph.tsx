@@ -400,7 +400,7 @@ const MOCK_EXTERNAL_DB: Record<string, ExternalData> = {
 
 function GraphSkeleton({ height }: { height: number }) {
   return (
-    <div className="relative w-full rounded-xl border bg-slate-50/60 dark:bg-neutral-900/60 border-neutral-200/60 dark:border-neutral-700/60 overflow-hidden" style={{ minHeight: height }}>
+    <div className="relative w-full rounded-xl border bg-neutral-50/60 dark:bg-neutral-900/60 border-neutral-200/60 dark:border-neutral-700/60 overflow-hidden" style={{ minHeight: height }}>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
           {/* 中心脉冲圆 */}
@@ -422,8 +422,8 @@ function GraphSkeleton({ height }: { height: number }) {
         </div>
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-        <p className="text-sm text-neutral-400 dark:text-neutral-500 font-medium">正在构建知识图谱...</p>
-        <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">计算节点关系网络</p>
+        <p className="text-sm text-neutral-400 dark:text-neutral-400 font-medium">正在构建知识图谱...</p>
+        <p className="text-xs text-neutral-300 dark:text-neutral-400 mt-1">计算节点关系网络</p>
       </div>
     </div>
   )
@@ -458,7 +458,7 @@ function ZoomToolbar({
         </svg>
       </button>
 
-      <span className="text-[10px] font-mono font-medium text-neutral-500 dark:text-neutral-400 w-10 text-center tabular-nums">{pct}</span>
+      <span className="text-xs font-mono font-medium text-neutral-500 dark:text-neutral-400 w-10 text-center tabular-nums">{pct}</span>
 
       <button onClick={onZoomIn} title="放大" className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         aria-label="放大">

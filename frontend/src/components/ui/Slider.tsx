@@ -47,8 +47,7 @@ export function Slider({ value, min, max, step = 1, onChange, className ='', dis
 "
  style={{
  background:'transparent',
- }}
- />
+ }} aria-label="滑块" />
  </div>
  )
 }

@@ -73,7 +73,7 @@ export function MoleculeViewer3D({ structure, bonds }: MoleculeProps) {
         <OrbitControls enableZoom={true} enablePan={false} />
       </Canvas>
       <div className="p-4 bg-white dark:bg-neutral-900 rounded-b-lg">
-        <p className="text-sm text-gray-600">拖拽旋转查看分子结构</p>
+        <p className="text-sm text-neutral-600">拖拽旋转查看分子结构</p>
       </div>
     </div>
   )

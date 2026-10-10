@@ -23,11 +23,11 @@ export interface StatCardProps {
 }
 
 const variantStyles: Record<StatVariant, { iconBg: string; iconColor: string; accentBar: string }> = {
-  primary:  { iconBg: 'bg-primary-100 dark:bg-primary-900/30',    iconColor: 'text-primary-600 dark:text-primary-400',    accentBar: 'bg-primary-500' },
-  secondary:{ iconBg: 'bg-blue-100 dark:bg-blue-900/30',          iconColor: 'text-blue-600 dark:text-blue-400',          accentBar: 'bg-blue-500' },
-  info:     { iconBg: 'bg-sky-100 dark:bg-sky-900/30',            iconColor: 'text-sky-600 dark:text-sky-400',            accentBar: 'bg-sky-500' },
-  success:  { iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',    iconColor: 'text-emerald-600 dark:text-emerald-400',    accentBar: 'bg-emerald-500' },
-  warning:  { iconBg: 'bg-amber-100 dark:bg-amber-900/30',        iconColor: 'text-amber-600 dark:text-amber-400',        accentBar: 'bg-amber-500' },
+  primary:  { iconBg: 'bg-primary-100 dark:bg-primary-300/25',    iconColor: 'text-primary-700 dark:text-primary-700',    accentBar: 'bg-primary-500' },
+  secondary:{ iconBg: 'bg-secondary-100 dark:bg-secondary-300/25',          iconColor: 'text-secondary-700 dark:text-secondary-700',          accentBar: 'bg-secondary-500' },
+  info:     { iconBg: 'bg-info-100 dark:bg-info-300/25',            iconColor: 'text-info-700 dark:text-info-700',            accentBar: 'bg-info-500' },
+  success:  { iconBg: 'bg-success-100 dark:bg-success-300/25',    iconColor: 'text-success-700 dark:text-success-600',    accentBar: 'bg-success-500' },
+  warning:  { iconBg: 'bg-warning-100 dark:bg-warning-300/25',        iconColor: 'text-warning-600 dark:text-warning-700',        accentBar: 'bg-warning-500' },
 }
 
 const trendIcon = (direction: StatTrend, cls: string) => {
@@ -95,8 +95,12 @@ export function StatCard({
             {trend && (
               <span className={cn(
                 'flex items-center gap-0.5 text-xs font-normal shrink-0 leading-normal',
-                trend.direction === 'up'   ? 'text-emerald-600 dark:text-emerald-400'
-              : trend.direction === 'down' ? 'text-error-600 dark:text-error-400'
+                /* D-71：涨/跌趋势文字原用 Tailwind 原生色板 emerald-600
+                   (oklch 0.596 .145 163 → #059669)，白底仅 3.67:1（12px 需 4.5）。
+                   改用设计系统令牌：亮色 success-700 #047857 = 5.48:1，
+                   暗色 success-600 #34d399 在暗画布上同样远超 AA。 */
+                trend.direction === 'up'   ? 'text-success-700 dark:text-success-600'
+              : trend.direction === 'down' ? 'text-error-600 dark:text-error-600'
               : 'text-[color:var(--text-muted)]',
               )}>
                 {trendIcon(trend.direction, 'w-3 h-3')}

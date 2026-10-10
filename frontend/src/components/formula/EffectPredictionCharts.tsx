@@ -161,7 +161,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
       </Tabs>
 
       {/* 图表区域 */}
-      <div className="mt-4 relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 rounded-lg p-4 overflow-hidden">
+      <div className="mt-4 relative bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 rounded-lg p-4 overflow-hidden">
         <svg width={chartWidth} height={height} className="mx-auto">
           {/* 网格线 */}
           {[0, 0.25, 0.5, 0.75, 1].map((tick) => (
@@ -173,7 +173,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
                 y2={height - padding.bottom}
                 stroke="#E5E7EB"
                 strokeDasharray="4,4"
-                className="dark:stroke-slate-700"
+                className="dark:stroke-neutral-700"
               />
               <line
                 x1={padding.left}
@@ -182,7 +182,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
                 y2={height - padding.bottom - plotHeight * tick}
                 stroke="#E5E7EB"
                 strokeDasharray="4,4"
-                className="dark:stroke-slate-700"
+                className="dark:stroke-neutral-700"
               />
             </g>
           ))}
@@ -456,7 +456,7 @@ export function MultiFormulaComparison({ formulas, selectedFormulas = [], onForm
       {/* 对比指标表格 */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-neutral-800">
+          <thead className="bg-neutral-50 dark:bg-neutral-800">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-neutral-700 dark:text-neutral-300">指标</th>
               {formulas
@@ -468,7 +468,7 @@ export function MultiFormulaComparison({ formulas, selectedFormulas = [], onForm
                 ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {[
               { label: 'Tmax (小时)', getValue: (d: EffectPredictionData) => d.peak_time.toFixed(2), unit: 'h' },
               { label: 'Cmax (μg/mL)', getValue: (d: EffectPredictionData) => d.peak_concentration.toFixed(3) },
@@ -481,7 +481,7 @@ export function MultiFormulaComparison({ formulas, selectedFormulas = [], onForm
                   `${d.optimal_window[0].toFixed(1)}-${d.optimal_window[1].toFixed(1)}`,
               },
             ].map(({ label, getValue, unit }) => (
-              <tr key={label} className="hover:bg-slate-50 dark:hover:bg-neutral-800">
+              <tr key={label} className="hover:bg-neutral-50 dark:hover:bg-neutral-800">
                 <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{label}</td>
                 {formulas
                   .filter((f) => selectedFormulas.includes(f.id))

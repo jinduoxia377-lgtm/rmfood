@@ -133,7 +133,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'show-bookmarks',
         label: '查看书签',
         description: '查看收藏的重要消息',
-        icon: <Bookmark className="w-4 h-4 text-yellow-500" />,
+        icon: <Bookmark className="w-4 h-4 text-warning-500" />,
         category: COMMAND_CATEGORIES.tools,
         shortcut: ['B'],
         action: () => {
@@ -148,7 +148,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'export-chat',
         label: '导出对话',
         description: '将对话历史导出为文件',
-        icon: <Download className="w-4 h-4 text-teal-500" />,
+        icon: <Download className="w-4 h-4 text-success-500" />,
         category: COMMAND_CATEGORIES.tools,
         shortcut: ['E'],
         action: () => {
@@ -163,7 +163,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'import-chat',
         label: '导入对话',
         description: '从文件导入对话历史',
-        icon: <Upload className="w-4 h-4 text-cyan-500" />,
+        icon: <Upload className="w-4 h-4 text-info-500" />,
         category: COMMAND_CATEGORIES.tools,
         shortcut: ['I'],
         action: () => {
@@ -235,7 +235,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'ai-guide',
       label: 'AI 能力介绍',
       description: '了解 AI 助手能做什么',
-      icon: <Wand2 className="w-4 h-4 text-pink-500" />,
+      icon: <Wand2 className="w-4 h-4 text-danger-500" />,
       category: COMMAND_CATEGORIES.help,
       action: () => {
         logger.info('[CommandPalette] 打开 AI 能力介绍')
@@ -247,7 +247,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'knowledge-base',
       label: '知识库',
       description: '浏览配方知识库',
-      icon: <BookOpen className="w-4 h-4 text-orange-500" />,
+      icon: <BookOpen className="w-4 h-4 text-warning-500" />,
       category: COMMAND_CATEGORIES.tools,
       action: () => {
         logger.info('[CommandPalette] 打开知识库')
@@ -259,7 +259,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       id: 'quick-actions',
       label: '快捷操作',
       description: '常用功能快速访问',
-      icon: <Zap className="w-4 h-4 text-yellow-400" />,
+      icon: <Zap className="w-4 h-4 text-warning-400" />,
       category: COMMAND_CATEGORIES.tools,
       action: () => {
         logger.info('[CommandPalette] 打开快捷操作')
@@ -368,7 +368,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               setSelectedIndex(0)
             }}
             placeholder="搜索命令或输入问题..."
-            className="flex-1 bg-transparent text-neutral-800 dark:text-neutral-200 placeholder-slate-400 outline-none text-sm"
+            className="flex-1 bg-transparent text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 outline-none text-sm"
             autoFocus
           />
           <div className="flex items-center gap-1 px-2 py-1 text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded">
@@ -401,8 +401,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         onClick={command.action}
                         className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                           isSelected
-                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600'
-                            : 'hover:bg-slate-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                            ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
+                            : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                         }`}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                       >

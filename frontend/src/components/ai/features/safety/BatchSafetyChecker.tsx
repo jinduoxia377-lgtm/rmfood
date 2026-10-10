@@ -425,7 +425,7 @@ export function BatchSafetyChecker({
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragOver
-                ? 'border-blue-500 bg-secondary-50 dark:bg-secondary-900/20'
+                ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20'
                 : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500'
             }`}
             onDrop={handleDrop}
@@ -437,8 +437,7 @@ export function BatchSafetyChecker({
               type="file"
               accept={supportedFormats.join(',')}
               onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-              className="hidden"
-            />
+              className="hidden" aria-hidden="true" tabIndex={-1} />
             <div className="space-y-3">
               <div className="text-4xl">📁</div>
               <div>
@@ -481,7 +480,7 @@ export function BatchSafetyChecker({
 
             <div className="overflow-x-auto border rounded-lg">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-neutral-800">
+                <thead className="bg-neutral-50 dark:bg-neutral-800">
                   <tr>
                     {uploadData.preview[0]?.map((header, idx) => (
                       <th key={idx} className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-neutral-300">
@@ -558,19 +557,19 @@ export function BatchSafetyChecker({
             <Progress value={statistics.completionRate} className="mb-4" />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg text-center">
+              <div className="p-3 bg-success-50 dark:bg-success-300/20 rounded-lg text-center">
                 <div className="text-2xl font-bold text-success-600">{statistics.passed}</div>
                 <div className="text-xs text-success-600 mt-1">✅ 通过 ({Math.round(statistics.passed / statistics.total * 100) || 0}%)</div>
               </div>
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                <div className="text-2xl font-bold text-yellow-600">{statistics.warning}</div>
-                <div className="text-xs text-yellow-600 mt-1">⚠️ 警告（需复核）</div>
+              <div className="p-3 bg-warning-50 dark:bg-warning-300/20 rounded-lg text-center">
+                <div className="text-2xl font-bold text-warning-600">{statistics.warning}</div>
+                <div className="text-xs text-warning-600 mt-1">⚠️ 警告（需复核）</div>
               </div>
-              <div className="p-3 bg-error-50 dark:bg-error-900/20 rounded-lg text-center">
+              <div className="p-3 bg-error-50 dark:bg-error-300/20 rounded-lg text-center">
                 <div className="text-2xl font-bold text-error-600">{statistics.failed}</div>
                 <div className="text-xs text-error-600 mt-1">❌ 不合规</div>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg text-center">
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg text-center">
                 <div className="text-2xl font-bold text-neutral-600">{statistics.pending}</div>
                 <div className="text-xs text-neutral-600 mt-1">❓ 待检测</div>
               </div>
@@ -582,7 +581,7 @@ export function BatchSafetyChecker({
               </div>
             )}
 
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded text-sm text-neutral-600 dark:text-neutral-400">
+            <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded text-sm text-neutral-600 dark:text-neutral-400">
               并发限制: {maxConcurrentTasks} | 进行中: {activeTasks.length} | 排队中: {queuedTasks.length}
             </div>
           </Card>
@@ -594,7 +593,7 @@ export function BatchSafetyChecker({
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-neutral-800">
+                <thead className="bg-neutral-50 dark:bg-neutral-800">
                   <tr>
                     <th className="px-4 py-2 text-left">#</th>
                     <th className="px-4 py-2 text-left">文件名</th>
@@ -606,7 +605,7 @@ export function BatchSafetyChecker({
                 </thead>
                 <tbody>
                   {tasks.map((task, index) => (
-                    <tr key={task.id} className="border-t border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800">
+                    <tr key={task.id} className="border-t border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800">
                       <td className="px-4 py-2">{index + 1}</td>
                       <td className="px-4 py-2 font-medium">{task.fileName}</td>
                       <td className="px-4 py-2">{task.ingredientCount}</td>
@@ -674,14 +673,14 @@ export function BatchSafetyChecker({
           </Card>
 
           {reviewRequiredTasks.length > 0 && (
-            <Card className="p-6 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10">
-              <h3 className="font-semibold mb-4 flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+            <Card className="p-6 border-warning-300 bg-warning-50 dark:bg-warning-300/15">
+              <h3 className="font-semibold mb-4 flex items-center gap-2 text-warning-800 dark:text-warning-200">
                 ⚠️ 异常标记与复核工作流
               </h3>
 
               <div className="space-y-3">
                 {reviewRequiredTasks.map(task => (
-                  <div key={task.id} className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-yellow-200">
+                  <div key={task.id} className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-warning-200">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
@@ -695,9 +694,9 @@ export function BatchSafetyChecker({
                     </div>
 
                     {task.result?.warnings && (
-                      <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded text-sm">
-                        <p className="font-medium text-yellow-800 dark:text-yellow-200">风险提示:</p>
-                        <ul className="mt-1 list-disc list-inside text-yellow-700 dark:text-yellow-300">
+                      <div className="mb-3 p-3 bg-warning-50 dark:bg-warning-300/20 rounded text-sm">
+                        <p className="font-medium text-warning-800 dark:text-warning-200">风险提示:</p>
+                        <ul className="mt-1 list-disc list-inside text-warning-700 dark:text-warning-700">
                           {task.result.warnings.map((warning, idx) => (
                             <li key={idx}>{typeof warning === 'string' ? warning : warning.message}</li>
                           ))}

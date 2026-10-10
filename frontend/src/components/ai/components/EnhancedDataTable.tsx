@@ -168,9 +168,9 @@ export function EnhancedDataTable({
         cell: (info) => {
           const source = info.getValue() as string
           const sourceConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-            TCM: { label: '药食同源', color: 'text-success-700 dark:text-success-600', bgColor: 'bg-success-50 dark:bg-success-900/20' },
-            PEPTIDE: { label: '食源性多肽', color: 'text-secondary-700 dark:text-secondary-600', bgColor: 'bg-secondary-50 dark:bg-secondary-900/20' },
-            EXCIPIENT: { label: '辅料', color: 'text-neutral-700 dark:text-neutral-400', bgColor: 'bg-slate-50 dark:bg-neutral-800/50' },
+            TCM: { label: '药食同源', color: 'text-success-700 dark:text-success-600', bgColor: 'bg-success-50 dark:bg-success-300/20' },
+            PEPTIDE: { label: '食源性多肽', color: 'text-secondary-700 dark:text-secondary-700', bgColor: 'bg-secondary-50 dark:bg-secondary-300/20' },
+            EXCIPIENT: { label: '辅料', color: 'text-neutral-700 dark:text-neutral-400', bgColor: 'bg-neutral-50 dark:bg-neutral-800/50' },
           }
           const config = sourceConfig[source] ?? sourceConfig.TCM
           if (!config) return null
@@ -250,7 +250,7 @@ export function EnhancedDataTable({
          role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
             <span className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -275,14 +275,14 @@ export function EnhancedDataTable({
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="搜索成分名称..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
             />
           </div>
 
           <div className="flex items-center gap-2">
             {/* Export Dropdown */}
             <div className="relative group">
-              <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+              <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                 <Download className="w-4 h-4" />
                 导出
                 <ChevronDown className="w-3 h-3" />
@@ -305,7 +305,7 @@ export function EnhancedDataTable({
         {/* Table Container */}
         <div className="flex-1 overflow-auto">
           <table className="w-full min-w-[900px]" role="table">
-            <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
+            <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -332,7 +332,7 @@ export function EnhancedDataTable({
                 </tr>
               </tbody>
             ) : (
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
                 {table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
@@ -351,7 +351,7 @@ export function EnhancedDataTable({
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30">
           <div className="text-sm text-neutral-500 dark:text-neutral-400 order-2 sm:order-1">
             显示{' '}
             <strong className="text-neutral-700 dark:text-neutral-300">

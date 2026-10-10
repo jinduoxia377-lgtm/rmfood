@@ -266,16 +266,16 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
     icon: React.ReactNode;
   }) => {
     const colorClasses: Record<string, string> = {
-      purple: 'from-purple-500 to-purple-600',
-      yellow: 'from-yellow-500 to-yellow-600',
-      blue: 'from-blue-500 to-blue-600',
-      green: 'from-green-500 to-green-600',
+      purple: 'from-accent-500 to-accent-600',
+      yellow: 'from-warning-500 to-warning-600',
+      blue: 'from-secondary-500 to-secondary-600',
+      green: 'from-success-500 to-success-600',
     };
     const bgClasses: Record<string, string> = {
-      purple: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-600',
-      yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
-      blue: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-600',
-      green: 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-600',
+      purple: 'bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700',
+      yellow: 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700',
+      blue: 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700',
+      green: 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600',
     };
 
     return (
@@ -306,7 +306,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary-100 dark:bg-primary-800 rounded-lg">
-              <FileText className="w-6 h-6 text-primary-700 dark:text-primary-600" />
+              <FileText className="w-6 h-6 text-primary-700 dark:text-primary-200" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{report.formulaName}</h2>
@@ -497,7 +497,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               onClick={() => setUseEnhancedVersion(!useEnhancedVersion)}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                 useEnhancedVersion
-                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 border border-primary-300 dark:border-primary-700'
+                  ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 border border-primary-300 dark:border-primary-700'
                   : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'
               }`}
             >
@@ -520,7 +520,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                 <Card key={chapterIndex} className="overflow-hidden">
                   <button
                     onClick={() => toggleChapter(chapterIndex)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors"
+                    className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                   >
                     <span className="font-semibold text-neutral-900 dark:text-neutral-100">{chapter.title}</span>
                     {expandedChapters.has(chapterIndex) ? (
@@ -542,7 +542,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                             </h4>
                             <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
                               <table className="w-full text-sm">
-                                <thead className="bg-slate-50 dark:bg-neutral-800">
+                                <thead className="bg-neutral-50 dark:bg-neutral-800">
                                   <tr>
                                     {table.headers.map((header, headerIndex) => (
                                       <th
@@ -554,9 +554,9 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                                     ))}
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                                   {table.rows.map((row, rowIndex) => (
-                                    <tr key={rowIndex} className="hover:bg-slate-50 dark:hover:bg-neutral-700/50">
+                                    <tr key={rowIndex} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                                       {row.map((cell, cellIndex) => (
                                         <td key={cellIndex} className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
                                           {cell}
@@ -587,7 +587,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
           <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 max-h-80 overflow-y-auto">
             {report.references.map((ref, index) => (
               <div key={index} className="pl-4 border-l-2 border-neutral-200 dark:border-neutral-700 py-1">
-                <span className="font-medium text-primary-700 dark:text-primary-600">{ref.number}.</span>
+                <span className="font-medium text-primary-700 dark:text-primary-700">{ref.number}.</span>
                 <span className="ml-1">
                   {ref.authors}. {ref.title}[J]. {ref.journal}, {ref.year}
                   {ref.volume && `, ${ref.volume}`}
@@ -608,8 +608,8 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
           <div
             className={`p-4 rounded-lg ${
               candidate.safety_passed
-                ? 'bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800'
+                ? 'bg-primary-50 dark:bg-primary-300/20 border border-success-200 dark:border-success-800'
+                : 'bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -622,8 +622,8 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
                 <p
                   className={`font-medium ${
                     candidate.safety_passed
-                      ? 'text-primary-700 dark:text-primary-600'
-                      : 'text-warning-700 dark:text-warning-600'
+                      ? 'text-primary-700 dark:text-primary-700'
+                      : 'text-warning-700 dark:text-warning-700'
                   }`}
                 >
                   {candidate.safety_passed ? '安全评估通过' : '需要关注的安全问题'}
@@ -636,11 +636,11 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
               </div>
             </div>
             {(candidate.safety_details?.warnings?.length ?? 0) > 0 && (
-              <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-800">
-                <p className="text-sm font-medium text-warning-700 dark:text-warning-600 mb-2">注意事项：</p>
+              <div className="mt-3 pt-3 border-t border-warning-200 dark:border-warning-800">
+                <p className="text-sm font-medium text-warning-700 dark:text-warning-700 mb-2">注意事项：</p>
                 <ul className="space-y-1">
                   {(candidate.safety_details?.warnings ?? []).map((warning: string, index: number) => (
-                    <li key={index} className="text-sm text-warning-600 dark:text-warning-600 flex items-start gap-2">
+                    <li key={index} className="text-sm text-warning-600 dark:text-warning-700 flex items-start gap-2">
                       <span className="mt-1.5 w-1 h-1 rounded-full bg-warning-500 shrink-0" />
                       {warning}
                     </li>

@@ -212,7 +212,7 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
   return (
     <div className="flex flex-col h-full">
       {/* 工具栏 */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
         {/* 格式化工具 */}
         <div className="flex items-center gap-0.5 pr-2 border-r border-neutral-300 dark:border-neutral-600">
           {formatTools.map((tool) => (
@@ -369,7 +369,8 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
                     max="20"
                     defaultValue="3"
                     className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+        aria-label="行数"
+      />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">列数</label>
@@ -379,7 +380,8 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
                     max="10"
                     defaultValue="3"
                     className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+        aria-label="列数"
+      />
                 </div>
               </div>
               <div>

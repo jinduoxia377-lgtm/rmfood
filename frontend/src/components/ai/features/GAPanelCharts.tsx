@@ -103,14 +103,14 @@ export function GADiversityChart({ chartData }: GAPanelChartsProps) {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-            <XAxis dataKey="generation" tick={{ fontSize: 11 }} stroke="#d1d5db" />
-            <YAxis tick={{ fontSize: 11 }} stroke="#d1d5db" domain={[0, 1]} />
+            <XAxis dataKey="generation" tick={{ fontSize: 12 }} stroke="#d1d5db" />
+            <YAxis tick={{ fontSize: 12 }} stroke="#d1d5db" domain={[0, 1]} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--card-bg, #fff)',
                 border: '1px solid var(--border-color, #e5e7eb)',
                 borderRadius: '6px',
-                fontSize: '11px',
+                fontSize: '12px',
               }}
               formatter={(value: number) => [value.toFixed(4), '多样性']}
             />

@@ -36,8 +36,8 @@ export const EmptyState = React.forwardRef<HTMLElement, EmptyStateProps>(({
         'lg:min-h-[55vh]',
         'max-w-2xl mx-auto',
         'animate-[fadeInUp_0.5s_ease-out]',
-        'bg-gradient-to-b from-white to-slate-50/50',
-        'dark:from-slate-900 dark:to-slate-950',
+        'bg-gradient-to-b from-white to-neutral-50/50',
+        'dark:from-neutral-900 dark:to-neutral-950',
         'before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.05)_0%,transparent_70%)] dark:before:hidden',
         className,
       )}

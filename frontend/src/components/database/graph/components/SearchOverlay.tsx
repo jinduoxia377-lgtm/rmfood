@@ -35,10 +35,10 @@ export default function SearchOverlay({
             onClick={() => onSelectMatch(node)}
             onMouseEnter={() => onFocusChange(idx)}
             className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
-              isFocused ? 'bg-primary-50 dark:bg-primary-950/30' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/60'
+              isFocused ? 'bg-primary-50 dark:bg-primary-950/30' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full shrink-0 ring-1.5 ring-white dark:ring-slate-900" style={{ backgroundColor: tconf?.color || '#9CA3AF' }} />
+            <span className="w-2.5 h-2.5 rounded-full shrink-0 ring-1.5 ring-white dark:ring-neutral-900" style={{ backgroundColor: tconf?.color || '#9CA3AF' }} />
             <span className={`flex-1 min-w-0 text-xs font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300'}`}>
               {node.label}
             </span>

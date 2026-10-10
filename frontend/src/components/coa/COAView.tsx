@@ -67,7 +67,7 @@ const COABasicInfoTable: React.FC<{ coa: PeptideBatchCOA }> = ({ coa }) => {
     <table className="w-full text-sm mb-6 border-collapse">
       <tbody>
         {fields.map((field, idx) => (
-          <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50 dark:bg-neutral-800' : ''}>
+          <tr key={idx} className={idx % 2 === 0 ? 'bg-neutral-50 dark:bg-neutral-800' : ''}>
             <td className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 font-semibold text-[var(--text-primary, #1e293b)] w-28 text-center align-middle">
               <div>{field.label}</div>
               <div className="text-xs text-[var(--text-muted, #94a3b8)] font-normal">{field.labelEn}</div>
@@ -106,7 +106,7 @@ const COATestResultTable: React.FC<{
     <div className="mb-6">
       {/* 检验依据 */}
       {standard && (
-        <div className="mb-3 text-sm text-[var(--text-primary, #1e293b)] bg-blue-50 border-l-4 border-blue-500 px-3 py-2 rounded">
+        <div className="mb-3 text-sm text-[var(--text-primary, #1e293b)] bg-secondary-50 border-l-4 border-secondary-500 px-3 py-2 rounded">
           <span className="font-semibold">检测、判定依据：</span>
           {standard}
         </div>
@@ -120,7 +120,7 @@ const COATestResultTable: React.FC<{
           </h4>
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-slate-100 dark:bg-neutral-800">
+              <tr className="bg-neutral-100 dark:bg-neutral-800">
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-left font-semibold text-[var(--text-primary, #1e293b)] w-1/4">
                   项目
                 </th>
@@ -137,7 +137,7 @@ const COATestResultTable: React.FC<{
             </thead>
             <tbody>
               {categoryItems.map((item, idx) => (
-                <tr key={item.id ?? idx} className={idx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-slate-50 dark:bg-neutral-800'}>
+                <tr key={item.id ?? idx} className={idx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50 dark:bg-neutral-800'}>
                   <td className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2">
                     <div className="font-medium text-[var(--text-primary, #1e293b)]">{item.item_name}</div>
                     {item.item_name_en && (
@@ -153,11 +153,11 @@ const COATestResultTable: React.FC<{
                   </td>
                   <td className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-center">
                     {item.judgment === '符合' ? (
-                      <span className="inline-flex items-center gap-1 text-green-600 font-semibold text-xs">
+                      <span className="inline-flex items-center gap-1 text-success-600 font-semibold text-xs">
                         <CheckCircle className="w-3 h-3" /> 符合 Conform
                       </span>
                     ) : item.judgment === '不符合' ? (
-                      <span className="inline-flex items-center gap-1 text-red-600 font-semibold text-xs">
+                      <span className="inline-flex items-center gap-1 text-error-600 font-semibold text-xs">
                         <XCircle className="w-3 h-3" /> 不符合
                       </span>
                     ) : (
@@ -186,8 +186,8 @@ const COAConclusion: React.FC<{
         <div className="text-sm font-semibold text-[var(--text-primary, #1e293b)] mb-1">结论 Conclusion</div>
         <div className={`text-sm px-3 py-2 rounded-lg ${
           coa.qualified
-            ? 'bg-green-50 text-green-700 border border-green-200'
-            : 'bg-red-50 text-red-700 border border-red-200'
+            ? 'bg-success-50 text-success-700 border border-success-200'
+            : 'bg-error-50 text-error-700 border border-error-200'
         }`}>
           {basis || `该批产品符合 ${coa.gb_standard || '相关标准'} 出厂检验要求，${coa.test_conclusion}`}
         </div>
@@ -280,14 +280,14 @@ export const COAView: React.FC<COAViewProps> = ({
     <div className={`bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
       {/* 操作栏 */}
       {!compact && (
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-[var(--border-subtle, #e2e8f0)]">
+        <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border-b border-[var(--border-subtle, #e2e8f0)]">
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
               coa.qualified
-                ? 'bg-green-100 text-green-700'
+                ? 'bg-success-100 text-success-700'
                 : coa.test_conclusion === '不合格'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
+                  ? 'bg-error-100 text-error-700'
+                  : 'bg-warning-100 text-warning-700'
             }`}>
               {coa.qualified ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
               {coa.test_conclusion}
@@ -309,7 +309,7 @@ export const COAView: React.FC<COAViewProps> = ({
                 <button
                   onClick={handleGenerateWord}
                   disabled={downloading !== null}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-secondary-50 rounded-lg transition-colors disabled:opacity-50"
                   title="生成并下载 Word 文档"
                 >
                   {downloading === 'word'
@@ -320,7 +320,7 @@ export const COAView: React.FC<COAViewProps> = ({
                 <button
                   onClick={handleGeneratePdf}
                   disabled={downloading !== null}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-secondary-50 rounded-lg transition-colors disabled:opacity-50"
                   title="生成并下载 PDF 文档"
                 >
                   {downloading === 'pdf'
@@ -333,7 +333,7 @@ export const COAView: React.FC<COAViewProps> = ({
             {onDownloadPdf && (
               <button
                 onClick={onDownloadPdf}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-blue-50 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-secondary-50 rounded-lg transition-colors"
                 title="打开原PDF"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -343,7 +343,7 @@ export const COAView: React.FC<COAViewProps> = ({
             {onPrint && (
               <button
                 onClick={onPrint}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-blue-50 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[var(--text-muted, #64748b)] hover:text-[var(--color-primary, #1a56db)] hover:bg-secondary-50 rounded-lg transition-colors"
                 title="打印"
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -398,10 +398,10 @@ export const COACard: React.FC<{
       </div>
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
         coa.qualified
-          ? 'bg-green-100 text-green-700'
+          ? 'bg-success-100 text-success-700'
           : coa.test_conclusion === '不合格'
-            ? 'bg-red-100 text-red-700'
-            : 'bg-yellow-100 text-yellow-700'
+            ? 'bg-error-100 text-error-700'
+            : 'bg-warning-100 text-warning-700'
       }`}>
         {coa.test_conclusion}
       </span>
@@ -430,7 +430,7 @@ export const COACard: React.FC<{
           {coa.test_items.filter(i => i.judgment === '符合').length}/{coa.test_items.length} 项符合
         </span>
         {coa.test_items.some(i => i.judgment === '不符合') && (
-          <span className="text-xs text-red-500 font-medium">⚠ 含不合格项</span>
+          <span className="text-xs text-error-500 font-medium">⚠ 含不合格项</span>
         )}
       </div>
     )}
@@ -446,23 +446,23 @@ export const COAStatsPanel: React.FC<{ stats: { total: number; qualified: number
       <div className="text-2xl font-bold text-[var(--text-primary, #1e293b)]">{stats.total}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">总批次</div>
     </div>
-    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-green-200 p-4">
-      <div className="text-2xl font-bold text-green-600">{stats.qualified}</div>
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-success-200 p-4">
+      <div className="text-2xl font-bold text-success-600">{stats.qualified}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">合格</div>
     </div>
-    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-red-200 p-4">
-      <div className="text-2xl font-bold text-red-600">{stats.unqualified}</div>
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-error-200 p-4">
+      <div className="text-2xl font-bold text-error-600">{stats.unqualified}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">不合格</div>
     </div>
-    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-yellow-200 p-4">
-      <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-warning-200 p-4">
+      <div className="text-2xl font-bold text-warning-600">{stats.pending}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">待检</div>
     </div>
-    <div className="col-span-2 md:col-span-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4">
+    <div className="col-span-2 md:col-span-4 bg-gradient-to-r from-secondary-50 to-accent-50 rounded-xl border border-secondary-200 p-4">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-sm text-[var(--text-muted, #64748b)]">合格率</div>
-          <div className="text-3xl font-bold text-blue-600">{stats.qualified_rate}%</div>
+          <div className="text-3xl font-bold text-secondary-600">{stats.qualified_rate}%</div>
         </div>
         <div className="text-right">
           <div className="text-sm text-[var(--text-muted, #64748b)]">产品种类</div>

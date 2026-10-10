@@ -20,11 +20,11 @@ export default function ThemePanel({ showThemePanel, activeTheme, onApplyTheme, 
       </button>
 
       <div className="absolute top-12 right-3 z-50 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60 p-3 min-w-[220px] animate-fade-in">
-        <div className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-2 px-1">选择配色主题</div>
+        <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2 px-1">选择配色主题</div>
         <div className="space-y-1">
           {THEME_PRESETS.map(t => (
             <button key={t.id} onClick={() => onApplyTheme(t)}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${activeTheme.id === t.id ? 'ring-2 ring-offset-1 ring-emerald-500 bg-primary-50/80 dark:bg-primary-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-700/40'}`}
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${activeTheme.id === t.id ? 'ring-2 ring-offset-1 ring-success-500 bg-primary-50/80 dark:bg-primary-300/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/40'}`}
               style={{ color: activeTheme.id === t.id ? t.accentColor : undefined }}>
               <span className="text-base">{t.icon}</span>
               <span className="flex-1 text-left">{t.name}</span>

@@ -170,7 +170,7 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-neutral-800 rounded-xl">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
             <Filter className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
             <select
               value={selectedCategory}
@@ -198,7 +198,7 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-neutral-800 rounded-xl p-1">
+          <div className="flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl p-1">
             <button
               onClick={() => onToggleSort('score')}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
@@ -227,8 +227,8 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
             onClick={() => setShowOptimizationAdvisor(!showOptimizationAdvisor)}
             className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${
               showOptimizationAdvisor
-                ? 'shadow-md bg-warning-500/10 dark:bg-warning-500/16 text-warning-600 dark:text-warning-400'
-                : 'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                ? 'shadow-md bg-warning-500/10 dark:bg-warning-500/16 text-warning-600 dark:text-warning-700'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
             }`}
           >
             <Lightbulb className="w-3.5 h-3.5" />
@@ -239,8 +239,8 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
             onClick={() => setShowSharePanel(!showSharePanel)}
             className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${
               showSharePanel
-                ? 'shadow-md bg-cyan-500/10 dark:bg-cyan-500/16 text-cyan-600 dark:text-cyan-400'
-                : 'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                ? 'shadow-md bg-info-500/10 dark:bg-info-500/16 text-info-600 dark:text-info-700'
+                : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -250,7 +250,7 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
           {onCompareVersions && (
             <button
               onClick={() => onCompareVersions(1, 2)}
-              className="px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md"
               title="对比最近两个版本"
             >
               <GitBranch className="w-3.5 h-3.5" />
@@ -260,7 +260,7 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
 
           <div className="relative group">
             <button
-              className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md'}`}
+              className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${'bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md'}`}
             >
               <FileText className="w-3.5 h-3.5" />
               {t('ai.formula.generateTab.export')}

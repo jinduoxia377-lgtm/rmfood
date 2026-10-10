@@ -30,7 +30,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
   onDeleteSelected,
 }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
+    <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200">
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-1 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 p-1">
           <button
@@ -93,8 +93,8 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
 
       <div className="flex items-center space-x-4">
         {hasUnsavedChanges && (
-          <span className="text-sm text-orange-600 flex items-center">
-            <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse" />
+          <span className="text-sm text-warning-600 flex items-center">
+            <span className="w-2 h-2 bg-warning-500 rounded-full mr-2 animate-pulse" />
             有 {changesCount} 处未保存更改
           </span>
         )}
@@ -109,14 +109,14 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
           <button
             onClick={onDiscard}
             disabled={!hasUnsavedChanges || isSaving}
-            className="px-3 py-1.5 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-md hover:bg-slate-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-md hover:bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             放弃更改
           </button>
           <button
             onClick={onSave}
             disabled={!hasUnsavedChanges || isSaving}
-            className="px-3 py-1.5 text-sm font-medium text-secondary-main bg-secondary-container border border-transparent rounded-md hover:bg-secondary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-3 py-1.5 text-sm font-medium text-secondary-main bg-secondary-container border border-transparent rounded-md hover:bg-secondary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isSaving ? (
               <>

@@ -48,7 +48,7 @@ export const COLORS = [
   'var(--color-warning, #FF9F0A)', // amber
   'var(--color-error, #FF3B30)', // red
   'var(--color-tertiary, var(--color-accent-500))', // violet
-  'var(--color-pink-500, #D946EF)', // pink
+  'var(--color-danger-500, #D946EF)', // pink
   'var(--color-info, var(--color-secondary-500))', // cyan
   'var(--color-success-400, #4ADE80)', // lime
 ];
@@ -176,7 +176,7 @@ export function PieChartComponent({
     <div className={`w-full ${className}`}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
-          <Pie
+          <Pie rootTabIndex={-1}
             data={chartData}
             cx="50%"
             cy="50%"

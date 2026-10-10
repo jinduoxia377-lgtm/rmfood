@@ -82,7 +82,7 @@ const DEFAULT_METRICS = [
   { key: 'ph', name: 'pH 值', color: 'var(--color-primary, var(--color-primary-400))' },
 ]
 
-const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
+const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-danger-500, #D946EF)']
 
 // ===== 主组件实现 =====
 
@@ -228,13 +228,13 @@ function StabilityTimeSeries({
               <div className="absolute top-full right-0 mt-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 z-10 overflow-hidden">
                 <button
                   onClick={() => handleExport('png')}
-                  className="w-full px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 text-left"
+                  className="w-full px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 text-left"
                 >
                   导出 PNG 图片
                 </button>
                 <button
                   onClick={() => handleExport('svg')}
-                  className="w-full px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 text-left border-t border-neutral-200 dark:border-neutral-700"
+                  className="w-full px-4 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 text-left border-t border-neutral-200 dark:border-neutral-700"
                 >
                   导出 SVG 矢量图
                 </button>
@@ -251,11 +251,11 @@ function StabilityTimeSeries({
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-200, #E5E7EB)" opacity={0.5} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
+              tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
+              tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }}
               domain={['auto', 'auto']}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -321,7 +321,7 @@ function StabilityTimeSeries({
                   value: point.label,
                   position: 'top',
                   fill: 'var(--color-gray-700, #374151)',
-                  fontSize: 11,
+                  fontSize: 12,
                 }}
                 onClick={() => onInflectionPointClick?.(point)}
                 style={{ cursor: 'pointer' }}
@@ -335,7 +335,7 @@ function StabilityTimeSeries({
       {inflectionPoints.length > 0 && (
         <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
           <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-yellow-500" />
+            <MapPin className="w-4 h-4 text-warning-500" />
             关键拐点标记
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -343,7 +343,7 @@ function StabilityTimeSeries({
               <button
                 key={point.id}
                 onClick={() => onInflectionPointClick?.(point)}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-left"
+                className="flex items-center gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-left"
               >
                 <AlertTriangle
                   className={`w-4 h-4 ${
@@ -351,14 +351,14 @@ function StabilityTimeSeries({
                       ? 'text-error-500'
                       : point.type === 'valley'
                       ? 'text-success-500'
-                      : 'text-yellow-500'
+                      : 'text-warning-500'
                   }`}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
                     {point.label}
                   </div>
-                  <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                  <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {new Date(point.timestamp).toLocaleDateString('zh-CN')}
                   </div>
                 </div>

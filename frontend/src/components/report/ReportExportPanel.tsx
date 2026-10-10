@@ -67,10 +67,10 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-white dark:bg-gray-800">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-700 p-5 bg-white dark:bg-neutral-800">
       <div className="flex items-center gap-2 mb-4">
-        <BarChart3 size={28} className="text-violet-600" />
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100">导出报告</h3>
+        <BarChart3 size={28} className="text-accent-600" />
+        <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">导出报告</h3>
       </div>
 
       {/* 格式选择 */}
@@ -81,15 +81,15 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
             onClick={() => setSelectedFormat(fmt)}
             className={`p-3 rounded-xl border-2 transition-all text-center ${
               selectedFormat === fmt
-                ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
-                : 'border-gray-200 dark:border-gray-700 hover:border-violet-300'
+                ? 'border-accent-500 bg-accent-50 dark:bg-accent-300/20'
+                : 'border-neutral-200 dark:border-neutral-700 hover:border-accent-300'
             }`}
           >
             <div className="text-2xl mb-1">{FORMAT_CONFIG[fmt].icon}</div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
               {FORMAT_CONFIG[fmt].label}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
               {FORMAT_CONFIG[fmt].desc}
             </div>
           </button>
@@ -100,14 +100,14 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
       <button
         onClick={handleExport}
         disabled={exporting}
-        className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium transition-colors disabled:cursor-not-allowed"
+        className="w-full py-3 rounded-xl bg-accent-600 hover:bg-accent-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-600 text-white font-medium transition-colors disabled:cursor-not-allowed"
       >
         {exporting ? (<><Clock size={14} className='animate-spin' /> 生成中...</>) : `导出 ${FORMAT_CONFIG[selectedFormat].label}`}
       </button>
 
       {/* 错误提示 */}
       {error && (
-        <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+        <div className="mt-3 p-3 rounded-xl bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 text-sm text-error-600 dark:text-error-700">
           {error}
         </div>
       )}
@@ -117,7 +117,7 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
         <a
           href={exportedUrl}
           download
-          className="mt-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 font-medium hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+          className="mt-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-success-300 dark:border-success-700 text-success-700 dark:text-success-700 font-medium hover:bg-success-50 dark:hover:bg-success-900/20 transition-colors"
         >
           <CheckCircle2 size={14} className="text-success-500" /> 下载报告
         </a>

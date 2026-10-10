@@ -45,12 +45,12 @@ const CALLOUT_CONFIG: Record<CalloutType, {
   iconColor: string
   titleColor: string
 }> = {
-  INFO:     { icon: Info,          label: '信息',   bgColor: 'bg-secondary-50 dark:bg-blue-950/40', borderColor: 'border-blue-200 dark:border-blue-800', iconColor: 'text-secondary-500',    titleColor: 'text-secondary-700 dark:text-secondary-300' },
-  WARNING:  { icon: AlertTriangle,  label: '警告',   bgColor: 'bg-warning-50 dark:bg-amber-950/40', borderColor: 'border-amber-200 dark:border-amber-800', iconColor: 'text-warning-500',  titleColor: 'text-warning-700 dark:text-warning-300' },
-  SUCCESS:  { icon: CheckCircle,    label: '成功',   bgColor: 'bg-success-50 dark:bg-green-950/40', borderColor: 'border-green-200 dark:border-green-800', iconColor: 'text-success-500',  titleColor: 'text-success-700 dark:text-success-300' },
-  ERROR:    { icon: XCircle,       label: '错误',   bgColor: 'bg-error-50 dark:bg-red-950/40', borderColor: 'border-red-200 dark:border-red-800', iconColor: 'text-error-500',    titleColor: 'text-error-700 dark:text-error-300' },
-  TIP:      { icon: Lightbulb,     label: '提示',   bgColor: 'bg-indigo-50 dark:bg-indigo-950/40', borderColor: 'border-indigo-200 dark:border-indigo-800', iconColor: 'text-indigo-500',  titleColor: 'text-indigo-700 dark:text-indigo-300' },
-  NOTE:     { icon: MessageSquare,  label: '注意',   bgColor: 'bg-slate-50 dark:bg-neutral-900/40', borderColor: 'border-neutral-200 dark:border-neutral-700', iconColor: 'text-neutral-500',   titleColor: 'text-neutral-700 dark:text-neutral-300' },
+  INFO:     { icon: Info,          label: '信息',   bgColor: 'bg-secondary-50 dark:bg-secondary-950/40', borderColor: 'border-secondary-200 dark:border-secondary-800', iconColor: 'text-secondary-500',    titleColor: 'text-secondary-700 dark:text-secondary-700' },
+  WARNING:  { icon: AlertTriangle,  label: '警告',   bgColor: 'bg-warning-50 dark:bg-warning-950/40', borderColor: 'border-warning-200 dark:border-warning-800', iconColor: 'text-warning-500',  titleColor: 'text-warning-700 dark:text-warning-700' },
+  SUCCESS:  { icon: CheckCircle,    label: '成功',   bgColor: 'bg-success-50 dark:bg-success-950/40', borderColor: 'border-success-200 dark:border-success-800', iconColor: 'text-success-500',  titleColor: 'text-success-700 dark:text-success-600' },
+  ERROR:    { icon: XCircle,       label: '错误',   bgColor: 'bg-error-50 dark:bg-error-950/40', borderColor: 'border-error-200 dark:border-error-800', iconColor: 'text-error-500',    titleColor: 'text-error-700 dark:text-error-600' },
+  TIP:      { icon: Lightbulb,     label: '提示',   bgColor: 'bg-accent-50 dark:bg-accent-950/40', borderColor: 'border-accent-200 dark:border-accent-800', iconColor: 'text-accent-500',  titleColor: 'text-accent-700 dark:text-accent-700' },
+  NOTE:     { icon: MessageSquare,  label: '注意',   bgColor: 'bg-neutral-50 dark:bg-neutral-900/40', borderColor: 'border-neutral-200 dark:border-neutral-700', iconColor: 'text-neutral-500',   titleColor: 'text-neutral-700 dark:text-neutral-300' },
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -716,9 +716,9 @@ interface BlockquoteProps {
 function BlockquoteRenderer({ lines, nestLevel }: BlockquoteProps) {
   // 嵌套颜色递进：每层使用更淡的色调
   const borderColors = [
-    'border-l-blue-400 bg-secondary-50/40 dark:bg-blue-950/20',
-    'border-l-purple-400 bg-accent-50/40 dark:bg-purple-950/20',
-    'border-l-emerald-400 bg-primary-50/40 dark:bg-emerald-950/20',
+    'border-l-blue-400 bg-secondary-50/40 dark:bg-secondary-950/20',
+    'border-l-accent-400 bg-accent-50/40 dark:bg-accent-950/20',
+    'border-l-emerald-400 bg-primary-50/40 dark:bg-success-950/20',
   ]
   const styleIdx = Math.min(nestLevel - 1, borderColors.length - 1)
 
@@ -820,7 +820,7 @@ function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
               title={expanded ? '收起' : '展开'}
             >
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              <span className="text-[10px] ml-0.5">{expanded ? '收起' : `${codeLines.length} 行`}</span>
+              <span className="text-xs ml-0.5">{expanded ? '收起' : `${codeLines.length} 行`}</span>
             </button>
           )}
           <button onClick={handleCopy} className="chat-md-code-btn" title="复制代码">

@@ -304,7 +304,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
       className={`bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden ${className}`}
     >
       {/* 步骤指示器 */}
-      <div className="px-8 pt-6 pb-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="px-8 pt-6 pb-4 bg-gradient-to-r from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           {steps.map((step, index) => (
             <React.Fragment key={step.title}>
@@ -323,7 +323,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                 </motion.div>
                 <span
                   className={`text-xs font-medium ${
-                    index === currentStep ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500'
+                    index === currentStep ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-500'
                   }`}
                 >
                   {step.title}
@@ -370,14 +370,14 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         <button
                           key={preset.id}
                           onClick={() => applyPreset(preset.id)}
-                          className="px-3 py-1.5 text-xs rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
+                          className="px-3 py-1.5 text-xs rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-700 dark:hover:text-primary-600 transition-colors border border-transparent hover:border-success-200 dark:hover:border-success-800"
                         >
                           {preset.name}
                         </button>
                       ))}
                       <button
                         onClick={() => setShowPresetManager(!showPresetManager)}
-                        className="px-3 py-1.5 text-xs rounded-lg bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
+                        className="px-3 py-1.5 text-xs rounded-lg bg-secondary-50 dark:bg-secondary-300/20 text-secondary-600 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
                       >
                         <FolderOpen className="w-3 h-3 inline mr-1" />
                         管理预设
@@ -416,14 +416,14 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() => toggleEfficacy(type.id)}
                           className={`p-3 rounded-xl border-2 transition-all text-left ${
                             selected
-                              ? 'border-emerald-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                              ? 'border-success-500 bg-primary-50 dark:bg-primary-300/20 shadow-md'
                               : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={selected ? 'text-primary-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>{type.icon}</span>
+                            <span className={selected ? 'text-primary-700' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>{type.icon}</span>
                             <span
-                              className={`text-sm font-medium ${selected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300'}`}
+                              className={`text-sm font-medium ${selected ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300'}`}
                             >
                               {type.label}
                             </span>
@@ -438,8 +438,9 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                                 onChange={(e) => updateEfficacyWeight(type.id, Number(e.target.value))}
                                 onClick={(e) => e.stopPropagation()}
                                 className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                aria-label="功效权重"
                               />
-                              <span className="text-xs text-primary-600 font-medium">{selected.weight}%</span>
+                              <span className="text-xs text-primary-700 font-medium">{selected.weight}%</span>
                             </div>
                           )}
                         </motion.button>
@@ -449,10 +450,10 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 权重汇总 */}
                   {efficacies.length > 0 && (
-                    <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                       <span className="text-sm text-neutral-600 dark:text-neutral-400">
                         已选 {efficacies.length} 种功效，总权重：
-                        <span className="font-semibold text-primary-600">{totalWeight}%</span>
+                        <span className="font-semibold text-primary-700">{totalWeight}%</span>
                       </span>
                     </div>
                   )}
@@ -486,7 +487,8 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                             phRange: [Math.min(Number(e.target.value), prev.phRange[1]), prev.phRange[1]],
                           }))
                         }
-                        className="flex-1 accent-red-500"
+                        className="flex-1 accent-error-500"
+                        aria-label="pH 下限"
                       />
                       <input
                         type="range"
@@ -500,7 +502,8 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                             phRange: [prev.phRange[0], Math.max(Number(e.target.value), prev.phRange[0])],
                           }))
                         }
-                        className="flex-1 accent-green-500"
+                        className="flex-1 accent-success-500"
+                        aria-label="pH 上限"
                       />
                     </div>
                   </div>
@@ -600,7 +603,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             constraints.excludedAllergens.includes(allergen.id)
-                              ? 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-400 border border-red-300 dark:border-red-700'
+                              ? 'bg-error-100 dark:bg-error-300/25 text-error-700 dark:text-error-600 border border-error-300 dark:border-error-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
@@ -632,7 +635,8 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                             maxCostPerKg: Number(e.target.value) || null,
                           }))
                         }
-                        className="flex-1 accent-yellow-500"
+                        className="flex-1 accent-warning-500"
+                        aria-label="成本上限"
                       />
                       <button
                         onClick={() => setConstraints((prev) => ({ ...prev, maxCostPerKg: null }))}
@@ -678,7 +682,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             advanced.sourcePreference.includes(source.value)
-                              ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-green-300 dark:border-green-700'
+                              ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600 border border-success-300 dark:border-success-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
@@ -717,7 +721,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             advanced.certifications.includes(cert.value)
-                              ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 border border-purple-300 dark:border-purple-700'
+                              ? 'bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 border border-accent-300 dark:border-accent-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
@@ -756,7 +760,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             advanced.targetMarket.includes(market.value)
-                              ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-blue-300 dark:border-blue-700'
+                              ? 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 border border-secondary-300 dark:border-secondary-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
@@ -793,7 +797,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             advanced.specialRestrictions.includes(restriction.value)
-                              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-700'
+                              ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700 border border-warning-300 dark:border-warning-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
@@ -818,7 +822,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="border-l border-neutral-200 dark:border-neutral-700 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 p-4 overflow-hidden"
+              className="border-l border-neutral-200 dark:border-neutral-700 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900 p-4 overflow-hidden"
             >
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
@@ -838,7 +842,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
         {!showPreview && (
           <button
             onClick={() => setShowPreview(true)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-neutral-800 shadow-lg rounded-l-lg border border-r-0 border-neutral-200 dark:border-neutral-700 hover:bg-slate-50"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-neutral-800 shadow-lg rounded-l-lg border border-r-0 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50"
           >
             <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
@@ -846,7 +850,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
       </div>
 
       {/* 底部操作栏 */}
-      <div className="px-8 py-4 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+      <div className="px-8 py-4 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {currentStep > 0 && (
             <button
@@ -885,7 +889,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
             disabled={!canProceed && currentStep < steps.length - 1}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all ${
               canProceed || currentStep === steps.length - 1
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
+                ? 'bg-gradient-to-r from-success-500 to-success-500 hover:from-success-600 hover:to-success-600'
                 : 'bg-neutral-300 dark:bg-neutral-600 cursor-not-allowed'
             }`}
           >
@@ -917,7 +921,7 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
             {data.selectedEfficacies.slice(0, 5).map((e: any) => (
               <div key={e.id} className="flex items-center justify-between">
                 <span className="text-neutral-700 dark:text-neutral-300">{e.label}</span>
-                <span className="text-primary-600 font-medium">{e.weight}%</span>
+                <span className="text-primary-700 font-medium">{e.weight}%</span>
               </div>
             ))}
             {data.selectedEfficacies.length > 5 && (
@@ -979,7 +983,7 @@ function PresetManager({
   const [newPresetName, setNewPresetName] = useState('');
 
   return (
-    <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-xl space-y-3">
+    <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">管理自定义预设</h4>
         <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 text-sm">
@@ -993,7 +997,7 @@ function PresetManager({
           value={newPresetName}
           onChange={(e) => setNewPresetName(e.target.value)}
           placeholder="输入预设名称..."
-          className="flex-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="flex-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-success-500"
         />
         <button
           onClick={() => {

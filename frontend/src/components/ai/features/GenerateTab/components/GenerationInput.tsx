@@ -156,11 +156,11 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <RefreshCw className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                  <RefreshCw className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
                 </div>
                 {DEFAULTS.PLACEHOLDER_TEXTS.TITLE_SELECT_EFFECTS}
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 text-white shadow-sm">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-accent-surface-deep)] text-white shadow-sm">
                   {selectionCount}/{VALIDATION.maxEffectSelection}
                 </span>
               </h3>
@@ -206,7 +206,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
                       {effect.label}
 
                       {effect.popular && !isSelected && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-400 font-semibold border border-warning-200 dark:border-warning-700">
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-700 font-semibold border border-warning-200 dark:border-warning-700">
                           {DEFAULTS.PLACEHOLDER_TEXTS.BADGE_POPULAR}
                         </span>
                       )}
@@ -244,7 +244,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
                     : <Sparkles className="w-4 h-4" />
                 }
                 size="lg"
-                className="min-w-[180px] rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary-500 via-indigo-500 to-purple-500 hover:from-primary-600 hover:via-indigo-600 hover:to-purple-600"
+                className="min-w-[180px] rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary-500 via-accent-500 to-accent-500 hover:from-primary-600 hover:via-accent-600 hover:to-accent-600"
               >
                 {useLlm
                   ? DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_AI_GENERATE
@@ -254,7 +254,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
 
               {/* 快捷提示 */}
               {selectedEffects.length > 0 && (
-                <span className="text-xs text-neutral-400 dark:text-neutral-500 hidden sm:inline">
+                <span className="text-xs text-neutral-400 dark:text-neutral-400 hidden sm:inline">
                   ✓ {selectedEffects.length} 个功效已选择
                 </span>
               )}

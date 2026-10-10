@@ -44,8 +44,8 @@ export const TrendChart: FC<Props> = ({ data, loading }) => {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
-          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-            <BarChart3 size={18} className="text-neutral-400" />
+          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <BarChart3 size={18} className="text-neutral-600" />
             研发趋势
           </CardTitle>
         </CardHeader>
@@ -77,8 +77,8 @@ export const TrendChart: FC<Props> = ({ data, loading }) => {
   return (
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+        <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-600 dark:text-neutral-400" />
           研发趋势
         </CardTitle>
       </CardHeader>
@@ -97,23 +97,32 @@ export const TrendChart: FC<Props> = ({ data, loading }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" tickFormatter={xTickFormatter} />
-              <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={36} />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" tickFormatter={xTickFormatter} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={36} />
               <Tooltip {...tooltipStyle} />
-              <Legend wrapperStyle={{ paddingTop: 16, fontSize: 12 }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="新增配方" stroke="var(--color-primary, #10B981)" fill="url(#colorFormula)" strokeWidth={2} />
-              <Area type="monotone" dataKey="新增实验" stroke="var(--color-accent, #8B5CF6)" fill="url(#colorExp)" strokeWidth={2} />
-              <Area type="monotone" dataKey="批准配方" stroke="var(--color-secondary, #3B82F6)" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
+              {/* D-53：图例文字不再继承 series stroke（#10B981 白底仅 2.54:1），
+                  统一改用 --text-secondary，亮/暗双模式均 ≥ 4.5:1 */}
+              <Legend
+                wrapperStyle={{ paddingTop: 16, fontSize: 12 }}
+                iconType="circle"
+                iconSize={8}
+                formatter={(value: string) => (
+                  <span style={{ color: 'var(--text-secondary, #475569)' }}>{value}</span>
+                )}
+              />
+              <Area type="monotone" dataKey="新增配方" stroke="var(--color-primary-700, #047857)" fill="url(#colorFormula)" strokeWidth={2} />
+              <Area type="monotone" dataKey="新增实验" stroke="var(--color-accent-700, #6D28D9)" fill="url(#colorExp)" strokeWidth={2} />
+              <Area type="monotone" dataKey="批准配方" stroke="var(--color-secondary-700, #1D4ED8)" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
           <div className="h-[200px] flex items-center justify-center">
             <EmptyState
-              icon={<BarChart3 size={28} className="text-neutral-400 dark:text-neutral-600" />}
+              icon={<BarChart3 size={28} className="text-neutral-600 dark:text-neutral-400" />}
               title="暂无趋势数据"
               description="创建第一个配方后，这里将显示研发趋势"
               action={
-                <Link to="/formulas/new" className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
+                <Link to="/formulas/new" className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-700 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-700 font-medium">
                   <Plus size={14} />
                   新建配方
                 </Link>

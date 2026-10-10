@@ -1006,8 +1006,8 @@ export class FormulaDesignEngine {
       data: {
         title: '多维评分',
         items: [
-          { label: '功效', value: Math.round(formula.scores.efficacy * 100), unit: '分', trend: 'up', color: 'text-primary-600' },
-          { label: '安全', value: Math.round(formula.scores.safety * 100), unit: '分', trend: 'up', color: 'text-primary-600' },
+          { label: '功效', value: Math.round(formula.scores.efficacy * 100), unit: '分', trend: 'up', color: 'text-primary-700' },
+          { label: '安全', value: Math.round(formula.scores.safety * 100), unit: '分', trend: 'up', color: 'text-primary-700' },
           { label: '口感', value: Math.round(formula.scores.taste * 100), unit: '分', trend: formula.scores.taste > 0.6 ? 'up' : 'stable', color: 'text-warning-600' },
           { label: '稳定', value: Math.round(formula.scores.stability * 100), unit: '分', trend: 'up', color: 'text-secondary-600' },
           { label: '成本', value: Math.round(formula.scores.cost * 100), unit: '分', trend: formula.scores.cost > 0.6 ? 'up' : 'down', color: 'text-accent-600' },

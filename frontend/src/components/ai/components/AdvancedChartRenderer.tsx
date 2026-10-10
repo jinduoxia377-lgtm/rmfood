@@ -98,7 +98,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
   <div className="absolute top-2 right-2 flex items-center space-x-1 z-10 opacity-0 hover:opacity-100 transition-opacity">
     <button
       onClick={() => onExport('png')}
-      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-600"
       title="导出PNG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
     </button>
     <button
       onClick={() => onExport('svg')}
-      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-600"
       title="导出SVG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
       </svg>
     </button>
     <button
-      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 text-neutral-600"
+      className="p-1.5 bg-white dark:bg-neutral-900 rounded shadow-sm border border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 text-neutral-600"
       title="全屏"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,7 +263,7 @@ const FunnelPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }>
     {data.map((item, i) => (
       <div
         key={i}
-        className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium py-3 rounded-t flex items-center justify-between px-8 transition-all hover:from-blue-600 hover:to-blue-700"
+        className="bg-gradient-to-r from-[var(--color-secondary-surface)] to-[var(--color-secondary-surface-deep)] text-white font-medium py-3 rounded-t flex items-center justify-between px-8 transition-all hover:from-[var(--color-secondary-surface-deep)] hover:to-[var(--color-secondary-surface-deep)]"
         style={{ width: `${100 - i * 15}%` }}
       >
         <span>{item.name || `阶段${i + 1}`}</span>
@@ -287,7 +287,7 @@ const BoxPlotPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }
   <div className="flex items-end justify-around h-full px-8 pb-8">
     {data.map((_, i) => (
       <div key={i} className="flex flex-col items-center">
-        <div className="w-16 h-32 border-2 border-blue-500 rounded relative bg-secondary-50">
+        <div className="w-16 h-32 border-2 border-secondary-500 rounded relative bg-secondary-50">
           <div className="absolute left-0 right-0 bg-secondary-500" style={{ top: '25%', height: '50%' }} />
           <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 bg-secondary-500" style={{ top: '10%', height: '80%' }} />
         </div>
@@ -346,7 +346,7 @@ const GanttPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> 
         <span className="w-24 text-sm text-neutral-700 truncate">{task.name || `任务${i + 1}`}</span>
         <div className="flex-1 h-6 bg-neutral-100 dark:bg-neutral-800 rounded relative ml-4">
           <div
-            className="absolute h-full bg-gradient-to-r from-green-400 to-green-500 rounded"
+            className="absolute h-full bg-gradient-to-r from-success-400 to-success-500 rounded"
             style={{
               left: `${(task.start || 0) * 100}%`,
               width: `${((task.end || task.start + 0.3) - (task.start || 0)) * 100}%`,

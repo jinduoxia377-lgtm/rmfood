@@ -29,7 +29,7 @@ export default function PerformancePanel({
     <>
       {/* 性能监控面板 */}
       {showPerfPanel && (
-        <div className="absolute top-14 right-3 z-40 w-56 rounded-xl bg-neutral-900/95 dark:bg-slate-950/95 backdrop-blur-xl border border-neutral-700/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute top-14 right-3 z-40 w-56 rounded-xl bg-neutral-900/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-700/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           <div className="px-3 py-2 border-b border-neutral-700/40 flex items-center justify-between">
             <span className="text-xs font-bold text-primary-400 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
@@ -44,7 +44,7 @@ export default function PerformancePanel({
             <div className="flex items-center justify-between">
               <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧率 FPS</span>
               <span className={`text-xs font-mono font-bold tabular-nums ${
-                perfStats.fps >= 55 ? 'text-primary-400' : perfStats.fps >= 40 ? 'text-warning-400' : perfStats.fps >= 24 ? 'text-orange-400' : 'text-error-400'
+                perfStats.fps >= 55 ? 'text-primary-400' : perfStats.fps >= 40 ? 'text-warning-400' : perfStats.fps >= 24 ? 'text-warning-400' : 'text-error-400'
               }`}>
                 {perfStats.fps} <span className="text-[8px] font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">fps</span>
               </span>

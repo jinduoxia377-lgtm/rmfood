@@ -31,10 +31,10 @@ export interface CentralityPanelProps {
 }
 
 const RANK_BADGES = [
-  'bg-yellow-100 text-yellow-700',
+  'bg-warning-100 text-warning-700',
   'bg-neutral-200 text-neutral-600',
-  'bg-orange-100 text-orange-700',
-  'bg-slate-50 dark:bg-neutral-800 text-neutral-400',
+  'bg-warning-100 text-warning-700',
+  'bg-neutral-50 dark:bg-neutral-800 text-neutral-400',
 ]
 
 export default function CentralityPanel({
@@ -53,8 +53,8 @@ export default function CentralityPanel({
   return (
     <div className="absolute top-14 right-3 z-40 w-72 rounded-xl bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[70vh] overflow-y-auto">
       <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
-        <span className="text-xs font-bold text-violet-500 uppercase tracking-wider flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+        <span className="text-xs font-bold text-accent-500 uppercase tracking-wider flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse" />
           中心性分析
         </span>
         <div className="flex items-center gap-1">
@@ -78,7 +78,7 @@ export default function CentralityPanel({
             { label: '边', value: stats.totalEdges, color: 'text-primary-500' },
             { label: '密度', value: stats.density, color: 'text-accent-500' },
           ].map(s => (
-            <div key={s.label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-1.5 text-center">
+            <div key={s.label} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-1.5 text-center">
               <div className={`text-xs font-bold tabular-nums ${s.color}`}>{s.value}</div>
               <div className="text-[7px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{s.label}</div>
             </div>
@@ -133,8 +133,8 @@ export default function CentralityPanel({
               return (
                 <button key={`${item.node.id}_${idx}`}
                   onClick={() => onNodeClick?.(item.node)}
-                  className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-secondary-50/70 dark:hover:bg-blue-950/20 transition-colors group text-left">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-slate-50 dark:bg-neutral-800 text-neutral-400'}`}>
+                  className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-secondary-50/70 dark:hover:bg-secondary-950/20 transition-colors group text-left">
+                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-neutral-50 dark:bg-neutral-800 text-neutral-400'}`}>
                     {idx + 1}
                   </span>
                   <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: conf?.color || '#9CA3AF' }} />
@@ -143,7 +143,7 @@ export default function CentralityPanel({
                   </span>
                   <span className="text-[9px] font-mono font-bold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{item.degree}</span>
                   <div className="w-8 h-1 bg-neutral-100 dark:bg-neutral-700/30 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-violet-400 transition-all" style={{ width: `${pct}%` }} />
+                    <div className="h-full rounded-full bg-gradient-to-r from-secondary-400 to-accent-400 transition-all" style={{ width: `${pct}%` }} />
                   </div>
                 </button>
               )
@@ -154,7 +154,7 @@ export default function CentralityPanel({
         {/* 连通分量警告 */}
         {stats.connectedComponents > 1 && (
           <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2 mt-1">
-            <div className="text-[8px] text-warning-600 dark:text-warning-700 px-2 py-1.5 bg-warning-50 dark:bg-warning-900/15 rounded-lg">
+            <div className="text-[8px] text-warning-600 dark:text-warning-700 px-2 py-1.5 bg-warning-50 dark:bg-warning-300/18 rounded-lg">
               ⚠ 图存在 {stats.connectedComponents} 个连通分量，最大分量含 {stats.largestComponentSize} 节点
             </div>
           </div>

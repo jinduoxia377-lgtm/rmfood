@@ -149,11 +149,11 @@ export function StabilityPredictTab() {
       {/* 左侧：输入控制面板 — 玻璃态设计 */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary-500 to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary-500 to-info-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
           <Card className="relative p-6 space-y-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
             {/* 标题区 */}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary-500 to-cyan-600 flex items-center justify-center shadow-md flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary-500 to-info-600 flex items-center justify-center shadow-md flex-shrink-0">
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -186,8 +186,8 @@ export function StabilityPredictTab() {
             {/* 储存条件配置 — 卡片式分组 */}
             <div className="rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 p-4 space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center">
-                  <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-600" />
+                <div className="w-6 h-6 rounded-lg bg-secondary-100 dark:bg-secondary-300/25 flex items-center justify-center">
+                  <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-700" />
                 </div>
                 <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
                   储存条件配置
@@ -196,7 +196,7 @@ export function StabilityPredictTab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     温度 (°C)
                   </label>
                   <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))} className="rounded-lg">
@@ -206,7 +206,7 @@ export function StabilityPredictTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     湿度 (%)
                   </label>
                   <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))} className="rounded-lg">
@@ -219,7 +219,7 @@ export function StabilityPredictTab() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     光照条件
                   </label>
                   <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')} className="rounded-lg">
@@ -229,7 +229,7 @@ export function StabilityPredictTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     包装类型
                   </label>
                   <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')} className="rounded-lg">
@@ -322,10 +322,10 @@ export function StabilityPredictTab() {
         {!stabilityResult ? (
           <Card
             className="h-full flex items-center justify-center bg-gradient-to-br
-                           from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-900"
+                           from-secondary-50 to-info-50 dark:from-neutral-800 dark:to-neutral-900"
           >
             <div className="text-center space-y-3 p-8">
-              <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-600" />
+              <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-700" />
               <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">等待输入配方...</h3>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
                 在左侧输入成分名称并配置储存条件后，点击"本地计算"或"AI 分析"按钮，
@@ -367,7 +367,7 @@ export function StabilityPredictTab() {
                           stabilityResult.score >= 80
                             ? 'bg-success-500'
                             : stabilityResult.score >= 60
-                              ? 'bg-yellow-500'
+                              ? 'bg-warning-500'
                               : 'bg-error-500'
                         }`}
                         style={{ width: `${stabilityResult.score}%` }}
@@ -434,7 +434,7 @@ export function StabilityPredictTab() {
                       <div className="w-full bg-neutral-200 rounded-full h-2 overflow-hidden">
                         <div
                           className={`h-full transition-all duration-500 ${
-                            contrib.impact > 2 ? 'bg-error-500' : contrib.impact > 1.2 ? 'bg-yellow-500' : 'bg-success-500'
+                            contrib.impact > 2 ? 'bg-error-500' : contrib.impact > 1.2 ? 'bg-warning-500' : 'bg-success-500'
                           }`}
                           style={{
                             width: `${Math.min((contrib.impact / 4) * 100, 100)}%`,
@@ -460,8 +460,8 @@ export function StabilityPredictTab() {
                   {stabilityResult.storageRecommendations.map((rec, index) => (
                     <div
                       key={index}
-                      className="flex gap-3 p-3 rounded-lg bg-success-50 dark:bg-success-900/20
-                                 border border-green-200 dark:border-green-800"
+                      className="flex gap-3 p-3 rounded-lg bg-success-50 dark:bg-success-300/20
+                                 border border-success-200 dark:border-success-800"
                     >
                       <span
                         className="flex-shrink-0 w-6 h-6 rounded-full bg-success-200

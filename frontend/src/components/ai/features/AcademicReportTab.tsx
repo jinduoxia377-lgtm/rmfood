@@ -441,7 +441,8 @@ export function AcademicReportTab({
                   type="text"
                   defaultValue={report.title}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+        aria-label="报告标题"
+      />
               </div>
 
               <div>
@@ -482,7 +483,8 @@ export function AcademicReportTab({
                   defaultValue={report.abstract}
                   rows={6}
                   className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                />
+        aria-label="摘要"
+      />
               </div>
 
               <hr className="my-4 border-neutral-200 dark:border-neutral-700" />
@@ -493,17 +495,19 @@ export function AcademicReportTab({
                 </label>
                 <div className="space-y-4">
                   {report.chapters?.map((section, index) => (
-                    <div key={index} className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4">
+                    <div key={index} className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4">
                       <input
                         type="text"
                         defaultValue={section.title}
                         className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 mb-2"
-                      />
+        aria-label="章节标题"
+      />
                       <textarea
                         defaultValue={section.content}
                         rows={4}
                         className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                      />
+        aria-label="章节内容"
+      />
                     </div>
                   ))}
                 </div>

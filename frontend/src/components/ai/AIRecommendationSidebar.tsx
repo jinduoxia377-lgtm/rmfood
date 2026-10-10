@@ -54,7 +54,7 @@ const TYPE_ICONS = {
   template: <Star size={14} className="text-accent-600" />,
   formula: <Zap size={14} className="text-secondary-600" />,
   tip: <TrendingUp size={14} className="text-success-600" />,
-  article: <Eye size={14} className="text-orange-600" />,
+  article: <Eye size={14} className="text-warning-600" />,
 }
 
 const TYPE_LABELS = {
@@ -164,8 +164,8 @@ export function AIRecommendationSidebar({
   const getConfidenceColor = (score: number) => {
     if (score >= 0.85) return 'text-success-600 bg-success-50'
     if (score >= 0.7) return 'text-secondary-600 bg-secondary-50'
-    if (score >= 0.5) return 'text-yellow-600 bg-yellow-50'
-    return 'text-neutral-600 bg-slate-50 dark:bg-neutral-800'
+    if (score >= 0.5) return 'text-warning-600 bg-warning-50'
+    return 'text-neutral-600 bg-neutral-50 dark:bg-neutral-800'
   }
 
   const filteredRecommendations =
@@ -207,7 +207,7 @@ export function AIRecommendationSidebar({
             onClick={() => setTypeFilter('all')}
             className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
               typeFilter === 'all'
-                ? 'bg-accent-100 text-accent-700 border border-purple-300'
+                ? 'bg-accent-100 text-accent-700 border border-accent-300'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
@@ -219,7 +219,7 @@ export function AIRecommendationSidebar({
               onClick={() => setTypeFilter(type)}
               className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap flex items-center gap-1 transition-colors ${
                 typeFilter === type
-                  ? 'bg-accent-100 text-accent-700 border border-purple-300'
+                  ? 'bg-accent-100 text-accent-700 border border-accent-300'
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
@@ -263,7 +263,7 @@ export function AIRecommendationSidebar({
           <Card key={`${item.id}-${index}`} className="p-3 hover:shadow-md transition-shadow group">
             <div className="flex items-start gap-3">
               {/* 序号 */}
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs flex items-center justify-center font-semibold">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-danger-surface-deep)] text-white text-xs flex items-center justify-center font-semibold">
                 {index + 1}
               </span>
 
@@ -298,12 +298,12 @@ export function AIRecommendationSidebar({
                       <Badge
                         variant="neutral"
                         size="sm"
-                        className={`text-[10px] ${getConfidenceColor(item.confidence_score)}`}
+                        className={`text-xs ${getConfidenceColor(item.confidence_score)}`}
                       >
                         匹配度 {(item.confidence_score * 100).toFixed(0)}%
                       </Badge>
 
-                      <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
                         <Clock size={10} />
                         {TYPE_LABELS[item.type]}
                       </span>
@@ -357,7 +357,7 @@ export function AIRecommendationSidebar({
 
       {/* 最后更新时间 */}
       {lastRefreshTime && !isLoading && (
-        <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center pt-2">
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center pt-2">
           上次更新: {lastRefreshTime.toLocaleTimeString('zh-CN')}
         </p>
       )}

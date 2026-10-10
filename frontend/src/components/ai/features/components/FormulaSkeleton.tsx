@@ -50,7 +50,7 @@ export const FormulaSkeleton = React.memo<FormulaSkeletonProps>(({ count = 5 }) 
             <div className="h-8 w-24 rounded-md skeleton-shimmer" />
             <div className="h-8 w-18 rounded-md skeleton-shimmer" />
             <div className="h-8 w-22 rounded-md skeleton-shimmer" />
-            <div className="h-8 w-16 rounded-md skeleton-shimmer bg-primary-50 dark:bg-primary-900/20" />
+            <div className="h-8 w-16 rounded-md skeleton-shimmer bg-primary-50 dark:bg-primary-300/20" />
           </div>
 
           {/* 底部元信息行 */}

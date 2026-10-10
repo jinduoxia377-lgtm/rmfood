@@ -220,13 +220,13 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
 
   const getScoreColor = (key: string): string => {
     const colors: Record<string, string> = {
-      efficacy: 'text-primary-600',
+      efficacy: 'text-primary-700',
       safety: 'text-secondary-600',
       taste: 'text-warning-600',
       cost: 'text-accent-600',
-      synergy: 'text-cyan-600',
-      stability: 'text-rose-600',
-      overall_fitness: 'text-primary-600',
+      synergy: 'text-info-600',
+      stability: 'text-danger-600',
+      overall_fitness: 'text-primary-700',
     };
     return colors[key] || 'text-neutral-600';
   };
@@ -331,7 +331,8 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => handlePopulationChange(e.target.value)}
                     min="10"
                     max="300"
-                  />
+        aria-label="种群大小"
+      />
                   <span className="param-desc">每代个体数量，建议50-100</span>
                 </div>
                 <div className="param-item">
@@ -342,7 +343,8 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => handleGenerationsChange(e.target.value)}
                     min="5"
                     max="200"
-                  />
+        aria-label="进化代数"
+      />
                   <span className="param-desc">最大迭代次数，建议30-100</span>
                 </div>
                 <div className="param-item">
@@ -353,6 +355,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => setMutationRate(parseInt(e.target.value))}
                     min={1}
                     max={50}
+                    aria-label="变异率"
                   />
                   <span className="param-value">{mutationRate}%</span>
                   <span className="param-desc">基因变异概率，建议5-20%</span>
@@ -365,6 +368,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => setCrossoverRate(parseInt(e.target.value))}
                     min={10}
                     max={100}
+                    aria-label="交叉率"
                   />
                   <span className="param-value">{crossoverRate}%</span>
                   <span className="param-desc">个体交叉概率，建议70-90%</span>
@@ -377,6 +381,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => setEliteRate(parseInt(e.target.value))}
                     min={5}
                     max={40}
+                    aria-label="精英保留"
                   />
                   <span className="param-value">{eliteRate}%</span>
                   <span className="param-desc">最优个体保留比例</span>
@@ -389,7 +394,8 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     onChange={(e) => handleCandidateCountChange(e.target.value)}
                     min="1"
                     max="30"
-                  />
+        aria-label="候选数量"
+      />
                   <span className="param-desc">输出的Top-N方案数</span>
                 </div>
               </div>
@@ -412,7 +418,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
               <div className="algorithm-info">
                 <div className="info-item">
                   <div className="info-icon">
-                    <Dna className="w-5 h-5 text-primary-600" />
+                    <Dna className="w-5 h-5 text-primary-700" />
                   </div>
                   <div className="info-content">
                     <h4>非支配排序</h4>
@@ -421,7 +427,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                 </div>
                 <div className="info-item">
                   <div className="info-icon">
-                    <BarChart3 className="w-5 h-5 text-cyan-600" />
+                    <BarChart3 className="w-5 h-5 text-info-600" />
                   </div>
                   <div className="info-content">
                     <h4>拥挤度计算</h4>
@@ -430,7 +436,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                 </div>
                 <div className="info-item">
                   <div className="info-icon">
-                    <Target className="w-5 h-5 text-primary-600" />
+                    <Target className="w-5 h-5 text-primary-700" />
                   </div>
                   <div className="info-content">
                     <h4>精英保留</h4>
@@ -634,7 +640,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                       </span>
                       <button
                         onClick={handleStopOptimization}
-                        className="ml-auto px-3 py-1 rounded-lg text-xs font-medium bg-error-500/10 text-error-600 dark:text-error-400 border border-error-200 dark:border-error-800 hover:bg-error-500/20 transition-colors flex items-center gap-1"
+                        className="ml-auto px-3 py-1 rounded-lg text-xs font-medium bg-error-500/10 text-error-600 dark:text-error-600 border border-error-200 dark:border-error-800 hover:bg-error-500/20 transition-colors flex items-center gap-1"
                       >
                         <Square className="w-3 h-3" />
                         停止

@@ -16,9 +16,9 @@ const typeLabels: Record<ReferenceType, string> = {
 const typeColors: Record<ReferenceType, string> = {
   article: 'bg-secondary-100 text-secondary-700',
   book: 'bg-success-100 text-success-700',
-  conference: 'bg-pink-100 text-pink-700',
-  thesis: 'bg-indigo-100 text-indigo-700',
-  website: 'bg-orange-100 text-orange-700',
+  conference: 'bg-danger-100 text-danger-700',
+  thesis: 'bg-accent-100 text-accent-700',
+  website: 'bg-warning-100 text-warning-700',
   patent: 'bg-warning-100 text-warning-700',
 };
 
@@ -144,7 +144,7 @@ export function ReferenceLibrary() {
           <div className="relative">
             <button
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               筛选
               <ChevronDown className="w-4 h-4" />
@@ -179,7 +179,7 @@ export function ReferenceLibrary() {
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-between">
+        <div className="px-4 py-3 bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center justify-between">
           <span className="text-sm text-primary dark:text-primary-700">
             已选择 {selectedIds.size} 项
           </span>
@@ -297,7 +297,7 @@ export function ReferenceLibrary() {
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               取消
             </button>
@@ -311,7 +311,7 @@ export function ReferenceLibrary() {
         </div>
       )}
 
-      <div className="flex items-center gap-3 px-2 py-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
+      <div className="flex items-center gap-3 px-2 py-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
         <input
           type="checkbox"
           checked={selectedIds.size === displayedReferences.length && displayedReferences.length > 0}
@@ -400,7 +400,7 @@ export function ReferenceLibrary() {
           <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无文献</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           >
             添加第一篇文献
           </button>

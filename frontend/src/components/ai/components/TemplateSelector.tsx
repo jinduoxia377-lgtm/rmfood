@@ -44,17 +44,17 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
   const getTypeColor = (type: ReportTemplateType): string => {
     switch (type) {
       case ReportTemplateType.ACADEMIC:
-        return 'border-blue-500 bg-secondary-50 hover:bg-secondary-100';
+        return 'border-secondary-500 bg-secondary-50 hover:bg-secondary-100';
       case ReportTemplateType.BUSINESS:
-        return 'border-green-500 bg-success-50 hover:bg-success-100';
+        return 'border-success-500 bg-success-50 hover:bg-success-100';
       case ReportTemplateType.EXPERIMENT:
-        return 'border-purple-500 bg-accent-50 hover:bg-accent-100';
+        return 'border-accent-500 bg-accent-50 hover:bg-accent-100';
       case ReportTemplateType.PATENT:
-        return 'border-red-500 bg-error-50 hover:bg-error-100';
+        return 'border-error-500 bg-error-50 hover:bg-error-100';
       case ReportTemplateType.REGULATORY:
-        return 'border-cyan-500 bg-cyan-50 hover:bg-cyan-100';
+        return 'border-info-500 bg-info-50 hover:bg-info-100';
       default:
-        return 'border-neutral-500 bg-slate-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800';
+        return 'border-neutral-500 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-800';
     }
   };
 
@@ -69,7 +69,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
       case ReportTemplateType.PATENT:
         return 'bg-error-500';
       case ReportTemplateType.REGULATORY:
-        return 'bg-cyan-500';
+        return 'bg-info-500';
       default:
         return 'bg-neutral-50 dark:bg-neutral-8000';
     }
@@ -87,7 +87,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             type="checkbox"
             checked={showRecommended}
             onChange={(e) => setShowRecommended(e.target.checked)}
-            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
           />
           <span className="text-sm text-neutral-700">仅显示推荐模板</span>
         </label>
@@ -109,7 +109,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
           placeholder="搜索模板名称、描述或标签..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="block w-full pl-10 pr-3 py-3 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="block w-full pl-10 pr-3 py-3 border border-neutral-300 dark:border-neutral-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
         />
       </div>
 
@@ -137,7 +137,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
              role="button" tabIndex={0} onClick={() => onSelect(template)}
             className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg ${
               selectedTemplateId === template.id
-                ? `${getTypeColor(template.type)} ring-2 ring-offset-2 ring-blue-500`
+                ? `${getTypeColor(template.type)} ring-2 ring-offset-2 ring-secondary-500`
                 : `border-neutral-200 bg-white dark:bg-neutral-900 hover:border-neutral-300`
             }`}
           >
@@ -168,7 +168,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center space-x-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <span className="flex items-center">
-                  <svg className="w-4 h-4 mr-1 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 mr-1 text-warning-500" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   {template.metadata.rating}

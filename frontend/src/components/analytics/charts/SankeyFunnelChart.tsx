@@ -132,8 +132,8 @@ export const SankeyFunnelChart: React.FC<Props> = ({
             x={n.x - 8} y={n.y + n.h / 2}
             textAnchor="end"
             dominantBaseline="middle"
-            className="text-[11px] fill-neutral-600 dark:fill-neutral-400 select-none"
-            style={{ fontSize: 11 }}
+            className="text-xs fill-neutral-600 dark:fill-neutral-400 select-none"
+            style={{ fontSize: 12 }}
           >
             {n.label}
           </text>
@@ -169,7 +169,7 @@ export const SankeyFunnelChart: React.FC<Props> = ({
           y={height - 6}
           textAnchor="middle"
           className="fill-neutral-500 select-none"
-          style={{ fontSize: 11 }}
+          style={{ fontSize: 12 }}
         >
           整体转化率 {(stages[stages.length - 1].count / total * 100).toFixed(1)}%
         </text>

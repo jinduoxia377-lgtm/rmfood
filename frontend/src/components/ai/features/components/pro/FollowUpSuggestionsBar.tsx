@@ -86,7 +86,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
               hover:shadow-sm transition-all duration-200
               text-left"
           >
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-600 font-medium flex-shrink-0">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 font-medium flex-shrink-0">
               {sug.category}
             </span>
             <span className="text-xs text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200 truncate max-w-[200px]">
@@ -98,7 +98,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
       </div>
 
       {/* 手动输入提示 */}
-      <div className="mt-2 text-[10px] text-neutral-400 dark:text-neutral-400">
+      <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-400">
         或直接输入您的问题...
       </div>
     </div>

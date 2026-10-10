@@ -95,30 +95,30 @@ export function ReferenceSearch() {
       </div>
 
       {error && (
-        <div className="mb-4 px-3 py-2 bg-error-50 text-error-600 border border-red-200 rounded-lg text-sm">
+        <div className="mb-4 px-3 py-2 bg-error-50 text-error-600 border border-error-200 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
-        <p className="text-sm text-neutral-500 mb-3">快速检索示例：</p>
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3">快速检索示例：</p>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleQuickSearch('doi', '10.1038/s41586-023-06164-9')}
-            className="px-3 py-1.5 text-xs bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-400 rounded-lg hover:bg-secondary-100 dark:hover:bg-secondary-900/30"
+            className="px-3 py-1.5 text-xs bg-secondary-50 dark:bg-secondary-300/20 text-secondary-600 dark:text-secondary-700 rounded-lg hover:bg-secondary-100 dark:hover:bg-secondary-900/30"
           >
             DOI: 10.1038/s41586-023-06164-9
           </button>
           <button
             onClick={() => handleQuickSearch('isbn', '9787030720378')}
-            className="px-3 py-1.5 text-xs bg-success-50 dark:bg-success-900/20 text-success-600 dark:text-success-400 rounded-lg hover:bg-success-100 dark:hover:bg-success-900/30"
+            className="px-3 py-1.5 text-xs bg-success-50 dark:bg-success-300/20 text-success-600 dark:text-success-600 rounded-lg hover:bg-success-100 dark:hover:bg-success-900/30"
           >
             ISBN: 9787030720378
           </button>
         </div>
       </div>
 
-      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+      <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
         <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">检索说明</h4>
         <ul className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1">
           <li>• DOI检索：输入完整DOI号，自动获取文献元数据</li>

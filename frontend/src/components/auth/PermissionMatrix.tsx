@@ -49,28 +49,28 @@ const ROLES = [
     id: 'ADMIN',
     name: '超级管理员',
     icon: Shield,
-    color: 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
+    color: 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600',
     description: '拥有系统所有权限',
   },
   {
     id: 'FORMULATOR',
     name: '配方师',
     icon: UserCheck,
-    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
+    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
     description: '配方全权管理',
   },
   {
     id: 'REVIEWER',
     name: '审核员',
     icon: Eye,
-    color: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400',
+    color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
     description: '审核与批准权限',
   },
   {
     id: 'RESEARCHER',
     name: '研究员',
     icon: UserCheck,
-    color: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
+    color: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
     description: '基础读写权限',
   },
   {
@@ -228,7 +228,7 @@ export function PermissionMatrix({
       )}
     >
       {/* ── 头部工具栏 ── */}
-      <div className="px-6 py-4 bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
+      <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Shield size={24} className="text-secondary-600" />
@@ -258,12 +258,12 @@ export function PermissionMatrix({
 
       {/* ── 图例说明 ── */}
       {showLegend && (
-        <div className="px-6 py-3 bg-secondary-50 dark:bg-secondary-900/10 border-b border-neutral-200 dark:border-neutral-700">
+        <div className="px-6 py-3 bg-secondary-50 dark:bg-secondary-300/15 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-6 text-xs">
             <span className="font-medium text-neutral-700 dark:text-neutral-300">操作说明:</span>
             {ACTIONS.map((action) => (
               <div key={action.id} className="flex items-center gap-1">
-                <span className="w-5 h-5 rounded bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-300">
+                <span className="w-5 h-5 rounded bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-600 dark:text-neutral-300">
                   {action.short}
                 </span>
                 <span className="text-neutral-600 dark:text-neutral-400">{action.name}</span>
@@ -292,13 +292,13 @@ export function PermissionMatrix({
                 </th>
               ))}
             </tr>
-            <tr className="bg-slate-50 dark:bg-neutral-800/50">
-              <th className="px-4 py-2 text-left text-xs text-neutral-500 dark:text-neutral-500 sticky left-0 bg-slate-50 dark:bg-neutral-800/50 z-10"></th>
+            <tr className="bg-neutral-50 dark:bg-neutral-800/50">
+              <th className="px-4 py-2 text-left text-xs text-neutral-500 dark:text-neutral-400 sticky left-0 bg-neutral-50 dark:bg-neutral-800/50 z-10"></th>
               {RESOURCES.flatMap((resource) =>
                 ACTIONS.map((action) => (
                   <th
                     key={`${resource.id}-${action.id}`}
-                    className="w-9 px-1 py-1 text-center text-[10px] font-medium text-neutral-500 dark:text-neutral-500 border-l border-neutral-200 dark:border-neutral-700"
+                    className="w-9 px-1 py-1 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 border-l border-neutral-200 dark:border-neutral-700"
                     title={action.name}
                   >
                     {action.short}
@@ -312,8 +312,8 @@ export function PermissionMatrix({
               <tr
                 key={role.id}
                 className={cn(
-                  'border-b border-neutral-100 dark:border-neutral-700/50 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors',
-                  selectedRole === role.id && 'bg-secondary-50 dark:bg-secondary-900/10',
+                  'border-b border-neutral-100 dark:border-neutral-700/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors',
+                  selectedRole === role.id && 'bg-secondary-50 dark:bg-secondary-300/15',
                 )}
                 onClick={() => setSelectedRole(role.id)}
               >
@@ -350,12 +350,12 @@ export function PermissionMatrix({
                         <button
                           disabled={readOnly || isAdmin}
                           className={cn(
-                            'w-7 h-7 rounded flex items-center justify-center transition-all text-[11px] font-bold',
+                            'w-7 h-7 rounded flex items-center justify-center transition-all text-xs font-bold',
                             permitted
                               ? isAdmin
-                                ? 'bg-error-100 text-error-600 dark:bg-error-900/30 dark:text-error-400'
-                                : 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400'
-                              : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-600',
+                                ? 'bg-error-100 text-error-600 dark:bg-error-300/25 dark:text-error-600'
+                                : 'bg-success-100 text-success-600 dark:bg-success-300/25 dark:text-success-600'
+                              : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-600',
                             !isAdmin && !readOnly && 'cursor-pointer hover:scale-110',
                             isAdmin && 'cursor-not-allowed',
                           )}
@@ -374,7 +374,7 @@ export function PermissionMatrix({
       </div>
 
       {/* ── 底部统计栏 ── */}
-      <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
+      <div className="px-6 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
         <div className="flex items-center gap-4">
           <span>共 {ROLES.length} 个角色</span>
           <span>·</span>
@@ -410,8 +410,8 @@ export function PermissionBadge({ role, resource, action, permissions = DEFAULT_
       size="sm"
       className={cn(
         'font-mono',
-        hasPerm && 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400',
-        !hasPerm && 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
+        hasPerm && 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
+        !hasPerm && 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600',
       )}
     >
       {hasPerm ? <Check size={12} className="mr-1" /> : <X size={12} className="mr-1" />}

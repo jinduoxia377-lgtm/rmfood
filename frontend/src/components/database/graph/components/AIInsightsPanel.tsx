@@ -14,9 +14,9 @@ export interface AIInsightsPanelProps {
 }
 
 const severityColors = {
-  info: 'border-blue-200 bg-secondary-50/80 dark:border-blue-800/30 dark:bg-blue-950/20',
-  warning: 'border-amber-200 bg-warning-50/80 dark:border-amber-800/30 dark:bg-amber-950/20',
-  critical: 'border-red-200 bg-error-50/80 dark:border-red-800/30 dark:bg-red-950/20',
+  info: 'border-secondary-200 bg-secondary-50/80 dark:border-secondary-800/30 dark:bg-secondary-950/20',
+  warning: 'border-warning-200 bg-warning-50/80 dark:border-warning-800/30 dark:bg-warning-950/20',
+  critical: 'border-error-200 bg-error-50/80 dark:border-error-800/30 dark:bg-error-950/20',
 } as const
 
 const typeIcons: Record<string, string> = {
@@ -36,18 +36,18 @@ export default function AIInsightsPanel({
   if (!showAIPanel) return null
 
   return (
-    <div className="absolute top-14 left-3 z-50 w-[380px] max-h-[65vh] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/60 dark:border-purple-700/40 overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/50 dark:to-purple-950/50 border-b border-purple-100/50 dark:border-purple-800/30">
+    <div className="absolute top-14 left-3 z-50 w-[380px] max-h-[65vh] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 overflow-hidden animate-fade-in">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50 dark:border-accent-800/30">
         <div className="flex items-center gap-2">
           <span className="text-base">🤖</span>
-          <span className="text-sm font-bold text-accent-700 dark:text-accent-300">AI 智能洞察</span>
+          <span className="text-sm font-bold text-accent-700 dark:text-accent-700">AI 智能洞察</span>
           {aiInsights.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-accent-100 dark:bg-accent-900/40 text-accent-600 dark:text-accent-300">{aiInsights.length} 条发现</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-accent-100 dark:bg-accent-300/30 text-accent-600 dark:text-accent-700">{aiInsights.length} 条发现</span>
           )}
         </div>
         <div className="flex items-center gap-1">
           <button onClick={onRegenerateInsights} disabled={isGeneratingInsight}
-            className="px-2 py-1 rounded-lg text-[10px] font-medium bg-accent-container text-accent-main hover:bg-accent-container disabled:opacity-50 transition-colors flex items-center gap-1">
+            className="px-2 py-1 rounded-lg text-xs font-medium bg-accent-container text-accent-main hover:bg-accent-container disabled:opacity-50 transition-colors flex items-center gap-1">
             {isGeneratingInsight ? '⏳ 分析中...' : '🔄 重新分析'}
           </button>
           <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>
@@ -57,12 +57,12 @@ export default function AIInsightsPanel({
       <div className="overflow-y-auto custom-scrollbar p-3 space-y-2 max-h-[calc(65vh-56px)]">
         {isGeneratingInsight ? (
           <div className="flex flex-col items-center py-8 gap-3">
-            <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-500 rounded-full animate-spin" />
-            <p className="text-xs text-neutral-400">正在分析图谱拓扑结构...</p>
+            <div className="w-8 h-8 border-2 border-accent-200 border-t-accent-500 rounded-full animate-spin" />
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在分析图谱拓扑结构...</p>
           </div>
         ) : aiInsights.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-xs text-neutral-400 mb-2">暂无洞察数据</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">暂无洞察数据</p>
             <button onClick={onRegenerateInsights} className="text-xs text-accent-500 hover:text-accent-600 font-medium">点击生成分析报告 →</button>
           </div>
         ) : (
@@ -79,13 +79,13 @@ export default function AIInsightsPanel({
                         {(insight.confidence * 100).toFixed(0)}%
                       </span>
                     </div>
-                    <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-3">{insight.description}</p>
+                    <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-3">{insight.description}</p>
                     {insight.actionLabel && insight.relatedNodeIds && insight.relatedNodeIds.length > 0 && (
                       <button
                         onClick={() => {
                           // The caller will need to resolve the node from filteredData
                         }}
-                        className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-white/70 dark:bg-neutral-700/50 text-accent-600 dark:text-purple-350 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors">
+                        className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-white/70 dark:bg-neutral-700/50 text-accent-600 dark:text-accent-350 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors">
                         {insight.actionLabel} →
                       </button>
                     )}

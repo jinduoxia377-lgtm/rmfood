@@ -39,16 +39,16 @@ const DEFAULT_WORKFLOW_TEMPLATES = [
 function StepBadge({ step }: { step: import('@/components/ai/shared/types').StepState }) {
   const iconMap = {
     running: <Loader2 className="w-3 h-3 animate-spin" />,
-    success: <CheckCircle2 className="w-3 h-3 text-green-500" />,
-    failed: <XCircle className="w-3 h-3 text-red-500" />,
+    success: <CheckCircle2 className="w-3 h-3 text-success-500" />,
+    failed: <XCircle className="w-3 h-3 text-error-500" />,
     pending: <Circle className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />,
   };
 
   const colorMap = {
-    running: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-    success: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800',
-    failed: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800',
-    pending: 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700',
+    running: 'bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 border-secondary-200 dark:border-secondary-800',
+    success: 'bg-success-50 dark:bg-success-300/20 text-success-600 dark:text-success-700 border-success-200 dark:border-success-800',
+    failed: 'bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-700 border-error-200 dark:border-error-800',
+    pending: 'bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700',
   };
 
   const labelMap: Record<string, string> = {
@@ -59,7 +59,7 @@ function StepBadge({ step }: { step: import('@/components/ai/shared/types').Step
   };
 
   return (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded-md border text-[10px] ${colorMap[step.status]}`}>
+    <div className={`flex items-center gap-1 px-2 py-1 rounded-md border text-xs ${colorMap[step.status]}`}>
       {iconMap[step.status]}
       <span>{labelMap[step.type]}</span>
       {step.latencyMs > 0 && <span className="opacity-60">{step.latencyMs}ms</span>}
@@ -135,20 +135,20 @@ export function AgentWorkflowTab() {
   }, [clearMessages]);
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800" data-testid="agent-workflow-tab">
+    <div className="flex flex-col h-full bg-gradient-to-br from-neutral-50 to-secondary-50 dark:from-neutral-900 dark:to-neutral-800" data-testid="agent-workflow-tab">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white">
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] flex items-center justify-center text-white">
           <Bot size={20} />
         </div>
         <div className="flex-1">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             AI 研发助手
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700">
               Agent v3.0
             </span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             Turn/Step 驱动 · Waterfall 事件 · IndexedDB 持久化 · CompactionLock
           </p>
         </div>
@@ -157,11 +157,11 @@ export function AgentWorkflowTab() {
         {recommendedRoute && (
           <button
             onClick={handleRecommendedRouteClick}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800 hover:bg-accent-100 dark:hover:bg-accent-900/40 transition-colors cursor-pointer"
             title="点击切换到此工作流模式"
           >
-            <Brain className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
-            <span className="text-xs text-violet-700 dark:text-violet-300">
+            <Brain className="w-3.5 h-3.5 text-accent-600 dark:text-accent-700" />
+            <span className="text-xs text-accent-700 dark:text-accent-700">
               {recommendedRoute.workflowType === 'formula_design' && '配方设计'}
               {recommendedRoute.workflowType === 'compliance_check' && '合规检查'}
               {recommendedRoute.workflowType === 'experiment_plan' && '实验方案'}
@@ -172,16 +172,16 @@ export function AgentWorkflowTab() {
         )}
 
         {/* 统计信息 */}
-        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
           {executedCount > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-700">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-700">
               <CheckCircle2 size={12} />
               <span>已执行 {executedCount} 次</span>
             </div>
           )}
           <button
             onClick={() => setShowCompactionInfo(!showCompactionInfo)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             title="查看 Token 使用情况"
             data-testid="token-indicator"
           >
@@ -191,7 +191,7 @@ export function AgentWorkflowTab() {
           <button
             onClick={handleClear}
             disabled={isRunning}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-500 hover:text-red-500 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-error-50 dark:hover:bg-error-900/20 text-neutral-500 hover:text-error-500 transition-colors disabled:opacity-50"
             title="清空对话"
           >
             <Trash2 size={12} />
@@ -201,15 +201,15 @@ export function AgentWorkflowTab() {
 
       {/* Token 使用详情 */}
       {showCompactionInfo && (
-        <div className="px-6 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400">
+        <div className="px-6 py-2 bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             <span>已用: {tokenCount.toLocaleString()} tokens</span>
             <span>消息数: {messages.length}</span>
-            <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
-                  tokenRatio >= 0.95 ? 'bg-red-500' :
-                  tokenRatio >= 0.8 ? 'bg-amber-500' : 'bg-green-500'
+                  tokenRatio >= 0.95 ? 'bg-error-500' :
+                  tokenRatio >= 0.8 ? 'bg-warning-500' : 'bg-success-500'
                 }`}
                 style={{ width: `${Math.min(tokenRatio * 100, 100)}%` }}
               />
@@ -223,13 +223,13 @@ export function AgentWorkflowTab() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center mb-4">
               <FlaskConical className="w-8 h-8 text-white" />
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mb-2">
+            <p className="text-sm text-neutral-600 dark:text-neutral-300 font-medium mb-2">
               AI 研发助手就绪 (v3.0)
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mb-6">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mb-6">
               Turn/Step 驱动 · Waterfall 事件拦截 · 有界并行调度(10) · IndexedDB 持久化 · CompactionLock
             </p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
@@ -245,7 +245,7 @@ export function AgentWorkflowTab() {
                   <button
                     key={s}
                     onClick={() => { setInput(s); inputRef.current?.focus(); }}
-                    className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 dark:hover:border-violet-500 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all"
+                    className="text-xs px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-accent-400 hover:text-accent-600 dark:hover:border-accent-500 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-all"
                   >
                     {s}
                   </button>
@@ -255,14 +255,14 @@ export function AgentWorkflowTab() {
 
             {/* 模板说明 */}
             {selectedTemplate && (
-              <div className="mt-8 p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-md">
+              <div className="mt-8 p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 max-w-md">
                 <div className="flex items-start gap-3">
-                  <FileText className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                  <FileText className="w-6 h-6 text-accent-600 dark:text-accent-700" />
                   <div className="text-left">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white">
                       {selectedTemplate?.label ?? selectedTemplate?.name ?? ''}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       {selectedTemplate?.desc ?? selectedTemplate?.description ?? ''}
                     </p>
                   </div>
@@ -276,8 +276,8 @@ export function AgentWorkflowTab() {
 
         {/* 当前 Turn 详情 */}
         {currentTurn && (
-          <div className="mt-4 p-3 rounded-xl bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800">
-            <div className="flex items-center gap-2 text-xs text-violet-700 dark:text-violet-300 mb-2">
+          <div className="mt-4 p-3 rounded-xl bg-accent-50 dark:bg-accent-300/15 border border-accent-200 dark:border-accent-800">
+            <div className="flex items-center gap-2 text-xs text-accent-700 dark:text-accent-700 mb-2">
               <Activity className="w-3 h-3 animate-pulse" />
               <span>Turn: {currentTurn.turnId.slice(-8)}</span>
               <span className="ml-auto">{currentTurn.status}</span>
@@ -301,8 +301,8 @@ export function AgentWorkflowTab() {
         {/* Running indicator */}
         {isRunning && tools.length === 0 && !currentTurn && (
           <div className="flex justify-start mt-4">
-            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-500 shadow-sm">
-              <span className="inline-block w-2 h-2 rounded-full bg-violet-500 mr-2 animate-pulse" />
+            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm text-neutral-500 shadow-sm">
+              <span className="inline-block w-2 h-2 rounded-full bg-accent-500 mr-2 animate-pulse" />
               Agent 思考中...
             </div>
           </div>
@@ -312,7 +312,7 @@ export function AgentWorkflowTab() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-6 py-4">
+      <div className="border-t border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm px-6 py-4">
         <div className="flex items-end gap-3">
           <textarea
             ref={inputRef}
@@ -321,20 +321,20 @@ export function AgentWorkflowTab() {
             onKeyDown={handleKeyDown}
             placeholder="描述你的研发需求，AI 将自动检索知识、生成配方并检查合规性…"
             rows={2}
-            className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+            className="flex-1 resize-none rounded-xl border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
             disabled={isRunning}
             data-testid="agent-input"
           />
           <button
             onClick={() => sendMessage(input.trim())}
             disabled={isRunning || !input.trim()}
-            className="px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white text-sm font-medium transition-all disabled:cursor-not-allowed shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 flex items-center gap-2"
+            className="px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] hover:from-[var(--color-accent-surface-deep)] hover:to-[var(--color-accent-surface-deep)] disabled:bg-neutral-300 dark:disabled:bg-neutral-600 text-white text-sm font-medium transition-all disabled:cursor-not-allowed shadow-lg shadow-accent-500/20 hover:shadow-accent-500/30 flex items-center gap-2"
           >
             <Send size={16} />
             <span className="hidden sm:inline">发送</span>
           </button>
         </div>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-center">
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 text-center">
           Enter 发送 · Shift+Enter 换行 · 并行工具 max=10 · IndexedDB 持久化 · CompactionLock
         </p>
       </div>

@@ -60,7 +60,7 @@ export function TemplateList({ templates = [], onSelect, onCreate }: TemplateLis
           <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无模板</p>
           <button
             onClick={onCreate}
-            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700"
           >
             创建第一个模板
           </button>

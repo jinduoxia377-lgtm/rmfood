@@ -52,7 +52,7 @@ export function FileHistory() {
 
   const statusColor = {
     pending: 'bg-secondary-100 text-secondary-700',
-    processing: 'bg-yellow-100 text-yellow-700',
+    processing: 'bg-warning-100 text-warning-700',
     completed: 'bg-success-100 text-success-700',
     failed: 'bg-error-100 text-error-700',
   }

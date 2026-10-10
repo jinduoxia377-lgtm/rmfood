@@ -99,8 +99,7 @@ function SliderField({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 bg-border rounded-full appearance-none cursor-pointer accent-primary"
-      />
+        className="w-full h-1.5 bg-border rounded-full appearance-none cursor-pointer accent-primary" aria-label="滑块" />
     </div>
   )
 }

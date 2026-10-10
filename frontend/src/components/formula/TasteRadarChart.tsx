@@ -105,14 +105,14 @@ export function TasteRadarChart({ profile, size = 200 }: TasteRadarChartProps) {
               y={centerY + labelR * Math.sin(angle)}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-[10px] fill-neutral-600 dark:fill-neutral-400"
+              className="text-xs fill-neutral-600 dark:fill-neutral-400"
             >
               {FLAVOR_LABELS[p.flavor]}
             </text>
           );
         })}
       </svg>
-      <div className="grid grid-cols-5 gap-1 text-[10px]">
+      <div className="grid grid-cols-5 gap-1 text-xs">
         {FLAVORS.map(flavor => (
           <div key={flavor} className="text-center">
             <div className="w-2 h-2 rounded-full mx-auto mb-0.5" style={{ backgroundColor: FLAVOR_COLORS[flavor] }} />

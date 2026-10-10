@@ -47,7 +47,7 @@ function SkipLink() {
   return (
     <a
       href="#main-content"
-      className="sr-only focus:not-sr-only focus:absolute focus:z-[200] focus:px-4 focus:py-2 focus:bg-[var(--color-primary-surface,theme(colors.primary.700))] focus:text-[var(--color-on-primary-surface,#fff)] focus:rounded-md"
+      className="rhine-skip-link"
     >
       跳转到主要内容
     </a>
@@ -148,7 +148,7 @@ function MobileSidebarContent({
               {item.badge && (
                 <span
                   className="flex items-center justify-center font-semibold shrink-0"
-                  style={{ minWidth: '20px', height: '20px', fontSize: 'var(--text-overline, 11px)', background: 'var(--color-primary)', color: 'white', borderRadius: '9999px', padding: '0 6px' }}
+                  style={{ minWidth: '20px', height: '20px', fontSize: 'var(--text-overline, 12px)', background: 'var(--color-primary)', color: 'white', borderRadius: '9999px', padding: '0 6px' }}
                 >
                   {item.badge > 99 ? '99+' : item.badge}
                 </span>
@@ -177,9 +177,13 @@ function MobileSidebarContent({
           <Beaker size={20} strokeWidth={2} />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="font-bold tracking-tight leading-none" style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', letterSpacing: '-0.02em' }}>
+          {/* A-13：侧边栏品牌名原本是 <h1>，导致全站唯一的 h1 是「RMFOOD」这个
+              站点名而不是页面主题，仪表盘/配方/实验等页面自己的主标题只能降级成
+              h2 —— 屏幕阅读器的「按标题导航」里页面主题缺失。
+              品牌名改为普通 <div>（它不是内容标题），h1 交给各页面自己的主标题。 */}
+          <div className="font-bold tracking-tight leading-none" style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', letterSpacing: '-0.02em' }}>
             RMFOOD
-          </h1>
+          </div>
           <p className="font-medium leading-tight mt-0.5" style={{ fontSize: 'var(--text-caption, 12px)', color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
             配方平台
           </p>
@@ -452,7 +456,7 @@ export default function MainLayout() {
         <div className="flex items-center gap-1 overflow-hidden">
           <button
             onClick={() => document.dispatchEvent(new CustomEvent('rmfood:open-command-palette'))}
-            className="p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500"
             style={{ color: 'var(--text-secondary)', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             aria-label="搜索"
           >
@@ -470,7 +474,7 @@ export default function MainLayout() {
           </button>
           <button
             onClick={() => navigate('/settings')}
-            className="p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500"
             style={{ color: 'var(--text-secondary)', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             aria-label="设置"
           >
@@ -478,7 +482,7 @@ export default function MainLayout() {
           </button>
           <button
             onClick={openHelp}
-            className="p-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 max-[900px]:hidden"
+            className="p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 max-[900px]:hidden"
             style={{ color: 'var(--text-secondary)', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             aria-label="键盘快捷键"
             title="键盘快捷键 (Ctrl+/)"
@@ -556,13 +560,32 @@ export default function MainLayout() {
         )}
         style={{
           background: 'linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end))',
-          paddingBottom: isMobile ? 'calc(var(--header-height, 56px) + var(--safe-area-inset-bottom, 0px) + 16px)' : '24px',
+          /* A-14：底部让位改由新增的 <footer> 承担（移动端 footer 自带
+             64px 的 nav 让位内边距），main 不再重复预留 56px。 */
+          paddingBottom: isMobile ? '16px' : '24px',
         }}
         tabIndex={-1}
       >
         <Outlet />
         <KeepAliveOutlet />
       </main>
+
+      {/* ── 站点页脚（A-14）──
+          此前全站没有 contentinfo 地标，屏幕阅读器缺少「页面底部信息」定位点。
+          补一条 32px 高的窄条：<footer> 是 <div> 的直接子元素（不在 main /
+          section / article 内），因此自动获得 contentinfo 角色。
+          移动端用 paddingBottom 让位给固定底部导航栏，避免被 64px 的 nav 盖住。 */}
+      <footer
+        className="shrink-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 pt-2 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900"
+        style={{
+          paddingBottom: isMobile ? 'calc(64px + var(--safe-area-inset-bottom, 0px))' : '8px',
+          fontSize: 'var(--text-caption, 12px)',
+          color: 'var(--text-secondary, #64748b)',
+        }}
+      >
+        <span>RMFOOD · 药食同源配方研发平台</span>
+        <span>© {new Date().getFullYear()} 莱茵分子</span>
+      </footer>
 
       {/* ── 底部导航栏（仅移动端） ── */}
       {isMobile && <MobileBottomNav />}

@@ -12,10 +12,10 @@ import { searchApi, type SearchResult, type SearchSuggestion } from '@/api/searc
 import { cn } from '@/lib/utils'
 
 const TYPE_CONFIG: Record<string, { icon: typeof FlaskConical; label: string; color: string }> = {
-  formula: { icon: FlaskConical, label: '配方', color: 'text-primary-600 dark:text-primary-400' },
-  experiment: { icon: TestTubes, label: '实验', color: 'text-secondary-600 dark:text-secondary-400' },
-  herb: { icon: Leaf, label: '药材', color: 'text-primary-600 dark:text-primary-400' },
-  peptide: { icon: Dna, label: '肽', color: 'text-accent-600 dark:text-accent-400' },
+  formula: { icon: FlaskConical, label: '配方', color: 'text-primary-700 dark:text-primary-700' },
+  experiment: { icon: TestTubes, label: '实验', color: 'text-secondary-600 dark:text-secondary-700' },
+  herb: { icon: Leaf, label: '药材', color: 'text-primary-700 dark:text-primary-700' },
+  peptide: { icon: Dna, label: '肽', color: 'text-accent-600 dark:text-accent-700' },
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -52,7 +52,7 @@ function ResultItem({
         'w-full flex items-center gap-3 px-4 py-3 text-left rounded-xl transition-all duration-150',
         'group',
         isSelected
-          ? 'bg-primary-50 dark:bg-primary-900/20'
+          ? 'bg-primary-50 dark:bg-primary-300/20'
           : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70',
       )}
     >
@@ -63,7 +63,7 @@ function ResultItem({
         <p className={cn(
           'text-sm font-medium truncate',
           isSelected
-            ? 'text-primary-700 dark:text-primary-300'
+            ? 'text-primary-700 dark:text-primary-700'
             : 'text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-300',
         )}>
           {item.title}
@@ -72,16 +72,16 @@ function ResultItem({
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {item.status && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+          <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
             {STATUS_LABELS[item.status] || item.status}
           </span>
         )}
         {isSelected ? (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400">
+          <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700">
             跳转
           </span>
         ) : (
-          <ArrowRight size={14} className="text-neutral-300 dark:text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ArrowRight size={14} className="text-neutral-600 dark:text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
       </div>
     </button>
@@ -276,7 +276,7 @@ export default function CommandPalette() {
       >
         {/* 搜索输入 */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-          <Search size={18} className="text-neutral-400 shrink-0" />
+          <Search size={18} className="text-neutral-600 dark:text-neutral-400 shrink-0" />
           <input
             ref={inputRef}
             id="command-palette-search"
@@ -286,18 +286,18 @@ export default function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="搜索配方、实验、药材、活性肽..."
-            className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-600 focus:outline-none"
             autoComplete="off"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              className="text-xs text-neutral-600 hover:text-neutral-600 dark:hover:text-neutral-600 transition-colors"
             >
               清除
             </button>
           )}
-          <kbd className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+          <kbd className="shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
             ESC
           </kbd>
         </div>
@@ -308,40 +308,43 @@ export default function CommandPalette() {
             /* 空状态 - 显示快捷入口 */
             <div className="px-4 py-6 text-center">
               <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <Command size={20} className="text-neutral-400" />
+                <Command size={20} className="text-neutral-600 dark:text-neutral-400" />
               </div>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">输入关键词开始搜索</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">支持搜索配方、实验、中药材、活性肽</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">支持搜索配方、实验、中药材、活性肽</p>
 
               {/* 快捷入口 */}
               <div className="mt-5 grid grid-cols-2 gap-2 max-w-xs mx-auto">
+                {/* D-68：四个快捷入口 chip 在暗色下用 *-900/20 浅色蒙版 + 600 档文字，
+                    实测 accent #a78bfa 3.72:1、secondary #60a5fa 4.02:1 —— 均未达 AA。
+                    暗色色阶是反转的（号大越亮），统一提到 700 档后为 5.49 / 5.67。 */}
                 <button
                   onClick={() => { navigate('/formulas/new'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-sm font-medium"
                 >
                   <Plus size={14} /> 新建配方
                 </button>
                 <button
                   onClick={() => { navigate('/experiments/new'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-300 hover:bg-accent-100 dark:hover:bg-violet-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 hover:bg-accent-100 dark:hover:bg-accent-900/30 transition-colors text-sm font-medium"
                 >
                   <Plus size={14} /> 新建实验
                 </button>
                 <button
                   onClick={() => { navigate('/ai'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-300 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
                 >
                   <Sparkles size={14} /> AI 助手
                 </button>
                 <button
                   onClick={() => { navigate('/databases'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
                 >
                   <Dna size={14} /> 数据库
                 </button>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-4 text-xs text-neutral-400">
+              <div className="mt-4 flex items-center justify-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
                 <span className="flex items-center gap-1"><Leaf size={12} /> 药材</span>
                 <span className="flex items-center gap-1"><FlaskConical size={12} /> 配方</span>
                 <span className="flex items-center gap-1"><TestTubes size={12} /> 实验</span>
@@ -351,7 +354,7 @@ export default function CommandPalette() {
           ) : searching ? (
             <div className="px-4 py-6 text-center">
               <div className="inline-block w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs text-neutral-400 mt-2">搜索中...</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">搜索中...</p>
             </div>
           ) : allResults.length > 0 ? (
             <div className="space-y-0.5 px-2">
@@ -379,18 +382,18 @@ export default function CommandPalette() {
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-2.5 text-left rounded-xl transition-colors',
                       isSel
-                        ? 'bg-primary-50 dark:bg-primary-900/20'
+                        ? 'bg-primary-50 dark:bg-primary-300/20'
                         : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70',
                     )}
                   >
                     <Icon size={14} className={cn('shrink-0', config.color)} />
                     <span className={cn(
                       'text-sm',
-                      isSel ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300',
+                      isSel ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-400',
                     )}>
                       {s.text}
                     </span>
-                    <span className="text-xs text-neutral-400 ml-auto">{s.hint}</span>
+                    <span className="text-xs text-neutral-600 ml-auto">{s.hint}</span>
                   </button>
                 )
               })}
@@ -398,7 +401,7 @@ export default function CommandPalette() {
           ) : (
             <div className="px-4 py-8 text-center">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">未找到相关结果</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">尝试不同的关键词</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">尝试不同的关键词</p>
             </div>
           )}
         </div>
@@ -406,10 +409,10 @@ export default function CommandPalette() {
         {/* 底部提示 */}
         {(searchData || query.length > 0) && (
           <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-            <span className="text-[10px] text-neutral-400">
+            <span className="text-xs text-neutral-600">
               {searchData ? `共 ${searchData.total} 个结果` : '输入关键词搜索'}
             </span>
-            <div className="flex items-center gap-3 text-[10px] text-neutral-400">
+            <div className="flex items-center gap-3 text-xs text-neutral-600">
               <span className="flex items-center gap-1">
                 <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">↑↓</kbd>
                 导航

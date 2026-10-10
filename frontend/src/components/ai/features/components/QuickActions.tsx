@@ -60,7 +60,7 @@ const QuickActions = memo(({
                   border border-neutral-200 dark:border-neutral-700
                   hover:bg-primary-50 dark:hover:bg-primary-900/20
                   hover:border-primary-300 dark:hover:border-primary-700
-                  hover:text-primary-700 dark:hover:text-primary-300
+                  hover:text-primary-700 dark:hover:text-primary-700
                   transition-all duration-200 shadow-sm hover:shadow-md
                   active:scale-[0.98]
                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
@@ -83,13 +83,13 @@ const QuickActions = memo(({
             disabled={isGeneratingReport || formulaCount === 0}
             className={`
               w-full flex items-center justify-center gap-2 px-4 py-2.5
-              bg-gradient-to-r from-indigo-500 to-purple-600 
-              hover:from-indigo-600 hover:to-purple-700
+              bg-gradient-to-r from-accent-500 to-accent-600 
+              hover:from-accent-600 hover:to-accent-700
               text-white font-medium rounded-xl
               shadow-md hover:shadow-lg
               transition-all duration-200
               active:scale-[0.98]
-              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2
               ${isGeneratingReport
                 ? 'opacity-75 cursor-wait'
                 : ''

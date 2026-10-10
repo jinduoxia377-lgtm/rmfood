@@ -66,8 +66,8 @@ interface RiskDetailPanelProps {
 
 const SEVERITY_CONFIG = {
   critical: { color: 'text-error-600', bg: 'bg-error-100', badge: 'danger', icon: '🔴', label: '严重' },
-  high: { color: 'text-orange-600', bg: 'bg-orange-100', badge: 'warning', icon: '🟠', label: '高' },
-  medium: { color: 'text-yellow-600', bg: 'bg-yellow-100', badge: 'warning', icon: '🟡', label: '中等' },
+  high: { color: 'text-warning-600', bg: 'bg-warning-100', badge: 'warning', icon: '🟠', label: '高' },
+  medium: { color: 'text-warning-600', bg: 'bg-warning-100', badge: 'warning', icon: '🟡', label: '中等' },
   low: { color: 'text-success-600', bg: 'bg-success-100', badge: 'success', icon: '🟢', label: '低' },
 }
 
@@ -135,7 +135,7 @@ export function RiskDetailPanel({
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
                 activeTab === tab.id
-                  ? 'text-secondary-600 dark:text-secondary-400 border-b-2 border-blue-600'
+                  ? 'text-secondary-600 dark:text-secondary-700 border-b-2 border-secondary-600'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
@@ -161,13 +161,13 @@ export function RiskDetailPanel({
               </Alert>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <h4 className="font-medium text-sm text-neutral-700 dark:text-neutral-300 mb-2">严重程度</h4>
                   <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${severityConfig.bg} ${severityConfig.color}`}>
                     {severityConfig.icon} {severityConfig.label}
                   </div>
                 </div>
-                <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                   <h4 className="font-medium text-sm text-neutral-700 dark:text-neutral-300 mb-2">影响范围</h4>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">{riskData.scope}</p>
                 </div>
@@ -198,7 +198,7 @@ export function RiskDetailPanel({
                         href={evidence.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-4 px-3 py-1 text-sm text-secondary-600 hover:text-secondary-700 border border-blue-300 rounded hover:bg-secondary-50"
+                        className="ml-4 px-3 py-1 text-sm text-secondary-600 hover:text-secondary-700 border border-secondary-300 rounded hover:bg-secondary-50"
                       >
                         查看原文
                       </a>
@@ -213,9 +213,9 @@ export function RiskDetailPanel({
             <div className="space-y-3">
               {riskData.regulations?.map((regulation, index) => (
                 <div key={index} className={`p-4 border rounded-lg ${
-                  regulation.status === 'compliant' ? 'border-green-300 bg-success-50 dark:bg-success-900/10' :
-                  regulation.status === 'non_compliant' ? 'border-red-300 bg-error-50 dark:bg-error-900/10' :
-                  'border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10'
+                  regulation.status === 'compliant' ? 'border-success-300 bg-success-50 dark:bg-success-300/15' :
+                  regulation.status === 'non_compliant' ? 'border-error-300 bg-error-50 dark:bg-error-300/15' :
+                  'border-warning-300 bg-warning-50 dark:bg-warning-300/15'
                 }`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -255,7 +255,7 @@ export function RiskDetailPanel({
           {activeTab === 'suggestions' && (
             <div className="space-y-3">
               {riskData.suggestions?.map((suggestion, index) => (
-                <div key={index} className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-blue-300 transition-colors">
+                <div key={index} className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-secondary-300 transition-colors">
                   <div className="flex items-start gap-3">
                     <Badge variant={suggestion.priority === 'high' ? 'danger' : suggestion.priority === 'medium' ? 'warning' : 'success'}>
                       {suggestion.priority === 'high' ? '高优先级' : suggestion.priority === 'medium' ? '中优先级' : '低优先级'}
@@ -270,7 +270,7 @@ export function RiskDetailPanel({
                         {suggestion.description}
                       </p>
                       {suggestion.estimatedImpact && (
-                        <p className="text-xs mt-2 text-secondary-600 dark:text-secondary-400">
+                        <p className="text-xs mt-2 text-secondary-600 dark:text-secondary-700">
                           预期效果: {suggestion.estimatedImpact}
                         </p>
                       )}
@@ -330,7 +330,7 @@ export function RiskDetailPanel({
           )}
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
+        <div className="flex items-center justify-between p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => {
               onExport?.()

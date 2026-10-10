@@ -84,7 +84,7 @@ const METRIC_COLORS: Record<keyof MetricResult, string> = {
   cost: 'var(--color-warning, #FF9F0A)',
   safety: 'var(--color-error, #FF3B30)',
   sensory: 'var(--color-primary-500, #10b981)',
-  overall: 'var(--color-pink-500, #D946EF)',
+  overall: 'var(--color-danger-500, #D946EF)',
 }
 
 const SCENARIO_COLORS = ['var(--color-primary, var(--color-primary-400))', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)']
@@ -323,13 +323,13 @@ export function SensitivityAnalysis({
               const isActive = param.id === activeParamId
 
               return (
-                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-accent-50 dark:bg-accent-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'}`}  role="button" tabIndex={0} onClick={() => setActiveParamId(param.id)}>
+                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-accent-50 dark:bg-accent-300/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}  role="button" tabIndex={0} onClick={() => setActiveParamId(param.id)}>
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{param.name}</label>
                     <span className={`text-xs font-mono px-2 py-0.5 rounded ${
                       Math.abs(deviation) < 1 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600' :
-                      deviation > 0 ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600' :
-                      'bg-error-100 dark:bg-error-900/30 text-error-600'
+                      deviation > 0 ? 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-600' :
+                      'bg-error-100 dark:bg-error-300/25 text-error-600'
                     }`}>
                       {param.currentValue}{param.unit}
                       {Math.abs(deviation) >= 1 && (
@@ -347,8 +347,7 @@ export function SensitivityAnalysis({
                     step={param.step}
                     value={param.currentValue}
                     onChange={(e) => handleParamChange(param.id, Number(e.target.value))}
-                    className={`w-full h-2 rounded-full appearance-none cursor-pointer accent-purple-500`}
-                  />
+                    className={`w-full h-2 rounded-full appearance-none cursor-pointer accent-accent-500`} aria-label="滑块" />
 
                   <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>{param.minValue}{param.unit}</span>
@@ -370,7 +369,7 @@ export function SensitivityAnalysis({
                 const color = diff > 0.5 ? 'text-success-600' : diff < -0.5 ? 'text-error-600' : 'text-neutral-600'
 
                 return (
-                  <div key={metric} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                  <div key={metric} className="flex items-center justify-between p-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{METRIC_LABELS[metric]}</span>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-semibold text-neutral-900 dark:text-white">
@@ -401,15 +400,15 @@ export function SensitivityAnalysis({
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-100, #F0F0F0)" />
                 <XAxis
                   dataKey="value"
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12 }}
                   label={{
                     value: `${parameters.find(p => p.id === activeParamId)?.name} (${parameters.find(p => p.id === activeParamId)?.unit})`,
                     position: 'insideBottomRight',
                     offset: -5,
-                    fontSize: 11,
+                    fontSize: 12,
                   }}
                 />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgba(255,255,255,0.95)',
@@ -436,7 +435,7 @@ export function SensitivityAnalysis({
                   stroke="var(--color-primary-500, #10b981)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
-                  label={{ value: '基准', position: 'top', fontSize: 11 }}
+                  label={{ value: '基准', position: 'top', fontSize: 12 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -582,7 +581,7 @@ export function SensitivityAnalysis({
                 const name = prompt('输入场景名称：')
                 if (name) saveAsScenario(name)
               }}
-              className="px-3 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-900/20 hover:bg-accent-100 dark:hover:bg-accent-900/30 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-300/20 hover:bg-accent-100 dark:hover:bg-accent-900/30 rounded-lg transition-colors"
             >
               + 新增场景
             </button>
@@ -604,9 +603,9 @@ export function SensitivityAnalysis({
                   onClick={() => setActiveScenarioIndex(idx)}
                   className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                     isActive
-                      ? 'border-purple-500 shadow-lg'
+                      ? 'border-accent-500 shadow-lg'
                       : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
-                  } ${isBest ? 'ring-2 ring-amber-400 ring-offset-2' : ''}`}
+                  } ${isBest ? 'ring-2 ring-warning-400 ring-offset-2' : ''}`}
                 >
                   {isBest && (
                     <div className="absolute -top-2 -right-2 bg-warning-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
@@ -647,7 +646,7 @@ export function SensitivityAnalysis({
                           e.stopPropagation()
                           applyScenario(scenario)
                         }}
-                        className="w-full mt-2 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-900/20 hover:bg-accent-100 rounded-lg transition-colors flex items-center justify-center gap-1"
+                        className="w-full mt-2 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-300/20 hover:bg-accent-100 rounded-lg transition-colors flex items-center justify-center gap-1"
                       >
                         <CheckCircle2 className="w-3 h-3" />
                         应用此场景
@@ -680,8 +679,8 @@ export function SensitivityAnalysis({
                   })}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-100, #F0F0F0)" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
                 {scenarios

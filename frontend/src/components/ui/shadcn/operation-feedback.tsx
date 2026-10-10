@@ -11,7 +11,7 @@ const feedbackVariants = cva(
         success: 'border-success/30 bg-success/5 text-success-foreground',
         error: 'border-destructive/30 bg-destructive/5 text-destructive-foreground',
         warning: 'border-warning/30 bg-warning/5 text-warning-foreground',
-        info: 'border-blue-500/30 bg-blue-50 text-blue-900 dark:text-blue-100',
+        info: 'border-secondary-500/30 bg-secondary-50 text-secondary-900 dark:text-secondary-100',
       },
     },
     defaultVariants: {

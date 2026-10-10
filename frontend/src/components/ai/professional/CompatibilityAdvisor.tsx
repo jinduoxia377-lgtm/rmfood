@@ -134,7 +134,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
     return (
       <span
         key={herb}
-        className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[var(--color-success-surface)] to-[var(--color-success-surface-deep)] text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-shadow cursor-pointer"
          role="button" tabIndex={0} onClick={() => this.showHerbInfo(herb)}
       >
         <span>{herb}</span>
@@ -153,14 +153,14 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
 
   private renderSuggestion(suggestion: CompatibilitySuggestion) {
     const typeStyles = {
-      avoid: 'bg-error-50 border-red-200',
-      caution: 'bg-yellow-50 border-yellow-200',
-      recommend: 'bg-success-50 border-green-200',
+      avoid: 'bg-error-50 border-error-200',
+      caution: 'bg-warning-50 border-warning-200',
+      recommend: 'bg-success-50 border-success-200',
     };
 
     const iconStyles = {
       avoid: 'bg-error-100 text-error-600',
-      caution: 'bg-yellow-100 text-yellow-600',
+      caution: 'bg-warning-100 text-warning-600',
       recommend: 'bg-success-100 text-success-600',
     };
 
@@ -199,7 +199,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
             </p>
             {suggestion.alternative && (
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
-                建议替代：<span className="text-teal-600 font-medium">{suggestion.alternative}</span>
+                建议替代：<span className="text-success-600 font-medium">{suggestion.alternative}</span>
               </p>
             )}
           </div>
@@ -214,7 +214,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-success-600"></div>
           <span className="ml-3 text-neutral-600 dark:text-neutral-400">正在检测配伍...</span>
         </div>
       );
@@ -222,7 +222,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
 
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5">
+        <div className="bg-gradient-to-r from-warning-500 to-warning-500 px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white dark:bg-neutral-900/20 flex items-center justify-center">
               <Shield className="w-7 h-7 text-white" />
@@ -244,7 +244,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
                   onChange={(e) => this.setState({ newHerb: e.target.value })}
                   onKeyDown={(e) => e.key === 'Enter' && this.addHerb()}
                   placeholder="输入中药名称..."
-                  className="w-full px-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-success-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                   list="herb-suggestions"
                 />
                 <datalist id="herb-suggestions">
@@ -256,7 +256,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
               <button
                 onClick={this.addHerb}
                 disabled={!newHerb.trim()}
-                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-success-500 text-white rounded-lg hover:bg-success-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 <span>添加</span>
@@ -279,7 +279,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
           </div>
 
           {herbs.length > 0 && herbs.length < 2 && (
-            <div className="text-center py-8 bg-slate-50 dark:bg-slate-850 rounded-lg">
+            <div className="text-center py-8 bg-neutral-50 dark:bg-neutral-850 rounded-lg">
               <AlertCircle className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400">请至少添加两种中药进行配伍检测</p>
             </div>
@@ -289,7 +289,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
             <div className="space-y-6">
               <div
                 className={`p-4 rounded-xl ${
-                  result.compatible ? 'bg-success-50 border border-green-200' : 'bg-error-50 border border-red-200'
+                  result.compatible ? 'bg-success-50 border border-success-200' : 'bg-error-50 border border-error-200'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -337,7 +337,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
           )}
 
           {!result && herbs.length >= 2 && (
-            <div className="text-center py-8 bg-slate-50 dark:bg-slate-850 rounded-lg">
+            <div className="text-center py-8 bg-neutral-50 dark:bg-neutral-850 rounded-lg">
               <BookOpen className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400">点击检测按钮查看配伍结果</p>
             </div>
@@ -368,11 +368,11 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
               )}
 
               {selectedHerbInfo.fears.length > 0 && (
-                <div className="bg-yellow-50 rounded-lg p-4">
-                  <h4 className="font-medium text-yellow-800 mb-2">十九畏</h4>
+                <div className="bg-warning-50 rounded-lg p-4">
+                  <h4 className="font-medium text-warning-800 mb-2">十九畏</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedHerbInfo.fears.map((herb: string) => (
-                      <span key={herb} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-sm">
+                      <span key={herb} className="px-2 py-1 bg-warning-100 text-warning-700 rounded text-sm">
                         {herb}
                       </span>
                     ))}

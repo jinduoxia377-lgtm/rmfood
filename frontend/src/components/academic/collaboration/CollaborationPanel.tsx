@@ -62,7 +62,7 @@ function PermissionBadge({ permission, hasPermission }: PermissionBadgeProps) {
     <div
       className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs ${
         hasPermission
-          ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
+          ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600'
           : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-400'
       }`}
     >
@@ -74,9 +74,9 @@ function PermissionBadge({ permission, hasPermission }: PermissionBadgeProps) {
 
 function RoleBadge({ role }: { role: CollaborationRole }) {
   const config: Record<CollaborationRole, { icon: typeof Crown; label: string; className: string }> = {
-    owner: { icon: Crown, label: '所有者', className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-700' },
-    editor: { icon: Edit3, label: '编辑者', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700' },
-    reviewer: { icon: Eye, label: '审阅者', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+    owner: { icon: Crown, label: '所有者', className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' },
+    editor: { icon: Edit3, label: '编辑者', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' },
+    reviewer: { icon: Eye, label: '审阅者', className: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700' },
     viewer: { icon: EyeOff, label: '查看者', className: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400' },
   };
 
@@ -94,7 +94,7 @@ function ConflictWarning({ conflicts, onResolve }: { conflicts: any[]; onResolve
   if (conflicts.length === 0) return null;
 
   return (
-    <div className="p-3 bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+    <div className="p-3 bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800 rounded-lg">
       <div className="flex items-center gap-2 mb-2">
         <AlertTriangle className="w-4 h-4 text-warning-600" />
         <span className="text-sm font-medium text-warning-800 dark:text-warning-200">
@@ -103,7 +103,7 @@ function ConflictWarning({ conflicts, onResolve }: { conflicts: any[]; onResolve
       </div>
       <div className="space-y-2">
         {conflicts.slice(0, 3).map((conflict) => (
-          <div key={conflict.id} className="text-xs bg-white dark:bg-warning-900/30 p-2 rounded">
+          <div key={conflict.id} className="text-xs bg-white dark:bg-warning-300/25 p-2 rounded">
             <div className="flex items-center justify-between">
               <span className="text-warning-700 dark:text-warning-700">
                 冲突类型: {conflict.type}
@@ -144,7 +144,7 @@ function SyncStatusIndicator({ status }: { status: { isSyncing: boolean; hasConf
           <span>存在冲突</span>
         </div>
       ) : status.pendingOperations > 0 ? (
-        <div className="flex items-center gap-1 text-yellow-600">
+        <div className="flex items-center gap-1 text-warning-600">
           <RefreshCw className="w-3 h-3" />
           <span>{status.pendingOperations} 个待同步</span>
         </div>
@@ -214,9 +214,9 @@ export function CollaborationPanel() {
           <h3 className="font-semibold">实时协作</h3>
         </div>
         {isConnecting ? (
-          <span className="px-2 py-1 text-xs bg-secondary-100 text-secondary-700 rounded-full dark:bg-secondary-900/30 dark:text-secondary-700">连接中...</span>
+          <span className="px-2 py-1 text-xs bg-secondary-100 text-secondary-700 rounded-full dark:bg-secondary-300/25 dark:text-secondary-700">连接中...</span>
         ) : isConnected ? (
-          <span className="px-2 py-1 text-xs bg-success-100 text-success-700 rounded-full dark:bg-success-900/30 dark:text-success-600">已连接</span>
+          <span className="px-2 py-1 text-xs bg-success-100 text-success-700 rounded-full dark:bg-success-300/25 dark:text-success-600">已连接</span>
         ) : (
           <span className="px-2 py-1 text-xs bg-neutral-100 text-neutral-700 rounded-full dark:bg-neutral-700 dark:text-neutral-300">未连接</span>
         )}
@@ -244,7 +244,7 @@ export function CollaborationPanel() {
             <SyncStatusIndicator status={syncStatus} />
           </div>
 
-          <div className="mb-4 p-3 bg-slate-50 dark:bg-neutral-700/50 rounded-lg">
+          <div className="mb-4 p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, var(--color-accent-500))' }} />
@@ -306,7 +306,7 @@ export function CollaborationPanel() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-300/20 rounded-lg">
             <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, var(--color-accent-500))' }} />
             <div>
               <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -320,7 +320,7 @@ export function CollaborationPanel() {
 
           <button
             onClick={disconnect}
-            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
           >
             <WifiOff className="w-4 h-4" />
             断开连接
@@ -339,7 +339,7 @@ export function CollaborationPanel() {
       )}
 
       {!isConnected && (
-        <div className="mt-4 p-3 bg-secondary-50 dark:bg-secondary-900/20 rounded-lg text-xs text-secondary-600 dark:text-secondary-700">
+        <div className="mt-4 p-3 bg-secondary-50 dark:bg-secondary-300/20 rounded-lg text-xs text-secondary-600 dark:text-secondary-700">
           <p className="font-medium mb-1">提示</p>
           <p>连接协作后，您可以与其他用户实时编辑同一文档，所有更改会即时同步。</p>
         </div>

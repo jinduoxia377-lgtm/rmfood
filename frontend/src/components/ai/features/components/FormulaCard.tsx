@@ -141,11 +141,11 @@ const FormulaCard = React.memo<FormulaCardProps>(
       if (!grade) return null;
 
       const gradeConfig = {
-        A: { bg: 'bg-success-100', text: 'text-success-700', border: 'border-green-200', label: 'A级 · 优秀' },
-        B: { bg: 'bg-secondary-100', text: 'text-secondary-700', border: 'border-blue-200', label: 'B级 · 良好' },
-        C: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200', label: 'C级 · 一般' },
-        D: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200', label: 'D级 · 较差' },
-        F: { bg: 'bg-error-100', text: 'text-error-700', border: 'border-red-200', label: 'F级 · 不合格' },
+        A: { bg: 'bg-success-100', text: 'text-success-700', border: 'border-success-200', label: 'A级 · 优秀' },
+        B: { bg: 'bg-secondary-100', text: 'text-secondary-700', border: 'border-secondary-200', label: 'B级 · 良好' },
+        C: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: 'C级 · 一般' },
+        D: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: 'D级 · 较差' },
+        F: { bg: 'bg-error-100', text: 'text-error-700', border: 'border-error-200', label: 'F级 · 不合格' },
       };
 
       const config = gradeConfig[grade];
@@ -156,7 +156,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.bg} ${config.text} border ${config.border}`}
         >
           {grade}
-          <span className="ml-1 text-[10px] opacity-75">{config.label.split('·')[1]}</span>
+          <span className="ml-1 text-xs opacity-75">{config.label.split('·')[1]}</span>
         </span>
       );
     };
@@ -173,8 +173,8 @@ const FormulaCard = React.memo<FormulaCardProps>(
         colorClass = 'text-success-600';
         bgColor = 'bg-success-50';
       } else if (percentage >= 70) {
-        colorClass = 'text-yellow-600';
-        bgColor = 'bg-yellow-50';
+        colorClass = 'text-warning-600';
+        bgColor = 'bg-warning-50';
       }
 
       return (
@@ -197,7 +197,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           {tags.slice(0, maxTags).map((tag, index) => (
             <span
               key={index}
-              className={`inline-flex items-center rounded-full font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ${
+              className={`inline-flex items-center rounded-full font-medium bg-accent-50 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 ${
                 compact ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-0.5 text-xs'
               }`}
             >
@@ -238,7 +238,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
             ))}
             {remainingCount > 0 && (
               <span
-                className={`inline-flex items-center rounded-md font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-600 ${
+                className={`inline-flex items-center rounded-md font-medium bg-primary-50 text-primary-700 dark:bg-primary-300/20 dark:text-primary-700 ${
                   compact ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs'
                 }`}
               >
@@ -274,7 +274,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           </span>
           {isExpanded && (
             <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer"
+              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer"
                role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           )}
           {!isExpanded && (
             <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer"
+              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer"
                role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               展开详情
@@ -308,7 +308,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           }}
         >
           <div className="border-t border-neutral-200 dark:border-neutral-700">
-            <div className="p-4 space-y-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-900">
+            <div className="p-4 space-y-4 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900/50 dark:to-neutral-900">
               {(formula.targetAudience?.length || formula.recommendedDosage || formula.contraindications) && (
                 <div className="space-y-2">
                   <div className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">详细信息</div>
@@ -346,26 +346,26 @@ const FormulaCard = React.memo<FormulaCardProps>(
               {qualityScore && (
                 <div className="grid grid-cols-4 gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
                   <div className="text-center">
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
-                    <div className="text-lg font-bold text-primary-700 dark:text-primary-600">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
+                    <div className="text-lg font-bold text-primary-700 dark:text-primary-700">
                       {qualityScore.overallScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">置信度</div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">置信度</div>
                     <div className="text-lg font-bold text-success-600 dark:text-success-600">
                       {qualityScore.confidenceScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">完整性</div>
-                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-600">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">完整性</div>
+                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-700">
                       {qualityScore.completenessScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">多样性</div>
-                    <div className="text-lg font-bold text-accent-600 dark:text-accent-600">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">多样性</div>
+                    <div className="text-lg font-bold text-accent-600 dark:text-accent-700">
                       {qualityScore.diversityScore}
                     </div>
                   </div>
@@ -373,12 +373,12 @@ const FormulaCard = React.memo<FormulaCardProps>(
               )}
 
               {formula.sourceMessageId && (
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="p-3 bg-warning-50 dark:bg-warning-300/20 rounded-lg border border-warning-200 dark:border-warning-800">
                   <div className="flex items-start gap-2">
-                    <MessageSquare className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                    <MessageSquare className="w-4 h-4 text-warning-600 dark:text-warning-700 mt-0.5 shrink-0" />
                     <div className="flex-1">
-                      <div className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-1">来源消息</div>
-                      <div className="text-xs text-yellow-700 dark:text-yellow-400 truncate">
+                      <div className="text-xs font-semibold text-warning-800 dark:text-warning-700 mb-1">来源消息</div>
+                      <div className="text-xs text-warning-700 dark:text-warning-700 truncate">
                         Message ID: {formula.sourceMessageId}
                       </div>
                     </div>
@@ -447,7 +447,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   }}
                   icon={
                     formula.isFavorite ? (
-                      <Star size={14} className="fill-current text-yellow-500" />
+                      <Star size={14} className="fill-current text-warning-500" />
                     ) : (
                       <Star size={14} />
                     )
@@ -486,7 +486,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
         touch-pan-x select-none
         ${
           isSelected
-            ? 'border-l-4 border-l-primary-500 border-primary-300 dark:border-primary-800 bg-primary-50/30 dark:bg-primary-900/10'
+            ? 'border-l-4 border-l-primary-500 border-primary-300 dark:border-primary-800 bg-primary-50/30 dark:bg-primary-300/15'
             : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
         }
       `}
@@ -526,7 +526,8 @@ const FormulaCard = React.memo<FormulaCardProps>(
                       className={`flex-1 font-semibold border border-primary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500/50 bg-white dark:bg-neutral-900 dark:border-primary-700 dark:text-white ${
                         compact ? 'px-2 py-1 text-sm' : 'px-2 py-1 text-base'
                       }`}
-                    />
+        aria-label="配方名称"
+      />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -603,7 +604,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 e.stopPropagation();
                 onToggleExpand(formula.id);
               }}
-              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-600 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               aria-label={isExpanded ? '收起' : '展开详情'}
             >
               {isExpanded ? (

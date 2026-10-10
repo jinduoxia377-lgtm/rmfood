@@ -245,12 +245,12 @@ function RecommendationPanel({
   return (
     <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
          role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <Sliders className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          <div className="p-2 bg-primary-100 dark:bg-primary-300/25 rounded-lg">
+            <Sliders className="w-5 h-5 text-primary-700 dark:text-primary-700" />
           </div>
           <div>
             <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
@@ -291,7 +291,7 @@ function RecommendationPanel({
                   onClick={() => setSelectedAlgorithmId(algo.id)}
                   className={`p-3 rounded-lg border text-left transition-all ${
                     selectedAlgorithmId === algo.id
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-500/20'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20 ring-2 ring-primary-500/20'
                       : 'border-neutral-200 dark:border-neutral-600 hover:border-neutral-300 dark:hover:border-neutral-500'
                   }`}
                 >
@@ -315,7 +315,7 @@ function RecommendationPanel({
                 参数设置
               </label>
               {selectedAlgorithm.parameters.map(param => (
-                <div key={param.id} className="bg-slate-50 dark:bg-neutral-700/50 rounded-lg p-3">
+                <div key={param.id} className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       {param.label}
@@ -336,11 +336,10 @@ function RecommendationPanel({
                         step={param.step ?? 1}
                         value={(parameters[param.id] as number) ?? param.default}
                         onChange={e => handleParameterChange(param.id, Number(e.target.value))}
-                        className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600"
-                      />
+                        className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600" aria-label="滑块" />
                       <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <span>{param.min ?? 0}{param.unit || ''}</span>
-                        <span className="font-medium text-primary-600 dark:text-primary-400">
+                        <span className="font-medium text-primary-700 dark:text-primary-700">
                           {(parameters[param.id] as number)?.toFixed(2) || param.default}{param.unit || ''}
                         </span>
                         <span>{param.max ?? 100}{param.unit || ''}</span>
@@ -382,9 +381,9 @@ function RecommendationPanel({
           )}
 
           {result && (
-            <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-800">
+            <div className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-800">
               <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <Lightbulb className="w-5 h-5 text-warning-500 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="w-4 h-4 text-primary-500" />
@@ -429,7 +428,7 @@ function RecommendationPanel({
                           <button
                             key={idx}
                             onClick={() => handleLoadPreset(preset)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg"
                           >
                             {preset.name}
                           </button>

@@ -87,7 +87,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
   const getActionIcon = (action: string) => {
     if (action.includes('编辑')) return <Activity size={16} className="text-secondary-600" />
     if (action.includes('查看')) return <User size={16} className="text-neutral-600" />
-    return <Activity size={16} className="text-neutral-500" />
+    return <Activity size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
   }
 
   return (
@@ -95,8 +95,8 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold">团队在线状态</CardTitle>
+            <Users size={20} className="text-secondary-600 dark:text-secondary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold">团队在线状态</CardTitle>
           </div>
           {isWebSocketEnabled
             ? <Badge size="sm">{onlineCount}</Badge>
@@ -109,15 +109,15 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
           <div className="py-6 flex flex-col items-center gap-2 text-center">
             {isWebSocketEnabled ? (
               <>
-                <Users size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <Users size={28} className="text-neutral-300 dark:text-neutral-400" />
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无在线协作用户</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">当团队协作者打开此仪表盘时，将在此实时显示</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400">当团队协作者打开此仪表盘时，将在此实时显示</p>
               </>
             ) : (
               <>
-                <WifiOff size={28} className="text-neutral-300 dark:text-neutral-600" />
+                <WifiOff size={28} className="text-neutral-300 dark:text-neutral-400" />
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">实时连接未启用</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                <p className="text-xs text-neutral-400 dark:text-neutral-400">
                   设置 VITE_WEBSOCKET_ENABLED=true 并启动后端 WebSocket 服务后可查看实时在线状态
                 </p>
               </>
@@ -147,7 +147,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {getActionIcon(user.currentAction)}
-                      <p className="text-xs text-neutral-500 truncate">{user.currentAction}</p>
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{user.currentAction}</p>
                     </div>
                   </div>
                 </div>
@@ -159,33 +159,33 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
 
         {/* 统计信息 */}
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="p-2 rounded-lg bg-success-50 dark:bg-success-900/10 border border-green-100 dark:border-green-800/30">
+          <div className="p-2 rounded-lg bg-success-50 dark:bg-success-300/15 border border-success-100 dark:border-success-800/30">
             <div className="text-center">
-              <p className="text-sm font-semibold text-success-800 dark:text-success-400">{users.filter(u => u.status === 'online').length}</p>
-              <p className="text-xs text-success-600 dark:text-success-500">在线</p>
+              <p className="text-sm font-semibold text-success-800 dark:text-success-600">{users.filter(u => u.status === 'online').length}</p>
+              <p className="text-xs text-success-700 dark:text-success-700">在线</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-100 dark:border-amber-800/30">
+          <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-300/15 border border-warning-100 dark:border-warning-800/30">
             <div className="text-center">
-              <p className="text-sm font-semibold text-warning-800 dark:text-warning-400">{users.filter(u => u.status === 'away').length}</p>
-              <p className="text-xs text-warning-600 dark:text-warning-500">离开</p>
+              <p className="text-sm font-semibold text-warning-800 dark:text-warning-700">{users.filter(u => u.status === 'away').length}</p>
+              <p className="text-xs text-warning-600 dark:text-warning-700">离开</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800/30">
+          <div className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800/30">
             <div className="text-center">
               <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-400">{users.filter(u => u.status === 'offline').length}</p>
-              <p className="text-xs text-neutral-600 dark:text-neutral-500">离线</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400">离线</p>
             </div>
           </div>
         </div>
 
         {/* 协作提示 */}
-        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-100 dark:border-secondary-800/30">
           <div className="flex items-start gap-3">
-            <Activity size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
+            <Activity size={18} className="text-secondary-600 dark:text-secondary-700 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">实时协作提示</h4>
-              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-700 mb-1">实时协作提示</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-700 space-y-1">
                 <li>• 绿色状态表示用户正在活跃</li>
                 <li>• 黄色状态表示用户暂时离开</li>
                 <li>• 灰色状态表示用户离线</li>

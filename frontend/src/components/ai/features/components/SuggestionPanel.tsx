@@ -69,15 +69,15 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 
 const STYLE_MAP: Record<string, string> = {
   history: 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500',
-  trending: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500',
-  ai: 'bg-accent-100 dark:bg-accent-900/30 text-accent-500',
-  language: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-500',
-  context: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-500',
-  optimization: 'bg-primary-100 dark:bg-primary-900/30 text-primary-500',
-  expert: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500',
-  expert_formula: 'bg-violet-100 dark:bg-violet-900/30 text-violet-500',
-  expert_targeting: 'bg-pink-100 dark:bg-pink-900/30 text-pink-500',
-  expert_process: 'bg-teal-100 dark:bg-teal-900/30 text-teal-500',
+  trending: 'bg-warning-100 dark:bg-warning-300/25 text-warning-500',
+  ai: 'bg-accent-100 dark:bg-accent-300/25 text-accent-500',
+  language: 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-500',
+  context: 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-500',
+  optimization: 'bg-primary-100 dark:bg-primary-300/25 text-primary-500',
+  expert: 'bg-accent-100 dark:bg-accent-300/25 text-accent-500',
+  expert_formula: 'bg-accent-100 dark:bg-accent-300/25 text-accent-500',
+  expert_targeting: 'bg-danger-100 dark:bg-danger-300/25 text-danger-500',
+  expert_process: 'bg-success-100 dark:bg-success-300/25 text-success-500',
 }
 
 // 分类分组配置
@@ -95,96 +95,96 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'mechanism',
     label: '技术深化',
     icon: Microscope,
-    color: 'text-accent-600 dark:text-accent-400',
-    bgColor: 'bg-accent-50 dark:bg-accent-900/20',
+    color: 'text-accent-600 dark:text-accent-700',
+    bgColor: 'bg-accent-50 dark:bg-accent-300/20',
     priority: 1,
   },
   '⚖️ 法规路径': {
     id: 'regulatory',
     label: '法规合规',
     icon: Scale,
-    color: 'text-secondary-600 dark:text-secondary-400',
-    bgColor: 'bg-secondary-50 dark:bg-secondary-900/20',
+    color: 'text-secondary-600 dark:text-secondary-700',
+    bgColor: 'bg-secondary-50 dark:bg-secondary-300/20',
     priority: 2,
   },
   '⚙️ 工艺路线': {
     id: 'process',
     label: '工艺优化',
     icon: Cog,
-    color: 'text-teal-600 dark:text-teal-400',
-    bgColor: 'bg-teal-50 dark:bg-teal-900/20',
+    color: 'text-success-600 dark:text-success-700',
+    bgColor: 'bg-success-50 dark:bg-success-300/20',
     priority: 3,
   },
   '⚙️ 关键工序': {
     id: 'process-detail',
     label: '工艺细节',
     icon: Cog,
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-info-600 dark:text-info-700',
+    bgColor: 'bg-info-50 dark:bg-info-300/20',
     priority: 4,
   },
   '🧪 原料推荐': {
     id: 'ingredient',
     label: '原料策略',
     icon: FlaskConical,
-    color: 'text-success-600 dark:text-success-400',
-    bgColor: 'bg-success-50 dark:bg-success-900/20',
+    color: 'text-success-600 dark:text-success-600',
+    bgColor: 'bg-success-50 dark:bg-success-300/20',
     priority: 5,
   },
   '📊 验证路径': {
     id: 'efficacy',
     label: '功效验证',
     icon: ChartLine,
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+    color: 'text-accent-600 dark:text-accent-700',
+    bgColor: 'bg-accent-50 dark:bg-accent-300/20',
     priority: 6,
   },
   '💰 成本参考': {
     id: 'cost',
     label: '成本价值',
     icon: DollarSign,
-    color: 'text-yellow-600 dark:text-yellow-400',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+    color: 'text-warning-600 dark:text-warning-700',
+    bgColor: 'bg-warning-50 dark:bg-warning-300/20',
     priority: 7,
   },
   '🎯 差异化': {
     id: 'market',
     label: '市场定位',
     icon: Target,
-    color: 'text-pink-600 dark:text-pink-400',
-    bgColor: 'bg-pink-50 dark:bg-pink-900/20',
+    color: 'text-danger-600 dark:text-danger-700',
+    bgColor: 'bg-danger-50 dark:bg-danger-300/20',
     priority: 8,
   },
   '⚠️ 风险提示': {
     id: 'risk',
     label: '风险预警',
     icon: AlertTriangle,
-    color: 'text-error-600 dark:text-error-400',
-    bgColor: 'bg-error-50 dark:bg-error-900/20',
+    color: 'text-error-600 dark:text-error-600',
+    bgColor: 'bg-error-50 dark:bg-error-300/20',
     priority: 9,
   },
   '🚀 开发路线图': {
     id: 'roadmap',
     label: '快速启动',
     icon: Rocket,
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+    color: 'text-warning-600 dark:text-warning-700',
+    bgColor: 'bg-warning-50 dark:bg-warning-300/20',
     priority: 10,
   },
   '🧪 成分矩阵': {
     id: 'matrix',
     label: '成分推荐',
     icon: FlaskConical,
-    color: 'text-primary-600 dark:text-primary-400',
-    bgColor: 'bg-primary-50 dark:bg-primary-900/20',
+    color: 'text-primary-700 dark:text-primary-700',
+    bgColor: 'bg-primary-50 dark:bg-primary-300/20',
     priority: 11,
   },
   '⚖️ 合规自检': {
     id: 'compliance-check',
     label: '合规检查',
     icon: Scale,
-    color: 'text-sky-600 dark:text-sky-400',
-    bgColor: 'bg-sky-50 dark:bg-sky-900/20',
+    color: 'text-info-700 dark:text-info-700',
+    bgColor: 'bg-info-50 dark:bg-info-300/20',
     priority: 12,
   },
   '💡 信息补充引导': {
@@ -192,7 +192,7 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     label: '信息引导',
     icon: Info,
     color: 'text-neutral-600 dark:text-neutral-400',
-    bgColor: 'bg-slate-50 dark:bg-neutral-900/20',
+    bgColor: 'bg-neutral-50 dark:bg-neutral-900/20',
     priority: 13,
   },
 }
@@ -227,8 +227,8 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
       onMouseEnter={onSelect}
       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150 border-b border-neutral-100 dark:border-neutral-700 last:border-0 ${
         isSelected
-          ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm'
-          : 'hover:bg-slate-50 dark:hover:bg-neutral-700'
+          ? 'bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 shadow-sm'
+          : 'hover:bg-neutral-50 dark:hover:bg-neutral-700'
       }`}
       role="option"
       aria-selected={isSelected}
@@ -247,7 +247,7 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             {suggestion.category}
             {suggestion.score > 0 && (
-              <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">
                 (相关度: {Math.round(suggestion.score * 100)}%)
               </span>
             )}
@@ -408,27 +408,27 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
       style={{ maxHeight: '400px' }}
     >
       {/* 标题栏 */}
-      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 bg-gradient-to-r from-slate-50/50 to-transparent dark:from-slate-700/30 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 bg-gradient-to-r from-neutral-50/50 to-transparent dark:from-neutral-700/30 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5">
-            <div className={`p-1.5 rounded-lg ${isUpdating ? 'bg-secondary-100 dark:bg-secondary-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'}`}>
-              <Lightbulb className={`w-4 h-4 ${isUpdating ? 'text-secondary-500 animate-pulse' : 'text-yellow-600 dark:text-yellow-400'}`} />
+            <div className={`p-1.5 rounded-lg ${isUpdating ? 'bg-secondary-100 dark:bg-secondary-300/25' : 'bg-warning-100 dark:bg-warning-300/25'}`}>
+              <Lightbulb className={`w-4 h-4 ${isUpdating ? 'text-secondary-500 animate-pulse' : 'text-warning-600 dark:text-warning-700'}`} />
             </div>
             <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
               专业级智能建议
             </span>
           </div>
-          <Badge variant="outline" className="text-[10px] h-5">
+          <Badge variant="outline" className="text-xs h-5">
             {languageLabel}
           </Badge>
           {isUpdating && (
-            <Badge className="text-[10px] h-5 bg-secondary-100 text-secondary-600 dark:bg-secondary-900/50 dark:text-secondary-400 border-blue-200 dark:border-blue-800">
+            <Badge className="text-xs h-5 bg-secondary-100 text-secondary-600 dark:bg-secondary-300/35 dark:text-secondary-700 border-secondary-200 dark:border-secondary-800">
               <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
               实时更新中...
             </Badge>
           )}
           {hasEnhanced && !isUpdating && (
-            <Badge className="text-[10px] h-5 bg-accent-100 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400 border-purple-200 dark:border-purple-800">
+            <Badge className="text-xs h-5 bg-accent-100 text-accent-600 dark:bg-accent-300/35 dark:text-accent-700 border-accent-200 dark:border-accent-800">
               <Star className="w-3 h-3 mr-1" />
               AI Engine v2.0
             </Badge>
@@ -458,7 +458,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
               <button
                 onClick={() => toggleGroup(group.category)}
                 className={`w-full flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors ${
-                  group.config?.bgColor || 'bg-slate-50 dark:bg-neutral-800'
+                  group.config?.bgColor || 'bg-neutral-50 dark:bg-neutral-800'
                 } hover:opacity-80`}
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
@@ -466,7 +466,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
                 <span className={group.config?.color || 'text-neutral-700 dark:text-neutral-300'}>
                   {group.category}
                 </span>
-                <span className="ml-auto text-[10px] text-neutral-400 bg-white dark:bg-neutral-700 px-1.5 py-0.5 rounded-full">
+                <span className="ml-auto text-xs text-neutral-400 bg-white dark:bg-neutral-700 px-1.5 py-0.5 rounded-full">
                   {group.items.length}
                 </span>
               </button>
@@ -516,7 +516,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
         })}
       </div>
 
-      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-[11px] text-neutral-400">
+      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-xs text-neutral-400">
         <span>
           ↑↓ 选择 · Enter 应用 · Esc 关闭 · [ 折叠全部 ] 展开全部
         </span>
@@ -589,8 +589,8 @@ function EnhancedSuggestionCard({
       onMouseEnter={onSelect}
       className={`group w-full p-4 cursor-pointer border-b border-neutral-100 dark:border-neutral-700 last:border-0 transition-all duration-200 ${
         isSelected
-          ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 shadow-md ring-1 ring-purple-200 dark:ring-purple-800'
-          : 'hover:bg-slate-50 dark:hover:bg-slate-750'
+          ? 'bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-900/20 dark:to-accent-900/20 shadow-md ring-1 ring-accent-200 dark:ring-accent-800'
+          : 'hover:bg-neutral-50 dark:hover:bg-neutral-750'
       }`}
       role="option"
       aria-selected={isSelected}
@@ -669,9 +669,9 @@ function EnhancedSuggestionCard({
 
 // Helper functions
 function getQualityScoreColor(score: number): string {
-  if (score >= 90) return 'border-green-300 text-success-600 dark:border-green-700 dark:text-success-400'
-  if (score >= 75) return 'border-blue-300 text-secondary-600 dark:border-blue-700 dark:text-secondary-400'
-  if (score >= 60) return 'border-yellow-300 text-yellow-600 dark:border-yellow-700 dark:text-yellow-400'
+  if (score >= 90) return 'border-success-300 text-success-600 dark:border-success-700 dark:text-success-600'
+  if (score >= 75) return 'border-secondary-300 text-secondary-600 dark:border-secondary-700 dark:text-secondary-700'
+  if (score >= 60) return 'border-warning-300 text-warning-600 dark:border-warning-700 dark:text-warning-700'
   return 'border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-400'
 }
 

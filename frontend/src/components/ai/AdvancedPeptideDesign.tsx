@@ -447,7 +447,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-accent-500 to-danger-500 rounded-lg">
               <Atom className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -502,7 +502,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   onClick={() => { setActiveTab(tab); setResults(null); setError(null) }}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     activeTab === tab
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-accent-500 to-danger-500 text-white shadow-md'
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >
@@ -586,11 +586,11 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
                       {/* 统计信息 */}
                       <div className="grid grid-cols-2 gap-2 text-center text-sm mb-3">
-                        <div className="bg-slate-50 dark:bg-neutral-800 rounded p-2">
+                        <div className="bg-neutral-50 dark:bg-neutral-800 rounded p-2">
                           <div className="font-bold text-accent-600">{project.total_candidates}</div>
                           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">候选方案</div>
                         </div>
-                        <div className="bg-slate-50 dark:bg-neutral-800 rounded p-2">
+                        <div className="bg-neutral-50 dark:bg-neutral-800 rounded p-2">
                           <div className="font-bold text-success-600">{project.pareto_size}</div>
                           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Pareto前沿</div>
                         </div>
@@ -600,7 +600,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                       {(project.target_effects || []).length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
                           {project.target_effects.slice(0, 3).map(effect => (
-                            <span key={effect} className="px-2 py-0.5 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded text-xs">
+                            <span key={effect} className="px-2 py-0.5 bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 rounded text-xs">
                               {effect}
                             </span>
                           ))}
@@ -711,7 +711,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               <button
                 onClick={handleGenerate}
                 disabled={loading || selectedEffects.length === 0}
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-accent-surface)] to-[var(--color-danger-surface-deep)] text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 开始生成
@@ -777,7 +777,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               <button
                 onClick={handleOptimize}
                 disabled={loading}
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-warning-surface)] to-error-500 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 RL 优化
@@ -834,7 +834,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             <button
               onClick={handleSample}
               disabled={loading}
-              className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-info-surface)] to-[var(--color-secondary-surface-deep)] text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               探索性采样
@@ -843,16 +843,16 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
         )}
 
         {error && (
-          <div className="mt-6 p-4 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+          <div className="mt-6 p-4 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-error-500 mt-0.5" />
-            <div className="text-error-700 dark:text-error-300 text-sm">{error}</div>
+            <div className="text-error-700 dark:text-error-600 text-sm">{error}</div>
           </div>
         )}
 
         {results && mainView === 'design' && (
           <div className="mt-6 space-y-4">
             {/* 项目操作工具栏 */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-lg border border-secondary-200 dark:border-secondary-800">
               <div className="flex items-center gap-3">
                 {currentProjectId ? (
                   <>
@@ -863,7 +863,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   </>
                 ) : (
                   <>
-                    <Save className="w-5 h-5 text-orange-600" />
+                    <Save className="w-5 h-5 text-warning-600" />
                     <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">设计完成，可保存为项目</span>
                   </>
                 )}
@@ -903,7 +903,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             </div>
 
             {results.diversityMetrics && (
-              <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <div className="grid grid-cols-3 gap-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-accent-600">{((results.diversityMetrics.diversity_score ?? 0) * 100).toFixed(1)}%</div>
                   <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">多样性得分</div>
@@ -928,16 +928,16 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   <div key={idx} className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
                     <button
                       onClick={() => toggleDetails(`peptide-${idx}`)}
-                      className="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+                      className="w-full p-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded text-xs font-mono font-bold">
+                        <span className="px-2 py-1 bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 rounded text-xs font-mono font-bold">
                           #{idx + 1}
                         </span>
                         <code className="text-lg font-bold text-neutral-900 dark:text-white font-mono">{seq}</code>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-success-700 dark:text-success-300 rounded-full text-sm font-semibold">
+                        <span className="px-3 py-1 bg-gradient-to-r from-success-100 to-success-100 dark:from-success-900/30 dark:to-success-900/30 text-success-700 dark:text-success-600 rounded-full text-sm font-semibold">
                           {(score * 100).toFixed(1)}%
                         </span>
                         {showDetails[`peptide-${idx}`] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -945,7 +945,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                     </button>
 
                     {showDetails[`peptide-${idx}`] && (
-                      <div className="px-4 pb-4 pt-2 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
+                      <div className="px-4 pb-4 pt-2 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子量</span>
@@ -969,7 +969,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">活性预测</div>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(peptide.activity_scores).map(([key, val]: [string, number]) => (
-                                <span key={key} className="px-2 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded text-xs">
+                                <span key={key} className="px-2 py-1 bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 rounded text-xs">
                                   {key}: {(val * 100).toFixed(1)}%
                                 </span>
                               ))}

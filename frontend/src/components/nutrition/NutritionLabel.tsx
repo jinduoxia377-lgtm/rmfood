@@ -179,10 +179,10 @@ function NutritionRow({ item, showServing, compact }: NutritionRowProps) {
   const nrvColor =
     item.nrv_percent != null
       ? item.nrv_percent >= 30
-        ? 'text-danger-600 dark:text-danger-400'
+        ? 'text-danger-600 dark:text-danger-600'
         : item.nrv_percent >= 15
-        ? 'text-warning-600 dark:text-warning-400'
-        : 'text-success-600 dark:text-success-400'
+        ? 'text-warning-600 dark:text-warning-700'
+        : 'text-success-600 dark:text-success-600'
       : ''
 
   return (

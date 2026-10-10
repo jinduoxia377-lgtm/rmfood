@@ -175,7 +175,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
   return (
     <Card className="p-4">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-info-500 to-secondary-500 flex items-center justify-center">
           <Share2 className="w-4 h-4 text-white" />
         </div>
         <div>
@@ -218,7 +218,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="设置访问密码"
-              className="w-full px-3 py-2 pr-10 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-3 py-2 pr-10 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-info-500 focus:border-transparent"
             />
             <button
               type="button"
@@ -257,7 +257,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 type="checkbox"
                 checked={config.includeScores}
                 onChange={(e) => setConfig({ ...config, includeScores: e.target.checked })}
-                className="rounded border-neutral-300 dark:border-neutral-700 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 dark:border-neutral-700 text-info-500 focus:ring-info-500"
               />
               包含评分信息
             </label>
@@ -266,7 +266,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 type="checkbox"
                 checked={config.includeIngredients}
                 onChange={(e) => setConfig({ ...config, includeIngredients: e.target.checked })}
-                className="rounded border-neutral-300 dark:border-neutral-700 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 dark:border-neutral-700 text-info-500 focus:ring-info-500"
               />
               包含原料信息
             </label>
@@ -283,7 +283,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 onClick={() => setConfig({ ...config, template: t as unknown as typeof config.template })}
                 className={`flex-1 px-3 py-2 text-xs rounded-lg border transition-colors ${
                   config.template === t
-                    ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
+                    ? 'border-info-500 bg-info-50 dark:bg-info-300/20 text-info-600 dark:text-info-700'
                     : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                 }`}
               >
@@ -296,7 +296,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
         {/* 生成按钮 */}
         <button
           onClick={handleGenerateLink}
-          className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg shadow-cyan-500/20"
+          className="w-full py-2.5 bg-gradient-to-r from-[var(--color-info-surface)] to-[var(--color-secondary-surface-deep)] text-white font-medium rounded-lg hover:from-[var(--color-info-surface-deep)] hover:to-[var(--color-secondary-surface-deep)] transition-all shadow-lg shadow-info-500/20"
         >
           生成分享链接
         </button>
@@ -305,7 +305,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
         {generatedLink && (
           <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <div className="flex items-center gap-2">
-              <Link className="w-4 h-4 text-cyan-500" />
+              <Link className="w-4 h-4 text-info-500" />
               <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">分享链接</span>
             </div>
             <div className="flex items-center gap-2">
@@ -313,13 +313,14 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 type="text"
                 value={generatedLink}
                 readOnly
-                className="flex-1 px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-800"
-              />
+                className="flex-1 px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800"
+        aria-label="分享链接"
+      />
               <button
                 onClick={handleCopyLink}
                 className={`p-2 rounded-lg transition-colors ${
                   copied
-                    ? 'bg-success-100 text-success-600 dark:bg-success-900/40'
+                    ? 'bg-success-100 text-success-600 dark:bg-success-300/30'
                     : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
@@ -332,7 +333,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 onClick={() => setShowQRCode(!showQRCode)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg border transition-colors ${
                   showQRCode
-                    ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
+                    ? 'border-info-500 bg-info-50 dark:bg-info-300/20 text-info-600 dark:text-info-700'
                     : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                 }`}
               >
@@ -352,7 +353,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                     link.download = `${formula.formulaName}_qrcode.png`;
                     link.click();
                   }}
-                  className="mt-2 flex items-center gap-1 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700"
+                  className="mt-2 flex items-center gap-1 text-xs text-info-600 dark:text-info-700 hover:text-info-700"
                 >
                   <Download className="w-3.5 h-3.5" />
                   下载二维码
@@ -361,7 +362,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
             )}
 
             {/* 预览 */}
-            <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">分享预览</p>
               <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(previewHtml) }} />
             </div>
@@ -384,7 +385,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
         <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <button
             onClick={() => setShowImportDialog(!showImportDialog)}
-            className="w-full py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+            className="w-full py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             导入他人分享的配方
           </button>
@@ -396,7 +397,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
                 value={importLink}
                 onChange={(e) => setImportLink(e.target.value)}
                 placeholder="粘贴分享链接或输入分享ID"
-                className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-info-500 focus:border-transparent"
               />
               {importLink.startsWith('http') && importLink.includes('pwd=') && (
                 <input
@@ -409,7 +410,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
               )}
               <button
                 onClick={handleImport}
-                className="w-full py-2 bg-cyan-500 text-white text-sm font-medium rounded-lg hover:bg-cyan-600 transition-colors"
+                className="w-full py-2 bg-info-500 text-white text-sm font-medium rounded-lg hover:bg-info-600 transition-colors"
               >
                 导入配方
               </button>
@@ -437,7 +438,7 @@ function PermissionButton({
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs rounded-lg border transition-colors ${
         active
-          ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
+          ? 'border-info-500 bg-info-50 dark:bg-info-300/20 text-info-600 dark:text-info-700'
           : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-400'
       }`}
     >
@@ -523,7 +524,7 @@ export function ImportShareDialog({
             value={link}
             onChange={(e) => setLink(e.target.value)}
             placeholder="粘贴分享链接"
-            className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-info-500 focus:border-transparent"
           />
 
           {link.includes('pwd=') && (
@@ -545,7 +546,7 @@ export function ImportShareDialog({
             <button
               onClick={handleImport}
               disabled={!link || loading}
-              className="px-4 py-2 text-sm bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-info-500 text-white rounded-lg hover:bg-info-600 disabled:opacity-50"
             >
               {loading ? '导入中...' : '导入'}
             </button>

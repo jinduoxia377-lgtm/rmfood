@@ -27,11 +27,11 @@ const MAX_HISTORY_ITEMS = 5
 
 const KeywordTag: React.FC<{ keyword: string; index: number }> = memo(({ keyword, index }) => {
   const colors = [
-    'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300',
-    'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300',
-    'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300',
-    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+    'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
+    'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
+    'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    'bg-danger-100 text-danger-700 dark:bg-danger-300/25 dark:text-danger-700',
   ]
 
   return (
@@ -98,9 +98,9 @@ const ComplexityGauge: React.FC<{ complexity: number }> = memo(({ complexity }) 
   const offset = circumference - (complexity * circumference)
 
   const getColor = () => {
-    if (percentage <= 33) return { stroke: 'var(--color-primary-400)', text: 'text-success-500', bg: 'bg-success-50 dark:bg-success-900/20' }
-    if (percentage <= 66) return { stroke: '#D97706', text: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' }
-    return { stroke: '#FF3B30', text: 'text-error-500', bg: 'bg-error-50 dark:bg-error-900/20' }
+    if (percentage <= 33) return { stroke: 'var(--color-primary-400)', text: 'text-success-500', bg: 'bg-success-50 dark:bg-success-300/20' }
+    if (percentage <= 66) return { stroke: '#D97706', text: 'text-warning-500', bg: 'bg-warning-50 dark:bg-warning-300/20' }
+    return { stroke: '#FF3B30', text: 'text-error-500', bg: 'bg-error-50 dark:bg-error-300/20' }
   }
 
   const colors = getColor()
@@ -118,7 +118,7 @@ const ComplexityGauge: React.FC<{ complexity: number }> = memo(({ complexity }) 
               stroke="currentColor"
               strokeWidth="4"
               fill="none"
-              className="text-neutral-200 dark:text-neutral-600"
+              className="text-neutral-200 dark:text-neutral-400"
             />
             <circle
               cx="28"
@@ -151,13 +151,13 @@ const SuggestedQuestionCard: React.FC<{
 }> = memo(({ question, onApply, index }) => (
   <button
     onClick={() => onApply(question)}
-    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-gradient-to-r hover:from-secondary-50 hover:to-accent-50 dark:hover:from-secondary-900/20 dark:hover:to-accent-900/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-secondary-200 dark:hover:border-secondary-800"
   >
-    <Zap className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
+    <Zap className="w-3.5 h-3.5 text-warning-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
     <span className="flex-1 text-left truncate group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors">
       {question}
     </span>
-    <span className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
+    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
       点击应用
     </span>
   </button>
@@ -277,9 +277,9 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
       className="absolute bottom-full left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 mb-2 bg-white dark:bg-neutral-800 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 max-h-96"
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800">
+      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between bg-gradient-to-r from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-800">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+          <div className="p-1.5 bg-gradient-to-br from-secondary-500 to-accent-600 rounded-lg">
             <Brain className="w-4 h-4 text-white" />
           </div>
           <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">深度分析</span>
@@ -348,7 +348,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             {history.map((item) => (
               <div
                 key={item.id}
-                className="p-3 bg-slate-50 dark:bg-neutral-700/30 rounded-lg border border-neutral-200 dark:border-neutral-600 hover:border-blue-300 dark:hover:border-blue-700 transition-colors cursor-pointer"
+                className="p-3 bg-neutral-50 dark:bg-neutral-700/30 rounded-lg border border-neutral-200 dark:border-neutral-600 hover:border-secondary-300 dark:hover:border-secondary-700 transition-colors cursor-pointer"
                  role="button" tabIndex={0} onClick={() => onApplyQuestion(item.analysis.suggestedQuestions[0] || '')}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -361,7 +361,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {item.analysis.keywords.slice(0, 3).map((kw, i) => (
-                    <span key={i} className="text-[11px] bg-white dark:bg-neutral-600 px-1.5 py-0.5 rounded text-neutral-600 dark:text-neutral-300">
+                    <span key={i} className="text-xs bg-white dark:bg-neutral-600 px-1.5 py-0.5 rounded text-neutral-600 dark:text-neutral-300">
                       {kw}
                     </span>
                   ))}
@@ -396,9 +396,9 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             {analysis.suggestedQuestions.length > 0 && (
               <div>
                 <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2.5 font-medium flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-yellow-500" />
+                  <Zap className="w-3.5 h-3.5 text-warning-500" />
                   推荐问题
-                  <span className="ml-auto text-[10px] bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400 px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto text-xs bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700 px-1.5 py-0.5 rounded-full">
                     {analysis.suggestedQuestions.length}个
                   </span>
                 </div>
@@ -416,7 +416,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             )}
 
             {/* Footer Hint */}
-            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-[10px] text-neutral-400 text-center flex items-center justify-center gap-3">
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-xs text-neutral-400 text-center flex items-center justify-center gap-3">
               <span>点击问题自动填充</span>
               <span>·</span>
               <span>按 ESC 关闭</span>

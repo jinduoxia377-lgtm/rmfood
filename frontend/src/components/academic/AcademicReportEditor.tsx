@@ -488,7 +488,7 @@ export function AcademicReportEditor() {
       </div>
     </header>
 
-    <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+    <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">

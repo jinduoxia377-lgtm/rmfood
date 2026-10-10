@@ -214,7 +214,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 overflow-hidden">
       {/* 头部 */}
-      <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white">
+      <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-neutral-50 to-white">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900">{chain.title}</h2>
@@ -229,7 +229,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       </div>
 
       {/* 统计信息栏 */}
-      <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
+      <div className="px-6 py-3 bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200">
         <div className="flex flex-wrap items-center gap-4">
           <StatItem icon={Hash} label="总步骤" value={stats.totalSteps} />
           <StatItem icon={Lightbulb} label="思考" value={stats.thoughtCount} color="text-warning-600" />
@@ -282,7 +282,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
               placeholder="搜索步骤..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+              className="pl-9 pr-4 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent w-64"
             />
           </div>
 
@@ -292,8 +292,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
             className={clsx(
               'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors',
               showFilter
-                ? 'bg-secondary-50 border-blue-300 text-secondary-700'
-                : 'border-neutral-200 text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800',
+                ? 'bg-secondary-50 border-secondary-300 text-secondary-700'
+                : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-800',
             )}
           >
             <Filter className="w-4 h-4" />
@@ -303,14 +303,14 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
           {/* 展开/折叠按钮 */}
           <button
             onClick={handleExpandAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-800 transition-colors"
           >
             <ChevronDown className="w-4 h-4" />
             展开全部
           </button>
           <button
             onClick={handleCollapseAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 dark:bg-neutral-800 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-800 transition-colors"
           >
             <ChevronUp className="w-4 h-4" />
             折叠全部
@@ -320,7 +320,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
       {/* 过滤器面板 */}
       {showFilter && (
-        <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200">
+        <div className="px-6 py-3 bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200">
           <div className="flex flex-wrap gap-6">
             <div>
               <label className="text-xs font-medium text-neutral-600 mb-1.5 block">步骤类型</label>
@@ -339,8 +339,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                     className={clsx(
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.stepTypes.includes(type)
-                        ? 'bg-secondary-100 border-blue-300 text-secondary-700'
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-slate-50 dark:bg-neutral-800',
+                        ? 'bg-secondary-100 border-secondary-300 text-secondary-700'
+                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-800',
                     )}
                   >
                     {typeLabels[type]}
@@ -366,8 +366,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                     className={clsx(
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.statuses.includes(status)
-                        ? 'bg-success-100 border-green-300 text-success-700'
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-slate-50 dark:bg-neutral-800',
+                        ? 'bg-success-100 border-success-300 text-success-700'
+                        : 'bg-white dark:bg-neutral-900 border-neutral-200 text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-800',
                     )}
                   >
                     {statusLabels[status]}
@@ -380,7 +380,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       )}
 
       {/* 步骤列表（虚拟列表） */}
-      <div ref={parentRef} className="flex-1 overflow-hidden bg-slate-50 dark:bg-neutral-800/50">
+      <div ref={parentRef} className="flex-1 overflow-hidden bg-neutral-50 dark:bg-neutral-800/50">
         <div
           ref={scrollRef}
           className="h-full overflow-y-auto"

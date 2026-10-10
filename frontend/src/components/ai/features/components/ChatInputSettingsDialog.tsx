@@ -211,7 +211,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
       <div className="space-y-6">
         {/* 标签页切换 */}
         <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-700">
-          <button className="px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 -mb-px">
+          <button className="px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 border-primary-500 text-primary-700 dark:text-primary-700 -mb-px">
             <MessageSquare className="w-4 h-4 inline-block mr-1" />
             输入行为
           </button>
@@ -345,9 +345,9 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                   key={action}
                   className={`p-3 rounded-lg border transition-all ${
                     isRecording
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                       : error
-                        ? 'border-red-300 bg-error-50 dark:bg-error-900/20'
+                        ? 'border-error-300 bg-error-50 dark:bg-error-300/20'
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                   }`}
                 >
@@ -366,7 +366,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                       <div className="flex items-center gap-1">
                         {isRecording ? (
                           <div className="px-3 py-1.5 bg-primary-100 dark:bg-primary-800 rounded-lg">
-                            <span className="text-xs font-mono text-primary-700 dark:text-primary-300 animate-pulse">
+                            <span className="text-xs font-mono text-primary-700 dark:text-primary-200 animate-pulse">
                               正在录制...
                             </span>
                           </div>
@@ -447,7 +447,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                           <>
                             <button
                               onClick={() => handleRecordHotkey(action)}
-                              className="p-1.5 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg"
+                              className="p-1.5 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg"
                               title="录制快捷键"
                             >
                               <Keyboard className="w-4 h-4" />
@@ -473,7 +473,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
                   </div>
 
                   {error && (
-                    <div className="mt-2 flex items-center gap-1 text-xs text-error-600 dark:text-error-400">
+                    <div className="mt-2 flex items-center gap-1 text-xs text-error-600 dark:text-error-600">
                       <AlertCircle className="w-3 h-3" />
                       {error}
                     </div>

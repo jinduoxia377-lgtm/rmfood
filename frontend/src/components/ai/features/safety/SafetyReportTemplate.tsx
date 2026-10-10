@@ -425,7 +425,7 @@ export function SafetyReportTemplate({
               value={reportData.executiveSummary}
               onChange={(e) => updateReportData('executiveSummary', e.target.value)}
               placeholder="请输入关键发现和建议的简要总结..."
-              className="w-full h-48 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-48 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none focus:ring-2 focus:ring-secondary-500"
             />
           </div>
         )
@@ -453,7 +453,7 @@ export function SafetyReportTemplate({
                 <label className="block text-sm font-medium text-neutral-700 mb-2">原料清单及检测结果</label>
                 <div className="overflow-x-auto border border-neutral-300 dark:border-neutral-700 rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-neutral-800">
+                    <thead className="bg-neutral-50 dark:bg-neutral-800">
                       <tr>
                         <th className="px-4 py-2 text-left">序号</th>
                         <th className="px-4 py-2 text-left">成分名称</th>
@@ -463,7 +463,7 @@ export function SafetyReportTemplate({
                         <th className="px-4 py-2 text-left">备注</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-neutral-200">
                       {initialData.ingredients.map((ing, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-2">{idx + 1}</td>
@@ -592,7 +592,7 @@ export function SafetyReportTemplate({
         </div>
 
         {showTemplateSelector && (
-          <div className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-800">
+          <div className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800">
             <h3 className="font-medium mb-3">选择报告模板</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {REPORT_TEMPLATES.map(template => (
@@ -604,9 +604,9 @@ export function SafetyReportTemplate({
                     setActiveSection('cover')
                     feedback.showInfo('模板已切换', `已选择 ${template.name}`)
                   }}
-                  className={`p-4 border rounded-lg text-left transition-all hover:border-blue-400 hover:shadow-md ${
+                  className={`p-4 border rounded-lg text-left transition-all hover:border-secondary-400 hover:shadow-md ${
                     selectedTemplate.id === template.id
-                      ? 'border-blue-500 bg-secondary-50 dark:bg-secondary-900/20 ring-2 ring-blue-500'
+                      ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20 ring-2 ring-secondary-500'
                       : 'border-neutral-200 dark:border-neutral-700 hover:bg-white dark:hover:bg-neutral-700'
                   }`}
                 >
@@ -619,7 +619,7 @@ export function SafetyReportTemplate({
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 line-clamp-2">
                         {template.description}
                       </p>
-                      <Badge variant="neutral" className="mt-2 text-[10px]">
+                      <Badge variant="neutral" className="mt-2 text-xs">
                         {template.category}
                       </Badge>
                     </div>

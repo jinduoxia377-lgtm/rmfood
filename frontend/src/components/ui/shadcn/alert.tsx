@@ -13,7 +13,7 @@ const alertVariants = cva(
         destructive: 'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
         success: 'border-success/50 text-success dark:border-success [&>svg]:text-success',
         warning: 'border-warning/50 text-warning dark:border-warning [&>svg]:text-warning',
-        info: 'border-blue-500/50 text-blue-700 dark:border-blue-500 dark:text-blue-300 [&>svg]:text-blue-500',
+        info: 'border-secondary-500/50 text-secondary-700 dark:border-secondary-500 dark:text-secondary-700 [&>svg]:text-secondary-500',
       },
     },
     defaultVariants: {
@@ -83,7 +83,9 @@ Alert.displayName = 'Alert'
 
 const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <h5 ref={ref} className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />
+    /* A-24：与 components/ui/Alert.tsx 同步 —— 告警标题不是文档章节标题，
+       写死 h5 会破坏标题大纲，改为 <div>（视觉样式不变）。 */
+    <p ref={ref} className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />
   )
 )
 AlertTitle.displayName = 'AlertTitle'

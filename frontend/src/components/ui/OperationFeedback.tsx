@@ -48,19 +48,19 @@ const colorMap: Record<FeedbackType, { bg: string; border: string; icon: string;
  },
  error: {
  bg:'bg-error-50 dark:bg-error-950/30',
- border:'border-red-200 dark:border-error-800/50',
+ border:'border-error-200 dark:border-error-800/50',
  icon:'text-error-500',
  text:'text-error-800 dark:text-error-200',
  },
  warning: {
  bg:'bg-warning-50 dark:bg-warning-950/30',
- border:'border-amber-200 dark:border-warning-800/50',
+ border:'border-warning-200 dark:border-warning-800/50',
  icon:'text-warning-500',
  text:'text-warning-800 dark:text-warning-200',
  },
  info: {
  bg:'bg-secondary-50 dark:bg-secondary-950/30',
- border:'border-blue-200 dark:border-secondary-800/50',
+ border:'border-secondary-200 dark:border-secondary-800/50',
  icon:'text-secondary-500',
  text:'text-secondary-800 dark:text-secondary-200',
  },
@@ -144,7 +144,7 @@ export function OperationFeedback({
 
  {/* Solution */}
  {solution && (
- <div className="mt-3 p-3 rounded-lg surface-overlay60 border border-neutral-200">
+ <div className="mt-3 p-3 rounded-lg surface-overlay60 border border-neutral-200 dark:border-neutral-700">
  <p className="text-xs font-medium text-text-muted mb-1">
  {type ==='error' ?'寤鸿瑙ｅ喅鏂规' :'鎻愮ず'}
  </p>
@@ -166,7 +166,7 @@ export function OperationFeedback({
  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
  bg-neutral-900 text-white text-xs font-medium
  hover:bg-neutral-800 transition-colors
- focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+ focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
  >
  <RefreshCw className="w-3.5 h-3.5" />
  閲嶈瘯
@@ -179,7 +179,7 @@ export function OperationFeedback({
  onClick={handleClose}
  className="flex-shrink-0 p-1 rounded-md text-text-disabled hover:text-text-secondary
  dark:hover:text-text-disabled hover:bg-neutral-200
- transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+ transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2"
  aria-label="鍏抽棴閫氱煡"
  >
  <X className="w-4 h-4" />
@@ -255,12 +255,12 @@ export function OperationStatus({ status, size ='md', showText = true }: Operati
  success: {
  icon: <CheckCircle className="w-4 h-4 text-primary-500" />,
  text:'鎴愬姛',
- className:'text-primary-600 dark:text-primary-400',
+ className:'text-primary-700 dark:text-primary-700',
  },
  error: {
  icon: <AlertCircle className="w-4 h-4 text-error-500" />,
  text:'澶辫触',
- className:'text-error-600 dark:text-error-400',
+ className:'text-error-600 dark:text-error-600',
  },
  };
 

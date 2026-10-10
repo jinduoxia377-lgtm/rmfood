@@ -64,12 +64,12 @@ function parseFeatureSummary(content: string): string[] {
 
 const FEATURE_ICONS = [Award, Shield, Leaf, Star, Target, Sparkles]
 const FEATURE_COLORS = [
-  'from-primary-500 to-blue-600',
-  'from-emerald-500 to-teal-600',
-  'from-amber-500 to-orange-600',
-  'from-violet-500 to-purple-600',
-  'from-rose-500 to-pink-600',
-  'from-cyan-500 to-sky-600',
+  'from-primary-500 to-secondary-600',
+  'from-success-500 to-success-600',
+  'from-warning-500 to-warning-600',
+  'from-accent-500 to-accent-600',
+  'from-danger-500 to-danger-600',
+  'from-info-500 to-info-600',
 ]
 
 export function EnhancedRatioChart({ content }: { content: string }) {
@@ -94,7 +94,7 @@ export function EnhancedRatioChart({ content }: { content: string }) {
             <div key={i}>
               <div className="flex justify-between text-xs mb-1">
                 <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate mr-2">{label}</span>
-                <span className="text-primary-600 dark:text-primary-400 font-bold">{pct}%</span>
+                <span className="text-primary-700 dark:text-primary-700 font-bold">{pct}%</span>
               </div>
               <div className="w-full h-3 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                 <div
@@ -110,11 +110,11 @@ export function EnhancedRatioChart({ content }: { content: string }) {
       {/* 卡片汇总 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         {data.labels.map((label, i) => (
-          <div key={i} className="bg-slate-50 dark:bg-neutral-700/50 rounded-lg p-2.5 text-center">
-            <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
+          <div key={i} className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-2.5 text-center">
+            <div className="text-lg font-bold text-primary-700 dark:text-primary-700">
               {data.values[i]}%
             </div>
-            <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{label}</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{label}</div>
           </div>
         ))}
       </div>
@@ -182,10 +182,10 @@ export function EnhancedRoleCards({ content }: { content: string }) {
   if (rows.length === 0) return null
 
   const roleColors: Record<string, string> = {
-    '君': 'from-red-500 to-rose-600',
-    '臣': 'from-blue-500 to-indigo-600',
-    '佐': 'from-amber-500 to-orange-600',
-    '使': 'from-emerald-500 to-teal-600',
+    '君': 'from-error-500 to-danger-600',
+    '臣': 'from-secondary-500 to-accent-600',
+    '佐': 'from-warning-500 to-warning-600',
+    '使': 'from-success-500 to-success-600',
   }
   const roleIcons: Record<string, string> = {
     '君': '君',
@@ -198,18 +198,18 @@ export function EnhancedRoleCards({ content }: { content: string }) {
     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {rows.map((row, i) => {
         const firstChar = row.role.charAt(0)
-        const grad = roleColors[firstChar] || 'from-slate-400 to-slate-500'
+        const grad = roleColors[firstChar] || 'from-neutral-400 to-neutral-500'
         return (
           <div key={i} className="rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden
             bg-white dark:bg-neutral-800/50 hover:shadow-md transition-all duration-300"
           >
             <div className={`bg-gradient-to-r ${grad} px-3 py-1.5 flex items-center justify-between`}>
               <span className="text-xs font-bold text-white">{row.role}</span>
-              <span className="text-[10px] text-white/80">{row.pct}</span>
+              <span className="text-xs text-white/80">{row.pct}</span>
             </div>
             <div className="p-3">
               <div className="text-sm font-bold text-neutral-800 dark:text-neutral-200 truncate">{row.name}</div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">{row.effect}</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">{row.effect}</p>
             </div>
           </div>
         )

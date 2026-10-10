@@ -97,7 +97,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-secondary-600'
+                  ? 'border-secondary-500 text-secondary-600'
                   : 'border-transparent text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700'
               }`}
             >
@@ -116,7 +116,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     type="checkbox"
                     checked={currentShareSettings.isPublic}
                     onChange={(e) => onShareSettingsChange({ isPublic: e.target.checked })}
-                    className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
                   />
                   <span className="text-sm font-medium text-neutral-700">公开访问（任何人可查看）</span>
                 </label>
@@ -130,7 +130,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     value={currentShareSettings.link || ''}
                     readOnly
                     placeholder="点击生成按钮创建分享链接..."
-                    className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg bg-slate-50 dark:bg-neutral-800 text-sm"
+                    className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-sm"
                   />
                   <button
                     onClick={handleCopyLink}
@@ -175,7 +175,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                       expiresAt: e.target.value ? new Date(e.target.value).toISOString() : null,
                     })}
                     className="w-full px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded-md"
-                  />
+        aria-label="有效期至"
+      />
                 </div>
               </div>
 
@@ -243,7 +244,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4">
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-neutral-700 mb-3">权限说明</h4>
                 <div className="space-y-2 text-xs text-neutral-600">
                   <div className="flex items-start space-x-2">
@@ -347,7 +348,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 };
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: string }> = ({ title, value, icon }) => (
-  <div className="bg-slate-50 dark:bg-neutral-800 rounded-lg p-4 text-center">
+  <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4 text-center">
     <div className="text-2xl mb-1">{icon}</div>
     <div className="text-display font-semibold text-neutral-900">{value.toLocaleString()}</div>
     <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{title}</div>

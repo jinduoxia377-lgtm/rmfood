@@ -90,8 +90,8 @@ const SessionCard: React.FC<{
         'group relative p-4 rounded-xl cursor-pointer transition-all duration-200',
         'border-2',
         isActive
-          ? 'border-primary-500 bg-primary-50/30 dark:bg-primary-900/20'
-          : 'border-transparent bg-slate-50/50 dark:bg-neutral-800/50 hover:border-neutral-200 dark:hover:border-neutral-700',
+          ? 'border-primary-500 bg-primary-50/30 dark:bg-primary-300/20'
+          : 'border-transparent bg-neutral-50/50 dark:bg-neutral-800/50 hover:border-neutral-200 dark:hover:border-neutral-700',
         'hover:shadow-md',
         'animate-fade-in',
       )}
@@ -114,7 +114,7 @@ const SessionCard: React.FC<{
           <h3
             className={clsx(
               'text-sm font-medium truncate',
-              isActive ? 'text-primary-700 dark:text-primary-600' : 'text-neutral-800 dark:text-neutral-200',
+              isActive ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-800 dark:text-neutral-200',
             )}
           >
             {session.title || '未命名会话'}
@@ -269,7 +269,7 @@ export function SessionHistory({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索会话..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800 dark:text-neutral-200 placeholder-slate-400"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800 dark:text-neutral-200 placeholder-neutral-400"
           />
         </div>
       </div>

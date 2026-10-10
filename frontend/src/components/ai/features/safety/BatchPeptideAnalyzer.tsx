@@ -299,14 +299,14 @@ export function BatchPeptideAnalyzer({
         <div className="grid grid-cols-5 gap-2">
           {[
             { label: '总计', value: stats.total, color: 'text-neutral-700 dark:text-neutral-300' },
-            { label: '完成', value: stats.completed, color: 'text-success-600 dark:text-success-400' },
-            { label: '通过', value: stats.passed, color: 'text-primary-600 dark:text-primary-400' },
-            { label: '警告', value: stats.warning, color: 'text-warning-600 dark:text-warning-400' },
-            { label: '失败', value: stats.failed, color: 'text-error-600 dark:text-error-400' },
+            { label: '完成', value: stats.completed, color: 'text-success-600 dark:text-success-600' },
+            { label: '通过', value: stats.passed, color: 'text-primary-700 dark:text-primary-700' },
+            { label: '警告', value: stats.warning, color: 'text-warning-600 dark:text-warning-700' },
+            { label: '失败', value: stats.failed, color: 'text-error-600 dark:text-error-600' },
           ].map(({ label, value, color }) => (
             <div key={label} className="text-center p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <div className={`text-lg font-bold tabular-nums ${color}`}>{value}</div>
-              <div className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
+              <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
             </div>
           ))}
           <div className="col-span-5">
@@ -323,7 +323,7 @@ export function BatchPeptideAnalyzer({
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               任务队列
-              <Badge variant="neutral" className="text-[10px]">{tasks.length}</Badge>
+              <Badge variant="neutral" className="text-xs">{tasks.length}</Badge>
             </h3>
             <div className="flex items-center gap-1">
               {stats.completed > 0 && (
@@ -346,13 +346,13 @@ export function BatchPeptideAnalyzer({
                 key={task.id}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs border transition-colors ${
                   task.status === 'processing'
-                    ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
+                    ? 'bg-primary-50 dark:bg-primary-300/15 border-primary-200 dark:border-primary-800'
                     : task.status === 'completed'
-                      ? 'bg-success-50 dark:bg-success-900/10 border-success-200 dark:border-success-800'
+                      ? 'bg-success-50 dark:bg-success-300/15 border-success-200 dark:border-success-800'
                       : task.status === 'failed'
-                        ? 'bg-error-50 dark:bg-error-900/10 border-error-200 dark:border-error-800'
+                        ? 'bg-error-50 dark:bg-error-300/15 border-error-200 dark:border-error-800'
                         : task.status === 'paused'
-                          ? 'bg-warning-50 dark:bg-warning-900/10 border-warning-200 dark:border-warning-800'
+                          ? 'bg-warning-50 dark:bg-warning-300/15 border-warning-200 dark:border-warning-800'
                           : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700'
                 }`}
               >
@@ -386,7 +386,7 @@ export function BatchPeptideAnalyzer({
                     <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分</span>
                     <Badge
                       variant={(getQualityScore(task.result) ?? 0) >= 70 ? 'success' : 'warning'}
-                      className="text-[10px]"
+                      className="text-xs"
                     >
                       {(getQualityScore(task.result) ?? 0) >= 70 ? '通过' : '预警'}
                     </Badge>
@@ -415,7 +415,7 @@ export function BatchPeptideAnalyzer({
       {/* 空状态 */}
       {tasks.length === 0 && (
         <Card className="p-8 text-center">
-          <Dna className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+          <Dna className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
           <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             输入肽序列（如 ACEINL、RPVK）后点击「开始分析」
           </p>

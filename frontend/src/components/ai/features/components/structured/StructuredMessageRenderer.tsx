@@ -80,7 +80,7 @@ function StructuredMessageRenderer({ content, animated = true }: StructuredMessa
 
   if (blocks.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
+      <div className="py-6 text-center text-xs text-neutral-400 dark:text-neutral-400">
         暂无内容
       </div>
     )

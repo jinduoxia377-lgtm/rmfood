@@ -324,9 +324,9 @@ export const RealTimeDataUpdater: React.FC<{
 
   // 状态指示器颜色
   const getStatusColor = (mode: string, connected: boolean) => {
-    if (connected && mode === 'websocket') return 'text-success-500 bg-success-50 dark:bg-success-900/20'
-    if (mode === 'polling') return 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20'
-    return 'text-error-500 bg-error-50 dark:bg-error-900/20'
+    if (connected && mode === 'websocket') return 'text-success-500 bg-success-50 dark:bg-success-300/20'
+    if (mode === 'polling') return 'text-secondary-500 bg-secondary-50 dark:bg-secondary-300/20'
+    return 'text-error-500 bg-error-50 dark:bg-error-300/20'
   }
 
   return (
@@ -367,7 +367,7 @@ export const RealTimeDataUpdater: React.FC<{
       {children}
 
       {/* 数据流统计面板（可折叠） */}
-      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4" />
           数据流状态

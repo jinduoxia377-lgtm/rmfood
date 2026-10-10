@@ -18,7 +18,7 @@ interface TemplatePreviewProps {
 export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePreviewProps) {
   if (!template) {
     return (
-      <div className="flex items-center justify-center h-64 border rounded-lg bg-slate-50 dark:bg-neutral-800">
+      <div className="flex items-center justify-center h-64 border rounded-lg bg-neutral-50 dark:bg-neutral-800">
         <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">选择一个模板进行预览</p>
       </div>
     );
@@ -34,7 +34,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
         <div className="flex items-center gap-2">
           <button
             onClick={onDuplicate}
-            className="flex items-center gap-2 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
+            className="flex items-center gap-2 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700"
           >
             <Copy className="w-4 h-4" />
             复制
@@ -54,7 +54,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
         {template.sections && template.sections.length > 0 ? (
           <div className="space-y-2">
             {template.sections.map((section, index) => (
-              <div key={section.id || index} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-neutral-700 rounded-lg">
+              <div key={section.id || index} className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
                 <span className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded-full text-sm font-medium">
                   {index + 1}
                 </span>
@@ -68,7 +68,7 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
       </div>
 
       <div className="flex justify-end">
-        <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700">
+        <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700">
           <Download className="w-4 h-4" />
           导出模板
         </button>

@@ -86,7 +86,7 @@ function DataTable<TData, TValue>({
             value={globalFilter ?? ''}
             onChange={(e) => setGlobalFilter(String(e.target.value))}
             placeholder="全局搜索..."
-            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="min-h-[44px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
       )}

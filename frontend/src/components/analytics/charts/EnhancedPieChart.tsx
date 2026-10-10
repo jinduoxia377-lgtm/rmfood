@@ -62,7 +62,7 @@ interface EnhancedPieChartProps {
 const defaultPalette = [
   'var(--color-success, var(--color-primary-400))', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)', 'var(--color-tertiary, var(--color-accent-500))',
   'var(--color-info, var(--color-secondary-500))', 'var(--color-error, #FF3B30)', 'var(--color-neutral-600, #4B5563)', 'var(--color-neutral-500, #6B7280)',
-  'var(--color-pink-500, #D946EF)', 'var(--color-success-400, #4ADE80)', 'var(--color-warning-400, #F59E0B)', 'var(--color-info-400, #67E8F9)',
+  'var(--color-danger-500, #D946EF)', 'var(--color-success-400, #4ADE80)', 'var(--color-warning-400, #F59E0B)', 'var(--color-info-400, #67E8F9)',
 ]
 
 export function EnhancedPieChart({
@@ -180,7 +180,7 @@ export function EnhancedPieChart({
     <div className="relative w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart>
-          <Pie
+          <Pie rootTabIndex={-1}
             data={pieData}
             cx="50%"
             cy="50%"
@@ -247,7 +247,7 @@ export function EnhancedPieChart({
       </ResponsiveContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-0 left-0 right-0 flex flex-wrap justify-center gap-x-6 gap-y-2 px-4 py-3 bg-gradient-to-t from-white/80 dark:from-gray-900/80 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 flex flex-wrap justify-center gap-x-6 gap-y-2 px-4 py-3 bg-gradient-to-t from-white/80 dark:from-neutral-900/80 to-transparent">
         {pieData.slice(0, 5).map((item, index) => (
           <button
             key={index}

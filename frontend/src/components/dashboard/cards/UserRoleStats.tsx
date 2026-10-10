@@ -15,10 +15,10 @@ interface UserRoleStatsProps {
 
 const ROLE_META: Record<string, { label: string; Icon: typeof Users; color: string; bar: string }> = {
   guest: { label: '访客', Icon: Users, color: 'text-neutral-500 dark:text-neutral-400', bar: 'bg-neutral-400' },
-  researcher: { label: '研究员', Icon: FlaskConical, color: 'text-secondary-600 dark:text-secondary-400', bar: 'bg-secondary-500' },
-  formulator: { label: '配方师', Icon: Users, color: 'text-primary-600 dark:text-primary-400', bar: 'bg-primary-500' },
-  reviewer: { label: '审核员', Icon: ShieldCheck, color: 'text-warning-600 dark:text-warning-400', bar: 'bg-warning-500' },
-  admin: { label: '管理员', Icon: ClipboardList, color: 'text-error-600 dark:text-error-400', bar: 'bg-error-500' },
+  researcher: { label: '研究员', Icon: FlaskConical, color: 'text-secondary-600 dark:text-secondary-700', bar: 'bg-secondary-500' },
+  formulator: { label: '配方师', Icon: Users, color: 'text-primary-700 dark:text-primary-700', bar: 'bg-primary-500' },
+  reviewer: { label: '审核员', Icon: ShieldCheck, color: 'text-warning-600 dark:text-warning-700', bar: 'bg-warning-500' },
+  admin: { label: '管理员', Icon: ClipboardList, color: 'text-error-600 dark:text-error-600', bar: 'bg-error-500' },
 }
 
 const ROLE_ORDER = ['admin', 'reviewer', 'formulator', 'researcher', 'guest']
@@ -35,8 +35,8 @@ export const UserRoleStats: FC<UserRoleStatsProps> = ({ byRole, total, loading }
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <UserCheck size={18} className="text-primary-600 dark:text-primary-400" />
-            <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>用户角色分布</CardTitle>
+            <UserCheck size={18} className="text-primary-700 dark:text-primary-700" />
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>用户角色分布</CardTitle>
           </div>
           <span className="text-xs text-neutral-500 dark:text-neutral-400">共 {total} 人</span>
         </div>

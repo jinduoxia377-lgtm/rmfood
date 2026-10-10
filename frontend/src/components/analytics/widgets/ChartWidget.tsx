@@ -67,7 +67,7 @@ export const ChartWidget: React.FC<Props> = ({ chartKey, height = 280, title, ch
   return (
     <div className="rounded-xl bg-surface border border-border p-5">
       <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-4 h-4 text-primary-600" />
+        <Icon className="w-4 h-4 text-primary-700" />
         <h4 className="font-semibold text-sm text-text-primary">{chartTitle}</h4>
       </div>
 

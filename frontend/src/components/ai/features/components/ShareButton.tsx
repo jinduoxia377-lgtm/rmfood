@@ -73,16 +73,16 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   variant = 'default',
 }) => {
   const baseClasses =
-    'flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800'
+    'flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-800'
 
   const variantClasses = {
     default:
       'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800',
     success: isActive
-      ? 'text-success-600 bg-success-50 dark:bg-success-900/20'
+      ? 'text-success-600 bg-success-50 dark:bg-success-300/20'
       : 'text-neutral-500 hover:text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20',
     danger: isActive
-      ? 'text-error-600 bg-error-50 dark:bg-error-900/20'
+      ? 'text-error-600 bg-error-50 dark:bg-error-300/20'
       : 'text-neutral-500 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20',
   }
 
@@ -337,7 +337,7 @@ export function ShareButton({
           </div>
 
           {/* 快捷键提示 */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
             Ctrl+Shift+S 快速分享
           </div>
         </div>

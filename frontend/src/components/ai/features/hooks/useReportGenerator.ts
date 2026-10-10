@@ -274,7 +274,7 @@ const BUILTIN_TEMPLATES: ReportTemplate[] = [
     styles: {
       primaryColor: '#4CAF50',
       fontFamily: 'SimSun, serif',
-      fontSize: 11,
+      fontSize: 12,
       headerStyle: 'classic',
       pageSize: 'A4',
       orientation: 'portrait',

@@ -74,38 +74,38 @@ export function EffectCurveChart({
           />
         )}
         {/* Axes */}
-        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" strokeWidth="1" className="text-neutral-400" />
-        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="currentColor" strokeWidth="1" className="text-neutral-400" />
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="currentColor" strokeWidth="1" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="currentColor" strokeWidth="1" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         {/* Labels */}
-        <text x={width / 2} y={height - 5} textAnchor="middle" className="text-[10px] fill-neutral-500">时间 (h)</text>
-        <text x={10} y={height / 2} textAnchor="middle" transform={`rotate(-90, 10, ${height / 2})`} className="text-[10px] fill-neutral-500">浓度/效应</text>
+        <text x={width / 2} y={height - 5} textAnchor="middle" className="text-xs fill-neutral-500">时间 (h)</text>
+        <text x={10} y={height / 2} textAnchor="middle" transform={`rotate(-90, 10, ${height / 2})`} className="text-xs fill-neutral-500">浓度/效应</text>
       </svg>
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-violet-500" />
+          <div className="w-3 h-0.5 bg-accent-500" />
           <span className="text-neutral-600 dark:text-neutral-400">血浆浓度 (CT)</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-0.5 bg-emerald-500" />
+          <div className="w-3 h-0.5 bg-success-500" />
           <span className="text-neutral-600 dark:text-neutral-400">效应水平 (ET)</span>
         </div>
         <div className="flex items-center gap-1 ml-auto">
-          <div className="w-2 h-2 rounded-full bg-red-500" />
-          <span className="text-neutral-500">Tmax: {peakTime.toFixed(1)}h</span>
+          <div className="w-2 h-2 rounded-full bg-error-500" />
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Tmax: {peakTime.toFixed(1)}h</span>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs">
-        <div className="p-2 rounded bg-violet-50 dark:bg-violet-900/20 text-center">
-          <div className="text-violet-600 dark:text-violet-400">Cmax</div>
-          <div className="font-bold text-violet-700 dark:text-violet-300">{peakConcentration.toFixed(1)}</div>
+        <div className="p-2 rounded bg-accent-50 dark:bg-accent-300/20 text-center">
+          <div className="text-accent-600 dark:text-accent-700">Cmax</div>
+          <div className="font-bold text-accent-700 dark:text-accent-700">{peakConcentration.toFixed(1)}</div>
         </div>
-        <div className="p-2 rounded bg-emerald-50 dark:bg-emerald-900/20 text-center">
-          <div className="text-emerald-600 dark:text-emerald-400">Emax</div>
-          <div className="font-bold text-emerald-700 dark:text-emerald-300">{maxEffect.toFixed(3)}</div>
+        <div className="p-2 rounded bg-success-50 dark:bg-success-300/20 text-center">
+          <div className="text-success-700 dark:text-success-600">Emax</div>
+          <div className="font-bold text-success-700 dark:text-success-700">{maxEffect.toFixed(3)}</div>
         </div>
-        <div className="p-2 rounded bg-blue-50 dark:bg-blue-900/20 text-center">
-          <div className="text-blue-600 dark:text-blue-400">AUC</div>
-          <div className="font-bold text-blue-700 dark:text-blue-300">{auc.toFixed(1)}</div>
+        <div className="p-2 rounded bg-secondary-50 dark:bg-secondary-300/20 text-center">
+          <div className="text-secondary-700 dark:text-secondary-700">AUC</div>
+          <div className="font-bold text-secondary-700 dark:text-secondary-700">{auc.toFixed(1)}</div>
         </div>
       </div>
     </div>

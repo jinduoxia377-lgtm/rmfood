@@ -76,7 +76,7 @@ function HighlightedText({ text, matches }: { text: string; matches: Array<{ sta
         seg.isMatch ? (
           <mark
             key={i}
-            className="bg-yellow-200 dark:bg-yellow-700/50 text-inherit rounded px-0.5"
+            className="bg-warning-200 dark:bg-warning-700/50 text-inherit rounded px-0.5"
           >
             {seg.text}
           </mark>
@@ -156,23 +156,23 @@ export function ChatSearchOverlay({ messages, onGoToMessage, onClose }: ChatSear
           onKeyDown={handleKeyDown}
           placeholder="搜索消息内容..."
           className="flex-1 text-xs bg-transparent text-neutral-700 dark:text-neutral-300
-            placeholder:text-neutral-300 dark:placeholder:text-neutral-600 focus:outline-none"
+            placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)] focus:outline-none"
           autoFocus
         />
         <button onClick={onClose} className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800">
-          <X className="w-3.5 h-3.5 text-neutral-400" />
+          <X className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </button>
       </div>
 
       {/* 结果列表 */}
       <div className="max-h-72 overflow-y-auto">
         {query.trim() && results.length === 0 ? (
-          <div className="py-8 text-center text-xs text-neutral-400 dark:text-neutral-500">
+          <div className="py-8 text-center text-xs text-neutral-400 dark:text-neutral-400">
             未找到匹配消息
           </div>
         ) : query.trim() && results.length > 0 ? (
           <div>
-            <div className="px-3 py-1.5 text-[10px] text-neutral-400 dark:text-neutral-500
+            <div className="px-3 py-1.5 text-xs text-neutral-400 dark:text-neutral-400
               bg-neutral-50 dark:bg-neutral-800/50 sticky top-0">
               找到 {results.length} 条消息 · 共 {results.reduce((s, r) => s + r.matchCount, 0)} 处匹配
               <span className="ml-2">(↑↓ 导航，Enter 跳转)</span>
@@ -184,15 +184,15 @@ export function ChatSearchOverlay({ messages, onGoToMessage, onClose }: ChatSear
                 onMouseEnter={() => setCurrentResultIndex(i)}
                 className={`w-full text-left px-3 py-2.5 border-b border-neutral-50 dark:border-neutral-800/50
                   hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors ${
-                    currentResultIndex === i ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
+                    currentResultIndex === i ? 'bg-primary-50/50 dark:bg-primary-300/15' : ''
                   }`}
               >
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
                     result.matchCount > 3
-                      ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                      ? 'bg-error-100 dark:bg-error-300/25 text-error-600 dark:text-error-700'
                       : result.matchCount > 1
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
+                        ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
                   }`}>
                     {result.matchCount} 次匹配
@@ -201,14 +201,14 @@ export function ChatSearchOverlay({ messages, onGoToMessage, onClose }: ChatSear
                     <ChevronDown className="w-3 h-3 text-primary-500" />
                   )}
                 </div>
-                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-relaxed line-clamp-2">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed line-clamp-2">
                   <HighlightedText text={result.snippet} matches={[{ start: 0, end: result.snippet.length }]} />
                 </p>
               </button>
             ))}
           </div>
         ) : (
-          <div className="py-8 text-center text-xs text-neutral-300 dark:text-neutral-600">
+          <div className="py-8 text-center text-xs text-neutral-300 dark:text-neutral-400">
             输入关键词开始搜索
           </div>
         )}

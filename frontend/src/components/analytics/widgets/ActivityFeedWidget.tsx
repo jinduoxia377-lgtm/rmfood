@@ -13,7 +13,7 @@ interface Props {
 }
 
 const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; dotColor: string }> = {
-  formula:    { icon: FileText,   color: 'text-primary-600',   dotColor: 'bg-primary-500' },
+  formula:    { icon: FileText,   color: 'text-primary-700',   dotColor: 'bg-primary-500' },
   experiment: { icon: FlaskConical, color: 'text-secondary-600', dotColor: 'bg-secondary-500' },
   ai_generation: { icon: Zap, color: 'text-warning-600', dotColor: 'bg-warning-500' },
   user:       { icon: User,       color: 'text-success-600',   dotColor: 'bg-success-500' },
@@ -38,7 +38,7 @@ export const ActivityFeedWidget: React.FC<Props> = ({ title = '近期动态', li
           {title}
         </h4>
         {items.length > 0 && (
-          <button className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+          <button className="text-xs text-primary-700 hover:text-primary-700 font-medium">
             查看全部
           </button>
         )}
@@ -57,7 +57,7 @@ export const ActivityFeedWidget: React.FC<Props> = ({ title = '近期动态', li
                 <span className={`block w-2 h-2 rounded-full ${cfg.dotColor}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary group-hover:text-primary-600 transition-colors line-clamp-2">
+                <p className="text-sm font-medium text-text-primary group-hover:text-primary-700 transition-colors line-clamp-2">
                   {activity.title}
                 </p>
                 <div className="flex items-center gap-2 mt-1.5">

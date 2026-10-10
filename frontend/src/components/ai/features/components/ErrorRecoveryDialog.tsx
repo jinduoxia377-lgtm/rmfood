@@ -78,44 +78,44 @@ const ERROR_CONFIG: Record<ErrorType, {
   [ErrorType.NetworkTimeout]: {
     icon: WifiOff,
     title: '连接超时',
-    colorClass: 'text-orange-600 dark:text-orange-400',
-    bgClass: 'bg-orange-100 dark:bg-orange-900/30',
+    colorClass: 'text-warning-600 dark:text-warning-700',
+    bgClass: 'bg-warning-100 dark:bg-warning-300/25',
   },
   [ErrorType.NetworkUnreachable]: {
     icon: WifiOff,
     title: '无法连接服务',
-    colorClass: 'text-error-600 dark:text-error-400',
-    bgClass: 'bg-error-100 dark:bg-error-900/30',
+    colorClass: 'text-error-600 dark:text-error-600',
+    bgClass: 'bg-error-100 dark:bg-error-300/25',
   },
   [ErrorType.Unauthorized]: {
     icon: Lock,
     title: '会话已过期',
-    colorClass: 'text-error-600 dark:text-error-400',
-    bgClass: 'bg-error-100 dark:bg-error-900/30',
+    colorClass: 'text-error-600 dark:text-error-600',
+    bgClass: 'bg-error-100 dark:bg-error-300/25',
   },
   [ErrorType.Forbidden]: {
     icon: Lock,
     title: '权限不足',
-    colorClass: 'text-error-600 dark:text-error-400',
-    bgClass: 'bg-error-100 dark:bg-error-900/30',
+    colorClass: 'text-error-600 dark:text-error-600',
+    bgClass: 'bg-error-100 dark:bg-error-300/25',
   },
   [ErrorType.RateLimited]: {
     icon: Timer,
     title: '请求过于频繁',
-    colorClass: 'text-yellow-600 dark:text-yellow-400',
-    bgClass: 'bg-yellow-100 dark:bg-yellow-900/30',
+    colorClass: 'text-warning-600 dark:text-warning-700',
+    bgClass: 'bg-warning-100 dark:bg-warning-300/25',
   },
   [ErrorType.ServerError]: {
     icon: ServerCrash,
     title: '服务器繁忙',
-    colorClass: 'text-accent-600 dark:text-accent-400',
-    bgClass: 'bg-accent-100 dark:bg-accent-900/30',
+    colorClass: 'text-accent-600 dark:text-accent-700',
+    bgClass: 'bg-accent-100 dark:bg-accent-300/25',
   },
   [ErrorType.StreamInterrupted]: {
     icon: Unplug,
     title: '响应中断',
-    colorClass: 'text-secondary-600 dark:text-secondary-400',
-    bgClass: 'bg-secondary-100 dark:bg-secondary-900/30',
+    colorClass: 'text-secondary-600 dark:text-secondary-700',
+    bgClass: 'bg-secondary-100 dark:bg-secondary-300/25',
   },
   [ErrorType.Unknown]: {
     icon: AlertTriangle,
@@ -435,7 +435,7 @@ export function ErrorRecoveryDialog({
                 <Bug className="w-3 h-3" />
                 技术详情
               </summary>
-              <pre className="mt-2 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg text-xs text-error-600 dark:text-error-400 overflow-auto max-h-40 whitespace-pre-wrap">
+              <pre className="mt-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg text-xs text-error-600 dark:text-error-600 overflow-auto max-h-40 whitespace-pre-wrap">
                 {classifiedError.originalError.message}
                 {'\n\n'}
                 {classifiedError.originalError.stack}

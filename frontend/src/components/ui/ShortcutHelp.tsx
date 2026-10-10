@@ -58,7 +58,7 @@ export function ShortcutHelp({ shortcuts }: ShortcutHelpProps) {
  >
  <div className="flex items-center gap-2">
  <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
- <Keyboard className="w-4 h-4 text-primary-600" />
+ <Keyboard className="w-4 h-4 text-primary-700" />
  </div>
  <h3 className="font-semibold" style={{ color:'var(--text-primary)' }}>
  键盘快捷键

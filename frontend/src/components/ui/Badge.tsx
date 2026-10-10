@@ -13,8 +13,14 @@ const badgeVariants = cva(
         outline: 'border-border text-foreground',
         success: 'border-transparent bg-success text-success-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
-        info: 'border-transparent bg-blue-500 text-white',
-        danger: 'border-transparent bg-red-500 text-white',
+        /* D-72：info / danger 原用 Tailwind 原生色板 bg-secondary-500 / bg-error-500
+           —— 既绕开了设计系统令牌（暗色下不随主题反转），白字对比度也不足：
+             white on red-500  #fb2c36 = 3.82:1 ✗（实测 /users「已禁用」计数徽章）
+             white on blue-500 #3b82f6 = 3.68:1 ✗
+           改为语义令牌：亮色用 600/700 实底 + 白字（4.83 / 5.48:1），
+           暗色改用「深底 + 亮字」的暗色徽章范式 *-300/25 + *-700（8.3:1）。 */
+        info: 'border-transparent bg-info-700 dark:bg-info-300/25 text-white dark:text-info-700',
+        danger: 'border-transparent bg-danger-600 dark:bg-danger-300/25 text-white dark:text-danger-700',
         neutral: 'border-transparent bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200',
         primary: 'border-transparent bg-primary text-primary-foreground',
       },

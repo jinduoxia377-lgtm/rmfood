@@ -29,7 +29,7 @@ export function RadixUsageGuide() {
 
       <div className="border-t pt-4">
         <h3 className="font-semibold">说明</h3>
-        <p className="text-sm text-gray-600 mt-2">
+        <p className="text-sm text-neutral-600 mt-2">
           - Button 和 Card 组件继续使用 shadcn/ui 实现（功能更丰富）
           - Badge 和 Text 使用 Radix Themes 原生实现
           - 所有组件保持向后兼容

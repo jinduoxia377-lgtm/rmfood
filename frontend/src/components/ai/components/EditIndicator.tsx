@@ -7,7 +7,7 @@ interface EditIndicatorProps {
 
 export function EditIndicator({ isAutoSaving, hasUnsavedChanges }: EditIndicatorProps) {
   return (
-    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xs py-2 px-4 flex items-center justify-between z-20 shadow-md">
+    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] text-white text-xs py-2 px-4 flex items-center justify-between z-20 shadow-md">
       <span className="flex items-center gap-2">
         <Edit2 className="w-3.5 h-3.5" />
         <span className="font-medium">编辑模式</span>

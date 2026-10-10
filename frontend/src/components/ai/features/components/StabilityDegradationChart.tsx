@@ -91,13 +91,13 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, #E5E7EB)" />
           <XAxis
             dataKey="time"
-            tick={{ fontSize: 11, fill: 'var(--text-muted, #6B7280)' }}
+            tick={{ fontSize: 12, fill: 'var(--text-muted, #6B7280)' }}
             axisLine={{ stroke: 'var(--border-color, #E5E7EB)' }}
           />
           <YAxis
             domain={[0, 105]}
             tickFormatter={(v) => `${v}%`}
-            tick={{ fontSize: 11, fill: 'var(--text-muted, #6B7280)' }}
+            tick={{ fontSize: 12, fill: 'var(--text-muted, #6B7280)' }}
             axisLine={{ stroke: 'var(--border-color, #E5E7EB)' }}
           />
           <RechartsTooltip
@@ -167,7 +167,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
 
       {/* 关键指标卡片 */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-900/10 p-3 text-center">
+        <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-300/15 p-3 text-center">
           <div className="text-2xl font-bold text-success-600 dark:text-success-600">
             {result.shelfLifeDays >= 365
               ? `${(result.shelfLifeDays / 365).toFixed(1)}年`
@@ -175,14 +175,14 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
           </div>
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">预测保质期</div>
         </div>
-        <div className="rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 p-3 text-center">
-          <div className="text-2xl font-bold text-primary-700 dark:text-primary-600">
+        <div className="rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-300/15 p-3 text-center">
+          <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">
             {result.score}/100
           </div>
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">稳定性评分</div>
         </div>
-        <div className="rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50/50 dark:bg-warning-900/10 p-3 text-center">
-          <div className="text-2xl font-bold text-warning-600 dark:text-warning-600">
+        <div className="rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50/50 dark:bg-warning-300/15 p-3 text-center">
+          <div className="text-2xl font-bold text-warning-600 dark:text-warning-700">
             {shelfLifeMonth ?? '—'}
           </div>
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">临界时间点</div>
@@ -242,7 +242,7 @@ export function FactorImpactBar({ factors, className = '' }: FactorImpactBarProp
             />
           </div>
           {f.description && (
-            <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{f.description}</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{f.description}</p>
           )}
         </div>
       ))}

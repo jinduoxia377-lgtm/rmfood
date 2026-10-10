@@ -173,9 +173,9 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
                   value={form.product_name_cn}
                   onChange={e => updateField('product_name_cn', e.target.value)}
                   placeholder="如：鱼胶原蛋白肽"
-                  className={errors.product_name_cn ? 'border-red-400' : ''}
+                  className={errors.product_name_cn ? 'border-error-400' : ''}
                 />
-                {errors.product_name_cn && <p className="text-xs text-red-500 mt-0.5">{errors.product_name_cn}</p>}
+                {errors.product_name_cn && <p className="text-xs text-error-500 mt-0.5">{errors.product_name_cn}</p>}
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">产品名称（英文）</label>
@@ -209,14 +209,14 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
               <div>
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">生产批号 *</label>
                 <Input value={form.batch_no} onChange={e => updateField('batch_no', e.target.value)} placeholder="20240518"
-                  className={errors.batch_no ? 'border-red-400' : ''} />
-                {errors.batch_no && <p className="text-xs text-red-500 mt-0.5">{errors.batch_no}</p>}
+                  className={errors.batch_no ? 'border-error-400' : ''} />
+                {errors.batch_no && <p className="text-xs text-error-500 mt-0.5">{errors.batch_no}</p>}
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">生产日期 *</label>
                 <Input type="date" value={form.mfg_date} onChange={e => updateField('mfg_date', e.target.value)}
-                  className={errors.mfg_date ? 'border-red-400' : ''} />
-                {errors.mfg_date && <p className="text-xs text-red-500 mt-0.5">{errors.mfg_date}</p>}
+                  className={errors.mfg_date ? 'border-error-400' : ''} />
+                {errors.mfg_date && <p className="text-xs text-error-500 mt-0.5">{errors.mfg_date}</p>}
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">执行标准</label>
@@ -273,7 +273,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
             </div>
             <div className="space-y-2">
               {testItems.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-2 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-[var(--border-subtle)]">
+                <div key={idx} className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-[var(--border-subtle)]">
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <select
                       value={item.category}
@@ -318,7 +318,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
                       <option>不符合</option>
                     </select>
                   </div>
-                  <button onClick={() => removeTestItem(idx)} className="mt-4 text-red-400 hover:text-red-600">
+                  <button onClick={() => removeTestItem(idx)} className="mt-4 text-error-400 hover:text-error-600">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -328,7 +328,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-subtle)] bg-slate-50 dark:bg-neutral-800">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--border-subtle)] bg-neutral-50 dark:bg-neutral-800">
           <span className="text-xs text-[var(--text-muted)]">
             {testItems.filter(i => i.item_name.trim()).length} 项检测已配置
           </span>

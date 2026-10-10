@@ -27,8 +27,8 @@ export default function ExperimentCompareModal({ experiments, onClose }: Props) 
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
-              <BarChart3 size={16} className="text-violet-500" />
+            <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex items-center justify-center">
+              <BarChart3 size={16} className="text-accent-500" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">实验数据对比</h2>

@@ -92,17 +92,17 @@ const BatchEditDialog: React.FC<BatchEditDialogProps> = ({
           )}
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 dark:bg-neutral-800 rounded-b-lg flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800 rounded-b-lg flex justify-end space-x-3">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-slate-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-md hover:bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500"
           >
             取消
           </button>
           <button
             onClick={handleApply}
             disabled={!value && value !== false}
-            className="px-4 py-2 text-sm font-medium text-secondary-main bg-secondary-container border border-transparent rounded-md hover:bg-secondary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-neutral-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-secondary-main bg-secondary-container border border-transparent rounded-md hover:bg-secondary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             应用更改
           </button>
@@ -117,7 +117,7 @@ function renderBatchInput(
   value: any,
   onChange: (value: any) => void,
 ): React.ReactNode {
-  const baseClasses = "w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  const baseClasses = "w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500";
 
   switch (config.editorType) {
     case 'select':
@@ -157,6 +157,7 @@ function renderBatchInput(
           value={value ? new Date(value).toISOString().split('T')[0] : ''}
           onChange={(e) => onChange(e.target.value)}
           className={baseClasses}
+          aria-label={config.label}
         />
       );
 
@@ -167,7 +168,7 @@ function renderBatchInput(
             type="checkbox"
             checked={Boolean(value)}
             onChange={(e) => onChange(e.target.checked)}
-            className="w-4 h-4 text-secondary-600 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-2 focus:ring-secondary-500"
           />
           <span className="text-sm text-neutral-700">
             {value ? '是' : '否'}

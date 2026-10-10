@@ -87,8 +87,8 @@ export function ActionButtons({
             </Button>
           ) : (
             <div className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-primary-500/10 dark:bg-primary-500/16">
-              <CheckCircle className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-              <span className="text-sm font-medium text-primary-600 dark:text-primary-400">已保存</span>
+              <CheckCircle className="w-4 h-4 text-primary-700 dark:text-primary-700" />
+              <span className="text-sm font-medium text-primary-700 dark:text-primary-700">已保存</span>
             </div>
           )}
         </>

@@ -103,7 +103,7 @@ export function FlavorRadar({ profile, balanceScore, size = 200 }: FlavorRadarPr
               dominantBaseline="middle"
               className="text-xs font-medium"
               fill={f.color}
-              style={{ fontSize: 11 }}
+              style={{ fontSize: 12 }}
             >
               {f.label}
             </text>
@@ -113,7 +113,7 @@ export function FlavorRadar({ profile, balanceScore, size = 200 }: FlavorRadarPr
       {balanceScore !== undefined && balanceScore !== null && (
         <div className="text-center">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">风味平衡度 </span>
-          <span className="text-sm font-bold text-violet-600 dark:text-violet-400">{balanceScore.toFixed(2)}</span>
+          <span className="text-sm font-bold text-accent-600 dark:text-accent-700">{balanceScore.toFixed(2)}</span>
         </div>
       )}
     </div>

@@ -52,7 +52,7 @@ export default function ComposerStatusBar({
     : null
 
   return (
-    <div className="flex items-center gap-2 px-4 py-1.5 text-[11px] text-neutral-400 dark:text-neutral-600 select-none flex-wrap">
+    <div className="flex items-center gap-2 px-4 py-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] select-none flex-wrap">
       {/* 对话轮次 */}
       {assistantCount > 0 && (
         <span className="flex items-center gap-1">
@@ -98,7 +98,7 @@ export default function ComposerStatusBar({
         <>
           <span className="flex items-center gap-1">
             <span>·</span>
-            <span className={contextPercent > 80 ? 'text-amber-500' : contextPercent > 60 ? 'text-yellow-600 dark:text-yellow-500' : ''}>
+            <span className={contextPercent > 80 ? 'text-warning-500' : contextPercent > 60 ? 'text-warning-600 dark:text-warning-700' : ''}>
               {formatTokens(contextTokens!)} / {formatTokens(contextLimit!)}
             </span>
           </span>
@@ -108,16 +108,16 @@ export default function ComposerStatusBar({
       {/* 模型标签 */}
       {modelName && (
         <>
-          <span className="text-neutral-300 dark:text-neutral-700">·</span>
-          <span className="hidden sm:inline">{modelName}</span>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+          <span className="hidden sm:inline text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{modelName}</span>
         </>
       )}
 
       {/* RAG 状态 */}
       {ragStatus && (
         <>
-          <span className="text-neutral-300 dark:text-neutral-700">·</span>
-          <span className={ragStatus === '知识库就绪' ? 'text-emerald-500/70' : 'text-amber-500/70'}>
+          <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
+          <span className={ragStatus === '知识库就绪' ? 'text-success-500/70' : 'text-warning-500/70'}>
             {ragStatus}
           </span>
         </>

@@ -225,7 +225,7 @@ describe('DialogInput', () => {
     )
     const container = screen.getByRole('textbox').parentElement?.parentElement
     
-    expect(container).toHaveClass('border-red-500')
+    expect(container).toHaveClass('border-error-500')
   })
 
   it('should auto resize height based on content', async () => {

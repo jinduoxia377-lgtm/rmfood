@@ -15,7 +15,7 @@ export default function AnnotationControls({
   return (
     <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 flex items-center gap-2">
       {isAddingAnnotation && (
-        <div className="px-3 py-1.5 rounded-lg bg-warning-500 text-white text-[11px] font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+        <div className="px-3 py-1.5 rounded-lg bg-warning-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
           ✏️ 点击图谱添加标注 — 按 Esc 取消
         </div>
       )}

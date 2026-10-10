@@ -39,7 +39,7 @@ export function AnalyticsSkeleton() {
 
 export function KPICardSkeleton() {
   return (
-    <div className="card p-4 bg-slate-50 dark:bg-neutral-800/50 animate-pulse">
+    <div className="card p-4 bg-neutral-50 dark:bg-neutral-800/50 animate-pulse">
       <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-700 rounded mb-3" />
       <div className="h-8 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
       <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2" />
@@ -54,14 +54,14 @@ export function ChartSkeleton({ height = 300 }: { height?: number }) {
         <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-32" />
         <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-24" />
       </div>
-      <div className="h-[300px] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-lg" />
+      <div className="h-[300px] bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 rounded-lg" />
     </div>
   )
 }
 
 export function ActivityItemSkeleton() {
   return (
-    <div className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg animate-pulse">
+    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg animate-pulse">
       <div className="flex items-start gap-3">
         <div className="w-2 h-2 bg-neutral-300 dark:bg-neutral-600 rounded-full mt-2" />
         <div className="flex-1">

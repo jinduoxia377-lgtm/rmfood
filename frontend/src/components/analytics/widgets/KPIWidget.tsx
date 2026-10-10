@@ -37,8 +37,8 @@ export const KPIWidget: React.FC<Props> = ({ metricId, size = 'medium', kpiMap }
   }, [changeDir])
 
   const changeColor = useMemo(() => {
-    if (changeDir === 'up') return 'text-success-600 dark:text-success-400'
-    if (changeDir === 'down') return 'text-error-600 dark:text-error-400'
+    if (changeDir === 'up') return 'text-success-600 dark:text-success-600'
+    if (changeDir === 'down') return 'text-error-600 dark:text-error-600'
     return 'text-text-muted'
   }, [changeDir])
 
@@ -73,7 +73,7 @@ export const KPIWidget: React.FC<Props> = ({ metricId, size = 'medium', kpiMap }
 
       {kpi.target != null && (
         <div className="mt-2 pt-2 border-t border-border">
-          <div className="flex items-center justify-between text-[10px] text-text-muted mb-1">
+          <div className="flex items-center justify-between text-xs text-text-muted mb-1">
             <span>目标</span>
             <span>{kpi.target.toLocaleString()}</span>
           </div>

@@ -93,8 +93,10 @@ export default function MobileBottomNav() {
       <nav
         className="fixed bottom-0 left-0 right-0 z-[150]"
         style={{
-          // 高度 = header-height(56px) + safe-area
-          height: 'var(--header-height, 56px)',
+          /* A-11：原 56px 装不下「44px 图标 + 2px 间距 + 12px 标签(≈17px 行高)」
+             = 63px，标签被挤压。抬到 64px（仍在 iOS 底部栏 56~64 的常规范畴），
+             图标容器同步 40→44 以满足 WCAG 2.5.5。 */
+          height: '64px',
           background: 'var(--bg-surface, #ffffff)',
           borderTop: '1px solid var(--border-color, #e2e8f0)',
           backdropFilter: 'blur(16px) saturate(180%)',
@@ -121,12 +123,12 @@ export default function MobileBottomNav() {
                 aria-label={item.label}
                 aria-current={active ? 'page' : undefined}
               >
-                {/* 图标容器 — 40×40, radius-xl */}
+                {/* 图标容器 — 44×44（A-11：40→44，WCAG 2.5.5 最小触控尺寸）, radius-xl */}
                 <div
                   className="relative flex items-center justify-center transition-all duration-200"
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     borderRadius: active ? 'var(--radius-xl, 16px)' : '0',
                     background: active ? 'var(--color-primary-container, #ecfdf5)' : 'transparent',
                   }}
@@ -140,11 +142,11 @@ export default function MobileBottomNav() {
                     />
                   )}
                 </div>
-                {/* 标签 — text-overline 11px，去西文 tracking（中文不需 0.05em） */}
+                {/* 标签 — text-overline 12px（A-11 由 11px 抬级），去西文 tracking（中文不需 0.05em） */}
                 <span
                   className="truncate px-1"
                   style={{
-                    fontSize: 'var(--text-overline, 11px)',
+                    fontSize: 'var(--text-overline, 12px)',
                     fontWeight: active ? 600 : 400,
                     color: active ? 'var(--color-primary, #10b981)' : 'var(--text-secondary, #64748b)',
                     lineHeight: '1.45',
@@ -174,7 +176,7 @@ export default function MobileBottomNav() {
             aria-label="更多导航"
           >
             <div
-              className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-95"
+              className="flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'var(--bg-surface-hover, #f1f5f9)', borderRadius: 'var(--radius-xl, 16px)' }}
             >
               <MoreHorizontal size={20} strokeWidth={1.75} />
@@ -182,7 +184,7 @@ export default function MobileBottomNav() {
             <span
               className="truncate px-1"
               style={{
-                fontSize: 'var(--text-overline, 11px)',
+                fontSize: 'var(--text-overline, 12px)',
                 fontWeight: 500,
                 lineHeight: '1.45',
               }}
@@ -280,7 +282,7 @@ export default function MobileBottomNav() {
                     </span>
                     {item.badge && (
                       <span
-                        className="flex items-center justify-center font-semibold min-w-[20px] h-5 px-1.5 rounded-full text-[11px] text-white"
+                        className="flex items-center justify-center font-semibold min-w-[20px] h-5 px-1.5 rounded-full text-xs text-white"
                         style={{ background: 'var(--color-error, #ef4444)' }}
                       >
                         {item.badge}

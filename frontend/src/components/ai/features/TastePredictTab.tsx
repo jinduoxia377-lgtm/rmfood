@@ -154,11 +154,11 @@ export function TastePredictTab() {
       {/* 左侧：输入控制面板 — 玻璃态设计 */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-rose-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-warning-500 to-danger-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
           <Card className="relative p-6 space-y-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
             {/* 标题区 */}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center shadow-md flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning-500 to-danger-600 flex items-center justify-center shadow-md flex-shrink-0">
                 <Cherry className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -183,7 +183,7 @@ export function TastePredictTab() {
                 rows={4}
                 className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
                            rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
-                           focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-800 focus:border-orange-400
+                           focus:ring-2 focus:ring-warning-200 dark:focus:ring-warning-800 focus:border-warning-400
                            resize-none transition-all duration-200"
               />
             </div>
@@ -218,23 +218,23 @@ export function TastePredictTab() {
                     onClick={() => setAlgorithmMode('weighted')}
                     className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                       algorithmMode === 'weighted'
-                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 shadow-sm'
-                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-orange-200'
+                        ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-700 dark:text-warning-700 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
                     }`}
                   >
                     <div className="font-semibold">加权平均</div>
-                    <div className="text-[10px] opacity-70 mt-0.5">快速计算</div>
+                    <div className="text-xs opacity-70 mt-0.5">快速计算</div>
                   </button>
                   <button
                     onClick={() => setAlgorithmMode('synergy')}
                     className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                       algorithmMode === 'synergy'
-                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 shadow-sm'
-                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-orange-200'
+                        ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-700 dark:text-warning-700 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
                     }`}
                   >
                     <div className="font-semibold">协同分析</div>
-                    <div className="text-[10px] opacity-70 mt-0.5">精确预测</div>
+                    <div className="text-xs opacity-70 mt-0.5">精确预测</div>
                   </button>
                 </div>
               </div>
@@ -279,11 +279,11 @@ export function TastePredictTab() {
           <Card className="p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <div className="w-6 h-6 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                  <Table2 className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                <div className="w-6 h-6 rounded-lg bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
+                  <Table2 className="w-3.5 h-3.5 text-warning-600 dark:text-warning-700" />
                 </div>
                 成分列表
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700">
                   {ingredientProfiles.length}
                 </span>
               </h3>
@@ -310,7 +310,7 @@ export function TastePredictTab() {
         {!tasteResult ? (
           <Card
             className="h-full flex items-center justify-center bg-gradient-to-br
-                           from-red-50 to-orange-50 dark:from-slate-800 dark:to-slate-900"
+                           from-error-50 to-warning-50 dark:from-neutral-800 dark:to-neutral-900"
           >
             <div className="text-center space-y-3 p-8">
               <Cherry className="w-16 h-16 mx-auto text-error-300 dark:text-error-600" />
@@ -445,7 +445,7 @@ export function TastePredictTab() {
             <TabsContent value="suggestions" className="mt-0">
               <Card className="p-6 space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-yellow-500" />
+                  <Lightbulb className="w-5 h-5 text-warning-500" />
                   优化建议
                 </h3>
 
@@ -453,12 +453,12 @@ export function TastePredictTab() {
                   {tasteResult.suggestions.map((suggestion, index) => (
                     <div
                       key={index}
-                      className="flex gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20
-                                 border border-yellow-200 dark:border-yellow-800"
+                      className="flex gap-3 p-3 rounded-lg bg-warning-50 dark:bg-warning-300/20
+                                 border border-warning-200 dark:border-warning-800"
                     >
                       <span
-                        className="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-200
-                                      dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200
+                        className="flex-shrink-0 w-6 h-6 rounded-full bg-warning-200
+                                      dark:bg-warning-800 text-warning-800 dark:text-warning-200
                                       flex items-center justify-center text-sm font-bold"
                       >
                         {index + 1}

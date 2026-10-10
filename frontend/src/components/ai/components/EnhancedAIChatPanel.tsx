@@ -111,7 +111,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
     <div className={`bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 transition-all duration-300 ${isExpanded ? 'max-h-[1200px]' : 'max-h-[60px]'}`}>
       {/* Header */}
       <div
-        className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750"
+        className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-750"
          role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-700 dark:text-primary-600'
+                    ? 'border-primary-500 text-primary-700 dark:text-primary-700'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
@@ -328,10 +328,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 key={idx}
                 className={`p-3 rounded-lg border ${
                   rel.type === 'antagonistic'
-                    ? 'border-red-200 bg-error-50 dark:bg-error-900/10'
+                    ? 'border-error-200 bg-error-50 dark:bg-error-300/15'
                     : rel.type === 'synergistic'
-                      ? 'border-green-200 bg-success-50 dark:bg-success-900/10'
-                      : 'border-neutral-200 bg-slate-50 dark:bg-neutral-700/30'
+                      ? 'border-success-200 bg-success-50 dark:bg-success-300/15'
+                      : 'border-neutral-200 bg-neutral-50 dark:bg-neutral-700/30'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -374,7 +374,7 @@ const FormulaAnalysisTab: React.FC<FormulaAnalysisTabProps> = ({ formulaAnalysis
     <div className="space-y-6">
       {/* Detailed Score Breakdown */}
       {score && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-750 rounded-xl p-6">
+        <div className="bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-750 rounded-xl p-6">
           <h4 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
             六维评分详情
           </h4>
@@ -420,8 +420,8 @@ const FormulaAnalysisTab: React.FC<FormulaAnalysisTabProps> = ({ formulaAnalysis
             剂量优化建议
           </h4>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-              <thead className="bg-slate-50 dark:bg-slate-750">
+            <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+              <thead className="bg-neutral-50 dark:bg-neutral-750">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">成分</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">当前用量</th>
@@ -430,7 +430,7 @@ const FormulaAnalysisTab: React.FC<FormulaAnalysisTabProps> = ({ formulaAnalysis
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">说明</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-neutral-800 divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody className="bg-white dark:bg-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-700">
                 {optimizations.map((opt, idx) => (
                   <tr key={idx}>
                     <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-white">
@@ -491,7 +491,7 @@ const ScoreCard: React.FC<{
   level: string
   icon: React.ReactNode
 }> = React.memo(({ title, score, level, icon }) => (
-  <div className="bg-white dark:bg-slate-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
+  <div className="bg-white dark:bg-neutral-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
     <div className="flex items-center justify-between mb-2">
       <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{title}</span>
       {icon}
@@ -504,7 +504,7 @@ const ScoreCard: React.FC<{
 ))
 
 const DimensionCard: React.FC<{ dimensions: Record<string, number> }> = React.memo(({ dimensions }) => (
-  <div className="bg-white dark:bg-slate-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
+  <div className="bg-white dark:bg-neutral-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
     <h5 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-3">维度得分</h5>
     <div className="space-y-2">
       {Object.entries(dimensions).slice(0, 4).map(([key, val]) => (
@@ -528,12 +528,12 @@ const DimensionCard: React.FC<{ dimensions: Record<string, number> }> = React.me
 ))
 
 const SuggestionsCard: React.FC<{ suggestions: string[] }> = React.memo(({ suggestions }) => (
-  <div className="bg-white dark:bg-slate-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
+  <div className="bg-white dark:bg-neutral-750 rounded-lg p-4 shadow-sm border border-neutral-200 dark:border-neutral-700">
     <h5 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-3">优化建议</h5>
     <ul className="space-y-1.5">
       {suggestions.slice(0, 3).map((suggestion, idx) => (
         <li key={idx} className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-400">
-          <Lightbulb className="w-3 h-3 mt-0.5 text-yellow-500 flex-shrink-0" />
+          <Lightbulb className="w-3 h-3 mt-0.5 text-warning-500 flex-shrink-0" />
           <span>{suggestion}</span>
         </li>
       ))}
@@ -547,7 +547,7 @@ const StatCard: React.FC<{
   value: string
   color: string
 }> = React.memo(({ icon, label, value, color }) => (
-  <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-3 text-center">
+  <div className="bg-neutral-50 dark:bg-neutral-750 rounded-lg p-3 text-center">
     <div className={`inline-flex p-2 rounded-lg bg-${color}-100 dark:bg-${color}-900/20 mb-2`}>
       <div className={`text-${color}-600 dark:text-${color}-400`}>{icon}</div>
     </div>
@@ -557,7 +557,7 @@ const StatCard: React.FC<{
 ))
 
 const NutrientCard: React.FC<{ label: string; value: number; unit: string }> = React.memo(({ label, value, unit }) => (
-  <div className="bg-slate-50 dark:bg-slate-750 rounded-lg p-3 text-center">
+  <div className="bg-neutral-50 dark:bg-neutral-750 rounded-lg p-3 text-center">
     <div className="text-lg font-bold text-neutral-900 dark:text-white">{value}</div>
     <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{unit}</div>
     <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{label}</div>
@@ -568,18 +568,18 @@ const NutrientCard: React.FC<{ label: string; value: number; unit: string }> = R
 
 function getScoreBadgeClass(level: string): string {
   switch (level) {
-    case 'excellent': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-600'
-    case 'good': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-600'
-    case 'moderate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-    default: return 'bg-error-100 text-error-800 dark:bg-error-900/30 dark:text-error-600'
+    case 'excellent': return 'bg-success-100 text-success-800 dark:bg-success-300/25 dark:text-success-600'
+    case 'good': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-300/25 dark:text-secondary-700'
+    case 'moderate': return 'bg-warning-100 text-warning-800 dark:bg-warning-300/25 dark:text-warning-700'
+    default: return 'bg-error-100 text-error-800 dark:bg-error-300/25 dark:text-error-600'
   }
 }
 
 function getScoreTextColor(level: string): string {
   switch (level) {
     case 'excellent': return 'text-success-600 dark:text-success-600'
-    case 'good': return 'text-secondary-600 dark:text-secondary-600'
-    case 'moderate': return 'text-yellow-600 dark:text-yellow-400'
+    case 'good': return 'text-secondary-600 dark:text-secondary-700'
+    case 'moderate': return 'text-warning-600 dark:text-warning-700'
     default: return 'text-error-600 dark:text-error-600'
   }
 }
@@ -587,15 +587,15 @@ function getScoreTextColor(level: string): string {
 function getScoreBarColor(score: number): string {
   if (score >= 8) return 'bg-success-500'
   if (score >= 6) return 'bg-secondary-500'
-  if (score >= 4) return 'bg-yellow-500'
+  if (score >= 4) return 'bg-warning-500'
   return 'bg-error-500'
 }
 
 function getOptimizationBadgeClass(type: string): string {
   switch (type) {
-    case 'increase': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-600'
-    case 'decrease': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-    case 'optimal': return 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-600'
+    case 'increase': return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-300/25 dark:text-secondary-700'
+    case 'decrease': return 'bg-warning-100 text-warning-800 dark:bg-warning-300/25 dark:text-warning-700'
+    case 'optimal': return 'bg-success-100 text-success-800 dark:bg-success-300/25 dark:text-success-600'
     default: return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300'
   }
 }

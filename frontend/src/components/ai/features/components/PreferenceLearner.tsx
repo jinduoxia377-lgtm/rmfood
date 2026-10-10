@@ -236,7 +236,7 @@ function PreferenceLearner({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Star className="w-5 h-5 text-warning-500" />
             口味偏好设置
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
@@ -266,7 +266,7 @@ function PreferenceLearner({
           return (
             <div
               key={dim.id}
-              className="bg-slate-50 dark:bg-neutral-700/50 rounded-lg p-4 space-y-3"
+              className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4 space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -292,8 +292,7 @@ function PreferenceLearner({
                 step={0.1}
                 value={rating}
                 onChange={e => handleRatingChange(dim.id, Number(e.target.value))}
-                className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600"
-              />
+                className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600" aria-label="滑块" />
 
               {/* 星级显示 */}
               <div className="flex gap-1">
@@ -302,8 +301,8 @@ function PreferenceLearner({
                     key={star}
                     className={`w-5 h-5 ${
                       star <= Math.round(rating)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-neutral-300 dark:text-neutral-600'
+                        ? 'fill-warning-400 text-warning-400'
+                        : 'text-neutral-300 dark:text-neutral-400'
                     }`}
                   />
                 ))}
@@ -332,7 +331,7 @@ function PreferenceLearner({
           <BarChart3 className="w-5 h-5 text-primary-500" />
           偏好分布图
         </h4>
-        <div className="relative h-48 bg-slate-50 dark:bg-neutral-700/30 rounded-lg p-4">
+        <div className="relative h-48 bg-neutral-50 dark:bg-neutral-700/30 rounded-lg p-4">
           <svg ref={svgRef} width="100%" height="100%" viewBox="0 0 600 150">
             {/* 简单柱状图 */}
             {ratings.map((r, i) => {
@@ -358,7 +357,7 @@ function PreferenceLearner({
                     x={x + barWidth / 2}
                     y={135}
                     textAnchor="middle"
-                    fontSize={11}
+                    fontSize={12}
                     fill="#6b7280"
                   >
                     {r.dimensionLabel}
@@ -390,7 +389,7 @@ function PreferenceLearner({
             {recommendations.map(product => (
               <div
                 key={product.id}
-                className="bg-gradient-to-br from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-800 hover:shadow-md transition-shadow"
+                className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-lg p-4 border border-primary-200 dark:border-primary-800 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <h5 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm">
@@ -411,7 +410,7 @@ function PreferenceLearner({
                   {product.matchDimensions.map(dim => (
                     <span
                       key={dim}
-                      className="px-2 py-0.5 text-[11px] font-medium bg-white dark:bg-neutral-700 rounded-full text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-600"
+                      className="px-2 py-0.5 text-xs font-medium bg-white dark:bg-neutral-700 rounded-full text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-600"
                     >
                       {dim}
                     </span>
@@ -435,7 +434,7 @@ function PreferenceLearner({
               {history.map((profile, idx) => (
                 <div
                   key={profile.id}
-                  className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg text-sm"
+                  className="flex items-center justify-between px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg text-sm"
                 >
                   <span className="text-neutral-600 dark:text-neutral-400">
                     #{idx + 1} · {new Date(profile.createdAt).toLocaleString('zh-CN')}

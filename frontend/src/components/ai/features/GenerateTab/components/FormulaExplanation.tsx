@@ -62,16 +62,16 @@ function Section({
 
 function HerbRoleBadge({ role }: { role: string }) {
   const colors = {
-    '君药': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    '臣药': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    '佐药': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    '使药': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    '君药': 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-700',
+    '臣药': 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    '佐药': 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+    '使药': 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700',
   }
   return (
     <span
       className={cn(
         'px-2 py-0.5 rounded text-xs font-medium',
-        colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300',
+        colors[role as keyof typeof colors] || 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
       )}
     >
       {role}

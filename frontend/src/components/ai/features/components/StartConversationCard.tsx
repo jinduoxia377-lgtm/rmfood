@@ -41,22 +41,22 @@ export const StartConversationCard = React.forwardRef<
       className={cn(
         'group relative w-full max-w-[400px] mx-auto min-h-[160px]',
         'rounded-2xl p-8 sm:p-8 md:p-8 es-card',
-        'bg-gradient-to-br from-white to-slate-50/80',
-        'dark:from-slate-800 dark:to-slate-900/90',
+        'bg-gradient-to-br from-white to-neutral-50/80',
+        'dark:from-neutral-800 dark:to-neutral-900/90',
         'border border-neutral-200/80 dark:border-neutral-700/60',
-        'shadow-md dark:shadow-slate-900/30',
+        'shadow-md dark:shadow-neutral-900/30',
         'cursor-pointer transition-all duration-200 ease-out',
         'hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-500/10',
         'hover:border-primary-300 dark:hover:border-primary-600',
         'active:scale-[0.98] active:brightness-[0.98] active:transition-duration-100',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 es-focus-visible',
-        'focus:ring-offset-white dark:focus:ring-offset-slate-900',
+        'focus:ring-offset-white dark:focus:ring-offset-neutral-900',
         className,
       )}
     >
       <div className="flex flex-col items-center text-center">
         <div
-          className="mx-auto mb-6 flex h-14 w-14 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-violet-400 shadow-inner shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] es-animate-pulse"
+          className="mx-auto mb-6 flex h-14 w-14 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-accent-400 shadow-inner shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] es-animate-pulse"
           style={{ animationDuration: '3s' }}
           aria-hidden="true"
           role="img"
@@ -100,7 +100,7 @@ export const StartConversationCard = React.forwardRef<
                   'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800',
                   'transition-colors duration-150',
                   'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700',
-                  'dark:hover:border-primary-600 dark:hover:bg-primary-900/30 dark:hover:text-primary-300',
+                  'dark:hover:border-primary-600 dark:hover:bg-primary-900/30 dark:hover:text-primary-700',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1 es-focus-visible',
                 )}
                 style={{

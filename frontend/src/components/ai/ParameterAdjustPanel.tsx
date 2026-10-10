@@ -142,11 +142,11 @@ export function ParameterAdjustPanel({
     <Card className="overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 hover:from-purple-100 dark:hover:from-purple-900/30 hover:to-pink-100 dark:hover:to-pink-900/30 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-accent-50 to-danger-50 dark:from-accent-900/20 dark:to-danger-900/20 hover:from-accent-100 dark:hover:from-accent-900/30 hover:to-danger-100 dark:hover:to-danger-900/30 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-accent-600 dark:text-accent-400" />
-          <span className="font-medium text-accent-700 dark:text-accent-300">多维度参数调整</span>
+          <Sliders className="w-4 h-4 text-accent-600 dark:text-accent-700" />
+          <span className="font-medium text-accent-700 dark:text-accent-700">多维度参数调整</span>
         </div>
         {expanded ? (
           <ChevronUp className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
@@ -186,10 +186,10 @@ export function ParameterAdjustPanel({
                 color="blue"
               />
             </div>
-            <div className="mt-3 p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合口感评分</span>
-                <span className="font-medium text-accent-600 dark:text-accent-400">
+                <span className="font-medium text-accent-600 dark:text-accent-700">
                   {tasteScore.toFixed(2)}
                 </span>
               </div>
@@ -216,7 +216,7 @@ export function ParameterAdjustPanel({
                   type="checkbox"
                   checked={safety.excludeRestricted}
                   onChange={(e) => handleSafetyChange({ excludeRestricted: e.target.checked })}
-                  className="rounded border-neutral-300 dark:border-neutral-700 text-error-500 focus:ring-red-500"
+                  className="rounded border-neutral-300 dark:border-neutral-700 text-error-500 focus:ring-error-500"
                 />
                 <span>排除受限制成分</span>
               </label>
@@ -237,7 +237,7 @@ export function ParameterAdjustPanel({
                   value={cost.minCost}
                   onChange={(e) => handleCostChange({ minCost: parseFloat(e.target.value) || 0 })}
                   placeholder="最低"
-                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 />
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
                 <input
@@ -245,7 +245,7 @@ export function ParameterAdjustPanel({
                   value={cost.maxCost}
                   onChange={(e) => handleCostChange({ maxCost: parseFloat(e.target.value) || 1000 })}
                   placeholder="最高"
-                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 />
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">元/kg</span>
               </div>
@@ -254,7 +254,7 @@ export function ParameterAdjustPanel({
                   type="checkbox"
                   checked={cost.optimizeCost}
                   onChange={(e) => handleCostChange({ optimizeCost: e.target.checked })}
-                  className="rounded border-neutral-300 dark:border-neutral-700 text-accent-500 focus:ring-purple-500"
+                  className="rounded border-neutral-300 dark:border-neutral-700 text-accent-500 focus:ring-accent-500"
                 />
                 <span>优化成本（保持功效下降低成本）</span>
               </label>
@@ -272,7 +272,7 @@ export function ParameterAdjustPanel({
             </button>
             <button
               onClick={handleSaveTemplate}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-accent-600 dark:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-accent-600 dark:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/20 rounded-lg transition-colors"
             >
               <Save className="w-3.5 h-3.5" />
               保存模板
@@ -311,7 +311,7 @@ function TasteSlider({ label, value, onChange, color }: TasteSliderProps) {
   const colorClasses = {
     emerald: 'bg-primary-500',
     amber: 'bg-warning-500',
-    orange: 'bg-orange-500',
+    orange: 'bg-warning-500',
     blue: 'bg-secondary-500',
   }
 
@@ -328,11 +328,10 @@ function TasteSlider({ label, value, onChange, color }: TasteSliderProps) {
         step="0.1"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-purple-500"
+        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-accent-500"
         style={{
           background: `linear-gradient(to right, ${colorClasses[color]} 0%, ${colorClasses[color]} ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
-        }}
-      />
+        }} aria-label="滑块" />
     </div>
   )
 }
@@ -359,10 +358,11 @@ function SafetySlider({ label, value, onChange }: SafetySliderProps) {
         step="0.1"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-red-500"
+        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-error-500"
         style={{
           background: `linear-gradient(to right, #FF3B30 0%, #D97706 50%, var(--color-primary-400) ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
         }}
+        aria-label={label}
       />
     </div>
   )

@@ -19,16 +19,16 @@ interface StatusBadgeProps {
 const statusConfig: Record<string, { label: string; cls: string; dot?: string }> = {
   // 配方状态
   draft:          { label: '草稿',   cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-400' },
-  pending_review: { label: '待审核', cls: 'bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300 border border-warning-200 dark:border-warning-800', dot: 'bg-warning-500' },
-  approved:       { label: '已通过', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800', dot: 'bg-primary-500' },
-  rejected:       { label: '已驳回', cls: 'bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-300 border border-error-200 dark:border-error-800', dot: 'bg-rose-500' },
-  archived:       { label: '已归档', cls: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500 border border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-300' },
+  pending_review: { label: '待审核', cls: 'bg-warning-50 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700 border border-warning-200 dark:border-warning-800', dot: 'bg-warning-500' },
+  approved:       { label: '已通过', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700 border border-primary-200 dark:border-primary-800', dot: 'bg-primary-500' },
+  rejected:       { label: '已驳回', cls: 'bg-error-50 text-error-700 dark:bg-error-300/25 dark:text-error-600 border border-error-200 dark:border-error-800', dot: 'bg-danger-500' },
+  archived:       { label: '已归档', cls: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-300' },
   // 实验状态
-  planned:     { label: '计划中', cls: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300 border border-sky-200 dark:border-sky-800', dot: 'bg-sky-500' },
-  in_progress: { label: '进行中', cls: 'bg-accent-50 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300 border border-accent-200 dark:border-accent-800', dot: 'bg-violet-500' },
-  completed:   { label: '已完成', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800', dot: 'bg-primary-500' },
-  failed:      { label: '已失败', cls: 'bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-300 border border-error-200 dark:border-error-800', dot: 'bg-rose-500' },
-  cancelled:   { label: '已取消', cls: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500 border border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-300' },
+  planned:     { label: '计划中', cls: 'bg-info-50 text-info-700 dark:bg-info-300/25 dark:text-info-700 border border-info-200 dark:border-info-800', dot: 'bg-info-500' },
+  in_progress: { label: '进行中', cls: 'bg-accent-50 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 border border-accent-200 dark:border-accent-800', dot: 'bg-accent-500' },
+  completed:   { label: '已完成', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700 border border-primary-200 dark:border-primary-800', dot: 'bg-primary-500' },
+  failed:      { label: '已失败', cls: 'bg-error-50 text-error-700 dark:bg-error-300/25 dark:text-error-600 border border-error-200 dark:border-error-800', dot: 'bg-danger-500' },
+  cancelled:   { label: '已取消', cls: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-300' },
 }
 
 export function StatusBadge({ status, className, size = 'md' }: StatusBadgeProps) {
@@ -37,7 +37,7 @@ export function StatusBadge({ status, className, size = 'md' }: StatusBadgeProps
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full font-medium',
-        size === 'sm' ? 'px-2 py-px text-[11px]' : 'px-2.5 py-0.5 text-xs',
+        size === 'sm' ? 'px-2 py-px text-xs' : 'px-2.5 py-0.5 text-xs',
         config.cls,
         className,
       )}
@@ -69,17 +69,17 @@ interface EmptyStateProps {
 const VARIANT_CONFIG: Record<EmptyStateVariant, { iconBg: string; iconColor: string; containerClass: string }> = {
   empty: {
     iconBg: 'bg-neutral-100 dark:bg-neutral-800',
-    iconColor: 'text-neutral-400 dark:text-neutral-500',
+    iconColor: 'text-neutral-400 dark:text-neutral-400',
     containerClass: '',
   },
   error: {
-    iconBg: 'bg-error-100 dark:bg-error-900/20',
-    iconColor: 'text-error-500 dark:text-error-400',
+    iconBg: 'bg-error-100 dark:bg-error-300/20',
+    iconColor: 'text-error-500 dark:text-error-600',
     containerClass: '',
   },
   forbidden: {
-    iconBg: 'bg-warning-100 dark:bg-warning-900/20',
-    iconColor: 'text-warning-600 dark:text-warning-400',
+    iconBg: 'bg-warning-100 dark:bg-warning-300/20',
+    iconColor: 'text-warning-600 dark:text-warning-700',
     containerClass: '',
   },
 }
@@ -223,7 +223,7 @@ export function Pagination({
         {/* 页码按钮 */}
         {pages.map((p, i) =>
           p === '...' ? (
-            <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-neutral-400 text-sm">
+            <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">
               ...
             </span>
           ) : (

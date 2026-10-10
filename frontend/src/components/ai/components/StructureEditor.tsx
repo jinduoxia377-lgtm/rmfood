@@ -161,10 +161,10 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                   onClick={() => setSelectedSectionId(section.id)}
                   className={`group relative flex items-center px-3 py-2.5 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedSectionId === section.id
-                      ? 'border-blue-500 bg-secondary-50'
+                      ? 'border-secondary-500 bg-secondary-50'
                       : section.visible
                       ? 'border-neutral-200 hover:border-neutral-300 bg-white dark:bg-neutral-900'
-                      : 'border-neutral-100 bg-slate-50 dark:bg-neutral-800 opacity-60'
+                      : 'border-neutral-100 bg-neutral-50 dark:bg-neutral-800 opacity-60'
                   } ${draggedId === section.id ? 'opacity-50' : ''}`}
                   style={{ paddingLeft: `${(section.level || 0) * 20 + 12}px` }}
                 >
@@ -275,7 +275,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
         </div>
 
         {selectedSectionId && (
-          <div className="border-t border-neutral-200 p-4 bg-slate-50 dark:bg-neutral-800">
+          <div className="border-t border-neutral-200 p-4 bg-neutral-50 dark:bg-neutral-800">
             <SectionPropertyPanel
               section={structure.getSectionById(selectedSectionId)!}
               onUpdate={(updates) => structure.updateSection(selectedSectionId, updates)}
@@ -303,8 +303,9 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
           type="text"
           value={section.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
-          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-secondary-500"
+        aria-label="标题"
+      />
       </div>
 
       <div>
@@ -312,7 +313,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
         <select
           value={section.detailLevel}
           onChange={(e) => onUpdate({ detailLevel: e.target.value as DetailLevel })}
-          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-secondary-500"
         >
           <option value={DetailLevel.BRIEF}>简略</option>
           <option value={DetailLevel.STANDARD}>标准</option>
@@ -327,7 +328,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             type="checkbox"
             checked={section.visible}
             onChange={(e) => onUpdate({ visible: e.target.checked })}
-            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
           />
           <span className="text-sm text-neutral-700">可见</span>
         </label>
@@ -339,7 +340,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             onChange={(e) => onUpdate({
               config: { ...section.config, includeTables: e.target.checked },
             })}
-            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
           />
           <span className="text-sm text-neutral-700">包含表格</span>
         </label>
@@ -351,7 +352,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             onChange={(e) => onUpdate({
               config: { ...section.config, includeCharts: e.target.checked },
             })}
-            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-secondary-500"
           />
           <span className="text-sm text-neutral-700">包含图表</span>
         </label>
@@ -366,7 +367,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             config: { ...section.config, maxWords: e.target.value ? Number(e.target.value) : undefined },
           })}
           placeholder="不限"
-          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-secondary-500"
         />
       </div>
     </div>
