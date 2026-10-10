@@ -200,7 +200,9 @@ function AdminGuard({ children }: { children: ReactNode }) {
 
 // 加载组件，用于Suspense的fallback
 const LoadingComponent = () => (
-  <div className="flex items-center justify-center h-screen">
+  /* D-74 配套：显式绑定画布令牌，避免依赖祖先容器的背景色
+     （曾因 MainLayout 根容器在暗色下仍是浅底而出现 2.45:1 的「加载中…」）。 */
+  <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'var(--bg-canvas)' }}>
     <div className="text-center">
       <div
         className="inline-block rounded-full h-8 w-8 border-t-2 border-b-2 animate-spin mb-4"

@@ -1,6 +1,42 @@
-<!-- 营养标签组件 -->
-<NutritionLabel
-  data="{{nutritionData}}"
-  serving-size="{{servingSize || '100g'}}"
-  class="{{className}}"
-/>
+<!--
+  营养成分表组件（GB 28050 格式）
+
+  历史问题：本文件此前只写了一行 <NutritionLabel ... /> —— 即组件在自己的 WXML 里
+  引用自身，且 index.json 的 usingComponents 为空，属于「未注册组件 + 自引用」，
+  一旦被任何页面引用就会编译失败，且组件本身不渲染任何内容。
+  现按 index.wxss 中已定义的类名体系补全真实视图。
+
+  数据结构约定（nutritionData 每一项）：
+    { name: '能量', amount: 1500, unit: 'kJ', nrv: 18, important: false }
+-->
+<view class="nutrition-label {{className}}">
+  <view class="label-title">营养成分表</view>
+  <view class="label-serving">{{servingSize}}</view>
+
+  <view class="label-table">
+    <view class="table-header">
+      <text class="th-name">项目</text>
+      <text class="th-amount">{{servingSize}}</text>
+      <text wx:if="{{showNRV}}" class="th-nrv">NRV%</text>
+    </view>
+
+    <view
+      wx:for="{{nutritionData}}"
+      wx:key="name"
+      class="table-row {{item.important ? 'important' : ''}}"
+    >
+      <text class="td-name">{{item.name}}</text>
+      <text class="td-amount">{{item.amount}}{{item.unit || ''}}</text>
+      <text
+        wx:if="{{showNRV}}"
+        class="td-nrv {{item.nrv >= 30 ? 'nrv-high' : (item.nrv >= 10 ? 'nrv-medium' : 'nrv-low')}}"
+      >{{item.nrv || 0}}%</text>
+    </view>
+
+    <view wx:if="{{!nutritionData.length}}" class="table-row">
+      <text class="td-name">暂无营养成分数据</text>
+    </view>
+  </view>
+
+  <view class="label-footer">NRV% 为{{servingSize}}中营养素占成人每日推荐摄入量的百分比</view>
+</view>

@@ -30,4 +30,16 @@ export const authApi = {
 
   resetPassword: (token: string, newPassword: string) =>
     api.post('/auth/reset-password', { token, new_password: newPassword }),
+
+  /**
+   * 邮箱预注册申请 — 平台暂未开放自助注册，
+   * 未认证用户留下联系方式，由管理员开通账号。
+   * 后端端点: POST /auth/pre-register (201)
+   */
+  preRegister: (data: { email: string; fullName?: string; department?: string }) =>
+    api.post('/auth/pre-register', {
+      email: data.email,
+      full_name: data.fullName,
+      department: data.department,
+    }).then((r) => r.data),
 }

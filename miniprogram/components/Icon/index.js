@@ -1,4 +1,59 @@
-// Icon 图标组件 - 内联 SVG 路径方案
+// Icon 图标组件
+//
+// 重要：小程序 WXML **不支持** 内联 <svg> / <path>（官方组件列表中无此二者），
+//       原实现 <svg><path fill="currentColor"/></svg> 既会触发「组件未注册」的编译问题，
+//       也无法渲染出任何图标。现改为 <image> + base64 data URI 方案。
+//
+//       代价：<image> 内的 SVG 无法继承外部 CSS 变量，currentColor / var(--x) 均失效，
+//       因此颜色必须在 JS 侧由令牌解析为真实色值（utils/token_colors.js），
+//       并在主题切换时重新生成。对外接口（name / size / color / fill）保持不变。
+const { getThemeManager } = require('../../utils/theme')
+const { resolveTokenColor } = require('../../utils/token_colors')
+
+const B64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+/** 小程序环境无 btoa，自行实现（SVG 内容均为 ASCII，按字节处理即可） */
+function base64Encode(str) {
+  let out = ''
+  let i = 0
+  while (i < str.length) {
+    const c1 = str.charCodeAt(i++) & 0xff
+    const c2 = i < str.length ? str.charCodeAt(i++) & 0xff : null
+    const c3 = i < str.length ? str.charCodeAt(i++) & 0xff : null
+    const e1 = c1 >> 2
+    const e2 = ((c1 & 3) << 4) | (c2 === null ? 0 : c2 >> 4)
+    const e3 = c2 === null ? 64 : ((c2 & 15) << 2) | (c3 === null ? 0 : c3 >> 6)
+    const e4 = c3 === null ? 64 : c3 & 63
+    out += B64_CHARS[e1] + B64_CHARS[e2] +
+      (e3 === 64 ? '=' : B64_CHARS[e3]) +
+      (e4 === 64 ? '=' : B64_CHARS[e4])
+  }
+  return out
+}
+
+/** 生成图标的 base64 data URI */
+function buildIconSrc(pathData, colorHex, filled) {
+  const paint = filled
+    ? `fill="${colorHex}"`
+    : `fill="none" stroke="${colorHex}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="${pathData}" ${paint}/></svg>`
+  return 'data:image/svg+xml;base64,' + base64Encode(svg)
+}
+
+/** 渲染入口（模块级函数，避免依赖 methods 挂载时机） */
+function renderIcon(ctx) {
+  const pathData = ctx._path
+  if (!pathData) return
+  let isDark = false
+  try {
+    isDark = getThemeManager().isDark()
+  } catch (e) {
+    // 主题管理器不可用时按浅色处理
+  }
+  const color = resolveTokenColor(ctx.data.color, isDark)
+  ctx.setData({ src: buildIconSrc(pathData, color, ctx.data.fill !== false) })
+}
+
 Component({
   properties: {
     name: { type: String, value: "info" },
@@ -8,9 +63,24 @@ Component({
   },
   data: {
     sizeClass: "icon-md",
-    svgPath: "",
-    style: ""
+    src: ""
   },
+
+  lifetimes: {
+    attached() {
+      // 主题切换后颜色需重新烘焙进 SVG
+      try {
+        this._offTheme = getThemeManager().onChange(() => renderIcon(this))
+      } catch (e) {
+        // ignore
+      }
+      renderIcon(this)
+    },
+    detached() {
+      if (this._offTheme) this._offTheme()
+    }
+  },
+
   observers: {
     "size": function(size) {
       const sizeMap = { 
@@ -23,12 +93,11 @@ Component({
       }
       this.setData({ sizeClass: sizeMap[size] || 'icon-md' })
     },
-    "color": function(color) {
-      if (color) {
-        this.setData({ style: 'color: ' + color + ';' })
-      } else {
-        this.setData({ style: '' })
-      }
+    "fill": function() {
+      renderIcon(this)
+    },
+    "color": function() {
+      renderIcon(this)
     },
     "name": function(name) {
       // SVG 路径数据 - Material Design Icons
@@ -87,6 +156,8 @@ Component({
         'success': 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
         'warning': 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
         'error': 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z',
+        // ErrorBoundary 组件在用（此前未定义，导致该处图标渲染为空）
+        'alert-circle': 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z',
         'info': 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z',
         'check': 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
         'close': 'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
@@ -119,7 +190,8 @@ Component({
         'arrow-back': 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
         'double-arrow-right': 'M12 6l-1.41 1.41L15.17 11H4v2h11.17l-4.58 4.59L12 19l6-6z'
       }
-      this.setData({ svgPath: svgPaths[name] || svgPaths['info'] })
+      this._path = svgPaths[name] || svgPaths['info']
+      renderIcon(this)
     }
   },
   methods: {

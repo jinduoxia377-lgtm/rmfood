@@ -54,7 +54,7 @@ class ImageCompressor {
         })
       })
 
-      // 缂撳瓨缁撴灉
+      // 缓存结果
       this.cache.set(cacheKey, result)
       
       // 闄愬埗缂撳瓨澶у皬
@@ -141,7 +141,7 @@ class ImageCompressor {
   }
 
   /**
-   * 鑾峰彇缁熻淇℃伅
+   * 获取统计信息
    */
   getStats() {
     return {

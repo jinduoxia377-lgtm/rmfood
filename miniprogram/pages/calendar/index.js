@@ -2,7 +2,7 @@
  * 饮食日历 - 页面逻辑（深度完善版）
  * 提供每日饮食建议和节气养生提醒
  */
-const api = require('../../../utils/api.js')
+const api = require('../../utils/api.js')
 
 // 节气名称
 const SOLAR_TERMS = [

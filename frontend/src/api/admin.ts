@@ -4,6 +4,38 @@
 import api from './client'
 import type { Notification, User, PaginatedResponse } from '@/types'
 
+// ═══════════════════════════════════════
+// 账号申请（预注册）队列类型
+// ═══════════════════════════════════════
+export type PreRegisterStatus = 'pending' | 'approved' | 'rejected'
+
+export interface PreRegisterRequest {
+  id: number
+  email: string
+  full_name: string | null
+  department: string | null
+  status: PreRegisterStatus
+  reviewed_by: number | null
+  reviewed_at: string | null
+  reject_reason: string | null
+  user_id: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PreRegisterListResponse {
+  items: PreRegisterRequest[]
+  total: number
+  page: number
+  page_size: number
+  status_counts: Record<PreRegisterStatus, number>
+}
+
+export interface PreRegisterApproveParams {
+  role?: string
+  password?: string
+}
+
 export const notificationApi = {
   list: (params?: { page?: number; page_size?: number; status?: string }) =>
     api.get<PaginatedResponse<Notification> & { unread_count: number }>('/notifications', {
@@ -99,4 +131,36 @@ export const adminApi = {
 
   getOrganizations: () =>
     api.get<{ organizations: { id: number; name: string; user_count: number }[] }>('/admin/users/organizations').then((r) => r.data),
+
+  // ── 账号申请（预注册）队列管理 ──
+  listPreRegisterRequests: (params?: {
+    page?: number
+    page_size?: number
+    status?: PreRegisterStatus | ''
+    search?: string
+  }) =>
+    api.get<PreRegisterListResponse>('/admin/pre-register-requests', {
+      params: {
+        page: params?.page,
+        page_size: params?.page_size,
+        status: params?.status || undefined,
+        search: params?.search || undefined,
+      },
+    }).then((r) => r.data),
+
+  approvePreRegisterRequest: (
+    requestId: number,
+    data?: PreRegisterApproveParams,
+  ) =>
+    api.post<{ detail: string; user_id: number; username: string; temp_password: string | null }>(
+      `/admin/pre-register-requests/${requestId}/approve`,
+      data ?? {},
+    ).then((r) => r.data),
+
+  rejectPreRegisterRequest: (requestId: number, reason?: string) =>
+    api
+      .post<{ detail: string }>(`/admin/pre-register-requests/${requestId}/reject`, {
+        reason: reason || undefined,
+      })
+      .then((r) => r.data),
 }

@@ -66,7 +66,7 @@
   width: 100%;
 }
 
-/* 闁剧偓甯撮幐澶愭尦 */
+/* 链接按钮 */
 .apple-btn-link {
   background: transparent;
   color: var(--color-system-blue);
@@ -80,7 +80,7 @@
   opacity: 0.6;
 }
 
-/* 閺傚洤鐡ч幐澶愭尦 */
+/* 文字按钮 */
 .apple-btn-text {
   background: transparent;
   color: var(--color-text-primary);
@@ -99,7 +99,7 @@
   background: var(--color-bg-hover);
 }
 
-/* 閸ョ偓鐖ｉ幐澶愭尦 */
+/* 图标按钮 */
 .apple-btn-icon {
   width: 44rpx;
   height: 44rpx;
@@ -122,10 +122,10 @@
 }
 
 /* ============================================
-   2. Apple List 閸掓銆冪化鑽ょ埠 (Grouped Table)
+   2. Apple List 列表系统 (Grouped Table)
    ============================================ */
 
-/* 閸掓銆冮崚鍡欑矋 */
+/* 列表分组 */
 .apple-list-group {
   background: var(--color-bg-card);
   margin: 20rpx 16rpx;
@@ -223,7 +223,7 @@
   flex-shrink: 0;
 }
 
-/* 缁狀厼銇旈梽鍕 */
+/* 箭头附件 */
 .apple-list-item-arrow {
   width: 8rpx;
   height: 14rpx;
@@ -343,7 +343,7 @@
 }
 
 /* ============================================
-   6. Apple Card 閸楋紕澧栫化鑽ょ埠
+   6. Apple Card 卡片系统
    ============================================ */
 
 .apple-card {
@@ -381,7 +381,7 @@
   gap: 12rpx;
 }
 
-/* 閻楃澹婇崡锛勫 */
+/* 特色卡片 */
 .apple-card-featured {
   background: linear-gradient(135deg, var(--color-system-blue) 0%, var(--color-system-teal) 100%);
   color: white;
@@ -543,16 +543,8 @@
   right: 0;
   bottom: 0;
   background: var(--blur-bg);
-  backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
-  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
   padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
   z-index: var(--z-index-sheet);
@@ -658,16 +650,8 @@
   width: calc(100% - 64rpx);
   max-width: 320rpx;
   background: var(--blur-bg);
-  backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
-  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: var(--radius-2xl);
   padding: 24rpx;
   transform: scale(0.9);
@@ -737,16 +721,8 @@
   right: 0;
   z-index: var(--z-index-fixed);
   background: var(--blur-bg);
-  backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
-  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5rpx solid var(--color-separator);
 }
 
@@ -834,16 +810,8 @@
   right: 0;
   height: calc(83rpx + env(safe-area-inset-bottom));
   background: var(--blur-bg);
-  backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
-  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
-    param($match)
-    $value = [int]$match.Groups[1].Value
-    "$($value * 2)rpx"
-) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 0.5rpx solid var(--color-separator);
   display: flex;
   align-items: flex-start;

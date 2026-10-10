@@ -846,7 +846,7 @@ export interface Experiment {
   createdAt: string;
   updatedAt: string;
 
-  // API 兼容字段
+  // API 兼容字段（后端 ExperimentResponse 返回 snake_case）
   code?: string;
   objectives?: string[];
   methodology?: string;
@@ -857,7 +857,11 @@ export interface Experiment {
   actual_start?: string;
   actual_end?: string;
   formula_id?: number;
+  formula_name?: string | null;
+  researcher_id?: number;
+  researcher_name?: string | null;
   created_at?: string;
+  updated_at?: string;
 }
 
 export enum ExperimentType {
@@ -904,6 +908,8 @@ export interface ExperimentData {
   parameter?: string;
   value?: string | number | null;
   recorded_at?: string;
+  created_at?: string;
+  measurement_time?: string | null;
 }
 
 export interface Attachment {

@@ -24,7 +24,9 @@ export const API_ENDPOINTS = {
     STABILITY_PREDICT: `${API_BASE_URL}/ai/stability`,
     PEPTIDE_SCORE: `${API_BASE_URL}/ai/peptide-score`,
     MODELS_STATUS: `${API_BASE_URL}/ai/models/status`,
-    MODELS_CONFIG: `${API_BASE_URL}/ai/models/config`,
+    // D-3 收敛：旧无参 POST /ai/models/config 已废弃，改有参端点 /ai/models/config/{model_type} + 用户级 /ai/models/user-key
+    MODELS_CONFIG_BY_TYPE: `${API_BASE_URL}/ai/models/config/{model_type}`,
+    MODELS_USER_KEY: `${API_BASE_URL}/ai/models/user-key`,
   },
 
   // ===== 认证模块 (/api/v1/auth/*) =====

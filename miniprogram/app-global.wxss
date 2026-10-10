@@ -36,7 +36,7 @@
   }
 }
 
-/* 閸忓啰绀屽ǎ鈥冲弳 */
+/* 元素淡入 */
 .fade-in {
   animation: fadeIn 0.3s ease forwards;
 }
@@ -46,7 +46,7 @@
   to { opacity: 1; }
 }
 
-/* 閸忓啰绀屽ǎ鈥冲毉 */
+/* 元素淡出 */
 .fade-out {
   animation: fadeOut 0.3s ease forwards;
 }
@@ -125,7 +125,7 @@
   }
 }
 
-/* 閺冨娴嗛崝銊ф暰 */
+/* 旋转动画 */
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -135,7 +135,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* 閼村鍟块崝銊ф暰 */
+/* 脉冲动画 */
 .pulse {
   animation: pulse 2s ease-in-out infinite;
 }
@@ -145,7 +145,7 @@
   50% { opacity: 0.5; }
 }
 
-/* 瀵鐑﹂崝銊ф暰 */
+/* 弹跳动画 */
 .bounce {
   animation: bounce 0.6s ease;
 }
@@ -157,7 +157,7 @@
   75% { transform: translateY(-5rpx); }
 }
 
-/* 閹舵牕濮╅崝銊ф暰 */
+/* 抖动动画 */
 .shake {
   animation: shake 0.5s ease;
 }
@@ -168,7 +168,7 @@
   75% { transform: translateX(8rpx); }
 }
 
-/* 閹存劕濮涢崝銊ф暰 */
+/* 成功动画 */
 .success-pop {
   animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -179,7 +179,7 @@
   100% { transform: scale(1); }
 }
 
-/* 闁挎瑨顕ら幎鏍уЗ */
+/* 错误抖动 */
 .error-shake {
   animation: errorShake 0.5s ease;
 }

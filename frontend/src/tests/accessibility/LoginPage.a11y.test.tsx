@@ -56,7 +56,7 @@ describe('LoginPage Accessibility Tests', () => {
     await waitFor(() => {
       const usernameInput = screen.getByPlaceholderText('请输入用户名');
       const passwordInput = screen.getByPlaceholderText('请输入密码');
-      const loginButton = screen.getByRole('button', { name: '登录' });
+      const loginButton = screen.getByRole('button', { name: '进入平台' });
 
       expect(usernameInput).not.toHaveAttribute('tabindex', '-1');
       expect(passwordInput).not.toHaveAttribute('tabindex', '-1');
@@ -74,10 +74,10 @@ describe('LoginPage Accessibility Tests', () => {
     );
 
     await waitFor(() => {
-      const loginButton = screen.getByRole('button', { name: '登录' });
+      const loginButton = screen.getByRole('button', { name: '进入平台' });
 
       expect(loginButton).toHaveAttribute('type', 'submit');
-      expect(loginButton).toHaveAttribute('aria-label', '登录');
+      expect(loginButton).toHaveAttribute('aria-label', '进入平台');
     });
   });
 
@@ -93,7 +93,8 @@ describe('LoginPage Accessibility Tests', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('用户名')).toBeInTheDocument();
       expect(screen.getByLabelText('密码')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '登录' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '进入平台' })).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: /保持登录/ })).toBeInTheDocument();
     });
   });
 
@@ -108,8 +109,7 @@ describe('LoginPage Accessibility Tests', () => {
 
     await waitFor(() => {
       const skipLink = screen.getByText('跳转到登录表单');
-      expect(skipLink).toHaveAttribute('href', '#login-main-content');
-      expect(skipLink).toHaveAttribute('tabindex', '0');
+      expect(skipLink).toHaveAttribute('href', '#rhine-login-form');
     });
   });
 

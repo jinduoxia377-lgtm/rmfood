@@ -1,4 +1,8 @@
-<!-- Icon 图标组件 - 内联 SVG 路径方案 -->
-<svg class="icon-wrap {{sizeClass}}" viewBox="0 0 24 24" style="{{style}}">
-  <path d="{{svgPath}}" fill="currentColor"/>
-</svg>
+<!--
+  Icon 图标组件
+
+  注意：小程序官方组件列表中不含 <svg> / <path>，内联 SVG 无法渲染且会触发
+  「组件未注册」问题。故统一改为 <image> + base64 data URI（由 index.js 生成）。
+  颜色已在 JS 侧由令牌解析后烘焙进 SVG，因此不再依赖 currentColor / CSS 变量。
+-->
+<image class="icon-wrap {{sizeClass}}" src="{{src}}" mode="aspectFit" bindtap="onTap"></image>
