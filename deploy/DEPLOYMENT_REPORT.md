@@ -1,9 +1,77 @@
 # RMFOODFP 云服务器部署报告
 
 **部署完成时间**: 2026-09-30
-**最后前端修复**: 2026-09-30（chunk 互操作/React dispatcher 全量修复）
+**最后迭代更新**: 2026-10-09（全量主题令牌化迭代 + 数据库核心业务数据补全 + user-key 空指针修复）
 **服务器**: 百度云服务器 `106.12.20.131` (Ubuntu 24.04, 2C4G + 2GB swap)
 **部署方式**: Docker Compose (4 容器)
+
+---
+
+## 迭代更新（2026-10-09）
+
+**本次迭代**：全量前端主题令牌化（520 文件）+ 后端 22 文件迭代 + 数据库 74 张表核心业务数据补全（此前 70 张表为空，仅 users/system_configs/pre_register_requests 有数据）。
+
+| 层 | 变更 | 状态 |
+|:--|:--|:--|
+| 前端 | 520 文件主题令牌化迭代（`LoginPage` +757/-193、`semantic-utils.css`、各页面/组件 CSS 变量化、`configManager.ts` AI 密钥持久化）；`tsc -b` 通过，`vite build` 成功 | ✅ 重建 dist（入口 `index-ZpaYCgCA.js`，React 单实例 `vendor-react-fFnOEeFM.js` 264KB，sw.js v5，0 Google Fonts），tar 上传 + web 镜像烘焙 + `--force-recreate` 上线 |
+| 后端 | 22 文件迭代：`integrations` / `experiments` / `formulas` / `analytics` / `integration_framework` / `formula_validation_workflow` + 模型 `DateTime→DateTime(timezone=True)`（system/knowledge_graph/ai_suggestion/prompt_template/prompt_version/experiment）+ `deps/oauth2_auth/plugin_router/main` 等；新增 `api_key_deps.py`、`20260927_000000` 2FA 迁移 | ✅ 24 文件上传 + `py_compile` 全过 + 镜像重建 + healthy |
+| 数据库 | 用已核实的干净数据源补全核心业务表（见下节） | ✅ 9 表灌入 1672 条，API 已验证可读 |
+
+**数据库补全（补全缺失业务数据，全部来自项目内已核实的干净真实数据源，无 mock 数据）**：
+
+| 表 | 行数 | 来源 |
+|:--|:--|:--|
+| `tcm_herbs` | 339 | `TCMSP_GOLDEN` 金标（`etl_sync_pipeline.py` 内嵌 339 种药食同源/中药材，含拉丁名、分类、OB/DL 范围、药食同源标记） |
+| `mmid_herbs` | 60 | `mmid_data.json`（已核实文本完整干净：阿魏/白附子/半夏/赤芍等） |
+| `food_materials` | 94 | `seed_data.json`（4 条全字段）+ 金标 `food=True` 药食同源药材（90） |
+| `term_categories` | 26 | 术语分类（中医基础/中药分类/多肽/食品法规等） |
+| `terms` | 1060 | 中药/多肽/食品法规三大领域专业术语（4 个干净 `.py` 源提取去重） |
+| `term_normalization_rules` | 15 | 标准名归一规则（炙甘草→甘草等） |
+| `categories` | 52 | 药材功效分类（补气药/补阳药/…/药食同源） |
+| `tags` | 10 | 药膳/补益/清热/活血/安神等常用标签 |
+| `ingredients` | 16 | 有效成分（黄芪甲苷/毛蕊异黄酮等） |
+
+**数据源安全核查（已排除脏数据）**：
+- `mmid_data_v4.json`(420) / `mmid_data_v5.json`(420)：`name_ch` 被爬取脚本污染成导航文本（"英文名"、"关键字搜索排序…"）→ **弃用**
+- `seed_database.py` / `run_seed.py`：占位样例 + 错别字（"狐梱子/薰舒仐"）+ 连本地 `postgres/password` → **弃用**
+- `import_symmap_data.py`：读本地 Windows 临时 CSV → **弃用**
+- 仅采用上表 4 个已逐一核实的干净源，灌入前已验证中文字段无乱码/占位
+
+**本次部署发现并修复的 bug**：
+
+| # | 症状 | 根因 | 修复 |
+|:--|:-----|:-----|:-----|
+| 1 | `GET /api/v1/ai/models/user-key` 未登录时 500 | `get_user_llm_key_status` 用可选认证 `Depends(get_current_user)`（未登录返回 None），但直接 `current_user.id` → `AttributeError: 'NoneType' object has no attribute 'id'` | `models_and_tools.py` 加 None 保护：未登录返回 200 + `configured:false` + 提示"未登录，无法查询个人密钥状态"（前端友好不崩溃）；已上传 + 后端重建 + 验证未登录 200、登录态 200 `configured:true` |
+
+**服务端验证（全通过）**：
+- 4 容器 healthy；外部 `/` `/health` `/api/v1/health`、入口 `index-ZpaYCgCA.js`、`vendor-react`、`sw.js` 全 200；`index.html` 0 处 Google Fonts
+- 数据接口：`databases/herbs` 200（返回"丁香/温里药"等金标药材）、`databases/food-materials` 200（"丝瓜络"）、`terminology/terms` 200（"青蒿琥酯"）、`ingredients/food-homology` 200（"山药/黄芪/枸杞子"）
+- `ai/models/user-key` 未登录 200（修复后）、登录态 200 `configured:true`（deepseek/sk-fresh...7890）；`ai/models/config/llm` 200、`ai/models/status` 200
+
+**待清理（非阻断）**：`pre_register_requests` 表内 5 条历史测试申请（probe@iter-test.example / final@iter-test.example 等），如需可一并删除。
+
+---
+
+## 迭代更新（2026-10-08）
+
+**本次迭代内容 + 部署修正**：
+
+| 层 | 变更 | 状态 |
+|:--|:--|:--|
+| 前端 | 25 文件（+2268/-639）：API Key 配置管理面板、AI 对话组件重构、LoginPage 账号申请通道、UserManagementPage 审核队列、IntegrationsPage | ✅ 重建 dist（181 chunk，入口 `index-BEwRQLqf.js`，React 单实例 `vendor-react-Bng-7D9N.js`，sw.js v5），已上线 |
+| 后端 | `pre_register` / `pre_register_admin` 预注册队列模块 + `device_fingerprint` + 迁移 `20261008_000000`；`/models/config` 标记废弃 + CSRF 豁免 pre-register | ✅ 上传 + 容器重建 |
+| 数据库 | `pre_register_requests` 表（账号申请队列）+ `ai_model_configs` 表（模型配置持久化） | ✅ 补建成功 |
+
+**本次部署发现并修复的 2 个迭代码 bug**：
+
+| # | 症状 | 根因 | 修复 |
+|:--|:-----|:-----|:-----|
+| 1 | `GET /models/user-key` 保存后仍返回 `configured: false`（数据已入库） | `LLMService.get_user_service` 用了不存在的类属性 `cls.config.provider/base_url/model`（`config` 是实例属性）→ AttributeError 被吞并返回 None | 改为回退到全局 `llm_service.config`（`getattr` 安全取值），代码中两处重复副本一并修 |
+| 2 | `GET /models/config/llm` 503 `relation "ai_model_configs" does not exist` | 新迭代引入的模型配置持久化表依赖 ORM 建表，但旧库走的是"ORM 直接建表+手动迁移"引导，未包含该表 | 按 ORM 模型补建 `ai_model_configs` 表（含唯一约束 + tenant 索引） |
+
+**alembic 迁移图**：项目迁移图存在缺陷（多 head + 悬空依赖），无法 `alembic upgrade head`；`pre_register_requests` 采用幂等 DDL 直接建表 + 手动更新 `alembic_version` 记录。
+
+**服务端验证（全通过）**：4 容器 healthy；外部 `/` `/health` `/api/v1/health`、entry、vendor-react、sw.js 全 200；`index.html` 0 处 Google Fonts；cookie 登录 `auth/me` 200、Bearer `auth/me` 200；`POST /auth/pre-register` 201、`GET /admin/pre-register-requests` 200；`GET /models/user-key` `configured:true`、`GET /models/config/llm` 200、`GET /models/status` 200。
 
 ---
 
@@ -74,7 +142,7 @@
 
 | 容器 | 状态 | 说明 |
 |:-----|:-----|:-----|
-| rmfood_postgres | healthy | PostgreSQL 16, 72 张业务表 |
+| rmfood_postgres | healthy | PostgreSQL 16, 74 张业务表（9 张核心表已补全 1672 条数据） |
 | rmfood_redis | healthy | Redis 7, AOF 持久化 |
 | rmfood_backend | healthy | FastAPI, 2 workers :8000 |
 | rmfood_web | healthy | Nginx 1.25, 前端静态 + 反向代理 |

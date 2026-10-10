@@ -46,3 +46,28 @@ cd ..
 python -m ruff check backend/app --output-format=github 2>/dev/null || echo "⚠️  ruff 未安装，跳过 lint"
 
 echo "✅ Pre-commit 检查完成"
+
+# 6. UI/可访问性静态护栏（棘轮：只减不增）
+#
+# 为什么不用"零违规即失败"：存量有 100+ 处（匿名输入框、渐变实底配白字等），
+# 一次性清零不现实；若非零即红，这个钩子会被长期 --no-verify 绕过而彻底失效。
+# 棘轮保证每修一批就收紧一次基线（node scripts/ui-guard.mjs --baseline），最终收敛到 0。
+echo "📋 UI/可访问性静态护栏（棘轮）..."
+cd frontend
+node scripts/ui-guard.mjs
+if [ $? -ne 0 ]; then
+    echo "❌ UI/可访问性护栏未通过：新增了违规。修掉它们，或确认是有意引入后重设基线。"
+    exit 1
+fi
+echo "✅ UI/可访问性护栏通过"
+cd ..
+
+# 7. 后端未定义名称扫描（NameError 隐患）
+#
+# 这类 bug 平时不报错，一旦走到那条分支就是 500。已靠它抓出
+# defaultdict / KnowledgeGraphService / HAS_SCIPY / sync_timeout 等一批真实 500。
+echo "📋 后端未定义名称扫描..."
+cd backend
+./venv/Scripts/python.exe scripts/scan_undefined.py app/api 2>/dev/null | tail -3
+echo "✅ 未定义名称扫描完成（app/api 应保持 0 处）"
+cd ..
