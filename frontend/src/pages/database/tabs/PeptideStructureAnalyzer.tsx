@@ -82,10 +82,20 @@ interface PeptideAnalysisResult {
   antioxidant: ActivityScore;
   antimicrobial: ActivityScore;
   dpp4_inhibition?: ActivityScore;
+  ml_model?: MLModelInfo;
   safety: SafetyInfo;
   taste: TasteInfo;
   source: SourceInfo;
   analysis_time: string;
+}
+
+interface MLModelInfo {
+  name: string;
+  ace_score: number | null;
+  method: 'ml' | 'fallback_rule' | 'unavailable';
+  training_samples: number;
+  validation_accuracy: number | null;
+  honest_note?: string;
 }
 
 interface ActivityScore {
@@ -2847,6 +2857,53 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 </div>
               </Card>
 
+              {/* 真实 ML 模型（与 QSAR 规则分并列） */}
+              <Card className="p-4">
+                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  真实 ML 模型（PeptideRanker-Mini）
+                  <span className="text-xs font-normal text-[var(--text-muted,#9A9A9F)]">并列于 QSAR 规则分</span>
+                </h3>
+                {result.ml_model ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold text-primary">
+                          {result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">ML 模型 ACE 分</div>
+                      </div>
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold text-primary">
+                          {result.ace_inhibition ? (result.ace_inhibition.score * 100).toFixed(1) + '%' : '-'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">QSAR 规则 ACE 分</div>
+                      </div>
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold">
+                          <Badge variant={result.ml_model.method === 'ml' ? 'success' : 'neutral'} size="sm">
+                            {result.ml_model.method}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">方法（ml=真实权重）</div>
+                      </div>
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold">
+                          {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">验证准确率</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                      训练样本 {result.ml_model.training_samples} 条（DFBP 真实库）· 模型 {result.ml_model.name}
+                      {result.ml_model.honest_note ? ` · ${result.ml_model.honest_note}` : ''}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-[var(--text-muted,#9A9A9F)]">ML 模型不可用（本次分析未启用真实模型预测）</p>
+                )}
+              </Card>
+
               {/* 安全性评估 */}
               <Card className="p-4">
                 <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -2932,9 +2989,21 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       <div>
                         <div className="text-[var(--text-muted,#9A9A9F)] mb-1">文献参考</div>
                         <ul className="list-disc list-inside space-y-0.5">
-                          {result.source.references.map((ref: string, i: number) => (
-                            <li key={i} className="text-[var(--text-secondary,#6B7280)]">{ref}</li>
-                          ))}
+                          {result.source.references.map((ref: string, i: number) => {
+                            const isOnline = ref.includes('PubMed') || ref.includes('PMID');
+                            const pmidMatch = ref.match(/PMID:(\d+)/);
+                            return (
+                              <li key={i} className={`text-xs ${isOnline ? 'text-success-600 dark:text-success-500' : 'text-[var(--text-secondary,#6B7280)]'}`}>
+                                {isOnline && pmidMatch ? (
+                                  <a href={`https://www.ncbi.nlm.nih.gov/pubmed/${pmidMatch[1]}/`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
+                                    {ref}
+                                  </a>
+                                ) : (
+                                  ref
+                                )}
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     )}

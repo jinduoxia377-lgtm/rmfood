@@ -87,6 +87,8 @@ class RealModelTrainer:
             self.model.weights = payload["weights"]
             self.model.biases = payload["biases"]
             self.metrics = payload.get("metrics", {})
+            # 从持久化产物恢复训练样本量，避免重启后丢失
+            self.training_set_size = payload.get("training_samples", 0)
             self.trained = True
             logger.info(f"已加载 ML 模型权重: {self.artifact_path}")
         except Exception as e:
