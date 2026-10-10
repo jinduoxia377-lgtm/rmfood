@@ -1,48 +1,61 @@
-"""Final comprehensive verification of CFAM integration."""
-import urllib.request, json, sys, urllib.parse
-sys.stdout.reconfigure(encoding='utf-8')
+# -*- coding: utf-8 -*-
+"""重启后端后全链路验证：/analyze + /database/search + /analyze/synergy + /ml-status"""
+import json, urllib.request, urllib.error, urllib.parse
 
-print("=== 药食同源 CFAM 功能验证 ===")
+BASE = 'http://localhost:8000/api/v1'
+
+def post(url, payload, timeout=120):
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method='POST', headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read().decode('utf-8', 'replace'))
+
+def get(url, timeout=90):
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode('utf-8', 'replace')[:120]
+
+print('=' * 60)
+print('[1] /analyze ml_model 真实/合成拆分')
+code, d = post(BASE + '/peptide-structure/analyze', {'sequence': 'VLGYT'})
+ml = d.get('ml_model', {}) if isinstance(d, dict) else {}
+print(f'  lib real={ml.get("library_real_count")} synth={ml.get("library_synth_count")}')
+print(f'  train real={ml.get("train_real_count")} synth={ml.get("train_synth_count")}')
+print(f'  method={ml.get("method")} ace={ml.get("ace_score")}')
+print(f'  honest_note: {ml.get("honest_note")}')
+
 print()
+print('[2] /database/search 合成标记')
+code, d = get(BASE + '/peptide-structure/database/search?activity_type=ACE%20inhibitory&page_size=5')
+print(f'  状态码 {code}')
+if isinstance(d, dict):
+    for r in d.get('peptides', [])[:5]:
+        print(f'    {r.get("database_id")} is_synthetic={r.get("is_synthetic")} provenance={r.get("provenance")}')
 
-# 1. API 数据
-r = urllib.request.urlopen('http://localhost:8000/api/v1/databases/herbs/food-homology?page_size=5')
-d = json.loads(r.read())
-print(f"1. API 响应: total={d['total']}, source={d['source']}, version={d['version']}")
-
-# 2. 药材字段检查
-h = d['items'][0]
-print(f"2. 示例药材 {h['name_cn']}:")
-print(f"   - announcement_source: {h.get('announcement_source', 'N/A')}")
-print(f"   - special_notice: {(h.get('special_notice') or '无')[:30]}")
-print(f"   - flavor_cn: {h.get('flavor_cn', 'N/A')}")
-print(f"   - nature_cn: {h.get('nature_cn', 'N/A')}")
-print(f"   - image_path: {h.get('image_path', 'N/A')}")
-
-# 3. 图片服务
-r2 = urllib.request.urlopen('http://localhost:8000/cfam-images/herb_p126_1.png')
-ct2 = r2.headers.get('Content-Type')
-print(f"3. CFAM图片服务: /cfam-images/ -> {r2.status} {ct2}")
-
-# URL-encode Chinese filename
-fname = urllib.parse.quote('黄芪.jpg')
-r3 = urllib.request.urlopen(f'http://localhost:8000/herbs-images/{fname}')
-ct3 = r3.headers.get('Content-Type')
-print(f"   106FAM图片服务: /herbs-images/ -> {r3.status} {ct3}")
-
-# 4. 公告批次分布
-r4 = urllib.request.urlopen('http://localhost:8000/api/v1/databases/herbs/food-homology?page_size=111')
-d4 = json.loads(r4.read())
-ann_counts = {}
-for h in d4['items']:
-    src = h.get('announcement_source') or '未分类'
-    ann_counts[src] = ann_counts.get(src, 0) + 1
-print(f"4. 公告批次分布:")
-for k, v in sorted(ann_counts.items(), key=lambda x: -x[1]):
-    print(f"   {k}: {v}种")
-
-# 5. 有图片的药材
-with_img = sum(1 for h in d4['items'] if h.get('image_path'))
-print(f"5. 有图片的药材: {with_img}/{d4['total']}")
 print()
-print("=== 验证通过 ===")
+print('[3] /ml-status 真实/合成拆分')
+code, d = get(BASE + '/peptide-structure/ml-status?target_activity=ACE%20inhibitory')
+if isinstance(d, dict):
+    print(f'  lib real={d.get("library_real_count")} synth={d.get("library_synth_count")}')
+    print(f'  train real={d.get("train_real_count")} synth={d.get("train_synth_count")}')
+    print(f'  note: {d.get("note","")[:150]}')
+
+print()
+print('[4] /analyze/synergy 药材知识来源')
+code, d = post(BASE + '/ai/peptide/advanced/analyze/synergy',
+               {'peptide_sequences': ['IPP'], 'herb_names': ['黄芪', '菊花', '灵芝', '未知草药X', '当归']})
+if isinstance(d, dict) and d.get('success'):
+    data = d.get('data', d)
+    hks = data.get('herb_knowledge_source', {})
+    print(f'  TCMSP={hks.get("tcmsp_matched")} fallback={hks.get("fallback_8herb")} unknown={hks.get("unknown")}')
+    for name, src in hks.get('sources', {}).items():
+        print(f'    {name} -> {src}')
+    for row in (data.get('synergy_matrix') or [[]])[0:3]:
+        for c in row:
+            print(f'    {c.get("herb")}: synergy={c.get("synergy_score")} herb_source={c.get("herb_source")}')
+else:
+    print(f'  状态码 {code} -> {str(d)[:200]}')
