@@ -32,8 +32,10 @@ async def list_users(
         role=UserRole(role) if role else None,
         search=search,
     )
+    # A-24：原直接把 SQLAlchemy 实体塞进 dict，而 response_model=dict 无法序列化
+    #       任意对象 —— /api/v1/users 恒定 500。改为按 UserResponse 显式序列化。
     return {
-        "items": users,
+        "items": [UserResponse.model_validate(u).model_dump(mode="json") for u in users],
         "total": total,
         "page": pagination.page,
         "page_size": pagination.page_size,

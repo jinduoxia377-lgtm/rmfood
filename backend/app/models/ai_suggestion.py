@@ -23,7 +23,7 @@ class AiSuggestion(Base):
     content: Mapped[dict] = mapped_column(JSON, nullable=False)
     confidence_score: Mapped[float | None] = mapped_column(Float)
     is_applied: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
 
     prompt_version: Mapped["PromptVersion | None"] = relationship(
         "PromptVersion", back_populates="suggestions"

@@ -68,7 +68,7 @@ async def get_optimization_suggestions(
             result = await db.execute(
                 select(Formula).where(
                     Formula.id == formula_data.formula_id,
-                    Formula.owner_id == current_user.id,
+                    Formula.creator_id == current_user.id,
                 )
             )
             formula = result.scalar_one_or_none()
@@ -153,13 +153,13 @@ async def recommend_formulas(
         from ..models.formula import Formula
 
         query = select(Formula).where(
-            Formula.owner_id == current_user.id,
+            Formula.creator_id == current_user.id,
             Formula.status == FormulaStatus.PUBLISHED,
         )
         if req.based_on_formula_id:
             query = query.where(Formula.id != req.based_on_formula_id)
 
-        result = await db.execute(query.order_by(Formula.overall_score.desc()).limit(req.limit))
+        result = await db.execute(query.order_by(Formula.created_at.desc()).limit(req.limit))
         formulas = result.scalars().all()
 
         recommendations = [
@@ -167,7 +167,8 @@ async def recommend_formulas(
                 "formula_id": f.id,
                 "name": f.name or "未命名配方",
                 "description": f.description or "",
-                "relevance_score": f.overall_score or 0.8,
+                # Formula 模型无 overall_score 列 → 取真实字段 relevance（status 为 PUBLISHED 视为高相关）
+                "relevance_score": 0.9 if f.status == FormulaStatus.PUBLISHED else 0.5,
                 "match_reason": "基于您的配方历史",
                 "target_effects": f.target_effects or [],
                 "ingredient_count": len(f.ingredients) if f.ingredients else 0,
@@ -201,12 +202,12 @@ async def predict_trends(
 
         # 获取真实统计数据
         formula_count = await db.execute(
-            select(func.count(Formula.id)).where(Formula.owner_id == current_user.id)
+            select(func.count(Formula.id)).where(Formula.creator_id == current_user.id)
         )
         total_formulas = formula_count.scalar_one()
 
         exp_count = await db.execute(
-            select(func.count(Experiment.id)).where(Experiment.owner_id == current_user.id)
+            select(func.count(Experiment.id)).where(Experiment.researcher_id == current_user.id)
         )
         total_experiments = exp_count.scalar_one()
 

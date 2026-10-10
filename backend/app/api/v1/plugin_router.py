@@ -6,10 +6,12 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.plugin_registry import get_plugin_registry, PluginType
-from app.services.plugin_registry.api_key_manager import get_api_key_manager
+from app.api.deps import get_db_session
+from app.core.api_framework.integration_framework import get_api_key_service
 
 logger = logging.getLogger(__name__)
 
@@ -72,43 +74,85 @@ async def create_api_key(
     user_id: int,
     organization_id: Optional[int] = None,
     permissions: list = [],
-    rate_limit_rpm: int = 60,
+    db: AsyncSession = Depends(get_db_session),
 ):
-    """创建新的 API Key（明文仅返回一次）"""
-    mgr = get_api_key_manager()
-    result = mgr.create_key(
+    """创建新的 API Key（明文仅返回一次）。
+
+    统一使用 DB 持久化的 APIKeyService（与 /integrations/api-keys 同源），
+    不再使用内存版 api_key_manager。permissions 映射为 scopes。
+    """
+    svc = get_api_key_service(db)
+    api_key, plain_key = await svc.create_api_key(
         name=name,
-        user_id=user_id,
-        organization_id=organization_id,
-        permissions=permissions,
-        rate_limit_rpm=rate_limit_rpm,
+        scopes=permissions,
+        owner_id=user_id,
+        org_id=organization_id,
     )
-    return {"success": True, "data": result}
+    return {
+        "success": True,
+        "data": {
+            "id": api_key.id,
+            "name": api_key.name,
+            "key_prefix": api_key.key_prefix,
+            "key": plain_key,
+            "scopes": api_key.scopes,
+            "expires_at": api_key.expires_at.isoformat() if api_key.expires_at else None,
+            "created_at": api_key.created_at.isoformat(),
+            "warning": "⚠️ 请立即保存此密钥，它将不会再次显示！",
+        },
+    }
 
 
 @router.get("/api-keys", summary="列出 API Keys")
-async def list_api_keys(user_id: Optional[int] = None):
-    """列出 API Keys（不含明文）"""
-    mgr = get_api_key_manager()
-    keys = mgr.list_keys(user_id)
-    stats = mgr.get_stats()
-    return {"success": True, "data": {"keys": keys, "stats": stats}}
+async def list_api_keys(
+    user_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """列出 API Keys（不含明文），统一为 DB 持久化来源。"""
+    svc = get_api_key_service(db)
+    if user_id is None:
+        # 未指定 user_id 时返回该服务可管理的汇总占位（保持接口向后兼容）
+        return {"success": True, "data": {"keys": [], "stats": {"total": 0}}}
+    keys = await svc.list_keys(user_id)
+    return {
+        "success": True,
+        "data": {
+            "keys": keys,
+            "stats": {"total": len(keys), "active": sum(1 for k in keys if k.get("is_active"))},
+        },
+    }
 
 
 @router.delete("/api-keys/{key_id}", summary="吊销 API Key")
-async def revoke_api_key(key_id: str):
-    """吊销指定 API Key"""
-    mgr = get_api_key_manager()
-    ok = mgr.revoke_key(key_id)
+async def revoke_api_key(
+    key_id: str,
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """吊销指定 API Key（DB 持久化）。user_id 必填以限定所有者。"""
+    svc = get_api_key_service(db)
+    ok = await svc.revoke_key(key_id, user_id)
     if not ok:
         raise HTTPException(404, detail="API Key 不存在")
     return {"success": True, "message": f"已吊销: {key_id}"}
 
 
 @router.get("/api-keys/stats", summary="API Key 统计")
-async def api_key_stats():
-    mgr = get_api_key_manager()
-    return {"success": True, "data": mgr.get_stats()}
+async def api_key_stats(
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """API Key 统计（DB 持久化来源）。"""
+    svc = get_api_key_service(db)
+    keys = await svc.list_keys(user_id)
+    return {
+        "success": True,
+        "data": {
+            "total": len(keys),
+            "active": sum(1 for k in keys if k.get("is_active")),
+            "revoked": sum(1 for k in keys if not k.get("is_active")),
+        },
+    }
 
 
 # ════════════════════════════════════════════

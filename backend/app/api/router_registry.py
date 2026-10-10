@@ -232,7 +232,15 @@ class RouterRegistry:
                 continue
 
             try:
-                app.include_router(router, prefix=prefix, tags=tags)
+                # A-37：app/api/*.py 里有几个模块把自己写成了完整前缀
+                #   （formula_integration=/api/v1/formula、herb_food=/api/v1/herb-food、
+                #     search_analytics=/api/v1/search/analytics），
+                #   而这里对所有路由统一再叠加一次 /api/v1 → 实际挂成了
+                #   /api/v1/api/v1/...，前端按文档里的路径永远调不到。
+                #   自身前缀已以全局前缀开头时不再叠加。
+                own_prefix = getattr(router, "prefix", "") or ""
+                effective = "" if own_prefix.startswith(prefix) else prefix
+                app.include_router(router, prefix=effective, tags=tags)
                 if is_critical:
                     stats["critical"] += 1
                 else:

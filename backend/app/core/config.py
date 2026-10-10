@@ -332,6 +332,11 @@ class SecurityConfig(BaseSettings):
     cors_allow_credentials: bool = Field(default=True, description="是否允许携带凭证")
     csrf_secret: str = Field(default="", description="CSRF double-submit secret")
     cookie_secure: bool | None = Field(default=None, description="Cookie Secure 属性覆盖: None=跟随debug(生产True)；false=纯HTTP部署允许非HTTPS cookie；true=强制HTTPS")
+    # ─── 登录安全策略（供 oauth2_auth.py 的 AccountLockout / 限流使用） ───
+    # 默认值对齐 app/core/security/account_lockout.py:AccountLockout.__init__ 的 5 / 15 分钟
+    max_login_attempts: int = Field(default=5, ge=1, description="允许的最大连续登录失败次数，达到后临时锁定账号")
+    lockout_duration_minutes: int = Field(default=15, ge=1, description="账号锁定持续时间（分钟）")
+    max_login_attempts_per_ip: int = Field(default=10, ge=1, description="单 IP 每分钟最大登录请求数（IP 限流）")
 
     @field_validator("secret_key", mode="before")
     @classmethod

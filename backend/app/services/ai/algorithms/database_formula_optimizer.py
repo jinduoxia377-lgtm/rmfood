@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import logging
+import asyncio  # A-27
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -258,16 +259,16 @@ class DatabaseFormulaOptimizer:
                     partner = herbs_dict.get(partner_id)
                     if partner and partner.herb_id not in [m["herb_id"] for m in ministers]:
                         # 计算协同功效
-                       协同_score = sum(
-                            partner.efficacy_scores.get(e, 0) 
+                        synergy_score = sum(
+                            partner.efficacy_scores.get(e, 0)
                             for e in target_effects
                         ) / len(target_effects)
-                        
+
                         ministers.append({
                             "herb_id": partner.herb_id,
                             "name_cn": partner.name_cn,
                             "role": "臣",
-                            "efficacy_score": 协同_score,
+                            "efficacy_score": synergy_score,
                             "dosage_min": partner.dosage_min,
                             "dosage_max": partner.dosage_max,
                             "safety_index": partner.safety_index,

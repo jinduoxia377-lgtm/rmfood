@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, update
+from sqlalchemy import insert  # A-27
 
 from ..models.peptide_analysis import PeptideAnalysis, PeptideAnalysisDetail, AnalysisMode, DimensionType
 from ..models.formula import Peptide

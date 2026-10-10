@@ -214,8 +214,9 @@ async def update_project(
                 setattr(project, field, value)
 
         project.updated_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(project)
+        # A-27：这里是模块级普通函数，没有 self；原写 self.db 会抛 NameError
+        await db.commit()
+        await db.refresh(project)
 
         return ApiResponse(
             success=True,

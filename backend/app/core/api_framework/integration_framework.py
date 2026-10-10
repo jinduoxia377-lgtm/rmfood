@@ -22,6 +22,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 import asyncio
 
+from sqlalchemy import text
+
 
 logger = logging.getLogger(__name__)
 
@@ -241,17 +243,16 @@ class WebhookService:
             org_id=org_id,
         )
 
-        await self.db.execute(
-            """INSERT INTO webhooks 
+        await self.db.execute(text("""INSERT INTO webhooks 
                (id, name, url, events, secret, headers, status, owner_id, org_id, created_at, updated_at)
-               VALUES (:id, :name, :url, :events::text[], :secret, :headers::jsonb, :status, :owner_id, :org_id, NOW(), NOW())""",
+               VALUES (:id, :name, :url, CAST(:events_arr AS text[]), :secret, CAST(:headers_jsonb AS jsonb), :status, :owner_id, :org_id, NOW(), NOW())"""),
             {
                 "id": webhook.id,
                 "name": webhook.name,
                 "url": webhook.url,
-                "events": [e.value for e in webhook.events],
+                "events_arr": [e.value for e in webhook.events],
                 "secret": webhook.secret,
-                "headers": json.dumps(webhook.headers),
+                "headers_jsonb": json.dumps(webhook.headers),
                 "status": webhook.status.value,
                 "owner_id": webhook.owner_id,
                 "org_id": webhook.org_id,
@@ -268,12 +269,11 @@ class WebhookService:
 
     async def get_webhooks(self, owner_id: int) -> List[Webhook]:
         """获取用户的所有Webhook"""
-        result = await self.db.execute(
-            """SELECT * FROM webhooks 
+        result = await self.db.execute(text("""SELECT * FROM webhooks 
                WHERE owner_id = :owner_id OR org_id IN (
                  SELECT org_id FROM organization_members WHERE user_id = :owner_id
                )
-               ORDER BY created_at DESC""",
+               ORDER BY created_at DESC"""),
             {"owner_id": owner_id},
         )
         
@@ -300,8 +300,7 @@ class WebhookService:
 
     async def get_webhook(self, webhook_id: str, owner_id: int) -> Optional[Webhook]:
         """获取单个Webhook详情"""
-        result = await self.db.execute(
-            "SELECT * FROM webhooks WHERE id = :id AND owner_id = :owner_id",
+        result = await self.db.execute(text("SELECT * FROM webhooks WHERE id = :id AND owner_id = :owner_id"),
             {"id": webhook_id, "owner_id": owner_id},
         )
         row = result.fetchone()
@@ -345,8 +344,7 @@ class WebhookService:
         if set_clauses:
             set_clauses.append("updated_at = NOW()")
             
-            await self.db.execute(
-                f"UPDATE webhooks SET {', '.join(set_clauses)} WHERE id = :id AND owner_id = :owner_id",
+            await self.db.execute(text("UPDATE webhooks SET {', '.join(set_clauses)} WHERE id = :id AND owner_id = :owner_id"),
                 params,
             )
             await self.db.commit()
@@ -355,8 +353,7 @@ class WebhookService:
 
     async def delete_webhook(self, webhook_id: str, owner_id: int) -> bool:
         """删除Webhook"""
-        await self.db.execute(
-            "DELETE FROM webhooks WHERE id = :id AND owner_id = :owner_id",
+        await self.db.execute(text("DELETE FROM webhooks WHERE id = :id AND owner_id = :owner_id"),
             {"id": webhook_id, "owner_id": owner_id},
         )
         await self.db.commit()
@@ -427,15 +424,14 @@ class WebhookService:
 
     async def _log_delivery(self, delivery: WebhookDelivery):
         """记录投递日志"""
-        await self.db.execute(
-            """INSERT INTO webhook_deliveries 
+        await self.db.execute(text("""INSERT INTO webhook_deliveries 
                (id, webhook_id, event_type, payload, response_status, response_body, duration_ms, success, retry_count, created_at)
-               VALUES (:id, :webhook_id, :event_type, :payload::jsonb, :response_status, :response_body, :duration_ms, :success, :retry_count, NOW())""",
+               VALUES (:id, :webhook_id, :event_type, CAST(:payload_jsonb AS jsonb), :response_status, :response_body, :duration_ms, :success, :retry_count, NOW())"""),
             {
                 "id": delivery.id,
                 "webhook_id": delivery.webhook_id,
                 "event_type": delivery.event_type.value,
-                "payload": json.dumps(delivery.payload),
+                "payload_jsonb": json.dumps(delivery.payload),
                 "response_status": delivery.response_status,
                 "response_body": delivery.response_body,
                 "duration_ms": delivery.duration_ms,
@@ -447,15 +443,13 @@ class WebhookService:
 
     async def _update_success_count(self, webhook_id: str):
         """更新成功计数"""
-        await self.db.execute(
-            "UPDATE webhooks SET success_count = success_count + 1, last_trigger_at = NOW() WHERE id = :id",
+        await self.db.execute(text("UPDATE webhooks SET success_count = success_count + 1, last_trigger_at = NOW() WHERE id = :id"),
             {"id": webhook_id},
         )
 
     async def _update_failure_count(self, webhook_id: str):
         """更新失败计数"""
-        await self.db.execute(
-            "UPDATE webhooks SET failure_count = failure_count + 1, last_trigger_at = NOW() WHERE id = :id",
+        await self.db.execute(text("UPDATE webhooks SET failure_count = failure_count + 1, last_trigger_at = NOW() WHERE id = :id"),
             {"id": webhook_id},
         )
 
@@ -530,16 +524,15 @@ class APIKeyService:
             expires_at=expires_at,
         )
 
-        await self.db.execute(
-            """INSERT INTO api_keys 
+        await self.db.execute(text("""INSERT INTO api_keys 
                (id, name, key_hash, key_prefix, scopes, owner_id, org_id, expires_at, is_active, created_at)
-               VALUES (:id, :name, :key_hash, :key_prefix, :scopes::text[], :owner_id, :org_id, :expires_at, TRUE, NOW())""",
+               VALUES (:id, :name, :key_hash, :key_prefix, CAST(:scopes_arr AS text[]), :owner_id, :org_id, :expires_at, TRUE, NOW())"""),
             {
                 "id": api_key.id,
                 "name": api_key.name,
                 "key_hash": api_key.key_hash,
                 "key_prefix": api_key.key_prefix,
-                "scopes": api_key.scopes,
+                "scopes_arr": api_key.scopes,
                 "owner_id": api_key.owner_id,
                 "org_id": api_key.org_id,
                 "expires_at": api_key.expires_at,
@@ -555,10 +548,9 @@ class APIKeyService:
         """验证API密钥并返回密钥对象"""
         key_hash = hashlib.sha256(plain_key.encode()).hexdigest()
 
-        result = await self.db.execute(
-            """SELECT * FROM api_keys 
+        result = await self.db.execute(text("""SELECT * FROM api_keys 
                WHERE key_hash = :key_hash AND is_active = TRUE
-               AND (expires_at IS NULL OR expires_at > NOW())""",
+               AND (expires_at IS NULL OR expires_at > NOW())"""),
             {"key_hash": key_hash},
         )
         row = result.fetchone()
@@ -566,8 +558,7 @@ class APIKeyService:
         if not row:
             return None
 
-        await self.db.execute(
-            "UPDATE api_keys SET last_used_at = NOW() WHERE id = :id",
+        await self.db.execute(text("UPDATE api_keys SET last_used_at = NOW() WHERE id = :id"),
             {"id": row.id},
         )
         await self.db.commit()
@@ -588,11 +579,10 @@ class APIKeyService:
 
     async def list_keys(self, owner_id: int) -> List[Dict[str, Any]]:
         """列出用户的所有API密钥（不含实际密钥值）"""
-        result = await self.db.execute(
-            """SELECT id, name, key_prefix, scopes, expires_at, last_used_at, is_active, created_at
+        result = await self.db.execute(text("""SELECT id, name, key_prefix, scopes, expires_at, last_used_at, is_active, created_at
                FROM api_keys 
                WHERE owner_id = :owner_id
-               ORDER BY created_at DESC""",
+               ORDER BY created_at DESC"""),
             {"owner_id": owner_id},
         )
 
@@ -613,8 +603,7 @@ class APIKeyService:
 
     async def revoke_key(self, key_id: str, owner_id: int) -> bool:
         """撤销API密钥"""
-        await self.db.execute(
-            "UPDATE api_keys SET is_active = FALSE WHERE id = :id AND owner_id = :owner_id",
+        await self.db.execute(text("UPDATE api_keys SET is_active = FALSE WHERE id = :id AND owner_id = :owner_id"),
             {"id": key_id, "owner_id": owner_id},
         )
         await self.db.commit()
@@ -662,16 +651,15 @@ class ThirdPartyIntegrationService:
             org_id=org_id,
         )
 
-        await self.db.execute(
-            """INSERT INTO integrations 
+        await self.db.execute(text("""INSERT INTO integrations 
                (id, type, name, config, events, is_active, owner_id, org_id, created_at)
-               VALUES (:id, :type, :name, :config::jsonb, :events::text[], :is_active, :owner_id, :org_id, NOW())""",
+               VALUES (:id, :type, :name, CAST(:config_jsonb AS jsonb), CAST(:events_arr AS text[]), :is_active, :owner_id, :org_id, NOW())"""),
             {
                 "id": integration.id,
                 "type": integration.type.value,
                 "name": integration.name,
-                "config": json.dumps(integration.config),
-                "events": [e.value for e in integration.events],
+                "config_jsonb": json.dumps(integration.config),
+                "events_arr": [e.value for e in integration.events],
                 "is_active": integration.is_active,
                 "owner_id": integration.owner_id,
                 "org_id": integration.org_id,

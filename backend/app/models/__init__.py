@@ -99,6 +99,14 @@ from .ingredient_lot import IngredientLot
 from .food_material import FoodMaterial
 from .retail_product import RetailProduct
 
+# 账号申请（预注册）模块
+from .pre_register import PreRegisterRequest, PreRegisterStatus
+
+# 药材 PK/PD/稳定性 真实参数表
+from .herb_pharmaco_params import TCMHerbPK, TCMHerbPD, StabilityData
+# 协同系数表（已存在，补充导入）
+from .seed_data import SynergyInteraction
+
 __all__ = [
     # 枚举
     "UserRole",
@@ -218,4 +226,12 @@ __all__ = [
     "CustomFieldType",
     "CustomFieldEntity",
     "ProjectPhase",
+    # 账号申请（预注册）模块
+    "PreRegisterRequest",
+    "PreRegisterStatus",
+    # 药材 PK/PD/稳定性 真实参数表
+    "TCMHerbPK",
+    "TCMHerbPD",
+    "StabilityData",
+    "SynergyInteraction",
 ]

@@ -17,6 +17,14 @@ try:
 except ImportError:
     HAS_JSONSCHEMA = False
 
+# A-27：301 行会读 HAS_SCIPY，但全文件从未定义过它（只定义了 HAS_JSONSCHEMA），
+#       一调用 get_stats() 就是 NameError。
+try:
+    import scipy  # noqa: F401
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
+
 from .synergy_models import (
     MechanismType,
     SynergyCoefficient,

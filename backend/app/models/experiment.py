@@ -32,17 +32,17 @@ class Experiment(Base):
     materials: Mapped[list | None] = mapped_column(JSON, default=list)
     equipment: Mapped[list | None] = mapped_column(JSON, default=list)
 
-    start_date: Mapped[datetime | None] = mapped_column(DateTime)
-    end_date: Mapped[datetime | None] = mapped_column(DateTime)
-    actual_start: Mapped[datetime | None] = mapped_column(DateTime)
-    actual_end: Mapped[datetime | None] = mapped_column(DateTime)
+    start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    end_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    actual_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    actual_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     results: Mapped[dict | None] = mapped_column(JSON, default=dict)
     conclusions: Mapped[str | None] = mapped_column(Text)
     recommendations: Mapped[str | None] = mapped_column(Text)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_naive)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_naive, onupdate=now_utc_naive)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_naive)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_naive, onupdate=now_utc_naive)
 
     formula: Mapped["Formula | None"] = relationship("Formula", back_populates="experiments")
     researcher: Mapped["User"] = relationship("User", back_populates="experiments")
@@ -80,10 +80,10 @@ class ExperimentData(Base):
     data_text: Mapped[str | None] = mapped_column(Text)
     unit: Mapped[str | None] = mapped_column(String(50))
     # DB 列 measurement_time（可空）：测量时间（naive timestamp）
-    measurement_time: Mapped[datetime | None] = mapped_column(DateTime)
+    measurement_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     notes: Mapped[str | None] = mapped_column(Text)
     metadata_json: Mapped[dict | None] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_naive)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_naive)
 
     # 语义别名（供 ORM/代码使用，不映射独立列）
     @property

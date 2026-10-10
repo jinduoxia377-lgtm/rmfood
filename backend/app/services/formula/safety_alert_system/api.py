@@ -9,6 +9,7 @@ SafetyAlertSystem - API 接口
 """
 
 import logging
+from ....utils.error_sanitize import sanitize_error  # A-27
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 

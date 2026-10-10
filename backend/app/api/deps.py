@@ -353,12 +353,16 @@ class ExperimentFilterParams:
         status: Optional[str] = Query(None, description="实验状态"),
         researcher_id: Optional[int] = Query(None, description="研究员ID"),
         formula_id: Optional[int] = Query(None, description="配方ID"),
-        search: Optional[str] = Query(None, description="搜索关键词")
+        search: Optional[str] = Query(None, description="搜索关键词"),
+        sort_field: Optional[str] = Query("updated_at", description="排序字段"),
+        sort_order: Optional[str] = Query("desc", description="排序方向 asc/desc")
     ):
         self.status = status
         self.researcher_id = researcher_id
         self.formula_id = formula_id
         self.search = search
+        self.sort_field = sort_field
+        self.sort_order = sort_order
 
 
 # 常用依赖

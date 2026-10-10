@@ -12,6 +12,7 @@ Swiss-Prot是UniProtKB的一个子集，包含经过专家手动审查的高质�
 本客户端继承自UniProtClient，增加专家审核相关功能。
 """
 
+import asyncio  # A-27
 import logging
 from typing import Dict, List, Optional, Any
 

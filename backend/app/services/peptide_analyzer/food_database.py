@@ -28,6 +28,8 @@ class DatabasePeptide:
     literature_doi: Optional[str] = None
     source_database: str = "DFBP"
     food_source: Optional[str] = None
+    is_synthetic: bool = False          # 诚实标记：程序合成（非真实 DFBP 文献记录）
+    provenance: str = "unknown"         # core_dfbp_literature / hand_expanded / synthetic_programmatic
     created_at: datetime = field(default_factory=datetime.utcnow)
     
     def to_dict(self) -> dict:
@@ -44,6 +46,8 @@ class DatabasePeptide:
             "literature_doi": self.literature_doi,
             "source_database": self.source_database,
             "food_source": self.food_source,
+            "is_synthetic": self.is_synthetic,
+            "provenance": self.provenance,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -91,6 +95,8 @@ class DFBPDatabase:
                     hydrolysis_enzyme=peptide_data.get('hydrolysis_enzyme'),
                     database_id=peptide_data.get('dfbp_id'),
                     food_source=food_source_map.get(organism, organism),
+                    is_synthetic=bool(peptide_data.get('is_synthetic', False)),
+                    provenance=peptide_data.get('provenance', 'unknown'),
                     source_database='DFBP',
                 ))
             logger.info(f"DFBP 数据库适配器初始化完成，加载 {len(self._local_cache)} 条肽记录")

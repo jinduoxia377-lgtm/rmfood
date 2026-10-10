@@ -3,6 +3,7 @@
 从配方自动生成可称重批记录
 """
 import logging
+import sqlalchemy  # A-27
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 

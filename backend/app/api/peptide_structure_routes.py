@@ -378,11 +378,16 @@ async def ml_status(target_activity: str = Query("ACE inhibitory")):
             "artifact_exists": os.path.exists(trainer.artifact_path) if hasattr(trainer, "artifact_path") else False,
             "metrics": trainer.metrics,
             "library_size": trainer.library_size,
+            "library_real_count": trainer.library_real_count,
+            "library_synth_count": trainer.library_synth_count,
             "training_samples": trainer.training_set_size,
             "validation_samples": trainer.validation_set_size,
+            "train_real_count": trainer.train_real_count,
+            "train_synth_count": trainer.train_synth_count,
             "note": (
-                f"模型用 DFBP 真实库 {trainer.library_size} 条标注记录中 85% 子集"
-                f"（{trainer.training_set_size} 训练 + {trainer.validation_set_size} 验证）训练；"
+                f"模型用 DFBP 库 {trainer.library_size} 条标注记录训练：真实文献 {trainer.library_real_count} 条 + "
+                f"程序合成 {trainer.library_synth_count} 条（合成已显式标注，非冒充真实数据）。"
+                f"实际训练子集 {trainer.training_set_size} 条：真实 {trainer.train_real_count} + 合成 {trainer.train_synth_count}。"
                 f"trained=False 时 /ml-predict 回退规则并标记 fallback_rule。"
             ),
         }

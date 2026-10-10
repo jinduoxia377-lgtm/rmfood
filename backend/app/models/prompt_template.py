@@ -22,8 +22,8 @@ class PromptTemplate(Base):
     created_by: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, onupdate=now_utc_mapped)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
 
     creator: Mapped["User | None"] = relationship("User")
     versions: Mapped[list["PromptVersion"]] = relationship(

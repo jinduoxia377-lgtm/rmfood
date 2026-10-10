@@ -138,6 +138,100 @@ class AminoAcidEncoder:
     def _has_aromatic_c_term(cls, seq: str) -> int:
         return 1 if seq[-1] in ['F', 'W', 'Y'] else 0
 
+    # ═══════════════════════════════════════════════════════════
+    # 富特征编码（升级版）：12 维 → 489 维
+    # 用于提升小数据/不平衡场景下的判别力（标准肽活性预测特征集）
+    # ═══════════════════════════════════════════════════════════
+
+    # Kyte-Doolittle 疏水性标度
+    KD_HYDRO = {
+        'A': 1.8, 'R': -4.5, 'N': -3.5, 'D': -3.5, 'C': 2.5,
+        'Q': -3.5, 'E': -3.5, 'G': -0.4, 'H': -3.2, 'I': 4.5,
+        'L': 3.8, 'K': -3.9, 'M': 1.9, 'F': 2.8, 'P': -1.6,
+        'S': -0.8, 'T': -0.7, 'W': -0.9, 'Y': -1.3, 'V': 4.2,
+    }
+
+    # 电荷（pH 7.4）
+    CHARGE = {
+        'D': -1.0, 'E': -1.0, 'K': 1.0, 'R': 1.0, 'H': 0.1,
+    }
+
+    @classmethod
+    def _aa_composition(cls, seq: str) -> List[float]:
+        """20 维氨基酸组成（频率）"""
+        n = max(len(seq), 1)
+        return [seq.count(aa) / n for aa in cls.STANDARD_AAS]
+
+    @classmethod
+    def _dipeptide_composition(cls, seq: str) -> List[float]:
+        """400 维二肽组成（频率），标准肽活性特征"""
+        aas = cls.STANDARD_AAS
+        idx = {aa: i for i, aa in enumerate(aas)}
+        vec = [0.0] * 400
+        n = max(len(seq) - 1, 1)
+        for i in range(len(seq) - 1):
+            a, b = seq[i], seq[i + 1]
+            if a in idx and b in idx:
+                vec[idx[a] * 20 + idx[b]] += 1.0
+        return [v / n for v in vec]
+
+    @classmethod
+    def _property_moments(cls, seq: str) -> List[float]:
+        """
+        理化性质分布矩：对疏水性/电荷两种标度，计算
+        均值、标准差、最大、最小、极差（5 项 x 2 标度 = 10 维），
+        外加 N 端 3 个 / C 端 3 个氨基酸的疏水均值（2 维）。
+        共 12 维。空序列返回全 0。
+        """
+        import math as _m
+        out = []
+        for scale in (cls.KD_HYDRO, cls.CHARGE):
+            vals = [scale.get(aa, 0.0) for aa in seq]
+            if not vals:
+                out.extend([0.0] * 5)
+                continue
+            n = len(vals)
+            mean = sum(vals) / n
+            var = sum((v - mean) ** 2 for v in vals) / n
+            out.extend([
+                mean,
+                _m.sqrt(var),
+                max(vals),
+                min(vals),
+                max(vals) - min(vals),
+            ])
+        # N 端 3 个 / C 端 3 个氨基酸的疏水均值
+        head = seq[:3]
+        tail = seq[-3:]
+        out.append(sum(cls.KD_HYDRO.get(aa, 0.0) for aa in head) / max(len(head), 1))
+        out.append(sum(cls.KD_HYDRO.get(aa, 0.0) for aa in tail) / max(len(tail), 1))
+        return out
+
+    # 富特征维度：20(组成) + 400(二肽) + 12(矩) + 12(原有基础特征) = 444
+    RICH_FEATURE_DIM = 444
+
+    @classmethod
+    def extract_features_rich(cls, sequence: str) -> List[float]:
+        """
+        富特征向量（444 维）：基础特征(12) + 氨基酸组成(20) + 二肽组成(400) + 理化矩(12)
+
+        目的：原 12 维手工特征信息量过低（F1 仅 0.162），
+        升级为标准肽活性预测特征集，提升判别力。
+        全部特征由序列本身计算，无任何外部伪造数据。
+        """
+        seq = sequence.upper().replace('-', '')
+        if not seq:
+            return [0.0] * cls.RICH_FEATURE_DIM
+        base = cls.extract_features(seq)          # 12
+        comp = cls._aa_composition(seq)           # 20
+        dipep = cls._dipeptide_composition(seq)   # 400
+        moments = cls._property_moments(seq)      # 12
+        vec = base + comp + dipep + moments
+        # 维度保护（截断/补零到固定长度）
+        if len(vec) < cls.RICH_FEATURE_DIM:
+            vec = vec + [0.0] * (cls.RICH_FEATURE_DIM - len(vec))
+        return vec[:cls.RICH_FEATURE_DIM]
+
 
 # ═══════════════════════════════════════════════════════════
 # 神经网络实现（纯Python）
@@ -200,21 +294,33 @@ class SimpleNeuralNetwork:
         
         return current[0] if current else 0.5
     
-    def train(self, X: List[List[float]], y: List[int], epochs: int = 100, lr: float = 0.01):
-        """训练模型（简化版批量梯度下降）"""
+    def train(self, X: List[List[float]], y: List[int], epochs: int = 100, lr: float = 0.01, class_weight: Optional[float] = None):
+        """
+        训练模型（简化版批量梯度下降）。
+
+        class_weight: 正类（label=1）的损失加权倍数（>=1.0）。
+            用于缓解类别不平衡——正类样本少时放大其梯度贡献，
+            让模型真正学会判正类，而非"永远预测负类"刷高 accuracy。
+            None = 自动按 sqrt(负类数/正类数) 加权（温和，避免过拟合正类）；1.0 = 不加权。
+        """
+        pos_count = sum(1 for t in y if t == 1)
+        neg_count = len(y) - pos_count
+        if class_weight is None:
+            class_weight = math.sqrt(max(neg_count, 1) / max(pos_count, 1))
         for epoch in range(epochs):
             total_loss = 0
             for x, target in zip(X, y):
                 # 前向传播
                 prediction = self.forward(x)
                 error = target - prediction
-                total_loss += error ** 2
-                
+                # 类别加权：正类样本的误差放大
+                weight = class_weight if target == 1 else 1.0
+                total_loss += weight * error ** 2
                 # 简化的反向传播（仅更新最后一层）
-                self._backward_update(x, prediction, error, lr)
-            
+                self._backward_update(x, prediction, error * weight, lr)
+
             if epoch % 10 == 0:
-                avg_loss = total_loss / len(X)
+                avg_loss = total_loss / max(len(X), 1)
                 logger.debug(f"Epoch {epoch}, Loss: {avg_loss:.4f}")
     
     def _backward_update(self, x: List[float], prediction: float, error: float, lr: float):

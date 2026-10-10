@@ -484,11 +484,13 @@ class LLMService:
                     return None
             if not isinstance(v, dict) or not _decrypt_api_key(v.get("api_key", "")):
                 return None
+            # 回退到全局 llm_service 的 config（实例属性）；避免用 cls.config（不存在，会抛 AttributeError）
+            _fb = getattr(llm_service, "config", None)
             cfg = LLMConfig(
-                provider=v.get("provider", "") or cls.config.provider,
+                provider=v.get("provider", "") or getattr(_fb, "provider", ""),
                 api_key=_decrypt_api_key(v.get("api_key", "")),
-                base_url=v.get("base_url", "") or cls.config.base_url,
-                model=v.get("model", "") or cls.config.model,
+                base_url=v.get("base_url", "") or getattr(_fb, "base_url", ""),
+                model=v.get("model", "") or getattr(_fb, "model", ""),
                 max_tokens=v.get("max_tokens", 4096),
                 temperature=v.get("temperature", 0.7),
                 key_from_db=True,
@@ -551,11 +553,13 @@ class LLMService:
                     return None
             if not isinstance(v, dict) or not _decrypt_api_key(v.get("api_key", "")):
                 return None
+            # 回退到全局 llm_service 的 config（实例属性）；避免用 cls.config（不存在，会抛 AttributeError）
+            _fb = getattr(llm_service, "config", None)
             cfg = LLMConfig(
-                provider=v.get("provider", "") or cls.config.provider,
+                provider=v.get("provider", "") or getattr(_fb, "provider", ""),
                 api_key=_decrypt_api_key(v.get("api_key", "")),
-                base_url=v.get("base_url", "") or cls.config.base_url,
-                model=v.get("model", "") or cls.config.model,
+                base_url=v.get("base_url", "") or getattr(_fb, "base_url", ""),
+                model=v.get("model", "") or getattr(_fb, "model", ""),
                 max_tokens=v.get("max_tokens", 4096),
                 temperature=v.get("temperature", 0.7),
                 key_from_db=True,

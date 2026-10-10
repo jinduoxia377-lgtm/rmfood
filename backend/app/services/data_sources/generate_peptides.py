@@ -345,6 +345,10 @@ def generate_single_peptide(dfbp_index: int, activity_type: str, config: dict) -
         "molecular_weight": mw,
         "hydrolysis_enzyme": enzyme,
         "dfbp_id": dfbp_id,
+        # 诚实标记：本条为程序合成（random 生成），非真实 DFBP 文献记录
+        "is_synthetic": True,
+        "provenance": "synthetic_programmatic",
+        "synthetic_note": "由 generate_peptides 程序化生成（random.seed(42)），非真实 DFBP 数据库记录",
     }
     return entry
 

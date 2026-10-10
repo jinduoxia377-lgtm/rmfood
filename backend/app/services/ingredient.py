@@ -1,5 +1,8 @@
 """RMFOOD 成分服务"""
 from typing import List, Tuple, Optional
+import logging  # A-27
+
+logger = logging.getLogger(__name__)  # A-27
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 

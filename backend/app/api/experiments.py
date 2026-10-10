@@ -2,18 +2,22 @@
 实验管理路由
 实验 CRUD、数据管理、状态流转
 """
+import logging
 from typing import Optional
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas.experiment import (
     ExperimentCreate, ExperimentUpdate, ExperimentResponse,
     ExperimentDataResponse, ExperimentListResponse,
+    CompleteExperimentRequest,
 )
 from ..services.experiment_service import ExperimentService
 from ..services.auth import require_role
 from ..models.models import User, UserRole, ExperimentStatus
-from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user, get_current_user
+from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/experiments", tags=["实验管理"])
 
@@ -40,6 +44,8 @@ async def list_experiments(
         researcher_id=filters.researcher_id,
         formula_id=filters.formula_id,
         search=filters.search,
+        sort_field=filters.sort_field,
+        sort_order=filters.sort_order,
     )
     return ExperimentListResponse(
         items=experiments,
@@ -93,37 +99,46 @@ async def update_experiment(
     return await service.update_experiment(experiment_id, data, current_user.id)
 
 
-@router.delete("/{experiment_id}", summary="删除实验")
+@router.delete("/{experiment_id}", summary="取消实验")
 async def delete_experiment(
     experiment_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """删除实验（取消状态）"""
+    """取消实验（软删除：状态置为 cancelled）"""
     service = ExperimentService(db)
     await service.delete_experiment(experiment_id, current_user.id)
     return {"message": "实验已取消"}
 
 
-@router.post("/batch-delete", summary="批量删除实验")
+@router.post("/batch-delete", summary="批量取消实验")
 async def batch_delete_experiments(
     data: dict,
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """批量删除实验"""
+    """批量取消实验"""
     ids = data.get("ids", [])
     if not ids:
         return {"message": "未提供实验ID", "deleted": 0}
+    if not isinstance(ids, list) or not all(isinstance(i, (int, str)) and str(i).isdigit() for i in ids):
+        raise HTTPException(status_code=400, detail="实验ID列表格式不正确")
     service = ExperimentService(db)
     deleted = 0
+    failed_ids: list[str] = []
     for eid in ids:
         try:
             await service.delete_experiment(int(eid), current_user.id)
             deleted += 1
+        except HTTPException as e:
+            failed_ids.append(f"#{eid}: {e.detail}")
         except Exception as e:
             logger.warning("实验删除失败 id=%s: %s", eid, e)
-    return {"message": f"已删除 {deleted} 个实验", "deleted": deleted}
+            failed_ids.append(f"#{eid}")
+    message = f"已取消 {deleted} 个实验"
+    if failed_ids:
+        message += f"，{len(failed_ids)} 个失败（{', '.join(failed_ids)}）"
+    return {"message": message, "deleted": deleted}
 
 
 # ── 实验状态流转 ──
@@ -142,16 +157,23 @@ async def start_experiment(
 @router.post("/{experiment_id}/complete", response_model=ExperimentResponse, summary="完成实验")
 async def complete_experiment(
     experiment_id: int,
-    results: dict | None = None,
-    conclusions: str | None = None,
-    recommendations: str | None = None,
+    payload: CompleteExperimentRequest = CompleteExperimentRequest(),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """完成实验并记录结果"""
+    """完成实验并记录结果
+
+    修复: 三个字段从 query 参数改为 JSON body（CompleteExperimentRequest），
+    避免客户端发 JSON 时文案错位进 results.conclusions、conclusions 列落库为 NULL。
+    向后兼容: body 可省略（全部字段 Optional），无 body 等价于空请求。
+    """
     service = ExperimentService(db)
     return await service.complete_experiment(
-        experiment_id, results, conclusions, recommendations, current_user.id
+        experiment_id,
+        payload.results,
+        payload.conclusions,
+        payload.recommendations,
+        current_user.id,
     )
 
 

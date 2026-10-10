@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, and_, or_
+from sqlalchemy import update  # A-27
 from sqlalchemy.orm import selectinload
 
 from app.models.peptide_structure import PeptideStructureAnalysis

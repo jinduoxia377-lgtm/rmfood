@@ -405,19 +405,41 @@ class DFBPSyncService:
 
 # ═══════════════════════════════════════════
 # 合并扩展数据（延迟到 DFBP_PEPTIDE_DATABASE 定义后执行）
+# 诚实来源标记：每条记录盖上 provenance 章，区分 核心真实文献 / 手写扩展 / 程序合成
 # ═══════════════════════════════════════════
+# 第一层：核心 DFBP_PEPTIDE_DATABASE（手写，基于真实 DFBP 文献记录）
+for _p in DFBP_PEPTIDE_DATABASE:
+    _p.setdefault("is_synthetic", False)
+    _p.setdefault("provenance", "core_dfbp_literature")
+
 if '_EXPANDED_PEPTIDES' in dir() and _EXPANDED_PEPTIDES:
     _EXISTING_IDS = {p["dfbp_id"] for p in DFBP_PEPTIDE_DATABASE}
-    _NEW_PEPTIDES = [p for p in _EXPANDED_PEPTIDES if p.get("dfbp_id") not in _EXISTING_IDS]
+    _NEW_PEPTIDES = [dict(p) for p in _EXPANDED_PEPTIDES if p.get("dfbp_id") not in _EXISTING_IDS]
+    for _p in _NEW_PEPTIDES:
+        _p.setdefault("is_synthetic", False)
+        _p.setdefault("provenance", "hand_expanded")
     DFBP_PEPTIDE_DATABASE = DFBP_PEPTIDE_DATABASE + _NEW_PEPTIDES
-    logger.info(f"合并扩展多肽数据: 原有 {len(DFBP_PEPTIDE_DATABASE) - len(_NEW_PEPTIDES)} + 新增 {len(_NEW_PEPTIDES)} = 总计 {len(DFBP_PEPTIDE_DATABASE)}")
+    logger.info(f"合并扩展多肽数据: 新增 {len(_NEW_PEPTIDES)} = 总计 {len(DFBP_PEPTIDE_DATABASE)}")
 
-# 合并程序化生成的活性肽数据
+# 第二层：程序化生成的活性肽（random 合成，明确 is_synthetic=True）
 if '_GENERATED_PEPTIDES' in dir() and _GENERATED_PEPTIDES:
     _EXISTING_IDS = {p["dfbp_id"] for p in DFBP_PEPTIDE_DATABASE}
-    _GEN_NEW = [p for p in _GENERATED_PEPTIDES if p.get("dfbp_id") not in _EXISTING_IDS]
+    _GEN_NEW = [dict(p) for p in _GENERATED_PEPTIDES if p.get("dfbp_id") not in _EXISTING_IDS]
+    for _p in _GEN_NEW:
+        _p["is_synthetic"] = True
+        _p["provenance"] = "synthetic_programmatic"
+        _p["synthetic_note"] = "由 generate_peptides 程序化生成（random.seed(42)），非真实 DFBP 数据库记录"
     DFBP_PEPTIDE_DATABASE = DFBP_PEPTIDE_DATABASE + _GEN_NEW
-    logger.info(f"合并程序化生成活性肽: 原有 {len(DFBP_PEPTIDE_DATABASE) - len(_GEN_NEW)} + 新增 {len(_GEN_NEW)} = 总计 {len(DFBP_PEPTIDE_DATABASE)}")
+    logger.info(f"合并程序化生成活性肽: 新增 {len(_GEN_NEW)} = 总计 {len(DFBP_PEPTIDE_DATABASE)}")
+
+# 库级来源统计（供 /ml-status、/database/search 诚实口径展示）
+_DFBP_LIBRARY_COMPOSITION = {
+    "total": len(DFBP_PEPTIDE_DATABASE),
+    "real_literature": sum(1 for p in DFBP_PEPTIDE_DATABASE if p.get("provenance") == "core_dfbp_literature"),
+    "hand_expanded": sum(1 for p in DFBP_PEPTIDE_DATABASE if p.get("provenance") == "hand_expanded"),
+    "synthetic_programmatic": sum(1 for p in DFBP_PEPTIDE_DATABASE if p.get("is_synthetic")),
+}
+logger.info(f"DFBP 库来源构成: {_DFBP_LIBRARY_COMPOSITION}")
 
 # 全局实例 — 必须在所有合并完成后初始化，确保 peptide_count 准确
 dfbp_service = DFBPSyncService()

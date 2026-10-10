@@ -11,6 +11,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import select, func, delete
+from datetime import datetime, timezone  # A-27: 113 行 datetime.now(timezone.utc) 用到，原漏导入
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_current_user
@@ -102,6 +103,26 @@ async def execute_workflow(
             # 更新工作流状态
             workflow.status = WorkflowStatus.IN_PROGRESS
             await db.commit()
+
+            # A-27：原先这里调用的 _push_progress 在本模块根本没有定义（NameError），
+            #       只要 DAG 回调一次进度，整个 _run() 就会崩进 except 并把工作流标记为
+            #       FAILED。这里按下方「完成 / 失败」消息同样的通道与载荷格式补上实现，
+            #       并自行吞掉推送异常，避免 WS 抖动影响执行主流程。
+            async def _push_progress(wf_id: int, task_id: int, status: str, result=None):
+                try:
+                    ws_manager = get_ws_manager()
+                    await ws_manager.broadcast_to_channel(
+                        f"workflow:{wf_id}",
+                        WSMessage(type=MessageType.AI_TASK_PROGRESS.value, data={
+                            "workflow_id": wf_id,
+                            "execution_id": execution_id,
+                            "task_id": task_id,
+                            "status": status,
+                            "output_data": getattr(result, "output_data", None) if result else None,
+                        }),
+                    )
+                except Exception as e:
+                    logger.warning("推送工作流进度失败: %s", e)
 
             # 带进度回调的执行
             async def on_progress(task_id: int, status: str, result=None):

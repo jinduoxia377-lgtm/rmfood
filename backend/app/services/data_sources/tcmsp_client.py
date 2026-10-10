@@ -783,7 +783,14 @@ class TCMSPSyncService:
         }
 
     async def search_compounds(self, herb_name: str, db: AsyncSession) -> list[dict[str, Any]]:
-        """查询药材的活性化合物列表"""
+        """查询药材的活性化合物列表
+
+        A-39：TCMHerb 在本模块里只在 sync / statistics 两个函数内做了局部导入，
+            search_compounds 直接用它 → NameError，端点恒 500。
+            补上局部导入（与同文件其它函数保持一致的写法）。
+        """
+        from app.models.models import TCMHerb
+
         herb = (await db.execute(
             select(TCMHerb).where(TCMHerb.name_cn == herb_name)
         )).scalar_one_or_none()

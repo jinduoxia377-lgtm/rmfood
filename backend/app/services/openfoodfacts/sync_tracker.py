@@ -35,7 +35,7 @@ class OFFSyncTracker:
             try:
                 cached = await self.redis.get(self.REDIS_KEY_CHECKPOINT)
                 if cached:
-                    return date.fromisoformat(coded.decode() if isinstance(cached, bytes) else cached)
+                    return date.fromisoformat(cached.decode() if isinstance(cached, bytes) else cached)  # A-27: 原为 typo `coded`
             except Exception as e:
                 logger.warning(f"[Tracker] Redis 读取失败: {e}")
 

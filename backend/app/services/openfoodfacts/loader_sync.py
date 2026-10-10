@@ -83,10 +83,13 @@ class OFFLoaderSync:
             update_parts.append(f"{col} = EXCLUDED.{col}")
         update_parts.append("updated_at = NOW()")
         updates = ", ".join(update_parts)
+        # A-27：原 VALUES 子句是个残缺的理解式占位 `(%s_{idx} for %s_{idx} in zip(...))`，
+        #       既不是合法 SQL 又引用了未定义的 idx。按列数生成真正的参数占位符。
+        placeholders = ", ".join(["%s"] * len(self.COLUMNS))
 
         return f"""
             INSERT INTO retail_products ({cols_str})
-            VALUES (%s_{idx} for %s_{idx} in zip(...))
+            VALUES ({placeholders})
             ON CONFLICT (external_id) DO UPDATE SET
                 {updates}
         """

@@ -11,7 +11,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func  # A-27: ilike 不是顶层函数，改用列方法 .ilike()
 
 from app.api.deps import get_db_session, get_current_user
 from app.models.food_material import FoodMaterial
@@ -359,10 +359,12 @@ async def search_retail_products(
 
     # 关键词搜索 - 在产品名、品牌、分类中模糊匹配
     if query:
+        # A-27：原写 ilike(Column, pattern) —— sqlalchemy 顶层没有 ilike 函数，
+        #       一进这个分支就是 NameError/ImportError。改用列方法 .ilike()。
         stmt = stmt.where(
-            (ilike(_RetailProduct.product_name, f"%{query}%")) |
-            (ilike(_RetailProduct.brand, f"%{query}%")) |
-            (ilike(_RetailProduct.category, f"%{query}%"))
+            (_RetailProduct.product_name.ilike(f"%{query}%")) |
+            (_RetailProduct.brand.ilike(f"%{query}%")) |
+            (_RetailProduct.category.ilike(f"%{query}%"))
         )
 
     # 计数查询

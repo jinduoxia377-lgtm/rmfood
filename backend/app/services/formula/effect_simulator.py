@@ -129,6 +129,64 @@ PD_PARAMETERS_DB = {
 }
 
 
+# ==================== 药材别名映射（消食导滞方常用 5 味） ====================
+# 背景: 配方成分常以「药材名」(黄芪/当归/茯苓/甘草/大枣) 录入，
+# 而 PK/PD 参数库按「有效成分单体名」建键 → 逐味精确匹配全部落空，
+# 功效预测恒 0。此处为 5 味常用药材补 PK/PD 参数 + 别名映射，
+# 让以药材名录入的配方也能产生真实 PK/PD 曲线。
+#
+# 参数取值说明（保守、可解释）:
+#   基于各药材代表性活性成分的药理学特征量级，取中位保守值；
+#   非某味药材的精确 PK 实测值（精确值需 PopPK 数据库支持，暂缺）。
+#   F=生物利用度, ka=吸收速率(h⁻¹), Vd=分布容积(L/kg),
+#   CL=清除率(L/h/kg), t_lag=吸收滞后(h);
+#   E_max=最大效应(0-1), EC50=半效浓度(μg/mL), Hill=陡峭度。
+
+INGREDIENT_ALIAS_DB = {
+    "黄芪": "黄芪多糖",
+    "当归": "当归多糖",
+    "茯苓": "茯苓多糖",
+    "甘草": "甘草甜素",
+    "大枣": "大枣多糖",
+    "红枣": "大枣多糖",
+}
+
+PK_PARAMETERS_DB["当归多糖"] = {
+    "F": 0.35, "ka": 0.7, "Vd": 0.5, "CL": 0.09, "t_lag": 0.6,
+}
+PK_PARAMETERS_DB["茯苓多糖"] = {
+    "F": 0.40, "ka": 0.9, "Vd": 0.35, "CL": 0.07, "t_lag": 0.5,
+}
+PK_PARAMETERS_DB["甘草甜素"] = {
+    "F": 0.55, "ka": 1.8, "Vd": 0.6, "CL": 0.28, "t_lag": 0.3,
+}
+PK_PARAMETERS_DB["大枣多糖"] = {
+    "F": 0.30, "ka": 0.6, "Vd": 0.45, "CL": 0.10, "t_lag": 0.7,
+}
+
+PD_PARAMETERS_DB["当归多糖"] = {"E_max": 0.72, "EC50": 6.0, "Hill": 1.9}
+PD_PARAMETERS_DB["茯苓多糖"] = {"E_max": 0.60, "EC50": 9.0, "Hill": 1.6}
+PD_PARAMETERS_DB["甘草甜素"] = {"E_max": 0.55, "EC50": 14.0, "Hill": 1.3}
+PD_PARAMETERS_DB["大枣多糖"] = {"E_max": 0.50, "EC50": 18.0, "Hill": 1.2}
+
+
+def _resolve_ingredient_params(name: str):
+    """把「药材名」解析为 PK/PD 参数。
+
+    先按原名精确查，未命中再走 INGREDIENT_ALIAS_DB 映射后查。
+    返回 (pk_params, pd_params)；两者任一为 None 表示无数据。
+    """
+    pk = PK_PARAMETERS_DB.get(name)
+    pd = PD_PARAMETERS_DB.get(name)
+    if pk and pd:
+        return pk, pd
+    alias = INGREDIENT_ALIAS_DB.get(name)
+    if alias:
+        pk = PK_PARAMETERS_DB.get(alias, pk)
+        pd = PD_PARAMETERS_DB.get(alias, pd)
+    return pk, pd
+
+
 class EffectSimulator:
     """
     效果预测模拟器 - 基于 PopPK/PD 的配方效果预测
@@ -152,7 +210,8 @@ class EffectSimulator:
         formula_id: Optional[str] = None,
         body_weight_kg: float = 70.0,
         simulation_hours: float = 24.0,
-        time_points: int = 100
+        time_points: int = 100,
+        db_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> EffectPrediction:
         """
         预测配方的整体效果
@@ -166,29 +225,74 @@ class EffectSimulator:
         
         Returns:
             EffectPrediction: 完整的预测结果，包含 C-T/E-T 曲线和可视化数据
+
+        参数 db_overrides（可选，DB 真实数据覆盖）:
+            {name: {"pk": {...}, "pd": {...}, "dosage": {"max_dosage_mg": ...}}}
+            - pk.F 来自 tcm_herbs.ob_percent（DB 真实生物利用度）；
+              ka/Vd/CL/t_lag 若 DB 缺失则沿用内置默认（标注 model_default）。
+            - pd.E_max 来自 tcm_herbs.extra_knowledge.efficacy_scores（DB 真实药效）；
+              EC50/Hill 若 DB 缺失则沿用内置默认（标注 model_default）。
+            - dosage.max_dosage_mg 来自 herb_food_herbs.max_dosage（DB 真实最大日用量），
+              替代 100mg/kg 占位剂量；缺失时仍回退占位剂量。
         """
         formula_id = formula_id or f"FORMULA-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
-        logger.info(f"开始效果预测 - 配方ID={formula_id}, 成分数={len(formula_ingredients)}")
+        db_overrides = db_overrides or {}
+
+        logger.info(f"开始效果预测 - 配方ID={formula_id}, 成分数={len(formula_ingredients)}, "
+                    f"DB覆盖数={len(db_overrides)}")
         
         time_array = [i * simulation_hours / (time_points - 1) for i in range(time_points)]
         
         total_ct = []
         total_et = []
         
+        db_hit_names = []
         for ing in formula_ingredients:
             name = ing.get("name", "")
             amount_mg = ing.get("amount_mg", 0)
-            
-            pk_params = PK_PARAMETERS_DB.get(name)
-            pd_params = PD_PARAMETERS_DB.get(name)
-            
+
+            pk_params, pd_params = _resolve_ingredient_params(name)
+
             if not pk_params or not pd_params:
-                logger.debug(f"{name} 缺少 PK/PD 参数，跳过")
+                logger.debug(f"{name} 缺少 PK/PD 参数（含别名映射后仍未命中），跳过")
                 continue
-            
+
+            # ── 注入 DB 真实数据覆盖（若调用方传入）──────────────
+            override = db_overrides.get(name) or {}
+            pk_real = override.get("pk")
+            pd_real = override.get("pd")
+            dose_real = override.get("dosage")
+            db_source: Dict[str, str] = {}
+            if pk_real:
+                # F/ka/Vd/CL/t_lag 来自 tcm_herbs_pk 表（F 真实 OB%；ka/Vd/CL 模型推导已落库）
+                pk_params = dict(pk_params)
+                for k in ("F", "ka", "Vd", "CL", "t_lag"):
+                    if pk_real.get(k) is not None:
+                        pk_params[k] = float(pk_real[k])
+                        db_source[k] = pk_real.get("source", "db")
+            if pd_real:
+                # E_max/EC50/Hill 来自 tcm_herbs_pd 表（E_max 真实评分；EC50 模型推导已落库）
+                pd_params = dict(pd_params)
+                for k in ("E_max", "EC50", "Hill"):
+                    if pd_real.get(k) is not None:
+                        pd_params[k] = float(pd_real[k])
+                        db_source[k] = pd_real.get("source", "db")
+            # ── 剂量：优先 DB 真实最大日用量，缺失才回退 100mg/kg 占位 ──
+            dose_origin = "placeholder_100mg_kg"
+            if dose_real and dose_real.get("max_dosage_mg") is not None:
+                # DB 真实最大日用量（mg/65kg 成人）× 当前体重缩放
+                amount_mg = float(dose_real["max_dosage_mg"]) * (body_weight_kg / 65.0)
+                dose_origin = dose_real.get("source", "db")
+                db_source["dose"] = dose_origin
+            elif amount_mg <= 0:
+                # 无 DB 剂量 → 回退 100mg/kg 占位（PK 模拟必须有剂量输入）
+                amount_mg = 100.0 * body_weight_kg
+                db_source["dose"] = "placeholder_100mg_kg (DB 无剂量数据)"
+            if db_source:
+                db_hit_names.append(f"{name}[{'; '.join(db_source.values())}]")
+
             dose_mg_kg = amount_mg / body_weight_kg
-            
+
             ct_single = self._calculate_pk_curve(pk_params, dose_mg_kg, time_array)
             et_single = self._calculate_pd_curve(pd_params, ct_single)
             
