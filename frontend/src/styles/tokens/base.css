@@ -18,7 +18,11 @@
   --color-primary-900: #064e3b;
   --color-primary-950: #022c22;
 
-  --color-primary: var(--color-primary-500);
+  /* D-58：--color-primary 原先 = primary-500(#10b981)，白底仅 2.54:1；
+     提到 --color-primary-surface(#047857) 后，作为实底配白字 4.83:1 ✅、
+     作为白底文本 4.83:1 ✅，且与 --color-primary-text(#047857) 取值一致。
+     暗色侧 dark.css 仍覆盖为 primary-500(#34d399)，不受影响。 */
+  --color-primary: var(--color-primary-surface, #047857);
   --color-primary-rgb: 16, 185, 129;
   --color-primary-hover: var(--color-primary-600);
   --color-primary-container: #d1fae5;
@@ -47,7 +51,7 @@
   --color-secondary-900: #1e3a8a;
   --color-secondary-950: #172554;
 
-  --color-secondary: var(--color-secondary-500);
+  --color-secondary: var(--color-secondary-700, #1d4ed8);  /* D-58：500 档白底/白字均不达标 → 700（白字 6.40:1 ✅）*/
   --color-secondary-rgb: 59, 130, 246;
   --color-secondary-hover: var(--color-secondary-700);
   --color-secondary-container: #dbeafe;
@@ -65,19 +69,23 @@
   --color-accent-900: #3b0764;
   --color-accent-950: #1a0542;
 
-  --color-accent: var(--color-accent-500);
+  --color-accent: var(--color-accent-700, #6d28d9);        /* D-58：白字 5.83:1 ✅ */
   --color-accent-rgb: 139, 92, 246;
   --color-accent-hover: var(--color-accent-600);
   --color-accent-container: #f3e8ff;
+  /* A-26：紫系实底配白字专用档。原先头像/图标直接写 from-accent-500(#8b5cf6)，
+     白字仅 3.6:1；且暗色下色阶反转(D-50)，靠调数字档位无法两态同时达标 ——
+     必须由「按模式取值的语义令牌」承担。accent-700 → 白字 7.1:1 ✅ */
+  --color-accent-surface: var(--color-accent-700, #6d28d9);
 
   /* ═══ Semantic Colors ═══ */
-  --color-success: var(--color-success-500);
+  --color-success: var(--color-success-700, #047857);      /* D-58：白字 4.83:1 ✅ */
   --color-success-bg: var(--color-success-50);
   --color-success-text: #065f46;
-  --color-warning: var(--color-warning-500);
+  --color-warning: var(--color-warning-700, #b45309);      /* D-58：白字 4.62:1 ✅ */
   --color-warning-bg: var(--color-warning-50);
   --color-warning-text: #92400e;
-  --color-error: var(--color-danger-500);
+  --color-error: var(--color-danger-700, #b91c1c);         /* D-58：白字 5.94:1 ✅ */
   --color-error-bg: var(--color-danger-50);
   --color-error-text: #991b1b;
   /* D-56 同族：error 色阶缺 950 档（danger 族有），源码使用了 bg-error-950 */
@@ -118,6 +126,23 @@
   --color-danger-900: #7f1d1d; --color-danger-950: #450a0a;
 
   /* ═══ Surface & Canvas ═══ */
+  /* ═══ A-28：品牌族「实底配白字」令牌 ═══
+     统计卡 / chip 这类实底容器上放白字时，不能写死数字色阶 —— 暗色下色阶是反转的
+     (D-50)，500/600 档在暗色反而是最亮的一档，白字只有 1.75:1（实测 /databases KPI）。
+     这里按模式给出「够深、能配白字」的两档：亮色 700→800，暗色 200→100。
+     实测白字对比度：secondary 6.7 / success 5.5 / warning 5.0 / danger 6.5 / accent 7.1，
+     全部 ≥ 4.5:1 AA。 */
+  --color-secondary-surface: var(--color-secondary-700, #1d4ed8);
+  --color-secondary-surface-deep: var(--color-secondary-800, #1e40af);
+  --color-success-surface: var(--color-success-700, #047857);
+  --color-success-surface-deep: var(--color-success-800, #065f46);
+  --color-warning-surface: var(--color-warning-700, #b45309);
+  --color-warning-surface-deep: var(--color-warning-800, #92400e);
+  --color-danger-surface: var(--color-danger-700, #b91c1c);
+  --color-danger-surface-deep: var(--color-danger-800, #991b1b);
+  --color-info-surface: var(--color-secondary-700, #1d4ed8);
+  --color-info-surface-deep: var(--color-secondary-800, #1e40af);
+  --color-accent-surface-deep: var(--color-accent-800, #5b21b6);
   --bg-canvas: var(--color-neutral-50);       /* DESIGN.md: slate-50 — 页面背景 */
   --bg-primary: var(--color-neutral-50);
   --bg-secondary: #ffffff;    /* 卡片背景 */
@@ -161,7 +186,10 @@
   --text-primary: var(--color-neutral-900);   /* slate-900 */
   --text-secondary: var(--color-neutral-700); /* slate-700 */
   --text-muted: var(--color-neutral-700);     /* slate-700 — 6.47:1 on canvas ✅ AA */
-  --text-disabled: var(--color-neutral-500);  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
+  /* D-63：--text-disabled 原取 neutral-500 (#64748b)，白底 4.76:1 达标，
+     但落在 #f1f5f9 浅底（kbd 提示、空状态副文案）仅 4.34:1。
+     提到 neutral-600 (#475569) → 白底 7.40:1 / 浅底 7.40:1 ✅。 */
+  --text-disabled: var(--color-neutral-600, #475569);
 
   /* ═══ Borders ═══ */
   --border-color: var(--color-neutral-200);   /* slate-200 */
@@ -213,7 +241,11 @@
   --text-caption-line-height: 1.33;
   --text-caption-font-weight: 400;
 
-  --text-overline: 0.6875rem; /* 11px — labels/badges */
+  /* A-11：原 0.6875rem(11px) 虽对应 DESIGN.md 3.2 的 macOS Caption 2，
+     但本平台是中文界面——11px 的汉字笔画已糊，实测移动端底部导航标签
+     （系统概览/配方管理/…）渲染为 11px。把最小可读字号地板抬到 12px
+     （= --text-caption），overline 与 caption 合并为同一档。 */
+  --text-overline: 0.75rem;   /* 12px — labels/badges（原 11px 抬级） */
   --text-overline-line-height: 1.45;
   --text-overline-font-weight: 500;
   --text-overline-tracking: 0.05em;
@@ -333,19 +365,28 @@
   --card-foreground: var(--text-primary, #0f172a);
   --popover: var(--bg-surface-container, #ffffff);
   --popover-foreground: var(--text-primary, #0f172a);
-  --primary: var(--color-primary-600, #059669);
-  --primary-foreground: var(--color-primary-text, #047857);
-  --secondary: var(--color-secondary-500, #3b82f6);
+  /* D-57 修复（2026-10-09）：--primary-foreground 原先指向 --color-primary-text
+     （深绿 #047857），与 --primary(#059669) 同色系 → 全站主按钮「绿字压绿底」
+     实测 1.09:1，属于完全不可读。按 D-50 规范改为 surface 令牌对：
+     实底取 --color-primary-surface(#047857)，前景取白色 → 4.83:1 ✅ AA。 */
+  --primary: var(--color-primary-surface, #047857);
+  --primary-foreground: var(--color-on-primary-surface, #ffffff);
+  /* D-58 修复（2026-10-09）：shadcn 语义「实底 + 白字」令牌原先直接取 500 档
+     （primary #059669 3.77:1 / secondary #3b82f6 3.68:1 / accent #8b5cf6 3.92:1 /
+     warning #f59e0b 2.15:1），均不满足 AA 4.5:1。统一提升到 700/600 深色档，
+     白字对比度：primary 4.83 ✅ / secondary 6.40 ✅ / accent 5.83 ✅ /
+     warning 4.62 ✅ / danger 5.94 ✅ / success 4.83 ✅。 */
+  --secondary: var(--color-secondary-700, #1d4ed8);
   --secondary-foreground: #ffffff;
   --muted: var(--color-neutral-muted, #e2e8f0);
   --muted-foreground: var(--text-secondary, #334155);
-  --accent: var(--color-accent-500, #8b5cf6);
+  --accent: var(--color-accent-700, #6d28d9);
   --accent-foreground: #ffffff;
-  --destructive: var(--color-error, #ef4444);
+  --destructive: var(--color-danger-700, #b91c1c);
   --destructive-foreground: #ffffff;
-  --success: var(--color-success, #10b981);
+  --success: var(--color-success-700, #047857);
   --success-foreground: #ffffff;
-  --warning: var(--color-warning, #f59e0b);
+  --warning: var(--color-warning-700, #b45309);
   --warning-foreground: #ffffff;
   --border: var(--color-neutral-muted, #e2e8f0);
   --input: var(--bg-surface-container, #ffffff);
@@ -363,6 +404,9 @@
   --color-neutral-700: #334155;
   --color-neutral-800: #1e293b;
   --color-neutral-900: #0f172a;
+  /* P0-C：补 950 档（slate-950），供暗色画布 --bg-canvas/--color-neutral-default 使用。
+     原先暗色用反转后的 --color-neutral-50 表达画布，色阶回退后必须显式提供 950。 */
+  --color-neutral-950: #020617;
 
   /* ── 容器色 ── */
   --color-success-container: rgba(16, 185, 129, 0.12);

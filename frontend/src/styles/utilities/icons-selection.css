@@ -79,6 +79,47 @@
   top: 0;
 }
 
+/* ── 主布局跳转链接（D-54）：显式给出双模式高对比底色+前景 ──
+   原先使用 focus:bg-[var(--color-primary-surface,theme(...))]，
+   Tailwind v4 无法解析 var() 内嵌 theme()，导致回退到继承色 #10B981（2.42:1）。 */
+.rhine-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background: var(--color-primary-surface, #047857);
+  color: var(--color-on-primary-surface, #ffffff);
+}
+.rhine-skip-link:focus {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 200;
+  width: auto;
+  height: auto;
+  margin: 0;
+  /* A-15：原 padding 0.625rem(10px) + 14px 行高 ≈ 42px，差一点点就到
+     WCAG 2.5.5 的 44×44。抬到 12px 并用 min-height 兜底。 */
+  padding: 0.75rem 1.25rem;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+  clip: auto;
+  outline: 2px solid var(--color-on-primary-surface, #ffffff);
+  outline-offset: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
 /* ── 屏幕阅读器专用 ── */
 .sr-only {
   position: absolute;

@@ -18,13 +18,31 @@ body {
   line-height: 1.6;
   background-color: var(--bg-canvas, var(--bg-canvas));
   color: var(--text-primary, #1D1D1F);
-  font-size: 17px;
+  /* A-12：原写死 17px，绕开了排版令牌，暗色也无法随主题调整。
+     17px 对应 DESIGN.md 3.2 的 Apple HIG Body(iOS)，令牌里已有
+     --text-body-apple: 17px，改为引用它，保持单一数据源。 */
+  font-size: var(--text-body-apple, 17px);
 }
 
 .dark body {
   background-color: var(--bg-primary, #000000);
   color: var(--text-primary, var(--bg-canvas));
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   P0-A 修复（2026-10-09）：以下【元素/排版类的 color 声明】统一收进 @layer base
+   ───────────────────────────────────────────────────────────────
+   问题：本文件此前为未分层（unlayered）样式。按 CSS Cascade Layers 规范，
+   未分层样式优先级高于任意 @layer 内的样式（与特异性无关），因此
+   `p { color: var(--text-secondary) }` / `h2 { color: var(--text-primary) }`
+   会**压制** Tailwind @layer utilities 中的 text-* 工具类。
+   后果实例：仪表盘欢迎横幅（.surface-primary 深绿实底 #047857）上
+   `<p class="text-white/80">` 实际渲染为 --text-secondary (#334155)，
+   对比度仅 1.89:1，几乎不可读。
+   修复：收进 @layer base 后，元素/类仍提供默认排版色，但任何 text-*
+   工具类（含 text-white / dark: 变体）均可正常覆盖。
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
 
 /* ── 标题系统 — Professional Hierarchy ── */
 h1, .h1 {
@@ -115,6 +133,8 @@ p {
 
 p:last-child { margin-bottom: 0; }
 
+} /* ← P0-A: @layer base 结束 */
+
 /* ── 辅助文字 ── */
 .text-caption {
   font-size: var(--text-caption);
@@ -153,16 +173,14 @@ p:last-child { margin-bottom: 0; }
 .text-disabled { color: var(--text-disabled); }
 
 /* ── 渐变背景文字 (WCAG Enhanced Contrast) ── */
-.text-gradient-primary {
-  color: var(--gradient-text-primary);
-  text-shadow: var(--gradient-text-shadow);
-}
-.text-gradient-secondary {
-  color: var(--gradient-text-secondary);
-  text-shadow: var(--gradient-text-shadow);
-}
+/* A-28：原写 color: var(--gradient-text-primary)，而该令牌的值是
+   `linear-gradient(135deg, …)` —— 把渐变赋给 color 是【非法 CSS】，声明会被整条丢弃，
+   文字颜色静默回落到继承值（实测 /databases 暗色下变成 rgb(241,245,249) 压在亮色
+   渐变卡上 = 1.75:1）。这些类只用在渐变实底卡片里，前景固定为白色即可。 */
+.text-gradient-primary,
+.text-gradient-secondary,
 .text-gradient-muted {
-  color: var(--gradient-text-muted);
+  color: #ffffff;
   text-shadow: var(--gradient-text-shadow);
 }
 .text-gradient-trend-up {
@@ -174,14 +192,25 @@ p:last-child { margin-bottom: 0; }
   text-shadow: var(--gradient-text-shadow);
 }
 
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-a:hover {
-  color: var(--color-primary-hover);
-  text-decoration: underline;
+/* P0-A 续（2026-10-09）：链接默认色同样必须收进 @layer base。
+   否则无层样式会压制所有 text-* / dark:text-* 工具类，
+   导致 <a> 恒为 --color-primary(#10B981)，白底仅 2.54:1。 */
+@layer base {
+  a {
+    color: var(--color-primary-700, #047857);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .dark a {
+    color: var(--color-primary-600, #6ee7b7);
+  }
+  a:hover {
+    color: var(--color-primary-800, #065f46);
+    text-decoration: underline;
+  }
+  .dark a:hover {
+    color: var(--color-primary-500, #34d399);
+  }
 }
 
 /* focus-visible support */
