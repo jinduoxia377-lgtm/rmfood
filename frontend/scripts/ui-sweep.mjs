@@ -28,7 +28,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ALL = process.argv.includes('--all');
 const AS_JSON = process.argv.includes('--json');
-const SCAN_DIR = path.join(ROOT, 'src', ALL ? '' : 'pages');
+const SRC = path.join(ROOT, 'src');
+const SCAN_DIR = path.join(SRC, ALL ? '' : 'pages');
 
 /** 取从 start('<') 开始的完整开标签文本（跳过字符串/注释内的 < 与 >） */
 function tagExtent(src, start) {
@@ -61,6 +62,20 @@ function classLiterals(src) {
     for (const s of m[1].matchAll(/['"`]([^'"`]*)['"`]/g)) out.push({ text: s[1], index: m.index });
   }
   return out;
+}
+
+/** 把 './x' / '../y' / '@/x' 解析成实际文件（补 .tsx/.ts/index） */
+function resolveLocal(dir, spec) {
+  // '@/components/Foo' 是 vite alias，指向 src/
+  const base = spec.startsWith('@/')
+    ? path.join(SRC, spec.slice(2))
+    : path.resolve(dir, spec);
+  const cands = [base, base + '.tsx', base + '.ts',
+                 path.join(base, 'index.tsx'), path.join(base, 'index.ts')];
+  for (const c of cands) {
+    if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+  }
+  return null;
 }
 
 const findings = [];
@@ -134,7 +149,29 @@ for (const file of walk(SCAN_DIR)) {
     const levels = [...src.matchAll(/<h([1-6])\b/g)].map((m) => Number(m[1]));
     // <PageHeader> 内部渲染的就是 <h1>（见 components/ui/PageHeader.tsx），
     // 用了它的页面运行时已经有 h1 —— 静态扫描看不到组件内部，会误报。
-    const viaHeader = /<PageHeader\b/.test(src);
+    // h1 的三种来源，静态扫描都得认：
+    //   1) 本文件里直接写了 <h1
+    //   2) 用了 <PageHeader>（该组件内部渲染 <h1 className="h1">）
+    //   3) 通过 as="h1" 把标题语义透传给封装组件（RadixDemoPage 的 <RadixText as="h1">）
+    let viaHeader = /<PageHeader\b/.test(src) || /\bas\s*=\s*["']h1["']/.test(src);
+
+    //   4) h1 在页面直接渲染的本地子组件里（LandingPage → sections/Hero、
+    //      TokenDocPage → components/TokenGallery）。沿相对 import 往下看一级，
+    //      够用了；再深就应该交给运行时量具，静态做全图解析不划算。
+    if (!viaHeader) {
+      // 同时覆盖默认导入（import Hero from './sections/Hero'）
+      // 与具名导入（import { TokenGallery } from '@/components/TokenGallery'）
+      for (const m of src.matchAll(/import\s+(?:\{[^}]*\}|\w+)\s+from\s+['"](@\/[^'"]+|\.[^'"]+)['"]/g)) {
+        const target = resolveLocal(path.dirname(file), m[1]);
+        if (!target || target === file) continue;
+        let sub;
+        try { sub = fs.readFileSync(target, 'utf8'); } catch { continue; }
+        if (/<h1\b/.test(sub) || /\bas\s*=\s*["']h1["']/.test(sub) || /<PageHeader\b/.test(sub)) {
+          viaHeader = true;
+          break;
+        }
+      }
+    }
     if (!levels.includes(1) && !viaHeader) {
       add(file, 1, 'W3 路由页缺少 h1', `现有标题层级: ${[...new Set(levels)].sort().join(',') || '无'}`);
     } else {
