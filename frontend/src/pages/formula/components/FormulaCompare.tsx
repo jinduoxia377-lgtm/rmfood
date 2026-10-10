@@ -266,8 +266,8 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             onClick={() => setShowAnalysis((v) => !v)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               showAnalysis
-                ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:border-violet-300 dark:hover:border-violet-700'
+                ? 'bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 border border-accent-200 dark:border-accent-800'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-700'
             }`}
           >
             <FlaskConical size={14} />
@@ -289,7 +289,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                 <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 协同效应</p>
                 {data ? (
                   <div>
-                    <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">
+                    <p className="text-2xl font-bold text-accent-600 dark:text-accent-700">
                       {data.overall_si?.toFixed(2) ?? '—'}
                     </p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{data.pairs?.length ?? 0} 个成分对</p>
@@ -311,14 +311,14 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                 <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 稳定性</p>
                 {data ? (
                   <div className="space-y-1">
-                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                    <p className="text-lg font-bold text-success-700 dark:text-success-600">
                       {data.stability_score?.toFixed(0) ?? '—'}/100
                     </p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       预测货架期: {data.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月
                     </p>
                     {((data as FormulaCompareData)?.risk_factors?.length ?? 0) > 0 && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                      <p className="text-xs text-warning-600 dark:text-warning-700">
                         ⚠ {(data as FormulaCompareData)?.risk_factors?.length} 个风险因素
                       </p>
                     )}
@@ -344,8 +344,8 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                       {(['bitter', 'sweet', 'umami', 'astringent', 'sour'] as const).map((k) => {
                         const val = data.taste_profile?.[k] ?? 0
                         const colors: Record<string, string> = {
-                          bitter: 'bg-rose-400', sweet: 'bg-pink-400', umami: 'bg-amber-400',
-                          astringent: 'bg-purple-400', sour: 'bg-lime-400',
+                          bitter: 'bg-danger-400', sweet: 'bg-danger-400', umami: 'bg-warning-400',
+                          astringent: 'bg-accent-400', sour: 'bg-success-400',
                         }
                         const labels: Record<string, string> = { bitter: '苦', sweet: '甜', umami: '鲜', astringent: '涩', sour: '酸' }
                         return (
@@ -377,12 +377,12 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                 <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 兼容性</p>
                 {data ? (
                   <div>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-2xl font-bold text-secondary-700 dark:text-secondary-700">
                       {data.overall_score?.toFixed(0) ?? '—'}/100
                     </p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                       {(data as FormulaCompareData)?.passed_checks ?? 0}/{(data as FormulaCompareData)?.total_checks ?? 0} 项通过
-                      {((data as FormulaCompareData)?.error_count ?? 0) > 0 && <span className="text-rose-500 ml-1">({(data as FormulaCompareData)?.error_count} 错误)</span>}
+                      {((data as FormulaCompareData)?.error_count ?? 0) > 0 && <span className="text-danger-500 ml-1">({(data as FormulaCompareData)?.error_count} 错误)</span>}
                     </p>
                   </div>
                 ) : (
@@ -399,20 +399,20 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               { data: rightSafetyData, label: right?.name ?? 'B' },
             ].map(({ data, label }) => (
               <div key={label} className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 ${
-                data?.is_safe ? 'border-emerald-200 dark:border-emerald-800' : 'border-rose-200 dark:border-rose-800'
+                data?.is_safe ? 'border-success-200 dark:border-success-800' : 'border-danger-200 dark:border-danger-800'
               }`}>
                 <p className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{label} · 安全性</p>
                 {data ? (
                   <div className="flex items-center gap-2">
                     {data.is_safe ? (
                       <>
-                        <span className="text-emerald-500">✓</span>
-                        <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">安全</span>
+                        <span className="text-success-500">✓</span>
+                        <span className="text-sm font-medium text-success-700 dark:text-success-700">安全</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-rose-500">⚠</span>
-                        <span className="text-sm font-medium text-rose-700 dark:text-rose-300">有风险</span>
+                        <span className="text-danger-500">⚠</span>
+                        <span className="text-sm font-medium text-danger-700 dark:text-danger-700">有风险</span>
                       </>
                     )}
                     <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">风险评分: {data.overall_risk_score?.toFixed(0) ?? '—'}</span>
@@ -428,7 +428,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
 
       {/* 指标对比 */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">安全检查</p>
           <div className="flex justify-center gap-3">
             <span className={leftSafety.passed === true ? 'text-success-500' : leftSafety.passed === false ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}>
@@ -440,7 +440,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             </span>
           </div>
         </div>
-        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">协同评分</p>
           <div className="flex justify-center gap-3">
             <span className="text-lg font-semibold text-primary-700">{leftSynergy ?? '-'}</span>
@@ -448,7 +448,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             <span className="text-lg font-semibold text-primary-700">{rightSynergy ?? '-'}</span>
           </div>
         </div>
-        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">成分数量</p>
           <div className="flex justify-center gap-3">
             <span className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">{left?.ingredients.length ?? 0}</span>
@@ -570,11 +570,11 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           </CardHeader>
           <CardContent className="p-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{left.name}</p>
                 <p className="text-sm text-neutral-700 dark:text-neutral-300">{left.description}</p>
               </div>
-              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{right.name}</p>
                 <p className="text-sm text-neutral-700 dark:text-neutral-300">{right.description}</p>
               </div>

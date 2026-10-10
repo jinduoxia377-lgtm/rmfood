@@ -153,7 +153,7 @@ export default function ComplianceCheckPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
-  const scoreColor = (s: number) => s >= 80 ? 'text-success-500 dark:text-success-400' : s >= 60 ? 'text-warning-500 dark:text-warning-400' : 'text-danger-500 dark:text-danger-400'
+  const scoreColor = (s: number) => s >= 80 ? 'text-success-500 dark:text-success-600' : s >= 60 ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'
 
   // Build radar data for risk dimensions
   const radarData = checkResult ? [
@@ -173,10 +173,10 @@ export default function ComplianceCheckPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
                 <ShieldCheck size={20} className="text-white/80 shrink-0" />
                 合规检查
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">十八反十九畏 · GB 16740 限量标准 · 配方自动修复 · 配方历史</p>
             </div>
             {formulas.length > 0 && (
@@ -197,11 +197,11 @@ export default function ComplianceCheckPage() {
                 {formulas.map(f => (
                   <div key={f.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs">
                     <span className="font-medium text-neutral-700 dark:text-neutral-300">{f.name}</span>
-                    <span className={`font-bold ${f.score >= 80 ? 'text-success-500 dark:text-success-400' : f.score >= 60 ? 'text-warning-500 dark:text-warning-400' : 'text-danger-500 dark:text-danger-400'}`}>
+                    <span className={`font-bold ${f.score >= 80 ? 'text-success-500 dark:text-success-600' : f.score >= 60 ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'}`}>
                       {f.score}
                     </span>
-                    <span className="text-neutral-400 dark:text-neutral-500 truncate max-w-[150px]">{f.ingredients}</span>
-                    <span className="text-neutral-300 dark:text-neutral-500">{f.date}</span>
+                    <span className="text-neutral-400 dark:text-neutral-400 truncate max-w-[150px]">{f.ingredients}</span>
+                    <span className="text-neutral-300 dark:text-neutral-400">{f.date}</span>
                   </div>
                 ))}
               </div>
@@ -235,7 +235,7 @@ export default function ComplianceCheckPage() {
                 <CardHeader className="px-5 pt-5 pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                      <Plus size={14} className="text-primary-500 dark:text-primary-400" />
+                      <Plus size={14} className="text-primary-500 dark:text-primary-700" />
                       药材成分
                     </CardTitle>
                     <div className="flex items-center gap-2">
@@ -253,10 +253,10 @@ export default function ComplianceCheckPage() {
                         placeholder="药材名称" className="flex-1 h-9" />
                       <Input type="number" value={ing.dosage_mg} onChange={e => updateIngredient(i, 'dosage_mg', parseFloat(e.target.value) || 0)}
                         className="w-28 h-9 text-center tabular-nums" />
-                      <span className="text-xs text-neutral-400 dark:text-neutral-500 w-8">mg</span>
+                      <span className="text-xs text-neutral-400 dark:text-neutral-400 w-8">mg</span>
                       <Button variant="ghost" size="sm" onClick={() => removeIngredient(i)} disabled={ingredients.length <= 1}
                         icon={<Trash2 size={14} />}
-                        className="text-neutral-400 dark:text-neutral-500 hover:text-danger-500 dark:hover:text-danger-400" />
+                        className="text-neutral-400 dark:text-neutral-400 hover:text-danger-500 dark:hover:text-danger-400" />
                     </div>
                   ))}
                 </CardContent>
@@ -287,14 +287,14 @@ export default function ComplianceCheckPage() {
                     'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900'
                   }`}>
                     <div className="flex items-center gap-6">
-                      {checkResult.status === 'compliant' ? <CheckCircle2 className="text-success-500 dark:text-success-400" size={32} /> : <AlertTriangle className="text-warning-500 dark:text-warning-400" size={32} />}
+                      {checkResult.status === 'compliant' ? <CheckCircle2 className="text-success-500 dark:text-success-600" size={32} /> : <AlertTriangle className="text-warning-500 dark:text-warning-700" size={32} />}
                       <div>
                         <div className={`text-3xl font-bold ${scoreColor(checkResult.score ?? 0)}`}>{checkResult.score ?? '?'}</div>
                         <div className="text-sm text-neutral-500 dark:text-neutral-400">合规评分（{checkResult.status === 'compliant' ? '通过' : checkResult.status === 'warning' ? '需关注' : '不合规'}）</div>
                       </div>
                       <div className="ml-auto text-right">
-                        {checkResult.violations?.length > 0 && <div className="text-danger-500 dark:text-danger-400 font-semibold">{checkResult.violations.length} 项违规</div>}
-                        {checkResult.warnings?.length > 0 && <div className="text-warning-500 dark:text-warning-400 font-semibold">{checkResult.warnings.length} 项警告</div>}
+                        {checkResult.violations?.length > 0 && <div className="text-danger-500 dark:text-danger-600 font-semibold">{checkResult.violations.length} 项违规</div>}
+                        {checkResult.warnings?.length > 0 && <div className="text-warning-500 dark:text-warning-700 font-semibold">{checkResult.warnings.length} 项警告</div>}
                       </div>
                     </div>
                   </div>
@@ -303,7 +303,7 @@ export default function ComplianceCheckPage() {
                   <Card>
                     <CardHeader className="px-5 pt-5 pb-3">
                       <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                        <Lightbulb size={14} className="text-warning-500 dark:text-warning-400" />
+                        <Lightbulb size={14} className="text-warning-500 dark:text-warning-700" />
                         风险维度雷达图
                       </CardTitle>
                     </CardHeader>
@@ -313,7 +313,7 @@ export default function ComplianceCheckPage() {
                           <ResponsiveContainer width="100%" height="100%">
                             <RechartsRadarChart data={radarData}>
                               <PolarGrid stroke="var(--border-color)" />
-                              <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                              <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
                               <RechartsTooltip
                                 formatter={(value: number) => [`${value}分`, '风险得分']}
@@ -345,17 +345,17 @@ export default function ComplianceCheckPage() {
                     <Card className="border-danger-200 dark:border-danger-800/60">
                       <CardHeader className="px-5 pt-5 pb-3">
                         <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                          <XCircle size={14} className="text-danger-500 dark:text-danger-400" />
+                          <XCircle size={14} className="text-danger-500 dark:text-danger-600" />
                           违规项（{checkResult.violations.length}）
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="px-5 pb-5 pt-0 space-y-2">
                         {checkResult.violations.map((v: any, i: number) => (
                           <div key={i} className="flex items-start gap-3 px-3 py-2 bg-danger-50 dark:bg-danger-950/20 rounded-lg border border-danger-200 dark:border-danger-900">
-                            <XCircle size={14} className="text-danger-500 dark:text-danger-400 mt-0.5 shrink-0" />
+                            <XCircle size={14} className="text-danger-500 dark:text-danger-600 mt-0.5 shrink-0" />
                             <div className="flex-1">
                               <div className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">{v.description}</div>
-                              <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">{v.rule_name} · 严重程度 {(v.severity * 100).toFixed(0)}%</div>
+                              <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">{v.rule_name} · 严重程度 {(v.severity * 100).toFixed(0)}%</div>
                             </div>
                             <Badge variant="danger" size="sm">{v.type}</Badge>
                           </div>
@@ -369,17 +369,17 @@ export default function ComplianceCheckPage() {
                     <Card className="border-warning-200 dark:border-warning-800/60">
                       <CardHeader className="px-5 pt-5 pb-3">
                         <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                          <AlertTriangle size={14} className="text-warning-500 dark:text-warning-400" />
+                          <AlertTriangle size={14} className="text-warning-500 dark:text-warning-700" />
                           警告项（{checkResult.warnings.length}）
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="px-5 pb-5 pt-0 space-y-2">
                         {checkResult.warnings.map((w: any, i: number) => (
                           <div key={i} className="flex items-start gap-3 px-3 py-2 bg-warning-50 dark:bg-warning-950/20 rounded-lg border border-warning-200 dark:border-warning-900">
-                            <AlertTriangle size={14} className="text-warning-500 dark:text-warning-400 mt-0.5 shrink-0" />
+                            <AlertTriangle size={14} className="text-warning-500 dark:text-warning-700 mt-0.5 shrink-0" />
                             <div className="flex-1">
                               <div className="text-sm text-neutral-700 dark:text-neutral-300">{w.description}</div>
-                              <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">{w.rule_name}</div>
+                              <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">{w.rule_name}</div>
                             </div>
                             <Badge variant="warning" size="sm">{w.type}</Badge>
                           </div>
@@ -393,14 +393,14 @@ export default function ComplianceCheckPage() {
                     <Card className="border-secondary-200 dark:border-secondary-800/60">
                       <CardHeader className="px-5 pt-5 pb-3">
                         <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                          <Lightbulb size={14} className="text-secondary-500 dark:text-secondary-400" />
+                          <Lightbulb size={14} className="text-secondary-500 dark:text-secondary-700" />
                           优化建议
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="px-5 pb-5 pt-0 space-y-2">
                         {checkResult.suggestions.map((s: any, i: number) => (
                           <div key={i} className="flex items-start gap-2 px-3 py-2 bg-secondary-50 dark:bg-secondary-950/20 rounded-lg border border-secondary-200 dark:border-secondary-900">
-                            <span className="text-secondary-500 dark:text-secondary-400 mt-0.5">→</span>
+                            <span className="text-secondary-500 dark:text-secondary-700 mt-0.5">→</span>
                             <span className="text-sm text-neutral-700 dark:text-neutral-300">{s}</span>
                           </div>
                         ))}
@@ -416,18 +416,18 @@ export default function ComplianceCheckPage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-danger-500 dark:text-danger-400" />
+                  <AlertTriangle size={14} className="text-danger-500 dark:text-danger-600" />
                   十八反十九畏禁忌组合
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-2">
                 {prohibitedList.length === 0 ? (
-                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">加载中...</p>
+                  <p className="text-sm text-neutral-400 dark:text-neutral-400 text-center py-8">加载中...</p>
                 ) : (
                   <div className="space-y-2">
                     {prohibitedList.map((pair: any, i: number) => (
                       <div key={i} className="flex items-center gap-3 px-3 py-2 bg-danger-50 dark:bg-danger-950/20 rounded-lg border border-danger-200 dark:border-danger-900">
-                        <span className="text-xs font-mono text-danger-400 dark:text-danger-500 w-16 shrink-0">{pair.rule || '十八反'}</span>
+                        <span className="text-xs font-mono text-danger-400 dark:text-danger-700 w-16 shrink-0">{pair.rule || '十八反'}</span>
                         <span className="text-sm text-neutral-700 dark:text-neutral-300">
                           <strong>{pair.herb1 || pair.pair?.[0]}</strong> ↔ <strong>{pair.herb2 || pair.pair?.[1]}</strong>
                         </span>
@@ -443,7 +443,7 @@ export default function ComplianceCheckPage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <BookOpen size={14} className="text-warning-500 dark:text-warning-400" />
+                  <BookOpen size={14} className="text-warning-500 dark:text-warning-700" />
                   GB 16740 药食同源目录限量标准
                 </CardTitle>
               </CardHeader>
@@ -451,7 +451,7 @@ export default function ComplianceCheckPage() {
                 <div className="overflow-x-auto">
                   <table className="data-table w-full text-xs">
                     <thead>
-                      <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 uppercase">
+                      <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-400 uppercase">
                         <th className="pb-2 pr-3 text-left">药材名</th>
                         <th className="pb-2 px-2 text-center">最大用量</th>
                         <th className="pb-2 px-2 text-center">状态</th>
@@ -462,15 +462,15 @@ export default function ComplianceCheckPage() {
                       {Object.entries(dosageLimits).map(([name, limit]) => (
                         <tr key={name} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50">
                           <td className="py-2 pr-3 text-neutral-700 dark:text-neutral-300 font-medium">{name}</td>
-                          <td className="py-2 px-2 text-center font-mono text-warning-600 dark:text-warning-400">{limit}mg</td>
-                          <td className="py-2 px-2 text-center"><span className="text-success-500 dark:text-success-400">允许</span></td>
-                          <td className="py-2 pl-2 text-neutral-400 dark:text-neutral-500 text-center">2025版</td>
+                          <td className="py-2 px-2 text-center font-mono text-warning-600 dark:text-warning-700">{limit}mg</td>
+                          <td className="py-2 px-2 text-center"><span className="text-success-500 dark:text-success-600">允许</span></td>
+                          <td className="py-2 pl-2 text-neutral-400 dark:text-neutral-400 text-center">2025版</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="text-xs text-neutral-400 dark:text-neutral-500 text-center">共 {Object.keys(dosageLimits).length} 条限量标准</div>
+                <div className="text-xs text-neutral-400 dark:text-neutral-400 text-center">共 {Object.keys(dosageLimits).length} 条限量标准</div>
               </CardContent>
             </Card>
           )}
@@ -479,7 +479,7 @@ export default function ComplianceCheckPage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Search size={14} className="text-warning-500 dark:text-warning-400" />
+                  <Search size={14} className="text-warning-500 dark:text-warning-700" />
                   药食同源药材数据库
                 </CardTitle>
               </CardHeader>
@@ -491,17 +491,17 @@ export default function ComplianceCheckPage() {
                 </div>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {dbItems.length === 0 ? (
-                    <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">{loading ? '加载中...' : '未找到相关药材'}</p>
+                    <p className="text-sm text-neutral-400 dark:text-neutral-400 text-center py-8">{loading ? '加载中...' : '未找到相关药材'}</p>
                   ) : dbItems.map((item: any, i: number) => (
                     <div key={i} className="flex items-center gap-4 px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg border border-neutral-200 dark:border-neutral-700">
                       <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{item.name}</span>
-                      <span className="text-xs text-neutral-400 dark:text-neutral-500">{item.latin_name}</span>
+                      <span className="text-xs text-neutral-400 dark:text-neutral-400">{item.latin_name}</span>
                       <span className="text-xs text-neutral-500 dark:text-neutral-400 ml-auto">{item.category}</span>
-                      <span className="text-xs font-mono text-warning-600 dark:text-warning-400">最大 {item.max_dosage}</span>
+                      <span className="text-xs font-mono text-warning-600 dark:text-warning-700">最大 {item.max_dosage}</span>
                     </div>
                   ))}
                 </div>
-                {dbTotal > 0 && <div className="text-xs text-neutral-400 dark:text-neutral-500 text-right">共 {dbTotal} 条记录</div>}
+                {dbTotal > 0 && <div className="text-xs text-neutral-400 dark:text-neutral-400 text-right">共 {dbTotal} 条记录</div>}
               </CardContent>
             </Card>
           )}

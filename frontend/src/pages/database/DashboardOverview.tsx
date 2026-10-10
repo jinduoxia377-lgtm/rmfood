@@ -190,21 +190,21 @@ const RANKING_TABS: {
     label: '药食同源原料',
     icon: Leaf,
     color: 'text-primary-700',
-    bgGradient: 'from-emerald-500/10 to-teal-500/5',
+    bgGradient: 'from-success-500/10 to-success-500/5',
   },
   {
     key: 'active-peptides',
     label: '高活性肽',
     icon: Dna,
-    color: 'text-violet-600',
-    bgGradient: 'from-violet-500/10 to-purple-500/5',
+    color: 'text-accent-600',
+    bgGradient: 'from-accent-500/10 to-accent-500/5',
   },
 ];
 
 const RANK_BADGE_STYLES: Record<number, string> = {
-  1: 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-200',
-  2: 'bg-gradient-to-br from-slate-300 to-slate-400 text-white shadow-md shadow-slate-200',
-  3: 'bg-gradient-to-br from-orange-300 to-amber-400 text-white shadow-md shadow-orange-200',
+  1: 'bg-gradient-to-br from-warning-400 to-warning-500 text-white shadow-lg shadow-warning-200',
+  2: 'bg-gradient-to-br from-neutral-300 to-neutral-400 text-white shadow-md shadow-neutral-200',
+  3: 'bg-gradient-to-br from-warning-300 to-warning-400 text-white shadow-md shadow-warning-200',
 };
 
 const REFRESH_INTERVAL_MS = 60_000;
@@ -214,20 +214,23 @@ const PIE_COLORS = [
   'var(--color-info-600, var(--color-secondary-500))',
   'var(--color-warning-600, #B45309)',
   'var(--color-danger-600, #B91C1C)',
-  'var(--color-purple-600, var(--color-accent-500))',
-  'var(--color-cyan-600, var(--color-info-600))',
+  'var(--color-accent-600, var(--color-accent-500))',
+  'var(--color-info-600, var(--color-info-600))',
   'var(--color-success-500, var(--color-primary-400))',
   'var(--color-warning-500, #D97706)',
 ];
 
+/* A-28：原来写死 500→600 档。暗色下品牌色阶是反转的(D-50)，500/600 恰是【最亮】的一档，
+   白字压上去实测只有 1.75~2.48:1（/databases KPI 卡 25 处违规全来自这里）。
+   改用按模式取值的 -surface 令牌：亮色 700→800、暗色 200→100，白字 5.0~8.7:1。 */
 const STAT_CARD_GRADIENTS = [
-  'from-blue-500 to-blue-600',
-  'from-emerald-500 to-emerald-600',
-  'from-violet-500 to-violet-600',
-  'from-amber-500 to-amber-600',
-  'from-rose-500 to-rose-600',
-  'from-cyan-500 to-cyan-600',
-  'from-indigo-500 to-indigo-600',
+  'from-[var(--color-secondary-surface)] to-[var(--color-secondary-surface-deep)]',
+  'from-[var(--color-success-surface)] to-[var(--color-success-surface-deep)]',
+  'from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)]',
+  'from-[var(--color-warning-surface)] to-[var(--color-warning-surface-deep)]',
+  'from-[var(--color-danger-surface)] to-[var(--color-danger-surface-deep)]',
+  'from-[var(--color-info-surface)] to-[var(--color-info-surface-deep)]',
+  'from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)]',
 ];
 
 const ACTIVITY_TYPE_CONFIG: Record<string, { color: string; label: string }> = {
@@ -457,10 +460,10 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
         <div
           className={`mt-5 px-4 py-3 rounded-lg text-center border ${
             qualityData.overall_score >= 85
-              ? 'bg-primary-50 text-primary-700 border-emerald-200'
+              ? 'bg-primary-50 text-primary-700 border-success-200'
               : qualityData.overall_score >= 70
-                ? 'bg-warning-50 text-warning-700 border-amber-200'
-                : 'bg-error-50 text-error-700 border-red-200'
+                ? 'bg-warning-50 text-warning-700 border-warning-200'
+                : 'bg-error-50 text-error-700 border-error-200'
           }`}
         >
           <span className="text-xs font-medium opacity-80">综合评分:</span>
@@ -587,8 +590,8 @@ const QuickActions = React.memo<QuickActionsProps>(
               </svg>
             </button>
             <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block bg-white dark:bg-neutral-900 shadow-lg rounded-xl border border-neutral-100 dark:border-neutral-800 py-1 z-20 min-w-[120px] animate-in fade-in slide-in-from-top-1 duration-150">
-              <button onClick={handleExportJSON} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">导出 JSON</button>
-              <button onClick={handleExportCSV} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">导出 CSV</button>
+              <button onClick={handleExportJSON} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">导出 JSON</button>
+              <button onClick={handleExportCSV} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">导出 CSV</button>
             </div>
           </div>
           <button
@@ -602,9 +605,9 @@ const QuickActions = React.memo<QuickActionsProps>(
           </button>
           <button
             onClick={onClearCache}
-            className="group relative flex items-center gap-3 px-4 py-3.5 bg-rose-50/80 dark:bg-rose-500/5 text-rose-700 dark:text-rose-300 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-danger-50/80 dark:bg-danger-500/5 text-danger-700 dark:text-danger-700 rounded-xl hover:bg-danger-100 dark:hover:bg-danger-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
-            <div className="w-9 h-9 rounded-lg bg-rose-100/80 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-danger-100/80 dark:bg-danger-500/10 flex items-center justify-center shrink-0">
               <Trash2 className="w-4.5 h-4.5" />
             </div>
             <span className="text-sm font-medium">缓存清理</span>
@@ -649,8 +652,8 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             unit: 'ms',
             label: '平均查询响应',
             color: 'blue',
-            gradient: 'from-blue-50/70 to-blue-50/20',
-            border: 'border-blue-100/60',
+            gradient: 'from-secondary-50/70 to-secondary-50/20',
+            border: 'border-secondary-100/60',
             valueColor: 'text-secondary-600',
             unitColor: 'text-secondary-400',
           },
@@ -659,8 +662,8 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             unit: '%',
             label: '缓存命中率',
             color: 'emerald',
-            gradient: 'from-emerald-50/70 to-emerald-50/20',
-            border: 'border-emerald-100/60',
+            gradient: 'from-success-50/70 to-success-50/20',
+            border: 'border-success-100/60',
             valueColor: 'text-primary-700',
             unitColor: 'text-primary-400',
           },
@@ -669,10 +672,10 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             unit: '',
             label: '今日 API 调用',
             color: 'violet',
-            gradient: 'from-violet-50/70 to-violet-50/20',
-            border: 'border-violet-100/60',
-            valueColor: 'text-violet-600',
-            unitColor: 'text-violet-400',
+            gradient: 'from-accent-50/70 to-accent-50/20',
+            border: 'border-accent-100/60',
+            valueColor: 'text-accent-600',
+            unitColor: 'text-accent-400',
           },
           {
             value: poolUsagePercent,
@@ -682,8 +685,8 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             showBar: true,
             barValue: parseFloat(poolUsagePercent),
             color: 'amber',
-            gradient: 'from-amber-50/70 to-amber-50/20',
-            border: 'border-amber-100/60',
+            gradient: 'from-warning-50/70 to-warning-50/20',
+            border: 'border-warning-100/60',
             valueColor: 'text-warning-600',
             unitColor: 'text-warning-400',
           },
@@ -702,11 +705,14 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
                 </span>
               )}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-snug font-medium">{metric.label}</p>
+            {/* A-35：原 text-neutral-500(#64748b) 压在 50/70 档的浅色渐变底
+                rgb(244,249,255) 上只有 4.49:1，差 0.01 就达标 —— 提到 600 档。 */}
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 leading-snug font-medium">{metric.label}</p>
             {'subText' in metric && (
               <>
                 <div className="mt-2 flex items-center justify-center">
-                  <span className="text-xs text-neutral-400 dark:text-neutral-400 font-mono tabular-nums">{metric.subText}</span>
+                  {/* A-35：原 text-neutral-400(#94a3b8) 压在 amber-50 系浅底上仅 2.5:1 */}
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400 font-mono tabular-nums">{metric.subText}</span>
                 </div>
                 {'showBar' in metric && (
                   <div className="mt-2 w-full h-1 bg-neutral-200/60 dark:bg-neutral-700/60 rounded-full overflow-hidden">
@@ -791,7 +797,7 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
           <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: 'var(--text-secondary, #6E6E73)' }} axisLine={false} tickLine={false} width={80} />
           <Tooltip
             formatter={(value: number, _name, props) => [`${value}`, props?.payload?.fullName || '数量']}
-            contentStyle={{ fontSize: 13, borderRadius: 8 }}
+            contentStyle={{ fontSize: 14, borderRadius: 8 }}
           />
           <Bar dataKey="value" radius={[4, 4, 4, 4]} barSize={24}>
             {chartData.map((entry, index) => (
@@ -841,13 +847,13 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
         <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} angle={-35} textAnchor="end" height={50} />
           <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
-          <Tooltip formatter={(v: number) => [`${v}`, '数量']} contentStyle={{ fontSize: 13, borderRadius: 8 }} />
+          <Tooltip formatter={(v: number) => [`${v}`, '数量']} contentStyle={{ fontSize: 14, borderRadius: 8 }} />
           <ReferenceLine y={0} stroke="#e5e7eb" strokeDasharray="3 3" />
           <ReferenceLine
             y={Math.max(...chartData.map((d) => d.value)) * 0.5}
             stroke="#D97706"
             strokeDasharray="6 4"
-            label={{ value: '中位参考', position: 'right', fontSize: 11, fill: 'var(--color-warning, #FF9F0A)', fontWeight: 500 }}
+            label={{ value: '中位参考', position: 'right', fontSize: 12, fill: 'var(--color-warning, #FF9F0A)', fontWeight: 500 }}
           />
           <Bar dataKey="value" radius={[4, 4, 4, 4]}>
             {chartData.map((_, index) => (
@@ -906,7 +912,7 @@ const SeqLengthDistributionChart = React.memo(
             <YAxis yAxisId="left" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: 'var(--color-tertiary, var(--color-accent-500))' }} axisLine={false} tickLine={false} width={40} />
             <Tooltip
-              contentStyle={{ fontSize: 13, borderRadius: 8 }}
+              contentStyle={{ fontSize: 14, borderRadius: 8 }}
               formatter={(value: number, name: string) => {
                 if (name === '累计') return [`${value.toLocaleString()}`, '累计'];
                 return [`${value}`, '数量'];
@@ -915,7 +921,7 @@ const SeqLengthDistributionChart = React.memo(
             {/* D-62：图例文字原先继承 series 颜色（primary-500 #10b981 白底 2.54:1、
                 accent-500 #8b5cf6 4.23:1），统一改用 --text-secondary。 */}
             <Legend
-              wrapperStyle={{ fontSize: 13, paddingTop: 12 }}
+              wrapperStyle={{ fontSize: 14, paddingTop: 12 }}
               iconType="circle"
               iconSize={10}
               formatter={(value: string) => (
@@ -972,17 +978,17 @@ function DistributionChart({
     'var(--color-danger-500, #FF3B30)',
     'var(--color-success-500, var(--color-primary-400))',
     'var(--color-warning-500, #D97706)',
-    'var(--color-purple-500, var(--color-accent-500))',
-    'var(--color-pink-500, #D946EF)',
+    'var(--color-accent-500, var(--color-accent-500))',
+    'var(--color-danger-500, #D946EF)',
     'var(--color-teal-500, #14b8a6)',
-    'var(--color-orange-500, #EA580C)',
-    'var(--color-cyan-500, var(--color-info-600))',
-    'var(--color-lime-500, #84cc16)',
-    'var(--color-purple-600, #a855f7)',
+    'var(--color-warning-500, #EA580C)',
+    'var(--color-info-500, var(--color-info-600))',
+    'var(--color-success-500, #84cc16)',
+    'var(--color-accent-600, #a855f7)',
     'var(--color-rose-600, #e11d48)',
     'var(--color-primary-600, var(--color-primary-500))',
     'var(--color-warning-600, #B45309)',
-    'var(--color-purple-600, var(--color-accent-500))',
+    'var(--color-accent-600, var(--color-accent-500))',
   ];
   const getColor = colorFn || ((i: number) => defaultColors[i % defaultColors.length]);
 
@@ -1287,7 +1293,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
       return (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="animate-spin w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-3" />
+            <div className="animate-spin w-10 h-10 border-4 border-secondary-200 border-t-blue-600 rounded-full mx-auto mb-3" />
             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在加载数据...</p>
           </div>
         </div>
@@ -1468,7 +1474,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                     setRankingSubTab(tab.key);
                     fetchRankingData(tab.key);
                   }}
-                  className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold rounded-lg transition-all duration-200 ${
+                  className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
                     isActive
                       ? `bg-white dark:bg-neutral-900 text-${tab.color.split('-')[1]}-600 shadow-sm`
                       : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 hover:bg-white/50'
@@ -1491,16 +1497,16 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                 className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${currentTabConfig.bgGradient} rounded-xl border border-neutral-100/80`}
               >
                 <TrendingUp className={`w-4 h-4 ${currentTabConfig.color}`} />
-                <span className="text-[13px] font-semibold text-neutral-700">共</span>
+                <span className="text-sm font-semibold text-neutral-700">共</span>
                 <span className="text-lg font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
                   {currentData.length}
                 </span>
-                <span className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">条记录</span>
+                <span className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">条记录</span>
               </div>
               <button
                 onClick={() => fetchRankingData(rankingSubTab)}
                 disabled={rankingLoading}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-neutral-600 bg-white dark:bg-neutral-900 hover:bg-slate-50 dark:bg-neutral-800 border border-neutral-200 rounded-lg transition-colors disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-neutral-600 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 rounded-lg transition-colors disabled:opacity-40"
               >
                 <Loader2 className={`w-3.5 h-3.5 ${rankingLoading ? 'animate-spin' : ''}`} />
                 刷新
@@ -1526,7 +1532,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">请稍后刷新或检查数据源连接</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-neutral-50">
               {currentData.map((item, index) => {
                 const rank = index + 1;
                 const isTop3 = rank <= 3;
@@ -1538,7 +1544,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                     <div
                       key={herb.name_cn}
                       className={`group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200 cursor-pointer ${
-                        isHovered ? 'bg-secondary-50/60' : 'hover:bg-slate-50 dark:bg-neutral-800/50'
+                        isHovered ? 'bg-secondary-50/60' : 'hover:bg-neutral-50 dark:bg-neutral-800/50'
                       }`}
                       onMouseEnter={() => setHoveredRankItem(index)}
                       onMouseLeave={() => setHoveredRankItem(null)}
@@ -1560,14 +1566,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                             {herb.name_cn}
                           </span>
                           {herb.is_food_homology && (
-                            <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-semibold bg-primary-50 text-primary-700 rounded border border-emerald-200">
+                            <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-semibold bg-primary-50 text-primary-700 rounded border border-success-200">
                               <Leaf className="w-2.5 h-2.5" />
                               同源
                             </span>
                           )}
                           {isTop3 && (
                             <Crown
-                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-orange-400'}`}
+                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-warning-400'}`}
                             />
                           )}
                         </div>
@@ -1592,7 +1598,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                         <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800" />
                         <div className="text-right">
                           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">热度分</p>
-                          <p className="text-[13px] font-medium text-orange-500 tabular-nums">
+                          <p className="text-sm font-medium text-warning-500 tabular-nums">
                             {Math.round(herb.heat_score)}
                           </p>
                         </div>
@@ -1617,7 +1623,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                     <div
                       key={`${peptide.sequence}-${index}`}
                       className={`group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200 cursor-pointer ${
-                        isHovered ? 'bg-violet-50/60' : 'hover:bg-slate-50 dark:bg-neutral-800/50'
+                        isHovered ? 'bg-accent-50/60' : 'hover:bg-neutral-50 dark:bg-neutral-800/50'
                       }`}
                       onMouseEnter={() => setHoveredRankItem(index)}
                       onMouseLeave={() => setHoveredRankItem(null)}
@@ -1635,12 +1641,12 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       {/* 序列与来源 */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-[14px] text-neutral-800 tracking-tight truncate group-hover:text-violet-700 transition-colors">
+                          <span className="font-mono font-bold text-[14px] text-neutral-800 tracking-tight truncate group-hover:text-accent-700 transition-colors">
                             {peptide.sequence}
                           </span>
                           {isTop3 && (
                             <Crown
-                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-orange-400'}`}
+                              className={`w-3.5 h-3.5 shrink-0 ${rank === 1 ? 'text-warning-500' : rank === 2 ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-warning-400'}`}
                             />
                           )}
                         </div>
@@ -1654,7 +1660,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
                       <div className="hidden lg:flex items-center gap-5 shrink-0">
                         <div className="text-right">
                           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-none mb-0.5">IC50</p>
-                          <p className="text-[14px] font-bold text-violet-600 tabular-nums font-mono">
+                          <p className="text-[14px] font-bold text-accent-600 tabular-nums font-mono">
                             {peptide.activity_value}
                             <span className="text-xs font-normal ml-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                               {peptide.activity_unit}
@@ -1677,7 +1683,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
                       {/* 移动端/平板简化 */}
                       <div className="flex lg:hidden items-center gap-2 shrink-0">
-                        <span className="px-2 py-1 text-xs font-bold bg-violet-50 text-violet-600 rounded-lg tabular-nums font-mono">
+                        <span className="px-2 py-1 text-xs font-bold bg-accent-50 text-accent-600 rounded-lg tabular-nums font-mono">
                           IC50 {peptide.activity_value}
                           {peptide.activity_unit}
                         </span>
@@ -1685,7 +1691,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
                       {/* 箭头 */}
                       <ChevronRight
-                        className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-violet-400 opacity-100' : 'opacity-0'}`}
+                        className={`w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-all duration-200 ${isHovered ? 'translate-x-0.5 text-accent-400 opacity-100' : 'opacity-0'}`}
                       />
                     </div>
                   );
@@ -1696,10 +1702,10 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
           {/* 底部信息栏 */}
           {currentData && currentData.length > 0 && (
-            <div className="px-6 py-3 bg-slate-50 dark:bg-neutral-800/80 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
+            <div className="px-6 py-3 bg-neutral-50 dark:bg-neutral-800/80 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
-                  <Flame className="w-3 h-3 text-orange-400" />
+                  <Flame className="w-3 h-3 text-warning-400" />
                   热度基于多维度综合评分
                 </span>
                 {rankingSubTab === 'food-homology' && (
@@ -1770,14 +1776,14 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
     const statusColors: Record<string, string> = {
       A: 'bg-success-100 text-success-700',
       B: 'bg-secondary-100 text-secondary-700',
-      C: 'bg-yellow-100 text-yellow-700',
+      C: 'bg-warning-100 text-warning-700',
       D: 'bg-error-100 text-error-700',
     };
 
     const gradeColor = (grade: string) => {
       if (grade === 'A') return 'text-success-600';
       if (grade === 'B') return 'text-secondary-600';
-      if (grade === 'C') return 'text-yellow-600';
+      if (grade === 'C') return 'text-warning-600';
       return 'text-error-600';
     };
 
@@ -1786,10 +1792,10 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         <div
           className={`rounded-xl p-6 text-center ${
             (qualityData.overall_score ?? 0) >= 85
-              ? 'bg-success-50 border-2 border-green-200'
+              ? 'bg-success-50 border-2 border-success-200'
               : (qualityData.overall_score ?? 0) >= 70
-                ? 'bg-yellow-50 border-2 border-yellow-200'
-                : 'bg-error-50 border-2 border-red-200'
+                ? 'bg-warning-50 border-2 border-warning-200'
+                : 'bg-error-50 border-2 border-error-200'
           }`}
         >
           <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">综合质量评分</p>
@@ -1892,13 +1898,19 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
   // ---- 工具栏 ----
   return (
     <div className="w-full">
+      {/* A-22：页面唯一 h1 是 DatabasePage 的「数据库检索中心」，而本组件所有卡片标题
+          都是 h3 —— 大纲直接从 1 跳到 3。补一个屏幕阅读器可见的 h2 作为本区块标题，
+          使层级回到 h1 → h2 → h3（WCAG 1.3.1 / 2.4.6）。 */}
+      <h2 className="sr-only">{`数据库概览 · ${TABS.find((t) => t.key === activeTab)?.label ?? ''}`}</h2>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl p-1 shadow-inner">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`relative px-4 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 tracking-tight ${
+              /* A-22：原 px-4 py-2 实测只有 87×36，低于 WCAG 2.5.5 的 44×44。
+                 补 inline-flex + min-h-[44px]，视觉内边距不变。 */
+              className={`relative inline-flex items-center px-4 py-2 min-h-[44px] text-sm font-semibold rounded-lg transition-all duration-200 tracking-tight ${
                 activeTab === tab.key
                   ? 'bg-white dark:bg-neutral-900 text-secondary-600 shadow-sm'
                   : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700 hover:bg-white/50'
@@ -1910,14 +1922,18 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 cursor-pointer select-none group/refresh">
+          {/* A-22：原为 20px 高的裸 label，命中区太小；补 min-h-[44px]（WCAG 2.5.5）。 */}
+          <label className="flex items-center gap-2 cursor-pointer select-none group/refresh min-h-[44px] min-w-[44px]">
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-[15px] h-[15px] rounded border-neutral-300 dark:border-neutral-700 text-secondary-600 cursor-pointer accent-blue-600 mt-px"
+              /* A-22：原生复选框自身没有文本，屏幕阅读器只能读到「复选框」，
+                 补 aria-label 让控件有可读名称（WCAG 4.1.2）。 */
+              aria-label="自动刷新"
+              className="w-[15px] h-[15px] rounded border-neutral-300 dark:border-neutral-700 text-secondary-600 cursor-pointer accent-secondary-600 mt-px"
             />
-            <span className="text-[13px] text-neutral-600 font-medium group-hover/refresh:text-neutral-800 transition-colors">
+            <span className="text-sm text-neutral-600 font-medium group-hover/refresh:text-neutral-800 transition-colors">
               自动刷新
             </span>
           </label>
@@ -1931,7 +1947,9 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
           <button
             onClick={fetchAllData}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-semibold text-secondary-600 bg-secondary-50 hover:bg-secondary-100 disabled:opacity-40 rounded-lg transition-colors duration-150 active:bg-secondary-200"
+            /* A-22：12.5px 不在排版令牌档位内（令牌为 12/14/15/16/17/18…），
+               且实测 69×32 未达 44×44。统一改 text-xs(12px) + min-h-[44px]。 */
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[44px] text-xs font-semibold text-secondary-600 bg-secondary-50 hover:bg-secondary-100 disabled:opacity-40 rounded-lg transition-colors duration-150 active:bg-secondary-200"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             {loading ? '刷新中' : '刷新'}
@@ -1950,7 +1968,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
       </div>
 
       {error && (
-        <div className="mb-4 px-4 py-3 bg-error-50 border border-red-200 rounded-lg text-sm text-error-600">{error}</div>
+        <div className="mb-4 px-4 py-3 bg-error-50 border border-error-200 rounded-lg text-sm text-error-600">{error}</div>
       )}
 
       <div className="min-h-[400px]">{renderContent()}</div>

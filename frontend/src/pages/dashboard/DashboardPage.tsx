@@ -641,9 +641,11 @@ export default function DashboardPage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold leading-snug tracking-tight">
+            {/* A-13：站品牌名已由 <h1> 降级为 <div>（见 MainLayout），
+                页面主标题顺位升级为 h1，保证「按标题导航」能直达页面主题。 */}
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">
               {DASHBOARD_CONFIG.messages.welcomeBack}, {user?.fullName ?? user?.username}
-            </h2>
+            </h1>
             <p className="mt-1 text-white/80 text-sm">{DASHBOARD_CONFIG.messages.startWork}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -659,7 +661,8 @@ export default function DashboardPage() {
                   onFocus={() => setShowSearch(true)}
                   onBlur={() => setTimeout(() => setShowSearch(false), 200)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && searchResults[0]) navigate(searchResults[0].to) }}
-                  className="bg-transparent text-white placeholder-white/60 text-sm outline-none w-40 sm:w-52"
+                  /* A-10：搜索框原 min-h-[24px]，实测渲染 208×28，远低于 44×44 */
+                  className="bg-transparent text-white placeholder-white/60 text-sm outline-none w-40 sm:w-52 py-2 min-h-[44px]"
                   aria-label="搜索配方或实验"
                 />
               </div>
@@ -672,9 +675,9 @@ export default function DashboardPage() {
                       onClick={() => { setShowSearch(false); setSearchQuery('') }}
                       className="flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                     >
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.type === '配方' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'}`}>{r.type}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.type === '配方' ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700' : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700'}`}>{r.type}</span>
                       <span className="text-sm text-neutral-900 dark:text-white truncate">{r.title}</span>
-                      <ArrowRight size={12} className="text-neutral-400 ml-auto shrink-0" />
+                      <ArrowRight size={12} className="text-neutral-600 ml-auto shrink-0" />
                     </Link>
                   ))}
                 </div>
@@ -729,7 +732,7 @@ export default function DashboardPage() {
               size="sm"
               icon={<Settings size={14} />}
               onClick={() => setIsEditMode(!isEditMode)}
-              className={isEditMode ? 'bg-white dark:bg-neutral-900 text-primary-600 hover:bg-neutral-100 dark:bg-neutral-800' : ''}
+              className={isEditMode ? 'bg-white dark:bg-neutral-900 text-primary-700 hover:bg-neutral-100 dark:bg-neutral-800' : ''}
               aria-label={isEditMode ? '退出编辑模式' : '进入编辑模式'}
             >
               {isEditMode ? '完成编辑' : '编辑布局'}
@@ -763,16 +766,22 @@ export default function DashboardPage() {
 
             {/* 趋势周期切换器（P3：trendPeriod 接 UI，消费 DASHBOARD_CONFIG.periodOptions） */}
             <div className="flex items-center gap-1.5" role="group" aria-label="趋势周期">
-              <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">趋势</span>
-              <div className="flex items-center bg-white dark:bg-neutral-900/15 rounded-full overflow-hidden">
+              <span className="text-xs text-white font-medium uppercase tracking-wider">趋势</span>
+              <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
                 {DASHBOARD_CONFIG.periodOptions.map((opt) => (
                   <button
                     key={opt.key}
                     onClick={() => setTrendPeriod(opt.key)}
-                    className={`px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                    /* A-10：周期胶囊原 px-3 py-1 → 实测 43×24，触控区不足 44×44。
+                       抬到 px-4 py-2 + min-h-[44px]；内层的「列/距」胶囊同理。 */
+                    className={`px-4 py-2 min-h-[44px] text-xs font-medium transition-colors ${
                       trendPeriod === opt.key
-                        ? 'bg-white dark:bg-neutral-900 text-primary-600'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
+                        /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
+                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
+                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
+                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
+                        : 'text-white/90 hover:text-white'
                     }`}
                     aria-label={`切换趋势周期为${opt.label}`}
                     aria-pressed={trendPeriod === opt.key}
@@ -787,16 +796,20 @@ export default function DashboardPage() {
             {isEditMode && (
               <div className="flex items-center gap-3 pl-4 border-l border-white/20 ml-1" role="group" aria-label="布局设置">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">列</span>
-                  <div className="flex items-center bg-white dark:bg-neutral-900/15 rounded-full overflow-hidden">
+                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">列</span>
+                  <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
                     {[2, 3, 4].map((col) => (
                       <button
                         key={col}
                         onClick={() => handleColumnsChange(col)}
-                        className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                        className={`px-3 py-2 min-h-[44px] text-xs font-medium transition-colors ${
                           layoutColumns === col
-                            ? 'bg-white dark:bg-neutral-900 text-primary-600'
-                            : 'text-white/80 hover:text-white'
+                            ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
+                            /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
+                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
+                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
+                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
+                        : 'text-white/90 hover:text-white'
                         }`}
                         aria-label={`切换为${col}列布局`}
                         aria-pressed={layoutColumns === col}
@@ -807,16 +820,20 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">距</span>
-                  <div className="flex items-center bg-white dark:bg-neutral-900/15 rounded-full overflow-hidden">
+                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">距</span>
+                  <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
                     {[8, 16, 24].map((g) => (
                       <button
                         key={g}
                         onClick={() => handleGapChange(g)}
-                        className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                        className={`px-3 py-2 min-h-[44px] text-xs font-medium transition-colors ${
                           layoutGap === g
-                            ? 'bg-white dark:bg-neutral-900 text-primary-600'
-                            : 'text-white/80 hover:text-white'
+                            ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
+                            /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
+                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
+                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
+                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
+                        : 'text-white/90 hover:text-white'
                         }`}
                         aria-label={`间距${g}px`}
                         aria-pressed={layoutGap === g}
@@ -834,11 +851,11 @@ export default function DashboardPage() {
 
       {/* 编辑模式提示 */}
       {isEditMode && (
-        <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+        <div className="p-4 rounded-lg bg-warning-50 dark:bg-warning-950/30 border border-warning-200 dark:border-warning-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AlertTriangle size={18} className="text-warning-600" />
-              <p className="text-sm text-warning-800 dark:text-warning-400">
+              <p className="text-sm text-warning-800 dark:text-warning-700">
                 编辑模式已开启 — 拖拽卡片调整位置，点击卡片右上角按钮进行配置
               </p>
             </div>

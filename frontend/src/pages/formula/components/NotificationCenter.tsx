@@ -111,11 +111,11 @@ const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
   system: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800',
-  formula_review: 'text-warning-600 bg-warning-100 dark:bg-warning-900/30',
-  experiment_complete: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-900/30',
-  ai_task_done: 'text-accent-600 bg-accent-100 dark:bg-accent-900/30',
-  data_sync: 'text-info-600 bg-info-100 dark:bg-info-900/30',
-  other: 'text-error-600 bg-error-100 dark:bg-error-900/30',
+  formula_review: 'text-warning-600 bg-warning-100 dark:bg-warning-300/25',
+  experiment_complete: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-300/25',
+  ai_task_done: 'text-accent-600 bg-accent-100 dark:bg-accent-300/25',
+  data_sync: 'text-info-600 bg-info-100 dark:bg-info-300/25',
+  other: 'text-error-600 bg-error-100 dark:bg-error-300/25',
 }
 
 const NOTIFICATION_LABELS: Record<NotificationType, string> = {
@@ -293,7 +293,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
               filter === 'all'
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                 : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
             )}
           >
@@ -306,7 +306,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
                 filter === type
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -328,7 +328,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <Bell size={48} className="text-neutral-300 dark:text-neutral-600 mb-3" />
+              <Bell size={48} className="text-neutral-300 dark:text-neutral-400 mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400 text-sm">暂无通知</p>
             </div>
           ) : (
@@ -339,7 +339,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                   'p-4 rounded-xl border transition-all duration-200 group relative',
                   notification.isRead
                     ? 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800'
-                    : 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800/50',
+                    : 'bg-primary-50 dark:bg-primary-300/15 border-primary-200 dark:border-primary-800/50',
                 )}
               >
                 {/* 未读指示 */}
@@ -368,7 +368,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                         </h4>
                         <Badge variant="neutral" size="sm">{NOTIFICATION_LABELS[notification.type]}</Badge>
                       </div>
-                      <span className="text-xs text-neutral-400 whitespace-nowrap">
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">
                         {formatTime(notification.createdAt)}
                       </span>
                     </div>
@@ -438,12 +438,12 @@ export function NotificationBadge({ count, onClick }: NotificationBadgeProps) {
   return (
     <button
       onClick={onClick}
-      className="relative p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+      className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
       aria-label={count > 0 ? `${count} 条未读通知` : '通知中心'}
     >
       <Bell size={20} className="text-neutral-600 dark:text-neutral-400" />
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-error-500 text-white text-[10px] font-semibold" aria-hidden="true">
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-error-500 text-white text-xs font-semibold" aria-hidden="true">
           {count > 99 ? '99+' : count}
         </span>
       )}

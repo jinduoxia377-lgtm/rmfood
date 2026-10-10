@@ -74,17 +74,17 @@ export default function IngredientsTab() {
   };
 
   const obColor = (ob: number | null) => {
-    if (ob === null) return 'text-neutral-400';
-    if (ob >= 50) return 'text-primary-600 dark:text-primary-400 font-semibold';
-    if (ob >= 30) return 'text-warning-600 dark:text-warning-400';
-    return 'text-neutral-500';
+    if (ob === null) return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
+    if (ob >= 50) return 'text-primary-700 dark:text-primary-700 font-semibold';
+    if (ob >= 30) return 'text-warning-600 dark:text-warning-700';
+    return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
   };
 
   const dlColor = (dl: number | null) => {
-    if (dl === null) return 'text-neutral-400';
-    if (dl >= 0.50) return 'text-primary-600 dark:text-primary-400 font-semibold';
-    if (dl >= 0.18) return 'text-warning-600 dark:text-warning-400';
-    return 'text-neutral-500';
+    if (dl === null) return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
+    if (dl >= 0.50) return 'text-primary-700 dark:text-primary-700 font-semibold';
+    if (dl >= 0.18) return 'text-warning-600 dark:text-warning-700';
+    return 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]';
   };
 
   return (
@@ -93,7 +93,7 @@ export default function IngredientsTab() {
       {statsQuery.data && (
         <div className="flex flex-wrap gap-3">
           {[
-            { label: '化合物总数', value: statsQuery.data.total_compounds?.toLocaleString() ?? '-', color: 'text-primary-600' },
+            { label: '化合物总数', value: statsQuery.data.total_compounds?.toLocaleString() ?? '-', color: 'text-primary-700' },
             { label: '高活性(OB≥50%)', value: statsQuery.data.ob_distribution?.find((o: any) => o.label.includes('50-70'))?.count ?? 0, color: 'text-accent-600' },
             { label: '类药性好(DL≥0.18)', value: statsQuery.data.dl_distribution?.filter((d: any) => d.label.includes('0.18') || d.label.includes('0.50') || d.label.includes('0.80')).reduce((s: number, d: any) => s + d.count, 0) ?? 0, color: 'text-success-600' },
           ].map((s, i) => (
@@ -108,7 +108,7 @@ export default function IngredientsTab() {
       {/* 搜索栏 */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <Input
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
@@ -161,23 +161,23 @@ export default function IngredientsTab() {
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     化合物名称 <SortIcon field="name" />
                   </button>
                 </th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">TCMSP ID</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('ob_percent')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('ob_percent')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     OB% <SortIcon field="ob_percent" />
                   </button>
                 </th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('dl_value')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('dl_value')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     DL <SortIcon field="dl_value" />
                   </button>
                 </th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('molecular_weight')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('molecular_weight')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     分子量 <SortIcon field="molecular_weight" />
                   </button>
                 </th>

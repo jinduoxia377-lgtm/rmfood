@@ -105,7 +105,7 @@ const MaterialCard: React.FC<{
             {(result.score * 100).toFixed(1)}%
           </div>
           {(result.extra.similarity as number | undefined) !== undefined && (
-            <div className="text-[11px] text-muted-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               语义: {((((result.extra.similarity as number) ?? 0)) * 100).toFixed(1)}%
             </div>
           )}

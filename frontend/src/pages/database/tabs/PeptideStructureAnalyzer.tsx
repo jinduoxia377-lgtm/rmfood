@@ -13,7 +13,7 @@ import {
   Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity, FlaskConical,
   AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
   Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy,
-  Layers, Zap, Target, TestTube, Bot, ZoomIn, Expand,
+  Layers, Zap, Target, TestTube, Bot, ZoomIn, Expand, Leaf,
 } from 'lucide-react';
 
 // 使用全局echarts对象（从CDN加载）
@@ -96,7 +96,17 @@ interface MLModelInfo {
   library_size: number;
   training_samples: number;
   validation_samples: number;
+  library_real_count: number;
+  library_synth_count: number;
+  train_real_count: number;
+  train_synth_count: number;
   validation_accuracy: number | null;
+  validation_f1: number | null;
+  validation_balanced_accuracy: number | null;
+  validation_majority_baseline: number | null;
+  validation_precision: number | null;
+  validation_recall: number | null;
+  metrics_note?: string;
   honest_note?: string;
 }
 
@@ -180,6 +190,8 @@ interface DatabasePeptide {
   molecular_weight?: number;
   food_source?: string;
   source_database: string;
+  is_synthetic?: boolean;
+  provenance?: string;
 }
 
 type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'batch' | 'deep' | 'optimize' | 'synergy' | 'advanced';
@@ -793,6 +805,7 @@ setLoading(true);
                   <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">数据来源</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
                 </tr>
               </thead>
@@ -806,6 +819,15 @@ setLoading(true);
                       {p.activity_value ? `${p.activity_value} ${p.activity_unit}` : '-'}
                     </td>
                     <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
+                    <td className="px-3 py-2">
+                      {p.is_synthetic ? (
+                        <Badge variant="warning" size="sm" title="程序合成（generate_peptides random 生成），非真实 DFBP 文献">合成</Badge>
+                      ) : (
+                        <Badge variant="success" size="sm" title={p.provenance === 'hand_expanded' ? '基于文献的手写扩展' : '核心真实 DFBP 文献记录'}>
+                          {p.provenance === 'hand_expanded' ? '扩展' : '真实'}
+                        </Badge>
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-center">
                       {onAnalyzeSequence && (
                         <Button
@@ -1312,6 +1334,9 @@ function DeepAnalysisView() {
               ACE 抑制目标分来源：{bp.ACE_inhibitory.ml_provenance}
             </div>
           )}
+          <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+            注：生物活性分为 <strong>QSAR 规则法预测</strong>（基于文献构效关系 SAR 规则 + motif 匹配，非实验实测量）；ACE 抑制目标分已并入真实 ML 模型分对照。
+          </div>
         </Card>
         <Card className="p-4">
           <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
@@ -1568,6 +1593,55 @@ function SynergyView() {
               <div className="text-[var(--text-muted)]">
                 训练来源：{result.ml_model_provenance.training_source} · {result.ml_model_provenance.honest_note}
               </div>
+            </div>
+          )}
+          {/* 药材知识库来源（TCMSP 真实 319 种 / 回退 8 味 / 未收录） */}
+          {result.herb_knowledge_source && (
+            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <Leaf className="w-3 h-3 text-primary" />
+                <span className="font-medium">药材功效知识来源</span>
+                <Badge variant="success" size="sm">TCMSP {result.herb_knowledge_source.tcmsp_matched}</Badge>
+                {result.herb_knowledge_source.fallback_8herb > 0 && <Badge variant="neutral" size="sm">回退 {result.herb_knowledge_source.fallback_8herb}</Badge>}
+                {result.herb_knowledge_source.unknown > 0 && <Badge variant="warning" size="sm">未收录 {result.herb_knowledge_source.unknown}</Badge>}
+              </div>
+              <div className="text-[var(--text-muted)]">
+                {result.herb_knowledge_source.note}
+              </div>
+              {(result.synergy_matrix || []).flat().slice(0, 12).map((s: any, i: number) => (
+                <div key={i} className="flex justify-between mt-1">
+                  <span className="font-mono">{s.herb}</span>
+                  <span className="text-[var(--text-muted)]">
+                    {s.herb_source?.startsWith('TCMSP') ? 'TCMSP 真实库' : s.herb_source === 'not_in_knowledge_base' ? '知识库未收录' : '知识库未收录'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* 药-药配伍关系（HERB_INTERACTIONS 真实配伍库，150+ 条） */}
+          {result.herb_interactions && result.herb_interactions.available && (
+            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <FlaskConical className="w-3 h-3 text-primary" />
+                <span className="font-medium">药-药配伍关系（HERB_INTERACTIONS）</span>
+                <Badge variant="success" size="sm">库 {result.herb_interactions.total_interactions_in_db} 条</Badge>
+                {result.herb_interactions.synergy_hits > 0 && <Badge variant="success" size="sm">协同 {result.herb_interactions.synergy_hits}</Badge>}
+                {result.herb_interactions.antagonism_hits > 0 && <Badge variant="warning" size="sm">拮抗 {result.herb_interactions.antagonism_hits}</Badge>}
+              </div>
+              <div className="text-[var(--text-muted)]">{result.herb_interactions.note}</div>
+              {(result.herb_interactions.matched_pairs || []).map((m: any, i: number) => (
+                <div key={i} className="flex justify-between mt-1">
+                  <span className="font-mono">{m.a} + {m.b}</span>
+                  <span className="text-[var(--text-muted)]">
+                    {m.type === 'synergy' ? '协同' : '拮抗'} {m.strength} · 修正 {m.adjustment >= 0 ? '+' : ''}{m.adjustment}
+                  </span>
+                </div>
+              ))}
+              {result.herb_interactions.net_adjustment !== 0 && (
+                <div className="mt-1 text-[var(--text-muted)]">
+                  配伍修正后总分：{result.herb_interactions.base_overall} → <strong className="text-primary">{result.herb_interactions.adjusted_overall}</strong>
+                </div>
+              )}
             </div>
           )}
         </Card>
@@ -1973,12 +2047,12 @@ function CustomOptimizerView() {
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">ACE 抑制权重 ({aceWeight})</label>
             <input type="range" min={0} max={1} step={0.1} value={aceWeight}
-              onChange={e => setAceWeight(Number(e.target.value))} className="w-full" />
+              onChange={e => setAceWeight(Number(e.target.value))} className="w-full" aria-label="种子序列" />
           </div>
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">抗氧化权重 ({aoxWeight})</label>
             <input type="range" min={0} max={1} step={0.1} value={aoxWeight}
-              onChange={e => setAoxWeight(Number(e.target.value))} className="w-full" />
+              onChange={e => setAoxWeight(Number(e.target.value))} className="w-full" aria-label="抗氧化权重" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -2928,16 +3002,68 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">QSAR 规则 ACE 分</div>
                       </div>
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold text-primary">
+                          {result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">验证 F1（推荐）</div>
+                      </div>
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold">
+                          {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">平衡准确率</div>
+                      </div>
+                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                        <div className="text-lg font-bold text-[var(--text-muted,#9A9A9F)]">
                           {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">验证准确率</div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                          验证准确率 <span className="text-[var(--text-muted,#9A9A9F)] opacity-70">(基线 {result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(0) + '%' : '-'})</span>
+                        </div>
                       </div>
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 → 训练 {result.ml_model.training_samples} 条 + 验证 {result.ml_model.validation_samples} 条（85/15 切分）
-                      {result.ml_model.honest_note ? ` · ${result.ml_model.honest_note}` : ''}
+                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {result.ml_model.library_real_count} + 程序合成 {result.ml_model.library_synth_count}
+                      {` · 训练 ${result.ml_model.training_samples} 条（真实 ${result.ml_model.train_real_count} + 合成 ${result.ml_model.train_synth_count}）`}
                     </div>
+                    {/* 数据来源构成条（诚实标注真实文献 vs 程序合成占比） */}
+                    {result.ml_model.library_size > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-[var(--text-muted,#9A9A9F)]">训练数据来源构成</span>
+                          <span className="font-mono">
+                            真实 {result.ml_model.train_real_count}（{Math.round(result.ml_model.train_real_count / Math.max(result.ml_model.training_samples,1)*100)}%）
+                            {' / '}合成 {result.ml_model.train_synth_count}（{Math.round(result.ml_model.train_synth_count / Math.max(result.ml_model.training_samples,1)*100)}%）
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-700 rounded overflow-hidden flex">
+                          <div
+                            className="h-full bg-primary"
+                            style={{ width: `${Math.round(result.ml_model.train_real_count / Math.max(result.ml_model.training_samples,1)*100)}%` }}
+                          />
+                          <div
+                            className="h-full bg-warning-400"
+                            style={{ width: `${Math.round(result.ml_model.train_synth_count / Math.max(result.ml_model.training_samples,1)*100)}%` }}
+                          />
+                        </div>
+                        <div className="text-[10px] text-[var(--text-muted,#9A9A9F)]">
+                          <span className="text-primary">■</span> 真实文献{' '}
+                          <span className="text-warning-400">■</span> 程序合成（generate_peptides random 生成，已显式标注，非冒充真实数据）
+                        </div>
+                      </div>
+                    )}
+                    {/* 诚实指标说明：不平衡数据集下 accuracy 具欺骗性 */}
+                    {result.ml_model.validation_f1 != null && (
+                      <div className="text-[11px] text-[var(--text-muted,#9A9A9F)] leading-relaxed">
+                        <strong>指标解读</strong>：标签不平衡（正类占比低），
+                        验证准确率 {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
+                        接近全预测负类的多数类基线（{result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(1) + '%' : '-'}），
+                        本身不具判别力；模型对 ACE 抑制正类的召回仅 {result.ml_model.validation_recall != null ? (result.ml_model.validation_recall * 100).toFixed(1) + '%' : '-'}，
+                        请以 <strong className="text-primary">F1={result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}</strong>（推荐）
+                        与平衡准确率 {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'} 为准。
+                        {result.ml_model.metrics_note ? <div className="mt-1 text-[10px] opacity-80">{result.ml_model.metrics_note}</div> : null}
+                      </div>
+                    )}
                     {/* 动态运行状态：按当前 method 显示，避免静态枚举说明误导 */}
                     <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${
                       result.ml_model.method === 'ml'

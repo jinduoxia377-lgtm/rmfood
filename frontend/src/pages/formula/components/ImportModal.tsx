@@ -266,10 +266,10 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
              role="button" tabIndex={0} onClick={() => !isParsing && fileInputRef.current?.click()}
             className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
               isDragging
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 scale-[1.02]'
+                ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20 scale-[1.02]'
                 : parseError
-                  ? 'border-red-300 bg-error-50 dark:bg-error-900/10 hover:border-red-400'
-                  : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-slate-50 dark:hover:bg-neutral-800/30'
+                  ? 'border-error-300 bg-error-50 dark:bg-error-300/15 hover:border-error-400'
+                  : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-neutral-50 dark:hover:bg-neutral-800/30'
             } ${isParsing ? 'pointer-events-none opacity-70' : ''}`}
           >
             <input
@@ -277,8 +277,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={handleInputChange}
-              className="hidden"
-            />
+              className="hidden" aria-hidden="true" tabIndex={-1} />
 
             {isParsing ? (
               <div className="space-y-3">
@@ -288,15 +287,15 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
             ) : (
               <>
                 <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
-                  isDragging ? 'bg-primary-100 dark:bg-primary-900/30' : 'bg-neutral-100 dark:bg-neutral-800'
+                  isDragging ? 'bg-primary-100 dark:bg-primary-300/25' : 'bg-neutral-100 dark:bg-neutral-800'
                 }`}>
-                  <Upload className={`w-8 h-8 ${isDragging ? 'text-primary-500' : 'text-neutral-400'}`} />
+                  <Upload className={`w-8 h-8 ${isDragging ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                 </div>
 
                 <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">
                   点击或拖拽上传文件
                 </p>
-                <p className="text-sm text-neutral-500 mt-1">
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                   支持 .xlsx / .csv 格式，最大 10MB
                 </p>
               </>
@@ -304,15 +303,15 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
           </div>
 
           {parseError && (
-            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
               <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-error-700 dark:text-error-400">{parseError}</p>
+              <p className="text-sm text-error-700 dark:text-error-600">{parseError}</p>
             </div>
           )}
 
-          <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800 rounded-lg">
             <Lightbulb className="w-5 h-5 text-secondary-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-secondary-700 dark:text-secondary-400">
+            <div className="text-sm text-secondary-700 dark:text-secondary-700">
               还没有模板？
               <button
                 onClick={(e) => { e.stopPropagation(); handleDownloadTemplate() }}
@@ -339,12 +338,12 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
               <FileSpreadsheet className="w-5 h-5 text-primary-500" />
               数据预览
             </h3>
-            <span className="text-sm text-neutral-500">共 {stats.total} 条</span>
+            <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {stats.total} 条</span>
           </div>
 
           <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden max-h-[360px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
+              <thead className="bg-neutral-50 dark:bg-neutral-800 sticky top-0 z-10">
                 <tr>
                   <th className="px-3 py-2.5 text-left text-xs font-semibold text-neutral-600 dark:text-neutral-400 w-12">状态</th>
                   {displayHeaders.map((header, idx) => (
@@ -354,13 +353,13 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {rows.slice(0, 100).map((row) => (
                   <tr
                     key={row.rowIndex}
-                    className={`hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors ${
-                      row.severity === 'error' ? 'bg-error-50/50 dark:bg-error-900/5' :
-                      row.severity === 'warning' ? 'bg-warning-50/50 dark:bg-warning-900/5' : ''
+                    className={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${
+                      row.severity === 'error' ? 'bg-error-50/50 dark:bg-error-300/10' :
+                      row.severity === 'warning' ? 'bg-warning-50/50 dark:bg-warning-300/10' : ''
                     }`}
                     title={row.errors.length > 0 || row.warnings.length > 0
                       ? [...row.errors, ...row.warnings].map(e => e.message).join('; ')
@@ -383,7 +382,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
             </table>
 
             {stats.total > 100 && (
-              <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-800 text-xs text-neutral-500 text-center border-t">
+              <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 text-xs text-neutral-500 text-center border-t">
                 仅显示前 100 条，共 {stats.total} 条记录
               </div>
             )}
@@ -413,7 +412,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
                   key={mode.value}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
                     importMode === mode.value
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                       : mode.value === 'skip_errors'
                         ? 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
@@ -432,11 +431,11 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
                       }
                     }}
                     disabled={isImporting}
-                    className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                    className="w-4 h-4 text-primary-700 focus:ring-primary-500"
                   />
                   <div>
                     <span className="text-sm font-medium text-neutral-900 dark:text-white">{mode.label}</span>
-                    <p className="text-xs text-neutral-500 mt-0.5">{mode.desc}</p>
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{mode.desc}</p>
                   </div>
                 </label>
               ))}
@@ -454,9 +453,9 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
           )}
 
           {importError && (
-            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
               <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-error-700 dark:text-error-400">{importError}</p>
+              <p className="text-sm text-error-700 dark:text-error-600">{importError}</p>
             </div>
           )}
 
@@ -493,7 +492,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
       {step === 'result' && (
         <div className="space-y-6 py-4">
           <div className="text-center space-y-3">
-            <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 bg-primary-100 dark:bg-primary-300/25 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-9 h-9 text-primary-500" />
             </div>
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
@@ -504,36 +503,36 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
           {importResult && (
             <div className="max-w-md mx-auto space-y-3">
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                <div className="bg-primary-50 dark:bg-primary-300/20 border border-success-200 dark:border-success-800 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">
                     {importResult.success}
                   </div>
-                  <div className="text-xs text-primary-700 dark:text-primary-500 mt-1">成功导入</div>
+                  <div className="text-xs text-primary-700 dark:text-primary-700 mt-1">成功导入</div>
                 </div>
 
-                <div className="bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-warning-600 dark:text-warning-400">
+                <div className="bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-warning-600 dark:text-warning-700">
                     {importResult.skipped}
                   </div>
-                  <div className="text-xs text-warning-700 dark:text-warning-500 mt-1">跳过(警告)</div>
+                  <div className="text-xs text-warning-700 dark:text-warning-700 mt-1">跳过(警告)</div>
                 </div>
 
-                <div className="bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-error-600 dark:text-error-400">
+                <div className="bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-error-600 dark:text-error-600">
                     {importResult.failed}
                   </div>
-                  <div className="text-xs text-error-700 dark:text-error-500 mt-1">导入失败</div>
+                  <div className="text-xs text-error-700 dark:text-error-700 mt-1">导入失败</div>
                 </div>
               </div>
 
-              <div className="text-center text-sm text-neutral-500">
+              <div className="text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 共处理 {importResult.total} 条记录
               </div>
 
               {importResult.errors.length > 0 && (
                 <button
                   onClick={handleDownloadFailedRecords}
-                  className="flex items-center gap-2 mx-auto px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                  className="flex items-center gap-2 mx-auto px-4 py-2 text-sm font-medium text-primary-700 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-700 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   下载失败明细 ({importResult.errors.length} 条)

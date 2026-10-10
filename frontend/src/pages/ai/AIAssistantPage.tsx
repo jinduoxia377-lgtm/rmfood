@@ -80,9 +80,9 @@ const AgentWorkflowTab = lazy(() => import('@/components/ai/features/AgentWorkfl
 // Tab 分组导航专属主题色板 — 桌面/移动共用（原 L577/L672 两份逐字重复，抽成模块级常量 P3-10）
 // 注：这些色族是分组导航的「标识色」（emerald/blue/amber 各自成套），属设计意图内的多色系装饰层。
 const TAB_GROUP_ACCENTS = [
-  { bar: 'bg-emerald-500',  bgActive: 'bg-emerald-50 dark:bg-emerald-950/30', textActive: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20',       iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', iconText: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800/50', subtext: 'text-emerald-600/60 dark:text-emerald-400/60', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
-  { bar: 'bg-blue-500',     bgActive: 'bg-blue-50 dark:bg-blue-950/30',        textActive: 'text-blue-700 dark:text-blue-300',      ring: 'ring-blue-500/20',          iconBg: 'bg-blue-100 dark:bg-blue-900/40',    iconText: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-200 dark:border-blue-800/50',   subtext: 'text-blue-600/60 dark:text-blue-400/60',  badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' },
-  { bar: 'bg-amber-500',    bgActive: 'bg-amber-50 dark:bg-amber-950/30',      textActive: 'text-amber-700 dark:text-amber-300',    ring: 'ring-amber-500/20',         iconBg: 'bg-amber-100 dark:bg-amber-900/40',   iconText: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-200 dark:border-amber-800/50', subtext: 'text-amber-600/60 dark:text-amber-400/60', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
+  { bar: 'bg-success-500',  bgActive: 'bg-success-50 dark:bg-success-950/30', textActive: 'text-success-700 dark:text-success-700', ring: 'ring-success-500/20',       iconBg: 'bg-success-100 dark:bg-success-300/30', iconText: 'text-success-700 dark:text-success-600', border: 'border-success-200 dark:border-success-800/50', subtext: 'text-success-600/60 dark:text-success-700/60', badge: 'bg-success-100 text-success-700 dark:bg-success-300/30 dark:text-success-700' },
+  { bar: 'bg-secondary-500',     bgActive: 'bg-secondary-50 dark:bg-secondary-950/30',        textActive: 'text-secondary-700 dark:text-secondary-700',      ring: 'ring-secondary-500/20',          iconBg: 'bg-secondary-100 dark:bg-secondary-300/30',    iconText: 'text-secondary-700 dark:text-secondary-700',    border: 'border-secondary-200 dark:border-secondary-800/50',   subtext: 'text-secondary-600/60 dark:text-secondary-700/60',  badge: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/30 dark:text-secondary-700' },
+  { bar: 'bg-warning-500',    bgActive: 'bg-warning-50 dark:bg-warning-950/30',      textActive: 'text-warning-700 dark:text-warning-700',    ring: 'ring-warning-500/20',         iconBg: 'bg-warning-100 dark:bg-warning-300/30',   iconText: 'text-warning-600 dark:text-warning-700',  border: 'border-warning-200 dark:border-warning-800/50', subtext: 'text-warning-600/60 dark:text-warning-700/60', badge: 'bg-warning-100 text-warning-700 dark:bg-warning-300/30 dark:text-warning-700' },
 ];
 
 // Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
@@ -400,7 +400,7 @@ export default function AIAssistantPage() {
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                             tab === t.value
-                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-600 shadow-sm scale-[1.02]'
+                              ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 shadow-sm scale-[1.02]'
                               : 'text-neutral-600 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
                           }`}
                           aria-current={tab === t.value ? 'page' : undefined}
@@ -431,10 +431,10 @@ export default function AIAssistantPage() {
           <div className="surface-primary rounded-xl p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
-                <h2 className="text-xl font-semibold leading-snug tracking-tight">
+                <h1 className="text-xl font-semibold leading-snug tracking-tight">
                   AI 智能助手中心
-                </h2>
-                <p className="mt-1 text-sm text-white/90 dark:text-emerald-950/80">
+                </h1>
+                <p className="mt-1 text-sm text-white/90 dark:text-success-950/80">
                   智能对话 · 配方生成 · 安全检查 · 协同分析
                 </p>
               </div>
@@ -442,7 +442,7 @@ export default function AIAssistantPage() {
                 {/* 汉堡菜单按钮（移动端） */}
                 <button
                   onClick={toggleMobileMenu}
-                  className="sm:hidden p-2.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-white transition-colors duration-150"
+                  className="sm:hidden p-2.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-primary-700 dark:text-white transition-colors duration-150"
                   aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
                   aria-expanded={mobileMenuOpen}
                 >
@@ -451,19 +451,19 @@ export default function AIAssistantPage() {
                 {/* 模型状态指示器 — Dashboard 风格 pill */}
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
                   llmAvailable
-                    ? 'bg-emerald-400/20 text-emerald-100'
-                    : 'bg-red-400/20 text-red-100'
+                    ? 'bg-success-400/20 text-success-100'
+                    : 'bg-error-400/20 text-error-100'
                 }`}>
                   <span className={`relative flex h-2 w-2`}>
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${llmAvailable ? 'bg-emerald-300' : 'bg-red-300'}`}></span>
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${llmAvailable ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${llmAvailable ? 'bg-success-300' : 'bg-error-300'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-2 w-2 ${llmAvailable ? 'bg-success-400' : 'bg-error-400'}`}></span>
                   </span>
                   {llmAvailable ? '模型在线' : '模型离线'}
                 </div>
                 {/* 快速操作 */}
                 <button
                   onClick={() => handleStatCardClick('chat', '智能对话')}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-white transition-colors duration-150 text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-primary-700 dark:text-white transition-colors duration-150 text-sm font-medium"
                 >
                   <MessageSquare className="w-4 h-4" />
                   开始对话
@@ -478,11 +478,11 @@ export default function AIAssistantPage() {
               type="search"
               placeholder="搜索配方、药材、分析工具…"
               aria-label="搜索配方、药材、分析工具"
-              prefix={<Search size={16} className="text-neutral-400" />}
+              prefix={<Search size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               className="h-10 pl-10 rounded-lg border-neutral-200 dark:border-neutral-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-colors duration-150"
             />
             <kbd
-              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
               aria-label="快捷键 Ctrl+K"
             >
               ⌘K
@@ -607,15 +607,15 @@ export default function AIAssistantPage() {
                           }`} aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block transition-colors duration-150 ${
+                          <span className={`text-xs font-semibold uppercase tracking-[0.08em] block transition-colors duration-150 ${
                             isActive ? c.textActive : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                           }`}>{group.label}</span>
-                          <span className={`text-[11px] transition-colors duration-150 ${isActive ? c.subtext : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
+                          <span className={`text-xs transition-colors duration-150 ${isActive ? c.subtext : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
                             {group.tabs.length} 个功能
                           </span>
                         </div>
                         {isActive && (
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${c.badge}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${c.bar}`} />
                             活跃
                           </span>
@@ -649,7 +649,7 @@ export default function AIAssistantPage() {
                               </div>
                               <span className="flex-1 font-medium">{t.label}</span>
                               {t.badge != null && t.badge > 0 && (
-                                <span className={`flex-shrink-0 inline-flex items-center justify-center h-5 px-1.5 rounded-md text-[10px] font-semibold ${
+                                <span className={`flex-shrink-0 inline-flex items-center justify-center h-5 px-1.5 rounded-md text-xs font-semibold ${
                                   isSelected ? c.badge : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
                                 }`}>
                                   {t.badge}
@@ -689,11 +689,11 @@ export default function AIAssistantPage() {
                           <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-400'}`}>{group.label}</span>
-                          <span className={`text-[10px] ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-400'}`}>{group.tabs.length} 个功能</span>
+                          <span className={`text-xs font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-400'}`}>{group.label}</span>
+                          <span className={`text-xs ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-400'}`}>{group.tabs.length} 个功能</span>
                         </div>
                         {isActive && (
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${c.badge}`}>
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${c.badge}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${c.bar}`} />
                             活跃
                           </span>
@@ -719,7 +719,7 @@ export default function AIAssistantPage() {
                               <TabIcon className="w-3.5 h-3.5" />
                               <span>{t.label}</span>
                               {t.badge != null && t.badge > 0 && (
-                                <span className={`h-4 px-1 rounded-md text-[10px] font-semibold ${isSelected ? c.badge : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'}`}>{t.badge}</span>
+                                <span className={`h-4 px-1 rounded-md text-xs font-semibold ${isSelected ? c.badge : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'}`}>{t.badge}</span>
                               )}
                             </button>
                           );
@@ -785,7 +785,7 @@ export default function AIAssistantPage() {
                           单目标 (GA)
                         </TabsTrigger>
                         <TabsTrigger value="multi" role="tab" aria-selected={geneticMode === 'multi'}>
-                          <GitBranch className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                          <GitBranch className="w-3.5 h-3.5 mr-1.5 text-accent-500" />
                           多目标 (NSGA-II)
                         </TabsTrigger>
                         <TabsTrigger value="formula" role="tab" aria-selected={geneticMode === 'formula'}>

@@ -66,10 +66,10 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           'relative w-32 h-32 rounded-full overflow-hidden cursor-pointer transition-all duration-200',
           'ring-4 ring-offset-4',
           isDragging
-            ? 'ring-primary-400 bg-primary-50 dark:bg-primary-900/20 scale-105'
-            : 'ring-slate-200 dark:ring-slate-700 hover:ring-primary-400 hover:scale-105',
+            ? 'ring-primary-400 bg-primary-50 dark:bg-primary-300/20 scale-105'
+            : 'ring-neutral-200 dark:ring-neutral-700 hover:ring-primary-400 hover:scale-105',
           disabled && 'opacity-50 cursor-not-allowed',
-          error && 'ring-rose-400',
+          error && 'ring-danger-400',
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -112,8 +112,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           accept="image/jpeg,image/png,image/webp"
           onChange={handleFileChange}
           className="hidden"
-          disabled={disabled}
-        />
+          disabled={disabled} aria-hidden="true" tabIndex={-1} />
       </div>
 
       {avatarUrl && !uploading && (
@@ -123,7 +122,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="mt-2 flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-rose-500 transition-colors"
+          className="mt-2 flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-500 transition-colors"
         >
           <X className="w-3 h-3" />
           移除图片
@@ -131,7 +130,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       )}
 
       {error && (
-        <p className="mt-2 text-sm text-rose-500 text-center">{error}</p>
+        <p className="mt-2 text-sm text-danger-500 text-center">{error}</p>
       )}
 
       <p className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">

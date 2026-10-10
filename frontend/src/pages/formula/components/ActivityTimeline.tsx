@@ -22,22 +22,22 @@ interface ActivityTimelineProps {
 }
 
 const ACTIVITY_CONFIG = {
-  created: { icon: Plus, color: 'text-success-500 bg-success-50 dark:bg-success-900/20', label: '创建配方' },
-  updated: { icon: Edit3, color: 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20', label: '更新配方' },
-  submitted: { icon: Send, color: 'text-warning-500 bg-warning-50 dark:bg-warning-900/20', label: '提交审核' },
-  approved: { icon: CheckCircle2, color: 'text-success-500 bg-success-50 dark:bg-success-900/20', label: '审核通过' },
-  rejected: { icon: XCircle, color: 'text-error-500 bg-error-50 dark:bg-error-900/20', label: '审核驳回' },
-  archived: { icon: Archive, color: 'text-neutral-500 bg-slate-50 dark:bg-neutral-800', label: '归档配方' },
-  commented: { icon: MessageSquare, color: 'text-accent-500 bg-accent-50 dark:bg-accent-900/20', label: '发表评论' },
-  ai_analysis: { icon: Sparkles, color: 'text-primary-500 bg-primary-50 dark:bg-primary-900/20', label: 'AI 分析' },
+  created: { icon: Plus, color: 'text-success-500 bg-success-50 dark:bg-success-300/20', label: '创建配方' },
+  updated: { icon: Edit3, color: 'text-secondary-500 bg-secondary-50 dark:bg-secondary-300/20', label: '更新配方' },
+  submitted: { icon: Send, color: 'text-warning-500 bg-warning-50 dark:bg-warning-300/20', label: '提交审核' },
+  approved: { icon: CheckCircle2, color: 'text-success-500 bg-success-50 dark:bg-success-300/20', label: '审核通过' },
+  rejected: { icon: XCircle, color: 'text-error-500 bg-error-50 dark:bg-error-300/20', label: '审核驳回' },
+  archived: { icon: Archive, color: 'text-neutral-500 bg-neutral-50 dark:bg-neutral-800', label: '归档配方' },
+  commented: { icon: MessageSquare, color: 'text-accent-500 bg-accent-50 dark:bg-accent-300/20', label: '发表评论' },
+  ai_analysis: { icon: Sparkles, color: 'text-primary-500 bg-primary-50 dark:bg-primary-300/20', label: 'AI 分析' },
 }
 
 export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   if (!activities || activities.length === 0) {
     return (
       <div className="text-center py-8">
-        <Clock size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-        <p className="text-sm text-neutral-400">暂无活动记录</p>
+        <Clock size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无活动记录</p>
       </div>
     )
   }
@@ -70,13 +70,13 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                     <div className="flex items-center gap-2 mb-1 justify-end">
                       <span className="text-sm font-medium text-neutral-900 dark:text-white">{activity.description}</span>
                       {isFirst && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded order-first">最新</span>
+                        <span className="px-1.5 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700 rounded order-first">最新</span>
                       )}
                     </div>
                     {activity.details && (
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 line-clamp-2">{activity.details}</p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-neutral-400 justify-end">
+                    <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] justify-end">
                       {activity.actor && (
                         <span className="flex items-center gap-1">{activity.actor}<User size={9} /></span>
                       )}

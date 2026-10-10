@@ -35,7 +35,7 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
+      <mark className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
       {text.slice(idx + keyword.length)}
     </>
   );
@@ -276,8 +276,8 @@ export default function PeptidesTab({
             }}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
               activityType === t.type_en
-                ? 'bg-secondary-container text-secondary-main border-blue-500'
-                : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-blue-300 dark:hover:border-blue-700'
+                ? 'bg-secondary-container text-secondary-main border-secondary-500'
+                : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-secondary-300 dark:hover:border-secondary-700'
             }`}
           >
             {t.type_cn} <span className="opacity-60">{t.count}</span>
@@ -327,10 +327,10 @@ export default function PeptidesTab({
                   <tr
                     key={item.id}
                     onClick={() => setSelectedPeptide(item)}
-                    className="cursor-pointer hover:bg-secondary-50/60 dark:hover:bg-blue-950/20 transition-colors duration-150 group"
+                    className="cursor-pointer hover:bg-secondary-50/60 dark:hover:bg-secondary-950/20 transition-colors duration-150 group"
                   >
                     <td className="px-4 py-3">
-                      <span className="font-mono font-medium text-secondary-600 dark:text-secondary-400 group-hover:text-secondary-700 transition-colors">
+                      <span className="font-mono font-medium text-secondary-600 dark:text-secondary-700 group-hover:text-secondary-700 transition-colors">
                         <Highlight text={item.sequence} keyword={keyword} />
                       </span>
                     </td>

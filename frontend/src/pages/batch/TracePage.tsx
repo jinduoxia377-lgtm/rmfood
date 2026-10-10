@@ -120,10 +120,10 @@ export default function TracePage() {
 
       {/* 页头横幅 — 对齐 Dashboard 品牌横幅规范 */}
       <div className="surface-primary rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+        <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
           <Search size={20} className="text-white/80 shrink-0" />
           双向追溯
-        </h2>
+        </h1>
         <p className="mt-1 text-white/80 text-sm">追踪原料批号与成品批次之间的完整链路</p>
       </div>
 
@@ -317,9 +317,9 @@ function ResultCard({
           {/* 原料批号列表 */}
           {result.ingredient_lots?.length > 0 ? (
             <div>
-              <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 使用的原料批号 ({result.ingredient_lots.length})
-              </h4>
+              </h2>
               <div className="space-y-2">
                 {result.ingredient_lots.map((lot: any) => (
                   <div
@@ -350,9 +350,9 @@ function ResultCard({
           {/* 样品列表 */}
           {result.samples?.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2">
+              <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2">
                 <TestTube size={14} /> 关联样品 ({result.samples.length})
-              </h4>
+              </h2>
               <div className="space-y-2">
                 {result.samples.map((s: any) => (
                   <div
@@ -360,7 +360,7 @@ function ResultCard({
                     className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-900/20 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex items-center justify-center">
                         <TestTube size={14} className="text-accent-500" />
                       </div>
                       <div>
@@ -425,9 +425,9 @@ function ResultCard({
         {/* 关联批次 */}
         {result.batches?.length > 0 ? (
           <div>
-            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               使用的批次 ({result.batches.length})
-            </h4>
+            </h2>
             <div className="space-y-2">
               {result.batches.map((b: any) => (
                 <div
@@ -435,7 +435,7 @@ function ResultCard({
                   className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-900/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-300/20 flex items-center justify-center">
                       <Package size={14} className="text-warning-500" />
                     </div>
                     <div>

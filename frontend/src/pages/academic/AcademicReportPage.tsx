@@ -138,8 +138,8 @@ export default function AcademicReportPage() {
 
   const statusCls = (s: string) => ({
     draft:      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-    in_review:  'bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300',
-    published:  'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
+    in_review:  'bg-warning-50 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    published:  'bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
   }[s] ?? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600')
 
   const clearFilters = () => {
@@ -157,7 +157,7 @@ export default function AcademicReportPage() {
     return (
       <div className="min-h-screen bg-grid flex items-center justify-center" style={{ backgroundColor: 'var(--bg-canvas)' }}>
         <div className="text-center p-8">
-          <p className="text-error-600 dark:text-error-400 font-semibold mb-2">加载失败</p>
+          <p className="text-error-600 dark:text-error-600 font-semibold mb-2">加载失败</p>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{storeError}</p>
           <Button size="sm" onClick={() => window.location.reload()}>刷新页面</Button>
         </div>
@@ -175,8 +175,8 @@ export default function AcademicReportPage() {
           </Button>
           {selectedReport && (
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center shrink-0">
-                <BookOpen size={16} className="text-primary-600 dark:text-primary-400" />
+              <div className="w-9 h-9 bg-primary-100 dark:bg-primary-300/25 rounded-xl flex items-center justify-center shrink-0">
+                <BookOpen size={16} className="text-primary-700 dark:text-primary-700" />
               </div>
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{selectedReport.title}</h2>
@@ -207,13 +207,13 @@ export default function AcademicReportPage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold leading-snug tracking-tight">学术报告管理</h2>
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">学术报告管理</h1>
             <p className="mt-1 text-white/80 text-sm">报告撰写 · 协作审核 · 成果归档</p>
           </div>
           <Button
             icon={<Plus size={16} />}
             size="md"
-            className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
+            className="bg-white dark:bg-neutral-900 text-primary-700 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
             onClick={() => { setSelectedReport(null); setViewMode('editor') }}
           >
             新建报告
@@ -239,7 +239,7 @@ export default function AcademicReportPage() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && setSearchQuery((e.target as HTMLInputElement).value)}
               placeholder="搜索标题、作者、摘要或关联配方…"
-              prefix={<Search size={14} className="text-neutral-400" />}
+              prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               className="flex-1 h-9 text-sm"
             />
             {hasActiveFilters && (
@@ -248,7 +248,7 @@ export default function AcademicReportPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Filter size={13} className="text-neutral-400 shrink-0" />
+            <Filter size={13} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
             {(['all', 'draft', 'in_review', 'published'] as const).map(s => (
               <button
                 key={s}
@@ -256,7 +256,7 @@ export default function AcademicReportPage() {
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                   selectedStatus === s
-                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                     : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
                 )}
               >
@@ -291,14 +291,14 @@ export default function AcademicReportPage() {
 
       {/* ── 批量操作条 ── */}
       {showBulkActions && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
-          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
+          <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
             已选中 {selectedIds.size} 份报告
           </span>
           <Button variant="danger" size="sm" icon={<Trash2 size={13} />} onClick={() => setShowDeleteConfirm(true)}>
             批量删除
           </Button>
-          <button onClick={() => { setSelectedIds(new Set()); setShowBulkActions(false) }} className="ml-auto text-xs text-neutral-400 hover:text-neutral-600 transition-colors">取消选择</button>
+          <button onClick={() => { setSelectedIds(new Set()); setShowBulkActions(false) }} className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 transition-colors">取消选择</button>
         </div>
       )}
 
@@ -311,15 +311,15 @@ export default function AcademicReportPage() {
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className="border-red-200 dark:border-red-800 bg-error-50 dark:bg-error-900/20">
+        <Card className="border-error-200 dark:border-error-800 bg-error-50 dark:bg-error-300/20">
           <CardContent className="p-8 text-center">
-            <p className="text-error-600 dark:text-error-400 text-sm mb-3">{error}</p>
+            <p className="text-error-600 dark:text-error-600 text-sm mb-3">{error}</p>
             <Button variant="outline" size="sm" icon={<RefreshCw size={14} />} onClick={fetchReports}>重试</Button>
           </CardContent>
         </Card>
       ) : filteredAndSortedReports.length === 0 ? (
         <EmptyState
-          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><FileText size={24} className="text-primary-500 dark:text-primary-400" /></div>}
+          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center"><FileText size={24} className="text-primary-500 dark:text-primary-700" /></div>}
           title={hasActiveFilters ? '未找到匹配的报告' : '暂无学术报告'}
           description={hasActiveFilters ? '尝试调整搜索条件或清除筛选' : '点击上方按钮创建您的第一份学术报告'}
           action={
@@ -351,7 +351,7 @@ export default function AcademicReportPage() {
                   key={report.id}
                   className={cn(
                     'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/30 transition-colors',
-                    isSelected && 'bg-primary-50/50 dark:bg-primary-900/10',
+                    isSelected && 'bg-primary-50/50 dark:bg-primary-300/15',
                   )}
                 >
                   {/* 勾选框 */}
@@ -378,14 +378,14 @@ export default function AcademicReportPage() {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <BookOpen size={13} className="text-primary-500 shrink-0" />
-                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
                         {report.title}
                       </span>
                     </div>
                     {report.abstract && (
-                      <p className="text-xs text-neutral-400 dark:text-neutral-500 line-clamp-1 mb-1">{report.abstract}</p>
+                      <p className="text-xs text-neutral-400 dark:text-neutral-400 line-clamp-1 mb-1">{report.abstract}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400 dark:text-neutral-500">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400 dark:text-neutral-400">
                       {report.authors.length > 0 && (
                         <span className="flex items-center gap-1"><User size={11} />{report.authors.join('、')}</span>
                       )}
@@ -407,11 +407,11 @@ export default function AcademicReportPage() {
                   {/* 操作 */}
                   <div className="shrink-0 flex items-center gap-1">
                     <button type="button" onClick={() => handleView(report)} title="查看"
-                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                       <Eye size={14} />
                     </button>
                     <button type="button" onClick={() => handleEdit(report)} title="编辑"
-                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                       <Edit size={14} />
                     </button>
                     <div className="relative">
@@ -433,7 +433,7 @@ export default function AcademicReportPage() {
                               <ClipboardCopy size={13} />复制
                             </button>
                             <div className="my-1 border-t border-neutral-100 dark:border-neutral-700" />
-                            <button onClick={() => confirmDelete(report.id)} className="w-full px-3 py-2 text-left text-xs hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-2 text-error-600 dark:text-error-400">
+                            <button onClick={() => confirmDelete(report.id)} className="w-full px-3 py-2 text-left text-xs hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-2 text-error-600 dark:text-error-600">
                               <Trash2 size={13} />删除
                             </button>
                           </div>

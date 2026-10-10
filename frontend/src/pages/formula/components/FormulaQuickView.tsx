@@ -71,7 +71,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
             {isLoading ? (
               <Skeleton className="w-8 h-8 rounded-lg" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                 <Zap size={16} className="text-primary-500" />
               </div>
             )}
@@ -132,7 +132,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
               )}
 
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">安全检查</p>
                   <p
                     className={cn(
@@ -147,13 +147,13 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                     {safetyPassed === null ? '未检测' : safetyPassed ? '通过' : '未通过'}
                   </p>
                 </div>
-                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">协同评分</p>
                   <p className="text-base font-semibold text-primary-700">
                     {synergyScore !== null ? synergyScore : '-'}
                   </p>
                 </div>
-                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">成分数量</p>
                   <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">{ingredientList.length}</p>
                 </div>
@@ -167,7 +167,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                   <CompositionChart ingredients={ingredientList} compact />
                   <div className="mt-2 max-h-28 overflow-y-auto">
                     <table className="w-full text-sm">
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                         {ingredientList.map((ing, i) => (
                           <tr key={i}>
                             <td className="py-1.5">
@@ -203,7 +203,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 ]
                   .filter((p) => p.value)
                   .map(({ label, value }) => (
-                    <div key={label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2">
+                    <div key={label} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2">
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</p>
                       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-0.5">{value}</p>
                     </div>
@@ -215,7 +215,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
           )}
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/50">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50">
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {isLoading
               ? ''

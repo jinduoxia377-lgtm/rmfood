@@ -16,10 +16,10 @@ export function StatisticsCardsSkeleton({ count = 4 }: StatisticsCardsSkeletonPr
           <div className="flex items-center justify-between">
             <div
               className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                i === 0 ? 'bg-secondary-50 dark:bg-secondary-900/20' :
-                i === 1 ? 'bg-primary-50 dark:bg-primary-900/20' :
-                i === 2 ? 'bg-warning-50 dark:bg-warning-900/20' :
-                'bg-accent-50 dark:bg-accent-900/20'
+                i === 0 ? 'bg-secondary-50 dark:bg-secondary-300/20' :
+                i === 1 ? 'bg-primary-50 dark:bg-primary-300/20' :
+                i === 2 ? 'bg-warning-50 dark:bg-warning-300/20' :
+                'bg-accent-50 dark:bg-accent-300/20'
               }`}
             >
               <Skeleton width={22} height={22} radius={5} animationType="pulse" />

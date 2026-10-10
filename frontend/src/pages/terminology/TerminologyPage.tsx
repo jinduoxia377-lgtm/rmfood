@@ -68,7 +68,7 @@ export default function TerminologyPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 顶部横幅 */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white shadow-lg">
+      <div className="rounded-2xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-6 text-white shadow-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">术语库管理</h1>
@@ -155,7 +155,7 @@ function StatCardsRow() {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+          <div key={i} className="h-20 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
         ))}
       </div>
     )
@@ -231,7 +231,7 @@ function RecentActivitySection() {
         <CardContent>
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+              <div key={i} className="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -256,7 +256,7 @@ function RecentActivitySection() {
               <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 shrink-0" />
               <div className="flex-1">
                 <span className="font-medium">{event.title}</span>
-                <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">{formatRelativeTime(event.created_at)}</span>
+                <span className="text-neutral-500 dark:text-neutral-400 ml-2 text-xs">{formatRelativeTime(event.created_at)}</span>
               </div>
               {event.status && (
                 <Badge variant={event.status === 'success' ? 'success' : 'info'} size="sm">
@@ -294,13 +294,13 @@ function CategoryTreeNode({
 
   return (
     <>
-      <tr className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+      <tr className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
         <td className="px-4 py-3" style={{ paddingLeft: `${depth * 20 + 16}px` }}>
           <div className="flex items-center gap-1">
             {hasChildren && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
@@ -440,7 +440,7 @@ function CategoryManagementTab() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
+              <tr className="border-b border-neutral-200 dark:border-neutral-700">
                 <th className="px-4 py-3 text-left font-semibold">名称</th>
                 <th className="px-4 py-3 text-left font-semibold">英文名</th>
                 <th className="px-4 py-3 text-left font-semibold">描述</th>
@@ -674,11 +674,11 @@ function TermManagementTab() {
             className="pl-9"
           />
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {suggestions.map((s) => (
                 <button
                   key={s}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 first:rounded-t-lg last:rounded-b-lg"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 first:rounded-t-lg last:rounded-b-lg"
                   onClick={() => selectSuggestion(s)}
                 >
                   {s}
@@ -728,7 +728,7 @@ function TermManagementTab() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
+              <tr className="border-b border-neutral-200 dark:border-neutral-700">
                 <th className="px-4 py-3 w-8"></th>
                 <th className="px-4 py-3 text-left font-semibold">术语</th>
                 <th className="px-4 py-3 text-left font-semibold">英文名</th>
@@ -743,11 +743,11 @@ function TermManagementTab() {
                 const isExpanded = expandedTermId === term.id
                 return (
                   <>
-                    <tr key={term.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                    <tr key={term.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setExpandedTermId(isExpanded ? null : term.id)}
-                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                         >
                           {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                         </button>
@@ -786,7 +786,7 @@ function TermManagementTab() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${term.id}-detail`}>
-                        <td colSpan={7} className="px-4 py-3 bg-gray-50 dark:bg-gray-900/30">
+                        <td colSpan={7} className="px-4 py-3 bg-neutral-50 dark:bg-neutral-900/30">
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">定义：</span>
@@ -1013,7 +1013,7 @@ function VariantManagementTab() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
+              <tr className="border-b border-neutral-200 dark:border-neutral-700">
                 <th className="px-4 py-3 text-left font-semibold">变体</th>
                 <th className="px-4 py-3 text-left font-semibold">归属术语</th>
                 <th className="px-4 py-3 text-left font-semibold">类型</th>
@@ -1023,7 +1023,7 @@ function VariantManagementTab() {
             </thead>
             <tbody>
               {variants.map((v) => (
-                <tr key={v.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                <tr key={v.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
                   <td className="px-4 py-3 font-medium">{v.variant}</td>
                   <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{v.term || `ID:${v.term_id}`}</td>
                   <td className="px-4 py-3">
@@ -1031,7 +1031,7 @@ function VariantManagementTab() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-primary-500 rounded-full"
                           style={{ width: `${(v.similarity ?? 0.8) * 100}%` }}
@@ -1174,7 +1174,7 @@ function ValidationTab() {
               </Button>
             </div>
             {validationResult && (
-              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded">
+              <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-900 rounded">
                 <div className="flex items-center gap-2 mb-2">
                   {validationResult.is_valid ? (
                     <Badge variant="success">有效</Badge>
@@ -1313,7 +1313,7 @@ function RulesTab() {
         <Card>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
+              <tr className="border-b border-neutral-200 dark:border-neutral-700">
                 <th className="px-4 py-3 text-left font-semibold">模式</th>
                 <th className="px-4 py-3 text-left font-semibold">替换</th>
                 <th className="px-4 py-3 text-left font-semibold">类型</th>
@@ -1324,7 +1324,7 @@ function RulesTab() {
             </thead>
             <tbody>
               {rules.map((rule) => (
-                <tr key={rule.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                <tr key={rule.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
                   <td className="px-4 py-3 font-mono text-xs">{rule.pattern}</td>
                   <td className="px-4 py-3 font-mono text-xs">{rule.replacement}</td>
                   <td className="px-4 py-3"><Badge variant="info">{rule.rule_type}</Badge></td>

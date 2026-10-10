@@ -93,7 +93,7 @@ export function FormulaListSkeleton() {
           {/* Table Skeleton */}
           <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+              <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                 <tr>
                   {[40, 150, 100, 100, 100, 120, 140].map((w, i) => (
                     <th key={i} className="px-4 py-3">

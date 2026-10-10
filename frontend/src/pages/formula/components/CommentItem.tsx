@@ -102,7 +102,7 @@ export function CommentItem({
             >
               <Heart
                 size={12}
-                className={cn('transition-transform duration-200', isLiked ? 'fill-red-500 scale-110' : 'fill-none')}
+                className={cn('transition-transform duration-200', isLiked ? 'fill-error-500 scale-110' : 'fill-none')}
               />
               {likeCount > 0 && <span>{likeCount}</span>}
             </button>

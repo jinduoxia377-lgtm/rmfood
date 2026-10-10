@@ -200,13 +200,18 @@ export default function ExperimentEditPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* 头部 */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate(`/experiments/${experimentId}`)}
-          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          返回详情
-        </button>
+        {/* A-47：这一页原本完全没有 h1 —— 只有「返回详情」和「保存修改」两个按钮，
+            屏幕阅读器用户进入后拿不到任何页面主题。补一个可见的 h1 作为页面标题。 */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/experiments/${experimentId}`)}
+            className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            返回详情
+          </button>
+          <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">编辑实验</h1>
+        </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-16 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
@@ -226,7 +231,7 @@ export default function ExperimentEditPage() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 text-error-600 dark:text-error-600 text-sm">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 text-error-600 dark:text-error-600 text-sm">
           <AlertCircle size={16} />{error}
         </div>
       )}
@@ -367,7 +372,7 @@ export default function ExperimentEditPage() {
             {/* 参数表格 */}
             <div className="space-y-2">
               {(form.parameters ? Object.entries(form.parameters) : []).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg group">
+                <div key={key} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 min-w-[120px] truncate">{key}</span>
                   <span className="text-sm text-neutral-500 dark:text-neutral-400 flex-1 truncate">{String(value)}</span>
                   <button
@@ -414,12 +419,12 @@ export default function ExperimentEditPage() {
           <Card>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
-                <FlaskConical size={18} className="text-violet-500" />
+                <FlaskConical size={18} className="text-accent-500" />
                 实验材料
               </div>
 
               {(form.materials || []).map((mat: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg group">
+                <div key={idx} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
                   <div className="flex-1 grid grid-cols-3 gap-2">
                     <Input
                       value={mat.name || ''}
@@ -471,12 +476,12 @@ export default function ExperimentEditPage() {
           <Card>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
-                <Wrench size={18} className="text-sky-500" />
+                <Wrench size={18} className="text-info-500" />
                 实验设备
               </div>
 
               {(form.equipment || []).map((eq: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg group">
+                <div key={idx} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex-1">{eq.name}</span>
                   <Badge variant={eq.status === 'available' ? 'success' : 'warning'} size="sm">
                     {eq.status === 'available' ? '可用' : '使用中'}

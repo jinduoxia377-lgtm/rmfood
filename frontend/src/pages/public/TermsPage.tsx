@@ -140,15 +140,15 @@ export default function TermsPage() {
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest block mb-3">Legal</span>
-          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-slate-900 mb-4">
+          <span className="text-xs font-mono text-secondary-600 uppercase tracking-widest block mb-3">Legal</span>
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-4">
             服务条款
           </h1>
-          <p className="text-[14px] leading-[1.75] text-slate-600 max-w-2xl">
+          <p className="text-[14px] leading-[1.75] text-neutral-600 max-w-2xl">
             感谢您选择 RMFOOD 药食同源配方平台。本服务条款是您与莱茵（厦门）分子生物科技有限公司之间关于您使用本平台服务所订立的法律协议。
             请在注册或使用本平台前仔细阅读本条款。
           </p>
-          <p className="text-[12px] text-slate-400 mt-3">最后更新日期：2025 年 7 月 1 日</p>
+          <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-3">最后更新日期：2025 年 7 月 1 日</p>
         </div>
       </section>
 
@@ -157,7 +157,7 @@ export default function TermsPage() {
           {/* 目录侧边栏 */}
           <aside className="hidden lg:block w-52 shrink-0">
             <nav className="sticky top-6">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">目录</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3">目录</p>
               <ul className="space-y-0.5">
                 {sections.map((s) => {
                   const IconComp = s.icon
@@ -167,8 +167,8 @@ export default function TermsPage() {
                         onClick={() => scrollTo(s.id)}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium transition-all text-left ${
                           activeSection === s.id
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-slate-600 hover:bg-slate-50 dark:bg-neutral-800 hover:text-slate-900'
+                            ? 'bg-secondary-50 text-secondary-700'
+                            : 'text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-800 hover:text-neutral-900'
                         }`}
                       >
                         <IconComp size={13} className="shrink-0 opacity-60" />
@@ -204,10 +204,10 @@ export default function TermsPage() {
                     >
                       <IconComp size={15} style={{ color: '#2563EB' }} />
                     </div>
-                    <h2 className="text-[14px] font-bold text-slate-900">{sec.title}</h2>
+                    <h2 className="text-[14px] font-bold text-neutral-900">{sec.title}</h2>
                   </div>
                   {sec.content.map((p, j) => (
-                    <p key={j} className="text-[13px] leading-[1.8] text-slate-600 mb-3 last:mb-0 pl-11">
+                    <p key={j} className="text-sm leading-[1.8] text-neutral-600 mb-3 last:mb-0 pl-11">
                       {p}
                     </p>
                   ))}
@@ -227,10 +227,10 @@ export default function TermsPage() {
                 <FileText size={18} style={{ color: '#2563EB' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-slate-900 mb-1">相关文件</p>
-                <p className="text-[12px] text-slate-600">
+                <p className="text-sm font-semibold text-neutral-900 mb-1">相关文件</p>
+                <p className="text-[12px] text-neutral-600">
                   本服务条款与我们的
-                  <a href="/privacy" className="text-blue-600 hover:underline font-medium">
+                  <a href="/privacy" className="text-secondary-600 hover:underline font-medium">
                     隐私政策
                   </a>
                   共同构成完整的用户使用协议。如对条款有任何疑问，请联系 support@rmfood.cn。
@@ -238,7 +238,7 @@ export default function TermsPage() {
               </div>
               <Link
                 to="/privacy"
-                className="shrink-0 flex items-center gap-1 text-[12px] font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                className="shrink-0 flex items-center gap-1 text-[12px] font-medium text-secondary-600 hover:text-secondary-700 transition-colors"
               >
                 查看隐私政策 <ChevronRight size={13} />
               </Link>

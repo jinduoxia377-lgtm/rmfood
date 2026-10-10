@@ -126,35 +126,38 @@ const QUICK_ACTIONS = [
     to: '/formulas/new',
     icon: Plus,
     title: '新建配方',
-    bgLight: 'bg-primary-50 dark:bg-primary-900/20',
+    bgLight: 'bg-primary-50 dark:bg-primary-300/20',
     textColor: 'text-primary-700 dark:text-primary-700',
   },
   {
     to: '/formulas?status=pending_review',
     icon: Clock,
     title: '待审核',
-    bgLight: 'bg-warning-50 dark:bg-warning-900/20',
-    textColor: 'text-warning-600 dark:text-warning-700',
+    bgLight: 'bg-warning-50 dark:bg-warning-300/20',
+    /* A-35：原 text-warning-600(#d97706) 压在 bg-warning-50(#fffbeb) 上仅 3.07:1。
+       且因为写了 dark:text-*，语义层的「600→700」兜底被 :not([class*="dark:text-"]) 跳过。
+       直接把亮色档提到 700(#b45309)，实测 4.84:1 ✅。 */
+    textColor: 'text-warning-700 dark:text-warning-700',
   },
   {
     to: '/experiments',
     icon: TestTubes,
     title: '实验管理',
-    bgLight: 'bg-secondary-50 dark:bg-secondary-900/20',
+    bgLight: 'bg-secondary-50 dark:bg-secondary-300/20',
     textColor: 'text-secondary-600 dark:text-secondary-700',
   },
   {
     to: '/ai',
     icon: Brain,
     title: 'AI 助手',
-    bgLight: 'bg-accent-50 dark:bg-accent-900/20',
+    bgLight: 'bg-accent-50 dark:bg-accent-300/20',
     textColor: 'text-accent-600 dark:text-accent-700',
   },
   {
     to: '/databases',
     icon: Database,
     title: '数据库',
-    bgLight: 'bg-secondary-50 dark:bg-secondary-900/20',
+    bgLight: 'bg-secondary-50 dark:bg-secondary-300/20',
     textColor: 'text-secondary-700 dark:text-secondary-700',
   },
 ];
@@ -901,7 +904,10 @@ export default function FormulaListPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight">配方管理</h2>
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">配方管理</h1>
+              {/* A-23：页面此前只有 h1 + h3，「最近更新」卡片标题直接从 1 跳到 3。
+                  补一个屏幕阅读器可见的 h2 承接正文区，大纲恢复 h1 → h2 → h3。 */}
+              <h2 className="sr-only">配方列表</h2>
               <span className="text-xs font-medium bg-white dark:bg-neutral-900/15 text-neutral-700 dark:text-white/75 px-2.5 py-0.5 rounded-full tabular-nums">
                 {total} 条
               </span>
@@ -934,9 +940,9 @@ export default function FormulaListPage() {
             <button
               onClick={() => setViewMode('card')}
               className={cn(
-                'px-3 py-2 transition-colors min-h-[44px] flex items-center justify-center',
+                'px-3 py-2 min-w-[44px] min-h-[44px] transition-colors flex items-center justify-center',
                 viewMode === 'card'
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700'
+                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
               title="卡片视图"
@@ -947,9 +953,10 @@ export default function FormulaListPage() {
             <button
               onClick={() => setViewMode('table')}
               className={cn(
-                'p-2 transition-colors',
+                /* A-20：与卡片视图按钮对称，补 44×44 触控区（原 32×32）。 */
+                'p-2 min-w-[44px] min-h-[44px] transition-colors flex items-center justify-center',
                 viewMode === 'table'
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700'
+                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
               title="表格视图"
@@ -965,7 +972,7 @@ export default function FormulaListPage() {
             className={cn(
               'p-2 rounded-lg border transition-all min-h-[44px] min-w-[44px]',
               favoritesOnly
-                ? 'bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800 text-warning-600 dark:text-warning-700'
+                ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800 text-warning-600 dark:text-warning-700'
                 : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
             )}
             title={favoritesOnly ? '显示全部' : '只看收藏'}
@@ -977,7 +984,7 @@ export default function FormulaListPage() {
           {/* 操作日志 */}
           <button
             onClick={() => setShowLogPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-sm"
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] min-w-[44px] rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-sm"
             aria-label="操作日志"
           >
             <FileText size={14} />
@@ -1035,8 +1042,11 @@ export default function FormulaListPage() {
         {/* ═══════════════ 移动端/平板端：顶部搜索栏 ═══════════════ */}
         <div className="lg:hidden col-span-12 space-y-3">
           <div className="relative">
+            {/* A-24：移动端顶部的搜索框（lg:hidden 分支）——placeholder 不是可访问名称，
+                它与筛选面板里那个搜索框是两个独立实例，需要各自带 aria-label。 */}
             <Input
               ref={searchInputRef}
+              aria-label="搜索配方名称或编号"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="搜索配方名称或编号..."
@@ -1045,7 +1055,7 @@ export default function FormulaListPage() {
             />
             <button
               onClick={() => setShowMobileFilter(true)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="打开筛选面板"
             >
               <SlidersHorizontal size={18} />
@@ -1062,7 +1072,7 @@ export default function FormulaListPage() {
                         className={cn(
                           'px-4 py-3 rounded-xl text-sm font-medium transition-all border min-h-[44px]',
                           selectedStatuses.has(opt.value)
-                            ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                            ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                             : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300',
                         )}
                       >
@@ -1075,9 +1085,13 @@ export default function FormulaListPage() {
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">创建日期</label>
                   <div className="space-y-2">
                     <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]" />
+                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
+        aria-label="创建日期（起）"
+      />
                     <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]" />
+                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
+        aria-label="创建日期（止）"
+      />
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -1132,7 +1146,7 @@ export default function FormulaListPage() {
           <CardContent className="p-6 space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
                   <Filter className="w-4 h-4 text-primary-700 dark:text-primary-700" />
                 </div>
                 <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">筛选条件</span>
@@ -1152,6 +1166,9 @@ export default function FormulaListPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">名称搜索</label>
               <Input
+                /* A-23：placeholder 不算可访问名称（WCAG 4.1.2 / 1.3.1）。
+                   该输入框的 <label> 是兄弟节点且没有 htmlFor，无法形成关联。 */
+                aria-label="搜索配方名称或编号"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="搜索配方名称或编号…"
@@ -1165,8 +1182,12 @@ export default function FormulaListPage() {
               <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">状态</label>
               <div className="space-y-1.5">
                 {STATUS_OPTIONS.map((opt) => (
-                  <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group py-1">
-                    <Checkbox checked={selectedStatuses.has(opt.value)} onChange={() => toggleStatusFilter(opt.value)} />
+                  /* A-23：原 192×28，未达 WCAG 2.5.5 的 44×44 —— 整行 label 就是
+                     命中区，给它 min-h-[44px]；同时给 Checkbox 补 aria-label，
+                     因为 Radix 渲染的是 <button role=checkbox>，外层 <label>
+                     并不会为它提供可访问名称。 */
+                  <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group py-1 min-h-[44px]">
+                    <Checkbox checked={selectedStatuses.has(opt.value)} onChange={() => toggleStatusFilter(opt.value)} aria-label={`按状态筛选：${opt.label}`} />
                     <span className="text-sm text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors">
                       {opt.label}
                     </span>
@@ -1179,10 +1200,11 @@ export default function FormulaListPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">创建日期</label>
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
-                <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
+                {/* A-23：原 92×34（<44），且日期输入框没有可访问名称 */}
+                <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)} aria-label="创建日期起始"
+                  className="w-full px-3 py-2 min-h-[44px] text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
+                <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)} aria-label="创建日期结束"
+                  className="w-full px-3 py-2 min-h-[44px] text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
               </div>
             </div>
 
@@ -1251,12 +1273,14 @@ export default function FormulaListPage() {
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">总数</p>
                   <p className="text-base font-semibold text-neutral-900 dark:text-white tabular-nums">{total}</p>
                 </div>
-                <div className="px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/40">
+                <div className="px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-primary-100 dark:border-primary-800/40">
                   <p className="text-xs text-primary-700 dark:text-primary-700 mb-0.5">已通过</p>
                   <p className="text-base font-semibold text-primary-700 dark:text-primary-700 tabular-nums">{statsData.approved}</p>
                 </div>
-                <div className="px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/20 border border-warning-100 dark:border-warning-800/40">
-                  <p className="text-xs text-warning-600 dark:text-warning-700 mb-0.5">待审核</p>
+                <div className="px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 border border-warning-100 dark:border-warning-800/40">
+                  {/* A-35：原 text-warning-600(#d97706) 压 bg-warning-50(#fffbeb) 仅 3.07:1；
+                      同张卡的数值已是 700 档，标签却是 600 档，本来就不一致。 */}
+                  <p className="text-xs text-warning-700 dark:text-warning-700 mb-0.5">待审核</p>
                   <p className="text-base font-semibold text-warning-700 dark:text-warning-700 tabular-nums">{statsData.pendingReview}</p>
                 </div>
                 <div className="px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
@@ -1375,7 +1399,7 @@ export default function FormulaListPage() {
               <div className="py-16 md:py-20">
                 <EmptyState
                   icon={
-                    <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center mx-auto mb-4">
                       <FlaskConical size={24} className="text-primary-500 dark:text-primary-700" />
                     </div>
                   }
@@ -1532,10 +1556,12 @@ export default function FormulaListPage() {
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <button onClick={() => toggleFavoriteItem(formula.id)} className="shrink-0" aria-label={favorites.has(formula.id) ? '取消收藏' : '收藏'} aria-pressed={favorites.has(formula.id)}>
+                                {/* A-23：14×14 的星标图标远低于 44×44。撑成 44×44 命中区，
+                                    用 -mx-3.5 抵消外框尺寸变化，视觉位置与间距不变。 */}
+                                <button onClick={() => toggleFavoriteItem(formula.id)} className="shrink-0 inline-flex items-center justify-center w-11 h-11 -mx-3.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors" aria-label={favorites.has(formula.id) ? '取消收藏' : '收藏'} aria-pressed={favorites.has(formula.id)}>
                                   <Star size={14} className={favorites.has(formula.id) ? 'fill-warning-400 text-warning-400' : 'text-neutral-400 dark:text-neutral-400 hover:text-warning-400 transition-colors'} />
                                 </button>
-                                <Link to={`/formulas/${formula.id}`} className="font-medium text-neutral-900 dark:text-white hover:text-primary-700 dark:hover:text-primary-600 transition-colors truncate max-w-[180px]">
+                                <Link to={`/formulas/${formula.id}`} className="inline-flex items-center min-h-[44px] font-medium text-neutral-900 dark:text-white hover:text-primary-700 dark:hover:text-primary-600 transition-colors truncate max-w-[180px]">
                                   <Highlight text={formula.name} keyword={debouncedSearch} />
                                 </Link>
                                 <Badge variant="neutral" size="sm" className="text-xs">v{formula.version}</Badge>
@@ -1570,7 +1596,7 @@ export default function FormulaListPage() {
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
                                 <button
                                   onClick={() => setActionMenuId(showMenu ? null : formula.id)}
-                                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                  className="p-1.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                   aria-label={`${formula.name} 的操作菜单`}
                                 >
                                   <MoreVertical className="w-4 h-4" />
@@ -1666,7 +1692,8 @@ export default function FormulaListPage() {
                             onChange={(e) => { const val = Math.min(Math.max(1, Number(e.target.value)), totalPages); if (!isNaN(val)) setPage(val); }}
                             onKeyDown={(e) => { if (e.key === 'Enter') { const val = Math.min(Math.max(1, Number(e.currentTarget.value)), totalPages); if (!isNaN(val)) setPage(val); } }}
                             className="w-14 px-2 py-1 text-xs border border-neutral-200 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-center focus:ring-2 focus:ring-primary-200 outline-none"
-                          />
+        aria-label="跳转页码"
+      />
                           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/{totalPages}</span>
                         </div>
                         <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} />
@@ -1688,12 +1715,12 @@ export default function FormulaListPage() {
             <CardHeader className="px-6 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
                     <Clock size={14} className="text-primary-700 dark:text-primary-700" />
                   </div>
                   <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近更新</CardTitle>
                 </div>
-                <Link to="/formulas" className="text-xs font-medium text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 flex items-center gap-1 transition-colors px-2 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20">
+                <Link to="/formulas" className="text-xs font-medium text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 inline-flex items-center gap-1 min-h-[44px] transition-colors px-2 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20">
                   全部 <ArrowRight size={11} />
                 </Link>
               </div>
@@ -1725,9 +1752,9 @@ export default function FormulaListPage() {
                                     warning-600  #fbbf24 on rgb(87,89,89)  = 4.23 ✗
                            暗色蒙版同时从 /30 降到 /20（与快捷入口 chip 一致），
                            700 档文字对比度提升到 5.7 / 7.6 / 6.9。 */
-                        idx === 0 ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700'
-                      : idx === 1 ? 'bg-secondary-100 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-700'
-                      : idx === 2 ? 'bg-warning-100 dark:bg-warning-900/20 text-warning-700 dark:text-warning-700'
+                        idx === 0 ? 'bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
+                      : idx === 1 ? 'bg-secondary-100 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700'
+                      : idx === 2 ? 'bg-warning-100 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700'
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400',
                       )}>{idx + 1}</span>
                       <div className="min-w-0 flex-1">
@@ -1752,7 +1779,7 @@ export default function FormulaListPage() {
             <div className="h-[3px] bg-accent-500 dark:bg-accent-600" />
             <CardHeader className="px-6 pt-5 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center">
                   <Download size={14} className="text-accent-600 dark:text-accent-700" />
                 </div>
                 <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">导入导出</CardTitle>
@@ -1779,7 +1806,7 @@ export default function FormulaListPage() {
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50/60 dark:hover:bg-primary-900/15 transition-all text-left group min-h-[48px]"
               >
-                <div className="w-9 h-9 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Download size={16} className="text-primary-700 dark:text-primary-700" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1796,7 +1823,7 @@ export default function FormulaListPage() {
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50/60 dark:hover:bg-accent-900/15 transition-all text-left group min-h-[48px]"
               >
-                <div className="w-9 h-9 rounded-xl bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-9 h-9 rounded-xl bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Download size={16} className="text-secondary-600 dark:text-secondary-700" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1841,6 +1868,8 @@ export default function FormulaListPage() {
       {/* ── 键盘快捷键提示（桌面端）── */}
       <div className="hidden lg:block fixed bottom-6 right-6 z-40">
         <Tooltip
+          /* A-23：asChild 让 Trigger 直接复用内层 button，不再多包一层无名 button */
+          asChild
           content={
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center justify-between gap-4">
@@ -1858,7 +1887,7 @@ export default function FormulaListPage() {
             </div>
           }
         >
-          <button className="p-2.5 rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/80 dark:border-neutral-700/60 shadow-lg hover:shadow-xl transition-all text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300" aria-label="键盘快捷键">
+          <button className="p-2.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/80 dark:border-neutral-700/60 shadow-lg hover:shadow-xl transition-all text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300" aria-label="键盘快捷键">
             <Keyboard size={16} />
           </button>
         </Tooltip>

@@ -37,6 +37,7 @@ export const MinSliderTest: React.FC = () => {
           defaultValue="50"
           onChange={handleChange}
           style={{ width: '100%', height: '30px', cursor: 'pointer' }}
+          aria-label="测试 2: 原生 range input"
         />
         <p style={{ margin: '10px 0 0 0' }}>尝试拖动这个滑块</p>
       </div>
@@ -51,6 +52,7 @@ export const MinSliderTest: React.FC = () => {
             defaultValue="50"
             onChange={handleChange}
             style={{ width: '100%', cursor: 'pointer' }}
+            aria-label="测试 3: div 包裹的 range"
           />
         </div>
       </div>

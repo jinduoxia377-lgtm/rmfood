@@ -320,50 +320,15 @@ export default function FormulaDetailPage() {
     setIsFavorite(favs.includes(formulaId));
   }, [formulaId]);
 
-  // ── Early Returns（在所有 hooks 之后）──
-
-  if (isLoading) {
-    return <FormulaDetailSkeleton activeTab={activeTab} />;
-  }
-
-  if (!formula) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <EmptyState
-          icon={<FlaskConical size={48} strokeWidth={1.5} />}
-          title="配方不存在"
-          description="该配方可能已被删除或您没有访问权限"
-          action={
-            <Link to="/formulas">
-              <Button variant="outline" size="sm">
-                返回列表
-              </Button>
-            </Link>
-          }
-        />
-      </div>
-    );
-  }
-
-  // ── 事件处理函数（在 early return 之后，因为依赖 formula）──
-
-  const toggleFavorite = () => {
-    const favs: number[] = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
-    if (isFavorite) {
-      const idx = favs.indexOf(formulaId);
-      if (idx > -1) favs.splice(idx, 1);
-    } else {
-      favs.push(formulaId);
-    }
-    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
-    setIsFavorite(!isFavorite);
-  };
-
   // ── 内联编辑功能（Tab 1）──
-  const EDITABLE_FIELDS = ['name', 'description', 'targetEffects', 'category', 'tags', 'notes'] as const;
+  const EDITABLE_FIELDS = useMemo(
+    () => ['name', 'description', 'targetEffects', 'category', 'tags', 'notes'] as const,
+    [],
+  );
 
   const getChangedFields = useCallback((): Record<string, any> => {
     const changed: Record<string, any> = {};
+    if (!formula) return changed;
     EDITABLE_FIELDS.forEach((key) => {
       if (!(key in editedData)) return;
       const editedVal = editedData[key];
@@ -373,13 +338,11 @@ export default function FormulaDetailPage() {
       }
     });
     return changed;
-  }, [editedData, formula]);
-
-  const hasChanges = Object.keys(getChangedFields()).length > 0;
+  }, [editedData, formula, EDITABLE_FIELDS]);
 
   const isFieldChanged = useCallback(
     (field: string): boolean => {
-      if (!(field in editedData)) return false;
+      if (!formula || !(field in editedData)) return false;
       const editedVal = editedData[field];
       const originalVal = (formula as unknown as Record<string, unknown>)[field];
       return JSON.stringify(editedVal) !== JSON.stringify(originalVal ?? '');
@@ -388,6 +351,7 @@ export default function FormulaDetailPage() {
   );
 
   const startEditing = useCallback(() => {
+    if (!formula) return;
     setEditedData({
       name: formula.name,
       description: formula.description || '',
@@ -408,6 +372,7 @@ export default function FormulaDetailPage() {
   }, []);
 
   const saveEditedData = useCallback(async () => {
+    if (!formula) return;
     const nameErrors = validateFormulaName(editedData.name || '');
     if (nameErrors.length > 0) {
       setEditErrors({ name: nameErrors[0].message });
@@ -450,7 +415,7 @@ export default function FormulaDetailPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [editedData, formula, formulaId, qc, addToast, cancelEditing, getChangedFields]);
+  }, [formula, formulaId, qc, addToast, cancelEditing, getChangedFields, editedData]);
 
   const updateEditedField = useCallback(
     (field: string, value: any) => {
@@ -469,7 +434,7 @@ export default function FormulaDetailPage() {
 
   // ── 删除功能（增强确认）──
   const handleDelete = async () => {
-    if (!deleteConfirmed || deleteInputValue !== formula.name) {
+    if (!formula || !deleteConfirmed || deleteInputValue !== formula.name) {
       return;
     }
 
@@ -492,7 +457,7 @@ export default function FormulaDetailPage() {
 
   // ── 推荐功能（Tab 5）──
   const loadRecommendations = useCallback(async () => {
-    const effects = (formula.target_effects || formula.targetEffects) as string[];
+    const effects = (formula?.target_effects || formula?.targetEffects) as string[];
     if (!effects || effects.length === 0) {
       addToast({ type: 'info', message: '暂无目标功效，无法生成推荐' });
       return;
@@ -500,16 +465,14 @@ export default function FormulaDetailPage() {
 
     setLoadingRecommendations(true);
     try {
-      const data = await import('@/api/formula').then((m) =>
-        m.formulaApi.recommendations((formula.target_effects || formula.targetEffects) as string[]),
-      );
+      const data = await import('@/api/formula').then((m) => m.formulaApi.recommendations(effects));
       setRecommendations(data);
     } catch (error: any) {
       addToast({ type: 'error', message: error?.message || '加载推荐失败' });
     } finally {
       setLoadingRecommendations(false);
     }
-  }, [(formula.target_effects || formula.targetEffects) as string[], addToast]);
+  }, [formula, addToast]);
 
   // ── 成分展开/折叠（Tab 2）──
   const toggleIngredientExpand = useCallback((name: string) => {
@@ -753,6 +716,7 @@ export default function FormulaDetailPage() {
   };
 
   const handleReview = (approved: boolean) => {
+    if (!formula) return;
     if (!reviewNotes.trim()) {
       setReviewAction(approved ? 'approve' : 'reject');
       return;
@@ -767,6 +731,7 @@ export default function FormulaDetailPage() {
   };
 
   const handleExport = () => {
+    if (!formula) return;
     const exportData = {
       name: formula.name,
       code: formula.code,
@@ -806,12 +771,15 @@ export default function FormulaDetailPage() {
     [formulaId, recommendations.length, loadingRecommendations],
   );
 
-  // ── 派生状态 ──
+  // ── 派生状态（依赖 formula，必须在 early return 之前计算）──
 
-  const canEdit = formula.status === 'draft' || (formula.status as string) === 'rejected';
-  const canSubmit = formula.status === 'draft';
-  const canReview = (formula.status as string) === 'pending_review' && has(FormulaPermission.AUDIT);
-  const hasAnalysisData = safetyParsed || synergyParsed || ingredientList.length > 0;
+  const hasChanges = Object.keys(getChangedFields()).length > 0;
+  const canEdit = formula ? formula.status === 'draft' || (formula.status as string) === 'rejected' : false;
+  const canSubmit = formula ? formula.status === 'draft' : false;
+  const canReview = formula
+    ? (formula.status as string) === 'pending_review' && has(FormulaPermission.AUDIT)
+    : false;
+  const hasAnalysisData = !!(safetyParsed || synergyParsed || ingredientList.length > 0);
 
   // 成分总用量统计
   const totalDosage = useMemo(() => {
@@ -838,6 +806,45 @@ export default function FormulaDetailPage() {
     }));
   }, [formula?.composition]);
 
+  // ── 事件处理函数（非 Hooks，依赖 formula，在 early return 之后）──
+
+  const toggleFavorite = () => {
+    const favs: number[] = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    if (isFavorite) {
+      const idx = favs.indexOf(formulaId);
+      if (idx > -1) favs.splice(idx, 1);
+    } else {
+      favs.push(formulaId);
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+    setIsFavorite(!isFavorite);
+  };
+
+  // ── Early Returns（必须在所有 hooks 之后）──
+
+  if (isLoading) {
+    return <FormulaDetailSkeleton activeTab={activeTab} />;
+  }
+
+  if (!formula) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <EmptyState
+          icon={<FlaskConical size={48} strokeWidth={1.5} />}
+          title="配方不存在"
+          description="该配方可能已被删除或您没有访问权限"
+          action={
+            <Link to="/formulas">
+              <Button variant="outline" size="sm">
+                返回列表
+              </Button>
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0">
       {/* 返回 + 操作栏（移动端优化） */}
@@ -855,7 +862,7 @@ export default function FormulaDetailPage() {
           <Button
             variant="ghost"
             size="sm"
-            icon={<Star size={14} className={isFavorite ? 'fill-amber-400 text-warning-400' : ''} />}
+            icon={<Star size={14} className={isFavorite ? 'fill-warning-400 text-warning-400' : ''} />}
             onClick={toggleFavorite}
           />
           {/* 编辑（切换内联编辑模式）*/}
@@ -924,7 +931,7 @@ export default function FormulaDetailPage() {
               icon={<Send size={14} />}
               onClick={() => submitMut.mutate(formula.id)}
               loading={submitMut.isPending}
-              className="bg-warning-500 hover:bg-warning-600 shadow-amber-600/25"
+              className="bg-warning-500 hover:bg-warning-600 shadow-warning-600/25"
             >
               提交审核
             </Button>
@@ -1251,8 +1258,8 @@ export default function FormulaDetailPage() {
                           <div
                             className={`rounded-xl p-4 border ${
                               safetyParsed.passed
-                                ? 'border-green-200 bg-success-50/50 dark:border-green-800 dark:bg-success-900/10'
-                                : 'border-red-200 bg-error-50/50 dark:border-red-800 dark:bg-error-900/10'
+                                ? 'border-success-200 bg-success-50/50 dark:border-success-800 dark:bg-success-300/15'
+                                : 'border-error-200 bg-error-50/50 dark:border-error-800 dark:bg-error-300/15'
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-2">
@@ -1270,7 +1277,7 @@ export default function FormulaDetailPage() {
 
                         {/* 协同分析摘要 */}
                         {synergyParsed && (
-                          <div className="rounded-xl p-4 border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10">
+                          <div className="rounded-xl p-4 border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-300/15">
                             <div className="flex items-center gap-2 mb-2">
                               <Leaf size={16} className="text-primary-700" />
                               <span className="font-semibold text-sm">协同分析</span>
@@ -1328,7 +1335,7 @@ export default function FormulaDetailPage() {
                         {/* 成分表格 */}
                         <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
                           <table className="w-full text-sm">
-                            <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+                            <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                               <tr>
                                 <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-12">#</th>
                                 <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">成分名称</th>
@@ -1339,12 +1346,12 @@ export default function FormulaDetailPage() {
                                 <th className="text-center p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-20">操作</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                               {ingredientList.map((ing, i) => (
                                 <>
                                   <tr
                                     key={ing.name}
-                                    className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors"
+                                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
                                   >
                                     <td className="p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{i + 1}</td>
                                     <td className="p-3 text-neutral-900 dark:text-white font-medium">{ing.name}</td>
@@ -1374,7 +1381,7 @@ export default function FormulaDetailPage() {
                                   {/* 展开详情行 */}
                                   {expandedIngredients.has(ing.name) && (
                                     <tr key={`${ing.name}-detail`}>
-                                      <td colSpan={7} className="p-4 bg-slate-50/50 dark:bg-neutral-800/30">
+                                      <td colSpan={7} className="p-4 bg-neutral-50/50 dark:bg-neutral-800/30">
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                                           <div>
                                             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">性味归经</p>
@@ -1458,7 +1465,7 @@ export default function FormulaDetailPage() {
                         
                         {/* 合规提示 */}
                         {nutritionLabelData.warnings && nutritionLabelData.warnings.length > 0 && (
-                          <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-900/10 rounded-lg">
+                          <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-300/15 rounded-lg">
                             {nutritionLabelData.warnings.map((w: string, i: number) => (
                               <p key={i} className="text-sm text-warning-700 dark:text-warning-700">
                                 ⚠ {w}
@@ -1499,7 +1506,7 @@ export default function FormulaDetailPage() {
                           {processSteps.map((step, index) => (
                             <div key={index} className="relative flex gap-4 pl-4">
                               {/* 时间线节点 */}
-                              <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
+                              <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-300/25 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
                                 <span className="text-sm font-bold text-primary-700 dark:text-primary-700">
                                   {step.step_number}
                                 </span>
@@ -1513,13 +1520,13 @@ export default function FormulaDetailPage() {
                                   </h4>
                                   <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                     {step.temperature && (
-                                      <span className="px-2 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
+                                      <span className="px-2 py-1 rounded-full bg-warning-50 dark:bg-warning-300/20 text-warning-600 dark:text-warning-700">
                                         <Thermometer className="w-3 h-3 inline mr-0.5" />{step.temperature.min}-{step.temperature.max}
                                         {step.temperature.unit}
                                       </span>
                                     )}
                                     {step.duration && (
-                                      <span className="px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-700">
+                                      <span className="px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-300/20 text-secondary-600 dark:text-secondary-700">
                                         ⏱️ {step.duration.value}
                                         {step.duration.unit}
                                       </span>
@@ -1587,7 +1594,7 @@ export default function FormulaDetailPage() {
                                 className={cn(
                                   'flex-1 rounded-xl border p-4',
                                   v.is_current
-                                    ? 'border-primary-200 bg-primary-50/50 dark:border-primary-800 dark:bg-primary-900/10'
+                                    ? 'border-primary-200 bg-primary-50/50 dark:border-primary-800 dark:bg-primary-300/15'
                                     : 'border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800',
                                 )}
                               >
@@ -1724,7 +1731,7 @@ export default function FormulaDetailPage() {
                             {/* 推荐头部 */}
                             <div className="flex items-start justify-between mb-3">
                               <h4 className="font-semibold text-neutral-900 dark:text-white line-clamp-2">{rec.name}</h4>
-                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 text-xs font-bold">
+                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 text-xs font-bold">
                                 {Math.round(rec.score * 100)}%
                               </div>
                             </div>
@@ -1772,14 +1779,14 @@ export default function FormulaDetailPage() {
               <TabsContent value="explainability">
                 <div className="space-y-4 pt-4">
                   <div className="flex items-center gap-2">
-                    <FileText size={20} className="text-violet-600" />
+                    <FileText size={20} className="text-accent-600" />
                     <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       配方可解释性报告
                     </h2>
                   </div>
 
                   {!((formula.target_effects || formula.targetEffects) as string[])?.length ? (
-                    <div className="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center text-gray-500">
+                    <div className="p-6 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-center text-neutral-500">
                       请先设置目标功效以生成解释报告
                     </div>
                   ) : (
@@ -1822,7 +1829,7 @@ export default function FormulaDetailPage() {
                 <div className="space-y-4 pt-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FlaskConical size={20} className="text-violet-600" />
+                      <FlaskConical size={20} className="text-accent-600" />
                       <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         配方深度分析
                       </h2>
@@ -1857,8 +1864,8 @@ export default function FormulaDetailPage() {
                   </div>
 
                   {!ingredientList.length && (
-                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                    <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800">
+                      <p className="text-sm text-warning-700 dark:text-warning-700">
                         请先添加成分后运行深度分析
                       </p>
                     </div>
@@ -1934,38 +1941,38 @@ export default function FormulaDetailPage() {
 
                   {/* 配比优化结果 */}
                   {optimizationResult && (
-                    <div className="mt-4 p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
-                      <h3 className="text-sm font-medium text-violet-700 dark:text-violet-300 mb-3">
+                    <div className="mt-4 p-4 rounded-xl bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800">
+                      <h3 className="text-sm font-medium text-accent-700 dark:text-accent-700 mb-3">
                         配比优化结果
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                         <div>
-                          <span className="text-violet-500">总成本:</span>
+                          <span className="text-accent-500">总成本:</span>
                           <span className="font-bold ml-1">{optimizationResult.min_cost?.toFixed(2)} 元</span>
                         </div>
                         <div>
-                          <span className="text-violet-500">求解时间:</span>
+                          <span className="text-accent-500">求解时间:</span>
                           <span className="font-bold ml-1">{optimizationResult.solve_time_ms?.toFixed(0)} ms</span>
                         </div>
                         <div>
-                          <span className="text-violet-500">可行解:</span>
-                          <span className={`font-bold ml-1 ${optimizationResult.feasible ? 'text-emerald-600' : 'text-error-600'}`}>
+                          <span className="text-accent-500">可行解:</span>
+                          <span className={`font-bold ml-1 ${optimizationResult.feasible ? 'text-success-600' : 'text-error-600'}`}>
                             {optimizationResult.feasible ? '是' : '否'}
                           </span>
                         </div>
                         <div>
-                          <span className="text-violet-500">成分数:</span>
+                          <span className="text-accent-500">成分数:</span>
                           <span className="font-bold ml-1">{optimizationResult.ratios?.length ?? 0}</span>
                         </div>
                       </div>
                       {optimizationResult.ratios?.length > 0 && (
                         <div className="mt-3 space-y-1">
-                          <p className="text-xs text-violet-600 dark:text-violet-400">最优配比:</p>
+                          <p className="text-xs text-accent-600 dark:text-accent-700">最优配比:</p>
                           {optimizationResult.ratios.slice(0, 5).map((r: any, i: number) => (
                             <div key={i} className="flex items-center gap-2 text-xs">
                               <span className="w-24 truncate">{r.ingredient}</span>
-                              <span className="text-violet-600 dark:text-violet-400">{r.dosage_g?.toFixed(1)}g</span>
-                              <span className="text-violet-500">({r.percentage?.toFixed(1)}%)</span>
+                              <span className="text-accent-600 dark:text-accent-700">{r.dosage_g?.toFixed(1)}g</span>
+                              <span className="text-accent-500">({r.percentage?.toFixed(1)}%)</span>
                             </div>
                           ))}
                         </div>
@@ -2000,10 +2007,10 @@ export default function FormulaDetailPage() {
 
       {/* 审核区域（保留原有功能，放在 Tabs 外面）*/}
       {canReview && (
-        <Card className="!border-amber-300 dark:!border-amber-800/50">
+        <Card className="!border-warning-300 dark:!border-warning-800/50">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-900/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-300/20 flex items-center justify-center">
                 <MessageSquare size={20} className="text-warning-500" />
               </div>
               <div>
@@ -2059,7 +2066,7 @@ export default function FormulaDetailPage() {
         <CardContent className="pt-0 space-y-4">
           {/* 发表评论 */}
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 text-xs font-bold shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center text-primary-700 text-xs font-bold shrink-0 mt-0.5">
               {user?.fullName?.[0] ?? user?.username?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1">
@@ -2139,8 +2146,8 @@ export default function FormulaDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
-                <TestTubes size={16} className="text-violet-500" />
+              <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex items-center justify-center">
+                <TestTubes size={16} className="text-accent-500" />
               </div>
               <CardTitle as="h2">关联实验</CardTitle>
               {experiments.length > 0 && (
@@ -2172,13 +2179,13 @@ export default function FormulaDetailPage() {
                 <Link
                   key={exp.id}
                   to={`/experiments/${exp.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-violet-300 dark:hover:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/10 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/10 transition-all group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
-                    <TestTubes size={14} className="text-violet-500" />
+                  <div className="w-8 h-8 rounded-lg bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center shrink-0">
+                    <TestTubes size={14} className="text-accent-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-violet-600 transition-colors truncate">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-accent-600 transition-colors truncate">
                       {exp.title}
                     </p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{exp.code}</p>
@@ -2201,7 +2208,7 @@ export default function FormulaDetailPage() {
         <div className="space-y-4">
           <Alert variant="destructive">此操作不可撤销！删除后所有相关数据将被永久移除。</Alert>
 
-          <div className="rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800 p-4">
+          <div className="rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800 p-4">
             <p className="font-semibold text-error-900 dark:text-error-100 mb-2">将要删除的配方：</p>
             <p className="text-error-700 dark:text-error-600 font-mono text-sm bg-white dark:bg-neutral-800 rounded px-2 py-1">
               {formula.name}
@@ -2222,8 +2229,8 @@ export default function FormulaDetailPage() {
 
           {/* 确认方式：输入配方名称或勾选确认框 */}
           <div className="space-y-3 pt-2 border-t border-neutral-200 dark:border-neutral-700">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox checked={deleteConfirmed} onCheckedChange={(checked) => setDeleteConfirmed(checked === true)} />
+            <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+              <Checkbox checked={deleteConfirmed} onCheckedChange={(checked) => setDeleteConfirmed(checked === true)} aria-label="我已了解此操作的后果，确认删除" />
               <span className="text-sm text-neutral-700 dark:text-neutral-300">我已了解此操作的后果，确认删除</span>
             </label>
 
@@ -2327,7 +2334,7 @@ export default function FormulaDetailPage() {
                       }
                       setSelectingDiffSide(null);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full text-left px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-neutral-900 dark:text-white">

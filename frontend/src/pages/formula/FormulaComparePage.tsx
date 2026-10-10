@@ -90,7 +90,7 @@ export default function FormulaComparePage() {
                         <button
                           key={formula.id}
                           onClick={() => { setLeftId(formula.id); setShowLeftPicker(false); setLeftSearch('') }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -108,7 +108,7 @@ export default function FormulaComparePage() {
                 )}
               </div>
             ) : (
-              <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
+              <div className="bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-primary-700 dark:text-primary-700">
@@ -173,7 +173,7 @@ export default function FormulaComparePage() {
                         <button
                           key={formula.id}
                           onClick={() => { setRightId(formula.id); setShowRightPicker(false); setRightSearch('') }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -191,7 +191,7 @@ export default function FormulaComparePage() {
                 )}
               </div>
             ) : (
-              <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
+              <div className="bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-primary-700 dark:text-primary-700">

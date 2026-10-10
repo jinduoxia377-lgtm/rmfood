@@ -123,7 +123,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
       </div>
     );
   }
@@ -136,7 +136,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
             <Shield className="w-5 h-5 text-secondary-500" />
             权限矩阵
           </h3>
-          <p className="text-sm text-neutral-500 mt-0.5">管理不同角色在各资源上的操作权限</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">管理不同角色在各资源上的操作权限</p>
         </div>
         <button
           onClick={handleSave}
@@ -149,7 +149,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
         </button>
       </div>
 
-      <div className="surface-card rounded-xl border border-neutral-200 overflow-x-auto">
+      <div className="surface-card rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-200 dark:border-neutral-800">
@@ -165,10 +165,10 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
                 <td className="px-4 py-3">
                   <span className={cn(
                     'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-                    role === 'owner' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                    role === 'admin' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' :
-                    role === 'member' ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400' :
-                    'bg-neutral-100 text-neutral-600',
+                    role === 'owner' ? 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700' :
+                    role === 'admin' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' :
+                    role === 'member' ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600' :
+                    'bg-neutral-100 dark:bg-neutral-800 text-neutral-600',
                   )}>
                     {ROLE_LABELS[role]}
                   </span>
@@ -193,7 +193,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
         </table>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-neutral-400">
+      <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-secondary-500 flex items-center justify-center">
             <CheckCircle className="w-3 h-3 text-white" />

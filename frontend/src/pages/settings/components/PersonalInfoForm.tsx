@@ -89,7 +89,10 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
         </h3>
         <FormField label="简介" error={errors.bio}>
           <div className="relative">
+            {/* A-26：外层 FormField 的 <label> 没有 htmlFor，而它下面是 <div> 包壳，
+                FormField 自动挂 aria-labelledby 挂不到真正的控件上，所以这里显式命名。 */}
             <textarea
+              aria-label="个人简介"
               value={data.bio}
               onChange={(e) => onChange('bio', e.target.value)}
               placeholder="介绍一下自己..."
@@ -104,7 +107,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                 disabled:opacity-50 disabled:cursor-not-allowed
                 resize-none
                 ${errors.bio
-                  ? 'border-rose-400 focus:ring-rose-500'
+                  ? 'border-danger-400 focus:ring-danger-500'
                   : 'border-neutral-200 dark:border-neutral-700'
                 }
               `}

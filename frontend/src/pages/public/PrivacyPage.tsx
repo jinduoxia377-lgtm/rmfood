@@ -126,16 +126,16 @@ export default function PrivacyPage() {
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <span className="text-[10px] font-mono text-emerald-600 uppercase tracking-widest block mb-3">Legal</span>
-          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-slate-900 mb-4">
+          <span className="text-xs font-mono text-success-600 uppercase tracking-widest block mb-3">Legal</span>
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-4">
             隐私政策
           </h1>
-          <p className="text-[14px] leading-[1.75] text-slate-600 max-w-2xl">
+          <p className="text-[14px] leading-[1.75] text-neutral-600 max-w-2xl">
             莱茵（厦门）分子生物科技有限公司（简称"莱茵分子"或"我们"）深知个人信息对您的重要性，
             我们将按照法律法规要求，采取合理的安全措施保护您的个人信息。本政策向您说明我们如何收集、
             使用、存储和保护您的信息。
           </p>
-          <p className="text-[12px] text-slate-400 mt-3">最后更新日期：2025 年 7 月 1 日</p>
+          <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-3">最后更新日期：2025 年 7 月 1 日</p>
         </div>
       </section>
 
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
           {/* 目录侧边栏 */}
           <aside className="hidden lg:block w-52 shrink-0">
             <nav className="sticky top-6">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">目录</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3">目录</p>
               <ul className="space-y-0.5">
                 {sections.map((s) => {
                   const IconComp = s.icon
@@ -154,8 +154,8 @@ export default function PrivacyPage() {
                         onClick={() => scrollTo(s.id)}
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium transition-all text-left ${
                           activeSection === s.id
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'text-slate-600 hover:bg-slate-50 dark:bg-neutral-800 hover:text-slate-900'
+                            ? 'bg-success-50 text-success-700'
+                            : 'text-neutral-600 hover:bg-neutral-50 dark:bg-neutral-800 hover:text-neutral-900'
                         }`}
                       >
                         <IconComp size={13} className="shrink-0 opacity-60" />
@@ -191,10 +191,10 @@ export default function PrivacyPage() {
                     >
                       <IconComp size={15} style={{ color: '#059669' }} />
                     </div>
-                    <h2 className="text-[14px] font-bold text-slate-900">{sec.title}</h2>
+                    <h2 className="text-[14px] font-bold text-neutral-900">{sec.title}</h2>
                   </div>
                   {sec.content.map((p, j) => (
-                    <p key={j} className="text-[13px] leading-[1.8] text-slate-600 mb-3 last:mb-0 pl-11">
+                    <p key={j} className="text-sm leading-[1.8] text-neutral-600 mb-3 last:mb-0 pl-11">
                       {p}
                     </p>
                   ))}
@@ -214,17 +214,17 @@ export default function PrivacyPage() {
                 <Shield size={18} style={{ color: '#059669' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-slate-900 mb-1">如有疑问</p>
-                <p className="text-[12px] text-slate-600">
+                <p className="text-sm font-semibold text-neutral-900 mb-1">如有疑问</p>
+                <p className="text-[12px] text-neutral-600">
                   如您对本隐私政策有任何疑问、意见或投诉，请联系我们的数据保护专员：
-                  <a href="mailto:contact@rmfood.cn" className="text-emerald-600 hover:underline font-medium">
+                  <a href="mailto:contact@rmfood.cn" className="text-success-600 hover:underline font-medium">
                     contact@rmfood.cn
                   </a>
                 </p>
               </div>
               <Link
                 to="/terms"
-                className="shrink-0 flex items-center gap-1 text-[12px] font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="shrink-0 flex items-center gap-1 text-[12px] font-medium text-success-600 hover:text-success-700 transition-colors"
               >
                 查看服务条款 <ChevronRight size={13} />
               </Link>

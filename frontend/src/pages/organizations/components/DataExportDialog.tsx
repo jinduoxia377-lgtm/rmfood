@@ -210,7 +210,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
       <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+            <div className="p-2 bg-primary-100 dark:bg-primary-300/25 rounded-lg">
               <Download className="w-5 h-5 text-primary-700" />
             </div>
             <div>
@@ -245,7 +245,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                     disabled={isExporting}
                     className={`relative p-4 rounded-xl border-2 transition-all ${
                       isSelected
-                        ? 'border-green-500 bg-success-50 dark:bg-success-900/20'
+                        ? 'border-success-500 bg-success-50 dark:bg-success-300/20'
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                     }`}
                   >
@@ -293,7 +293,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                   key={field.key}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
                     field.visible
-                      ? 'border-primary-300 bg-primary-50 dark:bg-primary-900/20'
+                      ? 'border-primary-300 bg-primary-50 dark:bg-primary-300/20'
                       : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                   }`}
                 >
@@ -320,7 +320,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
             </button>
 
             {showAdvancedOptions && (
-              <div className="mt-3 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <div className="mt-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
                     文件名
@@ -329,7 +329,8 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                     type="text"
                     defaultValue={fileName}
                     className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-primary-500"
-                  />
+        aria-label="文件名"
+      />
                 </div>
               </div>
             )}
@@ -351,7 +352,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
 
               <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-700 rounded-lg">
                 <table className="w-full text-xs">
-                  <thead className="bg-slate-50 dark:bg-neutral-800">
+                  <thead className="bg-neutral-50 dark:bg-neutral-800">
                     <tr>
                       {visibleFields.map(field => (
                         <th key={field.key} className="px-3 py-2 text-left font-medium text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
@@ -360,9 +361,9 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                     {previewData.map((row, i) => (
-                      <tr key={i} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                      <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                         {visibleFields.map(field => (
                           <td key={field.key} className="px-3 py-2 text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]">
                             {row[field.label]}
@@ -387,13 +388,13 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
               <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-error-700 dark:text-error-600">{error}</div>
             </div>
           )}
 
-          <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800 rounded-lg">
             <Info className="w-5 h-5 text-secondary-500 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-secondary-700 dark:text-secondary-700 space-y-1">
               <p>• CSV格式可在Excel、Google Sheets等软件中直接打开</p>
@@ -403,7 +404,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
+        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {isExporting ? (
@@ -420,7 +421,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
               <button
                 onClick={onClose}
                 disabled={isExporting}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
               >
                 取消
               </button>

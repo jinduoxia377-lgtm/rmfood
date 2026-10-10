@@ -2,13 +2,42 @@
  * 仪表盘可拖拽卡片组件
  * 支持拖放重排、尺寸调整、编辑配置
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useContext, createContext, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card } from '@/components/ui'
 import { GripVertical, Settings, X, Eye, EyeOff, Maximize2, Minimize2, Plus, Maximize, Lock, Unlock, ChevronDown, Star, Copy, RotateCcw, Palette, Layers, Grid, AlignLeft, Zap, PieChart, Users, Brain, Search, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CardConfig } from '@/config/dashboard'
+
+/* ═══ A-18：响应式列数下 clamp 卡片跨列 ═══
+   DraggableCard 原本无条件输出 `gridColumn: span ${card.size.w}`。但外层网格是
+   响应式的（grid-cols-1 sm:2 lg:3 xl:4）——当实际列数少于 size.w 时，`span N`
+   会【隐式生成】第 2 条 auto 轨道：内容撑到 max-content（实测 369px），把
+   显式的 1fr 轨道挤成 0px，卡片被压成 26px 宽（实测 390px 视口，快捷操作
+   五个入口全部不可点）。这里用 matchMedia 求出真实列数，把跨列 clamp 到它。 */
+
+const DashColsContext = createContext<number>(4)
+
+/** 与 DashboardLayout 的断点类名保持一致：1 / sm:2 / lg:3 / xl:4 */
+function useResponsiveCols(): number {
+  const read = () => {
+    if (typeof window === 'undefined' || !window.matchMedia) return 4
+    if (window.matchMedia('(min-width: 1280px)').matches) return 4
+    if (window.matchMedia('(min-width: 1024px)').matches) return 3
+    if (window.matchMedia('(min-width: 640px)').matches) return 2
+    return 1
+  }
+  const [cols, setCols] = useState<number>(read)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const qs = ['(min-width: 1280px)', '(min-width: 1024px)', '(min-width: 640px)'].map(window.matchMedia)
+    const onChange = () => setCols(read())
+    qs.forEach(q => q.addEventListener('change', onChange))
+    return () => qs.forEach(q => q.removeEventListener('change', onChange))
+  }, [])
+  return cols
+}
 
 interface DraggableCardProps {
   card: CardConfig
@@ -61,12 +90,16 @@ export function DraggableCard({
     disabled: disabled || !card.isVisible,
   })
 
+  const cols = useContext(DashColsContext)
+  /* A-18：跨列 clamp 到真实列数 —— 1 列网格里 span 2+ 会隐式造轨道，
+     把 1fr 轨道挤成 0px（见文件头 A-18 注释）。 */
+  const spanW = Math.max(1, Math.min(card.size.w, cols))
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isSorting ? 0.3 : 1,
     zIndex: isSorting ? 50 : 'auto',
-    gridColumn: `span ${card.size.w}`,
+    gridColumn: `span ${spanW}`,
     gridRow: `span ${card.size.h}`,
   }
 
@@ -100,12 +133,12 @@ export function DraggableCard({
           'transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/50',
         )}
       >
-        <div className="flex flex-col items-center gap-2 text-neutral-400">
+        <div className="flex flex-col items-center gap-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <Eye size={20} />
           <span className="text-xs">{card.title} - 已隐藏</span>
           <button
             onClick={handleToggleVisibility}
-            className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+            className="text-xs text-primary-700 hover:text-primary-700 font-medium"
           >
             显示
           </button>
@@ -186,9 +219,9 @@ export function DraggableCard({
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'light' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'light' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'light' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                   >
-                    <div className="w-3 h-3 rounded-full bg-white border border-neutral-300"></div>
+                    <div className="w-3 h-3 rounded-full bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700"></div>
                     浅色主题
                   </button>
                   <button
@@ -197,7 +230,7 @@ export function DraggableCard({
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'dark' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'dark' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'dark' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                   >
                     <div className="w-3 h-3 rounded-full bg-neutral-900 border border-neutral-700"></div>
                     深色主题
@@ -208,7 +241,7 @@ export function DraggableCard({
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'system' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'system' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'system' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
                   >
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-white via-neutral-300 to-neutral-800 border border-neutral-400"></div>
                     跟随系统
@@ -274,7 +307,7 @@ export function DraggableCard({
       {!isEditing && externalEditing === undefined && (isHovered || isSorting) && (
         <button
           onClick={() => setIsEditing(true)}
-          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
         >
           <Settings size={16} />
         </button>
@@ -292,23 +325,28 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, columns = 4, gap = 16, responsive = true }: DashboardLayoutProps) {
+  /* A-18：把响应式列数下发给 DraggableCard，供其 clamp 跨列。 */
+  const cols = useResponsiveCols()
+  const ColsCtx = DashColsContext
   return (
-    <div className="w-full">
-      {/* 网格布局 */}
-      <div
-        className={cn(
-          'grid w-full',
-          responsive && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-        )}
-        style={{
-          gridTemplateColumns: responsive ? undefined : `repeat(${columns}, 1fr)`,
-          gap: `${gap}px`,
-          gridAutoFlow: 'row dense',
-        }}
-      >
-        {children}
+    <ColsCtx.Provider value={responsive ? cols : Math.max(1, Math.min(columns, cols))}>
+      <div className="w-full">
+        {/* 网格布局 */}
+        <div
+          className={cn(
+            'grid w-full',
+            responsive && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+          )}
+          style={{
+            gridTemplateColumns: responsive ? undefined : `repeat(${columns}, 1fr)`,
+            gap: `${gap}px`,
+            gridAutoFlow: 'row dense',
+          }}
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </ColsCtx.Provider>
   )
 }
 
@@ -476,8 +514,8 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
                   onClick={() => handleApplyPreset(preset)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all duration-200 text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Maximize size={18} className="text-primary-600 dark:text-primary-400" />
+                  <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                    <Maximize size={18} className="text-primary-700 dark:text-primary-700" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-neutral-900 dark:text-white">{preset.name}</p>
@@ -500,7 +538,7 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 pl-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <Search size={16} />
                 </div>
               </div>
@@ -546,8 +584,8 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
                     onClick={() => onAddCard(card.type)}
                     className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                      <Plus size={18} className="text-primary-600 dark:text-primary-400" />
+                    <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                      <Plus size={18} className="text-primary-700 dark:text-primary-700" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900 dark:text-white">{card.name}</p>
@@ -565,9 +603,9 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
           </section>
 
           {/* 布局提示 */}
-          <section className="p-4 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30">
-            <h4 className="text-sm font-medium text-warning-800 dark:text-warning-400 mb-2">布局提示</h4>
-            <ul className="text-xs text-warning-700 dark:text-warning-300 space-y-1">
+          <section className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/30">
+            <h4 className="text-sm font-medium text-warning-800 dark:text-warning-700 mb-2">布局提示</h4>
+            <ul className="text-xs text-warning-700 dark:text-warning-700 space-y-1">
               <li>• 拖拽卡片可改变位置</li>
               <li>• 点击放大/缩小调整尺寸</li>
               <li>• 点击眼睛图标隐藏卡片</li>
@@ -614,14 +652,23 @@ export function LayoutSwitcher({
 
   return (
     <div className="relative">
+      {/* D-61：本下拉触发器在仪表盘被放在 .surface-primary 品牌实底横幅上，
+          但内部文字用浅色卡片配色 text-neutral-700（#334155），压在绿底
+          #047857 上仅 1.89:1。补一层自身底色把控件托回浅色卡片语境。 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
+        /* D-73：暗色下 dark:bg-white/10 是【浅色蒙版】，压在暗色品牌实底横幅
+           (--color-primary-surface ≈ rgb(6,95,69)) 上得到 rgb(31,111,88)，
+           而文字 dark:text-neutral-300 #cbd5e1 在其上只有 4.07:1。
+           暗色改用【深色蒙版】bg-black/25 → rgb(5,71,52)，同一文字 7.21:1；
+           亮色 bg-white dark:bg-neutral-800 原本就达标，保持不动。
+           A-10：实测 114×38 低于 WCAG 2.5.5 的 44×44，补 min-h-[44px]。 */
+        className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white dark:bg-black/25 border border-neutral-200 dark:border-white/20 hover:bg-neutral-100 dark:hover:bg-black/35 transition-colors"
       >
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
           {layouts.find(l => l.id === currentId)?.name || '视图'}
         </span>
-        <ChevronDown size={16} className="text-neutral-400" />
+        <ChevronDown size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
       </button>
 
       {isOpen && (
@@ -637,8 +684,8 @@ export function LayoutSwitcher({
                   key={layout.id}
                   type="button"
                   className={cn(
-                    'w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
-                    currentId === layout.id && 'bg-primary-50 dark:bg-primary-900/10',
+                    'w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
+                    currentId === layout.id && 'bg-primary-50 dark:bg-primary-300/15',
                   )}
                   onClick={() => {
                     onSwitch(layout.id)
@@ -649,12 +696,12 @@ export function LayoutSwitcher({
                   <div className="flex items-center gap-3">
                     <span className={cn(
                       'text-sm font-medium',
-                      currentId === layout.id ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300',
+                      currentId === layout.id ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300',
                     )}>
                       {layout.name}
                     </span>
                     {layout.isDefault && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700">
                         默认
                       </span>
                     )}
@@ -722,7 +769,7 @@ export function LayoutSwitcher({
               ) : (
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-neutral-800"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800"
                 >
                   <Plus size={16} />
                   创建新视图

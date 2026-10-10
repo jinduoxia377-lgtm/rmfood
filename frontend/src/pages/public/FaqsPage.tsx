@@ -21,8 +21,8 @@ export default function FaqsPage() {
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">FAQ</span>
-          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-slate-900 mb-4">常见问题</h1>
-          <p className="text-[14px] text-slate-600 leading-relaxed max-w-xl">
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-4">常见问题</h1>
+          <p className="text-[14px] text-neutral-600 leading-relaxed max-w-xl">
             关于产品功能、数据安全、定价方案及技术支持的常见问题解答。
           </p>
         </div>
@@ -34,18 +34,18 @@ export default function FaqsPage() {
             {faqs.map((faq, i) => (
               <AccordionItem key={i} value={`faq-${i}`} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <span className="text-[13px] font-normal text-left text-slate-800">{faq.q}</span>
+                  <span className="text-sm font-normal text-left text-neutral-800">{faq.q}</span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-3">
-                  <p className="text-[13px] leading-[1.7] text-slate-600">{faq.a}</p>
+                  <p className="text-sm leading-[1.7] text-neutral-600">{faq.a}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
 
           <div className="mt-10 p-5 rounded-sm" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-            <p className="text-[13px] font-medium text-slate-700 mb-1">还有疑问？</p>
-            <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请联系我们的支持团队，或通过 <a href="mailto:contact@rmfood.cn" className="text-emerald-600 hover:underline">contact@rmfood.cn</a> 发送邮件。</p>
+            <p className="text-sm font-medium text-neutral-700 mb-1">还有疑问？</p>
+            <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请联系我们的支持团队，或通过 <a href="mailto:contact@rmfood.cn" className="text-success-600 hover:underline">contact@rmfood.cn</a> 发送邮件。</p>
           </div>
         </div>
       </section>

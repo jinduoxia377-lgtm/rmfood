@@ -79,9 +79,9 @@ const MOCK_API_ENDPOINTS: ApiEndpointStat[] = [
 ]
 
 const FILE_TYPE_CONFIG: Record<StorageFileItem['type'], { icon: typeof FileText; color: string; label: string }> = {
-  document: { icon: FileText, color: 'text-secondary-500 bg-secondary-100 dark:bg-secondary-900/30', label: '文档' },
-  image: { icon: Image, color: 'text-primary-500 bg-primary-100 dark:bg-primary-900/30', label: '图片' },
-  archive: { icon: FileArchive, color: 'text-orange-500 bg-orange-100 dark:bg-orange-900/30', label: '压缩包' },
+  document: { icon: FileText, color: 'text-secondary-500 bg-secondary-100 dark:bg-secondary-300/25', label: '文档' },
+  image: { icon: Image, color: 'text-primary-500 bg-primary-100 dark:bg-primary-300/25', label: '图片' },
+  archive: { icon: FileArchive, color: 'text-warning-500 bg-warning-100 dark:bg-warning-300/25', label: '压缩包' },
   other: { icon: Server, color: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800', label: '其他' },
 }
 
@@ -94,9 +94,9 @@ function formatBytes(bytes: number): string {
 }
 
 function getStorageColor(percentage: number): { bar: string; text: string } {
-  if (percentage < 60) return { bar: 'bg-success-500', text: 'text-success-600 dark:text-success-400' }
-  if (percentage < 90) return { bar: 'bg-yellow-500', text: 'text-yellow-600 dark:text-yellow-400' }
-  return { bar: 'bg-error-500', text: 'text-error-600 dark:text-error-400' }
+  if (percentage < 60) return { bar: 'bg-success-500', text: 'text-success-600 dark:text-success-600' }
+  if (percentage < 90) return { bar: 'bg-warning-500', text: 'text-warning-600 dark:text-warning-700' }
+  return { bar: 'bg-error-500', text: 'text-error-600 dark:text-error-600' }
 }
 
 function ProgressBar({
@@ -181,8 +181,8 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
       {/* Storage Section */}
       <section aria-label="存储空间" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
-            <HardDrive className="w-5.5 h-5.5 text-accent-600 dark:text-accent-400" />
+          <div className="w-11 h-11 rounded-xl bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center">
+            <HardDrive className="w-5.5 h-5.5 text-accent-600 dark:text-accent-700" />
           </div>
           <div>
             <h3 className="font-semibold text-neutral-900 dark:text-white">存储空间</h3>
@@ -211,7 +211,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{config.label}</span>
                 </div>
                 <p className="text-lg font-bold text-neutral-900 dark:text-white">{item.size}</p>
-                <p className="text-xs text-neutral-400">{item.percent}% · {item.count} 个文件</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.percent}% · {item.count} 个文件</p>
               </div>
             )
           })}
@@ -226,18 +226,18 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
           <div className="border border-neutral-100 dark:border-neutral-700 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-neutral-800/50">
-                  <th className="px-4 py-2.5 text-left text-xs font-medium text-neutral-500 uppercase">文件名</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-medium text-neutral-500 uppercase">大小</th>
-                  <th className="hidden sm:table-cell px-4 py-2.5 text-right text-xs font-medium text-neutral-500 uppercase">更新时间</th>
+                <tr className="bg-neutral-50 dark:bg-neutral-800/50">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">文件名</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">大小</th>
+                  <th className="hidden sm:table-cell px-4 py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">更新时间</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                 {MOCK_STORAGE_FILES.map((file, index) => {
                   const config = FILE_TYPE_CONFIG[file.type]
                   const Icon = config.icon
                   return (
-                    <tr key={index} className="hover:bg-slate-50 dark:hover:bg-neutral-700/20 transition-colors">
+                    <tr key={index} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/20 transition-colors">
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Icon className={cn('w-4 h-4 shrink-0', config.color.split(' ')[0])} />
@@ -245,7 +245,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
                         </div>
                       </td>
                       <td className="px-4 py-2.5 text-right font-mono text-neutral-600 dark:text-neutral-400">{file.size}</td>
-                      <td className="hidden sm:table-cell px-4 py-2.5 text-right text-neutral-400 dark:text-neutral-500">{file.updatedAt}</td>
+                      <td className="hidden sm:table-cell px-4 py-2.5 text-right text-neutral-400 dark:text-neutral-400">{file.updatedAt}</td>
                     </tr>
                   )
                 })}
@@ -258,8 +258,8 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
       {/* API Calls Section */}
       <section aria-label="API调用配额" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-            <Zap className="w-5.5 h-5.5 text-orange-600 dark:text-orange-400" />
+          <div className="w-11 h-11 rounded-xl bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
+            <Zap className="w-5.5 h-5.5 text-warning-600 dark:text-warning-700" />
           </div>
           <div>
             <h3 className="font-semibold text-neutral-900 dark:text-white">API 调用配额</h3>
@@ -279,11 +279,11 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
             {MOCK_API_ENDPOINTS.map((ep, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700/20 transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/20 transition-colors"
               >
                 <span className={cn(
                   'w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0',
-                  index < 3 ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
+                  index < 3 ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
                 )}>
                   {index + 1}
                 </span>
@@ -291,7 +291,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
                 <span className="text-sm font-semibold text-neutral-900 dark:text-white shrink-0">
                   {ep.calls.toLocaleString()}
                 </span>
-                <span className="hidden md:block text-xs text-neutral-400 w-14 text-right">{ep.avgLatency}</span>
+                <span className="hidden md:block text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-14 text-right">{ep.avgLatency}</span>
                 <span className={cn(
                   'w-1.5 h-1.5 rounded-full shrink-0',
                   ep.trend === 'up' ? 'bg-error-500' : ep.trend === 'down' ? 'bg-success-500' : 'bg-neutral-400',
@@ -305,8 +305,8 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
       {/* Members Section */}
       <section aria-label="成员席位" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center">
-            <Users className="w-5.5 h-5.5 text-secondary-600 dark:text-secondary-400" />
+          <div className="w-11 h-11 rounded-xl bg-secondary-100 dark:bg-secondary-300/25 flex items-center justify-center">
+            <Users className="w-5.5 h-5.5 text-secondary-600 dark:text-secondary-700" />
           </div>
           <div>
             <h3 className="font-semibold text-neutral-900 dark:text-white">成员席位</h3>
@@ -321,7 +321,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
         />
 
         {memberLimit <= 0 && (
-          <p className="text-sm text-secondary-600 dark:text-secondary-400 bg-secondary-50 dark:bg-secondary-900/20 rounded-lg px-3 py-2">
+          <p className="text-sm text-secondary-600 dark:text-secondary-700 bg-secondary-50 dark:bg-secondary-300/20 rounded-lg px-3 py-2">
             企业版计划无成员数量限制
           </p>
         )}
@@ -331,7 +331,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
           <div className="rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 p-4 space-y-3">
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">邀请成员链接</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs bg-slate-50 dark:bg-neutral-900 px-3 py-2 rounded-lg truncate text-neutral-500">
+              <code className="flex-1 text-xs bg-neutral-50 dark:bg-neutral-900 px-3 py-2 rounded-lg truncate text-neutral-500">
                 {window.location.origin}/invite?org={organization?.id}
               </code>
               <button
@@ -344,12 +344,12 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
             </div>
           </div>
 
-          <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 p-4 space-y-2">
+          <div className="rounded-lg bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-secondary-200 dark:border-secondary-800 p-4 space-y-2">
             <p className="text-sm font-medium text-secondary-800 dark:text-secondary-200 flex items-center gap-1.5">
               需要更多席位？
               <ArrowUpRight className="w-4 h-4" />
             </p>
-            <p className="text-xs text-secondary-600 dark:text-secondary-400">升级计划以解锁更多成员席位和高级功能</p>
+            <p className="text-xs text-secondary-600 dark:text-secondary-700">升级计划以解锁更多成员席位和高级功能</p>
             <button
               onClick={() => onRefresh?.()}
               className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors"

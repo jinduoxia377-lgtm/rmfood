@@ -101,7 +101,7 @@ export default function StabilityPage() {
     } finally { setLoading(false) }
   }
 
-  const scoreColor = (s: number) => s >= 0.7 ? 'text-success-500 dark:text-success-400' : s >= 0.4 ? 'text-warning-500 dark:text-warning-400' : 'text-danger-500 dark:text-danger-400'
+  const scoreColor = (s: number) => s >= 0.7 ? 'text-success-500 dark:text-success-600' : s >= 0.4 ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'
   const scoreBg = (s: number) => s >= 0.7 ? 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900' : s >= 0.4 ? 'bg-warning-50 dark:bg-warning-950/20 border-warning-200 dark:border-warning-900' : 'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900'
 
   const chartData = result?.monthly_curve?.map((pt: any) => ({
@@ -133,10 +133,10 @@ export default function StabilityPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
                 <Thermometer size={20} className="text-white/80 shrink-0" />
                 稳定性分析
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">Arrhenius 模型 · 货架期预测 · Q10 温度系数 · 多条件对比</p>
             </div>
             {history.length > 0 && (
@@ -156,10 +156,10 @@ export default function StabilityPage() {
               <div className="flex gap-2 flex-wrap">
                 {history.map(h => (
                   <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs">
-                    <span className="font-mono text-secondary-600 dark:text-secondary-400">{h.temp}°C</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">{h.ingredients.slice(0, 2).join('+')}...</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">· 货架期 {h.shelfLife?.toFixed(1)} 月</span>
-                    <span className="text-neutral-300 dark:text-neutral-500">{h.date}</span>
+                    <span className="font-mono text-secondary-600 dark:text-secondary-700">{h.temp}°C</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">{h.ingredients.slice(0, 2).join('+')}...</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">· 货架期 {h.shelfLife?.toFixed(1)} 月</span>
+                    <span className="text-neutral-300 dark:text-neutral-400">{h.date}</span>
                   </div>
                 ))}
               </div>
@@ -173,7 +173,7 @@ export default function StabilityPage() {
             <CardHeader className="px-5 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <FlaskConical size={14} className="text-secondary-500 dark:text-secondary-400" />
+                  <FlaskConical size={14} className="text-secondary-500 dark:text-secondary-700" />
                   配方成分
                 </CardTitle>
                 <Button variant="secondary" size="sm" onClick={addIngredient} icon={<FlaskConical size={12} />} className="text-xs">
@@ -192,9 +192,9 @@ export default function StabilityPage() {
                   <Input type="number" value={ing.dosage_mg}
                     onChange={e => updateIngredient(i, 'dosage_mg', parseFloat(e.target.value) || 0)}
                     className="w-24 h-9 text-center tabular-nums" />
-                  <span className="text-xs text-neutral-400 dark:text-neutral-500 w-8">mg</span>
+                  <span className="text-xs text-neutral-400 dark:text-neutral-400 w-8">mg</span>
                   <Button variant="ghost" size="sm" onClick={() => removeIngredient(i)} disabled={ingredients.length <= 1}
-                    icon={<ShieldAlert size={14} />} className="text-neutral-400 dark:text-neutral-500 hover:text-danger-500 dark:hover:text-danger-400" />
+                    icon={<ShieldAlert size={14} />} className="text-neutral-400 dark:text-neutral-400 hover:text-danger-500 dark:hover:text-danger-400" />
                 </div>
               ))}
             </CardContent>
@@ -204,7 +204,7 @@ export default function StabilityPage() {
           <Card>
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                <Thermometer size={14} className="text-warning-500 dark:text-warning-400" />
+                <Thermometer size={14} className="text-warning-500 dark:text-warning-700" />
                 储存条件
               </CardTitle>
             </CardHeader>
@@ -212,12 +212,12 @@ export default function StabilityPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">温度 (°C)</label>
-                  <input type="range" min={-20} max={60} value={storageTemp} onChange={e => setStorageTemp(+e.target.value)} className="w-full accent-primary-500" />
+                  <input type="range" min={-20} max={60} value={storageTemp} onChange={e => setStorageTemp(+e.target.value)} className="w-full accent-primary-500" aria-label="温度 (°C)" />
                   <div className="text-right text-sm font-mono text-neutral-600 dark:text-neutral-300">{storageTemp}°C</div>
                 </div>
                 <div>
                   <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">湿度 (%RH)</label>
-                  <input type="range" min={0} max={100} value={humidity} onChange={e => setHumidity(+e.target.value)} className="w-full accent-primary-500" />
+                  <input type="range" min={0} max={100} value={humidity} onChange={e => setHumidity(+e.target.value)} className="w-full accent-primary-500" aria-label="湿度 (%RH)" />
                   <div className="text-right text-sm font-mono text-neutral-600 dark:text-neutral-300">{humidity}%</div>
                 </div>
                 <div>
@@ -240,7 +240,7 @@ export default function StabilityPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-neutral-500 dark:text-neutral-400 shrink-0">预测月份:</span>
-                <input type="range" min={6} max={60} step={6} value={months} onChange={e => setMonths(+e.target.value)} className="flex-1 accent-primary-500" />
+                <input type="range" min={6} max={60} step={6} value={months} onChange={e => setMonths(+e.target.value)} className="flex-1 accent-primary-500" aria-label="预测月份" />
                 <span className="text-sm font-mono text-neutral-600 dark:text-neutral-300 w-12 text-right shrink-0">{months}月</span>
               </div>
             </CardContent>
@@ -265,7 +265,7 @@ export default function StabilityPage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                  <Layers size={14} className="text-secondary-500 dark:text-secondary-400" />
+                  <Layers size={14} className="text-secondary-500 dark:text-secondary-700" />
                   多条件对比
                 </CardTitle>
               </CardHeader>
@@ -273,8 +273,8 @@ export default function StabilityPage() {
                 <div className="h-64"><ResponsiveContainer width="100%" height="100%">
                   <LineChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} label={{ value: '月份', position: 'bottom', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} label={{ value: '保留率 %', angle: -90, position: 'left', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: '月份', position: 'bottom', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: '保留率 %', angle: -90, position: 'left', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
                     <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card-bg-solid)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }} />
                     <Legend />
                     <ReferenceLine y={90} stroke="var(--color-success)" strokeDasharray="3 3" label={{ value: '90% 阈值', position: 'right', fontSize: 10, fill: 'var(--color-success)' }} />
@@ -292,7 +292,7 @@ export default function StabilityPage() {
                     </span>
                   ))}
                 </div>
-                <button onClick={() => setCompareResults([])} className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300">清除对比</button>
+                <button onClick={() => setCompareResults([])} className="text-xs text-neutral-400 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300">清除对比</button>
               </CardContent>
             </Card>
           )}
@@ -309,18 +309,18 @@ export default function StabilityPage() {
                 </div>
                 <div className="rounded-xl p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                   <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">预估货架期</div>
-                  <div className="text-2xl font-bold text-neutral-800 dark:text-neutral-200">{result.estimated_shelf_life_months.toFixed(1)} <span className="text-sm font-normal text-neutral-400 dark:text-neutral-500">月</span></div>
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">90%: {result.shelf_life_details?.months_to_90?.toFixed(1)}月 / 80%: {result.shelf_life_details?.months_to_80?.toFixed(1)}月</div>
+                  <div className="text-2xl font-bold text-neutral-800 dark:text-neutral-200">{result.estimated_shelf_life_months.toFixed(1)} <span className="text-sm font-normal text-neutral-400 dark:text-neutral-400">月</span></div>
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">90%: {result.shelf_life_details?.months_to_90?.toFixed(1)}月 / 80%: {result.shelf_life_details?.months_to_80?.toFixed(1)}月</div>
                 </div>
                 <div className="rounded-xl p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                   <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">置信度</div>
-                  <div className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">{((result.shelf_life_details?.confidence ?? 0) * 100).toFixed(0)}%</div>
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">基于已知成分数据库</div>
+                  <div className="text-2xl font-bold text-secondary-600 dark:text-secondary-700">{((result.shelf_life_details?.confidence ?? 0) * 100).toFixed(0)}%</div>
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">基于已知成分数据库</div>
                 </div>
                 <div className="rounded-xl p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                   <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">风险项</div>
-                  <div className={`text-2xl font-bold ${result.risk_factors.length > 2 ? 'text-danger-500 dark:text-danger-400' : result.risk_factors.length > 0 ? 'text-warning-500 dark:text-warning-400' : 'text-success-500 dark:text-success-400'}`}>{result.risk_factors.length}</div>
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">被标记的风险项</div>
+                  <div className={`text-2xl font-bold ${result.risk_factors.length > 2 ? 'text-danger-500 dark:text-danger-600' : result.risk_factors.length > 0 ? 'text-warning-500 dark:text-warning-700' : 'text-success-500 dark:text-success-600'}`}>{result.risk_factors.length}</div>
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">被标记的风险项</div>
                 </div>
               </div>
 
@@ -328,7 +328,7 @@ export default function StabilityPage() {
               <Card>
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <TrendingDown size={14} className="text-success-500 dark:text-success-400" />
+                    <TrendingDown size={14} className="text-success-500 dark:text-success-600" />
                     降解曲线
                   </CardTitle>
                 </CardHeader>
@@ -336,8 +336,8 @@ export default function StabilityPage() {
                   <div className="h-72"><ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} label={{ value: '月份', position: 'bottom', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} label={{ value: '保留率 %', angle: -90, position: 'left', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
+                      <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: '月份', position: 'bottom', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: '保留率 %', angle: -90, position: 'left', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
                       <RechartsTooltip contentStyle={{ backgroundColor: 'var(--card-bg-solid)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }} />
                       <Legend />
                       <ReferenceLine y={90} stroke="var(--color-success)" strokeDasharray="3 3" label={{ value: '通过 90%', position: 'right', fontSize: 10, fill: 'var(--color-success)' }} />
@@ -345,7 +345,7 @@ export default function StabilityPage() {
                       <Area type="monotone" dataKey="remaining" name="保留率" stroke="var(--color-success)" fill="var(--color-success)" fillOpacity={0.1} strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer></div>
-                  <div className="flex items-center gap-4 text-xs text-neutral-400 dark:text-neutral-500 flex-wrap">
+                  <div className="flex items-center gap-4 text-xs text-neutral-400 dark:text-neutral-400 flex-wrap">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success-500" />≥90% 合格</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning-500" />80-90% 需关注</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger-500" />&lt;80% 不合格</span>
@@ -358,16 +358,16 @@ export default function StabilityPage() {
                 <Card className="border-warning-200 dark:border-warning-800/60">
                   <CardHeader className="px-5 pt-5 pb-3">
                     <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <AlertTriangle size={14} className="text-warning-500 dark:text-warning-400" />
+                      <AlertTriangle size={14} className="text-warning-500 dark:text-warning-700" />
                       风险因子
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-5 pb-5 pt-0 space-y-2">
                     {result.risk_factors.map((rf: any, i: number) => (
                       <div key={i} className="flex items-start gap-3 px-3 py-2 bg-warning-50 dark:bg-warning-950/20 rounded-lg border border-warning-200 dark:border-warning-900">
-                        <Zap size={12} className="text-warning-500 dark:text-warning-400 mt-0.5 shrink-0" />
+                        <Zap size={12} className="text-warning-500 dark:text-warning-700 mt-0.5 shrink-0" />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 flex-1">{rf.description}</span>
-                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 shrink-0">严重程度: {(rf.severity * 100).toFixed(0)}%</span>
+                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 shrink-0">严重程度: {(rf.severity * 100).toFixed(0)}%</span>
                       </div>
                     ))}
                   </CardContent>
@@ -378,14 +378,14 @@ export default function StabilityPage() {
               <Card className="border-secondary-200 dark:border-secondary-800/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <ShieldAlert size={14} className="text-secondary-500 dark:text-secondary-400" />
+                    <ShieldAlert size={14} className="text-secondary-500 dark:text-secondary-700" />
                     储存建议
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-2">
                   {result.storage_advice.map((advice: string, i: number) => (
                     <div key={i} className="flex items-start gap-2 px-3 py-2 bg-secondary-50 dark:bg-secondary-950/20 rounded-lg border border-secondary-200 dark:border-secondary-900">
-                      <span className="text-secondary-500 dark:text-secondary-400 mt-0.5 shrink-0">→</span>
+                      <span className="text-secondary-500 dark:text-secondary-700 mt-0.5 shrink-0">→</span>
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">{advice}</span>
                     </div>
                   ))}
@@ -399,7 +399,7 @@ export default function StabilityPage() {
             <Card className="border-warning-200 dark:border-warning-800/60">
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Zap size={14} className="text-warning-500 dark:text-warning-400" />
+                  <Zap size={14} className="text-warning-500 dark:text-warning-700" />
                   Q10 温度系数计算
                 </CardTitle>
               </CardHeader>
@@ -422,15 +422,15 @@ export default function StabilityPage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="bg-warning-50 dark:bg-warning-950/20 rounded-xl p-4 border border-warning-200 dark:border-warning-900">
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Q10 值</div>
-                      <div className="text-3xl font-bold text-warning-600 dark:text-warning-400">{q10Result.q10?.toFixed(2)}</div>
+                      <div className="text-3xl font-bold text-warning-600 dark:text-warning-700">{q10Result.q10?.toFixed(2)}</div>
                     </div>
                     <div className="bg-secondary-50 dark:bg-secondary-950/20 rounded-xl p-4 border border-secondary-200 dark:border-secondary-900">
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">温度区间</div>
-                      <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400">{q10Result.t1_celsius}°C → {q10Result.t2_celsius}°C</div>
+                      <div className="text-lg font-bold text-secondary-600 dark:text-secondary-700">{q10Result.t1_celsius}°C → {q10Result.t2_celsius}°C</div>
                     </div>
                     <div className="bg-success-50 dark:bg-success-950/20 rounded-xl p-4 border border-success-200 dark:border-success-900 md:col-span-1">
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">储存建议</div>
-                      <div className="text-sm font-medium text-success-700 dark:text-success-400">{q10Interpretation(q10Result.q10)}</div>
+                      <div className="text-sm font-medium text-success-700 dark:text-success-600">{q10Interpretation(q10Result.q10)}</div>
                     </div>
                   </div>
                 )}

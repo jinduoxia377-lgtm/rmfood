@@ -99,7 +99,7 @@ export default function BatchDetailPage() {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => navigate('/batches')}
-                className="px-4 py-2 rounded-lg bg-primary text-white text-sm hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 rounded-lg bg-primary-surface text-white text-sm hover:bg-primary-surface-hover transition-colors"
               >
                 返回批记录列表
               </button>
@@ -131,9 +131,9 @@ export default function BatchDetailPage() {
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">
                 {batch.batch_code}
-              </h2>
+              </h1>
               <StatusBadge status={batch.status} />
             </div>
             <p className="text-white/80 text-sm mt-1">
@@ -147,10 +147,10 @@ export default function BatchDetailPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => window.print()} className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-white transition-colors flex items-center gap-1">
+            <button onClick={() => window.print()} className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-primary-700 dark:text-white transition-colors flex items-center gap-1">
               <Printer size={14} /> 打印
             </button>
-            <button className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-white transition-colors flex items-center gap-1">
+            <button className="px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-sm text-primary-700 dark:text-white transition-colors flex items-center gap-1">
               <Download size={14} /> 导出
             </button>
           </div>
@@ -233,10 +233,10 @@ export default function BatchDetailPage() {
                     <span className="font-mono text-xs text-primary">{sample.sample_code}</span>
                     <span className="text-sm text-neutral-600 dark:text-neutral-400">{sample.sample_type}</span>
                     {sample.storage_condition && (
-                      <span className="text-xs text-neutral-400">{sample.storage_condition}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{sample.storage_condition}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-neutral-500">
+                  <div className="flex items-center gap-3 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>{sample.test_count ?? 0} 项测试</span>
                     <ChevronRight size={14} />
                   </div>
@@ -270,15 +270,15 @@ export default function BatchDetailPage() {
                   className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-success-50 dark:bg-success-900/20 flex items-center justify-center">
-                      <Tag size={14} className="text-success-500 dark:text-success-400" />
+                    <div className="w-8 h-8 rounded-lg bg-success-50 dark:bg-success-300/20 flex items-center justify-center">
+                      <Tag size={14} className="text-success-500 dark:text-success-600" />
                     </div>
                     <div>
                       <div className="font-mono text-xs text-primary">{lot.internal_lot_code}</div>
                       <div className="text-sm text-neutral-600 dark:text-neutral-400">{lot.ingredient_name}</div>
                     </div>
                   </div>
-                  <div className="text-right text-xs text-neutral-500">
+                  <div className="text-right text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <div>供应商: {lot.supplier_lot_number || '—'}</div>
                     <div className="font-mono text-neutral-700 dark:text-neutral-300">
                       用量 {lot.used_qty_kg?.toFixed(3)} kg
@@ -309,9 +309,9 @@ function StatCard({
   return (
     <Card>
       <CardContent className="pt-4">
-        <div className="text-sm text-neutral-500">{label}</div>
+        <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</div>
         <div className="text-2xl font-semibold mt-1">{value}</div>
-        {sub && <div className="text-xs text-neutral-400 mt-1">{sub}</div>}
+        {sub && <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{sub}</div>}
       </CardContent>
     </Card>
   )

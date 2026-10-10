@@ -68,7 +68,7 @@ export default function TargetsTab() {
       {statsQuery.data && (
         <div className="flex flex-wrap gap-3">
           {[
-            { label: '靶点总数', value: statsQuery.data.total_targets?.toLocaleString() ?? '-', color: 'text-primary-600' },
+            { label: '靶点总数', value: statsQuery.data.total_targets?.toLocaleString() ?? '-', color: 'text-primary-700' },
             { label: '有基因符号', value: statsQuery.data.with_gene_symbol?.toLocaleString() ?? '0', color: 'text-accent-600' },
           ].map((s, i) => (
             <div key={i} className="card px-4 py-3 flex-1 min-w-[140px]">
@@ -82,7 +82,7 @@ export default function TargetsTab() {
       {/* 搜索栏 */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doSearch()} placeholder="搜索靶点名称或基因符号..." className="pl-9" />
         </div>
         <Button variant="primary" size="sm" onClick={doSearch} icon={<Search className="w-3.5 h-3.5" />}>搜索</Button>
@@ -98,12 +98,12 @@ export default function TargetsTab() {
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     靶点名称 <SortIcon field="name" />
                   </button>
                 </th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  <button onClick={() => toggleSort('gene_symbol')} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                  <button onClick={() => toggleSort('gene_symbol')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
                     基因符号 <SortIcon field="gene_symbol" />
                   </button>
                 </th>
@@ -119,7 +119,7 @@ export default function TargetsTab() {
               ) : items.map((t: any) => (
                 <tr key={t.id} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                   <td className="px-4 py-2.5 font-medium text-text-primary max-w-[300px] truncate" title={t.name}>{t.name}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-primary-600 dark:text-primary-400">{t.gene_symbol || <span className="text-neutral-400">-</span>}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-primary-700 dark:text-primary-700">{t.gene_symbol || <span className="text-neutral-400">-</span>}</td>
                   <td className="px-4 py-2.5 text-text-muted">{t.organism || '-'}</td>
                   <td className="px-4 py-2.5"><Badge variant="secondary" size="sm">{t.source || 'tcmsp'}</Badge></td>
                 </tr>

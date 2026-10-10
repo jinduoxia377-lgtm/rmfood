@@ -230,10 +230,11 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
             disabled={!isEditMode}
             className={`px-3 py-1.5 text-base font-semibold bg-transparent border-b transition-colors ${
               isEditMode
-                ? 'border-primary-500 text-primary-600 focus:outline-none'
+                ? 'border-primary-500 text-primary-700 focus:outline-none'
                 : 'border-transparent text-text-primary'
             }`}
-          />
+        aria-label="布局名称"
+      />
 
           <button
             onClick={() => setIsEditMode(!isEditMode)}
@@ -316,9 +317,9 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                   disabled={alreadyAdded}
                   className="p-3 rounded-lg bg-background border border-border hover:border-primary-400 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <widget.icon className="w-5 h-5 text-primary-600 mb-2" />
+                  <widget.icon className="w-5 h-5 text-primary-700 mb-2" />
                   <p className="text-xs font-medium text-text-primary">{widget.title}</p>
-                  <p className="text-[10px] text-text-muted mt-0.5">{widget.size === 'large' ? '大块' : widget.size === 'medium' ? '中块' : '小块'}</p>
+                  <p className="text-xs text-text-muted mt-0.5">{widget.size === 'large' ? '大块' : widget.size === 'medium' ? '中块' : '小块'}</p>
                 </button>
               )
             })}
@@ -378,7 +379,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                         <button
                           onClick={() => moveWidget(index, -1)}
                           disabled={!canMoveUp}
-                          className="p-1 text-text-muted hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-text-muted hover:text-primary-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="上移"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -386,7 +387,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                         <button
                           onClick={() => moveWidget(index, 1)}
                           disabled={!canMoveDown}
-                          className="p-1 text-text-muted hover:text-primary-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-text-muted hover:text-primary-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="下移"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
@@ -415,7 +416,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && (
             <button
               onClick={() => setShowWidgetPicker(true)}
-              className="p-4 rounded-lg border-2 border-dashed border-border hover:border-primary-400 transition-colors flex flex-col items-center gap-2 text-text-muted hover:text-primary-600 h-full min-h-[200px]"
+              className="p-4 rounded-lg border-2 border-dashed border-border hover:border-primary-400 transition-colors flex flex-col items-center gap-2 text-text-muted hover:text-primary-700 h-full min-h-[200px]"
             >
               <Plus className="w-8 h-8" />
               <span className="text-sm font-medium">添加组件</span>

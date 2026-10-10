@@ -13,13 +13,13 @@ import {
 } from '@/components/ui'
 
 const ACTION_COLORS: Record<string, string> = {
-  login: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
-  create: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400',
-  update: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
-  delete: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-  review: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-  export: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
-  status_change: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  login: 'bg-info-100 text-info-700 dark:bg-info-300/25 dark:text-info-700',
+  create: 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
+  update: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+  delete: 'bg-danger-100 text-danger-700 dark:bg-danger-300/25 dark:text-danger-700',
+  review: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
+  export: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+  status_change: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
 }
 
 const ACTION_LABELS: Record<string, string> = {
@@ -81,10 +81,10 @@ export default function AuditLogPage() {
       {/* 统计摘要 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: '总记录', value: total, icon: Activity, color: 'from-slate-500 to-slate-600' },
+          { label: '总记录', value: total, icon: Activity, color: 'from-neutral-500 to-neutral-600' },
           { label: '今日操作', value: logs.filter((l) => l.created_at?.startsWith(new Date().toISOString().slice(0, 10))).length, icon: Clock, color: 'from-primary-500 to-primary-600' },
-          { label: '涉及用户', value: new Set(logs.map((l) => l.username).filter(Boolean)).size, icon: User, color: 'from-violet-500 to-purple-600' },
-          { label: '操作类型', value: new Set(logs.map((l) => l.action).filter(Boolean)).size, icon: FileText, color: 'from-amber-500 to-orange-500' },
+          { label: '涉及用户', value: new Set(logs.map((l) => l.username).filter(Boolean)).size, icon: User, color: 'from-accent-500 to-accent-600' },
+          { label: '操作类型', value: new Set(logs.map((l) => l.action).filter(Boolean)).size, icon: FileText, color: 'from-warning-500 to-warning-500' },
         ].map((stat) => {
           const Icon = stat.icon
           return (
@@ -94,7 +94,7 @@ export default function AuditLogPage() {
               </div>
               <div>
                 <p className="text-lg font-bold text-neutral-900 dark:text-white">{stat.value}</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{stat.label}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">{stat.label}</p>
               </div>
             </div>
           )
@@ -139,7 +139,7 @@ export default function AuditLogPage() {
       {/* 日志列表 */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden">
         {/* 表头 */}
-        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200/60 dark:border-neutral-800/60">
+        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200/60 dark:border-neutral-800/60">
           <div className="col-span-2">时间</div>
           <div className="col-span-2">用户</div>
           <div className="col-span-2">操作</div>
@@ -156,7 +156,7 @@ export default function AuditLogPage() {
           ))
         ) : filteredLogs.length === 0 ? (
           <EmptyState
-            icon={<Shield className="w-10 h-10 text-neutral-300 dark:text-neutral-600" />}
+            icon={<Shield className="w-10 h-10 text-neutral-300 dark:text-neutral-400" />}
             title="暂无审计记录"
             description="系统暂无操作记录"
           />
@@ -164,7 +164,7 @@ export default function AuditLogPage() {
           filteredLogs.map((log) => (
             <div
               key={log.id}
-              className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-3 border-b border-neutral-100 dark:border-neutral-800/40 hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-3 border-b border-neutral-100 dark:border-neutral-800/40 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors"
             >
               {/* 时间 */}
               <div className="col-span-2 text-xs text-neutral-500 dark:text-neutral-400">
@@ -176,7 +176,7 @@ export default function AuditLogPage() {
               {/* 用户 */}
               <div className="col-span-2">
                 <div className="flex items-center gap-1.5">
-                  <User size={12} className="text-neutral-400" />
+                  <User size={12} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                     {log.username || `ID:${log.user_id}`}
                   </span>
@@ -208,7 +208,7 @@ export default function AuditLogPage() {
               </div>
 
               {/* IP */}
-              <div className="col-span-2 text-xs text-neutral-400 dark:text-neutral-500 font-mono">
+              <div className="col-span-2 text-xs text-neutral-400 dark:text-neutral-400 font-mono">
                 {log.ip_address || '-'}
               </div>
             </div>

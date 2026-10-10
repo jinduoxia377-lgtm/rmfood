@@ -76,10 +76,10 @@ const TABS: TabConfig[] = [
 function getPlanConfig(plan: string) {
   const configs: Record<string, { label: string; className: string }> = {
     free: { label: '免费版', className: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
-    pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' },
+    pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' },
     enterprise: {
       label: '企业版',
-      className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400',
+      className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
     },
   };
   return configs[plan] || configs.free;
@@ -87,10 +87,10 @@ function getPlanConfig(plan: string) {
 
 function getStatusConfig(status: string) {
   const configs: Record<string, { label: string; className: string }> = {
-    active: { label: '正常运营', className: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400' },
+    active: { label: '正常运营', className: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600' },
     suspended: {
       label: '已暂停',
-      className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      className: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
     },
     archived: { label: '已归档', className: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
   };
@@ -100,11 +100,11 @@ function getStatusConfig(status: string) {
 function getRoleIcon(role: string) {
   switch (role) {
     case 'owner':
-      return <Crown className="w-4 h-4 text-yellow-500" />;
+      return <Crown className="w-4 h-4 text-warning-500" />;
     case 'admin':
       return <Shield className="w-4 h-4 text-secondary-500" />;
     default:
-      return <Users className="w-4 h-4 text-neutral-500" />;
+      return <Users className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />;
   }
 }
 
@@ -268,7 +268,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="w-16 h-16 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-error-100 dark:bg-error-300/25 flex items-center justify-center">
           <AlertCircle className="w-16 h-16 mx-auto text-error-400" />
         </div>
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">加载失败</h2>
@@ -306,7 +306,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
             {loading ? (
               <Skeleton width={64} height={64} radius={16} />
             ) : (
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg shadow-blue-500/20">
+              <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-2xl flex items-center justify-center text-white font-bold text-2xl shrink-0 shadow-lg shadow-secondary-500/20">
                 {organization?.name?.charAt(0) || '?'}
               </div>
             )}
@@ -386,7 +386,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                           setShowActionsMenu(false);
                           handleTabChange('settings');
                         }}
-                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
                         编辑信息
@@ -396,7 +396,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                           setShowActionsMenu(false);
                           handleCopySlug();
                         }}
-                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
+                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Share2 className="w-4 h-4" />
                         分享组织
@@ -407,7 +407,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                           setShowActionsMenu(false);
                           setShowArchiveModal(true);
                         }}
-                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition-colors"
+                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-warning-600 dark:text-warning-700 hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors"
                       >
                         <Archive className="w-4 h-4" />
                         归档组织
@@ -417,7 +417,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                           setShowActionsMenu(false);
                           setShowDeleteModal(true);
                         }}
-                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/10 transition-colors"
+                        className="flex items-center w-full gap-2.5 px-3.5 py-2 text-sm text-error-600 dark:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                         删除组织
@@ -446,7 +446,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                 label: 'API 调用',
                 value: organization.apiUsage?.toLocaleString() || '-',
                 icon: Settings,
-                color: 'text-orange-500',
+                color: 'text-warning-500',
               },
             ].map((stat) => (
               <div key={stat.label} className="bg-white dark:bg-neutral-900 px-5 py-4">
@@ -483,8 +483,8 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                 className={cn(
                   'relative flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all',
                   isActive
-                    ? 'text-secondary-600 dark:text-secondary-400'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800/50',
+                    ? 'text-secondary-600 dark:text-secondary-700'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
                 )}
               >
                 <Icon className={cn('w-4.5 h-4.5', isActive && 'text-current')} />
@@ -494,7 +494,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                     className={cn(
                       'ml-1 px-1.5 py-0.5 text-xs rounded-full font-medium',
                       isActive
-                        ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/40 dark:text-secondary-300'
+                        ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/30 dark:text-secondary-700'
                         : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
                     )}
                   >
@@ -542,8 +542,8 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
             确定要归档组织 <strong className="text-neutral-900 dark:text-white">"{organization?.name}"</strong> 吗？
           </p>
-          <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+          <div className="rounded-lg bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800 p-3">
+            <p className="text-sm text-warning-800 dark:text-warning-200">
               归档后所有数据将保留但无法访问，您可以随时恢复此组织。
             </p>
           </div>
@@ -556,7 +556,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
             </button>
             <button
               onClick={handleArchive}
-              className="px-4 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+              className="px-4 py-2 text-sm bg-warning-500 text-white rounded-lg hover:bg-warning-600 transition-colors"
             >
               确认归档
             </button>
@@ -575,9 +575,9 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         size="sm"
       >
         <div className="space-y-4">
-          <div className="rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 p-3">
+          <div className="rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 p-3">
             <p className="text-sm text-error-800 dark:text-error-200 font-medium flex items-center gap-1.5"><AlertTriangle className="w-4 h-4 shrink-0" />此操作不可逆！</p>
-            <p className="text-sm text-error-700 dark:text-error-300 mt-1">
+            <p className="text-sm text-error-700 dark:text-error-600 mt-1">
               删除后组织的所有数据（成员、团队、配方等）将永久丢失。
             </p>
           </div>
@@ -595,7 +595,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder={organization?.name}
-              className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-error-500 focus:border-transparent"
             />
           </div>
 
@@ -616,7 +616,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                 'px-4 py-2 text-sm rounded-lg transition-colors',
                 deleteConfirmText === organization?.name
                   ? 'bg-error-600 text-white hover:bg-error-700 cursor-pointer'
-                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed',
+                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-400 cursor-not-allowed',
               )}
             >
               确认删除

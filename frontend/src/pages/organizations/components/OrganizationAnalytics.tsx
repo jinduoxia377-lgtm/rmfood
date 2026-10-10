@@ -105,7 +105,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       {/* 时间范围选择器 */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary-600" />
+          <Calendar className="w-5 h-5 text-primary-700" />
           数据概览
         </h2>
         <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
@@ -115,8 +115,8 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
               onClick={() => handleRangeChange(range)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
                 selectedRange === range
-                  ? 'bg-white dark:bg-neutral-900 text-primary-600 shadow-sm'
-                  : 'text-neutral-500 hover:text-text-primary'
+                  ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
+                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
               }`}
             >
               {range === '7d' ? '近7天' : range === '30d' ? '近30天' : '近90天'}
@@ -156,7 +156,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
                 <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {formatValue(kpi)}
                 </p>
-                <p className="text-sm text-neutral-500">{kpi.label}</p>
+                <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{kpi.label}</p>
               </div>
 
               {/* 迷你趋势线 */}
@@ -190,12 +190,12 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
           <div className="h-64 flex items-end space-x-2">
             {memberTrend.slice(-14).map((point, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full bg-secondary-100 dark:bg-secondary-900/30 rounded-t relative" style={{ height: `${(point.value / 400) * 100}%`, minHeight: 8 }}>
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-neutral-500 opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap">
+                <div className="w-full bg-secondary-100 dark:bg-secondary-300/25 rounded-t relative" style={{ height: `${(point.value / 400) * 100}%`, minHeight: 8 }}>
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap">
                     {point.value}
                   </div>
                 </div>
-                <span className="text-xs text-neutral-400 truncate w-full text-center">{point.date.split(' ')[1]}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate w-full text-center">{point.date.split(' ')[1]}</span>
               </div>
             ))}
           </div>
@@ -204,7 +204,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
         {/* 存储使用趋势 */}
         <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-            <HardDrive className="w-5 h-5 text-orange-500" />
+            <HardDrive className="w-5 h-5 text-warning-500" />
             存储使用趋势 (GB)
           </h3>
           <div className="h-64 flex items-end">
@@ -250,11 +250,11 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
           <div className="space-y-3">
             {orgActivity.map((org, index) => (
               <div key={index} className="flex items-center gap-3">
-                <span className="text-sm font-medium text-neutral-500 w-6">{index + 1}</span>
+                <span className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-6">{index + 1}</span>
                 <span className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 truncate">{org.name}</span>
                 <div className="w-32 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-accent-500 to-danger-500 rounded-full"
                     style={{ width: `${org.activity}%` }}
                   />
                 </div>

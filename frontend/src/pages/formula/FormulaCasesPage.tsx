@@ -48,23 +48,23 @@ import { cn } from '@/lib/utils'
 
 // ── 分类色块映射 — 每类别独占色系，饱和度统一，柔和不抢视觉重心 ──
 const CATEGORY_GRADIENTS = {
-  '补气养血':   { from: 'from-rose-100', to: 'to-rose-50',   text: 'text-rose-700', darkText: 'text-rose-300' },
-  '滋阴润燥':   { from: 'from-violet-100', to: 'to-fuchsia-50', text: 'text-violet-700', darkText: 'text-violet-300' },
-  '清热解毒':   { from: 'from-emerald-100', to: 'to-teal-50',  text: 'text-emerald-700', darkText: 'text-emerald-300' },
-  '活血化瘀':   { from: 'from-red-100', to: 'to-rose-50',    text: 'text-red-700', darkText: 'text-red-300' },
-  '祛湿化浊':   { from: 'from-amber-100', to: 'to-orange-50', text: 'text-amber-700', darkText: 'text-amber-300' },
-  '扶正固本':   { from: 'from-sky-100', to: 'to-blue-50',    text: 'text-sky-700', darkText: 'text-sky-300' },
-  '疏肝理气':   { from: 'from-green-100', to: 'to-lime-50',   text: 'text-green-700', darkText: 'text-green-300' },
-  '化痰散结':   { from: 'from-purple-100', to: 'to-violet-50', text: 'text-purple-700', darkText: 'text-purple-300' },
-  '安神定志':   { from: 'from-indigo-100', to: 'to-blue-50',  text: 'text-indigo-700', darkText: 'text-indigo-300' },
-  '健脾和胃':   { from: 'from-orange-100', to: 'to-amber-50', text: 'text-orange-700', darkText: 'text-orange-300' },
-  '补肾填精':   { from: 'from-teal-100', to: 'to-emerald-50', text: 'text-teal-700', darkText: 'text-teal-300' },
-  '清热利湿':   { from: 'from-cyan-100', to: 'to-sky-50',     text: 'text-cyan-700', darkText: 'text-cyan-300' },
-  '调和营卫':   { from: 'from-pink-100', to: 'to-rose-50',    text: 'text-pink-700', darkText: 'text-pink-300' },
-  '通络止痛':   { from: 'from-slate-100', to: 'to-zinc-50',   text: 'text-slate-700', darkText: 'text-slate-300' },
+  '补气养血':   { from: 'from-danger-100', to: 'to-danger-50',   text: 'text-danger-700', darkText: 'text-danger-300' },
+  '滋阴润燥':   { from: 'from-accent-100', to: 'to-accent-50', text: 'text-accent-700', darkText: 'text-accent-300' },
+  '清热解毒':   { from: 'from-success-100', to: 'to-success-50',  text: 'text-success-700', darkText: 'text-success-300' },
+  '活血化瘀':   { from: 'from-error-100', to: 'to-danger-50',    text: 'text-error-700', darkText: 'text-error-300' },
+  '祛湿化浊':   { from: 'from-warning-100', to: 'to-warning-50', text: 'text-warning-700', darkText: 'text-warning-300' },
+  '扶正固本':   { from: 'from-info-100', to: 'to-secondary-50',    text: 'text-info-700', darkText: 'text-info-300' },
+  '疏肝理气':   { from: 'from-success-100', to: 'to-success-50',   text: 'text-success-700', darkText: 'text-success-300' },
+  '化痰散结':   { from: 'from-accent-100', to: 'to-accent-50', text: 'text-accent-700', darkText: 'text-accent-300' },
+  '安神定志':   { from: 'from-accent-100', to: 'to-secondary-50',  text: 'text-accent-700', darkText: 'text-accent-300' },
+  '健脾和胃':   { from: 'from-warning-100', to: 'to-warning-50', text: 'text-warning-700', darkText: 'text-warning-300' },
+  '补肾填精':   { from: 'from-success-100', to: 'to-success-50', text: 'text-success-700', darkText: 'text-success-300' },
+  '清热利湿':   { from: 'from-info-100', to: 'to-info-50',     text: 'text-info-700', darkText: 'text-info-300' },
+  '调和营卫':   { from: 'from-danger-100', to: 'to-danger-50',    text: 'text-danger-700', darkText: 'text-danger-300' },
+  '通络止痛':   { from: 'from-neutral-100', to: 'to-neutral-50',   text: 'text-neutral-700', darkText: 'text-neutral-300' },
 } as const
 
-const DEFAULT_GRADIENT = { from: 'from-neutral-100', to: 'to-neutral-50', text: 'text-neutral-700', darkText: 'text-neutral-300' }
+const DEFAULT_GRADIENT = { from: 'from-neutral-100', to: 'to-neutral-50', text: 'text-neutral-700', darkText: 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' }
 
 function getCatGradient(cat?: string) {
   if (!cat) return DEFAULT_GRADIENT
@@ -81,14 +81,14 @@ function CategoryChip({
     <button
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150 active:scale-95',
+        'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-150 active:scale-95',
         active
           ? 'bg-primary-container text-primary-main shadow-sm'
           : 'bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-secondary hover:bg-neutral-200 dark:hover:bg-neutral-700',
       )}
     >
       {name}
-      <span className={cn('text-[11px]', active ? 'text-white/70' : 'text-text-disabled')}>{count}</span>
+      <span className={cn('text-xs', active ? 'text-white/70' : 'text-text-disabled')}>{count}</span>
     </button>
   )
 }
@@ -116,7 +116,7 @@ function CaseCard({ item }: { item: FormulaCase }) {
             <div className={cn('absolute inset-0 pointer-events-none', `bg-${grad.from.replace('from-', '')}/20`)} />
             {item.is_featured && (
               <div className="absolute top-3 right-3">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-warning-500/90 text-white backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-warning-500/90 text-white backdrop-blur-sm">
                   <Star size={10} className="fill-white" />推荐
                 </span>
               </div>
@@ -126,7 +126,7 @@ function CaseCard({ item }: { item: FormulaCase }) {
           /* 无图占位：类别柔和渐变背景 */
           <div className={cn('h-36 bg-gradient-to-br flex items-center justify-center relative', grad.from, grad.to)}>
             {item.generated_by_ai && (
-              <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/70 dark:bg-black/30 text-text-secondary backdrop-blur-sm border border-white/40">
+              <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/70 dark:bg-black/30 text-text-secondary backdrop-blur-sm border border-white/40">
                 AI
               </span>
             )}
@@ -138,24 +138,24 @@ function CaseCard({ item }: { item: FormulaCase }) {
 
         <div className="p-4">
           {/* Title */}
-          <h3 className="font-semibold text-[15px] text-text-primary leading-snug mb-1.5 line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+          <h3 className="font-semibold text-[15px] text-text-primary leading-snug mb-1.5 line-clamp-1 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
             {item.title}
           </h3>
 
           {/* Summary */}
-          <p className="text-[13px] text-text-muted line-clamp-2 mb-3 leading-relaxed min-h-[2em]">
+          <p className="text-sm text-text-muted line-clamp-2 mb-3 leading-relaxed min-h-[2em]">
             {item.summary}
           </p>
 
           {/* Category + Tags */}
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             {item.category && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">
                 {item.category}
               </span>
             )}
             {item.tags.slice(0, 2).map((tag) => (
-              <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">
+              <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">
                 {tag}
               </span>
             ))}
@@ -164,21 +164,21 @@ function CaseCard({ item }: { item: FormulaCase }) {
           {/* Meta Row */}
           <div className="flex items-center justify-between pt-3 border-t border-neutral-default/50 dark:border-neutral-default/80">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1 text-[11px] text-text-disabled">
+              <span className="inline-flex items-center gap-1 text-xs text-text-disabled">
                 <Eye size={12} className="shrink-0" />
                 <span className="font-medium tabular-nums text-text-muted">{item.views}</span>
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] text-text-disabled">
+              <span className="inline-flex items-center gap-1 text-xs text-text-disabled">
                 <Heart size={12} className="shrink-0" />
                 <span className="font-medium tabular-nums text-text-muted">{item.likes}</span>
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] text-text-disabled">
+              <span className="inline-flex items-center gap-1 text-xs text-text-disabled">
                 <Bookmark size={12} className="shrink-0" />
                 <span className="font-medium tabular-nums text-text-muted">{item.bookmarks ?? 0}</span>
               </span>
             </div>
             {item.formula_name && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-text-disabled truncate max-w-[80px]" title={item.formula_name}>
+              <span className="inline-flex items-center gap-1 text-xs text-text-disabled truncate max-w-[80px]" title={item.formula_name}>
                 <FileText size={11} className="shrink-0" />
                 <span className="truncate">{item.formula_name}</span>
               </span>
@@ -205,21 +205,21 @@ function CaseListItem({ item }: { item: FormulaCase }) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <h3 className="font-semibold text-[15px] text-text-primary truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+            <h3 className="font-semibold text-[15px] text-text-primary truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
               {item.title}
             </h3>
             {item.is_featured && <Star size={13} className="text-warning-500 shrink-0 fill-warning-500" />}
             {item.generated_by_ai && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">AI</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">AI</span>
             )}
           </div>
-          <p className="text-[13px] text-text-muted line-clamp-1 mb-1.5">{item.summary}</p>
-          <div className="flex items-center gap-3 text-[11px] text-text-disabled flex-wrap">
+          <p className="text-sm text-text-muted line-clamp-1 mb-1.5">{item.summary}</p>
+          <div className="flex items-center gap-3 text-xs text-text-disabled flex-wrap">
             <span className="inline-flex items-center gap-1"><Eye size={11} />{item.views}</span>
             <span className="inline-flex items-center gap-1"><Heart size={11} />{item.likes}</span>
             <span className="inline-flex items-center gap-1"><Bookmark size={11} />{item.bookmarks ?? 0}</span>
             {item.category && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">{item.category}</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">{item.category}</span>
             )}
             {item.formula_name && <span className="flex items-center gap-1"><FileText size={11} />{item.formula_name}</span>}
           </div>
@@ -347,7 +347,7 @@ export function FormulaCasesPage() {
     <div className="max-w-7xl mx-auto space-y-6 px-4 lg:px-6 py-6">
 
       {/* ── 渐变 Hero Banner（对齐 FormulaListPage）────────── */}
-      <div className="rounded-xl bg-gradient-to-r from-primary-600 to-primary-800 p-5 text-white shadow-card-hover">
+      <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-5 text-white shadow-card-hover">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -368,7 +368,7 @@ export function FormulaCasesPage() {
                 onClick={() => setViewMode('grid')}
                 className={cn(
                   'px-3 py-2 min-h-[44px] text-sm font-medium transition-colors',
-                  viewMode === 'grid' ? 'bg-white dark:bg-neutral-900/20 text-white' : 'text-white/70 hover:text-white',
+                  viewMode === 'grid' ? 'bg-white dark:bg-neutral-900/20 text-primary-700 dark:text-white' : 'text-primary-700/70 dark:text-white/70 hover:text-primary-700 dark:hover:text-white',
                 )}
               >
                 <Grid size={14} className="inline mr-1" />网格
@@ -377,7 +377,7 @@ export function FormulaCasesPage() {
                 onClick={() => setViewMode('list')}
                 className={cn(
                   'px-3 py-2 min-h-[44px] text-sm font-medium transition-colors border-l border-white/20',
-                  viewMode === 'list' ? 'bg-white dark:bg-neutral-900/20 text-white' : 'text-white/70 hover:text-white',
+                  viewMode === 'list' ? 'bg-white dark:bg-neutral-900/20 text-primary-700 dark:text-white' : 'text-primary-700/70 dark:text-white/70 hover:text-primary-700 dark:hover:text-white',
                 )}
               >
                 <ListIcon size={14} className="inline mr-1" />列表
@@ -386,12 +386,12 @@ export function FormulaCasesPage() {
 
             {/* CTA */}
             <Link to="/formulas/new">
-              <button className="px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-white dark:bg-neutral-900/10 text-white/80 hover:bg-white dark:bg-neutral-900/20 border border-white/30 transition-all active:scale-95">
+              <button className="px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-white dark:bg-neutral-900/10 text-primary-700/80 dark:text-white/80 hover:bg-white dark:bg-neutral-900/20 border border-white/30 transition-all active:scale-95">
                 <Plus size={14} className="inline mr-1" />新建配方
               </button>
             </Link>
             <Link to="/formulas/cases/new">
-              <Button variant="primary" icon={<Plus size={16} />} className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-white dark:bg-neutral-900/90 shadow-sm font-semibold">
+              <Button variant="primary" icon={<Plus size={16} />} className="bg-white dark:bg-neutral-900 text-primary-700 hover:bg-white dark:bg-neutral-900/90 shadow-sm font-semibold">
                 创建案例
               </Button>
             </Link>
@@ -422,7 +422,7 @@ export function FormulaCasesPage() {
         {hasMoreCategories && (
           <button
             onClick={() => setShowAllCategories(!showAllCategories)}
-            className="px-3.5 py-1.5 rounded-full text-[13px] text-text-muted hover:text-text-primary border border-dashed border-neutral-default/50 dark:border-neutral-default/60 hover:border-primary-400 transition-colors"
+            className="px-3.5 py-1.5 rounded-full text-sm text-text-muted hover:text-text-primary border border-dashed border-neutral-default/50 dark:border-neutral-default/60 hover:border-primary-400 transition-colors"
           >
             {showAllCategories ? '收起' : `更多 (${(categories?.length || 0) - 8})`}
           </button>
@@ -437,7 +437,7 @@ export function FormulaCasesPage() {
               <TrendingUp size={16} className="text-primary-500" />
               热门案例
             </h2>
-            <Link to="/formulas/cases?sort_by=views&sort_dir=desc" className="text-[13px] text-primary-500 hover:text-primary-600 flex items-center gap-1 transition-colors">
+            <Link to="/formulas/cases?sort_by=views&sort_dir=desc" className="text-sm text-primary-500 hover:text-primary-700 flex items-center gap-1 transition-colors">
               查看全部 <ChevronRight size={13} />
             </Link>
           </div>
@@ -458,8 +458,8 @@ export function FormulaCasesPage() {
                       </div>
                     )}
                     <div className="p-2.5">
-                      <p className="text-[13px] font-medium text-text-primary truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{c.title}</p>
-                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-text-disabled">
+                      <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">{c.title}</p>
+                      <div className="flex items-center gap-2 mt-1.5 text-xs text-text-disabled">
                         <span className="inline-flex items-center gap-0.5"><Eye size={10} />{c.views}</span>
                         <span className="inline-flex items-center gap-0.5"><Heart size={10} />{c.likes}</span>
                         <span className="inline-flex items-center gap-0.5"><Bookmark size={10} />{c.bookmarks ?? 0}</span>

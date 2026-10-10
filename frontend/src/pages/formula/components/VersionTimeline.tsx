@@ -24,8 +24,8 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
   if (!versions || versions.length === 0) {
     return (
       <div className="text-center py-8">
-        <GitBranch size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-        <p className="text-sm text-neutral-400">暂无版本记录</p>
+        <GitBranch size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
+        <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无版本记录</p>
       </div>
     )
   }
@@ -51,11 +51,11 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                   'absolute left-0 w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10',
                   'bg-neutral-100 dark:bg-neutral-800 border-2',
                   isCurrent
-                    ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/30'
+                    ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-300/25'
                     : 'border-neutral-200 dark:border-neutral-700',
                 )}
               >
-                <GitBranch size={14} className={isCurrent ? 'text-primary-500' : 'text-neutral-400'} />
+                <GitBranch size={14} className={isCurrent ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'} />
               </div>
 
               <div
@@ -74,12 +74,12 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       <div className="flex items-center gap-2 mb-1">
                         <span className={cn(
                           'text-sm font-semibold',
-                          isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-900 dark:text-white',
+                          isCurrent ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-900 dark:text-white',
                         )}>
                           v{v.version}
                         </span>
                         {isCurrent && (
-                          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded">
+                          <span className="px-1.5 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700 rounded">
                             当前版本
                           </span>
                         )}
@@ -91,7 +91,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                         </p>
                       )}
 
-                      <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <span className="flex items-center gap-1">
                           <Clock size={10} />
                           {new Date(v.created_at).toLocaleDateString('zh-CN', {
@@ -111,7 +111,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-neutral-400">
+                    <div className="flex items-center gap-1 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       {isExpanded ? (
                         <ChevronUp size={16} />
                       ) : (
@@ -148,7 +148,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       )}
                       <div className="text-xs">
                         <span className="text-neutral-500 dark:text-neutral-400">快照数据：</span>
-                        <pre className="mt-1 p-2 bg-slate-50 dark:bg-neutral-800 rounded text-[10px] overflow-auto max-h-32 text-neutral-600 dark:text-neutral-400">
+                        <pre className="mt-1 p-2 bg-neutral-50 dark:bg-neutral-800 rounded text-xs overflow-auto max-h-32 text-neutral-600 dark:text-neutral-400">
                           {JSON.stringify(v.snapshot, null, 2)}
                         </pre>
                       </div>

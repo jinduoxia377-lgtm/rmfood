@@ -21,7 +21,8 @@ export const TestSliderPage: React.FC = () => {
             max={100}
             value={value}
             onChange={handleChange}
-            className="w-full h-2 bg-gray-200 rounded-lg"
+            className="w-full h-2 bg-neutral-200 rounded-lg"
+            aria-label="测试 1: 基础 range input"
           />
           <p className="text-sm mt-1">当前值: {value}</p>
         </div>
@@ -34,8 +35,9 @@ export const TestSliderPage: React.FC = () => {
             max={100}
             value={value}
             onChange={handleChange}
-            className="w-full h-2 bg-blue-500 rounded-lg cursor-pointer"
+            className="w-full h-2 bg-secondary-500 rounded-lg cursor-pointer"
             style={{ accentColor: 'rgb(59, 130, 246)' }}
+            aria-label="测试 2: 带样式的 range input"
           />
           <p className="text-sm mt-1">当前值: {value}</p>
         </div>

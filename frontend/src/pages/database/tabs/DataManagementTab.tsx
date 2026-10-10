@@ -212,18 +212,18 @@ const TABS_CONFIG = [
 ];
 
 const IMPORT_MODE_OPTIONS: { value: ImportMode; label: string; desc: string; color: string }[] = [
-  { value: 'overwrite', label: '覆盖导入', desc: '已存在记录将被替换', color: 'text-error-600 bg-error-50 border-red-200' },
+  { value: 'overwrite', label: '覆盖导入', desc: '已存在记录将被替换', color: 'text-error-600 bg-error-50 border-error-200' },
   {
     value: 'skip',
     label: '跳过重复',
     desc: '跳过已存在的重复记录',
-    color: 'text-warning-600 bg-warning-50 border-amber-200',
+    color: 'text-warning-600 bg-warning-50 border-warning-200',
   },
   {
     value: 'merge',
     label: '合并更新',
     desc: '合并重复记录的字段值',
-    color: 'text-secondary-600 bg-secondary-50 border-blue-200',
+    color: 'text-secondary-600 bg-secondary-50 border-secondary-200',
   },
 ];
 
@@ -612,7 +612,7 @@ export default function DataManagementTab() {
         label: '平均查询响应时间',
         value: `${Math.round(perfMetrics.avgResponseTime)}ms`,
         icon: Timer,
-        color: 'text-secondary-600 bg-secondary-50 dark:bg-blue-950/40',
+        color: 'text-secondary-600 bg-secondary-50 dark:bg-secondary-950/40',
         trend: perfMetrics.avgResponseTime > 150 ? 'up' : perfMetrics.avgResponseTime < 100 ? 'down' : 'stable',
         trendValue: `${perfMetrics.avgResponseTime > 0 ? '+' : ''}${(perfMetrics.avgResponseTime - 128).toFixed(0)}ms`,
       },
@@ -628,14 +628,14 @@ export default function DataManagementTab() {
         label: '缓存命中率',
         value: `${perfMetrics.cacheHitRate.toFixed(1)}%`,
         icon: Cpu,
-        color: 'text-primary-700 bg-primary-50 dark:bg-emerald-950/40',
+        color: 'text-primary-700 bg-primary-50 dark:bg-success-950/40',
         trend: perfMetrics.cacheHitRate > 95 ? 'stable' : 'down',
       },
       {
         label: '内存使用估算',
         value: `${perfMetrics.memoryUsage.toFixed(1)}%`,
         icon: HardDrive,
-        color: 'text-warning-600 bg-warning-50 dark:bg-amber-950/40',
+        color: 'text-warning-600 bg-warning-50 dark:bg-warning-950/40',
         trend: perfMetrics.memoryUsage > 75 ? 'up' : 'stable',
       },
     ],
@@ -655,7 +655,7 @@ export default function DataManagementTab() {
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
           isDragging
             ? 'border-primary-500 bg-primary-50/60 dark:bg-primary-950/30 scale-[1.01]'
-            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30'
+            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-neutral-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30'
         }`}
       >
         <input
@@ -663,8 +663,7 @@ export default function DataManagementTab() {
           type="file"
           accept=".xlsx,.xls,.csv,.json"
           className="hidden"
-          onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-        />
+          onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])} aria-hidden="true" tabIndex={-1} />
         <UploadCloud className={`w-12 h-12 mx-auto mb-3 ${isDragging ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 leading-relaxed">
           {isDragging ? '释放文件以上传' : '拖拽文件到此处，或点击选择'}
@@ -689,7 +688,7 @@ export default function DataManagementTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs leading-[1.375]">
               <thead>
-                <tr className="bg-slate-50 dark:bg-neutral-800/50">
+                <tr className="bg-neutral-50 dark:bg-neutral-800/50">
                   {previewData.headers.map((h) => (
                     <th
                       key={h}
@@ -700,9 +699,9 @@ export default function DataManagementTab() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {previewData.rows.map((row, ri) => (
-                  <tr key={ri} className="hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30">
+                  <tr key={ri} className="hover:bg-neutral-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30">
                     {row.map((cell, ci) => (
                       <td
                         key={ci}
@@ -744,7 +743,7 @@ export default function DataManagementTab() {
       </div>
 
       {(isImporting || importResult) && (
-        <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/50 p-4 space-y-3">
+        <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-4 space-y-3">
           {isImporting && (
             <>
               <div className="flex items-center justify-between text-sm leading-relaxed">
@@ -827,7 +826,7 @@ export default function DataManagementTab() {
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">预估大小</label>
-          <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-sm text-neutral-500 font-mono tabular-nums">
+          <div className="px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-sm text-neutral-500 font-mono tabular-nums">
             ~{formatFileSize(500_000 + Math.floor(Math.random() * 1_500_000))}
           </div>
         </div>
@@ -860,7 +859,7 @@ export default function DataManagementTab() {
       </Card>
 
       {isExporting && (
-        <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/50 p-4 space-y-2">
+        <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-4 space-y-2">
           <div className="flex items-center justify-between text-sm leading-relaxed">
             <span className="flex items-center gap-2 text-neutral-600">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -891,7 +890,7 @@ export default function DataManagementTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center shrink-0">
               <Save className="w-5 h-5 text-primary-700" />
             </div>
             <div className="min-w-0">
@@ -912,7 +911,7 @@ export default function DataManagementTab() {
 
         <Card className="p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-secondary-100 dark:bg-secondary-300/30 flex items-center justify-center shrink-0">
               <RotateCcw className="w-5 h-5 text-secondary-600" />
             </div>
             <div className="min-w-0">
@@ -972,7 +971,7 @@ export default function DataManagementTab() {
             {backups.map((b) => (
               <div
                 key={b.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800"
+                className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -1030,7 +1029,7 @@ export default function DataManagementTab() {
           <Trash2 className="w-4 h-4 text-error-500" />
           批量删除
         </h4>
-        <div className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-sm">
+        <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-sm">
           <p>
             已选择 <strong className="text-primary-700 tabular-nums font-bold">{selectedRows.size}</strong> 条记录
           </p>
@@ -1099,17 +1098,17 @@ export default function DataManagementTab() {
         </Button>
         {validationResult && (
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+            <div className="text-center p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <div className="text-lg font-bold text-neutral-700 dark:text-neutral-300 tabular-nums">
                 {validationResult.total}
               </div>
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总计</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-success-50 dark:bg-green-950/20">
+            <div className="text-center p-3 rounded-lg bg-success-50 dark:bg-success-950/20">
               <div className="text-lg font-bold text-success-600 tabular-nums">{validationResult.valid}</div>
               <div className="text-xs text-success-600">有效</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-error-50 dark:bg-red-950/20">
+            <div className="text-center p-3 rounded-lg bg-error-50 dark:bg-error-950/20">
               <div className="text-lg font-bold text-error-600 tabular-nums">{validationResult.invalid}</div>
               <div className="text-xs text-error-600">无效</div>
             </div>
@@ -1176,11 +1175,11 @@ export default function DataManagementTab() {
             <p className="text-sm font-medium leading-relaxed">所有数据质量检查通过</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {qualityIssues.map((issue) => (
               <div
                 key={issue.id}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/30 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/30 transition-colors"
               >
                 {issue.severity === 'error' ? (
                   <XCircle className="w-4 h-4 text-error-500 shrink-0" />
@@ -1227,7 +1226,7 @@ export default function DataManagementTab() {
               onClick={() => setLogTypeFilter(f.value)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                 logTypeFilter === f.value
-                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700'
+                  ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
               }`}
             >
@@ -1256,7 +1255,7 @@ export default function DataManagementTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm leading-[1.375]">
               <thead>
-                <tr className="bg-slate-50 dark:bg-neutral-800/50 text-left">
+                <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-left">
                   <th className="px-4 py-2.5 font-semibold text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider leading-[1.375]">
                     时间
                   </th>
@@ -1277,9 +1276,9 @@ export default function DataManagementTab() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30 transition-colors">
+                  <tr key={log.id} className="hover:bg-neutral-50 dark:bg-neutral-800/50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="px-4 py-2.5 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap leading-[1.375] tabular-nums">
                       {log.time}
                     </td>

@@ -12,17 +12,17 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
     <div className="space-y-4">
       {r.overall_si !== null && r.overall_si !== undefined && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
-            <p className="text-xs text-violet-600 dark:text-violet-400 mb-1">综合协同指数 SI</p>
-            <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{r.overall_si.toFixed(2)}</p>
+          <div className="p-4 rounded-xl bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800">
+            <p className="text-xs text-accent-600 dark:text-accent-700 mb-1">综合协同指数 SI</p>
+            <p className="text-2xl font-bold text-accent-700 dark:text-accent-700">{r.overall_si.toFixed(2)}</p>
           </div>
-          <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">成分对数量</p>
-            <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{r.pairs?.length ?? 0}</p>
+          <div className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800">
+            <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">成分对数量</p>
+            <p className="text-2xl font-bold text-secondary-700 dark:text-secondary-700">{r.pairs?.length ?? 0}</p>
           </div>
-          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">成分总数</p>
-            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.ingredient_count ?? 0}</p>
+          <div className="p-4 rounded-xl bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800">
+            <p className="text-xs text-success-700 dark:text-success-600 mb-1">成分总数</p>
+            <p className="text-2xl font-bold text-success-700 dark:text-success-700">{r.ingredient_count ?? 0}</p>
           </div>
         </div>
       )}
@@ -40,7 +40,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
                 )}
                 {p.overall_si !== undefined && (
                   <span className={`text-sm font-semibold ${
-                    p.overall_si > 0.7 ? 'text-emerald-600' : p.overall_si > 0.4 ? 'text-amber-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
+                    p.overall_si > 0.7 ? 'text-success-600' : p.overall_si > 0.4 ? 'text-warning-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                   }`}>
                     SI: {p.overall_si.toFixed(2)}
                   </span>
@@ -56,21 +56,21 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
   export const renderStabilityResult = (r: any) => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">预测货架期</p>
-          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月</p>
+        <div className="p-4 rounded-xl bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800">
+          <p className="text-xs text-success-700 dark:text-success-600 mb-1">预测货架期</p>
+          <p className="text-2xl font-bold text-success-700 dark:text-success-700">{r.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月</p>
         </div>
-        <div className="p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
-          <p className="text-xs text-violet-600 dark:text-violet-400 mb-1">稳定性评分</p>
-          <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{r.stability_score?.toFixed(1) ?? '—'}/100</p>
+        <div className="p-4 rounded-xl bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800">
+          <p className="text-xs text-accent-600 dark:text-accent-700 mb-1">稳定性评分</p>
+          <p className="text-2xl font-bold text-accent-700 dark:text-accent-700">{r.stability_score?.toFixed(1) ?? '—'}/100</p>
         </div>
       </div>
       {r.risk_factors?.length > 0 && (
         <div>
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">风险因素 ({r.risk_factors.length})</p>
           {r.risk_factors.map((f: any, i: number) => (
-            <div key={i} className="flex items-start gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20 mb-1">
-              <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+            <div key={i} className="flex items-start gap-2 p-2 rounded bg-warning-50 dark:bg-warning-300/20 mb-1">
+              <AlertTriangle size={14} className="text-warning-500 mt-0.5 shrink-0" />
               <span className="text-sm text-neutral-700 dark:text-neutral-300">{f.description || f.factor}</span>
             </div>
           ))}
@@ -95,7 +95,7 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
         <div className="grid grid-cols-5 gap-2">
           {(['bitter', 'sweet', 'umami', 'astringent', 'sour'] as const).map((key) => {
             const labels: Record<string, string> = { bitter: '苦', sweet: '甜', umami: '鲜', astringent: '涩', sour: '酸' };
-            const colors: Record<string, string> = { bitter: 'bg-rose-400', sweet: 'bg-pink-400', umami: 'bg-amber-400', astringent: 'bg-purple-400', sour: 'bg-lime-400' };
+            const colors: Record<string, string> = { bitter: 'bg-danger-400', sweet: 'bg-danger-400', umami: 'bg-warning-400', astringent: 'bg-accent-400', sour: 'bg-success-400' };
             const val = tp[key] ?? 0;
             return (
               <div key={key} className="text-center">
@@ -107,13 +107,13 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
           })}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
-            <p className="text-xs text-emerald-600 dark:text-emerald-400">风味平衡度</p>
-            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{r.balance_score?.toFixed(2) ?? '—'}</p>
+          <div className="p-3 rounded-lg bg-success-50 dark:bg-success-300/20">
+            <p className="text-xs text-success-700 dark:text-success-600">风味平衡度</p>
+            <p className="text-xl font-bold text-success-700 dark:text-success-700">{r.balance_score?.toFixed(2) ?? '—'}</p>
           </div>
-          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-            <p className="text-xs text-blue-600 dark:text-blue-400">接受度</p>
-            <p className="text-xl font-bold text-blue-700 dark:text-blue-300">{r.acceptability?.toFixed(2) ?? '—'}</p>
+          <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/20">
+            <p className="text-xs text-secondary-700 dark:text-secondary-700">接受度</p>
+            <p className="text-xl font-bold text-secondary-700 dark:text-secondary-700">{r.acceptability?.toFixed(2) ?? '—'}</p>
           </div>
         </div>
         {r.optimization_suggestions?.length > 0 && (
@@ -144,9 +144,9 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
         ))}
       </div>
       {r.optimal_window?.length === 2 && (
-        <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">最佳服用时间窗口</p>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+        <div className="p-3 rounded-lg bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800">
+          <p className="text-sm font-medium text-success-700 dark:text-success-700">最佳服用时间窗口</p>
+          <p className="text-2xl font-bold text-success-700 dark:text-success-600">
             {r.optimal_window[0]?.toFixed(1)} ~ {r.optimal_window[1]?.toFixed(1)} 小时
           </p>
         </div>
@@ -160,17 +160,17 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
   export const renderCompatResult = (r: any) => (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">兼容分数</p>
-          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.overall_score?.toFixed(0) ?? '—'}/100</p>
+        <div className="p-4 rounded-xl bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800">
+          <p className="text-xs text-success-700 dark:text-success-600 mb-1">兼容分数</p>
+          <p className="text-2xl font-bold text-success-700 dark:text-success-700">{r.overall_score?.toFixed(0) ?? '—'}/100</p>
         </div>
-        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">通过检测</p>
-          <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{r.passed_checks ?? 0}/{r.total_checks ?? 0}</p>
+        <div className="p-4 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800">
+          <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">通过检测</p>
+          <p className="text-2xl font-bold text-secondary-700 dark:text-secondary-700">{r.passed_checks ?? 0}/{r.total_checks ?? 0}</p>
         </div>
-        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
-          <p className="text-xs text-rose-600 dark:text-rose-400 mb-1">问题数</p>
-          <p className="text-2xl font-bold text-rose-700 dark:text-rose-300">{r.error_count ?? 0} 错误 / {r.warning_count ?? 0} 警告</p>
+        <div className="p-4 rounded-xl bg-danger-50 dark:bg-danger-300/20 border border-danger-200 dark:border-danger-800">
+          <p className="text-xs text-danger-600 dark:text-danger-700 mb-1">问题数</p>
+          <p className="text-2xl font-bold text-danger-700 dark:text-danger-700">{r.error_count ?? 0} 错误 / {r.warning_count ?? 0} 警告</p>
         </div>
       </div>
       {r.issues?.length > 0 && (
@@ -178,20 +178,20 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">检测问题 ({r.issues.length})</p>
           {r.issues.slice(0, 5).map((issue: any, i: number) => (
             <div key={i} className={`p-3 rounded-lg border ${
-              issue.level === 'ERROR' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' :
-              issue.level === 'WARNING' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
-              'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+              issue.level === 'ERROR' ? 'bg-danger-50 dark:bg-danger-300/20 border-danger-200 dark:border-danger-800' :
+              issue.level === 'WARNING' ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800' :
+              'bg-secondary-50 dark:bg-secondary-300/20 border-secondary-200 dark:border-secondary-800'
             }`}>
               <div className="flex items-start justify-between gap-2">
                 <p className={`text-sm font-medium ${
-                  issue.level === 'ERROR' ? 'text-rose-700 dark:text-rose-300' :
-                  issue.level === 'WARNING' ? 'text-amber-700 dark:text-amber-300' :
-                  'text-blue-700 dark:text-blue-300'
+                  issue.level === 'ERROR' ? 'text-danger-700 dark:text-danger-700' :
+                  issue.level === 'WARNING' ? 'text-warning-700 dark:text-warning-700' :
+                  'text-secondary-700 dark:text-secondary-700'
                 }`}>{issue.category || issue.level}</p>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  issue.level === 'ERROR' ? 'bg-rose-200 dark:bg-rose-800 text-rose-800 dark:text-rose-200' :
-                  issue.level === 'WARNING' ? 'bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200' :
-                  'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                  issue.level === 'ERROR' ? 'bg-danger-200 dark:bg-danger-800 text-danger-800 dark:text-danger-200' :
+                  issue.level === 'WARNING' ? 'bg-warning-200 dark:bg-warning-800 text-warning-800 dark:text-warning-200' :
+                  'bg-secondary-200 dark:bg-secondary-800 text-secondary-800 dark:text-secondary-200'
                 }`}>{issue.level}</span>
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{issue.description}</p>
@@ -207,21 +207,21 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
     <div className="space-y-4">
       <div className={`p-4 rounded-xl border ${
         r.is_safe
-          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
-          : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'
+          ? 'bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800'
+          : 'bg-danger-50 dark:bg-danger-300/20 border-danger-200 dark:border-danger-800'
       }`}>
         <div className="flex items-center gap-3">
           {r.is_safe
-            ? <CheckCircle2 size={24} className="text-emerald-500" />
-            : <AlertTriangle size={24} className="text-rose-500" />
+            ? <CheckCircle2 size={24} className="text-success-500" />
+            : <AlertTriangle size={24} className="text-danger-500" />
           }
           <div>
-            <p className={`text-lg font-bold ${r.is_safe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+            <p className={`text-lg font-bold ${r.is_safe ? 'text-success-700 dark:text-success-700' : 'text-danger-700 dark:text-danger-700'}`}>
               {r.is_safe ? '配方安全' : '存在安全风险'}
             </p>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               风险评分: {r.overall_risk_score?.toFixed(1) ?? '—'} / 100
-              {r.blocked_by_critical && <span className="ml-2 text-rose-600 font-medium">⚠️ 已被关键问题阻断</span>}
+              {r.blocked_by_critical && <span className="ml-2 text-danger-600 font-medium">⚠️ 已被关键问题阻断</span>}
             </p>
           </div>
         </div>
@@ -231,16 +231,16 @@ import { ExplainabilityReport } from '@/components/report/ExplainabilityReport'
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">安全告警 ({r.alerts.length})</p>
           {r.alerts.map((a: any, i: number) => (
             <div key={i} className={`p-3 rounded-lg border ${
-              a.level === 'CRITICAL' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' :
-              a.level === 'WARNING' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
-              'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+              a.level === 'CRITICAL' ? 'bg-danger-50 dark:bg-danger-300/20 border-danger-200 dark:border-danger-800' :
+              a.level === 'WARNING' ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800' :
+              'bg-secondary-50 dark:bg-secondary-300/20 border-secondary-200 dark:border-secondary-800'
             }`}>
               <div className="flex items-start justify-between gap-2">
                 <span className="text-sm font-medium">{a.ingredient || '未知成分'}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  a.level === 'CRITICAL' ? 'bg-rose-200 dark:bg-rose-800 text-rose-800 dark:text-rose-200' :
-                  a.level === 'WARNING' ? 'bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200' :
-                  'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                  a.level === 'CRITICAL' ? 'bg-danger-200 dark:bg-danger-800 text-danger-800 dark:text-danger-200' :
+                  a.level === 'WARNING' ? 'bg-warning-200 dark:bg-warning-800 text-warning-800 dark:text-warning-200' :
+                  'bg-secondary-200 dark:bg-secondary-800 text-secondary-800 dark:text-secondary-200'
                 }`}>{a.level}</span>
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{a.message}</p>
@@ -269,7 +269,7 @@ export function ComplianceCheckSection({
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-        <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+        <span className="inline-block w-2 h-2 rounded-full bg-accent-500 animate-pulse" />
         检查合规性...
       </div>
     );
@@ -279,10 +279,10 @@ export function ComplianceCheckSection({
 
   const cfg =
     result.status === 'compliant'
-      ? 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+      ? 'text-success-600 bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800'
       : result.status === 'warning'
-      ? 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-      : 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+      ? 'text-warning-600 bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800'
+      : 'text-error-600 bg-error-50 dark:bg-error-300/20 border-error-200 dark:border-error-800';
 
   return (
     <div className={`rounded-xl border p-4 ${cfg}`}>
@@ -348,7 +348,7 @@ export function ExplainabilityReportSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 dark:text-white">
+        <h3 className="font-semibold text-neutral-900 dark:text-white">
           成分贡献与相互作用分析
         </h3>
         <Button
@@ -362,7 +362,7 @@ export function ExplainabilityReportSection({
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-sm text-red-600 dark:text-red-400">
+        <div className="p-3 rounded-xl bg-error-50 dark:bg-error-300/20 text-sm text-error-600 dark:text-error-700">
           {error}
         </div>
       )}
@@ -372,7 +372,7 @@ export function ExplainabilityReportSection({
       )}
 
       {!result && !loading && (
-        <div className="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center text-sm text-gray-500">
+        <div className="p-6 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-center text-sm text-neutral-500">
           点击「生成报告」分析配方可解释性
         </div>
       )}
@@ -406,9 +406,9 @@ export function AnalysisCard({
         className="w-full flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-violet-500">{icon}</span>
+          <span className="text-accent-500">{icon}</span>
           <span className="font-medium text-neutral-900 dark:text-white text-sm">{title}</span>
-          {result && <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">已完成</span>}
+          {result && <span className="text-xs text-success-700 dark:text-success-600 bg-success-50 dark:bg-success-300/25 px-2 py-0.5 rounded-full">已完成</span>}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" icon={<RefreshCw size={12} />} onClick={(e) => { e.stopPropagation(); onRun() }} disabled={loading}>

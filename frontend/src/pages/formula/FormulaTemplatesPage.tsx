@@ -90,7 +90,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日早晚各一次，每次5g，温水冲服',
     tags: ['美容', '养颜', '女性'],
     usage_count: 412,
-    color: 'var(--color-pink-500, #D946EF)',
+    color: 'var(--color-danger-500, #D946EF)',
   },
   {
     id: 'digestive',
@@ -214,11 +214,11 @@ export default function FormulaTemplatesPage() {
               className={cn(
                 'p-2 rounded-lg border transition-all',
                 showFavOnly
-                  ? 'bg-warning-50 dark:bg-warning-900/20 border-amber-300 dark:border-amber-700 text-warning-600'
+                  ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-600'
                   : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600',
               )}
             >
-              <Star size={18} className={showFavOnly ? 'fill-amber-400' : ''} />
+              <Star size={18} className={showFavOnly ? 'fill-warning-400' : ''} />
             </button>
             <Link to="/formulas/new">
               <Button icon={<Plus size={16} />} size="md">新建配方</Button>
@@ -244,7 +244,7 @@ export default function FormulaTemplatesPage() {
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
                 category === cat.value
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-700'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/30 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -259,7 +259,7 @@ export default function FormulaTemplatesPage() {
         <span>共 {filteredTemplates.length} 个模板</span>
         {favorites.size > 0 && (
           <span className="flex items-center gap-1">
-            <Star size={12} className="fill-amber-400 text-warning-400" />
+            <Star size={12} className="fill-warning-400 text-warning-400" />
             {favorites.size} 个收藏
           </span>
         )}
@@ -309,7 +309,7 @@ export default function FormulaTemplatesPage() {
                   >
                     <Star
                       size={16}
-                      className={favorites.has(template.id) ? 'fill-amber-400 text-warning-400' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
+                      className={favorites.has(template.id) ? 'fill-warning-400 text-warning-400' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                     />
                   </button>
                 </div>
@@ -327,7 +327,7 @@ export default function FormulaTemplatesPage() {
                 </div>
 
                 {/* 成分预览 */}
-                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
+                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">成分组成</p>
                   <div className="flex flex-wrap gap-1">
                     {template.ingredients.slice(0, 4).map(ing => (

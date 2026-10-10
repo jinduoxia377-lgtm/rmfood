@@ -73,14 +73,14 @@ function FeatureCard({ icon, title, description, onClick, color }: FeatureCardPr
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
           {title}
-        </h3>
+        </h2>
         <p className="text-xs text-[var(--text-muted,#6B7280)] dark:text-[var(--text-muted-dark,#9CA3AF)] mt-1 leading-relaxed">
           {description}
         </p>
       </div>
-      <ArrowRight size={16} className="text-neutral-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
+      <ArrowRight size={16} className="text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
     </button>
   )
 }
@@ -131,9 +131,9 @@ export default function PeptideStructurePage() {
                 </div>
                 <span className="text-xs font-medium uppercase tracking-wider text-white/70">肽链结构分析工具</span>
               </div>
-              <h2 className="text-xl font-semibold leading-snug tracking-tight">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">
                 肽序列结构与活性预测分析
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">
                 基于 PepLink 的完整肽链分析平台 — 结构预测、活性评估、安全分析一体化
               </p>
@@ -163,82 +163,82 @@ export default function PeptideStructurePage() {
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatsCard
-              icon={<Database size={20} className="text-primary-600 dark:text-primary-400" />}
+              icon={<Database size={20} className="text-primary-700 dark:text-primary-700" />}
               label="数据库肽数"
               value={stats.total_peptides}
-              color="bg-primary-50 dark:bg-primary-900/20"
+              color="bg-primary-50 dark:bg-primary-300/20"
             />
             <StatsCard
-              icon={<Activity size={20} className="text-success-600 dark:text-success-400" />}
+              icon={<Activity size={20} className="text-success-600 dark:text-success-600" />}
               label="活性类型"
               value={Object.keys(stats.activities).length}
-              color="bg-success-50 dark:bg-success-900/20"
+              color="bg-success-50 dark:bg-success-300/20"
             />
             <StatsCard
-              icon={<FlaskConical size={20} className="text-warning-600 dark:text-warning-400" />}
+              icon={<FlaskConical size={20} className="text-warning-600 dark:text-warning-700" />}
               label="食物来源"
               value={Object.keys(stats.food_sources).length}
-              color="bg-warning-50 dark:bg-warning-900/20"
+              color="bg-warning-50 dark:bg-warning-300/20"
             />
             <StatsCard
-              icon={<ShieldCheck size={20} className="text-purple-600 dark:text-purple-400" />}
+              icon={<ShieldCheck size={20} className="text-accent-600 dark:text-accent-700" />}
               label="活跃序列"
               value={`${Object.keys(stats.activities).length}+`}
-              color="bg-purple-50 dark:bg-purple-900/20"
+              color="bg-accent-50 dark:bg-accent-300/20"
             />
           </div>
         )}
 
         {/* 功能入口网格 — 快捷导航，每个卡片绑定独立的 tab */}
         <div>
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">快捷功能</h3>
+          <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">快捷功能</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FeatureCard
-              icon={<FlaskConical size={22} className="text-primary-600 dark:text-primary-400" />}
+              icon={<FlaskConical size={22} className="text-primary-700 dark:text-primary-700" />}
               title="序列分析"
               description="输入肽序列，分析分子量、等电点、疏水性及 ACE 抑制/抗氧化/抗菌活性评分"
               tab="analyze"
-              color="bg-primary-50 dark:bg-primary-900/20"
+              color="bg-primary-50 dark:bg-primary-300/20"
               onClick={() => handleNavigateToTab('analyze')}
             />
             <FeatureCard
-              icon={<Dna size={22} className="text-success-600 dark:text-success-400" />}
+              icon={<Dna size={22} className="text-success-600 dark:text-success-600" />}
               title="序列转换"
               description="FASTA → SMILES → SELFIES 格式互转，支持 N/C 端修饰"
               tab="convert"
-              color="bg-success-50 dark:bg-success-900/20"
+              color="bg-success-50 dark:bg-success-300/20"
               onClick={() => handleNavigateToTab('convert')}
             />
             <FeatureCard
-              icon={<Database size={22} className="text-warning-600 dark:text-warning-400" />}
+              icon={<Database size={22} className="text-warning-600 dark:text-warning-700" />}
               title="数据库查询"
               description="搜索药食同源数据库中的活性肽，按来源、活性类型筛选"
               tab="database"
-              color="bg-warning-50 dark:bg-warning-900/20"
+              color="bg-warning-50 dark:bg-warning-300/20"
               onClick={() => handleNavigateToTab('database')}
             />
             <FeatureCard
-              icon={<Zap size={22} className="text-purple-600 dark:text-purple-400" />}
+              icon={<Zap size={22} className="text-accent-600 dark:text-accent-700" />}
               title="协同效应分析"
               description="预测肽-药材协同作用，推荐最佳配伍组合，输出协同评分与机制"
               tab="synergy"
-              color="bg-purple-50 dark:bg-purple-900/20"
+              color="bg-accent-50 dark:bg-accent-300/20"
               onClick={() => handleNavigateToTab('synergy')}
             />
             <FeatureCard
-              icon={<TrendingUp size={22} className="text-cyan-600 dark:text-cyan-400" />}
+              icon={<TrendingUp size={22} className="text-info-600 dark:text-info-700" />}
               title="Pareto 优化"
               description="多目标优化候选序列，计算 Pareto 最优前沿，筛选综合评分最高的序列"
               tab="optimize"
-              color="bg-cyan-50 dark:bg-cyan-900/20"
+              color="bg-info-50 dark:bg-info-300/20"
               onClick={() => handleNavigateToTab('optimize')}
             />
             <FeatureCard
-              icon={<ShieldCheck size={22} className="text-rose-600 dark:text-rose-400" />}
+              icon={<ShieldCheck size={22} className="text-danger-600 dark:text-danger-700" />}
               title="深度分析"
               description="二级结构预测（Chou-Fasman）、理化性质分析、食品安全评估、毒性预测"
               tab="deep"
-              color="bg-rose-50 dark:bg-rose-900/20"
+              color="bg-danger-50 dark:bg-danger-300/20"
               onClick={() => handleNavigateToTab('deep')}
             />
           </div>

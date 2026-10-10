@@ -36,7 +36,7 @@ export default function ExperimentSharePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</p>
         </div>
       </div>
@@ -92,7 +92,7 @@ export default function ExperimentSharePage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                       <Target size={16} className="text-primary-500" />
                     </div>
                     <CardTitle as="h2">实验目标</CardTitle>
@@ -114,7 +114,7 @@ export default function ExperimentSharePage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                       <FileText size={16} className="text-primary-500" />
                     </div>
                     <CardTitle as="h2">实验方法</CardTitle>
@@ -134,7 +134,7 @@ export default function ExperimentSharePage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                     <BarChart3 size={16} className="text-primary-500" />
                   </div>
                   <div>
@@ -192,13 +192,13 @@ export default function ExperimentSharePage() {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {exp.conclusions && (
                 <div>
-                  <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">实验结论</h4>
+                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">实验结论</h2>
                   <p className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{exp.conclusions}</p>
                 </div>
               )}
               {exp.recommendations && (
                 <div>
-                  <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">改进建议</h4>
+                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">改进建议</h2>
                   <p className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{exp.recommendations}</p>
                 </div>
               )}
