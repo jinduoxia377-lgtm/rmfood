@@ -436,7 +436,7 @@ export default function FormulaNewPage() {
 
       {/* 网络错误提示条 */}
       {networkError && (
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800">
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800">
           <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
             <AlertCircle size={14} className="shrink-0" />
             {networkError}
@@ -459,7 +459,7 @@ export default function FormulaNewPage() {
             </CardHeader>
             <CardContent className="space-y-4 md:space-y-5 p-4 md:p-6 pt-4 md:pt-5">
               <div>
-                <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   配方名称 <span className="text-error-500 ml-0.5">*</span>
                 </label>
                 <Input
@@ -478,7 +478,7 @@ export default function FormulaNewPage() {
               </div>
 
               <div>
-                <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   配方描述
                 </label>
                 <Textarea
@@ -500,7 +500,7 @@ export default function FormulaNewPage() {
             </CardHeader>
             <CardContent className="space-y-5">
               <div>
-                <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                   功效标签 <span className="text-error-500 ml-0.5">*</span>
                 </label>
                 <div className="flex gap-2">
@@ -572,7 +572,7 @@ export default function FormulaNewPage() {
 
               {/* AI 推荐结果 */}
               {showRecommendations && (
-                <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-900/10">
+                <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-300/15">
                   <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
                     <Sparkles size={14} className="text-primary-500" />
                     AI 成分推荐
@@ -593,7 +593,7 @@ export default function FormulaNewPage() {
                           className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer',
                             ingredients.some((ing: any) => ing.id === rec.id)
-                              ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 opacity-60'
+                              ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-300 dark:border-primary-700 opacity-60'
                               : 'bg-white dark:bg-neutral-900 border-primary-100 dark:border-primary-800 hover:border-primary-300',
                           )}
                           onClick={() => {
@@ -668,14 +668,14 @@ export default function FormulaNewPage() {
               {ingredients.length > 0 && (
                 <div className="space-y-3">
                   {/* 成分总览条 */}
-                  <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg text-sm">
+                  <div className="flex items-center justify-between px-3 py-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-sm">
                     <div className="flex items-center gap-4">
                       <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">共 {ingredients.length} 种成分</span>
                       {totalWeight > 0 && (
                         <span className="text-primary-700 dark:text-primary-700 font-medium">总重 {totalWeight}g</span>
                       )}
                       {ingredients.length >= 2 && (
-                        <span className="text-xs text-violet-500 flex items-center gap-1">
+                        <span className="text-xs text-accent-500 flex items-center gap-1">
                           <FlaskConical size={12} />
                           {previewAnalysis.isRunning ? '分析中...' : '保存后可运行深度分析'}
                         </span>
@@ -813,7 +813,7 @@ export default function FormulaNewPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     服用剂量
                   </label>
                   <Input
@@ -824,7 +824,7 @@ export default function FormulaNewPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     保质期（天）
                   </label>
                   <Input
@@ -836,7 +836,7 @@ export default function FormulaNewPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     加工工艺
                   </label>
                   <Input
@@ -847,7 +847,7 @@ export default function FormulaNewPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     储藏条件
                   </label>
                   <Input
@@ -974,7 +974,7 @@ export default function FormulaNewPage() {
               { label: '储藏条件', value: storageConditions },
               { label: '保质期', value: shelfLife ? `${shelfLife} 天` : null },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
+              <div key={label} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</p>
                 <p className="text-sm font-medium text-neutral-900 dark:text-white mt-0.5">{value ?? '未设置'}</p>
               </div>
@@ -1047,7 +1047,7 @@ function HerbSearchDropdown({
           disabled={isDuplicate(herb.id)}
           onClick={() => onSelect(herb)}
           className={cn(
-            'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors border-b border-neutral-100 dark:border-neutral-800 last:border-0',
+            'w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors border-b border-neutral-100 dark:border-neutral-800 last:border-0',
             isDuplicate(herb.id) && 'opacity-50 cursor-not-allowed',
           )}
         >

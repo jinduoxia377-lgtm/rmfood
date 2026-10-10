@@ -190,9 +190,11 @@ export default function ExperimentListPage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold leading-snug tracking-tight">
+            {/* A-40：整页此前最高只到 h2（且没有 h1），文档大纲缺少顶层标题，
+                屏幕阅读器无法用 h 键跳到本页主题。与 /formulas 对齐改为 h1。 */}
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">
               实验管理
-            </h2>
+            </h1>
             <p className="mt-1 text-sm text-[color:var(--text-muted)]">
               实验计划 · 执行跟踪 · 结果分析 · 共 {total} 项实验
             </p>
@@ -222,19 +224,19 @@ export default function ExperimentListPage() {
 
       {/* ── 统计概览 ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        <button type="button" onClick={() => handleFilter('planned')} className="w-full text-left" aria-label="计划中：{statusCounts.planned ?? 0} 个实验">
+        <button type="button" onClick={() => handleFilter('planned')} className="w-full text-left" aria-label={`计划中：${statusCounts.planned ?? 0} 个实验`}>
           <StatCard label="计划中" value={statusCounts.planned ?? 0} icon={Clock} variant="secondary" />
         </button>
-        <button type="button" onClick={() => handleFilter('in_progress')} className="w-full text-left" aria-label="进行中：{statusCounts.in_progress ?? 0} 个实验">
+        <button type="button" onClick={() => handleFilter('in_progress')} className="w-full text-left" aria-label={`进行中：${statusCounts.in_progress ?? 0} 个实验`}>
           <StatCard label="进行中" value={statusCounts.in_progress ?? 0} icon={TestTube} variant="info" size="large" subtitle="活跃实验中" />
         </button>
-        <button type="button" onClick={() => handleFilter('completed')} className="w-full text-left" aria-label="已完成：{statusCounts.completed ?? 0} 个实验">
+        <button type="button" onClick={() => handleFilter('completed')} className="w-full text-left" aria-label={`已完成：${statusCounts.completed ?? 0} 个实验`}>
           <StatCard label="已完成" value={statusCounts.completed ?? 0} icon={CheckCircle2} variant="success" />
         </button>
-        <button type="button" onClick={() => handleFilter('failed')} className="w-full text-left" aria-label="已失败：{statusCounts.failed ?? 0} 个实验">
+        <button type="button" onClick={() => handleFilter('failed')} className="w-full text-left" aria-label={`已失败：${statusCounts.failed ?? 0} 个实验`}>
           <StatCard label="已失败" value={statusCounts.failed ?? 0} icon={AlertCircle} variant="warning" />
         </button>
-        <button type="button" onClick={() => handleFilter('cancelled')} className="w-full text-left" aria-label="已取消：{statusCounts.cancelled ?? 0} 个实验">
+        <button type="button" onClick={() => handleFilter('cancelled')} className="w-full text-left" aria-label={`已取消：${statusCounts.cancelled ?? 0} 个实验`}>
           <StatCard label="已取消" value={statusCounts.cancelled ?? 0} icon={Ban} variant="secondary" />
         </button>
       </div>
@@ -264,8 +266,8 @@ export default function ExperimentListPage() {
             <button
               onClick={() => handleFilter('')}
               className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                !status ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
+                !status ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                         : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >全部
@@ -276,8 +278,8 @@ export default function ExperimentListPage() {
                 key={f.value}
                 onClick={() => handleFilter(f.value)}
                 className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                  status === f.value ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
+                  status === f.value ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
                 )}
               >
@@ -290,8 +292,8 @@ export default function ExperimentListPage() {
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className={cn(
-                'ml-auto px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                showAdvanced ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                'ml-auto px-2.5 py-1 rounded-lg text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
+                showAdvanced ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                              : 'text-neutral-400 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
               )}
             >
@@ -313,7 +315,7 @@ export default function ExperimentListPage() {
                   key={opt.key}
                   onClick={() => toggleSort(opt.key)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
                     sortKey === opt.key
                       ? 'bg-primary-container text-primary-main'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700',
@@ -330,7 +332,7 @@ export default function ExperimentListPage() {
 
       {/* ── 多选提示条 ── */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
           <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
             已选中 {selectedIds.size} 个实验
           </span>
@@ -366,7 +368,7 @@ export default function ExperimentListPage() {
         </div>
       ) : sortedItems.length === 0 ? (
         <EmptyState
-          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><TestTubes size={24} className="text-primary-500 dark:text-primary-700" /></div>}
+          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center"><TestTubes size={24} className="text-primary-500 dark:text-primary-700" /></div>}
           title={search || status ? '没有匹配的实验' : '暂无实验'}
           description={search || status ? '尝试调整搜索关键词或筛选条件' : '创建实验来验证您的配方方案'}
           action={
@@ -382,15 +384,15 @@ export default function ExperimentListPage() {
           {/* 表头（桌面端） */}
           <div className="hidden sm:grid sm:grid-cols-[auto_1fr_90px_70px_90px_80px_44px] gap-3 px-5 py-2.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
             <div className="w-5" role="columnheader" />
-            <button onClick={() => toggleSort('title')} className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'title' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+            <button onClick={() => toggleSort('title')} className="flex items-center gap-1 min-h-[44px] hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'title' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
               标题 <SortIcon field="title" sortKey={sortKey} sortDir={sortDir} />
             </button>
             <div role="columnheader">编号</div>
-            <button onClick={() => toggleSort('status')} className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+            <button onClick={() => toggleSort('status')} className="flex items-center gap-1 min-h-[44px] hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
               状态 <SortIcon field="status" sortKey={sortKey} sortDir={sortDir} />
             </button>
             <div role="columnheader">关联配方</div>
-            <button onClick={() => toggleSort('updated_at')} className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+            <button onClick={() => toggleSort('updated_at')} className="flex items-center gap-1 min-h-[44px] hover:text-neutral-700 dark:hover:text-neutral-200" role="columnheader" aria-sort={sortKey === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
               更新时间 <SortIcon field="updated_at" sortKey={sortKey} sortDir={sortDir} />
             </button>
             <div role="columnheader" />
@@ -406,24 +408,34 @@ export default function ExperimentListPage() {
                   key={exp.id}
                   className={cn(
                     'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/30 transition-colors',
-                    isSelected && 'bg-primary-50/50 dark:bg-primary-900/10',
+                    isSelected && 'bg-primary-50/50 dark:bg-primary-300/15',
                   )}
                 >
-                  {/* 勾选框 */}
+                  {/* 勾选框
+                      A-40：原先是一个 16x16 的裸 <button>，既没有可访问名称（WCAG
+                      4.1.2），也远小于 44x44 触控目标（WCAG 2.5.5）。
+                      改成「44x44 的透明按钮 + 内层 16x16 视觉方框」：视觉尺寸不变，
+                      命中区域达标；同时补 aria-label / aria-pressed。 */}
                   <button
                     onClick={(e) => { e.preventDefault(); toggleSelect(exp.id) }}
-                    className={cn(
-                      'shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors mt-0.5',
-                      isSelected
-                        ? 'bg-primary-container border-primary-500 text-primary-main'
-                        : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
-                    )}
+                    aria-label={isSelected ? `取消选择 ${exp.title}` : `选择 ${exp.title}`}
+                    aria-pressed={isSelected}
+                    className="shrink-0 w-11 h-11 -my-3 -ml-2 rounded flex items-center justify-center"
                   >
-                    {isSelected && (
-                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
+                    <span
+                      className={cn(
+                        'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors',
+                        isSelected
+                          ? 'bg-primary-container border-primary-500 text-primary-main'
+                          : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
+                      )}
+                    >
+                      {isSelected && (
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
                   </button>
 
                   {/* 主内容（标题列） */}
@@ -467,7 +479,7 @@ export default function ExperimentListPage() {
                     {exp.formula_id ? (
                       <Link
                         to={`/formulas/${exp.formula_id}`}
-                        className="inline-flex items-center gap-1 text-xs text-primary-700 dark:text-primary-700 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs text-primary-700 dark:text-primary-700 hover:underline min-h-[44px]"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <FlaskConical size={11} />
@@ -490,7 +502,7 @@ export default function ExperimentListPage() {
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(exp.id) }}
                     disabled={deleting}
                     className={cn(
-                      'shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-error-600 dark:hover:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors',
+                      'shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:text-error-600 dark:hover:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors',
                       deleting && 'opacity-50 cursor-wait',
                     )}
                     aria-label="取消实验"
@@ -503,7 +515,7 @@ export default function ExperimentListPage() {
                   <Link
                     to={`/doe?exp=${exp.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                    className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:text-success-600 dark:hover:text-success-400 hover:bg-success-50 dark:hover:bg-success-900/20 transition-colors"
                     title="发送到 DOE 拟合"
                     aria-label="发送到 DOE"
                   >
@@ -515,7 +527,7 @@ export default function ExperimentListPage() {
                     <Link
                       to={`/experiments/${exp.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                      className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:text-accent-600 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors"
                       title="查看验证详情"
                       aria-label="验证配方"
                     >

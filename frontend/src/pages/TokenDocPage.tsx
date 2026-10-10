@@ -8,7 +8,7 @@ import { TokenGallery } from '@/components/TokenGallery';
 
 const TokenDocumentation: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-neutral-900">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
       <TokenGallery />
     </div>
   );

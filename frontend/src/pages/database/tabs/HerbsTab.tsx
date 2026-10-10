@@ -26,7 +26,7 @@ export function Highlight({ text, keyword }: { text: string; keyword: string }) 
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-yellow-200/80 dark:bg-yellow-700/50 text-inherit rounded px-0.5">
+      <mark className="bg-warning-200/80 dark:bg-warning-700/50 text-inherit rounded px-0.5">
         {text.slice(idx, idx + keyword.length)}
       </mark>
       {text.slice(idx + keyword.length)}
@@ -227,14 +227,14 @@ export default function HerbsTab({
         <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
           <button
             onClick={() => { setDataSource('tcmsp'); setPage(1); }}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${dataSource === 'tcmsp' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${dataSource === 'tcmsp' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
           >
             <Database className="w-3.5 h-3.5" />
             TCMSP ({herbQuery.data?.total || 0})
           </button>
           <button
             onClick={() => { setDataSource('symmap'); setPage(1); }}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${dataSource === 'symmap' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${dataSource === 'symmap' ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
           >
             <Database className="w-3.5 h-3.5" />
             SymMap ({symmapQuery.data?.total || 0})
@@ -282,7 +282,7 @@ export default function HerbsTab({
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
-                className={`p-1.5 rounded-md transition-all ${viewMode === mode ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+                className={`p-1.5 rounded-md transition-all ${viewMode === mode ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
               >
                 <Icon className="w-4 h-4" />
               </button>
@@ -299,7 +299,7 @@ export default function HerbsTab({
               setFoodOnly(!foodOnly);
               setPage(1);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${foodOnly ? 'bg-primary-container text-primary-main border-emerald-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-emerald-400 hover:text-primary-600'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${foodOnly ? 'bg-primary-container text-primary-main border-success-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-success-400 hover:text-primary-700'}`}
           >
             <Zap className="w-3.5 h-3.5" />
             仅药食同源
@@ -307,7 +307,7 @@ export default function HerbsTab({
         )}
         <button
           onClick={() => setShowFavOnly(!showFavOnly)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${showFavOnly ? 'bg-warning-500 text-white border-amber-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-amber-400 hover:text-warning-600'}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${showFavOnly ? 'bg-warning-500 text-white border-warning-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:border-warning-400 hover:text-warning-600'}`}
         >
           <Star className="w-3.5 h-3.5" />
           收藏{favorites.size > 0 ? ` (${favorites.size})` : ''}
@@ -332,13 +332,13 @@ export default function HerbsTab({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--border-subtle,rgba(0,0,0,0.06))] bg-slate-50 dark:bg-neutral-800">
+                <tr className="border-b border-[var(--border-subtle,rgba(0,0,0,0.06))] bg-neutral-50 dark:bg-neutral-800">
                   <th className="px-3 py-3 w-8" />
                   {[{ key: 'name_cn' as SortField, label: '药材名称' }].map(({ key, label }) => (
                     <th
                       key={key}
                       onClick={() => toggleSort(key)}
-                      className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-600 transition-colors"
+                      className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-700 transition-colors"
                     >
                       {label}
                       <SortIcon field={key} sortField={sortField} sortDir={sortDir} />
@@ -376,7 +376,7 @@ export default function HerbsTab({
                         <th
                           key={key}
                           onClick={() => toggleSort(key)}
-                          className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-600 transition-colors"
+                          className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-700 transition-colors"
                           title={title}
                         >
                           {label}
@@ -388,7 +388,7 @@ export default function HerbsTab({
                       </th>
                       <th
                         onClick={() => toggleSort('compound_count')}
-                        className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-600 transition-colors"
+                        className="px-4 py-3 text-center text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider cursor-pointer hover:text-primary-700 transition-colors"
                       >
                         化合物
                         <SortIcon field="compound_count" sortField={sortField} sortDir={sortDir} />
@@ -426,17 +426,17 @@ export default function HerbsTab({
                     >
                       <td className="px-3 py-3" onClick={(e) => toggleFav(item.id, e)}>
                         {favorites.has(item.id) ? (
-                          <Star className="w-4 h-4 text-warning-400 fill-amber-400" />
+                          <Star className="w-4 h-4 text-warning-400 fill-warning-400" />
                         ) : (
                           <StarOff className="w-4 h-4 text-[var(--text-muted,#9A9A9F)] opacity-0 group-hover:opacity-100 transition-opacity" />
                         )}
                       </td>
                       <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
-                        <span className="group-hover:text-primary-600 transition-colors">
+                        <span className="group-hover:text-primary-700 transition-colors">
                           <Highlight text={item.name_cn || item.nameCn} keyword={keyword} />
                         </span>
                         {item.name_pinyin || item.namePinyin ? (
-                          <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono">{item.name_pinyin || item.namePinyin}</div>
+                          <div className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{item.name_pinyin || item.namePinyin}</div>
                         ) : null}
                       </td>
                       <td className="px-4 py-3 text-[var(--text-secondary,#6E6E73)] text-xs italic font-mono">{item.name_latin || item.nameLatin || '-'}</td>
@@ -466,7 +466,7 @@ export default function HerbsTab({
                         <>
                           <td className="px-4 py-3 text-center">
                             {item.ob_percent != null ? (
-                              <span className={`font-mono text-sm font-semibold ${Number(item.ob_percent) >= 30 ? 'text-primary-600' : 'text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]'}`}>
+                              <span className={`font-mono text-sm font-semibold ${Number(item.ob_percent) >= 30 ? 'text-primary-700' : 'text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]'}`}>
                                 {Number(item.ob_percent).toFixed(1)}
                               </span>
                             ) : (
@@ -508,7 +508,7 @@ export default function HerbsTab({
                     setKeyword('');
                     doSearch();
                   }}
-                  className="text-xs text-primary-600 hover:underline"
+                  className="text-xs text-primary-700 hover:underline"
                 >
                   清除搜索
                 </button>
@@ -541,17 +541,17 @@ export default function HerbsTab({
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] group-hover:text-primary-600 transition-colors truncate">
+                      <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] group-hover:text-primary-700 transition-colors truncate">
                         <Highlight text={item.name_cn || item.nameCn} keyword={keyword} />
                       </h3>
                       <p className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono italic truncate">{item.name_latin || item.nameLatin || '-'}</p>
                     </div>
                     <button
                       onClick={(e) => toggleFav(item.id, e)}
-                      className="p-1 rounded-lg hover:bg-warning-50 dark:hover:bg-amber-950/20 transition-colors flex-shrink-0"
+                      className="p-1 rounded-lg hover:bg-warning-50 dark:hover:bg-warning-950/20 transition-colors flex-shrink-0"
                     >
                       {favorites.has(item.id) ? (
-                        <Star className="w-4 h-4 text-warning-400 fill-amber-400" />
+                        <Star className="w-4 h-4 text-warning-400 fill-warning-400" />
                       ) : (
                         <StarOff className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
                       )}
@@ -567,7 +567,7 @@ export default function HerbsTab({
                       {item.category || item.category_cn || item.categoryCn || '-'}
                     </Badge>
                     {isSymmap(item) && (item.use_part || item.usePart) && (
-                      <span className="text-[10px] font-mono text-[var(--text-muted,#9A9A9F)]">
+                      <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">
                         部位: {item.use_part || item.usePart}
                       </span>
                     )}
@@ -575,12 +575,12 @@ export default function HerbsTab({
                       <Badge variant="success" size="sm">药食同源</Badge>
                     )}
                     {!isSymmap(item) && item.ob_percent != null && (
-                      <span className="text-[10px] font-mono text-[var(--text-muted,#9A9A9F)]">
+                      <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">
                         OB {Number(item.ob_percent).toFixed(1)}%
                       </span>
                     )}
                     {isSymmap(item) && (item.meridiansCn || item.meridians_cn) ? (
-                      <span className="text-[10px] font-mono text-[var(--text-muted,#9A9A9F)]">
+                      <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">
                         {item.meridiansCn || item.meridians_cn}
                       </span>
                     ) : null}
@@ -676,30 +676,30 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
     if (activeTab === 'overview') {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-gradient-to-br from-slate-50 to-blue-100 dark:from-slate-800 dark:to-blue-950 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+          <div className="rounded-lg bg-gradient-to-br from-neutral-50 to-secondary-100 dark:from-neutral-800 dark:to-secondary-950 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
             <p className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] leading-relaxed">{herb.effects}</p>
-            <p className="text-[10px] text-[var(--text-muted,#9A9A9F)] mt-1">分类：{herb.category}</p>
+            <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1">分类：{herb.category}</p>
           </div>
 
           {compounds.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-primary-700 dark:text-primary-400 mb-2 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-primary-700 dark:text-primary-700 mb-2 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
                 核心化学成分
-                <span className="font-normal text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono">共 {compounds.length} 种</span>
+                <span className="font-normal text-xs text-[var(--text-muted,#9A9A9F)] font-mono">共 {compounds.length} 种</span>
               </h4>
               <div className="flex flex-wrap gap-2">
                 {compounds.slice(0, 8).map((c: any, i: number) => (
-                  <div key={i} className="bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-lg text-xs border border-blue-100 dark:border-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={i} className="bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-lg text-xs border border-secondary-100 dark:border-secondary-900/20 shadow-sm hover:shadow-md transition-shadow">
                     <div className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] truncate max-w-[140px]" title={c.name}>{c.name}</div>
-                    <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono mt-0.5">
-                      <span className="text-primary-600 dark:text-primary-400">OB {Number(c.ob).toFixed(1)}</span>
-                      <span className="text-secondary-600 dark:text-secondary-400 ml-2">DL {Number(c.dl).toFixed(2)}</span>
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono mt-0.5">
+                      <span className="text-primary-700 dark:text-primary-700">OB {Number(c.ob).toFixed(1)}</span>
+                      <span className="text-secondary-600 dark:text-secondary-700 ml-2">DL {Number(c.dl).toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
                 {compounds.length > 8 && (
-                  <button onClick={() => setActiveTab('compounds')} className="self-center px-3 py-1.5 rounded-lg text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/30 dark:hover:bg-primary-900/40 transition-colors">
+                  <button onClick={() => setActiveTab('compounds')} className="self-center px-3 py-1.5 rounded-lg text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/30 dark:hover:bg-primary-900/40 transition-colors">
                     查看全部 {compounds.length} 种成分 →
                   </button>
                 )}
@@ -709,10 +709,10 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
 
           {targets.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-warning-700 dark:text-warning-400 mb-2 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-warning-700 dark:text-warning-700 mb-2 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-warning-500"></span>
                 作用靶点预测
-                <span className="font-normal text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono">{targets.length} 个唯一靶点</span>
+                <span className="font-normal text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{targets.length} 个唯一靶点</span>
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {targets.slice(0, 15).map((t: any, i: number) => (
@@ -721,7 +721,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
                   </Badge>
                 ))}
                 {targets.length > 15 && (
-                  <button onClick={() => setActiveTab('targets')} className="px-2 py-0.5 rounded text-xs text-warning-600 bg-warning-50 hover:bg-warning-100 dark:bg-amber-950/20 transition-colors font-medium">
+                  <button onClick={() => setActiveTab('targets')} className="px-2 py-0.5 rounded text-xs text-warning-600 bg-warning-50 hover:bg-warning-100 dark:bg-warning-950/20 transition-colors font-medium">
                     +{targets.length - 15} 更多
                   </button>
                 )}
@@ -731,10 +731,10 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
 
           {diseases.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-error-700 dark:text-error-400 mb-2 flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-error-700 dark:text-error-600 mb-2 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-error-500"></span>
                 关联疾病谱
-                <span className="font-normal text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono">{diseases.length} 种相关疾病</span>
+                <span className="font-normal text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{diseases.length} 种相关疾病</span>
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {diseases.slice(0, 12).map((d: any, i: number) => (
@@ -743,7 +743,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
                   </Badge>
                 ))}
                 {diseases.length > 12 && (
-                  <button onClick={() => setActiveTab('diseases')} className="px-2 py-0.5 rounded text-xs text-error-600 bg-error-50 hover:bg-error-100 dark:bg-red-950/20 transition-colors font-medium">
+                  <button onClick={() => setActiveTab('diseases')} className="px-2 py-0.5 rounded text-xs text-error-600 bg-error-50 hover:bg-error-100 dark:bg-error-950/20 transition-colors font-medium">
                     +{diseases.length - 12} 更多
                   </button>
                 )}
@@ -768,7 +768,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
             </thead>
             <tbody className="divide-y divide-[rgba(148,163,184,0.08)]">
               {compounds.map((c: any, i: number) => (
-                <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-blue-950/10 transition-colors">
+                <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-secondary-950/10 transition-colors">
                   <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{c.name}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.ob != null ? Number(c.ob).toFixed(1) : '-'}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.dl != null ? Number(c.dl).toFixed(3) : '-'}</td>
@@ -813,14 +813,14 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <p className="text-sm text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] italic font-mono">{herb.name_latin}</p>
               {herb.is_food_homology && <Badge variant="success" size="sm">药食同源</Badge>}
-              {herb.tcmsp_id && <Badge variant="neutral" size="sm" className="font-mono text-[10px]">TCMSP:{herb.tcmsp_id}</Badge>}
+              {herb.tcmsp_id && <Badge variant="neutral" size="sm" className="font-mono text-xs">TCMSP:{herb.tcmsp_id}</Badge>}
             </div>
             <p className="text-sm text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] leading-relaxed">{herb.effects}</p>
             <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1">{herb.category}</p>
           </div>
         </div>
 
-        <div className="bg-slate-50 dark:bg-neutral-800 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-3 flex items-center gap-1.5">
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-primary-400 to-primary-600"></span>
             药理属性雷达图
@@ -836,14 +836,14 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', sub: 'OB', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-emerald-950/20', border: 'border-emerald-200/50 dark:border-emerald-800/20' },
-            { value: herb.dl_value != null ? Number(herb.dl_value).toFixed(3) : '-', label: '类药性', sub: 'DL', color: 'text-secondary-600 dark:text-secondary-400', bg: 'bg-secondary-50 dark:bg-blue-950/20', border: 'border-blue-200/50 dark:border-blue-800/20' },
-            { value: compounds.length, label: '活性化合物', sub: 'Compounds', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-primary-950/20', border: 'border-primary-200/50 dark:border-primary-800/20' },
-            { value: targets.length, label: '作用靶点', sub: 'Targets', color: 'text-warning-600 dark:text-warning-400', bg: 'bg-warning-50 dark:bg-amber-950/20', border: 'border-amber-200/50 dark:border-amber-800/20' },
+            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', sub: 'OB', color: 'text-primary-700 dark:text-primary-700', bg: 'bg-primary-50 dark:bg-success-950/20', border: 'border-success-200/50 dark:border-success-800/20' },
+            { value: herb.dl_value != null ? Number(herb.dl_value).toFixed(3) : '-', label: '类药性', sub: 'DL', color: 'text-secondary-600 dark:text-secondary-700', bg: 'bg-secondary-50 dark:bg-secondary-950/20', border: 'border-secondary-200/50 dark:border-secondary-800/20' },
+            { value: compounds.length, label: '活性化合物', sub: 'Compounds', color: 'text-primary-700 dark:text-primary-700', bg: 'bg-primary-50 dark:bg-primary-950/20', border: 'border-primary-200/50 dark:border-primary-800/20' },
+            { value: targets.length, label: '作用靶点', sub: 'Targets', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-950/20', border: 'border-warning-200/50 dark:border-warning-800/20' },
           ].map(({ value, label, sub, color, bg, border }) => (
             <div key={label} className={`p-3 rounded-xl text-center ${bg} border ${border} transition-all hover:shadow-sm`}>
               <div className={`text-lg font-bold ${color}`}>{value}</div>
-              <div className="text-[10px] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-0.5 font-medium">{label}</div>
+              <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-0.5 font-medium">{label}</div>
               <div className="text-[8px] text-[var(--text-muted,#9A9A9F)]/60 font-mono">{sub}</div>
             </div>
           ))}
@@ -861,7 +861,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
               <button
                 key={key}
                 onClick={() => setActiveTab(key as 'overview' | 'compounds' | 'targets' | 'diseases')}
-                className={`px-4 py-2.5 text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+                className={`px-4 py-2.5 text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === key ? 'text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
               >
                 {label}
                 {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-full" />}
@@ -884,7 +884,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
             <button
               key={key}
               onClick={() => setActiveTab(key as 'overview' | 'compounds' | 'targets' | 'diseases')}
-              className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+              className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
             >
               {label}
               {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-full" />}
@@ -902,13 +902,13 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
   return (
     <div className="space-y-4">
       {/* 基本信息 */}
-      <div className="rounded-lg bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-950 p-4 border border-purple-200/50 dark:border-purple-800/20">
+      <div className="rounded-lg bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-950 dark:to-accent-950 p-4 border border-accent-200/50 dark:border-accent-800/20">
         <div className="flex items-start gap-3 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-lg font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{herb.name_cn || herb.nameCn}</h3>
               {herb.symmap_id && (
-                <Badge variant="neutral" size="sm" className="font-mono text-[10px]">
+                <Badge variant="neutral" size="sm" className="font-mono text-xs">
                   SymMap #{herb.symmap_id}
                 </Badge>
               )}
@@ -925,38 +925,38 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
           {herb.nature_cn || herb.natureCn ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">性味</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">性味</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.nature_cn || herb.natureCn}</div>
             </div>
           ) : null}
           {herb.meridians_cn || herb.meridiansCn ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">归经</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">归经</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.meridians_cn || herb.meridiansCn}</div>
             </div>
           ) : null}
           {herb.category_cn || herb.categoryCn ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.category_cn || herb.categoryCn}</div>
             </div>
           ) : null}
           {herb.use_part ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">药用部位</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">药用部位</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.use_part}</div>
             </div>
           ) : null}
           {herb.category_eng ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类(英)</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类(英)</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.category_eng}</div>
             </div>
           ) : null}
           {herb.alias ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20 sm:col-span-2">
-              <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">别名</div>
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-accent-100/50 dark:border-accent-900/20 sm:col-span-2">
+              <div className="text-xs text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">别名</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mt-0.5">{herb.alias}</div>
             </div>
           ) : null}
@@ -964,7 +964,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
       </div>
 
       {(herb.tcmsp_id || herb.tcmid_id || herb.tcmid2_id || herb.herbdb_id) && (
-        <div className="rounded-lg bg-slate-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2">交叉引用</h4>
           <div className="flex flex-wrap gap-2">
             {herb.tcmsp_id && (
@@ -984,7 +984,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
       )}
 
       {/* 数据信息 */}
-      <div className="rounded-lg bg-slate-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+      <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
         <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2">数据信息</h4>
         <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted,#9A9A9F)]">
           {herb.source_version && (
@@ -1001,9 +1001,9 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 功效可视化 */}
       {herb.function_cn || herb.functionCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-teal-50 to-emerald-100 dark:from-teal-950 dark:to-emerald-950 p-4 border border-teal-200/50 dark:border-teal-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-success-50 to-success-100 dark:from-success-950 dark:to-success-950 p-4 border border-success-200/50 dark:border-success-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
-            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-teal-400 to-teal-600"></span>
+            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-success-400 to-success-600"></span>
             功效
           </h4>
           <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.function_cn || herb.functionCn}</p>
@@ -1015,9 +1015,9 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 性味可视化 */}
       {herb.nature_cn || herb.natureCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-950 p-4 border border-amber-200/50 dark:border-amber-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-warning-50 to-warning-100 dark:from-warning-950 dark:to-warning-950 p-4 border border-warning-200/50 dark:border-warning-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
-            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></span>
+            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-warning-400 to-warning-600"></span>
             四气五味
           </h4>
           <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.nature_cn || herb.natureCn}</p>
@@ -1029,9 +1029,9 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 归经可视化 */}
       {herb.meridians_cn || herb.meridiansCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 p-4 border border-blue-200/50 dark:border-blue-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-secondary-50 to-accent-100 dark:from-secondary-950 dark:to-accent-950 p-4 border border-secondary-200/50 dark:border-secondary-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
-            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-blue-400 to-blue-600"></span>
+            <span className="w-1 h-3 rounded-full bg-gradient-to-b from-secondary-400 to-secondary-600"></span>
             归经
           </h4>
           <p className="text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] leading-relaxed">{herb.meridians_cn || herb.meridiansCn}</p>

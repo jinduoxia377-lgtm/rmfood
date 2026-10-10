@@ -280,7 +280,7 @@ const SearchAnalyticsDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ResponsiveContainer width="100%" height={300}>
               <RePieChart>
-                <Pie
+                <Pie rootTabIndex={-1}
                   data={pieData}
                   cx="50%"
                   cy="50%"

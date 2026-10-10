@@ -35,22 +35,22 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: typeof B
   system: { label: '系统', color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300', icon: Zap },
   formula_review: {
     label: '审核',
-    color: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
+    color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
     icon: Check,
   },
   experiment_complete: {
     label: '实验',
-    color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+    color: 'bg-info-100 text-info-700 dark:bg-info-300/25 dark:text-info-700',
     icon: Inbox,
   },
   ai_task_done: {
     label: 'AI',
-    color: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400',
+    color: 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
     icon: Zap,
   },
   data_sync: {
     label: '数据',
-    color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+    color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
     icon: Clock,
   },
 }
@@ -150,9 +150,9 @@ export default function NotificationPage() {
       {/* ── 未读统计 + 筛选药丸 ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* 未读数 */}
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/40">
-          <Bell size={15} className="text-primary-600 dark:text-primary-400" />
-          <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-primary-100 dark:border-primary-800/40">
+          <Bell size={15} className="text-primary-700 dark:text-primary-700" />
+          <span className="text-sm font-semibold text-primary-700 dark:text-primary-700">
             {unreadCount} 条未读
           </span>
         </div>
@@ -179,7 +179,7 @@ export default function NotificationPage() {
 
           {/* 类型筛选 */}
           <div className="flex items-center gap-1.5">
-            <Filter size={14} className="text-neutral-400 shrink-0" />
+            <Filter size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
             <div className="flex flex-wrap items-center gap-1.5">
               {Object.entries(TYPE_CONFIG).map(([key, cfg]) => (
                 <button
@@ -189,7 +189,7 @@ export default function NotificationPage() {
                     'px-2.5 py-1 rounded-lg text-xs font-medium transition-all',
                     typeFilter === key
                       ? cn(cfg.color, 'ring-1 ring-current/30')
-                      : 'bg-slate-50 dark:bg-neutral-800/50 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+                      : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
                   )}
                 >
                   {cfg.label}
@@ -201,7 +201,7 @@ export default function NotificationPage() {
       </div>
 
       {/* ── 通知列表 ── */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800/40">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800/40">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="px-6 py-5">
@@ -211,7 +211,7 @@ export default function NotificationPage() {
           ))
         ) : filteredNotifications.length === 0 ? (
           <EmptyState
-            icon={<BellOff className="w-10 h-10 text-neutral-300 dark:text-neutral-600" />}
+            icon={<BellOff className="w-10 h-10 text-neutral-300 dark:text-neutral-400" />}
             title="暂无通知"
             description={statusFilter ? '该筛选条件下没有通知' : '当前没有新通知'}
           />
@@ -226,7 +226,7 @@ export default function NotificationPage() {
                 className={cn(
                   'w-full text-left px-6 py-4 transition-colors',
                   'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                  !notif.isRead && 'bg-primary-50/30 dark:bg-primary-900/10',
+                  !notif.isRead && 'bg-primary-50/30 dark:bg-primary-300/15',
                 )}
               >
                 <div className="flex items-start gap-4">
@@ -258,7 +258,7 @@ export default function NotificationPage() {
                         {notif.title}
                       </p>
                       {notif.actionUrl && (
-                        <ExternalLink size={12} className="shrink-0 text-neutral-400" />
+                        <ExternalLink size={12} className="shrink-0 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       )}
                       {!notif.isRead && (
                         <span className="shrink-0 w-2 h-2 rounded-full bg-primary-500" />
@@ -271,11 +271,11 @@ export default function NotificationPage() {
                     )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span
-                        className={cn('px-2 py-0.5 rounded-md text-[10px] font-medium', typeCfg.color)}
+                        className={cn('px-2 py-0.5 rounded-md text-xs font-medium', typeCfg.color)}
                       >
                         {typeCfg.label}
                       </span>
-                      <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                      <span className="text-xs text-neutral-400 dark:text-neutral-400">
                         {notif.createdAt &&
                           format(new Date(notif.createdAt), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
                       </span>

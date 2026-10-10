@@ -27,7 +27,8 @@ export const SliderTestPage: React.FC = () => {
           max={100}
           value={values.slider1}
           onChange={(e) => handleChange('slider1', parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
+          aria-label="测试 1: 基础滑块"
         />
         <p>值: {values.slider1}</p>
       </div>
@@ -40,8 +41,9 @@ export const SliderTestPage: React.FC = () => {
           max={100}
           value={values.slider2}
           onChange={(e) => handleChange('slider2', parseInt(e.target.value))}
-          className="w-full h-2 bg-blue-500 rounded-lg cursor-pointer"
+          className="w-full h-2 bg-secondary-500 rounded-lg cursor-pointer"
           style={{ accentColor: '#3b82f6' }}
+          aria-label="测试 2: 带样式的滑块"
         />
         <p>值: {values.slider2}</p>
       </div>
@@ -63,6 +65,7 @@ export const SliderTestPage: React.FC = () => {
             borderRadius: '4px',
             outline: 'none'
           }}
+          aria-label="测试 3: 内联样式滑块"
         />
         <p>值: {values.slider3}</p>
       </div>
@@ -71,7 +74,7 @@ export const SliderTestPage: React.FC = () => {
         <h2 className="font-medium mb-2">控制台日志</h2>
         <div className="text-xs font-mono space-y-1 max-h-48 overflow-y-auto">
           {logs.map((log, i) => (
-            <div key={i} className="text-green-600">{log}</div>
+            <div key={i} className="text-success-600">{log}</div>
           ))}
           {logs.length === 0 && <div className="text-muted-foreground">暂无日志</div>}
         </div>

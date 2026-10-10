@@ -91,7 +91,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
     <Card>
       <CardHeader>
         <CardTitle as="h3" className="text-base flex items-center gap-2">
-          <Star className="w-5 h-5 text-warning-500 fill-amber-500" />
+          <Star className="w-5 h-5 text-warning-500 fill-warning-500" />
           配方评分
         </CardTitle>
       </CardHeader>
@@ -115,7 +115,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
                   className={cn(
                     'transition-colors',
                     star <= displayRating
-                      ? 'text-warning-500 fill-amber-500'
+                      ? 'text-warning-500 fill-warning-500'
                       : 'text-neutral-300 dark:text-neutral-400',
                   )}
                 />
@@ -132,14 +132,14 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
 
         {/* 评分统计 */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+          <div className="text-center p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-3xl font-bold text-warning-500">{stats.average}</div>
             <div className="flex items-center justify-center gap-0.5 mt-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={12}
-                  className={star <= Math.round(stats.average) ? 'text-warning-500 fill-amber-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
+                  className={star <= Math.round(stats.average) ? 'text-warning-500 fill-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                 />
               ))}
             </div>
@@ -150,7 +150,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="flex items-center gap-2 text-xs">
                 <span className="w-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{star}</span>
-                <Star size={10} className="text-warning-500 fill-amber-500" />
+                <Star size={10} className="text-warning-500 fill-warning-500" />
                 <div className="flex-1 h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-warning-500 rounded-full"

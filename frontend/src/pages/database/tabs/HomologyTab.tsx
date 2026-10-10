@@ -21,7 +21,7 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
+      <mark className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
       {text.slice(idx + keyword.length)}
     </>
   );
@@ -49,13 +49,13 @@ function CardSkeleton() {
 
 // ─── 功效分类颜色 ───
 const EFFECT_COLORS: Record<string, string> = {
-  补益类: 'bg-primary-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800',
-  清热类: 'bg-error-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
-  活血类: 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800',
-  理气类: 'bg-accent-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800',
-  解表类: 'bg-secondary-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
-  利水渗湿: 'bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-800',
-  安神类: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800',
+  补益类: 'bg-primary-50 dark:bg-success-950/30 border-success-200 dark:border-success-800',
+  清热类: 'bg-error-50 dark:bg-error-950/30 border-error-200 dark:border-error-800',
+  活血类: 'bg-warning-50 dark:bg-warning-950/30 border-warning-200 dark:border-warning-800',
+  理气类: 'bg-accent-50 dark:bg-accent-950/30 border-accent-200 dark:border-accent-800',
+  解表类: 'bg-secondary-50 dark:bg-secondary-950/30 border-secondary-200 dark:border-secondary-800',
+  利水渗湿: 'bg-info-50 dark:bg-info-950/30 border-info-200 dark:border-info-800',
+  安神类: 'bg-accent-50 dark:bg-accent-950/30 border-accent-200 dark:border-accent-800',
 };
 
 export default function HomologyTab() {
@@ -144,7 +144,7 @@ export default function HomologyTab() {
       {/* 查询工具 */}
       <Card className="p-5">
         <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-2 flex items-center gap-2">
-          <Search className="w-4 h-4 text-primary-600" />
+          <Search className="w-4 h-4 text-primary-700" />
           药食同源快速查询
         </h3>
         <p className="text-xs text-[var(--text-muted,#9A9A9F)] mb-3">输入药材名称，查询是否在药食同源目录中</p>
@@ -169,16 +169,16 @@ export default function HomologyTab() {
         {/* 查询结果 */}
         {checkQuery.data && (
           <div
-            className={`mt-4 p-4 rounded-xl transition-all duration-300 ${checkQuery.data.is_food_homology ? 'bg-primary-50/60 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800' : 'bg-slate-50/60 dark:bg-neutral-800/40 border border-[var(--border-subtle,rgba(0,0,0,0.06))]'}`}
+            className={`mt-4 p-4 rounded-xl transition-all duration-300 ${checkQuery.data.is_food_homology ? 'bg-primary-50/60 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800' : 'bg-neutral-50/60 dark:bg-neutral-800/40 border border-[var(--border-subtle,rgba(0,0,0,0.06))]'}`}
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${checkQuery.data.is_food_homology ? 'bg-primary-100 dark:bg-primary-900/40' : 'bg-neutral-200 dark:bg-neutral-700'}`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${checkQuery.data.is_food_homology ? 'bg-primary-100 dark:bg-primary-300/30' : 'bg-neutral-200 dark:bg-neutral-700'}`}
               >
                 {checkQuery.data.is_food_homology ? (
-                  <CheckCircle2 className="w-5 h-5 text-primary-600" />
+                  <CheckCircle2 className="w-5 h-5 text-primary-700" />
                 ) : (
-                  <XCircle className="w-5 h-5 text-neutral-400" />
+                  <XCircle className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 )}
               </div>
               <div className="flex-1">
@@ -291,8 +291,8 @@ export default function HomologyTab() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-primary-600 dark:text-primary-400 text-lg">🌿</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary-700 dark:text-primary-700 text-lg">🌿</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">

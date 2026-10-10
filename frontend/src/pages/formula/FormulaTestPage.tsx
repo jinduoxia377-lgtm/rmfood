@@ -45,7 +45,7 @@ function TestPanel({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-violet-500">{icon}</span>
+        <span className="text-accent-500">{icon}</span>
         <h3 className="font-medium text-neutral-900 dark:text-white text-sm">{title}</h3>
       </div>
       <p className="text-xs text-neutral-500 dark:text-neutral-400">{desc}</p>
@@ -53,7 +53,7 @@ function TestPanel({
         {loading ? <span className="flex items-center gap-2"><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />运行中...</span> : runLabel}
       </Button>
       {error && (
-        <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-xs text-rose-600 dark:text-rose-400">
+        <div className="p-3 rounded-lg bg-danger-50 dark:bg-danger-300/20 border border-danger-200 dark:border-danger-800 text-xs text-danger-600 dark:text-danger-700">
           <span className="flex items-center gap-1"><AlertCircle size={12} />{error}</span>
         </div>
       )}
@@ -191,8 +191,8 @@ export function FormulaTestPage() {
                       <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-3">
                         <span>{f.ingredients?.length ?? 0} 味药材</span>
                         <span className={`px-2 py-0.5 rounded-full ${
-                          f.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                          f.status === 'DRAFT' ? 'bg-amber-100 text-amber-700' :
+                          f.status === 'APPROVED' ? 'bg-success-100 text-success-700' :
+                          f.status === 'DRAFT' ? 'bg-warning-100 text-warning-700' :
                           'bg-neutral-100 dark:bg-neutral-800 text-neutral-600'
                         }`}>{f.status || '未知'}</span>
                       </div>

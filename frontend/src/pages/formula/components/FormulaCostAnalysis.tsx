@@ -169,19 +169,19 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
       <CardContent className="space-y-6">
         {/* 成本概览 */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+          <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(totalCost * 100) / 100}
             </div>
             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">总成本</div>
           </div>
-          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+          <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(avgCost * 1000) / 1000}
             </div>
             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">元/克</div>
           </div>
-          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+          <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
             <div className="text-xl font-bold text-neutral-900 dark:text-white">
               {totalWeight}g
             </div>
@@ -190,7 +190,7 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
         </div>
 
         {/* 营养概览 */}
-        <div className="p-4 bg-success-50 dark:bg-success-900/10 rounded-xl border border-green-200 dark:border-green-800">
+        <div className="p-4 bg-success-50 dark:bg-success-300/15 rounded-xl border border-success-200 dark:border-success-800">
           <h4 className="text-sm font-medium text-success-800 dark:text-success-600 mb-3">
             营养成分估算
           </h4>
@@ -279,7 +279,7 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 bg-secondary-50 dark:bg-secondary-900/10 rounded-lg text-sm"
+                  className="flex items-start gap-2 p-2 bg-secondary-50 dark:bg-secondary-300/15 rounded-lg text-sm"
                 >
                   <AlertCircle size={14} className="text-secondary-500 mt-0.5 shrink-0" />
                   <span className="text-secondary-700 dark:text-secondary-700">{suggestion}</span>

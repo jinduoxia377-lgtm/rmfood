@@ -81,12 +81,12 @@ export default function SyncTab({
       {isSyncing && (
         <div className="card p-4 border-primary-200 dark:border-primary-800 bg-primary-50/40 dark:bg-primary-950/20 animate-pulse">
           <div className="flex items-center gap-3">
-            <RefreshCw className="w-5 h-5 text-primary-600 animate-spin" />
-            <span className="text-sm text-primary-700 dark:text-primary-400 font-medium">
+            <RefreshCw className="w-5 h-5 text-primary-700 animate-spin" />
+            <span className="text-sm text-primary-700 dark:text-primary-700 font-medium">
               {isSyncingHerbs ? '正在同步药材数据...' : '正在同步肽数据...'}
             </span>
           </div>
-          <div className="mt-2 h-1.5 bg-primary-100 dark:bg-primary-900/40 rounded-full overflow-hidden">
+          <div className="mt-2 h-1.5 bg-primary-100 dark:bg-primary-300/30 rounded-full overflow-hidden">
             <div className="h-full bg-primary-500 rounded-full animate-pulse" style={{ width: '60%' }} />
           </div>
         </div>
@@ -98,8 +98,8 @@ export default function SyncTab({
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-                <Database className="w-4 h-4 text-primary-600" />
+              <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center">
+                <Database className="w-4 h-4 text-primary-700" />
               </div>
               <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">TCMSP 中药材</h3>
             </div>
@@ -129,7 +129,7 @@ export default function SyncTab({
             {isSyncingHerbs ? '同步中...' : '同步药材数据'}
           </Button>
           {lastHerbSync && (
-            <div className="mt-2 p-3 bg-primary-50/60 dark:bg-primary-950/20 rounded-lg text-xs text-primary-700 dark:text-primary-400 border border-primary-100 dark:border-primary-900/30">
+            <div className="mt-2 p-3 bg-primary-50/60 dark:bg-primary-950/20 rounded-lg text-xs text-primary-700 dark:text-primary-700 border border-primary-100 dark:border-primary-900/30">
               <div className="font-semibold mb-1">同步完成</div>
               <div className="flex gap-4">
                 <span>新增 <strong>{lastHerbSync.inserted}</strong></span>
@@ -144,7 +144,7 @@ export default function SyncTab({
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-secondary-100 dark:bg-secondary-300/30 flex items-center justify-center">
                 <Activity className="w-4 h-4 text-secondary-600" />
               </div>
               <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">DFBP 活性肽</h3>
@@ -177,7 +177,7 @@ export default function SyncTab({
             {isSyncingPeptides ? '同步中...' : '同步肽数据'}
           </Button>
           {lastPeptideSync && (
-            <div className="mt-2 p-3 bg-secondary-50/60 dark:bg-blue-950/20 rounded-lg text-xs text-secondary-700 dark:text-secondary-400 border border-blue-100 dark:border-blue-900/30">
+            <div className="mt-2 p-3 bg-secondary-50/60 dark:bg-secondary-950/20 rounded-lg text-xs text-secondary-700 dark:text-secondary-700 border border-secondary-100 dark:border-secondary-900/30">
               <div className="font-semibold mb-1">同步完成</div>
               <div className="flex gap-4">
                 <span>新增 <strong>{lastPeptideSync.inserted}</strong></span>
@@ -193,18 +193,18 @@ export default function SyncTab({
       {stats?.knowledge_graph && (
         <Card className="p-5">
           <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-4 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-primary-600" />知识图谱概览
+            <Layers className="w-4 h-4 text-primary-700" />知识图谱概览
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: '药材节点', value: stats.knowledge_graph.total_herbs, icon: Database, bg: 'bg-primary-50 dark:bg-primary-950/40' },
-              { label: '化合物节点', value: stats.knowledge_graph.total_compounds, icon: BarChart2, bg: 'bg-secondary-50 dark:bg-blue-950/40' },
-              { label: '靶点节点', value: stats.knowledge_graph.total_targets, icon: TrendingUp, bg: 'bg-warning-50 dark:bg-amber-950/40' },
-              { label: '疾病节点', value: stats.knowledge_graph.total_diseases, icon: Layers, bg: 'bg-rose-50 dark:bg-rose-950/40' },
+              { label: '化合物节点', value: stats.knowledge_graph.total_compounds, icon: BarChart2, bg: 'bg-secondary-50 dark:bg-secondary-950/40' },
+              { label: '靶点节点', value: stats.knowledge_graph.total_targets, icon: TrendingUp, bg: 'bg-warning-50 dark:bg-warning-950/40' },
+              { label: '疾病节点', value: stats.knowledge_graph.total_diseases, icon: Layers, bg: 'bg-danger-50 dark:bg-danger-950/40' },
               { label: '活性肽数据', value: stats.knowledge_graph.total_peptides, icon: Activity, bg: 'bg-accent-50 dark:bg-accent-950/40' },
-              { label: '配伍关系', value: stats.knowledge_graph.herb_interactions, icon: TrendingUp, bg: 'bg-cyan-50 dark:bg-cyan-950/40' },
-              { label: '化合物-靶点路径', value: stats.knowledge_graph.compound_target_paths, icon: Layers, bg: 'bg-primary-50 dark:bg-emerald-950/40' },
-              { label: '药食同源药材', value: stats.knowledge_graph.food_homology_herbs, icon: Database, bg: 'bg-orange-50 dark:bg-orange-950/40' },
+              { label: '配伍关系', value: stats.knowledge_graph.herb_interactions, icon: TrendingUp, bg: 'bg-info-50 dark:bg-info-950/40' },
+              { label: '化合物-靶点路径', value: stats.knowledge_graph.compound_target_paths, icon: Layers, bg: 'bg-primary-50 dark:bg-success-950/40' },
+              { label: '药食同源药材', value: stats.knowledge_graph.food_homology_herbs, icon: Database, bg: 'bg-warning-50 dark:bg-warning-950/40' },
             ].map(({ label, value, icon: Icon, bg }) => (
               <div key={label} className={`p-3 rounded-xl text-center ${bg}`}>
                 <Icon className="w-4 h-4 mx-auto mb-1 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]" />
@@ -244,10 +244,10 @@ export default function SyncTab({
                     </div>
                     {s.metadata && (
                       <div className="flex gap-3 mt-1 text-xs">
-                        <span className="text-primary-600 dark:text-primary-400">
+                        <span className="text-primary-700 dark:text-primary-700">
                           +{s.metadata?.inserted ?? 0} 新增
                         </span>
-                        <span className="text-secondary-600 dark:text-secondary-400">
+                        <span className="text-secondary-600 dark:text-secondary-700">
                           ~{s.metadata?.updated ?? 0} 更新
                         </span>
                       </div>

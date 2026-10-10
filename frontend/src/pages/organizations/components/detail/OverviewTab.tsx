@@ -80,10 +80,10 @@ const ACTIVITY_ICONS: Record<ActivityItem['type'], typeof Users> = {
 }
 
 const ACTIVITY_COLORS: Record<ActivityItem['type'], string> = {
-  join: 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400',
-  upload: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400',
-  create: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400',
-  update: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+  join: 'bg-success-100 text-success-600 dark:bg-success-300/25 dark:text-success-600',
+  upload: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700',
+  create: 'bg-accent-100 text-accent-600 dark:bg-accent-300/25 dark:text-accent-700',
+  update: 'bg-warning-100 text-warning-600 dark:bg-warning-300/25 dark:text-warning-700',
   leave: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
 }
 
@@ -120,7 +120,7 @@ function StatCard({
           <span
             className={cn(
               'text-xs font-medium px-1.5 py-0.5 rounded-full',
-              trend.up ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400' : 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400',
+              trend.up ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600' : 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600',
             )}
           >
             {trend.value}
@@ -129,7 +129,7 @@ function StatCard({
       </div>
       <p className="text-2xl font-bold text-neutral-900 dark:text-white">{value}</p>
       <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{label}</p>
-      {subValue && <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">{subValue}</p>}
+      {subValue && <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">{subValue}</p>}
     </div>
   )
 }
@@ -146,7 +146,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
         label: '成员总数',
         value: memberCount,
         subValue: `${activeMembers} 人活跃`,
-        color: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400',
+        color: 'bg-secondary-100 text-secondary-600 dark:bg-secondary-300/25 dark:text-secondary-700',
         trend: { value: '+12%', up: true },
       },
       {
@@ -154,7 +154,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
         label: '活跃率',
         value: `${activeRate}%`,
         subValue: '较上周 +3%',
-        color: 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400',
+        color: 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
         trend: { value: '+3%', up: true },
       },
       {
@@ -162,14 +162,14 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
         label: '存储空间',
         value: organization?.storageUsed ? `${(organization.storageUsed / (1024 * 1024 * 1024)).toFixed(1)}GB` : '-',
         subValue: `/ ${organization?.storageLimit ? `${(organization.storageLimit / (1024 * 1024 * 1024)).toFixed(0)}GB` : '-'}`,
-        color: 'bg-accent-100 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400',
+        color: 'bg-accent-100 text-accent-600 dark:bg-accent-300/25 dark:text-accent-700',
       },
       {
         icon: Zap,
         label: 'API 调用',
         value: organization?.apiCalls?.toLocaleString() || '-',
         subValue: '本月累计',
-        color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+        color: 'bg-warning-100 text-warning-600 dark:bg-warning-300/25 dark:text-warning-700',
         trend: { value: '+8%', up: true },
       },
     ]
@@ -200,18 +200,18 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
       <section aria-label="最近活动">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">最近活动</h2>
-          <button className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-300 flex items-center gap-1 transition-colors">
+          <button className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-secondary-700 dark:hover:text-secondary-300 flex items-center gap-1 transition-colors">
             查看全部 <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-slate-100 dark:divide-slate-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-100 dark:divide-neutral-700">
           {recentActivities.map((activity, index) => {
             const Icon = ACTIVITY_ICONS[activity.type]
             return (
               <div
                 key={activity.id}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-700/30 transition-colors"
+                className="flex items-center gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors"
               >
                 {/* Timeline dot */}
                 <div className="relative flex flex-col items-center">
@@ -234,7 +234,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
                 </div>
 
                 {/* Time */}
-                <span className="text-xs text-neutral-400 dark:text-neutral-500 shrink-0 flex items-center gap-1">
+                <span className="text-xs text-neutral-400 dark:text-neutral-400 shrink-0 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
                   {activity.time}
                 </span>
@@ -256,7 +256,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
                 className={cn(
                   'group flex items-start gap-4 p-5 rounded-xl border transition-all text-left',
                   action.primary
-                    ? 'border-blue-200 bg-secondary-50/50 dark:border-blue-800 dark:bg-secondary-900/10 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
+                    ? 'border-secondary-200 bg-secondary-50/50 dark:border-secondary-800 dark:bg-secondary-300/15 hover:border-secondary-300 dark:hover:border-secondary-700 hover:shadow-md'
                     : 'border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm',
                 )}
               >
@@ -264,7 +264,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
                   className={cn(
                     'w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors',
                     action.primary
-                      ? 'bg-secondary-100 text-secondary-600 group-hover:bg-secondary-200 dark:bg-secondary-900/40 dark:text-secondary-400'
+                      ? 'bg-secondary-100 text-secondary-600 group-hover:bg-secondary-200 dark:bg-secondary-300/30 dark:text-secondary-700'
                       : 'bg-neutral-100 text-neutral-600 group-hover:bg-neutral-200 dark:bg-neutral-700 dark:text-neutral-400',
                   )}
                 >
@@ -275,7 +275,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
                     className={cn(
                       'font-medium',
                       action.primary
-                        ? 'text-secondary-700 dark:text-secondary-300'
+                        ? 'text-secondary-700 dark:text-secondary-700'
                         : 'text-neutral-900 dark:text-white',
                     )}
                   >

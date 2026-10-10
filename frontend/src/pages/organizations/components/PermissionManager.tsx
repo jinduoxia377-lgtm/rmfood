@@ -89,7 +89,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
-              <thead className="bg-slate-50 dark:bg-neutral-800">
+              <thead className="bg-neutral-50 dark:bg-neutral-800">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase w-32">角色</th>
                   {RESOURCE_TYPES.map(resource => (
@@ -109,9 +109,9 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {[...SYSTEM_ROLES, ...roles].map(role => (
-                  <tr key={role.code} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
+                  <tr key={role.code} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {role.icon && <role.icon className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
@@ -143,7 +143,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           </div>
 
           {/* 图例 */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center gap-6 text-xs text-neutral-500">
+          <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center gap-6 text-xs text-neutral-500">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-success-500" /> 有权限
             </div>
@@ -169,13 +169,13 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                     className="bg-white dark:bg-neutral-900 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
                   >
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-                      role.code === 'owner' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
-                      role.code === 'admin' ? 'bg-secondary-100 dark:bg-secondary-900/30' :
-                      role.code === 'editor' ? 'bg-accent-100 dark:bg-accent-900/30' :
+                      role.code === 'owner' ? 'bg-warning-100 dark:bg-warning-300/25' :
+                      role.code === 'admin' ? 'bg-secondary-100 dark:bg-secondary-300/25' :
+                      role.code === 'editor' ? 'bg-accent-100 dark:bg-accent-300/25' :
                       'bg-neutral-100 dark:bg-neutral-800'
                     }`}>
                       <Icon className={`w-5 h-5 ${
-                        role.code === 'owner' ? 'text-yellow-600' :
+                        role.code === 'owner' ? 'text-warning-600' :
                         role.code === 'admin' ? 'text-secondary-600' :
                         role.code === 'editor' ? 'text-accent-600' :
                         'text-neutral-600'
@@ -206,7 +206,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
             </div>
 
             {roles.length === 0 ? (
-              <div className="bg-slate-50 dark:bg-neutral-800 rounded-xl p-8 text-center">
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-8 text-center">
                 <Key className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
                 <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">暂无自定义角色</p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">点击上方按钮创建符合业务需求的定制角色</p>
@@ -219,7 +219,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                     className="bg-white dark:bg-neutral-900 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-sm font-bold">
                         {(role.name || role.code).charAt(0)}
                       </div>
                       <div className="flex items-center gap-1">
@@ -359,7 +359,7 @@ const RoleEditorModal: React.FC<{
             <div className="space-y-4">
               {RESOURCE_TYPES.map(resource => (
                 <div key={resource.key} className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-                  <div className="bg-slate-50 dark:bg-neutral-800 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700">
+                  <div className="bg-neutral-50 dark:bg-neutral-800 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700">
                     <h4 className="text-sm font-semibold text-neutral-900 dark:text-white capitalize">{resource.label}</h4>
                   </div>
                   <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -371,7 +371,7 @@ const RoleEditorModal: React.FC<{
                           key={permKey}
                           className={`flex items-center gap-2 cursor-pointer p-2 rounded-lg border transition-all ${
                             isChecked
-                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                               : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                           }`}
                         >

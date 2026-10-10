@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* ══ 右侧密码找回区 ══ */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-slate-50 dark:bg-slate-950">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-neutral-50 dark:bg-neutral-950">
         <div className="w-full max-w-md mx-auto">
           {/* 移动端 Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
@@ -112,16 +112,16 @@ export default function ForgotPasswordPage() {
             </div>
 
             {error && (
-              <div className="mb-6 p-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-sm flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+              <div className="mb-6 p-3 rounded-xl bg-danger-50 dark:bg-danger-300/20 border border-danger-200 dark:border-danger-800/60 text-danger-700 dark:text-danger-700 text-sm flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-danger-500 shrink-0" />
                 {error}
               </div>
             )}
 
             {success ? (
-              <div className="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800/60 text-primary-700 dark:text-primary-400 text-sm flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
-                  <Check size={16} className="text-primary-600 dark:text-primary-400" />
+              <div className="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-success-200 dark:border-success-800/60 text-primary-700 dark:text-primary-700 text-sm flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center shrink-0">
+                  <Check size={16} className="text-primary-700 dark:text-primary-700" />
                 </div>
                 <div>
                   <p className="font-medium">密码重置邮件已发送</p>
@@ -135,7 +135,7 @@ export default function ForgotPasswordPage() {
                     邮箱地址
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                       <Mail size={16} />
                     </div>
                     <Input
@@ -174,7 +174,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* 底部版权 */}
-          <p className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-600">{BRAND_CONFIG.copyright}</p>
+          <p className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-400">{BRAND_CONFIG.copyright}</p>
         </div>
       </div>
     </div>

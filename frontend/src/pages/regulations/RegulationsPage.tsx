@@ -35,7 +35,7 @@ function DetailModal({
 
   const headerBg = isStandard  ? 'from-primary-600 to-primary-700'
                  : isGb2760   ? 'from-info-600 to-info-700'
-                 : isGb14880  ? 'from-purple-600 to-purple-700'
+                 : isGb14880  ? 'from-accent-600 to-accent-700'
                  : 'from-error-600 to-error-700'
 
   const titleIcon = isStandard  ? <FileText size={15} className="shrink-0" />
@@ -55,10 +55,10 @@ function DetailModal({
         <div className={`flex items-center justify-between px-6 py-3.5 bg-gradient-to-r ${headerBg} text-white shrink-0`}>
           <div className="flex items-center gap-2.5 min-w-0">
             {titleIcon}
-            <h3 className="font-semibold text-sm truncate">{title}</h3>
+            <h2 className="font-semibold text-sm truncate">{title}</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}
-            className="text-white/80 hover:text-white hover:bg-white dark:bg-neutral-900/20 rounded-lg transition-colors">
+            className="text-primary-700/80 dark:text-white/80 hover:text-primary-700 dark:hover:text-white hover:bg-white dark:bg-neutral-900/20 rounded-lg transition-colors">
             <X size={16} />
           </Button>
         </div>
@@ -109,12 +109,12 @@ function DetailModal({
                   <p className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-1.5">适用食品类别</p>
                   <div className="flex flex-wrap gap-1.5">
                     {(a.categories || []).map((cat: string, j: number) => (
-                      <span key={j} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">{cat}</span>
+                      <span key={j} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">{cat}</span>
                     ))}
                   </div>
                 </div>
                 {a.notes && (
-                  <div className="bg-warning-50 dark:bg-warning-900/10 border border-warning-200 dark:border-warning-800 rounded-lg p-3">
+                  <div className="bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800 rounded-lg p-3">
                     <p className="text-xs font-semibold text-warning-700 dark:text-warning-700 mb-1 flex items-center gap-1.5">
                       <AlertTriangle size={12} />注意事项
                     </p>
@@ -133,20 +133,20 @@ function DetailModal({
                   <InfoBlock label="强化剂名称" value={e.name} />
                   <InfoBlock label="功能类别" value={<Badge variant="outline" className="text-xs">{e.function}</Badge>} />
                   <InfoBlock label="CAS号" value={e.cas || '—'} />
-                  <InfoBlock label="最小用量" value={<span className="font-semibold text-purple-600 dark:text-purple-400">{e.min}</span>} />
-                  <InfoBlock label="最大用量" value={<span className="font-semibold text-purple-600 dark:text-purple-400">{e.max}</span>} />
+                  <InfoBlock label="最小用量" value={<span className="font-semibold text-accent-600 dark:text-accent-700">{e.min}</span>} />
+                  <InfoBlock label="最大用量" value={<span className="font-semibold text-accent-600 dark:text-accent-700">{e.max}</span>} />
                   <InfoBlock label="备注" value={e.notes || '—'} />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-1.5">适用食品类别</p>
                   <div className="flex flex-wrap gap-1.5">
                     {(e.categories || []).map((cat: string, j: number) => (
-                      <span key={j} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">{cat}</span>
+                      <span key={j} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 border border-accent-200 dark:border-accent-800">{cat}</span>
                     ))}
                   </div>
                 </div>
                 {e.notes && (
-                  <div className="bg-info-50 dark:bg-info-900/10 border border-info-200 dark:border-info-800 rounded-lg p-3">
+                  <div className="bg-info-50 dark:bg-info-300/15 border border-info-200 dark:border-info-800 rounded-lg p-3">
                     <p className="text-xs font-semibold text-info-700 dark:text-info-600 mb-1 flex items-center gap-1.5">
                       <Info size={12} />说明
                     </p>
@@ -167,7 +167,7 @@ function DetailModal({
                   <InfoBlock label="法规依据" value={p.source_law} />
                   <InfoBlock label="禁用原因" value={p.reason} />
                 </div>
-                <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-4">
+                <div className="bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg p-4">
                   <p className="text-xs font-semibold text-error-700 dark:text-error-600 mb-1.5 flex items-center gap-1.5">
                     <AlertTriangle size={14} />健康危害
                   </p>
@@ -185,9 +185,9 @@ function DetailModal({
 // ─── 合规状态徽标（页面内复用） ───
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    compliant:    { color: 'text-success-600 dark:text-success-600', bg: 'bg-success-50  dark:bg-success-900/20', border: 'border-success-200 dark:border-success-800', label: '合规' },
-    warning:      { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50  dark:bg-warning-900/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意' },
-    non_compliant:{ color: 'text-error-600  dark:text-error-600',   bg: 'bg-error-50  dark:bg-error-900/20',   border: 'border-error-200 dark:border-error-800',   label: '不合规' },
+    compliant:    { color: 'text-success-600 dark:text-success-600', bg: 'bg-success-50  dark:bg-success-300/20', border: 'border-success-200 dark:border-success-800', label: '合规' },
+    warning:      { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50  dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意' },
+    non_compliant:{ color: 'text-error-600  dark:text-error-600',   bg: 'bg-error-50  dark:bg-error-300/20',   border: 'border-error-200 dark:border-error-800',   label: '不合规' },
   }
   const c = config[status] ?? config.compliant
   return (
@@ -200,13 +200,13 @@ function StatusBadge({ status }: { status: string }) {
 // ─── 违规类型标签（页面内复用） ───
 function ViolationTypeTag({ type }: { type: string }) {
   const config: Record<string, { label: string; color: string; bg: string; border: string }> = {
-    exceeds_limit:  { label: '超限量',  color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50  dark:bg-error-900/20', border: 'border-error-200 dark:border-error-800' },
-    prohibited_combo: { label: '禁忌搭配', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50  dark:bg-warning-900/20', border: 'border-warning-200 dark:border-warning-800' },
-    child_forbidden:{ label: '儿童禁忌', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50  dark:bg-accent-900/20', border: 'border-accent-200 dark:border-accent-800' },
+    exceeds_limit:  { label: '超限量',  color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50  dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
+    prohibited_combo: { label: '禁忌搭配', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50  dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800' },
+    child_forbidden:{ label: '儿童禁忌', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50  dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
     not_in_directory:{ label: '非目录',  color: 'text-neutral-600 dark:text-neutral-400', bg: 'bg-neutral-50  dark:bg-neutral-800/50', border: 'border-neutral-200 dark:border-neutral-700' },
-    gb2760:         { label: 'GB 2760', color: 'text-info-600  dark:text-info-600',   bg: 'bg-info-50   dark:bg-info-900/20',   border: 'border-info-200 dark:border-info-800' },
-    gb14880:        { label: 'GB 14880',color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
-    prohibited_tcm: { label: '禁用品',  color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50  dark:bg-error-900/20', border: 'border-error-200 dark:border-error-800' },
+    gb2760:         { label: 'GB 2760', color: 'text-info-600  dark:text-info-600',   bg: 'bg-info-50   dark:bg-info-300/20',   border: 'border-info-200 dark:border-info-800' },
+    gb14880:        { label: 'GB 14880',color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
+    prohibited_tcm: { label: '禁用品',  color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50  dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
   }
   const c = config[type] ?? config.not_in_directory
   return (
@@ -435,10 +435,10 @@ export default function RegulationsPage() {
         {/* ════════════════════════════════════════════ */}
         {/*  欢迎横幅（参照 DashboardPage）               */}
         {/* ════════════════════════════════════════════ */}
-        <div className="rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white shadow-sm">
+        <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-6 text-white shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight">合规标准中心</h2>
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">合规标准中心</h1>
               <p className="mt-1 text-white/80 text-sm">
                 国家标准查询 · 药食同源目录 · GB 2760/14880 · 禁忌搭配检查 · 配方合规验证
               </p>
@@ -503,7 +503,7 @@ export default function RegulationsPage() {
               {count !== undefined && count > 0 && (
                 <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
                   activeSection === key
-                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700'
+                    ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
                     : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {count}
@@ -553,7 +553,7 @@ export default function RegulationsPage() {
                     onClick={() => setStandardCategory(cat === standardCategory ? '' : cat)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                       standardCategory === cat
-                        ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-700'
+                        ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-700'
                         : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300'
                     }`}
                   >
@@ -730,9 +730,9 @@ export default function RegulationsPage() {
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                           m.status === '允许用于普通食品'
-                            ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-600'
+                            ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600'
                             : m.status === '试点用于普通食品'
-                            ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-700'
+                            ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                             : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                         }`}>
                           {m.status === '允许用于普通食品' ? '允许' : m.status === '试点用于普通食品' ? '试点' : '—'}
@@ -759,7 +759,7 @@ export default function RegulationsPage() {
                           </p>
                           <div className="flex flex-wrap gap-1">
                             {m.restrictions.map((r: string, j: number) => (
-                              <span key={j} className="px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-700 text-xs border border-warning-200 dark:border-warning-800">
+                              <span key={j} className="px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs border border-warning-200 dark:border-warning-800">
                                 {r}
                               </span>
                             ))}
@@ -769,7 +769,7 @@ export default function RegulationsPage() {
                       {m.usage_forms && m.usage_forms.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {m.usage_forms.map((f: string, j: number) => (
-                            <span key={j} className="px-2 py-0.5 rounded bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-600 text-xs border border-info-200 dark:border-info-800">
+                            <span key={j} className="px-2 py-0.5 rounded bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 text-xs border border-info-200 dark:border-info-800">
                               {f}
                             </span>
                           ))}
@@ -845,7 +845,7 @@ export default function RegulationsPage() {
                         >
                           <td className="px-4 py-2.5 font-medium text-text-primary">{a.name}</td>
                           <td className="px-4 py-2.5">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">
                               {a.function || '—'}
                             </span>
                           </td>
@@ -873,7 +873,7 @@ export default function RegulationsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                    <TestTube className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <TestTube className="w-4 h-4 text-accent-600 dark:text-accent-700" />
                     GB 14880-2012 营养强化剂使用标准
                   </CardTitle>
                   <Button variant="ghost" size="sm" icon={<Download className="w-3.5 h-3.5" />}
@@ -925,16 +925,16 @@ export default function RegulationsPage() {
                         <tr
                           key={i}
                           onClick={() => setDetailModal({ type: 'gb14880', item: e })}
-                          className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors cursor-pointer"
+                          className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-accent-50 dark:hover:bg-accent-900/10 transition-colors cursor-pointer"
                         >
                           <td className="px-4 py-2.5 font-medium text-text-primary">{e.name}</td>
                           <td className="px-4 py-2.5">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 border border-accent-200 dark:border-accent-800">
                               {e.function || '—'}
                             </span>
                           </td>
-                          <td className="px-4 py-2.5 tabular-nums text-purple-600 dark:text-purple-400">{e.min}</td>
-                          <td className="px-4 py-2.5 tabular-nums font-semibold text-purple-600 dark:text-purple-400">{e.max}</td>
+                          <td className="px-4 py-2.5 tabular-nums text-accent-600 dark:text-accent-700">{e.min}</td>
+                          <td className="px-4 py-2.5 tabular-nums font-semibold text-accent-600 dark:text-accent-700">{e.max}</td>
                           <td className="px-4 py-2.5">
                             <div className="flex flex-wrap gap-1">
                               {(e.categories || []).map((cat: string, j: number) => (
@@ -1057,7 +1057,7 @@ export default function RegulationsPage() {
                           <td className="px-4 py-2.5">
                             <div className="flex flex-wrap gap-1.5">
                               {p.pair.map((n: string, j: number) => (
-                                <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-700 text-xs font-medium border border-warning-200 dark:border-warning-800">
+                                <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs font-medium border border-warning-200 dark:border-warning-800">
                                   {n}
                                 </span>
                               ))}
@@ -1120,7 +1120,7 @@ export default function RegulationsPage() {
                         >
                           <td className="px-4 py-2.5 font-medium text-error-600 dark:text-error-600">{item.name}</td>
                           <td className="px-4 py-2.5">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 dark:bg-error-900/20 text-error-700 dark:text-error-600 border border-error-200 dark:border-error-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 dark:bg-error-300/20 text-error-700 dark:text-error-600 border border-error-200 dark:border-error-800">
                               {item.category || '—'}
                             </span>
                           </td>
@@ -1167,7 +1167,7 @@ export default function RegulationsPage() {
                   onClick={() => setPopulation(p)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     population === p
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800'
+                      ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800'
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >
@@ -1231,9 +1231,9 @@ export default function RegulationsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          checkResult.status === 'compliant' ? 'bg-success-100 dark:bg-success-900/30'
-                          : checkResult.status === 'warning' ? 'bg-warning-100 dark:bg-warning-900/30'
-                          : 'bg-error-100 dark:bg-error-900/30'
+                          checkResult.status === 'compliant' ? 'bg-success-100 dark:bg-success-300/25'
+                          : checkResult.status === 'warning' ? 'bg-warning-100 dark:bg-warning-300/25'
+                          : 'bg-error-100 dark:bg-error-300/25'
                         }`}>
                           {checkResult.status === 'compliant' ? <CheckCircle2 className="w-6 h-6 text-success-600 dark:text-success-600" />
                           : checkResult.status === 'warning' ? <AlertTriangle className="w-6 h-6 text-warning-600 dark:text-warning-700" />
@@ -1267,7 +1267,7 @@ export default function RegulationsPage() {
                     <CardContent>
                       <div className="space-y-2">
                         {checkResult.violations.map((v, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-error-100 dark:border-error-900/30">
+                          <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-100 dark:border-error-900/30">
                             <XCircle className="w-4 h-4 text-error-500 mt-0.5 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">

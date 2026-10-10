@@ -26,9 +26,9 @@ const STATUS_FILTERS = [
 ]
 
 const STATUS_COLORS: Record<string, string> = {
-  planned: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
-  in_progress: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700',
-  completed: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
+  planned: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+  in_progress: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+  completed: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
   closed: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
 }
 
@@ -86,15 +86,15 @@ export default function BatchListPage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex items-start gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
               <FlaskConical size={20} className="text-white/80 shrink-0" />
               批记录管理
-            </h2>
+            </h1>
             <p className="mt-1 text-white/80 text-sm">
               从配方生成批记录，追踪原料→批次→样品的完整链路
             </p>
           </div>
-          <Button onClick={() => navigate('/batches/new')} className="bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-white border-none">
+          <Button onClick={() => navigate('/batches/new')} className="bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-primary-700 dark:text-white border-none">
             <Plus size={16} />
             新建批记录
           </Button>
@@ -145,7 +145,7 @@ export default function BatchListPage() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
+              className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm min-h-[44px]"
             >
               {STATUS_FILTERS.map(f => (
                 <option key={f.value} value={f.value}>{f.label}</option>
@@ -160,25 +160,28 @@ export default function BatchListPage() {
 
       {/* Table */}
       <Card>
+        {/* A-41：本页大纲原先是 h1 → h3（空态组件的标题固定是 h3），中间断了一级。
+            补一个屏幕阅读器可见的 h2 承接表格区，与 /formulas 的处理方式一致。 */}
+        <h2 className="sr-only">批记录列表</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-100 dark:border-neutral-800">
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                  <button onClick={() => handleSort('batch_code')} className="flex items-center gap-1">
+                  <button onClick={() => handleSort('batch_code')} className="flex items-center gap-1 min-h-[44px] min-w-[44px]">
                     批号 <SortIcon field="batch_code" />
                   </button>
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方</th>
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                  <button onClick={() => handleSort('target_weight_kg')} className="flex items-center gap-1">
+                  <button onClick={() => handleSort('target_weight_kg')} className="flex items-center gap-1 min-h-[44px] min-w-[44px]">
                     目标产量 <SortIcon field="target_weight_kg" />
                   </button>
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">状态</th>
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">样品数</th>
                 <th className="text-left px-4 py-3 font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                  <button onClick={() => handleSort('created_at')} className="flex items-center gap-1">
+                  <button onClick={() => handleSort('created_at')} className="flex items-center gap-1 min-h-[44px] min-w-[44px]">
                     创建时间 <SortIcon field="created_at" />
                   </button>
                 </th>
@@ -201,7 +204,7 @@ export default function BatchListPage() {
                       icon={<FlaskConical size={48} strokeWidth={1.5} />}
                       title="暂无批记录"
                       description="从配方创建批记录，开始追踪原料→批次→样品的完整链路"
-                      action={<button onClick={() => navigate('/batches/new')} className="mt-4 px-4 py-2 rounded-lg bg-primary text-white text-sm hover:bg-primary/90 transition-colors">新建批记录</button>}
+                      action={<button onClick={() => navigate('/batches/new')} className="mt-4 px-4 py-2 rounded-lg bg-primary-surface text-white text-sm hover:bg-primary-surface-hover transition-colors min-h-[44px]">新建批记录</button>}
                     />
                   </td>
                 </tr>

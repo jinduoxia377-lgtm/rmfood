@@ -174,7 +174,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
-              工作流名称 <span className="text-rose-500">*</span>
+              工作流名称 <span className="text-danger-500">*</span>
             </label>
             <Input
               value={workflowName}
@@ -199,7 +199,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                     className={cn(
                       'flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 text-left transition-all',
                       isActive
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
                     )}
                   >
@@ -211,11 +211,11 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                     </div>
                     <span className={cn(
                       'text-xs font-medium',
-                      isActive ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300',
+                      isActive ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300',
                     )}>
                       {opt.label}
                     </span>
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-tight hidden sm:block">
+                    <span className="text-xs text-neutral-400 dark:text-neutral-400 leading-tight hidden sm:block">
                       {opt.desc}
                     </span>
                   </button>
@@ -244,7 +244,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
               选择模板
             </label>
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -254,7 +254,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
             </div>
 
             {templatesLoading ? (
-              <div className="flex items-center justify-center py-8 text-neutral-400 text-sm">
+              <div className="flex items-center justify-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">
                 <Loader2 size={16} className="animate-spin mr-2" />
                 加载模板中...
               </div>
@@ -268,14 +268,14 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                       hoverable
                       className={cn(
                         'p-3 cursor-pointer transition-all',
-                        isSelected && 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20',
+                        isSelected && 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-300/20',
                       )}
                       onClick={() => setSelectedTemplate(template)}
                     >
                       <div className="flex items-start gap-2.5">
                         {(() => {
                           const TIcon = TEMPLATE_ICON_MAP[template.category] || Sparkles
-                          return <TIcon size={18} className="shrink-0 text-primary-500 dark:text-primary-400 opacity-75" />
+                          return <TIcon size={18} className="shrink-0 text-primary-500 dark:text-primary-700 opacity-75" />
                         })()}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
@@ -284,18 +284,18 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                             </h4>
                             {isSelected && <CheckCircle size={12} className="text-primary-500 shrink-0" />}
                           </div>
-                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
                             {template.description}
                           </p>
                           <div className="flex items-center gap-2 mt-1.5">
-                            <Badge size="sm" variant="neutral" className="text-[10px]">
+                            <Badge size="sm" variant="neutral" className="text-xs">
                               {CATEGORY_LABELS[template.category] || template.category.replace('_', ' ')}
                             </Badge>
                             {template.node_count && (
-                              <span className="text-[10px] text-neutral-400">{template.node_count} 节点</span>
+                              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{template.node_count} 节点</span>
                             )}
                             {template.estimated_duration && (
-                              <span className="text-[10px] text-neutral-400">· {template.estimated_duration}</span>
+                              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">· {template.estimated_duration}</span>
                             )}
                           </div>
                         </div>
@@ -314,7 +314,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
 
         {/* 空白创建提示 */}
         {mode === 'custom' && (
-          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 text-sm text-amber-700 dark:text-amber-400">
+          <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/30 text-sm text-warning-700 dark:text-warning-700">
             <div className="flex items-start gap-2">
               <FlaskConical size={16} className="mt-0.5 shrink-0" />
               <div>

@@ -22,7 +22,8 @@ import {
 } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import { listAPIKeys, createAPIKey, revokeAPIKey } from '@/api/integrations'
+import { listAPIKeys, revokeAPIKey } from '@/api/integrations'
+import ApiKeyCreateDialog from '@/components/integrations/ApiKeyCreateDialog'
 
 interface APIKeyItem {
   id: string
@@ -60,14 +61,6 @@ export default function IntegrationsPage() {
     staleTime: 30_000,
   })
 
-  const createKeyMutation = useMutation({
-    mutationFn: (name: string) => createAPIKey({ name, scopes: ['read'] }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
-      addToast({ type: 'success', message: 'API 密钥已创建' })
-    },
-  })
-
   const deleteKeyMutation = useMutation({
     mutationFn: revokeAPIKey,
     onSuccess: () => {
@@ -75,6 +68,10 @@ export default function IntegrationsPage() {
       addToast({ type: 'success', message: 'API 密钥已删除' })
     },
   })
+
+  // 创建密钥 Dialog（共享组件统一处理创建 + 一次性明文展示）
+  const [createOpen, setCreateOpen] = useState(false)
+  const refreshApiKeys = () => qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
 
   // Normalize backend data to UI model
   const apiKeys: APIKeyItem[] = (apiKeysData?.keys ?? []).map((k) => ({
@@ -109,8 +106,8 @@ export default function IntegrationsPage() {
     <div key={key.id} className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-neutral-50/50 dark:bg-neutral-800/30">
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-            <Key className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+          <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
+            <Key className="w-5 h-5 text-warning-600 dark:text-warning-700" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -125,9 +122,9 @@ export default function IntegrationsPage() {
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" title="复制密钥"
             onClick={() => { navigator.clipboard.writeText(key.prefix); addToast({ type: 'success', message: '密钥已复制到剪贴板' }) }}>
-            <Copy className="w-4 h-4 text-neutral-500" />
+            <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30" title="删除密钥"
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-950/30" title="删除密钥"
             onClick={() => deleteKeyMutation.mutate(key.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -156,8 +153,8 @@ export default function IntegrationsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
-                <Webhook className="w-5 h-5 text-sky-600 dark:text-sky-500" />
+              <div className="w-10 h-10 rounded-xl bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
+                <Webhook className="w-5 h-5 text-info-600 dark:text-info-700" />
               </div>
               <div>
                 <CardTitle as="h3" className="text-sm font-semibold tracking-tight">{wh.name}</CardTitle>
@@ -180,11 +177,11 @@ export default function IntegrationsPage() {
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-success-500" />
                 成功 {wh.successCount}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <span className="w-2 h-2 rounded-full bg-danger-500" />
                 失败 {wh.failureCount}
               </span>
             </div>
@@ -209,9 +206,9 @@ export default function IntegrationsPage() {
       </CardHeader>
       <CardContent className="flex-1 pt-0">
         {service.connected && (
-          <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-500 shrink-0" />
-            <span className="text-xs text-emerald-700 dark:text-emerald-400">已连接</span>
+          <div className="flex items-center gap-2 p-3 bg-success-50 dark:bg-success-500/10 rounded-xl border border-success-200 dark:border-success-500/20">
+            <CheckCircle2 className="w-4 h-4 text-success-600 dark:text-success-700 shrink-0" />
+            <span className="text-xs text-success-700 dark:text-success-700">已连接</span>
           </div>
         )}
       </CardContent>
@@ -251,11 +248,8 @@ export default function IntegrationsPage() {
             <Button
               variant="glass" size="sm"
               icon={<Plus className="w-4 h-4" />}
-              onClick={() => {
-                const name = prompt('请输入密钥名称：')
-                if (name?.trim()) createKeyMutation.mutate(name.trim())
-              }}
-              disabled={createKeyMutation.isPending}
+              onClick={() => setCreateOpen(true)}
+              disabled={false}
             >
               新建 API 密钥
             </Button>
@@ -280,7 +274,7 @@ export default function IntegrationsPage() {
                 )}
                 aria-current={active ? 'true' : undefined}
               >
-                <Icon className={cn('w-4 h-4', active ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-400 dark:text-neutral-500')} />
+                <Icon className={cn('w-4 h-4', active ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
                 {label}
               </button>
             )
@@ -295,8 +289,8 @@ export default function IntegrationsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-                    <Key className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+                  <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
+                    <Key className="w-5 h-5 text-warning-600 dark:text-warning-700" />
                   </div>
                   <div>
                     <CardTitle as="h2" className="text-base font-semibold tracking-tight">API 密钥</CardTitle>
@@ -304,11 +298,8 @@ export default function IntegrationsPage() {
                   </div>
                 </div>
                 <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}
-                  onClick={() => {
-                    const name = prompt('请输入密钥名称：')
-                    if (name?.trim()) createKeyMutation.mutate(name.trim())
-                  }}
-                  disabled={createKeyMutation.isPending}
+                  onClick={() => setCreateOpen(true)}
+                  disabled={false}
                 >
                   创建新密钥
                 </Button>
@@ -327,6 +318,13 @@ export default function IntegrationsPage() {
         </div>
       )}
 
+      {/* 创建密钥 Dialog（共享组件统一处理创建 + 一次性明文展示） */}
+      <ApiKeyCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={refreshApiKeys}
+      />
+
       {/* Webhook */}
       {activeTab === 'webhooks' && (
         <div className="space-y-4">
@@ -334,8 +332,8 @@ export default function IntegrationsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
-                    <Webhook className="w-5 h-5 text-sky-600 dark:text-sky-500" />
+                  <div className="w-10 h-10 rounded-xl bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
+                    <Webhook className="w-5 h-5 text-info-600 dark:text-info-700" />
                   </div>
                   <div>
                     <CardTitle as="h2" className="text-base font-semibold tracking-tight">Webhook 配置</CardTitle>
@@ -362,8 +360,8 @@ export default function IntegrationsPage() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center shrink-0">
-                  <Plug className="w-5 h-5 text-violet-600 dark:text-violet-500" />
+                <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
+                  <Plug className="w-5 h-5 text-accent-600 dark:text-accent-700" />
                 </div>
                 <div>
                   <CardTitle as="h2" className="text-base font-semibold tracking-tight">第三方服务集成</CardTitle>
@@ -374,10 +372,10 @@ export default function IntegrationsPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { name: 'Slack',        icon: Slack,        desc: '消息通知与团队协作', color: 'bg-violet-600', connected: true  },
-                  { name: '钉钉',         icon: MessageCircle, desc: '阿里工作通知推送',   color: 'bg-cyan-600', connected: false },
-                  { name: '飞书',         icon: Bell,         desc: '文档与通讯集成',     color: 'bg-blue-600', connected: false },
-                  { name: '企业微信',     icon: ExternalLink, desc: '企业通讯工具',       color: 'bg-emerald-600', connected: false },
+                  { name: 'Slack',        icon: Slack,        desc: '消息通知与团队协作', color: 'bg-accent-600', connected: true  },
+                  { name: '钉钉',         icon: MessageCircle, desc: '阿里工作通知推送',   color: 'bg-info-600', connected: false },
+                  { name: '飞书',         icon: Bell,         desc: '文档与通讯集成',     color: 'bg-secondary-600', connected: false },
+                  { name: '企业微信',     icon: ExternalLink, desc: '企业通讯工具',       color: 'bg-success-600', connected: false },
                 ].map(service => renderThirdPartyCard(service))}
               </div>
             </CardContent>

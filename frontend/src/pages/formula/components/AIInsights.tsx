@@ -72,9 +72,9 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-600'
-      case 'medium': return 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700'
-      case 'low': return 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
+      case 'high': return 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600'
+      case 'medium': return 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700'
+      case 'low': return 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600'
       default: return 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400'
     }
   }
@@ -91,10 +91,10 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'trend': return 'text-secondary-600 bg-secondary-100 dark:text-secondary-700 dark:bg-secondary-900/30'
-      case 'anomaly': return 'text-error-600 bg-error-100 dark:text-error-600 dark:bg-error-900/30'
-      case 'recommendation': return 'text-accent-600 bg-accent-100 dark:text-accent-700 dark:bg-accent-900/30'
-      case 'achievement': return 'text-success-600 bg-success-100 dark:text-success-600 dark:bg-success-900/30'
+      case 'trend': return 'text-secondary-600 bg-secondary-100 dark:text-secondary-700 dark:bg-secondary-300/25'
+      case 'anomaly': return 'text-error-600 bg-error-100 dark:text-error-600 dark:bg-error-300/25'
+      case 'recommendation': return 'text-accent-600 bg-accent-100 dark:text-accent-700 dark:bg-accent-300/25'
+      case 'achievement': return 'text-success-600 bg-success-100 dark:text-success-600 dark:bg-success-300/25'
       default: return 'text-neutral-600 bg-neutral-100 dark:text-neutral-400 dark:bg-neutral-800'
     }
   }
@@ -111,7 +111,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center">
             <Brain size={20} className="text-accent-600 dark:text-accent-700" />
           </div>
           <div>
@@ -144,7 +144,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
                 activeTab === tab.key
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -248,7 +248,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
           {predictionsLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-neutral-800/50 space-y-2">
+                <div key={i} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 space-y-2">
                   <Skeleton className="h-4 w-2/3" />
                   <Skeleton className="h-6 w-1/2" />
                   <Skeleton className="h-3 w-full" />
@@ -258,7 +258,7 @@ export function AIInsights({ className, loading, error, onRetry }: AIInsightsPro
           ) : predictions && predictions.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
               {predictions.map((prediction, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-neutral-800/50">
+                <div key={idx} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       {prediction.metric}
@@ -300,7 +300,7 @@ export function KPIDashboard({ className }: { className?: string }) {
     <Card className={className}>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-warning-100 dark:bg-warning-900/30 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
             <Target size={20} className="text-warning-600 dark:text-warning-700" />
           </div>
           <div>

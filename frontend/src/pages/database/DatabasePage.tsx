@@ -93,12 +93,16 @@ const HerbCategoryChart = lazy(() =>
         <Card>
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <Leaf size={18} className="text-neutral-400 dark:text-neutral-500" />
+              <Leaf size={18} className="text-neutral-400 dark:text-neutral-400" />
               药材分类分布
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-5 pt-0">
           <div className="flex flex-col md:flex-row items-center gap-5">
+            {/* A-24：recharts 默认给饼图根 <g> 加 tabindex="0"，但它没有任何可访问名称
+                （WCAG 4.1.2）。这里用 rootTabIndex={-1} 把它移出 Tab 序列，
+                并由外层容器以 role="img" + aria-label 向屏幕阅读器整体描述图表。 */}
+            <div role="img" aria-label="药材分类分布饼图">
             <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
@@ -110,6 +114,7 @@ const HerbCategoryChart = lazy(() =>
                   paddingAngle={4}
                   dataKey="value"
                   label={false}
+                  rootTabIndex={-1}
                 >
                   {data.map((entry, index) => (
                     <Cell key={'cell-' + index} fill={entry.fill} strokeWidth={0} />
@@ -128,6 +133,7 @@ const HerbCategoryChart = lazy(() =>
                 />
               </PieChart>
             </ResponsiveContainer>
+            </div>
             <div className="flex flex-col gap-1.5 min-w-[150px]">
               {data.slice(0, 6).map((item, i) => (
                 <div key={i} className="flex items-center justify-between gap-2 text-xs">
@@ -142,18 +148,18 @@ const HerbCategoryChart = lazy(() =>
                 </div>
               ))}
               {data.length > 6 && (
-                <div className="text-[11px] text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700 mt-0.5">
+                <div className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700 mt-0.5">
                   +{data.length - 6} 其他分类
                 </div>
               )}
               <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-[var(--text-muted,#64748b)]">总计</span>
+                  <span className="text-xs text-[var(--text-muted,#64748b)]">总计</span>
                   <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{total} 种</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-[var(--text-muted,#64748b)] flex items-center gap-1">药食同源</span>
-                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{totalFoodHomology ?? 0} 种</span>
+                  <span className="text-xs text-[var(--text-muted,#64748b)] flex items-center gap-1">药食同源</span>
+                  <span className="text-xs font-semibold text-success-700 dark:text-success-600 tabular-nums">{totalFoodHomology ?? 0} 种</span>
                 </div>
               </div>
             </div>
@@ -189,7 +195,7 @@ const PeptideActivityChart = lazy(() =>
         <Card>
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <Dna size={18} className="text-neutral-400 dark:text-neutral-500" />
+              <Dna size={18} className="text-neutral-400 dark:text-neutral-400" />
               活性肽类型分布
             </CardTitle>
           </CardHeader>
@@ -197,11 +203,11 @@ const PeptideActivityChart = lazy(() =>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={data} layout="vertical" margin={{ top: 10, right: 50, left: 110, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
-              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis
                 type="category"
                 dataKey="name"
-                tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+                tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
                 axisLine={false}
                 tickLine={false}
                 width={110}
@@ -237,8 +243,8 @@ const PIE_COLORS = [
   'var(--color-info-600, var(--color-secondary-500))',
   'var(--color-warning-600, #B45309)',
   'var(--color-danger-600, #B91C1C)',
-  'var(--color-purple-600, var(--color-accent-500))',
-  'var(--color-cyan-600, var(--color-info-600))',
+  'var(--color-accent-600, var(--color-accent-500))',
+  'var(--color-info-600, var(--color-info-600))',
   'var(--color-success-500, var(--color-primary-400))',
   'var(--color-warning-500, #D97706)',
 ];
@@ -774,15 +780,18 @@ export default function DatabasePage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold leading-snug tracking-tight" style={{ letterSpacing: "-0.015em" }}>数据库检索中心</h2>
+            <h1 className="text-2xl font-semibold leading-snug tracking-tight" style={{ letterSpacing: "-0.015em" }}>数据库检索中心</h1>
+            {/* A-24：「药材分类分布」卡片标题是 h3，若中间没有 h2 大纲会 1 → 3 跳级。
+                补一个屏幕阅读器可见的 h2 作为内容区标题。 */}
+            <h2 className="sr-only">数据库检索与概览</h2>
             <p className="text-white/80 text-sm mt-1">TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-white dark:bg-neutral-900/10 text-white border-white/30 hover:bg-white dark:bg-neutral-900/20 hover:text-white" onClick={() => window.print()}>
+            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-neutral-900/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-neutral-900/20 hover:text-white" onClick={() => window.print()}>
               <Printer className="w-4 h-4 mr-1.5" />
               打印报告
             </Button>
-            <Button variant="outline" size="sm" className="bg-white dark:bg-neutral-900/10 text-white border-white/30 hover:bg-white dark:bg-neutral-900/20 hover:text-white" onClick={handleExportStats}>
+            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-neutral-900/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-neutral-900/20 hover:text-white" onClick={handleExportStats}>
               <Download className="w-4 h-4 mr-1.5" />
               导出数据
             </Button>
@@ -796,9 +805,9 @@ export default function DatabasePage() {
         <div className="flex items-center gap-1.5 bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md p-1">
           <button
             onClick={() => handleViewModeChange('overview')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'overview'
-                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
@@ -807,9 +816,9 @@ export default function DatabasePage() {
           </button>
           <button
             onClick={() => handleViewModeChange('compact')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'compact'
-                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
@@ -818,9 +827,9 @@ export default function DatabasePage() {
           </button>
           <button
             onClick={() => handleViewModeChange('detailed')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'detailed'
-                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
@@ -834,7 +843,7 @@ export default function DatabasePage() {
           {/* 快捷键帮助按钮 */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md hover:bg-[var(--color-neutral-muted,#e2e8f0)] dark:hover:bg-neutral-700 transition-colors leading-normal tracking-tight"
+            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md hover:bg-[var(--color-neutral-muted,#e2e8f0)] dark:hover:bg-neutral-700 transition-colors leading-normal tracking-tight"
             title="查看快捷键 (按 ? 键)"
           >
             <Keyboard className="w-4 h-4" />
@@ -845,7 +854,7 @@ export default function DatabasePage() {
           <div ref={quickActionsRef} className="relative">
             <button
               onClick={() => setShowQuickActions(!showQuickActions)}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-primary-main bg-primary-container hover:bg-primary-container rounded-md transition-colors leading-normal tracking-tight"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold text-primary-main bg-primary-container hover:bg-primary-container rounded-md transition-colors leading-normal tracking-tight"
             >
               快速操作
               <ChevronDown className={`w-4 h-4 transition-transform ${showQuickActions ? 'rotate-180' : ''}`} />
@@ -871,9 +880,9 @@ export default function DatabasePage() {
                       handleRefreshCache();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-success-950/20 transition-colors rounded-md leading-normal"
                   >
-                    <RefreshCw className="w-4 h-4 text-primary-600" />
+                    <RefreshCw className="w-4 h-4 text-primary-700" />
                     刷新所有缓存
                     <span className="ml-auto text-xs text-[var(--text-muted,#64748b)] font-normal tabular-nums">R</span>
                   </button>
@@ -883,7 +892,7 @@ export default function DatabasePage() {
                       handleHealthCheck();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-warning-50/60 dark:hover:bg-warning-950/20 transition-colors rounded-md leading-normal"
                   >
                     <ShieldCheck className="w-4 h-4 text-warning-600" />
                     数据库健康检查
@@ -896,7 +905,7 @@ export default function DatabasePage() {
                       handlePrintReport();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-accent-50/60 dark:hover:bg-accent-950/20 transition-colors rounded-md leading-normal"
                   >
                     <Printer className="w-4 h-4 text-accent-600" />
                     打印报告
@@ -908,9 +917,9 @@ export default function DatabasePage() {
                       toast.success('链接已复制到剪贴板');
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-info-50/60 dark:hover:bg-info-950/20 transition-colors rounded-md leading-normal"
                   >
-                    <Share2 className="w-4 h-4 text-cyan-600" />
+                    <Share2 className="w-4 h-4 text-info-600" />
                     分享此页面
                   </button>
                 </div>
@@ -924,25 +933,25 @@ export default function DatabasePage() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-normal leading-normal leading-normal">
           {syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-secondary-50 dark:bg-blue-950/30 text-secondary-700 dark:text-secondary-300 rounded-md border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-secondary-50 dark:bg-secondary-950/30 text-secondary-700 dark:text-secondary-700 rounded-md border border-secondary-200 dark:border-secondary-800">
               <div className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
               <span className="text-xs font-normal leading-normal">正在连接数据库服务器...</span>
             </div>
           )}
           {dataSource === 'database' && !syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 dark:bg-emerald-950/30 text-primary-700 dark:text-primary-300 rounded-md border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 dark:bg-success-950/30 text-primary-700 dark:text-primary-700 rounded-md border border-success-200 dark:border-success-800">
               <Database className="w-4 h-4" />
               <span className="text-xs font-normal leading-normal">已连接真实数据库</span>
             </div>
           )}
           {dataSource === 'fallback' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-50 dark:bg-amber-950/30 text-warning-700 dark:text-warning-300 rounded-md border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-50 dark:bg-warning-950/30 text-warning-700 dark:text-warning-700 rounded-md border border-warning-200 dark:border-warning-800">
               <Zap className="w-4 h-4" />
               <span className="text-xs font-normal leading-normal">使用内存数据库\uff08后端服务不可用\uff09</span>
             </div>
           )}
           {dataSource === 'error' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-300 rounded-md border border-red-200 dark:border-red-800">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-error-50 dark:bg-error-950/30 text-error-700 dark:text-error-600 rounded-md border border-error-200 dark:border-error-800">
               <span className="text-xs font-semibold leading-normal">⚠️ {errorMessage || '数据加载失败'}</span>
             </div>
           )}
@@ -951,7 +960,7 @@ export default function DatabasePage() {
         {dataSource === 'error' && (errorMessage?.includes('认证') || errorMessage?.includes('登录')) && (
           <button
             onClick={() => (window.location.href = '/login')}
-            className="text-xs text-primary-600 hover:text-primary-700 font-semibold leading-normal tracking-tight"
+            className="text-xs text-primary-700 hover:text-primary-700 font-semibold leading-normal tracking-tight"
           >
             前往登录 →
           </button>
@@ -964,6 +973,9 @@ export default function DatabasePage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pointer-events-none" />
           <input
             type="text"
+            /* A-20：WCAG 2.5.5 —— 搜索框实测 1216×40，补到 44px 高；
+               同时补 aria-label（此前仅靠 placeholder，屏幕阅读器无可读名称）。 */
+            aria-label="全局搜索：药材、活性肽、知识图谱"
             value={searchInput}
             onChange={(e) => {
               setSearchInput(e.target.value);
@@ -975,7 +987,7 @@ export default function DatabasePage() {
             }}
             onKeyDown={handleSearchKeyDown}
             placeholder="搜索药材、活性肽、知识图谱... (Ctrl+K 或 /)"
-            className="w-full pl-12 pr-20 py-3 input text-base font-normal leading-normal"
+            className="w-full pl-12 pr-20 py-3 min-h-[44px] input text-base font-normal leading-normal"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             {searchHistory.length > 0 && (
@@ -1056,7 +1068,7 @@ export default function DatabasePage() {
                         setSuggestions(null);
                       }}
                     >
-                      <Leaf className="w-4 h-4 text-primary-600" />
+                      <Leaf className="w-4 h-4 text-primary-700" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-neutral-100 leading-normal">
                           {s.label}
@@ -1083,7 +1095,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1102,7 +1114,7 @@ export default function DatabasePage() {
                           setSearchInput(h.name_cn);
                         }}
                       >
-                        <Leaf className="w-6 h-6 text-primary-600" />
+                        <Leaf className="w-6 h-6 text-primary-700" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                             {h.name_cn}
@@ -1130,7 +1142,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1157,7 +1169,7 @@ export default function DatabasePage() {
                         >
                           <Dna className="w-6 h-6 text-secondary-600" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-normal tabular-nums">
+                            <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-700 leading-normal tabular-nums">
                               {p.sequence}
                             </div>
                             <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal">{p.source_protein}</div>
@@ -1182,7 +1194,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1200,7 +1212,7 @@ export default function DatabasePage() {
                           setSearchInput(g.node_label);
                         }}
                       >
-                        <GitBranch className="w-6 h-6 text-violet-600" />
+                        <GitBranch className="w-6 h-6 text-accent-600" />
                         <div className="flex-1 text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                           {g.node_label}
                         </div>
@@ -1358,7 +1370,7 @@ export default function DatabasePage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
         >
           <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700 w-full max-w-lg mx-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-primary-600 to-blue-600 text-white">
+            <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-secondary-surface-deep)] text-white">
               <div className="flex items-center gap-3">
                 <Keyboard className="w-6 h-6" />
                 <h1 className="text-xl font-semibold tracking-tight leading-tight">键盘快捷键</h1>
@@ -1395,7 +1407,7 @@ export default function DatabasePage() {
                     className="flex items-center justify-between p-3 rounded-md hover:bg-[var(--bg-canvas,#f8fafc)] dark:hover:bg-neutral-800/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="w-6 h-6 text-[var(--text-disabled,#94a3b8)] group-hover:text-primary-600 transition-colors" />
+                      <Icon className="w-6 h-6 text-[var(--text-disabled,#94a3b8)] group-hover:text-primary-700 transition-colors" />
                       <span className="text-sm font-normal leading-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                         {description}
                       </span>

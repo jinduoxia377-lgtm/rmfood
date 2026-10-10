@@ -57,7 +57,7 @@ export default function DiseasesTab() {
       {statsQuery.data && (
         <div className="flex flex-wrap gap-3">
           <div className="card px-4 py-3 flex-1 min-w-[140px]">
-            <div className="text-lg font-bold text-primary-600 tabular-nums">{statsQuery.data.total_diseases?.toLocaleString() ?? '-'}</div>
+            <div className="text-lg font-bold text-primary-700 tabular-nums">{statsQuery.data.total_diseases?.toLocaleString() ?? '-'}</div>
             <div className="text-xs text-text-muted font-medium">疾病总数</div>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function DiseasesTab() {
       {/* 搜索栏 */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doSearch()} placeholder="搜索疾病名称..." className="pl-9" />
         </div>
         <Button variant="primary" size="sm" onClick={doSearch} icon={<Search className="w-3.5 h-3.5" />}>搜索</Button>
@@ -94,7 +94,7 @@ export default function DiseasesTab() {
               ) : items.map((d: any) => (
                 <tr key={d.id} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                   <td className="px-4 py-2.5 font-medium text-text-primary">{d.name}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-text-muted">{d.mesh_id || <span className="text-neutral-400">-</span>}</td>
+                  <td className="px-4 py-2.5 font-mono text-xs text-text-muted">{d.mesh_id || <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>}</td>
                   <td className="px-4 py-2.5 text-text-muted text-xs">{d.source || 'tcmsp'}</td>
                 </tr>
               ))}

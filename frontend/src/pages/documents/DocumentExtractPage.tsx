@@ -67,10 +67,10 @@ CAS号：77-92-9
 // 置信度 → 设计令牌映射（阈值 0.85 / 0.6 → success / warning / danger）
 const confClass = (conf: number) =>
   conf >= 0.85
-    ? { card: 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900', text: 'text-success-500 dark:text-success-400', bar: 'bg-success-500' }
+    ? { card: 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900', text: 'text-success-500 dark:text-success-600', bar: 'bg-success-500' }
     : conf >= 0.6
-      ? { card: 'bg-warning-50 dark:bg-warning-950/20 border-warning-200 dark:border-warning-900', text: 'text-warning-500 dark:text-warning-400', bar: 'bg-warning-500' }
-      : { card: 'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900', text: 'text-danger-500 dark:text-danger-400', bar: 'bg-danger-500' }
+      ? { card: 'bg-warning-50 dark:bg-warning-950/20 border-warning-200 dark:border-warning-900', text: 'text-warning-500 dark:text-warning-700', bar: 'bg-warning-500' }
+      : { card: 'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900', text: 'text-danger-500 dark:text-danger-600', bar: 'bg-danger-500' }
 
 export default function DocumentExtractPage() {
   const { addToast } = useToast()
@@ -153,10 +153,10 @@ export default function DocumentExtractPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
                 <FileCheck size={20} className="text-white/80 shrink-0" />
                 文档智能提取
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">CoA / PDS / SDS 结构化字段提取 · 置信度评分 · 提取历史管理</p>
             </div>
             <div className="flex items-center gap-2">
@@ -186,10 +186,10 @@ export default function DocumentExtractPage() {
               <div className="flex gap-2 flex-wrap">
                 {history.map(h => (
                   <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs border border-neutral-200 dark:border-neutral-700">
-                    <span className="font-mono text-accent-600 dark:text-accent-400">{h.type.toUpperCase()}</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">{h.fields}字段</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">· 置信度 {(h.confidence * 100).toFixed(0)}%</span>
-                    <span className="text-neutral-300 dark:text-neutral-500">{h.date}</span>
+                    <span className="font-mono text-accent-600 dark:text-accent-700">{h.type.toUpperCase()}</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">{h.fields}字段</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">· 置信度 {(h.confidence * 100).toFixed(0)}%</span>
+                    <span className="text-neutral-300 dark:text-neutral-400">{h.date}</span>
                     <button onClick={() => {
                       const newHist = history.filter(x => x.id !== h.id)
                       setHistory(newHist)
@@ -208,7 +208,7 @@ export default function DocumentExtractPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">对比结果（{compareResults.length}个）</div>
-                <button onClick={() => { setCompareResults([]); setCompareMode(false) }} className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300">清除对比</button>
+                <button onClick={() => { setCompareResults([]); setCompareMode(false) }} className="text-xs text-neutral-400 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300">清除对比</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {compareResults.map((cr, idx) => {
@@ -263,10 +263,10 @@ export default function DocumentExtractPage() {
             <CardHeader className="px-5 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <FileText size={14} className="text-accent-500 dark:text-accent-400" />文档内容
+                  <FileText size={14} className="text-accent-500 dark:text-accent-700" />文档内容
                 </CardTitle>
                 <button onClick={() => setTextInput(EXAMPLE_TEXTS[docType] ?? '')}
-                  className="text-xs text-accent-500 hover:text-accent-600 dark:text-accent-400 dark:hover:text-accent-300 transition-colors">
+                  className="text-xs text-accent-500 hover:text-accent-600 dark:text-accent-700 dark:hover:text-accent-300 transition-colors">
                   填入示例文本
                 </button>
               </div>
@@ -287,11 +287,11 @@ export default function DocumentExtractPage() {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]) }}
               >
-                <Upload className="mx-auto mb-2 text-neutral-400" size={24} />
+                <Upload className="mx-auto mb-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" size={24} />
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">拖拽文件至此，或点击下方按钮选择</p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">支持 PDF、DOCX、TXT（PDF需含文本层）</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">支持 PDF、DOCX、TXT（PDF需含文本层）</p>
                 <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden"
-                  onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0])} />
+                  onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0])} aria-hidden="true" tabIndex={-1} />
                 <label htmlFor="file-input"
                   className="inline-block mt-2 px-4 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer transition-colors">
                   选择文件
@@ -323,20 +323,20 @@ export default function DocumentExtractPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {overallConf >= 0.85
-                      ? <CheckCircle2 className="text-success-500 dark:text-success-400" size={20} />
-                      : <AlertTriangle className="text-warning-500 dark:text-warning-400" size={20} />}
+                      ? <CheckCircle2 className="text-success-500 dark:text-success-600" size={20} />
+                      : <AlertTriangle className="text-warning-500 dark:text-warning-700" size={20} />}
                     <div>
                       <div className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                         整体置信度：{overallConf.toFixed(2)}
                       </div>
                       <div className="text-xs text-neutral-500 dark:text-neutral-400">
                         发现 {result.metadata.total_fields_found} / {result.metadata.total_fields_expected} 个字段
-                        {result.requires_review && <span className="text-warning-600 dark:text-warning-400 ml-2">⚠ 需人工复核</span>}
+                        {result.requires_review && <span className="text-warning-600 dark:text-warning-700 ml-2">⚠ 需人工复核</span>}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-neutral-400 dark:text-neutral-500">{result.document_type.toUpperCase()}</div>
+                    <div className="text-xs text-neutral-400 dark:text-neutral-400">{result.document_type.toUpperCase()}</div>
                   </div>
                 </div>
                 {/* 进度条 */}
@@ -370,18 +370,18 @@ export default function DocumentExtractPage() {
                   <div className="space-y-2">
                     {Object.entries(result.extracted_fields).map(([key, field]: [string, any]) => (
                       <div key={key} className="flex items-center gap-4 px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 w-24 shrink-0">{key}</span>
+                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-24 shrink-0">{key}</span>
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 flex-1">{String(field.value || '—')}</span>
                         <span className="text-xs text-neutral-500 dark:text-neutral-400">{field.label ?? key}</span>
                         <span className={`text-xs font-mono w-10 text-right ${
-                          field.confidence >= 0.8 ? 'text-success-500 dark:text-success-400' : field.confidence >= 0.6 ? 'text-warning-500 dark:text-warning-400' : 'text-danger-500 dark:text-danger-400'
+                          field.confidence >= 0.8 ? 'text-success-500 dark:text-success-600' : field.confidence >= 0.6 ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'
                         }`}>
                           {(field.confidence * 100).toFixed(0)}%
                         </span>
                       </div>
                     ))}
                     {Object.keys(result.extracted_fields).length === 0 && (
-                      <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-4">未识别到任何字段，请检查文档格式</p>
+                      <p className="text-sm text-neutral-400 dark:text-neutral-400 text-center py-4">未识别到任何字段，请检查文档格式</p>
                     )}
                   </div>
                 </CardContent>

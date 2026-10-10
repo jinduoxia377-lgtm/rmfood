@@ -262,9 +262,9 @@ export default function UserManagementPage() {
     rejected: '已拒绝',
   };
   const preRegStatusColor: Record<PreRegisterStatus, string> = {
-    pending: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20',
-    approved: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/20',
-    rejected: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20',
+    pending: 'text-warning-600 bg-warning-50 dark:text-warning-700 dark:bg-warning-300/20',
+    approved: 'text-success-600 bg-success-50 dark:text-success-700 dark:bg-success-300/20',
+    rejected: 'text-error-600 bg-error-50 dark:text-error-700 dark:bg-error-300/20',
   };
 
   // P3-5: CDC 实时通知 - 用户变更时显示 toast
@@ -823,7 +823,7 @@ export default function UserManagementPage() {
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     if (percent < 0.05) return null;
     return (
-      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600}>
         {`${name} ${(percent * 100).toFixed(0)}%`}
       </text>
     );
@@ -837,6 +837,9 @@ export default function UserManagementPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">用户管理</h1>
+            {/* A-24：此前页面只有 h1，紧接着就是各卡片的 h3，大纲从 1 直接跳到 3。
+                补一个屏幕阅读器可见的 h2 承接用户列表区，恢复 h1 → h2 → h3。 */}
+            <h2 className="sr-only">用户列表</h2>
             <p className="mt-1 text-white/90 text-sm">
               共 <strong className="text-white font-semibold">{total}</strong> 位注册用户
               {isFetching && !isLoading && (
@@ -848,7 +851,7 @@ export default function UserManagementPage() {
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
             {selectedIds.size > 0 && (
-              <span className="px-3 py-1 rounded-full bg-white dark:bg-neutral-900/20 backdrop-blur-sm text-white text-xs font-medium">
+              <span className="px-3 py-1 rounded-full bg-white dark:bg-neutral-900/20 backdrop-blur-sm text-primary-700 dark:text-white text-xs font-medium">
                 已选 {selectedIds.size}
               </span>
             )}
@@ -879,7 +882,7 @@ export default function UserManagementPage() {
           onClick={() =>
             document.getElementById('prereg-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
           }
-          className="w-full flex items-center gap-3 rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50 dark:bg-warning-900/20 px-5 py-3.5 text-left transition-colors hover:bg-warning-100/80 dark:hover:bg-warning-900/30"
+          className="w-full flex items-center gap-3 rounded-xl border border-warning-200 dark:border-warning-800 bg-warning-50 dark:bg-warning-300/20 px-5 py-3.5 text-left transition-colors hover:bg-warning-100/80 dark:hover:bg-warning-900/30"
         >
           <UserRoundPlus className="w-5 h-5 text-warning-600 dark:text-warning-700 shrink-0" />
           <span className="flex-1 text-sm text-warning-800 dark:text-warning-200">
@@ -895,16 +898,16 @@ export default function UserManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-100 via-emerald-50 to-teal-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-teal-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-success-100 via-success-50 to-success-50 dark:from-success-900/50 dark:via-success-900/30 dark:to-success-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
                   <CheckCircle2 className="w-4.5 h-4.5 text-primary-700 dark:text-primary-700" />
                 </div>
-                <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">活跃用户</span>
+                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">活跃用户</span>
               </div>
               <Badge variant="success" size="sm">
                 +{activeCount}
               </Badge>
             </div>
-            <p className="text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 tabular-nums tracking-tight">
+            <p className="text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-success-600 to-success-600 dark:from-success-400 dark:to-success-400 tabular-nums tracking-tight">
               {activeCount}
             </p>
             <Progress value={activeRate} max={100} variant="success" size="sm" className="mt-3" />
@@ -916,16 +919,16 @@ export default function UserManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-100 via-red-50 to-orange-50 dark:from-red-900/50 dark:via-red-900/30 dark:to-orange-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-error-100 via-error-50 to-warning-50 dark:from-error-900/50 dark:via-error-900/30 dark:to-warning-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
                   <ShieldAlert className="w-4.5 h-4.5 text-error-600 dark:text-error-600" />
                 </div>
-                <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">已禁用</span>
+                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">已禁用</span>
               </div>
               <Badge variant="danger" size="sm">
                 {inactiveCount}
               </Badge>
             </div>
-            <p className="text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-red-600 to-orange-600 dark:from-red-400 dark:to-orange-400 tabular-nums tracking-tight">
+            <p className="text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-error-600 to-warning-600 dark:from-error-400 dark:to-warning-400 tabular-nums tracking-tight">
               {inactiveCount}
             </p>
             <Progress
@@ -945,10 +948,10 @@ export default function UserManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-violet-50 dark:from-blue-900/50 dark:via-indigo-900/30 dark:to-violet-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary-100 via-accent-50 to-accent-50 dark:from-secondary-900/50 dark:via-accent-900/30 dark:to-accent-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
                   <PieIcon className="w-4.5 h-4.5 text-secondary-600 dark:text-secondary-700" />
                 </div>
-                <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">角色分布</span>
+                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">角色分布</span>
               </div>
               <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full font-medium">
                 共 {users.length} 人
@@ -958,7 +961,7 @@ export default function UserManagementPage() {
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width={180} height={150}>
                   <PieChart>
-                    <Pie
+                    <Pie rootTabIndex={-1}
                       data={pieChartData}
                       cx="50%"
                       cy="50%"
@@ -990,7 +993,7 @@ export default function UserManagementPage() {
                   {pieChartData.map((entry) => {
                     const pct = users.length > 0 ? ((entry.value / users.length) * 100).toFixed(0) : '0';
                     return (
-                      <div key={entry.name} className="flex items-center gap-2 text-[13px]">
+                      <div key={entry.name} className="flex items-center gap-2 text-sm">
                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
                         <span className="text-neutral-600 dark:text-neutral-400 truncate">{entry.name}</span>
                         <span className="font-semibold tabular-nums text-neutral-900 dark:text-white ml-auto">
@@ -1036,12 +1039,12 @@ export default function UserManagementPage() {
                 </defs>
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }}
+                  tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }}
                   tickLine={false}
                   axisLine={false}
                   interval="preserveStartEnd"
                 />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <RechartsTooltip
                   contentStyle={{ borderRadius: 8, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                   formatter={(value) => [`${value} 人`, '新增注册']}
@@ -1067,7 +1070,7 @@ export default function UserManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center">
                   <History className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
                 </div>
                 操作日志与安全监控{' '}
@@ -1089,11 +1092,11 @@ export default function UserManagementPage() {
                     onClick={() => handleLogClick(log.id)}
                     className={`flex items-start gap-3 p-2.5 rounded-lg text-xs cursor-pointer transition-all duration-150 hover:bg-primary-50 dark:hover:bg-primary-900/10 ${
                       log.type === 'login_anomaly' || log.type === 'security_event'
-                        ? 'border border-red-200 dark:border-red-800/30'
+                        ? 'border border-error-200 dark:border-error-800/30'
                         : log.type === 'batch_op'
-                          ? 'border border-amber-200 dark:border-amber-800/30'
+                          ? 'border border-warning-200 dark:border-warning-800/30'
                           : 'border border-transparent'
-                    } ${expandedLogId === log.id ? 'bg-primary-50 dark:bg-primary-900/10 rounded-t-none' : ''}`}
+                    } ${expandedLogId === log.id ? 'bg-primary-50 dark:bg-primary-300/15 rounded-t-none' : ''}`}
                   >
                     <div
                       className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
@@ -1187,7 +1190,7 @@ export default function UserManagementPage() {
       {/* ── Main Content Grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* ── Left Sidebar: Filters ── */}
-        <Card className="lg:col-span-1 transition-all duration-300 hover:shadow-md shadow-md border-neutral-200/80 dark:border-neutral-700/60 bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50">
+        <Card className="lg:col-span-1 transition-all duration-300 hover:shadow-md shadow-md border-neutral-200/80 dark:border-neutral-700/60 bg-gradient-to-b from-white to-neutral-50/50 dark:from-neutral-900 dark:to-neutral-800/50">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
@@ -1215,8 +1218,10 @@ export default function UserManagementPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">搜索</label>
+              <label className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">搜索</label>
+              {/* A-24：placeholder 不是可访问名称，且该 <label> 无 htmlFor 无法关联 */}
               <Input
+                aria-label="搜索用户：用户名、姓名、邮箱"
                 value={searchInput}
                 onChange={(e) => {
                   setSearchInput(e.target.value);
@@ -1286,7 +1291,7 @@ export default function UserManagementPage() {
             </div>
 
             <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
-              <p className="text-[13px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">显示设置</p>
+              <p className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">显示设置</p>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">每页数量</label>
                 <Select
@@ -1307,9 +1312,9 @@ export default function UserManagementPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setTableDensity('comfortable')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[44px] rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'comfortable'
-                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -1317,9 +1322,9 @@ export default function UserManagementPage() {
                 </button>
                 <button
                   onClick={() => setTableDensity('compact')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 min-h-[44px] rounded-md text-xs font-medium transition-colors ${
                     tableDensity === 'compact'
-                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                      ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                       : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                   }`}
                 >
@@ -1367,7 +1372,7 @@ export default function UserManagementPage() {
         <div className="lg:col-span-3 space-y-4">
           {/* Batch Action Bar */}
           {selectedIds.size > 0 && (
-            <Alert className="rounded-xl border-primary-200 bg-gradient-to-r from-primary-50/80 to-blue-50/60 dark:border-primary-800 dark:from-primary-950/30 dark:to-blue-950/20 animate-in fade-in slide-in-from-bottom-2 duration-200 shadow-sm">
+            <Alert className="rounded-xl border-primary-200 bg-gradient-to-r from-primary-50/80 to-secondary-50/60 dark:border-primary-800 dark:from-primary-950/30 dark:to-secondary-950/20 animate-in fade-in slide-in-from-bottom-2 duration-200 shadow-sm">
               <Check className="w-4 h-4 text-primary-700" />
               <AlertTitle className="text-sm font-medium">
                 已选择 <strong className="text-primary-700 dark:text-primary-700">{selectedIds.size}</strong> 个用户
@@ -1402,7 +1407,7 @@ export default function UserManagementPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-primary-700 border-emerald-200 hover:bg-primary-50 dark:border-emerald-800 dark:hover:bg-primary-900/20"
+                  className="text-primary-700 border-success-200 hover:bg-primary-50 dark:border-success-800 dark:hover:bg-primary-900/20"
                   onClick={() => requestBatchStatusToggle(true)}
                   disabled={batchStatusMutation.isPending}
                 >
@@ -1411,7 +1416,7 @@ export default function UserManagementPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-error-600 border-red-200 hover:bg-error-50 dark:border-red-800 dark:hover:bg-error-900/20"
+                  className="text-error-600 border-error-200 hover:bg-error-50 dark:border-error-800 dark:hover:bg-error-900/20"
                   onClick={() => requestBatchStatusToggle(false)}
                   disabled={batchStatusMutation.isPending}
                 >
@@ -1420,7 +1425,7 @@ export default function UserManagementPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-error-600 border-red-200 hover:bg-error-50 dark:border-red-800 dark:hover:bg-error-900/20"
+                  className="text-error-600 border-error-200 hover:bg-error-50 dark:border-error-800 dark:hover:bg-error-900/20"
                   onClick={() => requestBatchDelete()}
                   disabled={batchDeleteMutation.isPending}
                 >
@@ -1449,7 +1454,7 @@ export default function UserManagementPage() {
 
           {/* Table Card */}
           <Card
-            className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible border-neutral-200 dark:border-neutral-700/60"
+            className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-neutral-200/60 dark:ring-neutral-700/40 overflow-visible border-neutral-200 dark:border-neutral-700/60"
             id="user-table-card"
           >
             {isLoading ? (
@@ -1480,7 +1485,7 @@ export default function UserManagementPage() {
               <>
                 <div className="overflow-visible">
                   <table className={`w-full ${textSize}`} role="table" aria-label="用户列表">
-                    <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-800/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 text-[13px] uppercase">
+                    <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-800/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 text-sm uppercase">
                       <tr>
                         <th className={`w-10 ${cellPadding}`}>
                           <Checkbox
@@ -1538,7 +1543,7 @@ export default function UserManagementPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody ref={tableBodyRef} className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    <tbody ref={tableBodyRef} className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
                       {filteredUsers.map((user, idx) => {
                         const roleCfg = getRoleConfig(user.role);
                         const RoleIcon = roleCfg.icon;
@@ -1554,7 +1559,7 @@ export default function UserManagementPage() {
                         return (
                           <tr
                             key={user.id}
-                            className={`group animate-in fade-in slide-in-from-4 duration-300 fill-mode-both hover:[&]:bg-slate-50 dark:bg-neutral-800/90 dark:hover:bg-neutral-800/50 [&]:transition-colors [&]:duration-150 ${
+                            className={`group animate-in fade-in slide-in-from-4 duration-300 fill-mode-both hover:[&]:bg-neutral-50 dark:bg-neutral-800/90 dark:hover:bg-neutral-800/50 [&]:transition-colors [&]:duration-150 ${
                               isSelected
                                 ? 'bg-primary-50/60 dark:bg-primary-950/20 ring-1 ring-primary-200 dark:ring-primary-800'
                                 : ''
@@ -1577,7 +1582,7 @@ export default function UserManagementPage() {
                                 }}
                               >
                                 <div
-                                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow-sm shrink-0 ring-1 ring-white dark:ring-slate-700 ${roleCfg.color}`}
+                                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow-sm shrink-0 ring-1 ring-white dark:ring-neutral-700 ${roleCfg.color}`}
                                 >
                                   {(user.full_name || user.username || '?').charAt(0).toUpperCase()}
                                 </div>
@@ -1592,7 +1597,8 @@ export default function UserManagementPage() {
                                     {hasAnomaly && <AlertTriangle className="w-3 h-3 ml-1 inline text-warning-500" />}
                                     {isLocked && <Lock className="w-3 h-3 ml-1 inline text-error-500" />}
                                   </p>
-                                  <p className="text-xs text-neutral-400 dark:text-neutral-400 truncate max-w-[140px]">
+                                  {/* A-35：原 text-neutral-400(#94a3b8) 白底仅 2.56:1 */}
+                                  <p className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[140px]">
                                     ID: {user.id}
                                   </p>
                                 </div>
@@ -1600,8 +1606,9 @@ export default function UserManagementPage() {
                             </td>
                             <td className={`${cellPadding} text-neutral-600 dark:text-neutral-300 hidden sm:table-cell`}>
                               <span className="truncate block max-w-[100px]">
+                                {/* A-35：占位「未设置」原为 neutral-300(#cbd5e1)，白底仅 1.48:1，几乎看不见 */}
                                 {user.full_name || (
-                                  <span className="text-neutral-300 dark:text-neutral-400 italic">未设置</span>
+                                  <span className="text-neutral-500 dark:text-neutral-400 italic">未设置</span>
                                 )}
                               </span>
                             </td>
@@ -1609,7 +1616,7 @@ export default function UserManagementPage() {
                               {user.email ? (
                                 <a
                                   href={`mailto:${user.email}`}
-                                  className="inline-flex items-center gap-1 text-neutral-500 dark:text-neutral-400 hover:text-primary-700 transition-colors truncate max-w-[180px]"
+                                  className="inline-flex items-center gap-1 min-h-[44px] text-neutral-500 dark:text-neutral-400 hover:text-primary-700 transition-colors truncate max-w-[180px]"
                                   title={user.email}
                                 >
                                   <Mail className="w-3.5 h-3.5 shrink-0" />
@@ -1629,7 +1636,7 @@ export default function UserManagementPage() {
                                   )
                                 }
                                 disabled={isSelf}
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer transition-all duration-200 hover:shadow-sm focus:ring-2 focus:ring-offset-1 ${roleCfg.color} ${isSelf ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 min-h-[44px] rounded-full text-xs font-semibold border-0 cursor-pointer transition-all duration-200 hover:shadow-sm focus:ring-2 focus:ring-offset-1 ${roleCfg.color} ${isSelf ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 title={`${roleCfg.description}${isSelf ? '（不可修改）' : ''}`}
                               >
                                 <RoleIcon className="w-3.5 h-3.5" />
@@ -1657,7 +1664,7 @@ export default function UserManagementPage() {
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
                                 <button
                                   onClick={() => setActionMenuId(showMenu ? null : user.id)}
-                                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
+                                  className="p-1.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors"
                                   aria-label={`${user.username} 的操作菜单`}
                                 >
                                   <MoreVertical className="w-4 h-4" />
@@ -1682,7 +1689,7 @@ export default function UserManagementPage() {
                                       <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 查看详情
                                     </button>
                                     <button
-                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
+                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
                                       onClick={() => {
                                         // Cycle through roles: ADMIN -> MANAGER -> RESEARCHER -> ANALYST -> VIEWER -> ADMIN
                                         const roleOrder = [UserRole.ADMIN, UserRole.MANAGER, UserRole.RESEARCHER, UserRole.ANALYST, UserRole.VIEWER];
@@ -1741,7 +1748,7 @@ export default function UserManagementPage() {
 
                 {totalPages > 1 && (
                   <div
-                    className={`px-6 ${tableDensity === 'compact' ? 'py-3' : 'py-4'} border-t border-neutral-200/80 dark:border-neutral-700/60 flex items-center justify-between bg-gradient-to-r from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30`}
+                    className={`px-6 ${tableDensity === 'compact' ? 'py-3' : 'py-4'} border-t border-neutral-200/80 dark:border-neutral-700/60 flex items-center justify-between bg-gradient-to-r from-neutral-50 to-neutral-50/80 dark:from-neutral-800/50 dark:to-neutral-800/30`}
                   >
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       显示第
@@ -1779,7 +1786,7 @@ export default function UserManagementPage() {
                   <UserRoundPlus className="w-5 h-5 text-primary-700 dark:text-primary-700" />
                   账号申请
                   {preRegStatusCounts.pending > 0 && (
-                    <span className="ml-1 min-w-[20px] h-5 px-1.5 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700 text-xs font-bold flex items-center justify-center">
+                    <span className="ml-1 min-w-[20px] h-5 px-1.5 rounded-full bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700 text-xs font-bold flex items-center justify-center">
                       {preRegStatusCounts.pending}
                     </span>
                   )}
@@ -1791,6 +1798,7 @@ export default function UserManagementPage() {
 
               <div className="flex items-center gap-2">
                 <Input
+                  aria-label="搜索账号申请：邮箱 / 姓名 / 部门"
                   placeholder="搜索邮箱 / 姓名 / 部门…"
                   value={preRegSearch}
                   onChange={(e) => { setPreRegSearch(e.target.value); setPreRegPage(1); }}
@@ -1911,7 +1919,7 @@ export default function UserManagementPage() {
             {/* 申请信息 */}
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-300/25 flex items-center justify-center">
                   <Mail className="w-5 h-5 text-primary-700 dark:text-primary-700" />
                 </div>
                 <div>
@@ -1925,12 +1933,12 @@ export default function UserManagementPage() {
                 申请时间：{new Date(preRegDetail.created_at).toLocaleString('zh-CN')}
               </p>
               {preRegDetail.status === 'rejected' && preRegDetail.reject_reason && (
-                <div className="rounded-lg bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 p-3 text-sm text-error-700 dark:text-error-600">
+                <div className="rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 p-3 text-sm text-error-700 dark:text-error-600">
                   <strong>拒绝原因：</strong>{preRegDetail.reject_reason}
                 </div>
               )}
               {preRegDetail.status === 'approved' && preRegDetail.user_id && (
-                <div className="rounded-lg bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 p-3 text-sm text-success-700 dark:text-success-600">
+                <div className="rounded-lg bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800 p-3 text-sm text-success-700 dark:text-success-600">
                   <strong>已开通</strong>，对应用户 #{preRegDetail.user_id}
                 </div>
               )}
@@ -2043,7 +2051,7 @@ export default function UserManagementPage() {
                   <div className="space-y-5">
                     <div className="flex items-center gap-4">
                       <div
-                        className={`w-20 h-20 rounded-2xl flex items-center justify-center text-xl font-bold bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 shadow-lg ring-2 ring-white dark:ring-slate-700 ${roleCfg.color}`}
+                        className={`w-20 h-20 rounded-2xl flex items-center justify-center text-xl font-bold bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 shadow-lg ring-2 ring-white dark:ring-neutral-700 ${roleCfg.color}`}
                       >
                         {(detailUser.full_name || detailUser.username || '?').charAt(0).toUpperCase()}
                       </div>
@@ -2107,7 +2115,7 @@ export default function UserManagementPage() {
                       ].map(({ icon: Icon, label, value, highlight }) => (
                         <div
                           key={label}
-                          className={`flex items-start gap-2.5 p-2.5 rounded-lg ${highlight ? 'bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-neutral-800/50'}`}
+                          className={`flex items-start gap-2.5 p-2.5 rounded-lg ${highlight ? 'bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/30' : 'bg-neutral-50 dark:bg-neutral-800/50'}`}
                         >
                           <Icon
                             className={`w-4 h-4 mt-0.5 shrink-0 ${highlight ? 'text-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}
@@ -2221,7 +2229,7 @@ export default function UserManagementPage() {
                       </div>
                     )}
 
-                    <div className="gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30 -mx-6 -mb-6 px-6 py-4 rounded-b-xl flex items-center">
+                    <div className="gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30 -mx-6 -mb-6 px-6 py-4 rounded-b-xl flex items-center">
                       {!detailUser.is_active && !isSelf && (
                         <Button
                           size="sm"
@@ -2239,7 +2247,7 @@ export default function UserManagementPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-error-600 border-red-200 hover:bg-error-50 dark:border-red-800 dark:hover:bg-error-900/20"
+                          className="flex-1 text-error-600 border-error-200 hover:bg-error-50 dark:border-error-800 dark:hover:bg-error-900/20"
                           onClick={() => {
                             requestStatusToggle(detailUser);
                             setDetailUser(null);
@@ -2267,7 +2275,7 @@ export default function UserManagementPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-warning-600 border-amber-200 hover:bg-warning-50 dark:border-amber-800 dark:hover:bg-warning-900/20"
+                          className="flex-1 text-warning-600 border-warning-200 hover:bg-warning-50 dark:border-warning-800 dark:hover:bg-warning-900/20"
                           onClick={async () => {
                             try {
                               await adminApi.unlockUserAccount(detailUser.id);
@@ -2344,7 +2352,7 @@ export default function UserManagementPage() {
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700">
                       <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/30">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
                             <KeyRound className="w-4 h-4 text-primary-700 dark:text-primary-700" />
                           </div>
                           <div>
@@ -2355,7 +2363,7 @@ export default function UserManagementPage() {
                         <div className="flex items-center gap-2">
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                             (detailUser as any).totp_enabled
-                              ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
+                              ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600'
                               : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
                           }`}>
                             {(detailUser as any).totp_enabled ? '已启用' : '未启用'}
@@ -2435,10 +2443,10 @@ export default function UserManagementPage() {
                           <div
                             className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 shadow-sm background-white dark:bg-neutral-900 ${
                               record.status === 'success'
-                                ? 'border-emerald-500 bg-primary-500'
+                                ? 'border-success-500 bg-primary-500'
                                 : record.status === 'failed'
-                                  ? 'border-red-500 bg-error-500'
-                                  : 'border-amber-500 bg-warning-500'
+                                  ? 'border-error-500 bg-error-500'
+                                  : 'border-warning-500 bg-warning-500'
                             }`}
                           />
                           <div className="pl-4">
@@ -2480,19 +2488,19 @@ export default function UserManagementPage() {
                     </div>
 
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700 grid grid-cols-3 gap-3">
-                      <div className="text-center p-2 rounded-lg bg-primary-50 dark:bg-primary-900/10">
+                      <div className="text-center p-2 rounded-lg bg-primary-50 dark:bg-primary-300/15">
                         <p className="text-lg font-bold text-primary-700 tabular-nums">
                           {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code === 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'success').length}
                         </p>
                         <p className="text-xs text-primary-700/70">成功操作</p>
                       </div>
-                      <div className="text-center p-2 rounded-lg bg-error-50 dark:bg-error-900/10">
+                      <div className="text-center p-2 rounded-lg bg-error-50 dark:bg-error-300/15">
                         <p className="text-lg font-bold text-error-600 tabular-nums">
                           {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code !== 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'failed').length}
                         </p>
                         <p className="text-xs text-error-600/70">失败操作</p>
                       </div>
-                      <div className="text-center p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10">
+                      <div className="text-center p-2 rounded-lg bg-warning-50 dark:bg-warning-300/15">
                         <p className="text-lg font-bold text-warning-600 tabular-nums">
                           {detailUser && userActivityQuery.data?.items?.[0]?.created_at ? formatTimeAgo(userActivityQuery.data.items[0].created_at) : formatTimeAgo(MOCK_ACTIVITY_RECORDS[0]?.time || '')}
                         </p>
@@ -2517,7 +2525,7 @@ export default function UserManagementPage() {
           <div className="space-y-4">
             <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{confirmAction.description}</p>
             {confirmAction.currentValue && confirmAction.newValue && (
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-sm">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-sm">
                 <span className="line-through text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{getRoleConfig(confirmAction.currentValue).label}</span>
                 <ChevronRight className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <span className="font-medium text-primary-700 dark:text-primary-700">
@@ -2567,7 +2575,7 @@ export default function UserManagementPage() {
           </Alert>
 
           <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl p-8 text-center hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
-            <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleCSVImport} />
+            <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleCSVImport} aria-hidden="true" tabIndex={-1} />
             <Upload className="w-10 h-10 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               点击选择或拖拽 CSV 文件到此区域
@@ -2580,7 +2588,7 @@ export default function UserManagementPage() {
 
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] space-y-1">
             <p className="font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">CSV 格式示例：</p>
-            <pre className="bg-slate-50 dark:bg-neutral-800/50 p-2.5 rounded-lg overflow-x-auto font-mono text-xs leading-relaxed">
+            <pre className="bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-lg overflow-x-auto font-mono text-xs leading-relaxed">
               {`username,full_name,email,role,department
 zhangsan,张三,zhang@example.com,researcher,研发部
 lisi,李四,li@example.com,analyst,数据部`}
@@ -2606,14 +2614,14 @@ lisi,李四,li@example.com,analyst,数据部`}
           {importErrorDetail.map((err: any, i: number) => (
             <div
               key={i}
-              className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-error-200 dark:border-error-800/30 text-xs"
+              className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800/30 text-xs"
             >
               <AlertTriangle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-error-700 dark:text-error-600">
                   第 {err.row || '?'} 行 · {err.field || '未知字段'}
                 </p>
-                <p className="text-error-600/80 dark:text-error-500/70 mt-0.5">{err.message || String(err)}</p>
+                <p className="text-error-600/80 dark:text-error-700/70 mt-0.5">{err.message || String(err)}</p>
               </div>
             </div>
           ))}
@@ -2636,7 +2644,7 @@ lisi,李四,li@example.com,analyst,数据部`}
         size="md"
       >
         <div className="space-y-6">
-          <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/10 border-blue-200/60 dark:border-blue-800/30">
+          <Alert className="bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/10 border-secondary-200/60 dark:border-secondary-800/30">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/40 dark:to-primary-800/20 flex items-center justify-center shadow-md ring-1 ring-white/50 shrink-0 mt-0.5">
                 <UserRoundPlus className="w-4 h-4 text-primary-700 dark:text-primary-700" />
@@ -2654,7 +2662,7 @@ lisi,李四,li@example.com,analyst,数据部`}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 用户名<span className="text-error-500 ml-0.5">*</span>
               </label>
               <Input
@@ -2733,7 +2741,7 @@ lisi,李四,li@example.com,analyst,数据部`}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">姓名</label>
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">姓名</label>
               <Input
                 value={createForm.full_name}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, full_name: e.target.value }))}
@@ -2745,7 +2753,7 @@ lisi,李四,li@example.com,analyst,数据部`}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">角色</label>
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">角色</label>
               <Select
                 value={createForm.role}
                 onChange={(v) => setCreateForm((prev) => ({ ...prev, role: v as UserRole }))}
@@ -2788,7 +2796,7 @@ lisi,李四,li@example.com,analyst,数据部`}
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-700/30 border border-neutral-200/60 dark:border-neutral-700/40 rounded-xl p-3.5 ring-1 ring-slate-200/60 dark:ring-slate-700/40">
+          <div className="bg-gradient-to-r from-neutral-50 to-neutral-100/50 dark:from-neutral-800/50 dark:to-neutral-700/30 border border-neutral-200/60 dark:border-neutral-700/40 rounded-xl p-3.5 ring-1 ring-neutral-200/60 dark:ring-neutral-700/40">
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
               <span className="inline-flex items-center gap-1 font-semibold text-neutral-700 dark:text-neutral-300">
                 <Zap className="w-3 h-3" /> 提示：{' '}

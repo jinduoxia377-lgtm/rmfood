@@ -190,8 +190,8 @@ export default function AnalyticsPage() {
             {/* 数据状态 */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
               dataLoading
-                ? 'bg-warning-500/20 text-warning-800 dark:text-warning-200'
-                : 'bg-success-500/20 text-success-800 dark:text-success-200'
+                ? 'bg-white/95 dark:bg-warning-500/20 text-warning-800 dark:text-white'
+                : 'bg-white/95 dark:bg-success-500/20 text-success-800 dark:text-white'
             }`}>
               {dataLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
               {dataLoading ? '加载中' : '已连接'}
@@ -199,15 +199,15 @@ export default function AnalyticsPage() {
             {/* WebSocket 状态 */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
               wsConnected
-                ? 'bg-green-500/20 text-green-800 dark:text-green-300'
+                ? 'bg-white/95 dark:bg-success-500/20 text-success-800 dark:text-white'
                 : wsConnecting
-                  ? 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-300'
-                  : 'bg-neutral-500/20 text-neutral-700 dark:text-neutral-300'
+                  ? 'bg-white/95 dark:bg-warning-500/20 text-warning-800 dark:text-white'
+                  : 'bg-white/95 dark:bg-neutral-500/20 text-neutral-700 dark:text-white'
             }`}>
               {wsConnected
-                ? <Wifi className="w-3.5 h-3.5 text-green-400" />
+                ? <Wifi className="w-3.5 h-3.5 text-success-700 dark:text-success-400" />
                 : wsConnecting
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-yellow-400" />
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-warning-700 dark:text-warning-400" />
                   : <WifiOff className="w-3.5 h-3.5" />
               }
               <span>{wsConnected ? '实时' : wsConnecting ? '连接中…' : '轮询'}</span>
@@ -250,7 +250,7 @@ export default function AnalyticsPage() {
           <select
             value={filters.timeRange}
             onChange={(e) => setFilters({ ...filters, timeRange: e.target.value as FilterConfig['timeRange'] })}
-            className="px-3 py-2 text-sm input min-w-[110px]"
+            className="px-3 py-2 text-sm input min-w-[110px] min-h-[44px]"
           >
             <option value="7d">近 7 天</option>
             <option value="30d">近 30 天</option>
@@ -263,8 +263,8 @@ export default function AnalyticsPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-1.5 ${
               showFilters
-                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-600'
-                : 'border-border text-text-secondary hover:bg-surface-hover'
+                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-700'
+                : 'border-border text-text-secondary dark:text-neutral-300 hover:bg-surface-hover'
             }`}
           >
             <Settings2 className="w-4 h-4" />
@@ -385,8 +385,8 @@ export default function AnalyticsPage() {
           <Card key={label} className="px-5 py-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-text-muted">{label}</p>
-              <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <Icon size={14} className="text-primary-700 dark:text-primary-600" />
+              <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                <Icon size={14} className="text-primary-700 dark:text-primary-700" />
               </div>
             </div>
             <p className="text-xl font-bold text-text-primary">{value}</p>

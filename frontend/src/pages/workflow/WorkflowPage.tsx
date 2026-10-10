@@ -24,17 +24,17 @@ import { useToast } from '@/components/ui/Toast'
 // ─── 状态配置 ────────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle; variant: 'primary' | 'secondary' | 'info' | 'success' | 'warning' }> = {
   pending: { label: '等待中', color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300', icon: CircleDot, variant: 'secondary' },
-  in_progress: { label: '进行中', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Loader2, variant: 'info' },
-  completed: { label: '已完成', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle, variant: 'success' },
+  in_progress: { label: '进行中', color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700', icon: Loader2, variant: 'info' },
+  completed: { label: '已完成', color: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700', icon: CheckCircle, variant: 'success' },
   cancelled: { label: '已取消', color: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400', icon: XCircle, variant: 'secondary' },
-  failed: { label: '已失败', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400', icon: XCircle, variant: 'warning' },
+  failed: { label: '已失败', color: 'bg-danger-100 text-danger-700 dark:bg-danger-300/25 dark:text-danger-700', icon: XCircle, variant: 'warning' },
 }
 
 const TASK_STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
   pending: { label: '等待', color: 'border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900', icon: CircleDot },
-  in_progress: { label: '执行中', color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-200 dark:ring-blue-800', icon: Play },
-  completed: { label: '完成', color: 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20', icon: CheckCircle },
-  failed: { label: '失败', color: 'border-rose-400 bg-rose-50 dark:bg-rose-900/20', icon: XCircle },
+  in_progress: { label: '执行中', color: 'border-secondary-400 bg-secondary-50 dark:bg-secondary-300/20 ring-2 ring-secondary-200 dark:ring-secondary-800', icon: Play },
+  completed: { label: '完成', color: 'border-success-400 bg-success-50 dark:bg-success-300/20', icon: CheckCircle },
+  failed: { label: '失败', color: 'border-danger-400 bg-danger-50 dark:bg-danger-300/20', icon: XCircle },
   skipped: { label: '跳过', color: 'border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 opacity-50', icon: CircleDot },
 }
 
@@ -59,7 +59,7 @@ const QUICK_CREATE_CARDS = [
   { type: 'ai_generation', label: 'AI 配方生成', desc: '从零到配方，AI 全流程驱动', icon: Sparkles, gradient: 'from-primary-500 to-primary-600', templateId: 'ai-formula-gen' },
   { type: 'review', label: '配方审核流程', desc: '标准化审批与合规校验', icon: CheckCircle, gradient: 'from-secondary-500 to-secondary-600', templateId: 'review-process' },
   { type: 'data_sync', label: '数据同步流水线', desc: '多源数据自动同步与更新', icon: RefreshCw, gradient: 'from-accent-500 to-accent-600', templateId: 'data-sync' },
-  { type: 'analysis', label: '批量数据分析', desc: '实验数据批量处理与统计', icon: FileSearch, gradient: 'from-warning-500 to-orange-500', templateId: 'batch-analysis' },
+  { type: 'analysis', label: '批量数据分析', desc: '实验数据批量处理与统计', icon: FileSearch, gradient: 'from-warning-500 to-warning-500', templateId: 'batch-analysis' },
 ] as const
 
 // ─── 主页面 ────────────────────────────────────────────────────────────────────
@@ -124,9 +124,9 @@ export default function WorkflowPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">
                 工作流管理
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">
                 查看 AI 配方生成、数据同步和审核流程的执行状态
               </p>
@@ -164,7 +164,7 @@ export default function WorkflowPage() {
                 onClick={handleRefresh}
                 title="刷新数据"
                 aria-label="刷新工作流数据"
-                className="bg-white dark:bg-neutral-900/15 text-white hover:bg-white dark:bg-neutral-900/25"
+                className="bg-white dark:bg-neutral-900/15 text-primary-700 dark:text-white hover:bg-white dark:bg-neutral-900/25"
               >
                 刷新
               </Button>
@@ -174,7 +174,7 @@ export default function WorkflowPage() {
                 size="sm"
                 icon={<Plus size={14} />}
                 onClick={() => { setPreselectedTemplateId(null); setShowCreateModal(true) }}
-                className="bg-white dark:bg-neutral-900 text-primary-600 hover:bg-white dark:bg-neutral-900/90 shrink-0"
+                className="bg-white dark:bg-neutral-900 text-primary-700 hover:bg-white dark:bg-neutral-900/90 shrink-0"
               >
                 创建工作流
               </Button>
@@ -245,12 +245,12 @@ export default function WorkflowPage() {
                     <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-3 leading-tight">
                       {card.label}
                     </p>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed line-clamp-2">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed line-clamp-2">
                       {card.desc}
                     </p>
                     <ChevronRight
                       size={14}
-                      className="absolute top-4 right-3 text-neutral-300 dark:text-neutral-600 group-hover:text-primary-500 transition-colors duration-200"
+                      className="absolute top-4 right-3 text-neutral-300 dark:text-neutral-400 group-hover:text-primary-500 transition-colors duration-200"
                     />
                   </button>
                 )
@@ -307,7 +307,7 @@ export default function WorkflowPage() {
             <Card>
               <CardContent className="p-12">
                 <EmptyState
-                  icon={<GitBranch className="w-10 h-10 text-neutral-300 dark:text-neutral-600" />}
+                  icon={<GitBranch className="w-10 h-10 text-neutral-300 dark:text-neutral-400" />}
                   title="暂无工作流"
                   description="点击上方「创建工作流」按钮开始，或选择快捷模板快速创建"
                 />
@@ -354,7 +354,7 @@ export default function WorkflowPage() {
           >
             <div className="flex items-center gap-3 mb-4">
               <StatusBadge status={editorWorkflow.status} size="sm" />
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 {editorWorkflow.created_at && format(new Date(editorWorkflow.created_at), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
                 {editorWorkflow.task_count != null && ` · ${editorWorkflow.task_count} 个任务节点`}
               </span>
@@ -453,7 +453,7 @@ function WorkflowCard({
                   <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
                     {workflow.name}
                   </CardTitle>
-                  <span className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                  <span className="shrink-0 px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                     {TYPE_LABELS[workflow.workflow_type] || workflow.workflow_type}
                   </span>
                   <StatusBadge status={workflow.status} size="sm" />
@@ -461,7 +461,7 @@ function WorkflowCard({
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                   {workflow.description || '无描述'}
                   {typeof workflow.task_count === 'number' && (
-                    <span className="ml-1.5 text-neutral-400 dark:text-neutral-500">
+                    <span className="ml-1.5 text-neutral-400 dark:text-neutral-400">
                       · {workflow.task_count > 0 ? `${workflow.task_count} 个任务` : '暂无任务'}
                     </span>
                   )}
@@ -470,7 +470,7 @@ function WorkflowCard({
 
               {/* 右侧操作 */}
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] text-neutral-400 dark:text-neutral-500 hidden sm:block">
+                <span className="text-xs text-neutral-400 dark:text-neutral-400 hidden sm:block">
                   {workflow.created_at && format(new Date(workflow.created_at), 'MM月dd日 HH:mm', { locale: zhCN })}
                 </span>
                 <Button
@@ -485,7 +485,7 @@ function WorkflowCard({
                 <ChevronRight
                   size={14}
                   className={cn(
-                    'text-neutral-400 transition-transform duration-200',
+                    'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] transition-transform duration-200',
                     isExpanded && 'rotate-90',
                   )}
                 />
@@ -527,13 +527,13 @@ function WorkflowCard({
                         {/* 任务信息 */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                            <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono">
+                            <span className="text-xs text-neutral-400 dark:text-neutral-400 font-mono">
                               第 {task.step_order + 1} 步
                             </span>
                             <span className="text-xs font-medium text-neutral-900 dark:text-white">
                               {task.name}
                             </span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                            <span className="text-xs px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                               {TASK_TYPE_LABELS[task.task_type] || task.task_type}
                             </span>
                           </div>
@@ -545,12 +545,12 @@ function WorkflowCard({
                               {taskCfg.label}
                             </span>
                             {task.duration_ms != null && task.duration_ms > 0 && (
-                              <span className="text-[10px] text-neutral-400">
+                              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                 {(task.duration_ms / 1000).toFixed(1)}s
                               </span>
                             )}
                             {task.error_message && (
-                              <span className="text-[10px] text-rose-500 flex items-center gap-0.5">
+                              <span className="text-xs text-danger-500 flex items-center gap-0.5">
                                 <AlertTriangle size={10} /> {task.error_message}
                               </span>
                             )}
@@ -562,7 +562,7 @@ function WorkflowCard({
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500">暂无任务节点</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-400">暂无任务节点</p>
                 </div>
               )}
             </div>

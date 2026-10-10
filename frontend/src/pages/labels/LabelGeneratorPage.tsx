@@ -217,10 +217,10 @@ export default function LabelGeneratorPage() {
         <div className="surface-primary rounded-xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
                 <Barcode size={20} className="text-white/80 shrink-0" />
                 标签生成器
-              </h2>
+              </h1>
               <p className="mt-1 text-white/80 text-sm">Code128 · QR · 模板预设 · 批量生成 · 打印下载</p>
             </div>
             <div className="flex items-center gap-2">
@@ -244,15 +244,15 @@ export default function LabelGeneratorPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">最近生成历史</div>
-                <button onClick={() => { setHistory([]); saveHistory([]) }} className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-danger-500">清除全部</button>
+                <button onClick={() => { setHistory([]); saveHistory([]) }} className="text-xs text-neutral-400 dark:text-neutral-400 hover:text-danger-500">清除全部</button>
               </div>
               <div className="flex gap-2 flex-wrap">
                 {history.map(h => (
                   <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs">
-                    <span className="font-mono text-secondary-600 dark:text-secondary-400">{h.type}</span>
+                    <span className="font-mono text-secondary-600 dark:text-secondary-700">{h.type}</span>
                     <span className="text-neutral-700 dark:text-neutral-300">{h.name}</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">· {h.size} · {h.format}</span>
-                    <span className="text-neutral-300 dark:text-neutral-500">{h.date}</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">· {h.size} · {h.format}</span>
+                    <span className="text-neutral-300 dark:text-neutral-400">{h.date}</span>
                   </div>
                 ))}
               </div>
@@ -265,7 +265,7 @@ export default function LabelGeneratorPage() {
           <Card>
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                <Layers size={14} className="text-secondary-500 dark:text-secondary-400" />
+                <Layers size={14} className="text-secondary-500 dark:text-secondary-700" />
                 快速模板
               </CardTitle>
             </CardHeader>
@@ -275,7 +275,7 @@ export default function LabelGeneratorPage() {
                   <button key={p.name} onClick={() => applyTemplate(p)}
                     className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-950/20 dark:hover:border-secondary-700 text-left transition-colors">
                     <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{p.name}</div>
-                    <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">{p.recommended}</div>
+                    <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">{p.recommended}</div>
                   </button>
                 ))}
               </div>
@@ -296,7 +296,7 @@ export default function LabelGeneratorPage() {
                       <button key={t.value} onClick={() => setEntityType(t.value)}
                         className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
                           entityType === t.value
-                            ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-400'
+                            ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-700'
                             : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                         }`}>
                         <t.icon size={14} />
@@ -323,7 +323,7 @@ export default function LabelGeneratorPage() {
                       ) : batchesData?.items?.length === 0 ? (
                         <div className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-3">
                           暂无批记录，请先{' '}
-                          <button onClick={() => navigate('/batches/new')} className="text-secondary-500 dark:text-secondary-400 hover:underline font-medium">创建批记录</button>
+                          <button onClick={() => navigate('/batches/new')} className="text-secondary-500 dark:text-secondary-700 hover:underline font-medium">创建批记录</button>
                         </div>
                       ) : (
                         <>
@@ -335,17 +335,17 @@ export default function LabelGeneratorPage() {
                                 onClick={() => handleSelectBatch(b.id, b.batch_code)}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                                   entityId === String(b.id)
-                                    ? 'bg-secondary-50 dark:bg-secondary-950/20 border border-secondary-300 dark:border-secondary-700 text-secondary-700 dark:text-secondary-400'
+                                    ? 'bg-secondary-50 dark:bg-secondary-950/20 border border-secondary-300 dark:border-secondary-700 text-secondary-700 dark:text-secondary-700'
                                     : 'border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                                 }`}
                               >
-                                <span className="font-mono text-xs text-primary-600 dark:text-primary-400">{b.batch_code}</span>
+                                <span className="font-mono text-xs text-primary-700 dark:text-primary-700">{b.batch_code}</span>
                                 <span className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-[180px]">{b.formula_name || b.formula_code}</span>
-                                <span className="text-xs text-neutral-400 dark:text-neutral-500">{b.status}</span>
+                                <span className="text-xs text-neutral-400 dark:text-neutral-400">{b.status}</span>
                               </button>
                             ))}
                           </div>
-                          <div className="text-xs text-neutral-400 dark:text-neutral-500">共 {batchesData?.total ?? 0} 条批记录</div>
+                          <div className="text-xs text-neutral-400 dark:text-neutral-400">共 {batchesData?.total ?? 0} 条批记录</div>
                         </>
                       )}
                       {/* 手动覆盖（可选） */}
@@ -383,7 +383,7 @@ export default function LabelGeneratorPage() {
                       <button key={t} onClick={() => setBarcodeType(t)}
                         className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
                           barcodeType === t
-                            ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-400'
+                            ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-700'
                             : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                         }`}>
                         {t === 'code128' ? <Barcode size={14} className="mx-auto mb-1" /> : t === 'qr' ? <QrCode size={14} className="mx-auto mb-1" /> : <><Barcode size={12} /><QrCode size={12} /></>}
@@ -407,12 +407,12 @@ export default function LabelGeneratorPage() {
                         <button key={s.value} onClick={() => setLabelSize(s.value)}
                           className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
                             labelSize === s.value
-                              ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-400'
+                              ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-700'
                               : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                           }`}>
                           <div>{s.label}</div>
-                          <div className="text-xs text-neutral-400 dark:text-neutral-500">{s.dims}</div>
-                          <div className="text-xs text-secondary-500 dark:text-secondary-400 mt-0.5">{s.recommended}</div>
+                          <div className="text-xs text-neutral-400 dark:text-neutral-400">{s.dims}</div>
+                          <div className="text-xs text-secondary-500 dark:text-secondary-700 mt-0.5">{s.recommended}</div>
                         </button>
                       ))}
                     </div>
@@ -424,7 +424,7 @@ export default function LabelGeneratorPage() {
                         <button key={f.value} onClick={() => setOutputFormat(f.value)}
                           className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
                             outputFormat === f.value
-                              ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-400'
+                              ? 'border-secondary-400 bg-secondary-50 dark:bg-secondary-950/20 dark:border-secondary-700 text-secondary-700 dark:text-secondary-700'
                               : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                           }`}>
                           {f.label}
@@ -440,7 +440,7 @@ export default function LabelGeneratorPage() {
                 <CardHeader className="px-5 pt-5 pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                      <Layers size={14} className="text-secondary-500 dark:text-secondary-400" />
+                      <Layers size={14} className="text-secondary-500 dark:text-secondary-700" />
                       批量生成
                     </CardTitle>
                     <Button variant={batchMode ? 'secondary' : 'outline'} size="sm" onClick={() => setBatchMode(!batchMode)}
@@ -465,7 +465,7 @@ export default function LabelGeneratorPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="text-xs text-neutral-400 dark:text-neutral-500 text-center py-2">开启批量模式后可一次生成多个标签</div>
+                    <div className="text-xs text-neutral-400 dark:text-neutral-400 text-center py-2">开启批量模式后可一次生成多个标签</div>
                   )}
                 </CardContent>
               </Card>
@@ -484,7 +484,7 @@ export default function LabelGeneratorPage() {
                     服务端预览
                   </Button>
                   {genError && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-danger-50 dark:bg-danger-950/20 rounded-lg text-xs text-danger-600 dark:text-danger-400 border border-danger-200 dark:border-danger-900">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-danger-50 dark:bg-danger-950/20 rounded-lg text-xs text-danger-600 dark:text-danger-600 border border-danger-200 dark:border-danger-900">
                       <AlertCircle size={14} />{genError}
                     </div>
                   )}
@@ -497,7 +497,7 @@ export default function LabelGeneratorPage() {
               <Card>
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-secondary-500 dark:text-secondary-400" />
+                    <CheckCircle2 size={14} className="text-secondary-500 dark:text-secondary-700" />
                     标签预览
                   </CardTitle>
                 </CardHeader>
@@ -517,7 +517,7 @@ export default function LabelGeneratorPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="aspect-video bg-neutral-50 dark:bg-neutral-800/50 rounded-lg flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 border border-neutral-200 dark:border-neutral-700">
+                    <div className="aspect-video bg-neutral-50 dark:bg-neutral-800/50 rounded-lg flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
                       <Barcode size={32} className="mb-2 opacity-30" />
                       <p className="text-sm">配置参数后点击「生成标签」</p>
                     </div>

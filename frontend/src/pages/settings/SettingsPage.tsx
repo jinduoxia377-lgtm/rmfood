@@ -601,8 +601,8 @@ function ApiKeyPanel() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-500" />
+              <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
+                <Key className="w-5 h-5 text-accent-600 dark:text-accent-700" />
               </div>
               <div>
                 <CardTitle as="h2" className="text-base font-semibold tracking-tight">API 密钥</CardTitle>
@@ -659,7 +659,7 @@ function ApiKeyPanel() {
                           onClick={() => { navigator.clipboard.writeText(key.key_prefix); addToast({ type: 'success', message: '密钥前缀已复制' }) }}>
                           <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30" title="撤销密钥"
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-950/30" title="撤销密钥"
                           onClick={() => revokeKeyMutation.mutate(key.id)}>
                           <Trash className="w-4 h-4" />
                         </Button>
@@ -918,8 +918,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-              <KeyRound className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+            <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
+              <KeyRound className="w-5 h-5 text-warning-600 dark:text-warning-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">修改密码</CardTitle>
@@ -945,15 +945,15 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">密码强度</span>
                     <span className={cn('text-xs font-medium',
-                      passwordStrength === 'weak' ? 'text-rose-500' :
-                      passwordStrength === 'medium' ? 'text-amber-500' : 'text-emerald-500')}>
+                      passwordStrength === 'weak' ? 'text-danger-500' :
+                      passwordStrength === 'medium' ? 'text-warning-500' : 'text-success-500')}>
                       {passwordStrength === 'weak' ? '弱' : passwordStrength === 'medium' ? '中等' : '强'}
                     </span>
                   </div>
                   <div className="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                     <div className={cn('h-full rounded-full transition-all duration-300',
-                      passwordStrength === 'weak' ? 'bg-rose-500 w-1/3' :
-                      passwordStrength === 'medium' ? 'bg-amber-500 w-2/3' : 'bg-emerald-500 w-full')} />
+                      passwordStrength === 'weak' ? 'bg-danger-500 w-1/3' :
+                      passwordStrength === 'medium' ? 'bg-warning-500 w-2/3' : 'bg-success-500 w-full')} />
                   </div>
                 </div>
               )}
@@ -968,8 +968,8 @@ export default function SettingsPage() {
           {pwMsg && (
             <div className={cn('flex items-center gap-2 text-sm px-4 py-3 rounded-lg',
               pwMsg.type === 'success'
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400')}>
+                ? 'bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-700'
+                : 'bg-danger-50 text-danger-700 dark:bg-danger-500/10 dark:text-danger-700')}>
               {pwMsg.type === 'success' ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               {pwMsg.msg}
             </div>
@@ -977,7 +977,7 @@ export default function SettingsPage() {
         </CardContent>
         <CardFooter className="justify-between pt-0">
           {/* 忘记密码入口 — 旧实现完全缺失，用户只能走 /forgot-password 页面 */}
-          <Link to="/forgot-password" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors">
+          <Link to="/forgot-password" className="inline-flex items-center min-h-[44px] text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors">
             忘记密码？
           </Link>
           <Button variant="amber" loading={pwSaving} disabled={!pw.old_password || !pw.new_password}
@@ -999,8 +999,8 @@ export default function SettingsPage() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+              <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-success-600 dark:text-success-700" />
               </div>
               <div>
                 <CardTitle as="h2" className="text-base font-semibold tracking-tight">两步验证</CardTitle>
@@ -1013,9 +1013,9 @@ export default function SettingsPage() {
         </CardHeader>
         {twoFactorEnabled && (
           <CardContent>
-            <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+            <div className="flex items-start gap-3 p-4 bg-success-50 dark:bg-success-500/10 rounded-xl border border-success-200 dark:border-success-500/20">
+              <ShieldCheck className="w-5 h-5 text-success-600 dark:text-success-700 mt-0.5 shrink-0" />
+              <p className="text-sm text-success-800 dark:text-success-700 leading-relaxed">
                 两步验证已生效。每次登录需输入密码及手机验证码，有效防止未经授权的访问。
               </p>
             </div>
@@ -1028,8 +1028,8 @@ export default function SettingsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-700/50 flex items-center justify-center shrink-0">
+                <Clock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
               </div>
               <div>
                 <CardTitle as="h2" className="text-base font-semibold tracking-tight">登录历史</CardTitle>
@@ -1055,7 +1055,7 @@ export default function SettingsPage() {
               <div key={s.id ?? idx} role="listitem"
                 className={cn('flex items-center justify-between p-4 rounded-xl border transition-colors',
                   isCurrent
-                    ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-900/10'
+                    ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-300/15'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-50 dark:hover:bg-neutral-800/40')}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
@@ -1089,8 +1089,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center shrink-0">
-              <SmartphoneIcon className="w-5 h-5 text-violet-600 dark:text-violet-500" />
+            <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
+              <SmartphoneIcon className="w-5 h-5 text-accent-600 dark:text-accent-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">设备管理</CardTitle>
@@ -1107,7 +1107,7 @@ export default function SettingsPage() {
               <div key={String(d.id)} role="listitem"
                 className={cn('flex items-center justify-between p-4 rounded-xl border transition-colors',
                   d.is_current
-                    ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-900/10'
+                    ? 'border-primary-200 dark:border-primary-800/40 bg-primary-50/50 dark:bg-primary-300/15'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:bg-neutral-50 dark:hover:bg-neutral-800/40')}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0',
@@ -1130,7 +1130,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 {d.is_active !== false && !d.is_current && (
-                  <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 h-8 text-xs"
+                  <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-950/30 h-8 text-xs"
                     disabled={loadingSecurity} onClick={() => handleRemoveDevice(Number(d.id))}>
                     <Trash className="w-3.5 h-3.5 mr-1" />移除
                   </Button>
@@ -1152,8 +1152,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center shrink-0">
-              <Download className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-700/50 flex items-center justify-center shrink-0">
+              <Download className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">数据导出</CardTitle>
@@ -1174,7 +1174,7 @@ export default function SettingsPage() {
                 <label key={item.key}
                   className={cn('flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all',
                     exportOptions[item.key]
-                      ? 'border-primary-300 dark:border-primary-700 bg-primary-50/60 dark:bg-primary-900/20'
+                      ? 'border-primary-300 dark:border-primary-700 bg-primary-50/60 dark:bg-primary-300/20'
                       : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
                   <input type="checkbox" checked={exportOptions[item.key]}
                     onChange={e => setExportOptions(p => ({ ...p, [item.key]: e.target.checked }))}
@@ -1195,7 +1195,7 @@ export default function SettingsPage() {
                   role="radio" aria-checked={exportOptions.format === format}
                   className={cn('p-4 rounded-xl border text-center transition-all',
                     exportOptions.format === format
-                      ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
+                      ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-300/20 shadow-sm'
                       : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
                   <p className={cn('text-sm font-medium', exportOptions.format === format ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300')}>
                     {format === 'json' ? 'JSON' : format === 'csv' ? 'CSV' : 'Excel'}
@@ -1221,8 +1221,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <Upload className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+            <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center shrink-0">
+              <Upload className="w-5 h-5 text-success-600 dark:text-success-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">数据导入</CardTitle>
@@ -1233,15 +1233,15 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div
             className={cn('relative p-8 border-2 border-dashed rounded-xl text-center transition-all cursor-pointer',
-              isDragging ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-300 dark:hover:border-primary-700')}
+              isDragging ? 'border-primary-400 bg-primary-50 dark:bg-primary-300/20' : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-300 dark:hover:border-primary-700')}
             onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
             onKeyDown={e => e.key === 'Enter' && document.getElementById('import-file-input')?.click()}>
             <input id="import-file-input" type="file" accept=".json,.csv,.xls,.xlsx"
               onChange={handleFileSelect} className="hidden" aria-hidden="true" />
             {importFile ? (
               <div>
-                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-12 h-12 rounded-full bg-success-100 dark:bg-success-300/25 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-6 h-6 text-success-700 dark:text-success-600" />
                 </div>
                 <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{importFile.name}</p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{(importFile.size / 1024).toFixed(1)} KB</p>
@@ -1257,9 +1257,9 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-          <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-200 dark:border-amber-500/20">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
+          <div className="flex items-start gap-3 p-4 bg-warning-50 dark:bg-warning-500/10 rounded-xl border border-warning-200 dark:border-warning-500/20">
+            <AlertCircle className="w-5 h-5 text-warning-600 dark:text-warning-700 mt-0.5 shrink-0" />
+            <p className="text-sm text-warning-800 dark:text-warning-700 leading-relaxed">
               导入操作将覆盖现有数据，建议先导出当前数据作为备份。
             </p>
           </div>
@@ -1273,25 +1273,25 @@ export default function SettingsPage() {
       </Card>
 
       {/* 数据清除 */}
-      <Card className="border-rose-200 dark:border-rose-800/40">
+      <Card className="border-danger-200 dark:border-danger-800/40">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
-              <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-500" />
+            <div className="w-10 h-10 rounded-xl bg-danger-50 dark:bg-danger-500/10 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5 text-danger-600 dark:text-danger-700" />
             </div>
             <div>
-              <CardTitle as="h2" className="text-base font-semibold tracking-tight text-rose-800 dark:text-rose-300">危险操作区</CardTitle>
-              <CardDescription className="text-rose-600/70 dark:text-rose-400/70">以下操作不可撤销，请谨慎执行</CardDescription>
+              <CardTitle as="h2" className="text-base font-semibold tracking-tight text-danger-800 dark:text-danger-700">危险操作区</CardTitle>
+              <CardDescription className="text-danger-600/70 dark:text-danger-700/70">以下操作不可撤销，请谨慎执行</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="p-5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20">
+          <div className="p-5 rounded-xl bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20">
             <div className="flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-500 mt-0.5 shrink-0" />
+              <ShieldAlert className="w-5 h-5 text-danger-600 dark:text-danger-700 mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-rose-800 dark:text-rose-300 mb-1">清除所有账户数据</p>
-                <p className="text-xs text-rose-700/80 dark:text-rose-400/80 leading-relaxed">
+                <p className="text-sm font-medium text-danger-800 dark:text-danger-700 mb-1">清除所有账户数据</p>
+                <p className="text-xs text-danger-700/80 dark:text-danger-700/80 leading-relaxed">
                   永久删除您的全部配方、实验记录、个人资料及界面配置，此操作无法恢复。
                 </p>
               </div>
@@ -1312,8 +1312,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
-              <Globe className="w-5 h-5 text-sky-600 dark:text-sky-500" />
+            <div className="w-10 h-10 rounded-xl bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
+              <Globe className="w-5 h-5 text-info-600 dark:text-info-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">界面语言</CardTitle>
@@ -1332,7 +1332,7 @@ export default function SettingsPage() {
                 aria-checked={selectedLanguage === lang.code} role="radio"
                 className={cn('flex items-center gap-3 p-5 rounded-xl border text-left transition-all',
                   selectedLanguage === lang.code
-                    ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
+                    ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-300/20 shadow-sm'
                     : 'border-neutral-200 dark:border-neutral-700/60 hover:border-neutral-300 dark:hover:border-neutral-600')}>
                 <span className="text-2xl" aria-hidden="true">{lang.flag}</span>
                 <span className={cn('text-sm font-medium', selectedLanguage === lang.code ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300')}>
@@ -1352,8 +1352,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center shrink-0">
-              <MapPin className="w-5 h-5 text-violet-600 dark:text-violet-500" />
+            <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
+              <MapPin className="w-5 h-5 text-accent-600 dark:text-accent-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">时区设置</CardTitle>
@@ -1445,8 +1445,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-              <BellRing className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+            <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
+              <BellRing className="w-5 h-5 text-warning-600 dark:text-warning-700" />
             </div>
             <div>
               <CardTitle as="h2" className="text-base font-semibold tracking-tight">通知偏好</CardTitle>
@@ -1564,15 +1564,15 @@ export default function SettingsPage() {
       <DialogContent ref={modal2FARef} size="sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />启用两步验证
+            <ShieldCheck className="w-4 h-4 text-success-500" />启用两步验证
           </DialogTitle>
           <DialogDescription>按以下步骤完成身份验证器绑定</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="p-4 bg-sky-50 dark:bg-sky-500/10 rounded-xl border border-sky-200 dark:border-sky-500/20">
+          <div className="p-4 bg-info-50 dark:bg-info-500/10 rounded-xl border border-info-200 dark:border-info-500/20">
             <div className="flex items-start gap-3">
-              <Info className="w-4 h-4 text-sky-600 dark:text-sky-500 mt-0.5 shrink-0" />
-              <ol className="text-sm text-sky-800 dark:text-sky-300 space-y-1.5 list-decimal list-inside">
+              <Info className="w-4 h-4 text-info-600 dark:text-info-700 mt-0.5 shrink-0" />
+              <ol className="text-sm text-info-800 dark:text-info-700 space-y-1.5 list-decimal list-inside">
                 <li>下载验证器应用（Google Authenticator 或 Microsoft Authenticator）</li>
                 <li>扫描下方二维码或手动输入密钥</li>
                 <li>输入 6 位验证码完成绑定</li>
@@ -1626,7 +1626,7 @@ export default function SettingsPage() {
     <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
       <DialogContent ref={clearConfirmRef} size="sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-rose-700 dark:text-rose-400">
+          <DialogTitle className="flex items-center gap-2 text-danger-700 dark:text-danger-700">
             <ShieldAlert className="w-4 h-4" />确认清除所有数据？
           </DialogTitle>
           <DialogDescription>此操作不可撤销，请仔细阅读以下说明</DialogDescription>
@@ -1638,8 +1638,8 @@ export default function SettingsPage() {
             <li>界面偏好与通知配置</li>
             <li>API 密钥与访问令牌</li>
           </ul>
-          <div className="p-4 bg-rose-50 dark:bg-rose-500/10 rounded-xl border border-rose-200 dark:border-rose-500/20">
-            <p className="text-xs text-rose-700 dark:text-rose-400 mb-2">
+          <div className="p-4 bg-danger-50 dark:bg-danger-500/10 rounded-xl border border-danger-200 dark:border-danger-500/20">
+            <p className="text-xs text-danger-700 dark:text-danger-700 mb-2">
               请输入 <strong className="font-mono">DELETE ALL</strong> 以确认：
             </p>
             <Input value={clearConfirmText} onChange={e => setClearConfirmText(e.target.value)}
@@ -1712,14 +1712,16 @@ export default function SettingsPage() {
                 key={id}
                 onClick={() => setTab(id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                  'flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all duration-150',
                   active
                     ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50',
+                    : /* A-26：dark:text-neutral-400 在 rgb(19,27,45) 底上只有 3.79:1（需 4.5）。
+                         提到 neutral-300 后为 11.6:1。 */
+                      'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50',
                 )}
                 aria-current={active ? 'true' : undefined}
               >
-                <Icon className={cn('w-4 h-4', active ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
+                <Icon className={cn('w-4 h-4', active ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-300')} />
                 {label}
               </button>
             )

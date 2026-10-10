@@ -28,30 +28,30 @@ function getStatusLabel(status: FormulaStatus): string {
 }
 
 const STATUS_ACCENT: Record<string, string> = {
-  approved:     'border-emerald-500',
-  pending_review: 'border-amber-500',
-  in_review:    'border-blue-500',
-  rejected:     'border-red-500',
-  draft:        'border-neutral-300',
-  archived:     'border-neutral-200',
-  deprecated:   'border-neutral-200',
+  approved:     'border-success-500',
+  pending_review: 'border-warning-500',
+  in_review:    'border-secondary-500',
+  rejected:     'border-error-500',
+  draft:        'border-neutral-300 dark:border-neutral-700',
+  archived:     'border-neutral-200 dark:border-neutral-700',
+  deprecated:   'border-neutral-200 dark:border-neutral-700',
 };
 
 const STATUS_BG: Record<string, string> = {
-  approved:     'bg-emerald-50 dark:bg-emerald-950/20',
-  pending_review: 'bg-amber-50 dark:bg-amber-950/20',
-  in_review:    'bg-blue-50 dark:bg-blue-950/20',
-  rejected:     'bg-red-50 dark:bg-red-950/20',
+  approved:     'bg-success-50 dark:bg-success-950/20',
+  pending_review: 'bg-warning-50 dark:bg-warning-950/20',
+  in_review:    'bg-secondary-50 dark:bg-secondary-950/20',
+  rejected:     'bg-error-50 dark:bg-error-950/20',
   draft:        'bg-neutral-50 dark:bg-neutral-800/40',
   archived:     'bg-neutral-50 dark:bg-neutral-800/40',
   deprecated:   'bg-neutral-50 dark:bg-neutral-800/40',
 };
 
 const STATUS_BAR: Record<string, string> = {
-  approved:     'bg-emerald-500',
-  pending_review: 'bg-amber-500',
-  in_review:    'bg-blue-500',
-  rejected:     'bg-red-500',
+  approved:     'bg-success-500',
+  pending_review: 'bg-warning-500',
+  in_review:    'bg-secondary-500',
+  rejected:     'bg-error-500',
   draft:        'bg-neutral-300',
   archived:     'bg-neutral-200',
   deprecated:   'bg-neutral-200',
@@ -94,10 +94,12 @@ export function FormulaCard({
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(); }}
           className={cn(
-            'absolute top-3 right-3 p-1.5 rounded-lg transition-all',
+            /* A-23：原 26×26（14px 图标 + p-1.5），未达 WCAG 2.5.5 的 44×44。
+               撑到 44×44 作命中区，用 -m-[9px] 抵消，视觉位置与原来完全一致。 */
+            'absolute top-3 right-3 p-1.5 min-w-[44px] min-h-[44px] -m-[9px] inline-flex items-center justify-center rounded-lg transition-all',
             isFavorite
-              ? 'bg-warning-50 dark:bg-warning-900/20 text-warning-500'
-              : 'text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-warning-400',
+              ? 'bg-warning-50 dark:bg-warning-300/20 text-warning-500'
+              : 'text-neutral-400 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-warning-400',
           )}
           aria-label={isFavorite ? '取消收藏' : '收藏'}
           aria-pressed={isFavorite}
@@ -108,25 +110,30 @@ export function FormulaCard({
         {/* 多选框 */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleSelect(); }}
-          className={cn(
-            'w-5 h-5 rounded border-2 shrink-0 transition-all flex items-center justify-center mt-0.5',
-            isSelected
-              ? 'bg-primary-container border-primary-500 text-primary-main'
-              : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
-          )}
+          className="w-11 h-11 -m-3 rounded shrink-0 transition-all inline-flex items-center justify-center mt-0.5"
           aria-label={isSelected ? '取消选择' : '选择'}
           aria-pressed={isSelected}
         >
-          {isSelected && <CheckCircle2 size={14} strokeWidth={3} />}
+          {/* A-23：20×20 的视觉方框下沉到内层 span，外层 button 只作 44×44 命中区 */}
+          <span
+            className={cn(
+              'w-5 h-5 rounded border-2 shrink-0 transition-all flex items-center justify-center',
+              isSelected
+                ? 'bg-primary-container border-primary-500 text-primary-main'
+                : 'border-neutral-300 dark:border-neutral-600',
+            )}
+          >
+            {isSelected && <CheckCircle2 size={14} strokeWidth={3} />}
+          </span>
         </button>
 
         {/* 标题区 */}
         <div className="flex items-start justify-between mb-2 pl-7 pr-8">
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1 leading-snug">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-1 leading-snug">
               <Highlight text={formula.name} keyword={search} />
             </h3>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 leading-relaxed">
+            <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5 leading-relaxed">
               <Highlight text={formula.code || ''} keyword={search} /> · v{formula.version}
             </p>
           </div>
@@ -158,18 +165,18 @@ export function FormulaCard({
 
         {/* 底部信息 */}
         <div className="flex items-center justify-between pt-3 mt-1 border-t border-neutral-100 dark:border-neutral-800">
-          <span className="text-xs text-neutral-400 dark:text-neutral-500">{formatDate(formula.updatedAt)}</span>
+          <span className="text-xs text-neutral-400 dark:text-neutral-400">{formatDate(formula.updatedAt)}</span>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={(e) => { e.preventDefault(); onPreview(); }}
-              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
               aria-label="快速预览"
             >
               <Eye size={14} />
             </button>
             <Link
               to={`/formulas/${formula.id}`}
-              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors"
               aria-label="查看详情"
             >
               <ArrowRightLeft size={14} />

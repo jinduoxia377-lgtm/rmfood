@@ -28,12 +28,12 @@ interface Props {
 }
 
 const COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  primary: { bg: 'bg-primary-50 dark:bg-primary-950/40', text: 'text-primary-600', border: 'border-primary-200 dark:border-primary-800' },
-  blue: { bg: 'bg-secondary-50 dark:bg-blue-950/40', text: 'text-secondary-600', border: 'border-blue-200 dark:border-blue-800' },
-  emerald: { bg: 'bg-primary-50 dark:bg-emerald-950/40', text: 'text-primary-600', border: 'border-emerald-200 dark:border-emerald-800' },
-  cyan: { bg: 'bg-cyan-50 dark:bg-cyan-950/40', text: 'text-cyan-600', border: 'border-cyan-200 dark:border-cyan-800' },
-  violet: { bg: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-600', border: 'border-violet-200 dark:border-violet-800' },
-  amber: { bg: 'bg-warning-50 dark:bg-amber-950/40', text: 'text-warning-600', border: 'border-amber-200 dark:border-amber-800' },
+  primary: { bg: 'bg-primary-50 dark:bg-primary-950/40', text: 'text-primary-700', border: 'border-primary-200 dark:border-primary-800' },
+  blue: { bg: 'bg-secondary-50 dark:bg-secondary-950/40', text: 'text-secondary-600', border: 'border-secondary-200 dark:border-secondary-800' },
+  emerald: { bg: 'bg-primary-50 dark:bg-success-950/40', text: 'text-primary-700', border: 'border-success-200 dark:border-success-800' },
+  cyan: { bg: 'bg-info-50 dark:bg-info-950/40', text: 'text-info-600', border: 'border-info-200 dark:border-info-800' },
+  violet: { bg: 'bg-accent-50 dark:bg-accent-950/40', text: 'text-accent-600', border: 'border-accent-200 dark:border-accent-800' },
+  amber: { bg: 'bg-warning-50 dark:bg-warning-950/40', text: 'text-warning-600', border: 'border-warning-200 dark:border-warning-800' },
 }
 
 type ViewMode = 'dashboard' | 'charts'
@@ -162,7 +162,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-primary-700 animate-spin" />
           <span className="text-sm text-text-muted">正在加载数据分析...</span>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
   if (error) {
     return (
       <div className="card p-6 border border-error-200 dark:border-error-800 bg-error-50 dark:bg-error-950/20">
-        <p className="text-error-600 dark:text-error-400 font-medium">数据加载失败: {error}</p>
+        <p className="text-error-600 dark:text-error-600 font-medium">数据加载失败: {error}</p>
         <button
           onClick={refresh}
           className="mt-3 px-4 py-2 bg-error-600 text-white rounded-lg text-sm hover:bg-error-700 transition-colors"
@@ -189,7 +189,8 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
       {/* 顶部工具栏 */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
-          <div className="text-sm text-text-muted">
+          {/* A-41：暗色画布是墨绿渐变，--text-muted(#94a3b8) 落在上面只有 3.79:1 */}
+          <div className="text-sm text-text-muted dark:text-neutral-300">
             当前筛选: <span className="font-medium text-text-primary">{filters.timeRange}</span>
             {filters?.categories?.length > 0 && ` · ${filters.categories.length} 个类别`}
           </div>
@@ -197,9 +198,9 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
           <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('dashboard')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 min-h-[44px] ${
                 viewMode === 'dashboard'
-                  ? 'bg-white dark:bg-neutral-900 text-primary-600 shadow-sm'
+                  ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
@@ -208,9 +209,9 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
             </button>
             <button
               onClick={() => setViewMode('charts')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 min-h-[44px] ${
                 viewMode === 'charts'
-                  ? 'bg-white dark:bg-neutral-900 text-primary-600 shadow-sm'
+                  ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
@@ -231,7 +232,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
 
           <button
             onClick={refresh}
-            className="px-3 py-1.5 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+            className="px-3 py-1.5 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2 min-h-[44px]"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             {loading ? '刷新中...' : '刷新'}
@@ -258,7 +259,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                   <div className="flex items-center justify-between mb-2">
                     <Icon className={`w-5 h-5 ${colors.text} group-hover:scale-110 transition-transform`} />
                     {target != null && (
-                      <span className="text-[10px] text-text-muted">目标: {target}</span>
+                      <span className="text-xs text-text-muted">目标: {target}</span>
                     )}
                   </div>
                   <div className="text-2xl font-bold text-text-primary">
@@ -266,7 +267,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                     <span className="text-sm font-normal text-text-muted ml-1">{unit}</span>
                   </div>
                   <div className="text-xs text-text-muted mt-1">{name}</div>
-                  <div className={`text-[10px] mt-1 ${change > 0 ? 'text-success-600' : change < 0 ? 'text-error-600' : 'text-text-muted'}`}>
+                  <div className={`text-xs mt-1 ${change > 0 ? 'text-success-600' : change < 0 ? 'text-error-600' : 'text-text-muted'}`}>
                     {change != null && change !== 0 ? `${change > 0 ? '↑' : '↓'} ${Math.abs(change).toFixed(1)}%` : pctStr}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -279,14 +280,14 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 card p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-text-primary flex items-center gap-2">
-                  <LineChart className="w-5 h-5 text-primary-600" />
+                <h2 className="font-bold text-text-primary flex items-center gap-2">
+                  <LineChart className="w-5 h-5 text-primary-700" />
                   月度创建趋势
-                </h3>
+                </h2>
                 <div className="flex items-center gap-2">
-                  <button onClick={handleZoomIn} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors" title="放大"><ZoomIn className="w-4 h-4" /></button>
-                  <button onClick={handleZoomOut} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors" title="缩小"><ZoomOut className="w-4 h-4" /></button>
-                  <button onClick={handleResetZoom} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors" title="重置"><Maximize2 className="w-4 h-4" /></button>
+                  <button onClick={handleZoomIn} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="放大"><ZoomIn className="w-4 h-4" /></button>
+                  <button onClick={handleZoomOut} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="缩小"><ZoomOut className="w-4 h-4" /></button>
+                  <button onClick={handleResetZoom} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="重置"><Maximize2 className="w-4 h-4" /></button>
                 </div>
               </div>
               {monthlyTrend ? (
@@ -329,7 +330,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                   activityList.map((activity, index) => (
                     <div
                       key={index}
-                      className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer group"
+                      className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${
@@ -338,7 +339,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                           'bg-neutral-400'
                         }`} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-text-primary group-hover:text-primary-600 transition-colors line-clamp-2">
+                          <p className="text-sm font-medium text-text-primary group-hover:text-primary-700 transition-colors line-clamp-2">
                             {activity.title}
                           </p>
                           <div className="flex items-center justify-between mt-1.5">
@@ -360,21 +361,21 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
           {health && (
             <div className="card p-6">
               <h3 className="font-bold text-text-primary mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary-600" />
+                <TrendingUp className="w-5 h-5 text-primary-700" />
                 系统健康状态
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: '数据库', value: health.database_status, color: health.database_status === 'healthy' ? 'text-success-600' : 'text-error-600' },
-                  { label: '平均响应', value: `${health.avg_response_time_ms}ms`, color: 'text-primary-600' },
+                  { label: '平均响应', value: `${health.avg_response_time_ms}ms`, color: 'text-primary-700' },
                   { label: '错误率', value: `${health.error_rate_percent}%`, color: health.error_rate_percent < 1 ? 'text-success-600' : 'text-error-600' },
                   { label: '活跃连接', value: `${health.active_connections}`, color: 'text-secondary-600' },
                   { label: 'CPU', value: `${health.cpu_usage_percent}%`, color: health.cpu_usage_percent < 70 ? 'text-success-600' : 'text-warning-600' },
                   { label: '内存', value: `${health.memory_usage_percent}%`, color: health.memory_usage_percent < 80 ? 'text-success-600' : 'text-warning-600' },
                   { label: '磁盘', value: `${health.disk_usage_percent}%`, color: health.disk_usage_percent < 85 ? 'text-success-600' : 'text-warning-600' },
-                  { label: '缓存命中率', value: `${health.cache_hit_rate_percent}%`, color: 'text-primary-600' },
+                  { label: '缓存命中率', value: `${health.cache_hit_rate_percent}%`, color: 'text-primary-700' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
+                  <div key={label} className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
                     <div className="text-xs text-text-muted">{label}</div>
                     <div className={`text-lg font-bold mt-1 ${color}`}>{value}</div>
                   </div>
@@ -444,7 +445,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
             <h3 className="text-xl font-bold text-text-primary">数据可视化</h3>
             <button
               onClick={() => setViewMode('dashboard')}
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-700 hover:text-primary-700"
             >
               ← 返回仪表盘
             </button>
@@ -543,7 +544,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg text-xs text-text-muted">
+      <div className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs text-text-muted">
         <span>共 {kpiCards.length} 个核心指标 · 当前视图: {viewMode.toUpperCase()}</span>
         <span>数据更新频率: 每 30 秒自动刷新</span>
         <span>最后更新: {lastFetched?.toLocaleString() || '未知'}</span>

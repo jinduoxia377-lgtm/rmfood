@@ -167,17 +167,17 @@ export default function AgentPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-neutral-50 dark:bg-neutral-900">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] flex items-center justify-center text-white text-sm font-bold">
           A
         </div>
         <div>
-          <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+          <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
             AI 研发助手
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
             {availableTools.length} 个工具可用
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function AgentPage() {
             value={workflowType}
             onChange={(e) => setWorkflowType(e.target.value)}
             disabled={isRunning}
-            className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
+            className="text-xs px-2 py-1 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50"
           >
             {(workflowTemplates.length > 0 ? workflowTemplates : [
               { id: 'formula_design', name: '配方设计' },
@@ -215,7 +215,7 @@ export default function AgentPage() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center opacity-50">
             <div className="text-4xl mb-3">🧪</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               输入您的需求，AI 助手将自动调用知识库、生成配方并检查合规性
             </p>
             <div className="flex flex-wrap gap-2 mt-4 justify-center max-w-md">
@@ -232,7 +232,7 @@ export default function AgentPage() {
                     setInput(s);
                     inputRef.current?.focus();
                   }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-violet-400 hover:text-violet-500 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:border-accent-400 hover:text-accent-500 transition-colors"
                 >
                   {s}
                 </button>
@@ -249,8 +249,8 @@ export default function AgentPage() {
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap ${
                 msg.role === 'user'
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
+                  ? 'bg-accent-600 text-white'
+                  : 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200'
               }`}
             >
               {msg.content}
@@ -261,8 +261,8 @@ export default function AgentPage() {
         {/* Workflow stage animation */}
         {isRunning && workflowStages.length > 0 && (
           <div className="flex justify-start">
-            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm">
-              <p className="text-gray-500 dark:text-gray-400 mb-2 text-xs font-medium uppercase tracking-wide">
+            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm">
+              <p className="text-neutral-500 dark:text-neutral-400 mb-2 text-xs font-medium uppercase tracking-wide">
                 工作流执行中 · {workflowType}
               </p>
               <div className="space-y-1">
@@ -271,16 +271,16 @@ export default function AgentPage() {
                     <span
                       className={
                         ws.success
-                          ? 'text-green-500'
-                          : 'text-yellow-500 animate-pulse'
+                          ? 'text-success-500'
+                          : 'text-warning-500 animate-pulse'
                       }
                     >
                       {ws.success ? '✓' : '⋯'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 font-mono">{ws.stage}</span>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-mono">{ws.stage}</span>
                     <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ws.latencyMs}ms</span>
                     {ws.error && (
-                      <span className="text-red-400 ml-1">{ws.error}</span>
+                      <span className="text-error-400 ml-1">{ws.error}</span>
                     )}
                   </div>
                 ))}
@@ -292,8 +292,8 @@ export default function AgentPage() {
         {/* Tool call animation */}
         {isRunning && currentTools.length > 0 && (
           <div className="flex justify-start">
-            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm">
-              <p className="text-gray-500 dark:text-gray-400 mb-2 text-xs font-medium uppercase tracking-wide">
+            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm">
+              <p className="text-neutral-500 dark:text-neutral-400 mb-2 text-xs font-medium uppercase tracking-wide">
                 正在调用工具
               </p>
               <div className="space-y-1">
@@ -302,18 +302,18 @@ export default function AgentPage() {
                     <span
                       className={
                         tc.status === 'success'
-                          ? 'text-green-500'
+                          ? 'text-success-500'
                           : tc.status === 'failed'
-                          ? 'text-red-500'
-                          : 'text-yellow-500 animate-pulse'
+                          ? 'text-error-500'
+                          : 'text-warning-500 animate-pulse'
                       }
                     >
                       {tc.status === 'success' ? '✓' : tc.status === 'failed' ? '✗' : '⋯'}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300 font-mono">{tc.tool}</span>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-mono">{tc.tool}</span>
                     <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{tc.latencyMs}ms</span>
                     {tc.error && (
-                      <span className="text-red-400 ml-1">{tc.error}</span>
+                      <span className="text-error-400 ml-1">{tc.error}</span>
                     )}
                   </div>
                 ))}
@@ -324,8 +324,8 @@ export default function AgentPage() {
 
         {isRunning && currentTools.length === 0 && (
           <div className="flex justify-start">
-            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-500">
-              <span className="inline-block w-2 h-2 rounded-full bg-violet-500 mr-2 animate-pulse" />
+            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm text-neutral-500">
+              <span className="inline-block w-2 h-2 rounded-full bg-accent-500 mr-2 animate-pulse" />
               Agent 思考中...
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function AgentPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3">
+      <div className="border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3">
         <div className="flex items-end gap-3">
           <textarea
             ref={inputRef}
@@ -344,13 +344,13 @@ export default function AgentPage() {
             onKeyDown={handleKeyDown}
             placeholder="描述你的研发需求，AI 将自动检索知识、生成配方并检查合规性…"
             rows={2}
-            className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+            className="flex-1 resize-none rounded-xl border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
             disabled={isRunning}
           />
           <button
             onClick={sendMessage}
             disabled={isRunning || !input.trim()}
-            className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white text-sm font-medium transition-colors disabled:cursor-not-allowed"
+            className="px-4 py-2.5 rounded-xl bg-accent-600 hover:bg-accent-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-600 text-white text-sm font-medium transition-colors disabled:cursor-not-allowed"
           >
             发送
           </button>

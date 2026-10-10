@@ -20,7 +20,10 @@ export default function RadixDemoPage() {
       {/* 页面标题 */}
       <div className="flex items-center justify-between">
         <div>
-          <RadixText size="7" weight="bold" color="gray">
+          {/* A-47：这里原本是 <RadixText> 默认渲染的 <span>，视觉上是页面主标题但语义上不是标题，
+              既缺 h1（WCAG 1.3.1）又会被量具判成「疑似标题非 h 标签」。RadixText 支持 as 透传，
+              直接用 as="h1" 补齐语义，字号字重完全不变。 */}
+          <RadixText as="h1" size="7" weight="bold" color="gray">
             Radix UI Themes 演示
           </RadixText>
           <RadixText size="3" color="gray">
@@ -173,7 +176,7 @@ export default function RadixDemoPage() {
                 </RadixText>
               </div>
               <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-primary-600" />
+                <Sparkles className="w-8 h-8 text-primary-700" />
               </div>
             </div>
             <div className="mt-4 pt-4 border-t flex gap-2">

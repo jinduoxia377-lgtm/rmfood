@@ -31,7 +31,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
           <div className="flex items-center gap-2 mb-1">
             <p className="text-sm text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] italic font-mono">{herb.name_latin}</p>
             {herb.is_food_homology && <Badge variant="success" size="sm">药食同源</Badge>}
-            {herb.tcmsp_id && <Badge variant="neutral" size="sm" className="font-mono text-[10px]">TCMSP:{herb.tcmsp_id}</Badge>}
+            {herb.tcmsp_id && <Badge variant="neutral" size="sm" className="font-mono text-xs">TCMSP:{herb.tcmsp_id}</Badge>}
           </div>
           <p className="text-sm text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] leading-relaxed">{herb.effects}</p>
         </div>
@@ -39,7 +39,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
 
       {/* 雷达图 + 属性卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="bg-neutral-50/60 dark:bg-neutral-800/40 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <h4 className="text-xs font-semibold text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider mb-3">属性雷达图</h4>
           <ResponsiveContainer width="100%" height={180}>
             <RadarChart data={radarData} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
@@ -52,14 +52,14 @@ export function HerbDetailContent({ herb }: { herb: any }) {
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', color: 'text-primary-600', bg: 'bg-primary-50' },
+            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', color: 'text-primary-700', bg: 'bg-primary-50' },
             { value: herb.dl_value != null ? Number(herb.dl_value).toFixed(3) : '-', label: '类药性 (DL)', color: 'text-secondary-600', bg: 'bg-secondary-50' },
             { value: compounds.length, label: '活性化合物', color: 'text-accent-600', bg: 'bg-accent-50' },
             { value: targets.length, label: '作用靶点', color: 'text-warning-600', bg: 'bg-warning-50' },
           ].map(({ value, label, color, bg }) => (
             <div key={label} className={`p-3 rounded-xl text-center ${bg} dark:bg-opacity-20`}>
               <div className={`text-xl font-bold ${color}`}>{value}</div>
-              <div className="text-[10px] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-0.5">{label}</div>
+              <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-0.5">{label}</div>
             </div>
           ))}
         </div>
@@ -74,7 +74,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
           { key: 'diseases', label: `疾病 (${diseases.length})` },
         ].map(({ key, label }) => (
           <button key={key} onClick={() => setActiveTab(key as "diseases" | "overview" | "compounds" | "targets")}
-            className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}>
+            className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-700' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}>
             {label}
             {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-full" />}
           </button>
@@ -89,9 +89,9 @@ export function HerbDetailContent({ herb }: { herb: any }) {
               <h4 className="text-xs font-semibold text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider mb-2">代表性化合物</h4>
               <div className="flex flex-wrap gap-2">
                 {compounds.slice(0, 8).map((c: any, i: number) => (
-                  <div key={i} className="bg-secondary-50/60 dark:bg-blue-950/20 px-3 py-1.5 rounded-lg text-xs">
-                    <div className="font-medium text-secondary-700 dark:text-secondary-400">{c.name}</div>
-                    <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono">OB {Number(c.ob).toFixed(1)} | DL {Number(c.dl).toFixed(2)}</div>
+                  <div key={i} className="bg-secondary-50/60 dark:bg-secondary-950/20 px-3 py-1.5 rounded-lg text-xs">
+                    <div className="font-medium text-secondary-700 dark:text-secondary-700">{c.name}</div>
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">OB {Number(c.ob).toFixed(1)} | DL {Number(c.dl).toFixed(2)}</div>
                   </div>
                 ))}
                 {compounds.length > 8 && <Badge variant="info" size="sm">+{compounds.length - 8} 更多</Badge>}
@@ -128,15 +128,15 @@ export function HerbDetailContent({ herb }: { herb: any }) {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">化合物</th>
-                <th className="px-3 py-2 text-center text-[10px] font-semibold text-[var(--text-muted,#9A9A9F)]">OB%</th>
-                <th className="px-3 py-2 text-center text-[10px] font-semibold text-[var(--text-muted,#9A9A9F)]">DL</th>
-                <th className="px-3 py-2 text-center text-[10px] font-semibold text-[var(--text-muted,#9A9A9F)]">靶点</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">化合物</th>
+                <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--text-muted,#9A9A9F)]">OB%</th>
+                <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--text-muted,#9A9A9F)]">DL</th>
+                <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--text-muted,#9A9A9F)]">靶点</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(148,163,184,0.08)]">
               {compounds.map((c: any, i: number) => (
-                <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-blue-950/10 transition-colors">
+                <tr key={i} className="hover:bg-secondary-50/40 dark:hover:bg-secondary-950/10 transition-colors">
                   <td className="px-3 py-2.5 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{c.name}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.ob != null ? Number(c.ob).toFixed(1) : '-'}</td>
                   <td className="px-3 py-2.5 text-center font-mono text-[var(--text-secondary,#6E6E73)]">{c.dl != null ? Number(c.dl).toFixed(3) : '-'}</td>
@@ -151,7 +151,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
       {activeTab === 'targets' && targets.length > 0 && (
         <div className="flex flex-wrap gap-2 animate-micro-in">
           {targets.map((t: string, i: number) => (
-            <div key={i} className="bg-warning-50/60 dark:bg-amber-950/20 px-3 py-2 rounded-xl text-xs">
+            <div key={i} className="bg-warning-50/60 dark:bg-warning-950/20 px-3 py-2 rounded-xl text-xs">
               <Badge variant="warning" size="sm" className="mb-1">{t}</Badge>
             </div>
           ))}
@@ -161,7 +161,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
       {activeTab === 'diseases' && diseases.length > 0 && (
         <div className="flex flex-wrap gap-2 animate-micro-in">
           {diseases.map((d: string, i: number) => (
-            <div key={i} className="bg-rose-50/60 dark:bg-rose-950/20 px-3 py-2 rounded-xl text-xs">
+            <div key={i} className="bg-danger-50/60 dark:bg-danger-950/20 px-3 py-2 rounded-xl text-xs">
               <Badge variant="danger" size="sm" className="mb-1">{d}</Badge>
             </div>
           ))}

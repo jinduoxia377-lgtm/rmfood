@@ -96,9 +96,9 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       {/* 头部 */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-primary-600" />
+          <CheckCircle2 className="w-5 h-5 text-primary-700" />
           <span className="font-medium text-neutral-900 dark:text-white">
-            已选择 <span className="text-primary-600 font-bold">{count}</span> 个组织
+            已选择 <span className="text-primary-700 font-bold">{count}</span> 个组织
           </span>
         </div>
         <button
@@ -133,7 +133,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
         <button
           onClick={() => setShowArchiveConfirm(true)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-100 border border-yellow-300 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-warning-600 bg-warning-50 hover:bg-warning-100 border border-warning-300 rounded-lg transition-colors disabled:opacity-50"
         >
           <Archive className="w-4 h-4" />
           归档
@@ -142,7 +142,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
         <button
           onClick={() => setShowDeleteConfirm(true)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 hover:bg-error-100 border border-red-300 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 hover:bg-error-100 border border-error-300 rounded-lg transition-colors disabled:opacity-50"
         >
           <Trash2 className="w-4 h-4" />
           删除
@@ -153,7 +153,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       {isProcessing && (
         <div className="px-5 pb-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-neutral-500">处理进度...</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">处理进度...</span>
             <span className="font-medium text-neutral-900 dark:text-white">
               {processedCount || 0}/{totalCount || count}
             </span>
@@ -171,8 +171,8 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       {operationResult && (
         <div className={`mx-5 mb-4 p-3 rounded-lg flex items-start gap-3 ${
           operationResult.type === 'success'
-            ? 'bg-success-50 dark:bg-success-900/20 text-success-800 dark:text-success-200'
-            : 'bg-error-50 dark:bg-error-900/20 text-error-800 dark:text-error-200'
+            ? 'bg-success-50 dark:bg-success-300/20 text-success-800 dark:text-success-200'
+            : 'bg-error-50 dark:bg-error-300/20 text-error-800 dark:text-error-200'
         }`}>
           {operationResult.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -217,13 +217,13 @@ export const PermissionSelectModal: React.FC<{
         </div>
 
         <div className="p-6 space-y-3">
-          <p className="text-sm text-neutral-500">为选中的组织选择新的角色级别：</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">为选中的组织选择新的角色级别：</p>
           {roles.map(r => (
             <label
               key={r.value}
               className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                 role === r.value
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
                   : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
               }`}
             >
@@ -237,7 +237,7 @@ export const PermissionSelectModal: React.FC<{
               />
               <div>
                 <p className="font-medium text-neutral-900 dark:text-white">{r.label}</p>
-                <p className="text-xs text-neutral-500">{r.desc}</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{r.desc}</p>
               </div>
             </label>
           ))}
@@ -276,7 +276,7 @@ export const DeleteConfirmModal: React.FC<{
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
         <div className="p-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-error-100 dark:bg-error-900/30 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-error-100 dark:bg-error-300/25 rounded-full flex items-center justify-center">
             <Trash2 className="w-8 h-8 text-error-600" />
           </div>
 
@@ -289,8 +289,8 @@ export const DeleteConfirmModal: React.FC<{
             所有数据将永久丢失，包括成员、团队、配方、实验等。
           </p>
 
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg p-4 mb-6">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+          <div className="bg-warning-50 dark:bg-warning-300/20 border border-warning-300 dark:border-warning-800 rounded-lg p-4 mb-6">
+            <p className="text-sm text-warning-800 dark:text-warning-200 font-medium">
               请输入 <strong>DELETE</strong> 以确认：
             </p>
             <input
@@ -298,7 +298,7 @@ export const DeleteConfirmModal: React.FC<{
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
               placeholder="DELETE"
-              className="mt-2 w-full px-3 py-2 border border-yellow-400 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="mt-2 w-full px-3 py-2 border border-warning-400 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-warning-500"
             />
           </div>
 

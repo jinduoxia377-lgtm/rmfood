@@ -19,11 +19,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <span className="font-bold text-[15px] tracking-tight" style={{ color: '#0f172a' }}>{BRAND_CONFIG.name}</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/landing" className="text-[13px] font-medium" style={{ color: '#475569' }}
+            <Link to="/landing" className="text-sm font-medium" style={{ color: '#475569' }}
               onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#0f172a'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569'; }}
             >首页</Link>
-            <Link to="/login" className="text-[13px] font-semibold px-4 py-2 rounded-md text-white" style={{ background: '#0f172a' }}>
+            <Link to="/login" className="text-sm font-semibold px-4 py-2 rounded-md text-white" style={{ background: '#0f172a' }}>
               免费试用
             </Link>
           </div>
@@ -46,10 +46,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 </div>
                 <span className="font-bold text-sm" style={{ color: '#0f172a' }}>{BRAND_CONFIG.name}</span>
               </div>
-              <p className="text-[11px] leading-relaxed" style={{ color: '#64748b' }}>{RHINE_BRAND_CONFIG.description}</p>
+              <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{RHINE_BRAND_CONFIG.description}</p>
             </div>
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>资源</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>资源</h4>
               <ul className="space-y-2">
                 {[
                   { label: '使用文档', href: '/docs' },
@@ -63,7 +63,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>公司</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>公司</h4>
               <ul className="space-y-2">
                 {[
                   { label: '关于莱茵分子', href: '/about' },
@@ -78,7 +78,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>联系</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>联系</h4>
               <ul className="space-y-2">
                 <li><span className="text-[12px]" style={{ color: '#64748b' }}>contact@rmfood.cn</span></li>
                 <li><span className="text-[12px]" style={{ color: '#64748b' }}>厦门 · 中国</span></li>
@@ -86,8 +86,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </div>
           </div>
           <div className="pt-5 border-t flex flex-col sm:flex-row items-center justify-between gap-2" style={{ borderColor: '#e2e8f0' }}>
-            <p className="text-[11px]" style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}</p>
-            <p className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>闽ICP备XXXXXXXX号</p>
+            <p className="text-xs" style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}</p>
+            <p className="text-xs font-mono" style={{ color: '#cbd5e1' }}>闽ICP备XXXXXXXX号</p>
           </div>
         </div>
       </footer>

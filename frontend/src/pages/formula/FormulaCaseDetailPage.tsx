@@ -63,20 +63,20 @@ import { useToastStore } from '@/stores/toastStore'
 
 // ── 分类主题映射 ───────────────────────────────────────────────
 const CATEGORY_THEME: Record<string, { gradient: string; text: string; bg: string; ring: string; label: string }> = {
-  '补气养血':   { gradient: 'from-rose-600 to-pink-700',   text: 'text-rose-700 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30',  ring: 'ring-rose-300 dark:ring-rose-700', label: '气血' },
-  '滋阴润燥':   { gradient: 'from-violet-600 to-purple-700', text: 'text-violet-700 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-900/30', ring: 'ring-violet-300 dark:ring-violet-700', label: '润燥' },
-  '清热解毒':   { gradient: 'from-emerald-600 to-teal-700', text: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30', ring: 'ring-emerald-300 dark:ring-emerald-700', label: '解毒' },
-  '活血化瘀':   { gradient: 'from-red-600 to-rose-700',   text: 'text-red-700 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30',  ring: 'ring-red-300 dark:ring-red-700', label: '化瘀' },
-  '祛湿化浊':   { gradient: 'from-amber-600 to-orange-700', text: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30', ring: 'ring-amber-300 dark:ring-amber-700', label: '祛湿' },
-  '扶正固本':   { gradient: 'from-sky-600 to-blue-700',   text: 'text-sky-700 dark:text-sky-400', bg: 'bg-sky-100 dark:bg-sky-900/30',  ring: 'ring-sky-300 dark:ring-sky-700', label: '固本' },
-  '疏肝理气':   { gradient: 'from-lime-600 to-green-700', text: 'text-lime-700 dark:text-lime-400', bg: 'bg-lime-100 dark:bg-lime-900/30', ring: 'ring-lime-300 dark:ring-lime-700', label: '疏肝' },
-  '化痰散结':   { gradient: 'from-purple-600 to-violet-700', text: 'text-purple-700 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30', ring: 'ring-purple-300 dark:ring-purple-700', label: '散结' },
-  '安神定志':   { gradient: 'from-indigo-600 to-blue-700', text: 'text-indigo-700 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/30', ring: 'ring-indigo-300 dark:ring-indigo-700', label: '安神' },
-  '健脾和胃':   { gradient: 'from-orange-600 to-amber-700', text: 'text-orange-700 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/30', ring: 'ring-orange-300 dark:ring-orange-700', label: '健脾' },
-  '补肾填精':   { gradient: 'from-teal-600 to-emerald-700', text: 'text-teal-700 dark:text-teal-400', bg: 'bg-teal-100 dark:bg-teal-900/30', ring: 'ring-teal-300 dark:ring-teal-700', label: '补肾' },
-  '清热利湿':   { gradient: 'from-cyan-600 to-sky-700',   text: 'text-cyan-700 dark:text-cyan-400', bg: 'bg-cyan-100 dark:bg-cyan-900/30', ring: 'ring-cyan-300 dark:ring-cyan-700', label: '利湿' },
-  '调和营卫':   { gradient: 'from-pink-600 to-rose-700',  text: 'text-pink-700 dark:text-pink-400', bg: 'bg-pink-100 dark:bg-pink-900/30', ring: 'ring-pink-300 dark:ring-pink-700', label: '调和' },
-  '通络止痛':   { gradient: 'from-slate-600 to-zinc-700', text: 'text-slate-700 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-900/30', ring: 'ring-slate-300 dark:ring-slate-700', label: '通络' },
+  '补气养血':   { gradient: 'from-danger-600 to-danger-700',   text: 'text-danger-700 dark:text-danger-700', bg: 'bg-danger-100 dark:bg-danger-300/25',  ring: 'ring-danger-300 dark:ring-danger-700', label: '气血' },
+  '滋阴润燥':   { gradient: 'from-accent-600 to-accent-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '润燥' },
+  '清热解毒':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '解毒' },
+  '活血化瘀':   { gradient: 'from-error-600 to-danger-700',   text: 'text-error-700 dark:text-error-700', bg: 'bg-error-100 dark:bg-error-300/25',  ring: 'ring-error-300 dark:ring-error-700', label: '化瘀' },
+  '祛湿化浊':   { gradient: 'from-warning-600 to-warning-700', text: 'text-warning-700 dark:text-warning-700', bg: 'bg-warning-100 dark:bg-warning-300/25', ring: 'ring-warning-300 dark:ring-warning-700', label: '祛湿' },
+  '扶正固本':   { gradient: 'from-info-600 to-secondary-700',   text: 'text-info-700 dark:text-info-700', bg: 'bg-info-100 dark:bg-info-300/25',  ring: 'ring-info-300 dark:ring-info-700', label: '固本' },
+  '疏肝理气':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '疏肝' },
+  '化痰散结':   { gradient: 'from-accent-600 to-accent-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '散结' },
+  '安神定志':   { gradient: 'from-accent-600 to-secondary-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '安神' },
+  '健脾和胃':   { gradient: 'from-warning-600 to-warning-700', text: 'text-warning-700 dark:text-warning-700', bg: 'bg-warning-100 dark:bg-warning-300/25', ring: 'ring-warning-300 dark:ring-warning-700', label: '健脾' },
+  '补肾填精':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '补肾' },
+  '清热利湿':   { gradient: 'from-info-600 to-info-700',   text: 'text-info-700 dark:text-info-700', bg: 'bg-info-100 dark:bg-info-300/25', ring: 'ring-info-300 dark:ring-info-700', label: '利湿' },
+  '调和营卫':   { gradient: 'from-danger-600 to-danger-700',  text: 'text-danger-700 dark:text-danger-700', bg: 'bg-danger-100 dark:bg-danger-300/25', ring: 'ring-danger-300 dark:ring-danger-700', label: '调和' },
+  '通络止痛':   { gradient: 'from-neutral-600 to-neutral-700', text: 'text-neutral-700 dark:text-neutral-400', bg: 'bg-neutral-100 dark:bg-neutral-900/30', ring: 'ring-neutral-300 dark:ring-neutral-700', label: '通络' },
 }
 
 function getTheme(cat?: string) {
@@ -142,9 +142,9 @@ function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () 
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { icon: Share2, color: 'text-sky-500', bg: 'bg-sky-100 dark:bg-sky-900/30', label: 'Twitter' },
-                { icon: Mail, color: 'text-primary-500', bg: 'bg-primary-100 dark:bg-primary-900/30', label: '邮件' },
-                { icon: LinkIcon, color: 'text-success-500', bg: 'bg-success-100 dark:bg-success-900/30', label: '复制链接' },
+                { icon: Share2, color: 'text-info-500', bg: 'bg-info-100 dark:bg-info-300/25', label: 'Twitter' },
+                { icon: Mail, color: 'text-primary-500', bg: 'bg-primary-100 dark:bg-primary-300/25', label: '邮件' },
+                { icon: LinkIcon, color: 'text-success-500', bg: 'bg-success-100 dark:bg-success-300/25', label: '复制链接' },
               ].map(({ icon: Icon, color, bg, label }, i) => (
                 <button key={i}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
@@ -159,7 +159,7 @@ function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () 
                   <div className={`w-8 h-8 rounded-full ${bg} flex items-center justify-center`}>
                     <Icon size={14} className={color} />
                   </div>
-                  <span className="text-[10px] text-text-muted">{label}</span>
+                  <span className="text-xs text-text-muted">{label}</span>
                 </button>
               ))}
             </div>
@@ -240,7 +240,7 @@ function DeleteDialog({ open, onClose, onConfirm, caseTitle }: {
       <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
         <CardContent className="p-5">
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-error-100 dark:bg-error-900/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-error-100 dark:bg-error-300/25 flex items-center justify-center shrink-0">
               <Trash2 size={18} className="text-error-500" />
             </div>
             <div>
@@ -479,7 +479,7 @@ export function FormulaCaseDetailPage() {
     return (
       <div className="max-w-4xl mx-auto py-16 px-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-          <FileText size={28} className="text-neutral-400" />
+          <FileText size={28} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </div>
         <h2 className="text-lg font-semibold text-text-primary mb-2">案例不存在</h2>
         <p className="text-sm text-text-muted mb-6">该案例可能已被删除或不存在</p>
@@ -532,7 +532,7 @@ export function FormulaCaseDetailPage() {
               <div className="relative">
                 {/* Badges */}
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-white shadow-sm`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-primary-700 dark:text-white shadow-sm`}>
                     {caseItem.category ?? '未分类'}
                   </span>
                   {caseItem.is_featured && (
@@ -541,7 +541,7 @@ export function FormulaCaseDetailPage() {
                     </span>
                   )}
                   {caseItem.generated_by_ai && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-white">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-primary-700 dark:text-white">
                       <Sparkles size={11} />AI生成
                     </span>
                   )}
@@ -620,7 +620,7 @@ export function FormulaCaseDetailPage() {
                     <button
                       onClick={() => setShowToc(!showToc)}
                       className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                        showToc ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-500' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        showToc ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-500' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'
                       }`}
                       title="目录"
                     >
@@ -630,7 +630,7 @@ export function FormulaCaseDetailPage() {
                     <button onClick={() => setFontSize('small')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'small' ? 'bg-neutral-200 dark:bg-neutral-700 text-text-primary' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="小字">
                       <Minus size={13} />
                     </button>
-                    <button onClick={() => setFontSize('medium')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-bold ${fontSize === 'medium' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="中字">
+                    <button onClick={() => setFontSize('medium')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-bold ${fontSize === 'medium' ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="中字">
                       M
                     </button>
                     <button onClick={() => setFontSize('large')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'large' ? 'bg-neutral-200 dark:bg-neutral-700 text-text-primary' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="大字">
@@ -705,7 +705,7 @@ export function FormulaCaseDetailPage() {
                   <h2 className="font-semibold text-text-primary flex items-center gap-2 text-body">
                     <TrendingUp size={16} className="text-primary-500" />相关案例
                   </h2>
-                  <Link to={`/formulas/cases?formula_id=${caseItem.formula_id}`} className="text-xs text-primary-500 hover:text-primary-600 flex items-center gap-1 transition-colors">
+                  <Link to={`/formulas/cases?formula_id=${caseItem.formula_id}`} className="text-xs text-primary-500 hover:text-primary-700 flex items-center gap-1 transition-colors">
                     查看全部 <ArrowRight size={12} />
                   </Link>
                 </div>
@@ -720,9 +720,9 @@ export function FormulaCaseDetailPage() {
                             <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
                           </div>
                           <div className="p-3">
-                            <p className="font-medium text-sm text-text-primary truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{c.title}</p>
+                            <p className="font-medium text-sm text-text-primary truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">{c.title}</p>
                             <p className="text-xs text-text-muted mt-1 line-clamp-1">{c.summary}</p>
-                            <div className="flex items-center gap-2 mt-2 text-[11px] text-neutral-400 dark:text-neutral-500">
+                            <div className="flex items-center gap-2 mt-2 text-xs text-neutral-400 dark:text-neutral-400">
                               <span className="inline-flex items-center gap-0.5"><Eye size={10} />{c.views}</span>
                               <span className="inline-flex items-center gap-0.5"><Heart size={10} />{c.likes}</span>
                             </div>
@@ -742,7 +742,7 @@ export function FormulaCaseDetailPage() {
                   <h2 className="font-semibold text-text-primary flex items-center gap-2 text-body">
                     <MessageCircle size={16} className="text-primary-500" />
                     评论
-                    <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded-full">{topComments.length}</span>
+                    <span className="text-xs font-semibold text-primary-700 dark:text-primary-700 bg-primary-50 dark:bg-primary-300/25 px-2 py-0.5 rounded-full">{topComments.length}</span>
                   </h2>
                   <Button variant="secondary" size="sm" onClick={() => setShowCommentInput(!showCommentInput)} className="rounded-xl">
                     发表评论
@@ -773,7 +773,7 @@ export function FormulaCaseDetailPage() {
                 {topComments.length === 0 ? (
                   <div className="text-center py-10">
                     <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-                      <MessageCircle size={22} className="text-neutral-400" />
+                      <MessageCircle size={22} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     </div>
                     <p className="text-sm text-text-muted">暂无评论</p>
                     <p className="text-xs text-text-disabled mt-1">来发表第一条评论吧</p>
@@ -808,22 +808,22 @@ export function FormulaCaseDetailPage() {
                   {[
                     {
                       label: '点赞', sub: `${caseItem.likes} 次点赞`, icon: Heart, color: 'error',
-                      bg: 'bg-error-100 dark:bg-error-900/20', hover: 'hover:bg-error-50 dark:hover:bg-error-900/20', text: 'text-error-500',
+                      bg: 'bg-error-100 dark:bg-error-300/20', hover: 'hover:bg-error-50 dark:hover:bg-error-900/20', text: 'text-error-500',
                       action: () => likeMutation.mutate(), pending: likeMutation.isPending,
                     },
                     {
                       label: '收藏', sub: `${caseItem.bookmarks ?? 0} 次收藏`, icon: Bookmark, color: 'primary',
-                      bg: 'bg-primary-100 dark:bg-primary-900/20', hover: 'hover:bg-primary-50 dark:hover:bg-primary-900/20', text: 'text-primary-500',
+                      bg: 'bg-primary-100 dark:bg-primary-300/20', hover: 'hover:bg-primary-50 dark:hover:bg-primary-900/20', text: 'text-primary-500',
                       action: () => bookmarkMutation.mutate(), pending: bookmarkMutation.isPending,
                     },
                     {
                       label: '分享', sub: '分享给好友', icon: Share2, color: 'secondary',
-                      bg: 'bg-secondary-100 dark:bg-secondary-900/20', hover: 'hover:bg-secondary-50 dark:hover:bg-secondary-900/20', text: 'text-secondary-500',
+                      bg: 'bg-secondary-100 dark:bg-secondary-300/20', hover: 'hover:bg-secondary-50 dark:hover:bg-secondary-900/20', text: 'text-secondary-500',
                       action: () => setShowShareDialog(true), pending: false,
                     },
                     {
                       label: '举报', sub: '反馈问题', icon: Flag, color: 'warning',
-                      bg: 'bg-warning-100 dark:bg-warning-900/20', hover: 'hover:bg-warning-50 dark:hover:bg-warning-900/20', text: 'text-warning-500',
+                      bg: 'bg-warning-100 dark:bg-warning-300/20', hover: 'hover:bg-warning-50 dark:hover:bg-warning-900/20', text: 'text-warning-500',
                       action: () => setShowReportDialog(true), pending: false,
                     },
                   ].map(({ label, sub, icon: Icon, color, bg, hover, text, action, pending }, i) => (
@@ -868,7 +868,7 @@ export function FormulaCaseDetailPage() {
                         <Icon size={13} className="text-text-muted" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] text-text-muted">{label}</p>
+                        <p className="text-xs text-text-muted">{label}</p>
                         <p className="text-sm font-medium text-text-primary truncate">{value}</p>
                       </div>
                     </div>
@@ -887,12 +887,12 @@ export function FormulaCaseDetailPage() {
                         <FileText size={14} className="text-white" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-caption text-primary-600 dark:text-primary-400 font-medium">配方来源</p>
+                        <p className="text-caption text-primary-700 dark:text-primary-700 font-medium">配方来源</p>
                         <p className="text-sm font-semibold text-text-primary truncate">{caseItem.formula_name || `配方 #${caseItem.formula_id}`}</p>
                       </div>
                     </div>
                     <p className="text-xs text-text-muted mb-3">查看完整配方详情与配方分析</p>
-                    <div className="flex items-center text-xs text-primary-500 font-medium group-hover:text-primary-600">
+                    <div className="flex items-center text-xs text-primary-500 font-medium group-hover:text-primary-700">
                       前往配方 <ArrowRight size={12} className="ml-1 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </CardContent>

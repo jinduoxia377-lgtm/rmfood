@@ -19,9 +19,9 @@ const AA_NAMES: Record<string, string> = {
 // ─── 氨基酸颜色 ───
 const AA_COLORS: Record<string, string> = {
   A: 'var(--text-muted, #9CA3AF)', R: 'var(--color-tertiary, var(--color-accent-500))', N: 'var(--color-secondary, #0A84FF)', D: 'var(--color-danger-600, #B91C1C)', C: 'var(--color-warning-700, #B45309)',
-  E: 'var(--color-primary, var(--color-primary-400))', Q: 'var(--color-cyan-600, #0E7490)', G: 'var(--color-warning, #FF9F0A)', H: 'var(--color-pink-500, #D946EF)', I: 'var(--color-primary-hover, var(--color-primary-500))',
+  E: 'var(--color-primary, var(--color-primary-400))', Q: 'var(--color-info-600, #0E7490)', G: 'var(--color-warning, #FF9F0A)', H: 'var(--color-danger-500, #D946EF)', I: 'var(--color-primary-hover, var(--color-primary-500))',
   L: 'var(--color-primary-hover, var(--color-primary-500))', K: 'var(--color-tertiary, var(--color-accent-500))', M: 'var(--color-warning-700, #B45309)', F: 'var(--color-danger-600, #B91C1C)', P: 'var(--color-warning, #FF9F0A)',
-  S: 'var(--color-secondary, #0A84FF)', T: 'var(--color-secondary, #0A84FF)', W: 'var(--color-pink-500, #D946EF)', Y: 'var(--color-warning-700, #B45309)', V: 'var(--color-primary-hover, var(--color-primary-500))',
+  S: 'var(--color-secondary, #0A84FF)', T: 'var(--color-secondary, #0A84FF)', W: 'var(--color-danger-500, #D946EF)', Y: 'var(--color-warning-700, #B45309)', V: 'var(--color-primary-hover, var(--color-primary-500))',
 }
 
 export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide }) {
@@ -47,7 +47,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
   return (
     <div className="space-y-4">
       {/* 序列可视化 */}
-      <div className="bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+      <div className="bg-neutral-50/60 dark:bg-neutral-800/40 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-xs font-semibold text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">氨基酸序列</h4>
           <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">{aaCount} aa</span>
@@ -55,7 +55,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
         <div className="space-y-1">
           {sequenceChunks.map((chunk, chunkIdx) => (
             <div key={chunkIdx} className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-[var(--text-muted,#9A9A9F)] w-6 text-right">{chunkIdx * 10 + 1}</span>
+              <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)] w-6 text-right">{chunkIdx * 10 + 1}</span>
               <div className="flex gap-0.5 flex-wrap">
                 {chunk.split('').map((aa, idx) => (
                   <span key={idx} title={`${AA_NAMES[aa] || aa} (${aa})`}
@@ -71,7 +71,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
         {/* 图例 */}
         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           {Object.entries(AA_NAMES).slice(0, 10).map(([letter, name]) => (
-            <div key={letter} className="flex items-center gap-1 text-[10px]">
+            <div key={letter} className="flex items-center gap-1 text-xs">
               <div className="w-3.5 h-3.5 rounded flex items-center justify-center text-[8px] font-bold"
                 style={{ backgroundColor: `${AA_COLORS[letter]}18`, color: AA_COLORS[letter] }}>{letter}</div>
               <span className="text-[var(--text-muted,#9A9A9F)]">{name}</span>
@@ -84,14 +84,14 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {[
           { label: '来源蛋白', value: (peptide as { source_protein?: string }).source_protein || '-', bg: 'bg-primary-50 dark:bg-primary-950/40' },
-          { label: '来源生物', value: (peptide as { source_organism?: string }).source_organism || '-', bg: 'bg-secondary-50 dark:bg-blue-950/40' },
+          { label: '来源生物', value: (peptide as { source_organism?: string }).source_organism || '-', bg: 'bg-secondary-50 dark:bg-secondary-950/40' },
           { label: '活性类型', value: activityTypeMap[(peptide as { activity_type?: string }).activity_type ?? ''] || (peptide as { activity_type?: string }).activity_type || '-', bg: 'bg-accent-50 dark:bg-accent-950/40' },
-          { label: '活性值', value: (peptide as { activity_value?: number; activity_unit?: string }).activity_value != null ? `${(peptide as { activity_value?: number }).activity_value} ${(peptide as { activity_unit?: string }).activity_unit || ''}` : '-', bg: 'bg-warning-50 dark:bg-amber-950/40' },
-          { label: '分子量 (Da)', value: (peptide as { molecular_weight?: number }).molecular_weight?.toFixed(2) || '-', bg: 'bg-cyan-50 dark:bg-cyan-950/40' },
-          { label: '水解酶', value: (peptide as { hydrolysis_enzyme?: string }).hydrolysis_enzyme || '-', bg: 'bg-rose-50 dark:bg-rose-950/40' },
+          { label: '活性值', value: (peptide as { activity_value?: number; activity_unit?: string }).activity_value != null ? `${(peptide as { activity_value?: number }).activity_value} ${(peptide as { activity_unit?: string }).activity_unit || ''}` : '-', bg: 'bg-warning-50 dark:bg-warning-950/40' },
+          { label: '分子量 (Da)', value: (peptide as { molecular_weight?: number }).molecular_weight?.toFixed(2) || '-', bg: 'bg-info-50 dark:bg-info-950/40' },
+          { label: '水解酶', value: (peptide as { hydrolysis_enzyme?: string }).hydrolysis_enzyme || '-', bg: 'bg-danger-50 dark:bg-danger-950/40' },
         ].map(({ label, value, bg }) => (
           <div key={label} className={`p-3 rounded-xl ${bg} dark:bg-opacity-20`}>
-            <span className="text-[10px] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">{label}</span>
+            <span className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">{label}</span>
             <div className="font-medium mt-0.5 text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{value}</div>
           </div>
         ))}
@@ -99,14 +99,14 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
 
       {/* 文献 DOI */}
       {(peptide.dfbp_id && (
-        <div className="flex items-center gap-2 p-3 bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="flex items-center gap-2 p-3 bg-neutral-50/60 dark:bg-neutral-800/40 rounded-xl border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <ExternalLink className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
           <span className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">DFBP ID:</span>
           <span className="text-xs font-mono text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{peptide.dfbp_id}</span>
           {peptide.literature_doi && (
             <>
               <span className="text-xs text-[var(--text-muted,#9A9A9F)] ml-2">DOI:</span>
-              <span className="text-xs font-mono text-secondary-600 dark:text-secondary-400">{peptide.literature_doi}</span>
+              <span className="text-xs font-mono text-secondary-600 dark:text-secondary-700">{peptide.literature_doi}</span>
             </>
           )}
         </div>

@@ -21,9 +21,9 @@ type SortDir = 'asc' | 'desc';
 // ─── 合规状态徽标 ───
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    compliant: { color: 'text-success-600 dark:text-success-600', bg: 'bg-success-50 dark:bg-success-900/20', border: 'border-success-200 dark:border-success-800', label: '合规' },
-    warning: { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-900/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意' },
-    non_compliant: { color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-900/20', border: 'border-error-200 dark:border-error-800', label: '不合规' },
+    compliant: { color: 'text-success-600 dark:text-success-600', bg: 'bg-success-50 dark:bg-success-300/20', border: 'border-success-200 dark:border-success-800', label: '合规' },
+    warning: { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意' },
+    non_compliant: { color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800', label: '不合规' },
   };
   const c = config[status] ?? config.compliant;
   return (
@@ -36,13 +36,13 @@ function StatusBadge({ status }: { status: string }) {
 // ─── 违规类型标签 ───
 function ViolationTypeTag({ type }: { type: string }) {
   const config: Record<string, { label: string; color: string; bg: string; border: string }> = {
-    exceeds_limit: { label: '超限量', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-900/20', border: 'border-error-200 dark:border-error-800' },
-    prohibited_combo: { label: '禁忌搭配', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-900/20', border: 'border-warning-200 dark:border-warning-800' },
-    child_forbidden: { label: '儿童禁忌', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-900/20', border: 'border-accent-200 dark:border-accent-800' },
+    exceeds_limit: { label: '超限量', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
+    prohibited_combo: { label: '禁忌搭配', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800' },
+    child_forbidden: { label: '儿童禁忌', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
     not_in_directory: { label: '非目录', color: 'text-neutral-600 dark:text-neutral-400', bg: 'bg-neutral-50 dark:bg-neutral-800/50', border: 'border-neutral-200 dark:border-neutral-700' },
-    gb2760: { label: 'GB 2760', color: 'text-info-600 dark:text-info-600', bg: 'bg-info-50 dark:bg-info-900/20', border: 'border-info-200 dark:border-info-800' },
-    gb14880: { label: 'GB 14880', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800' },
-    prohibited_tcm: { label: '禁用品', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-900/20', border: 'border-error-200 dark:border-error-800' },
+    gb2760: { label: 'GB 2760', color: 'text-info-600 dark:text-info-600', bg: 'bg-info-50 dark:bg-info-300/20', border: 'border-info-200 dark:border-info-800' },
+    gb14880: { label: 'GB 14880', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
+    prohibited_tcm: { label: '禁用品', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
   };
   const c = config[type] ?? config.not_in_directory;
   return (
@@ -277,7 +277,7 @@ export default function ComplianceTab() {
             {count !== undefined && count > 0 && (
               <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
                 activeSection === key
-                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-700'
+                  ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
                   : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
               }`}>
                 {count}
@@ -328,7 +328,7 @@ export default function ComplianceTab() {
                   onClick={() => setStandardCategory(cat === standardCategory ? '' : cat)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                     standardCategory === cat
-                      ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-700'
+                      ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-700'
                       : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300'
                   }`}
                 >
@@ -505,9 +505,9 @@ export default function ComplianceTab() {
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                         m.status === '允许用于普通食品'
-                          ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-600'
+                          ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600'
                           : m.status === '试点用于普通食品'
-                          ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-700'
+                          ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                       }`}>
                         {m.status === '允许用于普通食品' ? '允许' : m.status === '试点用于普通食品' ? '试点' : '—'}
@@ -534,7 +534,7 @@ export default function ComplianceTab() {
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {m.restrictions.map((r: string, j: number) => (
-                            <span key={j} className="px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-700 text-xs border border-warning-200 dark:border-warning-800">
+                            <span key={j} className="px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs border border-warning-200 dark:border-warning-800">
                               {r}
                             </span>
                           ))}
@@ -544,7 +544,7 @@ export default function ComplianceTab() {
                     {m.usage_forms && m.usage_forms.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {m.usage_forms.map((f: string, j: number) => (
-                          <span key={j} className="px-2 py-0.5 rounded bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-600 text-xs border border-info-200 dark:border-info-800">
+                          <span key={j} className="px-2 py-0.5 rounded bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 text-xs border border-info-200 dark:border-info-800">
                             {f}
                           </span>
                         ))}
@@ -625,7 +625,7 @@ export default function ComplianceTab() {
                         <td className="px-4 py-2.5">
                           <div className="flex flex-wrap gap-1">
                             {a.categories.map((cat: string, j: number) => (
-                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">
+                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">
                                 {cat}
                               </span>
                             ))}
@@ -644,7 +644,7 @@ export default function ComplianceTab() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <TestTube className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <TestTube className="w-4 h-4 text-accent-600 dark:text-accent-700" />
                   GB 14880-2012 营养强化剂使用标准
                 </CardTitle>
                 <Button
@@ -701,12 +701,12 @@ export default function ComplianceTab() {
                     ) : sortedGb14880.map((e: any, i: number) => (
                       <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                         <td className="px-4 py-2.5 font-medium text-text-primary">{e.name}</td>
-                        <td className="px-4 py-2.5 tabular-nums text-purple-600 dark:text-purple-400">{e.min}</td>
-                        <td className="px-4 py-2.5 tabular-nums font-semibold text-purple-600 dark:text-purple-400">{e.max}</td>
+                        <td className="px-4 py-2.5 tabular-nums text-accent-600 dark:text-accent-700">{e.min}</td>
+                        <td className="px-4 py-2.5 tabular-nums font-semibold text-accent-600 dark:text-accent-700">{e.max}</td>
                         <td className="px-4 py-2.5">
                           <div className="flex flex-wrap gap-1">
                             {e.categories.map((cat: string, j: number) => (
-                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 border border-accent-200 dark:border-accent-800">
                                 {cat}
                               </span>
                             ))}
@@ -840,7 +840,7 @@ export default function ComplianceTab() {
                         <td className="px-4 py-2.5">
                           <div className="flex flex-wrap gap-1.5">
                             {p.pair.map((n: string, j: number) => (
-                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-700 text-xs font-medium border border-warning-200 dark:border-warning-800">
+                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs font-medium border border-warning-200 dark:border-warning-800">
                                 {n}
                               </span>
                             ))}
@@ -926,7 +926,7 @@ export default function ComplianceTab() {
                 onClick={() => setPopulation(p)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                   population === p
-                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800'
+                    ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
@@ -983,8 +983,8 @@ export default function ComplianceTab() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        checkResult.status === 'compliant' ? 'bg-success-100 dark:bg-success-900/30' :
-                        checkResult.status === 'warning' ? 'bg-warning-100 dark:bg-warning-900/30' : 'bg-error-100 dark:bg-error-900/30'
+                        checkResult.status === 'compliant' ? 'bg-success-100 dark:bg-success-300/25' :
+                        checkResult.status === 'warning' ? 'bg-warning-100 dark:bg-warning-300/25' : 'bg-error-100 dark:bg-error-300/25'
                       }`}>
                         {checkResult.status === 'compliant' ? <CheckCircle2 className="w-6 h-6 text-success-600 dark:text-success-600" /> :
                          checkResult.status === 'warning' ? <AlertTriangle className="w-6 h-6 text-warning-600 dark:text-warning-700" /> :
@@ -1014,7 +1014,7 @@ export default function ComplianceTab() {
                   <CardContent>
                     <div className="space-y-2">
                       {checkResult.violations.map((v, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-error-100 dark:border-error-900/30">
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-100 dark:border-error-900/30">
                           <XCircle className="w-4 h-4 text-error-500 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">

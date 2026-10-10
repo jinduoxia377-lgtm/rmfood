@@ -45,13 +45,13 @@ function FactorRow({ factor, index, onChange, onRemove, canRemove }: {
 }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-neutral-50/70 dark:bg-neutral-800/40 rounded-lg border border-neutral-200 dark:border-neutral-700">
-      <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 w-6">{index + 1}</span>
+      <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-6">{index + 1}</span>
       <Input className="flex-1 h-8 text-sm"
         placeholder="因子名称（例如：温度）" value={factor.name}
         onChange={e => onChange({ ...factor, name: e.target.value })} />
       {(['low', 'high', 'center'] as const).map(k => (
         <div key={k} className="flex flex-col items-center gap-1">
-          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">{k === 'low' ? '低水平 (-1)' : k === 'high' ? '高水平 (+1)' : '中心点 (0)'}</span>
+          <span className="text-xs text-neutral-400 dark:text-neutral-400 uppercase tracking-wide">{k === 'low' ? '低水平 (-1)' : k === 'high' ? '高水平 (+1)' : '中心点 (0)'}</span>
           <Input type="number" step="0.1"
             className="w-20 h-8 text-sm text-center tabular-nums"
             value={factor[k]}
@@ -59,7 +59,7 @@ function FactorRow({ factor, index, onChange, onRemove, canRemove }: {
         </div>
       ))}
       <button onClick={onRemove} disabled={!canRemove}
-        className="p-1.5 rounded-md hover:bg-danger-50 dark:hover:bg-danger-950/40 text-neutral-400 dark:text-neutral-500 hover:text-danger-500 disabled:opacity-30 transition-colors">
+        className="p-1.5 rounded-md hover:bg-danger-50 dark:hover:bg-danger-950/40 text-neutral-400 dark:text-neutral-400 hover:text-danger-500 disabled:opacity-30 transition-colors">
         <Trash2 size={14} />
       </button>
     </div>
@@ -73,20 +73,20 @@ function MixtureComponentRow({ comp, index, onChange, onRemove }: {
 }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-neutral-50/70 dark:bg-neutral-800/40 rounded-lg border border-neutral-200 dark:border-neutral-700">
-      <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 w-6">{index + 1}</span>
+      <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-6">{index + 1}</span>
       <Input className="flex-1 h-8 text-sm"
         placeholder="组分名称（例如：黄芪）" value={comp.name}
         onChange={e => onChange({ ...comp, name: e.target.value })} />
       {(['lower', 'upper'] as const).map(k => (
         <div key={k} className="flex flex-col items-center gap-1">
-          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">{k === 'lower' ? '下限' : '上限'}</span>
+          <span className="text-xs text-neutral-400 dark:text-neutral-400 uppercase tracking-wide">{k === 'lower' ? '下限' : '上限'}</span>
           <Input type="number" step="0.01"
             className="w-20 h-8 text-sm text-center tabular-nums"
             value={comp[k]}
             onChange={e => onChange({ ...comp, [k]: parseFloat(e.target.value) || 0 })} />
         </div>
       ))}
-      <button onClick={onRemove} className="p-1.5 rounded-md hover:bg-danger-50 dark:hover:bg-danger-950/40 text-neutral-400 dark:text-neutral-500 hover:text-danger-500 transition-colors">
+      <button onClick={onRemove} className="p-1.5 rounded-md hover:bg-danger-50 dark:hover:bg-danger-950/40 text-neutral-400 dark:text-neutral-400 hover:text-danger-500 transition-colors">
         <Trash2 size={14} />
       </button>
     </div>
@@ -105,7 +105,7 @@ function ResponseInputTable({ runs, factors, values, onChange, autoFill }: {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500">
+          <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-400">
             <th className="pb-2 pr-2 text-left w-10">#</th>
             {factorNames.map(name => <th key={name} className="pb-2 px-2 text-center min-w-[80px]">{name}</th>)}
             <th className="pb-2 px-2 text-center min-w-[100px]">响应值?y)</th>
@@ -155,7 +155,7 @@ function ScatterPlot({ runs, factors, values }: {
   }))
   if (scatterData.length < 3) {
     return (
-      <div className="h-56 flex items-center justify-center text-neutral-400 dark:text-neutral-500 text-sm bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
+      <div className="h-56 flex items-center justify-center text-neutral-400 dark:text-neutral-400 text-sm bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
         请输入至少组响应值以生成分散图      </div>
     )
   }
@@ -164,8 +164,8 @@ function ScatterPlot({ runs, factors, values }: {
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(148,163,184,0.12))" opacity={0.35} />
-          <XAxis type="number" dataKey="x" name={f1} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f1, position: 'bottom', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
-          <YAxis type="number" dataKey="y" name={f2} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f2, angle: -90, position: 'left', offset: 0, fontSize: 11, fill: 'var(--text-muted)' }} />
+          <XAxis type="number" dataKey="x" name={f1} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f1, position: 'bottom', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
+          <YAxis type="number" dataKey="y" name={f2} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f2, angle: -90, position: 'left', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
           <ZAxis type="number" dataKey="z" range={[60, 400]} name="响应值" />
           <RechartsTooltip
             content={({ active, payload }) => {
@@ -176,7 +176,7 @@ function ScatterPlot({ runs, factors, values }: {
                   <div className="font-semibold mb-1">第#{d.run_id} 组</div>
                   <div>{f1}: {d.f1_val.toFixed(2)}</div>
                   <div>{f2}: {d.f2_val.toFixed(2)}</div>
-                  <div className="text-primary-600 dark:text-primary-400 font-bold">响应值 {d.z.toFixed(2)}</div>
+                  <div className="text-primary-700 dark:text-primary-700 font-bold">响应值 {d.z.toFixed(2)}</div>
                 </div>
               )
             }}
@@ -185,7 +185,7 @@ function ScatterPlot({ runs, factors, values }: {
           <Scatter name="散点" data={scatterData} fill="var(--color-primary, #10b981)" fillOpacity={0.7} />
         </ScatterChart>
       </ResponsiveContainer>
-      <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center mt-1">
+      <p className="text-xs text-neutral-400 dark:text-neutral-400 text-center mt-1">
         气泡大小 = 响应值· X值= {f1} · Y值= {f2}
       </p>
     </div>
@@ -555,10 +555,10 @@ export default function DoePage() {
       <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
               <Beaker size={20} className="text-white/80 shrink-0" />
               DOE 实验设计
-            </h2>
+            </h1>
             <p className="mt-1 text-white/80 text-sm">CCD / BBD / 混料设计 · 多响应面拟合 · 反向搜索 · 主动学习闭环</p>
           </div>
           {history.length > 0 && (
@@ -578,10 +578,10 @@ export default function DoePage() {
             <div className="flex gap-2 flex-wrap">
               {history.map(h => (
                 <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs">
-                  <span className="font-mono text-primary-600 dark:text-primary-400">{h.type}</span>
-                  <span className="text-neutral-400 dark:text-neutral-500">{h.factors.join('×')}</span>
-                    <span className="text-neutral-400 dark:text-neutral-500">· {h.runs} 组</span>
-                  <span className="text-neutral-400 dark:text-neutral-500">{h.date}</span>
+                  <span className="font-mono text-primary-700 dark:text-primary-700">{h.type}</span>
+                  <span className="text-neutral-400 dark:text-neutral-400">{h.factors.join('×')}</span>
+                    <span className="text-neutral-400 dark:text-neutral-400">· {h.runs} 组</span>
+                  <span className="text-neutral-400 dark:text-neutral-400">{h.date}</span>
                 </div>
               ))}
             </div>
@@ -593,9 +593,9 @@ export default function DoePage() {
       <Card className="border-primary-200 dark:border-primary-800/60">
         <CardHeader className="px-5 pt-5 pb-3">
           <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FolderInput size={14} className="text-primary-500 dark:text-primary-400" />
-            <span className="text-primary-700 dark:text-primary-300">从实验管理导入</span>
-            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-500 ml-1">读取真实实验数据点，自动推断因子/响应，直接进入响应面拟合</span>
+            <FolderInput size={14} className="text-primary-500 dark:text-primary-700" />
+            <span className="text-primary-700 dark:text-primary-700">从实验管理导入</span>
+            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-400 ml-1">读取真实实验数据点，自动推断因子/响应，直接进入响应面拟合</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="px-5 pb-5 pt-0">
@@ -617,9 +617,9 @@ export default function DoePage() {
       <Card>
         <CardHeader className="px-5 pt-5 pb-3">
           <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FlaskConical size={14} className="text-secondary-500 dark:text-secondary-400" />
-            <span className="text-secondary-600 dark:text-secondary-400">从配方生成种子</span>
-            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-500 ml-1">读取真实配方的成分占比作因子、真实实验指标作响应，生成可直接拟合的DOE 种子运行</span>
+            <FlaskConical size={14} className="text-secondary-500 dark:text-secondary-700" />
+            <span className="text-secondary-600 dark:text-secondary-700">从配方生成种子</span>
+            <span className="text-xs font-normal text-neutral-400 dark:text-neutral-400 ml-1">读取真实配方的成分占比作因子、真实实验指标作响应，生成可直接拟合的DOE 种子运行</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="px-5 pb-5 pt-0">
@@ -655,7 +655,7 @@ export default function DoePage() {
             )}
           </div>
           {seedFormulas.length === 0 && (
-                <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">暂无真实配方数据可作种子。请确认 /doe/formulas 端点是否返回数据，或点击「重新加载配方」</div>
+                <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-400">暂无真实配方数据可作种子。请确认 /doe/formulas 端点是否返回数据，或点击「重新加载配方」</div>
           )}
         </CardContent>
       </Card>
@@ -687,13 +687,13 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <Plus size={14} className="text-primary-500 dark:text-primary-400" />因子设置（CCD / BBD）
+                    <Plus size={14} className="text-primary-500 dark:text-primary-700" />因子设置（CCD / BBD）
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addFactor} icon={<Plus size={12} />} className="text-xs">添加因子</Button>
                 </div>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-2">
-                <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-neutral-400 dark:text-neutral-400 uppercase tracking-wider">
                   <span className="w-6">#</span><span className="flex-1">因子名称</span>
                   <span className="w-20 text-center">低水平(-1)</span>
                   <span className="w-20 text-center">高水平(+1)</span>
@@ -711,14 +711,14 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <PieChart size={14} className="text-secondary-500 dark:text-secondary-400" />混料设计（Mixture，组分比例之和 = 1）
+                    <PieChart size={14} className="text-secondary-500 dark:text-secondary-700" />混料设计（Mixture，组分比例之和 = 1）
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addMixtureComponent} icon={<Plus size={12} />} className="text-xs">添加组分</Button>
                 </div>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-4">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-neutral-400 dark:text-neutral-400 uppercase tracking-wider">
                     <span className="w-6">#</span><span className="flex-1">组分名称</span>
                     <span className="w-20 text-center">下限(0~1)</span>
                     <span className="w-20 text-center">上限(0~1)</span>
@@ -769,7 +769,7 @@ export default function DoePage() {
                 <CardHeader className="px-5 pt-5 pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <Sparkles size={14} className="text-primary-500 dark:text-primary-400" />
+                      <Sparkles size={14} className="text-primary-500 dark:text-primary-700" />
                       {designResult.type.toUpperCase()} 设计矩阵
                     </CardTitle>
                     <div className="flex items-center gap-2">
@@ -791,7 +791,7 @@ export default function DoePage() {
                   {/* 响应值输出*/}
                   {showResponseInput && (
                     <div className="p-3 bg-primary-50 dark:bg-primary-950/20 rounded-lg border border-primary-200 dark:border-primary-900">
-                    <div className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-2">请输入实验响应值（y）</div>
+                    <div className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-2">请输入实验响应值（y）</div>
                       <ResponseInputTable runs={designResult.runs} factors={factors} values={responseValues} onChange={updateResponseValue} />
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">{Object.keys(responseValues).length} / {designResult.runs.length} 组响应已填写</div>
                     </div>
@@ -821,18 +821,18 @@ export default function DoePage() {
                           <tr key={run.run_id}>
                             <td className="pr-3 text-neutral-500 dark:text-neutral-400 font-mono">{run.run_id}</td>
                             {Object.entries(run.coded_levels).map(([k, v]) => (
-                              <td key={k} className="px-2 text-center font-mono text-primary-600 dark:text-primary-400 tabular-nums">{(v as number).toFixed(4)}</td>
+                              <td key={k} className="px-2 text-center font-mono text-primary-700 dark:text-primary-700 tabular-nums">{(v as number).toFixed(4)}</td>
                             ))}
                             <td className="pl-2">
                               {fittingRuns.some(r => r.run_id === run.run_id) ? (
-                                <span className="text-xs text-primary-500 dark:text-primary-400">已在队列</span>
+                                <span className="text-xs text-primary-500 dark:text-primary-700">已在队列</span>
                               ) : (
                                 <button
                                   onClick={() => {
                                     setFittingRuns(prev => [...prev, run])
                                     addToast({ type: 'success', message: `已将 #${run.run_id} 加入拟合队列` })
                                   }}
-                                  className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 transition-colors">
+                                  className="text-primary-500 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-700 transition-colors">
                                   <ChevronRight size={14} />
                                 </button>
                               )}
@@ -855,7 +855,7 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <TrendingUp size={14} className="text-primary-500 dark:text-primary-400" />
+                    <TrendingUp size={14} className="text-primary-500 dark:text-primary-700" />
                     拟合队列（{fittingRuns.length} 组）
                   </CardTitle>
                   {/* 响应参数选选择*/}
@@ -872,7 +872,7 @@ export default function DoePage() {
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-4">
                 {fittingRuns.length === 0 ? (
-                  <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
+                  <div className="text-center py-12 text-neutral-400 dark:text-neutral-400">
                     <FileText size={32} className="mx-auto mb-3 opacity-30" />
                     <p className="text-sm">请通过上方「实验管理导入」或「配方种子」获取真实数据，或在「实验设计」标签页添加</p>
                   </div>
@@ -880,17 +880,17 @@ export default function DoePage() {
                   <div className="space-y-2 max-h-80 overflow-y-auto">
                     {fittingRuns.map(run => (
                       <div key={run.run_id} className="flex items-center gap-3 px-3 py-2 bg-neutral-50/70 dark:bg-neutral-800/40 rounded-lg flex-wrap">
-                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-500 w-6">#{run.run_id}</span>
+                        <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-6">#{run.run_id}</span>
                         {Object.entries(run.factor_levels ?? run.coded_levels ?? {}).slice(0, 6).map(([k, v]) => (
                           <span key={k} className="text-xs font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">{k}={(v as number).toFixed(2)}</span>
                         ))}
                         {run.response_values && Object.keys(run.response_values).length > 0 && (
-                          <span className="text-xs font-mono text-primary-600 dark:text-primary-400">
+                          <span className="text-xs font-mono text-primary-700 dark:text-primary-700">
                             {Object.entries(run.response_values).map(([k, v]) => `${k}=${(v as number).toFixed(2)}`).join(' ')}
                           </span>
                         )}
                         <button onClick={() => setFittingRuns(fittingRuns.filter(r => r.run_id !== run.run_id))}
-                          className="ml-auto text-neutral-400 dark:text-neutral-500 hover:text-danger-500 transition-colors">
+                          className="ml-auto text-neutral-400 dark:text-neutral-400 hover:text-danger-500 transition-colors">
                           <Trash2 size={12} />
                         </button>
                       </div>
@@ -901,7 +901,7 @@ export default function DoePage() {
                 {/* 手动输入响应（选择 y（手动输入） 或没有真实响应时） */}
                 {(fitResponseParam === 'y' || responseCandidates.length === 0) && fittingRuns.length > 0 && (
                   <div className="p-3 bg-primary-50 dark:bg-primary-950/20 rounded-lg border border-primary-200 dark:border-primary-900">
-                    <div className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-2">手动输入响应值（y组</div>
+                    <div className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-2">手动输入响应值（y组</div>
                     <ResponseInputTable runs={fittingRuns} factors={factors} values={responseValues} onChange={updateResponseValue} />
                     <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">{Object.keys(responseValues).length} / {fittingRuns.length} 组已填写</div>
                   </div>
@@ -925,8 +925,8 @@ export default function DoePage() {
               <Card className="border-primary-200 dark:border-primary-800/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-primary-500 dark:text-primary-400" />
-                    <span className="text-primary-700 dark:text-primary-300">拟合结果（响应：{displayRespName}）</span>
+                    <Sparkles size={14} className="text-primary-500 dark:text-primary-700" />
+                    <span className="text-primary-700 dark:text-primary-700">拟合结果（响应：{displayRespName}）</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-4">
@@ -999,7 +999,7 @@ export default function DoePage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Target size={14} className="text-primary-500 dark:text-primary-400" />
+                  <Target size={14} className="text-primary-500 dark:text-primary-700" />
                   反向参数搜索
                 </CardTitle>
               </CardHeader>
@@ -1016,7 +1016,7 @@ export default function DoePage() {
                       icon={<Search size={14} />}>执行反向搜索</Button>
                   </>
                 ) : (
-                  <div className="text-center py-8 text-neutral-400 dark:text-neutral-500">
+                  <div className="text-center py-8 text-neutral-400 dark:text-neutral-400">
                   <p className="text-sm">请先在「响应面拟合」标签页完成模型拟合</p>
                   </div>
                 )}
@@ -1029,7 +1029,7 @@ export default function DoePage() {
                 ? 'border-primary-200 dark:border-primary-800/60'
                 : 'border-warning-300 dark:border-warning-800/60'}>
                 <CardHeader className="px-5 pt-5 pb-3">
-                  <CardTitle as="h3" className={`text-sm font-semibold flex items-center gap-2 ${searchResult.converged ? 'text-primary-700 dark:text-primary-300' : 'text-warning-600 dark:text-warning-400'}`}>
+                  <CardTitle as="h3" className={`text-sm font-semibold flex items-center gap-2 ${searchResult.converged ? 'text-primary-700 dark:text-primary-700' : 'text-warning-600 dark:text-warning-700'}`}>
                     <Sparkles size={14} />
                     搜索结果{!searchResult.converged && '（未收敛，仅供参考）'}
                   </CardTitle>
@@ -1037,20 +1037,20 @@ export default function DoePage() {
                 <CardContent className="px-5 pb-5 pt-0 space-y-4">
                 {/* P2-2 修复：未收敛时强警示，禁用下游操作 */}
                 {!searchResult.converged && (
-                  <div className="p-3 bg-warning-50 dark:bg-warning-950/30 rounded-lg border border-warning-200 dark:border-warning-800 text-xs text-warning-700 dark:text-warning-400">
+                  <div className="p-3 bg-warning-50 dark:bg-warning-950/30 rounded-lg border border-warning-200 dark:border-warning-800 text-xs text-warning-700 dark:text-warning-700">
                     <div>⚠️ 本次搜索未收敛：梯度可能停在局部极小，或目标值超出响应面可达范围。以下数值仅供参考，请勿直接用于生产决策。建议：调整目标值或扩大 factor_bounds，或增加拟合样本后重试。</div>
                   </div>
                 )}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className={`rounded-lg p-3 ${searchResult.converged ? 'bg-primary-50 dark:bg-primary-950/30' : 'bg-warning-50 dark:bg-warning-950/30'}`}>
                     <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">收敛状态</div>
-                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-primary-500 dark:text-primary-400' : 'text-warning-600 dark:text-warning-400'}`}>
+                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-primary-500 dark:text-primary-700' : 'text-warning-600 dark:text-warning-700'}`}>
                     {searchResult.converged ? '✓ 已收敛' : '✗ 未收敛'}
                     </div>
                   </div>
                   <div className="bg-secondary-50 dark:bg-secondary-950/30 rounded-lg p-3">
                     <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">可行性评分</div>
-                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-400 tabular-nums">{(searchResult.feasibility_score ?? 0).toFixed(3)}</div>
+                    <div className="text-lg font-bold text-secondary-600 dark:text-secondary-700 tabular-nums">{(searchResult.feasibility_score ?? 0).toFixed(3)}</div>
                   </div>
                   {Object.entries(searchResult.predicted_factors ?? {}).map(([k, v]) => {
                     const ci = searchResult.confidence_interval?.[k]
@@ -1060,19 +1060,19 @@ export default function DoePage() {
                         <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{k}（实际值）</div>
                         <div className={`text-lg font-bold tabular-nums ${searchResult.converged ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                           {Number(v).toFixed(2)}
-                        {!searchResult.converged && <span className="text-xs text-warning-600 dark:text-warning-400 ml-1">≈</span>}
+                        {!searchResult.converged && <span className="text-xs text-warning-600 dark:text-warning-700 ml-1">≈</span>}
                         </div>
-                        {coded != null && <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">编码 {Number(coded).toFixed(2)}</div>}
-                        {ci && <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">范围 [{Number(ci[0]).toFixed(2)}, {Number(ci[1]).toFixed(2)}]</div>}
+                        {coded != null && <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">编码 {Number(coded).toFixed(2)}</div>}
+                        {ci && <div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">范围 [{Number(ci[0]).toFixed(2)}, {Number(ci[1]).toFixed(2)}]</div>}
                       </div>
                     )
                   })}
                 </div>
                 {searchResult.iteration_count > 0 && (
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500">迭代 {searchResult.iteration_count} 组</div>
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400">迭代 {searchResult.iteration_count} 组</div>
                 )}
                 {searchResult.converged && (
-                  <div className="text-xs text-primary-600 dark:text-primary-400">
+                  <div className="text-xs text-primary-700 dark:text-primary-700">
                     建议：将以上因子组合纳入下一个DOE实验验证                  </div>
                 )}
               </CardContent>
@@ -1087,7 +1087,7 @@ export default function DoePage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Lightbulb size={14} className="text-warning-500 dark:text-warning-400" />
+                  <Lightbulb size={14} className="text-warning-500 dark:text-warning-700" />
                   主动学习推荐
                 </CardTitle>
               </CardHeader>
@@ -1105,7 +1105,7 @@ export default function DoePage() {
                   </div>
                 </div>
                 {fittingRuns.length === 0 && (
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500">请先在「实验设计」标签页将实验组加入拟合队列</div>
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400">请先在「实验设计」标签页将实验组加入拟合队列</div>
                 )}
               </CardContent>
             </Card>
@@ -1114,8 +1114,8 @@ export default function DoePage() {
               <Card className="border-warning-200 dark:border-warning-800/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-warning-500 dark:text-warning-400" />
-                    <span className="text-warning-700 dark:text-warning-400">推荐实验点</span>
+                    <Sparkles size={14} className="text-warning-500 dark:text-warning-700" />
+                    <span className="text-warning-700 dark:text-warning-700">推荐实验点</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-4">
@@ -1128,7 +1128,7 @@ export default function DoePage() {
                             <th key={k} className="px-2 text-center">{k}</th>
                           ))}
                           {Object.keys(activeLearningResult[0]?.factor_levels ?? {}).map(k => (
-                            <th key={`fl-${k}`} className="px-2 text-center text-warning-700 dark:text-warning-400">{k}（实际值）</th>
+                            <th key={`fl-${k}`} className="px-2 text-center text-warning-700 dark:text-warning-700">{k}（实际值）</th>
                           ))}
                         </tr>
                       </thead>
@@ -1137,10 +1137,10 @@ export default function DoePage() {
                           <tr key={i}>
                             <td className="pr-2 text-neutral-500 dark:text-neutral-400 font-mono">{rec.run_id}</td>
                             {Object.entries(rec.coded_levels ?? {}).map(([k, v]) => (
-                              <td key={k} className="px-2 text-center font-mono text-primary-600 dark:text-primary-400 tabular-nums">{(v as number).toFixed(4)}</td>
+                              <td key={k} className="px-2 text-center font-mono text-primary-700 dark:text-primary-700 tabular-nums">{(v as number).toFixed(4)}</td>
                             ))}
                             {Object.entries(rec.factor_levels ?? {}).map(([k, v]) => (
-                              <td key={`fl-${k}`} className="px-2 text-center font-mono text-warning-700 dark:text-warning-400 tabular-nums">{(v as number).toFixed(2)}</td>
+                              <td key={`fl-${k}`} className="px-2 text-center font-mono text-warning-700 dark:text-warning-700 tabular-nums">{(v as number).toFixed(2)}</td>
                             ))}
                           </tr>
                         ))}
@@ -1153,7 +1153,7 @@ export default function DoePage() {
                       采样策略
                     </div>
                   )}
-                  <div className="text-xs text-neutral-400 dark:text-neutral-500">
+                  <div className="text-xs text-neutral-400 dark:text-neutral-400">
                     提示：将以上推荐点加入实验队列，执行实验后回填响应值，可进一步改善响应面模型精度。
                   </div>
                   {closeLoopExpId && (
@@ -1162,7 +1162,7 @@ export default function DoePage() {
                         icon={<Send size={13} />} className="text-xs">
                         把推荐点写回实验 {closeLoopExpId}（闭环）
                       </Button>
-                      <div className="mt-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+                      <div className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-400">
                         来源：{importedMeta ? `实验导入 #${importedMeta.expId}` : seedMeta ? `配方种子「${seedMeta.formulaName}」→ 实验 ${seedMeta.experimentId}` : '-'}
                       </div>
                     </div>

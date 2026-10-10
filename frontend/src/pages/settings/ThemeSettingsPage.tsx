@@ -332,8 +332,8 @@ const ThemeSettingsPage: React.FC = () => {
               onClick={exportThemeConfig}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center mb-3">
-                <Download size={24} className="text-secondary-600 dark:text-secondary-400" />
+              <div className="w-12 h-12 rounded-full bg-secondary-100 dark:bg-secondary-300/25 flex items-center justify-center mb-3">
+                <Download size={24} className="text-secondary-600 dark:text-secondary-700" />
               </div>
               <span className="font-semibold text-text-primary">导出配置</span>
               <span className="text-xs text-text-secondary mt-1">保存为 JSON 文件</span>
@@ -344,8 +344,8 @@ const ThemeSettingsPage: React.FC = () => {
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center mb-3">
-                <Upload size={24} className="text-success-600 dark:text-success-400" />
+              <div className="w-12 h-12 rounded-full bg-success-100 dark:bg-success-300/25 flex items-center justify-center mb-3">
+                <Upload size={24} className="text-success-600 dark:text-success-600" />
               </div>
               <span className="font-semibold text-text-primary">导入配置</span>
               <span className="text-xs text-text-secondary mt-1">从文件恢复设置</span>
@@ -354,8 +354,7 @@ const ThemeSettingsPage: React.FC = () => {
                 type="file"
                 accept=".json"
                 onChange={handleImportTheme}
-                className="hidden"
-              />
+                className="hidden" aria-hidden="true" tabIndex={-1} />
             </button>
 
             {/* 分享 */}
@@ -367,8 +366,8 @@ const ThemeSettingsPage: React.FC = () => {
               }}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center mb-3">
-                <Share2 size={24} className="text-accent-600 dark:text-accent-400" />
+              <div className="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center mb-3">
+                <Share2 size={24} className="text-accent-600 dark:text-accent-700" />
               </div>
               <span className="font-semibold text-text-primary">分享页面</span>
               <span className="text-xs text-text-secondary mt-1">复制当前链接</span>

@@ -145,7 +145,7 @@ function IngredientsSkeleton() {
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+          <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
             <tr>
               {['#', '成分名称', '用量(g)', '分类', '来源', '药食同源'].map((_, i) => (
                 <th key={i} className="p-3">

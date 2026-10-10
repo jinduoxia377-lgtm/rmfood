@@ -231,7 +231,7 @@ export function ExportModal({
     >
       <div className="space-y-6">
         {error && (
-          <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
             <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-error-700 dark:text-error-600">{error}</p>
           </div>
@@ -249,8 +249,8 @@ export function ExportModal({
                 key={option.value}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
                   scope === option.value
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
-                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800/50'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20 shadow-sm'
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                 }`}
               >
                 <input
@@ -320,6 +320,8 @@ export function ExportModal({
           <div className="space-y-3">
             <Checkbox
               id="exp-ingredients"
+              /* A-23：Radix 渲染的是 <button role=checkbox>，兄弟 <label htmlFor> 无法为其提供可访问名称，必须显式给 aria-label。 */
+              aria-label="包含成分详细信息"
               checked={includeIngredients}
               onCheckedChange={(checked) => setIncludeIngredients(checked as boolean)}
               disabled={isExporting}
@@ -328,6 +330,8 @@ export function ExportModal({
 
             <Checkbox
               id="exp-steps"
+              /* A-23：Radix 渲染的是 <button role=checkbox>，兄弟 <label htmlFor> 无法为其提供可访问名称，必须显式给 aria-label。 */
+              aria-label="包含制作步骤"
               checked={includeSteps}
               onCheckedChange={(checked) => setIncludeSteps(checked as boolean)}
               disabled={isExporting}
@@ -336,6 +340,8 @@ export function ExportModal({
 
             <Checkbox
               id="exp-analysis"
+              /* A-23：Radix 渲染的是 <button role=checkbox>，兄弟 <label htmlFor> 无法为其提供可访问名称，必须显式给 aria-label。 */
+              aria-label="包含 AI 分析结果（可能导致文件较大）"
               checked={includeAnalysis}
               onCheckedChange={(checked) => setIncludeAnalysis(checked as boolean)}
               disabled={isExporting}

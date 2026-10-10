@@ -96,7 +96,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-primary-700 animate-spin" />
           <span className="text-sm text-text-muted">正在加载业务洞察…</span>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
     return (
       <div className="p-4 rounded-lg bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/40 flex items-center gap-3">
         <AlertCircle className="w-5 h-5 text-error-600 flex-shrink-0" />
-        <span className="text-sm text-error-700 dark:text-error-400">{error}</span>
+        <span className="text-sm text-error-700 dark:text-error-600">{error}</span>
       </div>
     )
   }
@@ -166,7 +166,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
           value={lifecycle_funnel.total_formulas.toLocaleString()}
           sub="含全部状态"
           icon={<FlaskConical className="w-4 h-4" />}
-          color="text-primary-600"
+          color="text-primary-700"
         />
         <StatCard
           label="平均成分数"
@@ -181,7 +181,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <FlaskConical className="w-4 h-4 text-primary-600" />
+            <FlaskConical className="w-4 h-4 text-primary-700" />
             配方生命周期转化漏斗
           </CardTitle>
         </CardHeader>
@@ -193,7 +193,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
           )}
           {sankeyStages.length > 1 && (
             <div className="mt-2 text-xs text-text-muted text-right">
-              整体转化率 <span className="font-bold text-primary-600">{lifecycle_funnel.total_conversion}%</span>
+              整体转化率 <span className="font-bold text-primary-700">{lifecycle_funnel.total_conversion}%</span>
             </div>
           )}
         </CardContent>
@@ -277,9 +277,9 @@ export default function BusinessInsightsTab({ filters }: Props) {
       </div>
 
       {/* ── 药食同源说明 ── */}
-      <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-400">
+      <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
         <p className="font-medium mb-1">药食同源分析说明</p>
-        <p className="text-xs text-info-600 dark:text-info-500">
+        <p className="text-xs text-info-600 dark:text-info-700">
           药食同源食材指国家卫健委发布的《既是食品又是药品的物品名单》中的原料。
           本模块统计含药食同源食材的配方占比、食材共现规律，以及 AI 辅助设计的采纳率。
         </p>
@@ -305,11 +305,11 @@ function StatCard({
   return (
     <Card className="px-4 py-3">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[11px] text-text-muted">{label}</p>
+        <p className="text-xs text-text-muted">{label}</p>
         <span className={`${color}`}>{icon}</span>
       </div>
       <p className="text-xl font-bold text-text-primary">{value}</p>
-      <p className="text-[10px] text-text-muted mt-0.5">{sub}</p>
+      <p className="text-xs text-text-muted mt-0.5">{sub}</p>
     </Card>
   )
 }

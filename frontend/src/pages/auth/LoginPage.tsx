@@ -1,62 +1,38 @@
 /**
- * RMFOOD — 登录页面
+ * RMFOOD — 登录页面 (莱茵分子 · Rhine Molecular)
  *
- * 主题系统规范对齐版 (DESIGN.md v2.0 / Dashboard 基准)
- * - 页面背景使用 bg-grid 点阵 + var(--bg-canvas)，与 /dashboard 视觉统一
- * - 容器宽度 max-w-7xl，垂直节奏 space-y-4
- * - 卡片使用全局 Card 体系：rounded-xl bg-primary-600 欢迎横幅 + 顶部 accent bar
- * - 输入框 / 按钮 / 提示 全部对接全局语义令牌，Light/Dark 双模式自适应
- * - 字号基线：页面标题 16px，区块副标题/说明 12px，Tab/辅助 14px
- * - WCAG 2.1 AA 可访问性
+ * 主题系统设计规范对齐版 v5.0 — 双栏深度重构
+ *
+ * 设计基准 (frontend/design-system/DESIGN.md + RMFOOD-主题系统设计规范.md):
+ * ── 桌面端 (≥1024px) 双栏布局:
+ *    左栏 = 品牌叙事区 (Logo + 主张 + 三大支柱: 基因组学/蛋白质组学/人工智能)
+ *    右栏 = 登录卡片 (440px 主内容宽度, 表单/社交/预登记/安全说明)
+ * ── 移动端 (<1024px): 品牌条 + 单卡片全宽, 支柱区收起
+ * ── 所有颜色/间距/圆角/阴影/字号全部对接全局语义令牌 (--color-*, --text-*,
+ *    --bg-*, --space-*, --radius-*, --shadow-*), Light/Dark 双模式自动适配
+ * ── 字号基线 (对齐主题令牌 --text-*): 卡片标题 22px (h4, 卡片标题级),
+ *    副标题 14px (body-sm), 正文 15px (body), 注释 12px (caption),
+ *    品牌主张 28px (h2), 品牌名 24px (h3), 支柱 14px (body-sm)
+ * ── WCAG 2.1 AA: 44×44 触控目标、完整 ARIA、skip link、键盘可达
+ * ── 交互: 输入聚焦环、按钮涟漪、卡片入场动画 (尊重 prefers-reduced-motion)
  */
 import {
-  useState, useCallback, useRef, useLayoutEffect,
+  useState, useCallback, useRef, useLayoutEffect, useEffect,
   type FC, type FormEvent, type ChangeEvent,
   type FocusEvent, type MouseEvent as RMouseEvent,
+  type KeyboardEvent as RKeyboardEvent,
+  type CSSProperties,
 } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   Eye, EyeOff, User, Lock, AlertCircle, CheckCircle2,
-  Shield, type LucideIcon,
+  Shield, Mail, Send, Dna, BoxSelect, BrainCircuit,
+  ArrowRight, type LucideIcon,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
+import { authApi } from '@/api/auth'
 import { RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG } from '@/config'
-
-import { logger } from '@/utils/safeLogger';
 import './LoginPage.css'
-
-/* ═══════════════════════════════════════════════════════════════
-   Startup Validation — OAuth credentials
-   NOTE: This must NOT throw at module scope — it would crash the
-   entire SPA. Instead, warn in console and let the config layer
-   auto-disable providers that lack credentials.
-   ═══════════════════════════════════════════════════════════════ */
-
-const OAUTH_CHECK: Record<string, string> = {
-  VITE_WECHAT_APPID: '微信 OAuth (VITE_WECHAT_APPID)',
-  VITE_QQ_APPID: 'QQ OAuth (VITE_QQ_APPID)',
-  VITE_GITHUB_CLIENT_ID: 'GitHub OAuth (VITE_GITHUB_CLIENT_ID)',
-}
-
-function checkOAuthEnvVars() {
-  const missing: string[] = []
-  for (const [key, label] of Object.entries(OAUTH_CHECK)) {
-    const val = import.meta.env[key]
-    if (!val || val.startsWith('YOUR_')) {
-      missing.push(label)
-    }
-  }
-  if (missing.length > 0) {
-    // 降噪：OAuth 凭证缺失是预期配置（开发态 .env 留空，社交登录被自动禁用）。
-    // 原实现每次加载登录页都打一条 WARN，刷屏且非错误；降级为 debug。
-    // 真要启用社交登录时，请填入真实 VITE_* 变量而非依赖此告警。
-    logger.debug(
-      `[Login] OAuth 未配置（社交登录已自动禁用）：缺少 ${missing.join(', ')}。`
-    )
-  }
-}
-
-checkOAuthEnvVars()
 
 /* ═══════════════════════════════════════════════════════════════
    Types
@@ -102,16 +78,20 @@ const SocialLoginSection: FC = () => {
     }
   }, [])
 
+  /* ── P0-2: 图标统一继承 CSS color (currentColor), 不再硬编码品牌原色
+     GitHub 原 #f0f6fc 近白色在浅色卡片上不可见, 现由 .rhine-social-icon-wrap 统一着色 */
+  const socialIconFill = 'currentColor'
+
   /* ── 微信图标 ── */
   const WechatIcon = () => (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.wechat.color} aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socialIconFill} aria-hidden="true">
       <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.325.325 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18z"/>
     </svg>
   )
 
   /* ── QQ 企鹅图标 ── */
   const QQIcon = () => (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.qq.color} aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socialIconFill} aria-hidden="true">
       <path d="M12.003 2c-2.265 0-4.346 1.09-5.707 2.793-.403.505-.75 1.056-1.024 1.64C4.088 8.41 4 10.428 4 12c0 3.52 1.187 6.477 3.033 8.308.487.483 1.108.926 1.837 1.252.536.24 1.148.397 1.796.428.11.005.223.012.334.012.111 0 .225-.007.334-.012.648-.031 1.26-.188 1.796-.428.729-.326 1.35-.77 1.837-1.252C18.813 18.477 20 15.52 20 12c0-1.572-.088-3.59-1.27-5.567-.273-.584-.62-1.135-1.023-1.64C16.35 3.09 14.268 2 12.003 2z"/>
       <ellipse cx="8.5" cy="11" rx="1.5" ry="2" fill="#fff" opacity="0.9"/>
       <ellipse cx="15.5" cy="11" rx="1.5" ry="2" fill="#fff" opacity="0.9"/>
@@ -121,7 +101,7 @@ const SocialLoginSection: FC = () => {
 
   /* ── GitHub 图标 ── */
   const GitHubIcon = () => (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.github.color} aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socialIconFill} aria-hidden="true">
       <path fillRule="evenodd" clipRule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
     </svg>
   )
@@ -182,22 +162,235 @@ const SocialLoginSection: FC = () => {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Brand Strip — 桌面端左上品牌区 (Dashboard 风格，无动画)
+   PreRegister Section — 邮箱预登记 (平台暂未开放自助注册)
+   折叠入口: 未认证用户可留下联系方式, 由管理员开通账号
    ═══════════════════════════════════════════════════════════════ */
-const BrandOverlay: FC = () => {
-  return (
-    <div className="rhine-brand-overlay">
-      <div className="rhine-brand-logo">
-        <div className="rhine-brand-icon" aria-hidden="true">
-          <Shield size={19} />
-        </div>
-        <div>
-          <div className="rhine-brand-name">{RHINE_BRAND_CONFIG.name}</div>
-          <div className="rhine-brand-name-en">{RHINE_BRAND_CONFIG.nameEn}</div>
-        </div>
+const PreRegisterSection: FC = () => {
+  const [expanded, setExpanded] = useState(false)
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [department, setDepartment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [err, setErr] = useState('')
+  const [ok, setOk] = useState('')
+
+  /* ── F1-3修复: 焦点管理 — 展开/收起/提交成功三处状态切换时,
+     原实现中被替换掉的按钮从 DOM 移除后焦点会掉回 body (键盘用户彻底失去位置)。
+     现按状态显式接管: 展开 → 邮箱输入框; 成功 → 结果容器 (tabIndex=-1); 收起 → 入口按钮。
+     首次挂载跳过, 避免抢走登录表单用户名的 autoFocus。 */
+  const emailRef = useRef<HTMLInputElement>(null)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const mounted = useRef(false)
+  const prevExpanded = useRef(false)
+  const prevOk = useRef('')
+  useEffect(() => {
+    if (!mounted.current) {
+      /* 首次挂载仅记录基线, 不抢焦点 (避免覆盖登录表单用户名的 autoFocus) */
+      mounted.current = true
+      prevExpanded.current = expanded
+      prevOk.current = ok
+      return
+    }
+    /* React StrictMode 下 effect 会 mount→cleanup→mount 双调用 (ref 保留),
+       仅比较「值是否真的变化」, 防止重复挂载时误触发 focus → toggle */
+    if (expanded === prevExpanded.current && ok === prevOk.current) return
+    prevExpanded.current = expanded
+    prevOk.current = ok
+    if (expanded) {
+      if (ok) resultRef.current?.focus()
+      else emailRef.current?.focus()
+    } else {
+      toggleRef.current?.focus()
+    }
+  }, [expanded, ok])
+
+  const handleSubmit = useCallback(async (e: FormEvent) => {
+    e.preventDefault()
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setErr('请输入有效的邮箱地址'); return
+    }
+    setErr(''); setSubmitting(true)
+    try {
+      await authApi.preRegister({ email: email.trim(), fullName: name.trim() || undefined, department: department.trim() || undefined })
+      setOk('预登记成功，管理员将尽快与您联系开通账号')
+    } catch {
+      setErr('提交失败，请稍后重试')
+    } finally { setSubmitting(false) }
+  }, [email, name, department])
+
+  if (!expanded) {
+    return (
+      <div className="rhine-preregister">
+        <button
+          ref={toggleRef}
+          type="button"
+          className="rhine-preregister-toggle"
+          onClick={() => setExpanded(true)}
+          aria-expanded="false"
+        >
+          <Mail size={15} aria-hidden="true" />
+          <span>申请开通账号？留下您的邮箱</span>
+        </button>
       </div>
-      <p className="rhine-brand-tagline">{RHINE_BRAND_CONFIG.tagline}</p>
+    )
+  }
+
+  return (
+    <div className="rhine-preregister">
+      <div className="rhine-preregister-head">
+        <span className="rhine-preregister-title">
+          <Mail size={14} aria-hidden="true" /> 账号申请
+        </span>
+        <span className="rhine-preregister-sub">
+          平台暂未开放自助注册，填写邮箱后管理员将联系您开通账号
+        </span>
+      </div>
+
+      <form className="rhine-preregister-form" onSubmit={handleSubmit} noValidate>
+        {ok ? (
+          /* F1-3修复: tabIndex=-1 使结果容器可编程聚焦, 承接提交后焦点 */
+          <div ref={resultRef} tabIndex={-1}
+            className="rhine-preregister-result rhine-preregister-result-ok" role="status">
+            <CheckCircle2 size={15} aria-hidden="true" /><span>{ok}</span>
+          </div>
+        ) : (
+          <>
+            {/* F2-9修复: 错误提示挂 id, 供邮箱输入框 aria-describedby 关联 */}
+            {err && <div id="rhine-prereg-err" className="rhine-alert rhine-alert-error" role="alert">
+              <AlertCircle size={15} className="rhine-alert-icon" aria-hidden="true" /><span>{err}</span>
+            </div>}
+
+            <div className="rhine-form-group">
+              <label htmlFor="rhine-prereg-email" className="rhine-label">邮箱 <span className="rhine-label-opt">（必填）</span></label>
+              <div className="rhine-input-wrap">
+                <Mail size={18} className="rhine-input-icon" aria-hidden="true" />
+                {/* F2-9修复: 邮箱校验错误与主表单对齐 — error 红框 + aria-invalid + describedby
+                    (原仅顶部 alert, 字段无视觉/语义错误态) */}
+                <input ref={emailRef} id="rhine-prereg-email" type="email"
+                  className={`rhine-input${err ? ' error' : ''}`} value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (err) setErr('') }}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  aria-required="true" aria-invalid={!!err}
+                  aria-describedby={err ? 'rhine-prereg-err' : undefined} />
+              </div>
+            </div>
+
+            <div className="rhine-preregister-row">
+              <div className="rhine-form-group">
+                <label htmlFor="rhine-prereg-name" className="rhine-label">姓名 <span className="rhine-label-opt">（选填）</span></label>
+                <input id="rhine-prereg-name" type="text"
+                  className="rhine-input" value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="您的姓名" autoComplete="name" />
+              </div>
+              <div className="rhine-form-group">
+                <label htmlFor="rhine-prereg-dept" className="rhine-label">部门 <span className="rhine-label-opt">（选填）</span></label>
+                <input id="rhine-prereg-dept" type="text"
+                  className="rhine-input" value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="所在部门" />
+              </div>
+            </div>
+
+            <div className="rhine-preregister-actions">
+              <button
+                type="submit"
+                className="rhine-preregister-submit"
+                disabled={submitting}
+                aria-busy={submitting}
+              >
+                {submitting ? (
+                  <span className="rhine-spinner" aria-hidden="true" />
+                ) : (
+                  <Send size={14} aria-hidden="true" />
+                )}
+                <span>{submitting ? '提交中…' : '提交预登记'}</span>
+              </button>
+              <button
+                type="button"
+                className="rhine-preregister-cancel"
+                onClick={() => { setExpanded(false); setErr(''); setEmail(''); setName(''); setDepartment('') }}
+                disabled={submitting}
+              >
+                返回登录
+              </button>
+            </div>
+          </>
+        )}
+      </form>
     </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Brand Panel — 桌面端左侧品牌叙事区 (≥1024px)
+   Logo + 主张 + 三大支柱 (基因组学 / 蛋白质组学 / 人工智能)
+   ═══════════════════════════════════════════════════════════════ */
+const PILLAR_ICON_MAP: Record<string, LucideIcon> = {
+  Dna: Dna,
+  BoxSelect: BoxSelect,
+  BrainCircuit: BrainCircuit,
+  Leaf: Dna,
+  Cpu: BrainCircuit,
+  Shield: Shield,
+}
+
+const BrandPanel: FC = () => {
+  const pillars = RHINE_BRAND_CONFIG.pillars
+
+  return (
+    <aside className="rhine-brand-panel" aria-label="品牌介绍">
+      {/* 背景纹理层 — 点阵网格 + 径向光晕, 与 Dashboard bg-grid 同规格 */}
+      <div className="rhine-brand-panel-bg" aria-hidden="true" />
+
+      <div className="rhine-brand-panel-inner">
+        {/* ── 品牌标识 ── */}
+        <div className="rhine-brand-id">
+          <div className="rhine-brand-logo">
+            <div className="rhine-brand-logo-mark" aria-hidden="true">
+              <Shield size={20} />
+            </div>
+            <div className="rhine-brand-logo-text">
+              <span className="rhine-brand-name">{RHINE_BRAND_CONFIG.name}</span>
+              <span className="rhine-brand-name-en">{RHINE_BRAND_CONFIG.nameEn}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 主张 ── */}
+        <div className="rhine-brand-claim">
+          <p className="rhine-brand-tagline">{RHINE_BRAND_CONFIG.tagline}</p>
+          <h1 className="rhine-brand-headline">{RHINE_BRAND_CONFIG.description}</h1>
+        </div>
+
+        {/* ── 三大支柱 ── */}
+        <ul className="rhine-brand-pillars">
+          {pillars.map((p, i) => {
+            const Icon = PILLAR_ICON_MAP[p.icon] ?? Shield
+            return (
+              <li key={p.title} className="rhine-pillar"
+                style={{ '--pillar-delay': `${i * 90}ms` } as CSSProperties}>
+                <span className="rhine-pillar-icon" aria-hidden="true">
+                  <Icon size={18} />
+                </span>
+                <span className="rhine-pillar-body">
+                  <span className="rhine-pillar-title">
+                    {p.title}
+                    <span className="rhine-pillar-subtitle">{p.subtitle}</span>
+                  </span>
+                  <span className="rhine-pillar-desc">{p.description}</span>
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+
+        {/* ── 底部版权 ── */}
+        <p className="rhine-brand-copyright">{RHINE_BRAND_CONFIG.copyright}</p>
+      </div>
+    </aside>
   )
 }
 
@@ -221,7 +414,16 @@ export default function RhineLoginPage() {
   const [loading, setLoading] = useState(false)
   const [userErr, setUserErr] = useState('')
   const [passErr, setPassErr] = useState('')
-  const [rateLimitRemaining, setRateLimitRemaining] = useState(0)
+  /* F3-3: 大写锁定检测 (密码框聚焦期间) */
+  const [capsOn, setCapsOn] = useState(false)
+
+  /* 429 限频倒计时 (秒) — 与 429 错误提示联动 */
+  const [rateCountdown, setRateCountdown] = useState(0)
+  useLayoutEffect(() => {
+    if (rateCountdown <= 0) return
+    const t = setTimeout(() => setRateCountdown((s) => (s > 1 ? s - 1 : 0)), 1000)
+    return () => clearTimeout(t)
+  }, [rateCountdown])
 
   /* ── Validation ── */
   const validateUser = useCallback((v: string) => {
@@ -259,20 +461,36 @@ export default function RhineLoginPage() {
   }, [passErr])
   const handlePassBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
     setPassErr(validatePass(password))
+    setCapsOn(false) /* F3-3: 失焦后不再提示大写锁定 */
   }, [password, validatePass])
+
+  /* F3-3: 仅在密码框聚焦时探测 CapsLock 状态 (getModifierState 为 KeyboardEvent 标准 API) */
+  const handlePassKeyUp = useCallback((e: RKeyboardEvent<HTMLInputElement>) => {
+    const on = typeof e.getModifierState === 'function' ? e.getModifierState('CapsLock') : false
+    setCapsOn((prev) => (prev === on ? prev : on))
+  }, [])
 
   /* ── Submit ── */
   const handleSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault()
+    if (rateCountdown > 0) { userRef.current?.focus(); return }
     const ue = validateUser(username); const pe = validatePass(password)
     setUserErr(ue); setPassErr(pe)
     if (ue) { userRef.current?.focus(); return }
     if (pe) { passRef.current?.focus(); return }
-    setError(''); setRateLimitRemaining(0); setLoading(true)
+    setError(''); setRateCountdown(0); setLoading(true)
     try {
       await login(username, password)
-      if (remember) { sessionStorage.setItem('rhine_remember', '1'); sessionStorage.setItem('rhine_user', username) }
-      else { sessionStorage.removeItem('rhine_remember'); sessionStorage.removeItem('rhine_user') }
+      if (remember) {
+        sessionStorage.setItem('rhine_remember', '1')
+        sessionStorage.setItem('rhine_user', username)
+        /* F3-2修复: 补 SameSite=Lax (原缺失, 无该属性时现代浏览器按 Lax 处理但行为不一致) */
+        document.cookie = `rhine_user=${encodeURIComponent(username)}; path=/; max-age=604800; SameSite=Lax`
+      } else {
+        sessionStorage.removeItem('rhine_remember')
+        sessionStorage.removeItem('rhine_user')
+        document.cookie = 'rhine_user=; path=/; max-age=0; SameSite=Lax'
+      }
       setSuccess(msg.loginSuccess)
       setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err: unknown) {
@@ -283,13 +501,14 @@ export default function RhineLoginPage() {
       const s = resp?.status ?? null
       if (s === 429) {
         const retryAfter = parseInt((resp?.headers?.['retry-after'] as string | undefined) ?? '60', 10)
-        setRateLimitRemaining(isNaN(retryAfter) ? 60 : retryAfter)
-        setError(`验证请求过于频繁，请 ${isNaN(retryAfter) ? 60 : retryAfter} 秒后重试`)
+        const secs = isNaN(retryAfter) ? 60 : retryAfter
+        setRateCountdown(secs)
+        setError('验证请求过于频繁，请稍后再试')
       } else {
         setError(s === 401 ? msg.errorAuth : msg.errorNetwork)
       }
     } finally { setLoading(false) }
-  }, [username, password, remember, validateUser, validatePass, login, navigate, msg])
+  }, [username, password, remember, validateUser, validatePass, login, navigate, msg, rateCountdown])
 
   /* ── Ripple ── */
   const handleBtnClick = useCallback((e: RMouseEvent<HTMLButtonElement>) => {
@@ -315,14 +534,16 @@ export default function RhineLoginPage() {
         {/* 背景层 — Dashboard 基准：bg-grid 点阵 + var(--bg-canvas) */}
         <div className="rhine-bg-layer" aria-hidden="true" />
 
-        {/* 品牌叠加层 (桌面端) */}
-        <BrandOverlay />
+        {/* 品牌叙事面板 (桌面端) — 移动端收起, 由下方品牌条承接 */}
+        <BrandPanel />
 
-        {/* 移动端品牌条 */}
+        {/* 移动端品牌条
+            F2-7修复: <1024px 时桌面品牌面板(h1 所在)被隐藏, 页面原本没有 h1。
+            此品牌名改由 <h1> 承载 (视觉不变), 保证移动端标题层级完整。 */}
         <div className="rhine-mobile-brand">
           <div className="rhine-mobile-logo">
             <div className="rhine-mobile-logo-icon" aria-hidden="true"><Shield size={17} /></div>
-            <span className="rhine-mobile-logo-text">{RHINE_BRAND_CONFIG.name}</span>
+            <h1 className="rhine-mobile-logo-text">{RHINE_BRAND_CONFIG.name}</h1>
           </div>
         </div>
 
@@ -331,18 +552,24 @@ export default function RhineLoginPage() {
           <div className="rhine-form-content">
             <div id="rhine-login-form" className="rhine-card">
 
-              {/* 卡片头部 — 欢迎横幅：rounded-xl bg-primary-600 含顶部 accent bar */}
+              {/* 卡片头部 — 欢迎横幅: 卡片标题 (h4 级 22px) + 副标题 (body-sm 14px)
+                  P1-1: 移除装饰性 accent bar — 登录是单一任务页, 卡片靠阴影+hairline 边框建立层级 */}
               <div className="rhine-card-header">
-                <div className="rhine-card-accent" aria-hidden="true" />
                 <h2>{msg.welcome}</h2>
                 <p>{msg.prompt}</p>
               </div>
 
-              {/* 错误提示 */}
+              {/* 错误提示区 — 同时显示动态倒计时 (限频冷却期内) */}
               {error && (
                 <div className="rhine-alert rhine-alert-error" role="alert">
                   <AlertCircle size={16} className="rhine-alert-icon" aria-hidden="true" />
-                  <span>{error}</span>
+                  {/* F2-8修复: 倒计时秒数对辅助技术隐藏。
+                      原实现把「（Ns）」拼进 role="alert" 文本, 每秒改写 live region →
+                      屏幕阅读器每秒打断播报。现仅视觉可见; 冷却语义由按钮禁用态承载。 */}
+                  <span>
+                    {error}
+                    {rateCountdown > 0 && <span aria-hidden="true">（{rateCountdown}s）</span>}
+                  </span>
                 </div>
               )}
 
@@ -381,6 +608,7 @@ export default function RhineLoginPage() {
                       type={showPw ? 'text' : 'password'}
                       className={`rhine-input${password ? ' filled' : ''}${passErr ? ' error' : ''}`}
                       value={password} onChange={handlePassChange} onBlur={handlePassBlur}
+                      onKeyUp={handlePassKeyUp}
                       placeholder={msg.passwordPlaceholder}
                       autoComplete="current-password"
                       aria-required="true" aria-invalid={!!passErr}
@@ -392,35 +620,51 @@ export default function RhineLoginPage() {
                     </button>
                   </div>
                   {passErr && <p id="rhine-pass-err" className="rhine-error-text" role="alert">{passErr}</p>}
+                  {/* F3-3: 大写锁定提示 — 与校验错误互斥, 避免同一行堆叠两条提示 */}
+                  {!passErr && capsOn && (
+                    <p className="rhine-caps-hint" role="status">大写锁定已开启，可能导致密码输入错误</p>
+                  )}
                 </div>
 
                 {/* 选项行 */}
                 <div className="rhine-form-options">
-                  <label className="rhine-remember">
-                    <div
-                      className={`rhine-remember-check${remember ? ' checked' : ''}`}
-                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRemember(!remember) } }}
-                      role="checkbox" aria-checked={remember} tabIndex={0}
-                      aria-label={remember ? '已勾选：保持登录' : '未勾选：保持登录'}
-                    >
-                      {remember && <CheckCircle2 size={14} />}
-                    </div>
+                  <label className="rhine-remember" htmlFor="rhine-remember">
+                    {/* P3-2: 原生 checkbox — 屏幕阅读器兼容性优于 div[role=checkbox],
+                        外观由 CSS 自定义 (appearance: none + 视觉 18px), 可点热区 44px */}
+                    <input
+                      id="rhine-remember"
+                      type="checkbox"
+                      className="rhine-remember-check"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      aria-label={remember ? '取消保持登录' : '保持登录'}
+                    />
                     <span>{msg.rememberMe}</span>
                   </label>
                   <Link to="/forgot-password" className="rhine-forgot-link">{msg.forgotPassword}</Link>
                 </div>
 
-                {/* 主提交按钮 */}
+                {/* 主提交按钮 — 限频冷却期内禁用 */}
                 <button type="submit" className="rhine-submit-btn"
-                  disabled={loading} onClick={handleBtnClick}
-                  aria-label={loading ? msg.loggingIn : msg.loginButton}
+                  disabled={loading || rateCountdown > 0} onClick={handleBtnClick}
+                  aria-label={loading ? msg.loggingIn : (rateCountdown > 0 ? `请 ${rateCountdown} 秒后重试` : msg.loginButton)}
                   aria-busy={loading}>
                   {loading ? (
                     <span className="rhine-btn-content">
                       <span className="rhine-spinner" aria-hidden="true" />
                       <span>{msg.loggingIn}</span>
                     </span>
-                  ) : msg.loginButton}
+                  ) : rateCountdown > 0 ? (
+                    /* F2-8: 冷却期按钮文案与禁用态一致, 视觉上直接说明剩余时间 */
+                    <span className="rhine-btn-content">
+                      <span>请 {rateCountdown}s 后重试</span>
+                    </span>
+                  ) : (
+                    <span className="rhine-btn-content">
+                      <span>{msg.loginButton}</span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </span>
+                  )}
                 </button>
               </form>
 
@@ -433,6 +677,9 @@ export default function RhineLoginPage() {
                   <SocialLoginSection />
                 </div>
               )}
+
+              {/* 邮箱预注册模块 — 平台暂未开放自助注册，仅提供邮箱预登记通道 */}
+              <PreRegisterSection />
 
               {/* 安全提示 */}
               <div className="rhine-security-note">
@@ -448,11 +695,6 @@ export default function RhineLoginPage() {
                 </div>
               </div>
             </div>
-
-            {/* 注册状态提示 — 卡片正下方，在 rhine-form-content 内垂直堆叠 */}
-            <p className="rhine-registration-notice">
-              平台暂未开放自助注册，请联系管理员开通账号
-            </p>
           </div>
         </div>
       </div>

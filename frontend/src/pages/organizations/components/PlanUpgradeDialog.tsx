@@ -104,7 +104,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
         {/* Current Plan */}
         <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/30 rounded-xl border border-neutral-200 dark:border-neutral-800">
           <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前计划:</span>
-          <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700">
+          <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700">
             {PLAN_CONFIG.find(p => p.value === organization?.plan)?.label || organization?.plan}
           </span>
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">· {organization?.memberCount} 成员 · {organization?.teamCount} 团队</span>
@@ -119,7 +119,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
               className={cn(
                 'relative rounded-xl border-2 p-5 text-left transition-all',
                 selectedPlan === plan.value
-                  ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20 shadow-md'
+                  ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20 shadow-md'
                   : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700',
                 plan.highlight && 'ring-2 ring-accent-500/30',
               )}
@@ -157,7 +157,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
 
         {/* DANGER: Downgrade warning */}
         {!canDowngrade() && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-900/20 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-300/20 rounded-lg px-4 py-3">
             <AlertCircle className="w-4 h-4 shrink-0" />
             当前成员数 ({organization?.memberCount}) 或团队数 ({organization?.teamCount}) 超过目标计划限制
           </div>

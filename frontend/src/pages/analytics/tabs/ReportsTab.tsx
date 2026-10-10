@@ -203,16 +203,16 @@ export default function ReportsTab({ filters }: Props) {
   }
 
   const FORMAT_COLORS: Record<string, string> = {
-    pdf: 'text-error-600 bg-error-50 dark:bg-red-950/40',
-    excel: 'text-success-600 bg-success-50 dark:bg-green-950/40',
-    csv: 'text-secondary-600 bg-secondary-50 dark:bg-blue-950/40',
+    pdf: 'text-error-600 bg-error-50 dark:bg-error-950/40',
+    excel: 'text-success-600 bg-success-50 dark:bg-success-950/40',
+    csv: 'text-secondary-600 bg-secondary-50 dark:bg-secondary-950/40',
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary-700 animate-spin" />
           <span className="text-sm text-text-muted">正在加载报表模板…</span>
         </div>
       </div>
@@ -240,8 +240,8 @@ export default function ReportsTab({ filters }: Props) {
       {exportMsg && (
         <div className={`p-3 rounded-lg border text-sm flex items-center gap-2 ${
           exportMsg.startsWith('导出失败')
-            ? 'bg-error-50 dark:bg-error-950/20 border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-400'
-            : 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900/40 text-success-700 dark:text-success-400'
+            ? 'bg-error-50 dark:bg-error-950/20 border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-600'
+            : 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900/40 text-success-700 dark:text-success-600'
         }`}>
           {exportMsg.startsWith('导出失败') ? <Settings2 className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           <span>{exportMsg}</span>
@@ -291,7 +291,7 @@ export default function ReportsTab({ filters }: Props) {
                         handleGenerate(template.id)
                       }}
                       disabled={exporting}
-                      className="px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      className="px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-700 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                       {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
                       生成
@@ -316,7 +316,7 @@ export default function ReportsTab({ filters }: Props) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Settings2 className="w-4 h-4 text-primary-600" />
+                <Settings2 className="w-4 h-4 text-primary-700" />
                 自定义报表生成器
               </CardTitle>
               <button
@@ -368,7 +368,7 @@ export default function ReportsTab({ filters }: Props) {
                           type="checkbox"
                           checked={selectedDimensions.includes(key)}
                           onChange={() => toggleDimension(key)}
-                          className="rounded border-border text-primary-600"
+                          className="rounded border-border text-primary-700"
                         />
                         <span className="text-sm text-text-primary">{label}</span>
                       </label>

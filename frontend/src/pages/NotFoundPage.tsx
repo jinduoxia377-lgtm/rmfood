@@ -51,7 +51,7 @@ export default function NotFoundPage() {
         <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto pt-2">
           {[
             { to: '/formulas', icon: FlaskConical, label: '配方', color: 'text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20' },
-            { to: '/experiments', icon: TestTubes, label: '实验', color: 'text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20' },
+            { to: '/experiments', icon: TestTubes, label: '实验', color: 'text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/20' },
             { to: '/ai', icon: Sparkles, label: 'AI', color: 'text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-900/20' },
             { to: '/databases', icon: Database, label: '数据库', color: 'text-secondary-500 hover:bg-secondary-50 dark:hover:bg-secondary-900/20' },
           ].map((item) => (

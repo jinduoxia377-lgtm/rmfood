@@ -37,7 +37,7 @@ interface MembersTabProps {
 }
 
 const ROLE_OPTIONS: { value: Role; label: string; description: string; color: string }[] = [
-  { value: 'owner', label: '所有者', description: '拥有所有权限', color: 'text-yellow-600 dark:text-yellow-400' },
+  { value: 'owner', label: '所有者', description: '拥有所有权限', color: 'text-warning-600 dark:text-warning-700' },
   { value: 'admin', label: '管理员', description: '可管理成员和设置', color: 'text-secondary-600 dark:text-secondary-700' },
   { value: 'member', label: '成员', description: '标准权限', color: 'text-success-600 dark:text-success-600' },
   { value: 'viewer', label: '访客', description: '只读访问', color: 'text-neutral-500 dark:text-neutral-400' },
@@ -45,7 +45,7 @@ const ROLE_OPTIONS: { value: Role; label: string; description: string; color: st
 
 const STATUS_CONFIG: Record<string, { label: string; dotColor: string; textColor: string }> = {
   active: { label: '活跃', dotColor: 'bg-success-500', textColor: 'text-success-700 dark:text-success-600' },
-  pending: { label: '待激活', dotColor: 'bg-yellow-500', textColor: 'text-yellow-700 dark:text-yellow-400' },
+  pending: { label: '待激活', dotColor: 'bg-warning-500', textColor: 'text-warning-700 dark:text-warning-700' },
   invited: { label: '已邀请', dotColor: 'bg-secondary-500', textColor: 'text-secondary-700 dark:text-secondary-700' },
   suspended: { label: '已停用', dotColor: 'bg-error-500', textColor: 'text-error-700 dark:text-error-600' },
 };
@@ -53,7 +53,7 @@ const STATUS_CONFIG: Record<string, { label: string; dotColor: string; textColor
 function getRoleIcon(role: Role) {
   switch (role) {
     case 'owner':
-      return <Crown className="w-4 h-4 text-yellow-500" />;
+      return <Crown className="w-4 h-4 text-warning-500" />;
     case 'admin':
       return <Shield className="w-4 h-4 text-secondary-500" />;
     case 'member':
@@ -67,9 +67,9 @@ function getRoleIcon(role: Role) {
 
 function getRoleBadgeClass(role: Role): string {
   const map: Record<Role, string> = {
-    owner: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    admin: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700',
-    member: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600',
+    owner: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    admin: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+    member: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600',
     viewer: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
   };
   return map[role] || map.viewer;
@@ -105,7 +105,7 @@ function MemberAvatar({ name, avatarUrl, size = 36 }: { name: string; avatarUrl?
   return (
     <div
       className={cn(
-        'rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium shrink-0',
+        'rounded-full bg-gradient-to-br from-secondary-500 to-accent-500 flex items-center justify-center text-white font-medium shrink-0',
       )}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
@@ -156,8 +156,8 @@ function RoleSelect({
                 className={cn(
                   'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors text-left',
                   option.value === value
-                    ? 'bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-700'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700',
+                    ? 'bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700',
                 )}
               >
                 {getRoleIcon(option.value)}
@@ -270,7 +270,7 @@ const MembersTab = memo(
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-secondary-500/25"
           >
             <UserPlus className="w-4 h-4" />
             邀请成员
@@ -286,7 +286,7 @@ const MembersTab = memo(
               placeholder="搜索姓名或邮箱..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
             />
             {searchQuery && (
               <button
@@ -300,7 +300,7 @@ const MembersTab = memo(
 
           <div className="flex gap-2">
             <div className="relative">
-              <button className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                 <Filter className="w-4 h-4" />
                 角色
                 <ChevronDown className="w-3 h-3" />
@@ -321,7 +321,7 @@ const MembersTab = memo(
             </div>
 
             <div className="relative">
-              <button className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                 <Filter className="w-4 h-4" />
                 状态
                 <ChevronDown className="w-3 h-3" />
@@ -359,7 +359,7 @@ const MembersTab = memo(
             <div className="overflow-x-auto">
               <table className="w-full" aria-label="成员列表">
                 <thead>
-                  <tr className="border-b border-neutral-100 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/50">
+                  <tr className="border-b border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50">
                     <th className="px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       成员
                     </th>
@@ -380,11 +380,11 @@ const MembersTab = memo(
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                   {filteredMembers.map((member) => (
                     <tr
                       key={member.id}
-                      className="hover:bg-slate-50 dark:hover:bg-neutral-700/30 transition-colors group"
+                      className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors group"
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
@@ -447,7 +447,7 @@ const MembersTab = memo(
                             <>
                               <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setActionMenuMemberId(null)} />
                               <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-20 animate-scale-in">
-                                <button className="flex items-center gap-2 w-full px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
+                                <button className="flex items-center gap-2 w-full px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                                   <Mail className="w-3.5 h-3.5" />
                                   发送消息
                                 </button>
@@ -518,7 +518,7 @@ const MembersTab = memo(
                   onChange={(e) => setInviteEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
                   placeholder="colleague@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
                   autoFocus
                 />
               </div>
@@ -535,7 +535,7 @@ const MembersTab = memo(
                 id="invite-role"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as Role)}
-                className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
               >
                 {ROLE_OPTIONS.filter((r) => r.value !== 'owner').map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -545,7 +545,7 @@ const MembersTab = memo(
               </select>
             </div>
 
-            <div className="rounded-lg bg-secondary-50 dark:bg-secondary-900/20 border border-blue-200 dark:border-blue-800 p-3">
+            <div className="rounded-lg bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800 p-3">
               <p className="text-sm text-secondary-800 dark:text-secondary-200">
                 邀请邮件将发送至指定邮箱，受邀者可通过链接加入组织。
               </p>

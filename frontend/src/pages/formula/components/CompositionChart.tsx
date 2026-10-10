@@ -108,7 +108,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
         <div className="w-20 h-20 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie
+              <Pie rootTabIndex={-1}
                 data={roleData}
                 cx="50%"
                 cy="50%"
@@ -149,7 +149,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
             <div className="w-28 h-28 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
+                  <Pie rootTabIndex={-1}
                     data={roleData}
                     cx="50%"
                     cy="50%"
@@ -174,7 +174,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
             <div className="flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {roleData.map((entry) => (
-                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
                     <div className="min-w-0">
                       <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{entry.name}</span>

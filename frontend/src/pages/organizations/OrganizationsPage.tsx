@@ -409,8 +409,8 @@ export default function OrganizationsPage() {
               <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <HardDrive className="w-8 h-8 text-violet-600 dark:text-violet-400" />
-                    <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
+                    <HardDrive className="w-8 h-8 text-accent-600 dark:text-accent-700" />
+                    <span className="text-xs font-medium text-accent-700 dark:text-accent-700">
                       {stats.avgStorageUsage.toFixed(1)}%
                     </span>
                   </div>
@@ -492,7 +492,7 @@ export default function OrganizationsPage() {
                   href={`/organizations/${entry.id}`}
                   className="flex items-center gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-secondary-300 dark:hover:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-all group"
                 >
-                  <div className="w-7 h-7 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
                     {entry.name.charAt(0)}
                   </div>
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
@@ -604,7 +604,7 @@ export default function OrganizationsPage() {
             ) : (
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-neutral-800">
+                  <thead className="bg-neutral-50 dark:bg-neutral-800">
                     <tr>
                       <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">组织名称</th>
                       <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">Slug</th>
@@ -613,9 +613,9 @@ export default function OrganizationsPage() {
                       <th className="px-5 py-4 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">操作</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                     {trashedOrganizations.map((org: Organization) => (
-                      <tr key={org.id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors">
+                      <tr key={org.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 bg-gradient-to-br from-neutral-400 to-neutral-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
@@ -627,8 +627,8 @@ export default function OrganizationsPage() {
                         <td className="px-5 py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">@{org.slug}</td>
                         <td className="px-5 py-4">
                           <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700' :
-                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-700' :
+                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' :
+                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' :
                             'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
                           }`}>
                             {org.plan === 'free' ? '免费版' : org.plan === 'pro' ? '专业版' : '企业版'}
@@ -826,7 +826,7 @@ function OrganizationContent({
               'px-3 py-2 rounded-lg border transition-all flex items-center gap-2 text-sm',
               showFilters
                 ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-700'
-                : 'border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800',
+                : 'border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800',
             )}
           >
             <Filter className="w-4 h-4" />
@@ -1027,7 +1027,7 @@ function OrganizationSkeleton({ viewMode }: { viewMode: ViewMode }) {
 
   return (
     <Card>
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-neutral-100">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="px-4 py-3 flex items-center gap-4">
             <Skeleton className="w-4 h-4 rounded" />

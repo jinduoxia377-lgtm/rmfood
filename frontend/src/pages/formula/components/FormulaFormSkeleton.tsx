@@ -200,7 +200,7 @@ function QuickActionsSkeleton() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <Skeleton width={20} height={20} radius={5} animationType="pulse" />
             <Skeleton width={90 + (i * 15)} height={14} animationType="pulse" />

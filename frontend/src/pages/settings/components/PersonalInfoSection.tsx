@@ -88,7 +88,10 @@ export const PersonalInfoSection: React.FC = () => {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-lg font-bold shadow-sm">
+          {/* A-26：原来是 from-primary-500 to-accent-500。白字压在 emerald-500 上只有
+              2.54:1（亮色）/ 1.92:1（暗色），远低于 4.5。改用按模式取值的 -surface
+              语义令牌（D-50 / D-58）：亮色 5.5:1、暗色 7.7:1。 */}
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary-surface)] to-[var(--color-accent-surface)] flex items-center justify-center text-white text-lg font-bold shadow-sm">
             {formData.fullName?.[0] || profile?.username?.[0]?.toUpperCase() || 'U'}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -107,7 +110,7 @@ export const PersonalInfoSection: React.FC = () => {
           <div className={cn(
             'lg:col-span-1',
             'flex lg:flex-col items-center lg:items-start gap-4',
-            'p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg',
+            'p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg',
           )}>
             <AvatarUpload
               avatarUrl={avatarUrl}
@@ -144,7 +147,7 @@ export const PersonalInfoSection: React.FC = () => {
         </div>
 
         {saving && (
-          <div className="flex items-center gap-2 text-sm text-primary-600">
+          <div className="flex items-center gap-2 text-sm text-primary-700">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500" />
             保存中...
           </div>

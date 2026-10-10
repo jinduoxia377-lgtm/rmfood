@@ -295,7 +295,7 @@ export default function TrendsTab({ filters }: Props) {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
-                <TrendingUp className="w-4 h-4 text-primary-600" />
+                <TrendingUp className="w-4 h-4 text-primary-700" />
                 线性回归预测（未来 3 个月）
               </CardTitle>
             </CardHeader>
@@ -320,9 +320,9 @@ export default function TrendsTab({ filters }: Props) {
           </Card>
 
           {/* 预测说明 */}
-          <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-400">
+          <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
             <p className="font-medium mb-1">预测模型说明</p>
-            <p className="text-xs text-info-600 dark:text-info-500">
+            <p className="text-xs text-info-600 dark:text-info-700">
               基于最近 {selectedDays} 天的历史数据，使用最小二乘法拟合线性趋势线，
               提供未来 3 个月的预测区间（上下限为预测值的 ±15%）。
             </p>

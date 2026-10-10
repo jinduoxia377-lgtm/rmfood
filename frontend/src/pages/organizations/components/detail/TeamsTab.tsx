@@ -41,7 +41,7 @@ function MiniAvatar({ name, size = 24 }: { name: string; size?: number }) {
   return (
     <div
       className={cn(
-        'rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-neutral-800 shrink-0 -ml-1 first:ml-0',
+        'rounded-full bg-gradient-to-br from-secondary-400 to-accent-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-neutral-800 shrink-0 -ml-1 first:ml-0',
       )}
       style={{ width: size, height: size }}
       title={name}
@@ -95,8 +95,8 @@ const TeamTreeNode = memo(function TeamTreeNode({
         className={cn(
           'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer transition-all group',
           isSelected
-            ? 'bg-secondary-50 dark:bg-secondary-900/20 border border-blue-200 dark:border-blue-800'
-            : 'hover:bg-slate-50 dark:hover:bg-neutral-700/30 border border-transparent',
+            ? 'bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800'
+            : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/30 border border-transparent',
           depth > 0 && 'ml-6',
         )}
         style={{ paddingLeft: `${depth * 24 + 12}px` }}
@@ -332,7 +332,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         </div>
         <button
           onClick={() => openCreateModal(null)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-blue-500/25"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-secondary-500/25"
         >
           <Plus className="w-4 h-4" />
           创建团队
@@ -404,7 +404,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
                     {selectedTeamMembers.map((m) => (
                       <div
                         key={m.userId}
-                        className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-700/50"
+                        className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-700/50"
                       >
                         <MiniAvatar name={m.displayName} size={28} />
                         <div className="min-w-0">
@@ -448,7 +448,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="例如：研发部"
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
               autoFocus
             />
           </div>
@@ -462,7 +462,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               onChange={(e) => setFormDescription(e.target.value)}
               placeholder="简要描述团队的职责..."
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -506,7 +506,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
               autoFocus
             />
           </div>
@@ -519,7 +519,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -554,7 +554,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         size="sm"
       >
         <div className="space-y-4">
-          <div className="rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 p-3">
+          <div className="rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 p-3">
             <p className="text-sm text-error-800 dark:text-error-200">
               确定要删除团队 <strong>"{deletingTeam?.name}"</strong> 吗？此操作不可撤销。
             </p>

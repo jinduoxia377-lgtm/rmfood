@@ -303,7 +303,7 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-0.5">
             {leftVersion ? `v${leftVersion.version}` : '未选择'}
           </p>
@@ -314,7 +314,7 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
             <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{leftVersion.change_summary}</p>
           )}
         </div>
-        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3">
+        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-0.5">
             {rightVersion ? `v${rightVersion.version}` : '未选择'}
           </p>
@@ -328,7 +328,7 @@ export function VersionDiffViewer({ leftVersion, rightVersion }: VersionDiffView
       </div>
 
       <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-        <div className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 px-3 py-2 flex items-center justify-between" role="row">
+        <div className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 px-3 py-2 flex items-center justify-between" role="row">
           <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span className="w-4"></span>
             <span className="flex-1">路径</span>

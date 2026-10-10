@@ -79,8 +79,8 @@ const INTEGRATIONS: IntegrationCard[] = [
 
 const STATUS_BADGE: Record<IntegrationCard['status'], { label: string; className: string }> = {
   'coming-soon': { label: '即将推出', className: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
-  available: { label: '可用', className: 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400' },
-  beta: { label: 'Beta', className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400' },
+  available: { label: '可用', className: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600' },
+  beta: { label: 'Beta', className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' },
 }
 
 const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
@@ -97,14 +97,14 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
       </div>
 
       {/* Info Banner */}
-      <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 p-5">
+      <div className="rounded-xl bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-secondary-200 dark:border-secondary-800 p-5">
         <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center shrink-0">
-            <Plug className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+          <div className="w-10 h-10 rounded-xl bg-secondary-100 dark:bg-secondary-300/30 flex items-center justify-center shrink-0">
+            <Plug className="w-5 h-5 text-secondary-600 dark:text-secondary-700" />
           </div>
           <div>
             <h3 className="font-semibold text-secondary-800 dark:text-secondary-200 mb-1">集成中心</h3>
-            <p className="text-sm text-secondary-700/80 dark:text-secondary-300/80 leading-relaxed">
+            <p className="text-sm text-secondary-700/80 dark:text-secondary-700/80 leading-relaxed">
               通过集成外部服务，您可以将 RMFOOD 配方平台与现有工作流无缝连接。
               目前部分集成正在开发中，敬请期待。
             </p>
@@ -133,8 +133,8 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
                     className={cn(
                       'group relative rounded-xl border p-5 transition-all',
                       isDisabled
-                        ? 'border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/50 opacity-80'
-                        : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md cursor-pointer',
+                        ? 'border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 opacity-80'
+                        : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-secondary-300 dark:hover:border-secondary-700 hover:shadow-md cursor-pointer',
                     )}
                   >
                     {/* Status Badge */}
@@ -148,7 +148,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
                         'w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors',
                         isDisabled
                           ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-400'
-                          : 'bg-secondary-50 dark:bg-secondary-900/30 text-secondary-500 group-hover:bg-secondary-100 dark:group-hover:bg-secondary-900/50',
+                          : 'bg-secondary-50 dark:bg-secondary-300/25 text-secondary-500 group-hover:bg-secondary-100 dark:group-hover:bg-secondary-900/50',
                       )}
                     >
                       <Icon className="w-5.5 h-5.5" />
@@ -167,14 +167,14 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
 
                     {/* Action */}
                     {!isDisabled && (
-                      <button className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-secondary-600 dark:text-secondary-400 group-hover:text-secondary-700 dark:group-hover:text-secondary-300 transition-colors">
+                      <button className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-secondary-600 dark:text-secondary-700 group-hover:text-secondary-700 dark:group-hover:text-secondary-300 transition-colors">
                         {integration.status === 'available' ? '配置' : '申请体验'}
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     )}
 
                     {isDisabled && (
-                      <div className="mt-4 flex items-center gap-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                      <div className="mt-4 flex items-center gap-1.5 text-sm text-neutral-400 dark:text-neutral-400">
                         <Clock className="w-3.5 h-3.5" />
                         开发中...
                       </div>
@@ -195,7 +195,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
       <div className="text-center pt-4 pb-2">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           需要特定的集成方案？{' '}
-          <a href="#" className="text-secondary-600 dark:text-secondary-400 font-medium hover:underline">
+          <a href="#" className="text-secondary-600 dark:text-secondary-700 font-medium hover:underline">
             联系我们
           </a>{' '}
           定制开发

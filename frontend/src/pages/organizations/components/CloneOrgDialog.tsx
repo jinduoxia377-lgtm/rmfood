@@ -50,14 +50,14 @@ export function CloneOrgDialog({ open, sourceOrg, onClone, onClose, onCloned }: 
       <div className="space-y-5">
         {sourceOrg && (
           <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/30 rounded-xl border border-neutral-200 dark:border-neutral-800">
-            <div className="w-10 h-10 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-xl flex items-center justify-center text-white font-bold text-lg">
               {sourceOrg.name.charAt(0)}
             </div>
             <div>
               <p className="font-medium text-neutral-900 dark:text-white">{sourceOrg.name}</p>
-              <p className="text-xs text-neutral-500">@{sourceOrg.slug} · {sourceOrg.plan === 'pro' ? '专业版' : sourceOrg.plan === 'enterprise' ? '企业版' : '免费版'}</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">@{sourceOrg.slug} · {sourceOrg.plan === 'pro' ? '专业版' : sourceOrg.plan === 'enterprise' ? '企业版' : '免费版'}</p>
             </div>
-            <Copy className="w-4 h-4 text-neutral-400 ml-auto" />
+            <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto" />
           </div>
         )}
 
@@ -74,18 +74,18 @@ export function CloneOrgDialog({ open, sourceOrg, onClone, onClose, onCloned }: 
             autoFocus
             onKeyDown={(e) => e.key === 'Enter' && !loading && handleClone()}
           />
-          <p className="text-xs text-neutral-400 mt-1">克隆将复制成员、团队和基础配置</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">克隆将复制成员、团队和基础配置</p>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-900/20 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-300/20 rounded-lg px-3 py-2">
             <X className="w-4 h-4 shrink-0" />
             {error}
           </div>
         )}
 
         {cloned && (
-          <div className="flex items-center gap-2 text-sm text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-900/20 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-success-600 dark:text-success-600 bg-success-50 dark:bg-success-300/20 rounded-lg px-3 py-2">
             <CheckCircle className="w-4 h-4 shrink-0" />
             克隆成功！即将跳转...
           </div>

@@ -45,17 +45,17 @@ interface OrganizationListProps {
 
 const PlanBadgeConfig = {
   free: { label: '免费版', className: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
-  pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700' },
+  pro: { label: '专业版', className: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' },
   enterprise: {
     label: '企业版',
-    className: 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-700',
+    className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
   },
 };
 
 const RoleIcon = ({ role }: { role: string }) => {
   switch (role) {
     case 'owner':
-      return <Crown className="w-4 h-4 text-yellow-500" />;
+      return <Crown className="w-4 h-4 text-warning-500" />;
     case 'admin':
       return <Shield className="w-4 h-4 text-secondary-500" />;
     case 'member':
@@ -93,7 +93,7 @@ const OrganizationCard = memo(
       const parts = text.split(regex);
       return parts.map((part, i) =>
         regex.test(part) ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">
+          <mark key={i} className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">
             {part}
           </mark>
         ) : (
@@ -110,7 +110,7 @@ const OrganizationCard = memo(
           isSelected
             ? 'border-primary-500 shadow-md ring-2 ring-primary-100 dark:ring-primary-900/50'
             : 'border-neutral-200 dark:border-neutral-700 hover:border-primary-300 hover:shadow-lg'
-        } ${org.isPinned ? 'ring-2 ring-yellow-300' : ''}`}
+        } ${org.isPinned ? 'ring-2 ring-warning-300' : ''}`}
       >
         <div className="p-6">
           {/* 头部 */}
@@ -122,7 +122,7 @@ const OrganizationCard = memo(
                 onChange={() => onToggleSelect(org.id)}
                 className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
               />
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 {org.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
@@ -138,7 +138,7 @@ const OrganizationCard = memo(
                   e.stopPropagation();
                   onToggleFavorite(org.id);
                 }}
-                className={`p-1.5 rounded-lg transition-colors ${org.isFavorite ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'text-neutral-400 hover:text-yellow-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+                className={`p-1.5 rounded-lg transition-colors ${org.isFavorite ? 'text-warning-500 bg-warning-50 dark:bg-warning-300/20' : 'text-neutral-400 hover:text-warning-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
               >
                 <Star className={`w-4 h-4 ${org.isFavorite ? 'fill-current' : ''}`} />
               </button>
@@ -147,7 +147,7 @@ const OrganizationCard = memo(
                   e.stopPropagation();
                   onTogglePin(org.id);
                 }}
-                className={`p-1.5 rounded-lg transition-colors ${org.isPinned ? 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20' : 'text-neutral-400 hover:text-secondary-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+                className={`p-1.5 rounded-lg transition-colors ${org.isPinned ? 'text-secondary-500 bg-secondary-50 dark:bg-secondary-300/20' : 'text-neutral-400 hover:text-secondary-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
               >
                 <Pin className={`w-4 h-4 ${org.isPinned ? 'fill-current' : ''}`} />
               </button>
@@ -161,17 +161,17 @@ const OrganizationCard = memo(
 
           {/* 统计数据 */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <Users className="w-5 h-5 mx-auto mb-1 text-secondary-500" />
               <p className="text-lg font-bold text-neutral-900 dark:text-white">{org.memberCount}</p>
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">成员</p>
             </div>
-            <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <Settings className="w-5 h-5 mx-auto mb-1 text-success-500" />
               <p className="text-lg font-bold text-neutral-900 dark:text-white">{org.teamCount}</p>
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">团队</p>
             </div>
-            <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+            <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <Clock className="w-5 h-5 mx-auto mb-1 text-accent-500" />
               <p className="text-sm font-bold text-neutral-900 dark:text-white">
                 {new Date(org.createdAt).toLocaleDateString('zh-CN', { month: 'short', year: 'numeric' })}
@@ -198,7 +198,7 @@ const OrganizationCard = memo(
               <div className="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    storagePercent >= 90 ? 'bg-error-500' : storagePercent >= 60 ? 'bg-yellow-500' : 'bg-success-500'
+                    storagePercent >= 90 ? 'bg-error-500' : storagePercent >= 60 ? 'bg-warning-500' : 'bg-success-500'
                   }`}
                   style={{ width: `${Math.min(storagePercent, 100)}%` }}
                 />
@@ -257,7 +257,7 @@ const OrganizationTableRow = memo(
       const parts = text.split(regex);
       return parts.map((part, i) =>
         regex.test(part) ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">
+          <mark key={i} className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">
             {part}
           </mark>
         ) : (
@@ -269,8 +269,8 @@ const OrganizationTableRow = memo(
     return (
       <tr
         className={`transition-colors ${
-          index % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-slate-50 dark:bg-neutral-800/50'
-        } ${isSelected ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-l-primary-500' : ''} hover:bg-neutral-100 dark:hover:bg-neutral-700/50`}
+          index % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50 dark:bg-neutral-800/50'
+        } ${isSelected ? 'bg-primary-50 dark:bg-primary-300/20 border-l-4 border-l-primary-500' : ''} hover:bg-neutral-100 dark:hover:bg-neutral-700/50`}
       >
         <td className="px-5 py-4">
           <input
@@ -282,7 +282,7 @@ const OrganizationTableRow = memo(
         </td>
         <td className="px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {org.name.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -302,7 +302,7 @@ const OrganizationTableRow = memo(
           <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${storagePercent >= 90 ? 'bg-error-500' : storagePercent >= 60 ? 'bg-yellow-500' : 'bg-success-500'}`}
+                className={`h-full rounded-full ${storagePercent >= 90 ? 'bg-error-500' : storagePercent >= 60 ? 'bg-warning-500' : 'bg-success-500'}`}
                 style={{ width: `${Math.min(storagePercent, 100)}%` }}
               />
             </div>
@@ -349,7 +349,7 @@ const OrganizationCompactItem = memo(
       const parts = text.split(regex);
       return parts.map((part, i) =>
         regex.test(part) ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">
+          <mark key={i} className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">
             {part}
           </mark>
         ) : (
@@ -360,8 +360,8 @@ const OrganizationCompactItem = memo(
 
     return (
       <div
-        className={`flex items-center gap-4 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 ${
-          isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+        className={`flex items-center gap-4 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${
+          isSelected ? 'bg-primary-50 dark:bg-primary-300/20' : ''
         }`}
       >
         <input
@@ -371,7 +371,7 @@ const OrganizationCompactItem = memo(
           className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
         />
 
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+        <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
           {org.name.charAt(0)}
         </div>
 
@@ -456,7 +456,7 @@ const Pagination = memo(
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700 rounded font-medium text-sm">
+          <span className="px-3 py-1 bg-primary-50 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 rounded font-medium text-sm">
             {page}
           </span>
 
@@ -626,7 +626,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
       {viewMode === 'table' && (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
+            <thead className="bg-neutral-50 dark:bg-neutral-800 sticky top-0 z-10">
               <tr>
                 <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider w-12"></th>
                 <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">名称</th>
@@ -641,7 +641,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
                 <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
               {sortedOrganizations.map((org, index) => (
                 <OrganizationTableRow
                   key={org.id}
@@ -659,7 +659,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
       )}
 
       {viewMode === 'compact' && (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-100 dark:divide-neutral-800">
           {sortedOrganizations.map((org) => (
             <OrganizationCompactItem
               key={org.id}

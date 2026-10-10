@@ -60,7 +60,7 @@ function DataEntryForm({
   return (
     <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3 animate-slide-down">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">录入数据点</h3>
+        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">录入数据点</h2>
         <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
           <XCircle size={16} />
         </button>
@@ -118,6 +118,21 @@ function DataEntryForm({
   )
 }
 
+// 数据点时间字段可能缺失/为 null/不可解析 → new Date 得 Invalid Date，
+// date-fns format 会抛 RangeError 导致表格/页面崩溃。统一兜底：
+// 依次取 recorded_at → timestamp → created_at → measurement_time，
+// 校验可解析后再 format，全部无效则显示 '-'。
+function formatDataTime(
+  d: { recorded_at?: string | null; timestamp?: string | null; created_at?: string | null; measurement_time?: string | null },
+  pattern = 'MM-dd HH:mm',
+): string {
+  const raw = d.recorded_at ?? d.timestamp ?? d.created_at ?? d.measurement_time
+  if (!raw) return '-'
+  const dt = new Date(raw)
+  if (Number.isNaN(dt.getTime())) return '-'
+  return format(dt, pattern, { locale: zhCN })
+}
+
 // ── 数据表格 ──
 function DataTable({
   data,
@@ -170,7 +185,7 @@ function DataTable({
               <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400">{d.unit ?? '-'}</td>
               <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400 max-w-[200px] truncate">{d.notes ?? '-'}</td>
               <td className="py-2.5 px-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                {format(new Date(d.recorded_at ?? d.timestamp), 'MM-dd HH:mm', { locale: zhCN })}
+                {formatDataTime(d)}
               </td>
               <td className="py-2.5 px-3">
                 <Button
@@ -207,7 +222,7 @@ function DataView({
       const paramKey = d.parameter ?? d.measurementType; if (!paramKey) continue; if (!paramValues[paramKey]) paramValues[paramKey] = []
       paramValues[paramKey].push({
         value: numVal,
-        time: format(new Date(d.recorded_at ?? d.timestamp), 'MM-dd HH:mm'),
+        time: formatDataTime(d),
       })
     }
     const params = Object.keys(paramValues)
@@ -255,7 +270,7 @@ function DataView({
               className={cn(
                 'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                 chartType === type
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
                   : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
             >
@@ -281,7 +296,7 @@ function DataView({
                   boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
               {parameters.map((p, i) => (
                 <Line key={p} type="monotone" dataKey={p} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
               ))}
@@ -300,7 +315,7 @@ function DataView({
                   boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
               {parameters.map((p, i) => (
                 <Bar key={p} dataKey={p} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
               ))}
@@ -327,7 +342,7 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
   if (isFailed || isCancelled) {
     const Icon = experiment.status === 'failed' ? XCircle : Clock
     return (
-      <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+      <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
         <Icon size={20} className={experiment.status === 'failed' ? 'text-error-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'} />
         <div>
           <p className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -369,9 +384,9 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
           <div key={step.key} className="flex items-center gap-2">
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
-              isActive && 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800',
-              isDone && 'bg-success-50 dark:bg-success-900/10 border border-green-200 dark:border-green-800/50',
-              !isActive && !isDone && 'bg-slate-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700',
+              isActive && 'bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800',
+              isDone && 'bg-success-50 dark:bg-success-300/15 border border-success-200 dark:border-success-800/50',
+              !isActive && !isDone && 'bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700',
             )}>
               <Icon size={14} className={cn(
                 isDone ? 'text-success-500' : isActive ? 'text-primary-500' : 'text-neutral-300 dark:text-neutral-400',
@@ -432,10 +447,10 @@ function BatchImportForm({
   return (
     <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3 animate-slide-down">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <ClipboardPaste size={14} className="text-primary-500" />
           批量导入数据
-        </h3>
+        </h2>
         <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
           <X size={16} />
         </button>
@@ -446,7 +461,7 @@ function BatchImportForm({
         onChange={(e) => setCsvText(e.target.value)}
         placeholder={"参数,数值,单位,备注\npH值,7.2,,\n温度,25,°C,水浴\n浓度,0.5,mg/mL,"}
         rows={5}
-        className="w-full text-xs font-mono p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="w-full text-xs font-mono p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
       {result && (
         <div className="flex items-center gap-3 text-xs">
@@ -555,7 +570,7 @@ export default function ExperimentDetailPage() {
       String(d.value ?? ''),
       d.unit ?? '',
       d.notes ?? '',
-      format(new Date(d.recorded_at ?? d.timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+      formatDataTime(d, 'yyyy-MM-dd HH:mm'),
     ])
     const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
     const BOM = '\uFEFF'
@@ -586,7 +601,7 @@ export default function ExperimentDetailPage() {
       String(d.value ?? ''),
       d.unit ?? '',
       d.notes ?? '',
-      format(new Date(d.recorded_at ?? d.timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+      formatDataTime(d, 'yyyy-MM-dd HH:mm'),
     ])
     const csv = [
       ['参数', '数值', '单位', '备注', '记录时间'],
@@ -680,7 +695,7 @@ export default function ExperimentDetailPage() {
             {experiment.formula_id && (
               <Link
                 to={`/formulas/${experiment.formula_id}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
               >
                 <FlaskConical size={12} />
                 关联配方
@@ -764,7 +779,7 @@ export default function ExperimentDetailPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                     <Target size={16} className="text-primary-500" />
                   </div>
                   <CardTitle as="h2">实验目标</CardTitle>
@@ -786,7 +801,7 @@ export default function ExperimentDetailPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                     <FileText size={16} className="text-primary-500" />
                   </div>
                   <CardTitle as="h2">实验方法</CardTitle>
@@ -805,7 +820,7 @@ export default function ExperimentDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
                 <BarChart3 size={16} className="text-primary-500" />
               </div>
               <div>
@@ -942,13 +957,13 @@ export default function ExperimentDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {experiment.conclusions && (
                 <div>
-                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">实验结论</h4>
+                  <h2 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">实验结论</h2>
                   <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">{experiment.conclusions}</p>
                 </div>
               )}
               {experiment.recommendations && (
                 <div>
-                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">改进建议</h4>
+                  <h2 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">改进建议</h2>
                   <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">{experiment.recommendations}</p>
                 </div>
               )}
@@ -980,8 +995,7 @@ export default function ExperimentDetailPage() {
                     const file = e.target.files?.[0]
                     if (file) uploadMut.mutate(file)
                     e.target.value = ''
-                  }}
-                />
+                  }} aria-hidden="true" tabIndex={-1} />
                 <Button variant="ghost" size="sm" icon={<Upload size={12} />}>
                   上传
                 </Button>
@@ -993,7 +1007,7 @@ export default function ExperimentDetailPage() {
           {attachments.length > 0 ? (
             <div className="space-y-2">
               {attachments.map((att: Attachment) => (
-                <div key={att.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 group">
+                <div key={att.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 group">
                   <div className="flex items-center gap-2 min-w-0">
                     <Paperclip size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
                     <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{att.file_name}</span>
@@ -1021,7 +1035,7 @@ export default function ExperimentDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
                 <Sparkles size={16} className="text-white" />
               </div>
               <div>

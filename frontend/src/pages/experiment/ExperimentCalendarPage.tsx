@@ -65,7 +65,7 @@ export default function ExperimentCalendarPage() {
             <ArrowLeft size={18} />
           </Link>
           <div className="flex items-center gap-2">
-            <CalendarIcon size={20} className="text-violet-500" />
+            <CalendarIcon size={20} className="text-accent-500" />
             <h1 className="text-h1 font-semibold text-neutral-900 dark:text-white">实验日历</h1>
           </div>
         </div>
@@ -126,12 +126,12 @@ export default function ExperimentCalendarPage() {
                       className={cn(
                         'min-h-[100px] p-2 border border-neutral-100 dark:border-neutral-800 transition-colors',
                         !isCurrentMonth && 'opacity-40',
-                        isToday && 'bg-violet-50 dark:bg-violet-900/10',
+                        isToday && 'bg-accent-50 dark:bg-accent-300/15',
                       )}
                     >
                       <div className={cn(
                         'text-xs font-medium mb-1',
-                        isToday ? 'text-violet-600 dark:text-violet-400' : 'text-neutral-500',
+                        isToday ? 'text-accent-600 dark:text-accent-700' : 'text-neutral-500',
                       )}>
                         {format(day, 'd')}
                       </div>
@@ -141,9 +141,9 @@ export default function ExperimentCalendarPage() {
                           to={`/experiments/${exp.id}`}
                           className={cn(
                             'block px-1.5 py-0.5 rounded text-xs truncate mb-0.5 transition-colors',
-                            exp.status === 'in_progress' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-700'
-                              : exp.status === 'completed' ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-600'
-                              : exp.status === 'failed' ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-700'
+                            exp.status === 'in_progress' ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
+                              : exp.status === 'completed' ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600'
+                              : exp.status === 'failed' ? 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700'
                               : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
                           )}
                           title={exp.title}
@@ -183,9 +183,9 @@ export default function ExperimentCalendarPage() {
               <Link key={exp.id} to={`/experiments/${exp.id}`} className="block">
                 <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-violet-50 dark:bg-violet-900/20 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-violet-600 dark:text-violet-400">{format(new Date(exp.start_date), 'MM')}</span>
-                      <span className="text-xs text-violet-500 dark:text-violet-400 -mt-0.5">{format(new Date(exp.start_date), 'dd')}</span>
+                    <div className="w-12 h-12 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-accent-600 dark:text-accent-700">{format(new Date(exp.start_date), 'MM')}</span>
+                      <span className="text-xs text-accent-500 dark:text-accent-700 -mt-0.5">{format(new Date(exp.start_date), 'dd')}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">

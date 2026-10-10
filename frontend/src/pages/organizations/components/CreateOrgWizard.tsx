@@ -140,7 +140,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">组织头像（可选）</label>
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                   {logoUrl ? (
                     <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-xl" />
                   ) : name.charAt(0).toUpperCase()}
@@ -153,7 +153,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                       reader.onloadend = () => setLogoUrl(reader.result as string)
                       reader.readAsDataURL(file)
                     }
-                  }} />
+                  }} aria-hidden="true" tabIndex={-1} />
                   <div className="px-4 py-2 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg text-center hover:border-secondary-500 transition-colors">
                     <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">点击上传 Logo</p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">支持 JPG、PNG，建议 200×200px</p>
@@ -184,7 +184,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
                     onClick={() => setPlan(p.value)}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       plan === p.value
-                        ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20'
+                        ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20'
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700'
                     }`}
                   >
@@ -226,7 +226,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
           <div className="space-y-4">
             <div className="surface-card rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-xl flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg">
                   {logoUrl ? (
                     <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
                   ) : name.charAt(0).toUpperCase()}
@@ -238,7 +238,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
               </div>
               {description && <p className="text-sm text-neutral-600 dark:text-neutral-400">{description}</p>}
               <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-700">
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700">
                   {plan === 'free' ? '免费版' : plan === 'pro' ? '专业版' : '企业版'}
                 </span>
               </div>
@@ -248,7 +248,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
 
         {step === 'success' && (
           <div className="text-center py-6">
-            <div className="w-16 h-16 bg-success-100 dark:bg-success-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-success-100 dark:bg-success-300/25 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-success-500" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">组织创建成功！</h3>
@@ -257,7 +257,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
         )}
 
         {error && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-900/20 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-300/20 rounded-lg px-3 py-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             {error}
           </div>

@@ -560,7 +560,7 @@ export default function FormulaEditPage() {
   if (!canEdit) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20 space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-warning-50 dark:bg-warning-900/20 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-warning-50 dark:bg-warning-300/20 flex items-center justify-center mx-auto">
           <AlertTriangle size={32} className="text-warning-500" />
         </div>
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">无法编辑此配方</h2>
@@ -593,7 +593,7 @@ export default function FormulaEditPage() {
 
       {/* 并发冲突提示 */}
       {conflictDetected && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-3.5 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-3.5 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800">
           <div className="flex items-start gap-2 text-sm text-warning-700 dark:text-warning-700 min-w-0">
             <AlertTriangle size={16} className="shrink-0 mt-0.5" />
             <span>
@@ -613,7 +613,7 @@ export default function FormulaEditPage() {
 
       {/* 网络错误提示 */}
       {networkError && (
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800">
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800">
           <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600">
             <AlertCircle size={14} className="shrink-0" />
             {networkError}
@@ -625,7 +625,7 @@ export default function FormulaEditPage() {
       )}
 
       {hasChanges && !isSubmitting && (
-        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800 text-sm text-warning-700 dark:text-warning-700">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800 text-sm text-warning-700 dark:text-warning-700">
           <div className="flex items-center gap-2">
             <AlertTriangle size={14} className="shrink-0" />
             您有未保存的变更，离开页面将丢失修改。
@@ -641,7 +641,7 @@ export default function FormulaEditPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       配方名称 <span className="text-error-500 ml-0.5">*</span>
                     </label>
                     <Input
@@ -661,7 +661,7 @@ export default function FormulaEditPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       配方描述
                     </label>
                     <Textarea
@@ -678,7 +678,7 @@ export default function FormulaEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     目标功效 <span className="text-error-500 ml-0.5">*</span>
                   </label>
                   <div className="flex gap-2 mb-2">
@@ -724,21 +724,21 @@ export default function FormulaEditPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     分类选择
                   </label>
                   <CategoryTree value={categoryIds} onChange={setCategoryIds} placeholder="选择分类..." />
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     标签选择
                   </label>
                   <TagMultiSelect value={tagIds} onChange={setTagIds} placeholder="选择标签..." />
                 </div>
 
                 {showRecommendations && (
-                  <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-900/10">
+                  <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-300/15">
                     <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
                       <Sparkles size={14} className="text-primary-500" />
                       AI 成分推荐
@@ -774,7 +774,7 @@ export default function FormulaEditPage() {
                 )}
 
                 <div>
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     配方成分 <span className="text-error-500 ml-0.5">*</span>
                   </label>
                   <FieldErrorText field="ingredients" />
@@ -820,7 +820,7 @@ export default function FormulaEditPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       服用剂量
                     </label>
                     <Input
@@ -834,7 +834,7 @@ export default function FormulaEditPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       保质期（天）
                     </label>
                     <Input
@@ -849,7 +849,7 @@ export default function FormulaEditPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       加工工艺
                     </label>
                     <Input
@@ -863,7 +863,7 @@ export default function FormulaEditPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                       储藏条件
                     </label>
                     <Input
@@ -879,7 +879,7 @@ export default function FormulaEditPage() {
                 </div>
 
                 <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                  <label className="block text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     版本更新说明
                   </label>
                   <Textarea
@@ -977,8 +977,8 @@ export default function FormulaEditPage() {
                           className={cn(
                             'px-2 py-1 text-xs transition-colors',
                             zoomLevel === zoom
-                              ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-700'
-                              : 'text-neutral-500 hover:bg-slate-50 dark:hover:bg-neutral-800',
+                              ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700'
+                              : 'text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800',
                           )}
                         >
                           {zoom}%
@@ -995,7 +995,7 @@ export default function FormulaEditPage() {
                   </div>
                 </div>
                 <div
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 overflow-auto max-h-[600px]"
+                  className="border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-900 overflow-auto max-h-[600px]"
                   style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top left' }}
                 >
                   <div className="p-4 space-y-4 min-w-[320px]">
@@ -1084,38 +1084,38 @@ export default function FormulaEditPage() {
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
-                <FlaskConical size={12} className="text-violet-500" />
+                <FlaskConical size={12} className="text-accent-500" />
                 深度分析
               </h3>
               {isRunningAnalysis && (
-                <span className="text-xs text-violet-500 flex items-center gap-0.5">
+                <span className="text-xs text-accent-500 flex items-center gap-0.5">
                   <RefreshCw size={10} className="animate-spin" /> 分析中...
                 </span>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               {analysisSynergy && (
-                <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
-                  <p className="text-xs text-violet-600 dark:text-violet-400">协同指数 SI</p>
-                  <p className="text-sm font-bold text-violet-700 dark:text-violet-300">{analysisSynergy.overall_si?.toFixed(2) ?? '—'}</p>
+                <div className="p-2 rounded-lg bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800">
+                  <p className="text-xs text-accent-600 dark:text-accent-700">协同指数 SI</p>
+                  <p className="text-sm font-bold text-accent-700 dark:text-accent-700">{analysisSynergy.overall_si?.toFixed(2) ?? '—'}</p>
                 </div>
               )}
               {analysisStability && (
-                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">货架期</p>
-                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{analysisStability.predicted_shelf_life_months?.toFixed(0) ?? '—'}月</p>
+                <div className="p-2 rounded-lg bg-success-50 dark:bg-success-300/20 border border-success-200 dark:border-success-800">
+                  <p className="text-xs text-success-700 dark:text-success-600">货架期</p>
+                  <p className="text-sm font-bold text-success-700 dark:text-success-700">{analysisStability.predicted_shelf_life_months?.toFixed(0) ?? '—'}月</p>
                 </div>
               )}
               {analysisTaste && (
-                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                  <p className="text-xs text-amber-600 dark:text-amber-400">风味接受度</p>
-                  <p className="text-sm font-bold text-amber-700 dark:text-amber-300">{analysisTaste.acceptability?.toFixed(2) ?? '—'}</p>
+                <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800">
+                  <p className="text-xs text-warning-600 dark:text-warning-700">风味接受度</p>
+                  <p className="text-sm font-bold text-warning-700 dark:text-warning-700">{analysisTaste.acceptability?.toFixed(2) ?? '—'}</p>
                 </div>
               )}
               {analysisSafety && (
-                <div className={`p-2 rounded-lg border ${analysisSafety.is_safe ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'}`}>
-                  <p className={`text-xs ${analysisSafety.is_safe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>安全性</p>
-                  <p className={`text-sm font-bold ${analysisSafety.is_safe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                <div className={`p-2 rounded-lg border ${analysisSafety.is_safe ? 'bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800' : 'bg-danger-50 dark:bg-danger-300/20 border-danger-200 dark:border-danger-800'}`}>
+                  <p className={`text-xs ${analysisSafety.is_safe ? 'text-success-700 dark:text-success-600' : 'text-danger-600 dark:text-danger-700'}`}>安全性</p>
+                  <p className={`text-sm font-bold ${analysisSafety.is_safe ? 'text-success-700 dark:text-success-700' : 'text-danger-700 dark:text-danger-700'}`}>
                     {analysisSafety.is_safe ? '✓ 安全' : '⚠ 风险'}
                   </p>
                 </div>
@@ -1135,7 +1135,7 @@ export default function FormulaEditPage() {
         size="xl"
         className="max-w-4xl"
       >
-        <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 overflow-auto max-h-[70vh]">
+        <div className="border border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50 dark:bg-neutral-900 overflow-auto max-h-[70vh]">
           <div className="p-6 space-y-6 min-w-[400px]">
             <div>
               <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
@@ -1276,7 +1276,7 @@ function HerbSearchDropdown({
           disabled={isDuplicate(herb.id)}
           onClick={() => onSelect(herb)}
           className={cn(
-            'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors border-b border-neutral-100 dark:border-neutral-800 last:border-0',
+            'w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors border-b border-neutral-100 dark:border-neutral-800 last:border-0',
             isDuplicate(herb.id) && 'opacity-50 cursor-not-allowed',
           )}
         >
