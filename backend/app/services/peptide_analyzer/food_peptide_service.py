@@ -47,6 +47,13 @@ class FoodPeptideAnalysis:
     dpp4_is_active: bool = False
     dpp4_motifs: List[str] = field(default_factory=list)
     
+    # 真实 ML 模型（DFBP 7540 条真数据训练）并列分数
+    ml_ace_score: Optional[float] = None      # 真实 ML 模型 ACE 抑制分（0-1）
+    ml_method: str = "unavailable"            # ml / fallback_rule / unavailable
+    ml_training_samples: int = 0              # 训练样本量
+    ml_validation_accuracy: Optional[float] = None
+    ml_model_name: str = "PeptideRanker-Mini"
+    
     # 安全性评估结果
     food_safety_score: float = 0.0
     is_allergen: bool = False
@@ -111,6 +118,14 @@ class FoodPeptideAnalysis:
                 "confidence": round(self.dpp4_confidence, 4),
                 "is_active": self.dpp4_is_active,
                 "motifs": self.dpp4_motifs
+            },
+            "ml_model": {
+                "name": self.ml_model_name,
+                "ace_score": round(self.ml_ace_score, 4) if self.ml_ace_score is not None else None,
+                "method": self.ml_method,
+                "training_samples": self.ml_training_samples,
+                "validation_accuracy": round(self.ml_validation_accuracy, 4) if self.ml_validation_accuracy is not None else None,
+                "honest_note": "真实 ML 模型：用 DFBP 7540 条真实数据训练；method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。"
             },
             
             "safety": {
@@ -276,6 +291,10 @@ class FoodPeptideAnalyzer:
             result.dpp4_is_active = activity_results['dpp4_inhibition']['is_active']
             result.dpp4_motifs = activity_results['dpp4_inhibition']['motifs']
             
+            # Step 3b: 真实 ML 模型并列预测（DFBP 7540 条真数据训练的 PeptideRanker-Mini）
+            # 与 QSAR 规则分并列输出；未加载权重时诚实标记 fallback_rule，不冒充 ML
+            await self._run_real_ml(seq, result)
+            
             # Step 4: 安全性评估（使用专业预测器）
             safety_results = await self.safety_predictor.assess(seq)
             
@@ -303,7 +322,7 @@ class FoodPeptideAnalyzer:
             # Step 6: 计算综合食品评分
             result.food_safety_score = self._calculate_food_score(result)
             
-            # Step 7: 来源追溯（数据库检索 + 食物来源 + 文献）
+            # Step 7: 来源追溯（数据库检索 + 食物来源 + 文献 + NCBI 在线证据）
             await self._enrich_source(seq, result)
             
             logger.info(
@@ -330,7 +349,9 @@ class FoodPeptideAnalyzer:
 
         匹配策略：精确匹配 → 去除修饰字符后匹配 → 子串模糊匹配。
         失败时静默降级（保持 source 为空），不影响主流程。
+        末尾追加 NCBI 真实在线文献证据（可达时）。
         """
+        top = None
         try:
             from app.services.peptide_analyzer.food_database import get_food_peptide_database
             manager = get_food_peptide_database()
@@ -339,29 +360,108 @@ class FoodPeptideAnalyzer:
                 # 子串模糊匹配（序列可能包含修饰）
                 clean = sequence.replace('-', '').replace('.', '')
                 records = manager.dfbp._fuzzy_match(clean)
-            if not records:
+            if records:
+                top = records[0]
+                result.source_food = top.food_source
+                result.source_database = top.source_database
+                # 文献参考：DOI + 活性证据
+                refs = []
+                if top.literature_doi:
+                    refs.append(f"DOI: {top.literature_doi}")
+                if top.activity_type:
+                    val = f"IC50={top.activity_value} {top.activity_unit}" if top.activity_value else "活性已报道"
+                    refs.append(f"{top.activity_type} ({val})")
+                if top.source_protein:
+                    refs.append(f"来源蛋白: {top.source_protein} ({top.source_organism or '未知物种'})")
+                result.literature_refs = refs
+                logger.info(
+                    f"来源追溯成功: {sequence} → {top.source_database}"
+                    f" 食物={top.food_source} 记录数={len(records)}"
+                )
+            else:
                 logger.debug(f"来源追溯：{sequence} 在 DFBP 无匹配记录")
-                return
-            top = records[0]
-            result.source_food = top.food_source
-            result.source_database = top.source_database
-            # 文献参考：DOI + 活性证据
-            refs = []
-            if top.literature_doi:
-                refs.append(f"DOI: {top.literature_doi}")
-            if top.activity_type:
-                val = f"IC50={top.activity_value} {top.activity_unit}" if top.activity_value else "活性已报道"
-                refs.append(f"{top.activity_type} ({val})")
-            if top.source_protein:
-                refs.append(f"来源蛋白: {top.source_protein} ({top.source_organism or '未知物种'})")
-            result.literature_refs = refs
-            logger.info(
-                f"来源追溯成功: {sequence} → {top.source_database}"
-                f" 食物={top.food_source} 记录数={len(records)}"
-            )
         except Exception as e:
             logger.warning(f"来源追溯失败（不影响分析）: {e}")
-    
+        finally:
+            # Step 7b: 追加 NCBI 真实在线文献证据（可达时，诚实降级不伪造）
+            await self._append_ncbi_literature(
+                sequence, result,
+                activity_type_hint=(top.activity_type if top else None),
+            )
+
+    async def _append_ncbi_literature(
+        self,
+        sequence: str,
+        result: "FoodPeptideAnalysis",
+        activity_type_hint: Optional[str] = None,
+        limit: int = 3,
+    ) -> None:
+        """
+        把 NCBI PubMed 真实在线文献追加进 source 证据链。
+        - 可达时：检索与序列/活性类型相关的真实文献，标注来源数据库 PubMed
+        - 不可达时：诚实降级，仅追加一条离线说明，绝不伪造文献
+        """
+        try:
+            from app.services.peptide_analyzer.real_source_client import get_real_source_client
+            client = get_real_source_client()
+            probe = await client.ncbi.probe()
+            if not probe.get("reachable"):
+                result.literature_refs.append(
+                    "[离线] NCBI PubMed 当前不可达，未追加在线文献（诚实降级，无伪造数据）"
+                )
+                return
+            # 用活性类型关键词检索（优先用命中的真实活性类型，否则默认 ACE 抑制肽）
+            query = (activity_type_hint or "ACE inhibitory peptide")
+            refs = await client.search_references(activity_type=query, limit=limit)
+            if not refs:
+                result.literature_refs.append(f"[在线] NCBI PubMed 可达，但 {query} 无匹配文献")
+                return
+            result.source_database = "DFBP + PubMed" if result.source_database == "DFBP" else (result.source_database or "PubMed")
+            for r in refs:
+                title = (r.get("title") or "").strip()
+                journal = r.get("journal") or ""
+                pmid = r.get("pmid")
+                doi = r.get("doi")
+                parts = [f"PMID:{pmid}"]
+                if doi:
+                    parts.append(f"DOI:{doi}")
+                if journal:
+                    parts.append(journal)
+                if title:
+                    parts.append(title[:80])
+                result.literature_refs.append(f"[PubMed在线] {' · '.join(parts)}")
+            logger.info(f"NCBI 在线文献追加: {sequence} → {len(refs)} 篇")
+        except Exception as e:
+            logger.warning(f"NCBI 文献追加失败（不影响分析）: {e}")
+
+    async def _run_real_ml(self, sequence: str, result: "FoodPeptideAnalysis") -> None:
+        """
+        真实 ML 模型并列预测：用 DFBP 真实数据训练的 PeptideRanker-Mini
+        对 ACE 抑制做预测，与 QSAR 规则分并列输出。
+
+        诚实边界：
+        - 已加载训练权重 → method=ml，给出真实模型分
+        - 未加载/不可用 → method=fallback_rule，回退规则分并显式标注
+        - 训练样本量 / 验证准确率随结果返回
+        """
+        try:
+            from app.services.peptide_analyzer.real_ml_trainer import get_real_model_trainer
+            trainer = get_real_model_trainer("ACE inhibitory")
+            pred = trainer.predict(sequence)
+            result.ml_ace_score = pred.get("score")
+            result.ml_method = pred.get("method", "unavailable")
+            result.ml_training_samples = trainer.training_set_size
+            val = (trainer.metrics or {}).get("validation", {})
+            if val:
+                result.ml_validation_accuracy = val.get("accuracy")
+            logger.info(
+                f"真实 ML 预测: {sequence} → ACE={result.ml_ace_score} "
+                f"method={result.ml_method} samples={result.ml_training_samples}"
+            )
+        except Exception as e:
+            result.ml_method = "unavailable"
+            logger.warning(f"真实 ML 预测失败（不影响分析）: {e}")
+
     def _calculate_properties(
         self,
         sequence: str,

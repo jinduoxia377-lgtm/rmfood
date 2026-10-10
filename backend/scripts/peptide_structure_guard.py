@@ -330,6 +330,32 @@ CHECKS = [
         r"RealSourceStatusPanel",
         "前端：真实数据源状态面板必须注册",
     ),
+    # /analyze 主流程：真实 ML 并列分 + NCBI 在线文献证据链
+    (
+        "backend/app/services/peptide_analyzer/food_peptide_service.py",
+        r"_run_real_ml",
+        "/analyze 主流程：真实 ML 模型并列预测 _run_real_ml 必须接入",
+    ),
+    (
+        "backend/app/services/peptide_analyzer/food_peptide_service.py",
+        r"_append_ncbi_literature",
+        "/analyze 主流程：NCBI 在线文献证据链 _append_ncbi_literature 必须接入",
+    ),
+    (
+        "backend/app/services/peptide_analyzer/food_peptide_service.py",
+        r"ml_model",
+        "/analyze 主流程：to_dict 必须输出 ml_model 并列字段",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"result\.ml_model",
+        "前端：分析结果视图必须渲染真实 ML 模型卡片",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"isOnline.*PMID|PMID.*isOnline|pmidMatch",
+        "前端：来源证据链必须高亮 NCBI 在线文献",
+    ),
 ]
 
 
