@@ -2914,7 +2914,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 </h3>
                 {result.ml_model ? (
                   <div className="space-y-2">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold text-primary">
                           {result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}
@@ -2929,14 +2929,6 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold">
-                          <Badge variant={result.ml_model.method === 'ml' ? 'success' : 'neutral'} size="sm">
-                            {result.ml_model.method}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">方法（ml=真实权重）</div>
-                      </div>
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
-                        <div className="text-lg font-bold">
                           {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">验证准确率</div>
@@ -2945,6 +2937,19 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
                       模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 → 训练 {result.ml_model.training_samples} 条 + 验证 {result.ml_model.validation_samples} 条（85/15 切分）
                       {result.ml_model.honest_note ? ` · ${result.ml_model.honest_note}` : ''}
+                    </div>
+                    {/* 动态运行状态：按当前 method 显示，避免静态枚举说明误导 */}
+                    <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${
+                      result.ml_model.method === 'ml'
+                        ? 'bg-success-50 dark:bg-success-950/30 text-success-700 dark:text-success-600'
+                        : 'bg-warning-50 dark:bg-warning-950/30 text-warning-700 dark:text-warning-600'
+                    }`}>
+                      <span className={`w-2 h-2 rounded-full ${result.ml_model.method === 'ml' ? 'bg-success-500' : 'bg-warning-500'}`} />
+                      {result.ml_model.method === 'ml'
+                        ? '方法：真实 ML 权重（method=ml）— 权重已加载，正在正常运行'
+                        : result.ml_model.method === 'fallback_rule'
+                        ? '方法：QSAR 规则分（method=fallback_rule）— 模型权重未加载，本次回退规则分'
+                        : '方法：不可用（method=unavailable）— 模型不可用'}
                     </div>
                   </div>
                 ) : (
