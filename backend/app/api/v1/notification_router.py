@@ -3,6 +3,7 @@
 提供多渠道通知管理、已读状态追踪和偏好设置的RESTful接口。
 支持云端同步、团队协作和AI辅助模块的通知功能。
 """
+import logging  # A-27：文件里只有函数内的 import logging，模块级 logger 拿不到
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -24,6 +25,7 @@ from ...schemas.notification_schemas import (
     NotificationPreferencesResponse,
 )
 from ...api.deps import get_current_active_user, CurrentUser, DbSession
+logger = logging.getLogger(__name__)  # A-27：原缺失
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 

@@ -22,6 +22,7 @@ from app.api.deps import get_db_session
 from app.services.import_engine.celery.worker import run_import_task
 from app.schemas.import_schema import (
     CancelResponse,
+    ImportErrorItem,  # A-27: 488 行用到，原漏导入
     ImportErrorsResponse,
     ImportListResponse,
     ImportPreviewRequest,

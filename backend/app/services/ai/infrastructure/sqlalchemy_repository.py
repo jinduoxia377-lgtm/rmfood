@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select  # A-27
+from datetime import datetime  # A-27
 from typing import List, Optional, Dict, Any
 from ..models.formula_model import FormulaModel
 from ..domain.events.formula_events import FormulaCreatedEvent, FormulaUpdatedEvent

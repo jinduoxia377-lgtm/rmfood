@@ -30,6 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...models.knowledge_graph import KGNode, KGEdge
 from ..data_sources.tcmsp_client import tcmsp_service
+# A-27：下面 3 个方法引用的 KnowledgeGraphService 定义在这里；原先根本没导入，
+#       一调用就是 NameError（/api/v1/knowledge-base 的搜索/邻居/子图接口全挂）。
+from ..data_sources.graph_service import KnowledgeGraphService
 
 logger = logging.getLogger(__name__)
 
@@ -1273,27 +1276,64 @@ class KnowledgeGraphEngine:
         limit: int = 100,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
-        """获取图谱节点列表（从 TCMSP 数据库）"""
-        from ..data_sources.tcmsp_client import TCMSP_HERB_DATABASE, TCM_COMPOUND_DATABASE, TARGET_DATABASE, DISEASE_DATABASE
+        """获取图谱节点列表（从 TCMSP 数据库）
+
+        A-39：原实现从 tcmsp_client 导入 TCM_COMPOUND_DATABASE / TARGET_DATABASE /
+        DISEASE_DATABASE，但那三个常量在模块里【根本不存在】（只有
+        TCMSP_HERB_DATABASE）→ ImportError，经全局异常中间件（异常串含
+        "database"）被映射成 503，GET /knowledge-base/graph/nodes 长期不可用。
+
+        这三类节点本来就寄生在药材条目上（每条药材都带 compounds / targets /
+        diseases 三个字段），直接从药材库展开即可，无需独立常量。
+        """
+        from ..data_sources.tcmsp_client import TCMSP_HERB_DATABASE
 
         all_nodes: List[Dict[str, Any]] = []
-        type_map = {
-            "herb": TCMSP_HERB_DATABASE,
-            "compound": TCM_COMPOUND_DATABASE,
-            "target": TARGET_DATABASE,
-            "disease": DISEASE_DATABASE,
+
+        def herb_nodes() -> List[Dict[str, Any]]:
+            return [{
+                "id": f"herb_{h.get('name_cn', '')}",
+                "node_type": "herb",
+                "node_label": h.get("name_cn", ""),
+                "properties": h,
+            } for h in TCMSP_HERB_DATABASE]
+
+        def nested_nodes(field: str, node_type_name: str) -> List[Dict[str, Any]]:
+            """从药材条目里展开嵌套集合（化合物 / 靶点 / 疾病），按名字去重"""
+            seen: set = set()
+            out: List[Dict[str, Any]] = []
+            for h in TCMSP_HERB_DATABASE:
+                for raw in (h.get(field) or []):
+                    if isinstance(raw, dict):
+                        label = raw.get("name") or raw.get("name_cn") or ""
+                        props = raw
+                    else:
+                        label = str(raw)
+                        props = {"name": label, "source_herb": h.get("name_cn", "")}
+                    if not label or label in seen:
+                        continue
+                    seen.add(label)
+                    out.append({
+                        "id": f"{node_type_name}_{label}",
+                        "node_type": node_type_name,
+                        "node_label": label,
+                        "properties": props,
+                    })
+            return out
+
+        type_builders = {
+            "herb": herb_nodes,
+            "compound": lambda: nested_nodes("compounds", "compound"),
+            "target": lambda: nested_nodes("targets", "target"),
+            "disease": lambda: nested_nodes("diseases", "disease"),
         }
 
-        for t, items in type_map.items():
+        for t, build in type_builders.items():
             if node_type and t != node_type:
                 continue
+            items = build()
             for item in items[offset:offset + limit]:
-                all_nodes.append({
-                    "id": f"{t}_{item.get('name_cn', item.get('name', ''))}",
-                    "node_type": t,
-                    "node_label": item.get("name_cn", item.get("name", "")),
-                    "properties": item,
-                })
+                all_nodes.append(item)
                 if len(all_nodes) >= limit:
                     break
             if len(all_nodes) >= limit:
@@ -1323,7 +1363,9 @@ class KnowledgeGraphEngine:
         if len(parts) != 2:
             return {"neighbors": [], "edges": []}
         node_type, node_label = parts
-        relations = await service.get_node_relations(node_label, node_type, depth=depth)
+        # A-27：get_node_relations(node_label, depth) 只有两个参数，原调用把 node_type
+        #       当成 depth 传进去了。
+        relations = await service.get_node_relations(node_label, depth=depth)
         return relations
 
     async def extract_subgraph(
@@ -1340,14 +1382,20 @@ class KnowledgeGraphEngine:
             return {"nodes": [], "edges": []}
         node_label = parts[1]
         node_type = parts[0]
-        relations = await service.get_node_relations(node_label, node_type, depth=max_depth)
+        relations = await service.get_node_relations(node_label, depth=max_depth)
         return relations
 
-    async def compute_pagerank(
+    async def compute_herb_pagerank(
         self,
         top_n: int = 50,
     ) -> List[Dict[str, Any]]:
-        """计算 PageRank 中心性排名（简化版：基于连接度）"""
+        """计算 PageRank 中心性排名（简化版：基于连接度）
+
+        A-27：本方法原名 compute_pagerank，与上面第 507 行的【真实 PageRank 实现】
+        同名，定义在后 ⇒ 把前者整个覆盖掉。app/api/knowledge_graph.py 调用的是
+        `engine.compute_pagerank(nodes, edges)`，实际却落到这个只吃 top_n 的简化版上，
+        抛 TypeError → /analytics/centrality 恒定 500。这里改名以保留两个实现。
+        """
         from ..data_sources.tcmsp_client import TCMSP_HERB_DATABASE
 
         compound_counts: Dict[str, int] = {}

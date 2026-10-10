@@ -5,6 +5,7 @@
 - 预定义角色权限矩阵（owner, admin, member, guest）
 - 权限继承规则
 """
+from typing import Optional  # A-27
 from typing import Dict, List, Set, Any
 from dataclasses import dataclass, field
 from enum import Enum

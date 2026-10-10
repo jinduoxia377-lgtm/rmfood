@@ -30,6 +30,11 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """用户响应"""
+    # A-24：username 的 `^[a-zA-Z0-9_]+$` 格式约束属于「创建账号时」的输入校验，
+    #       不应该施加在读取响应上 —— 库里存在 dev-demo 这类历史账号（含连字符），
+    #       一旦响应模型套用该 pattern，整个用户列表接口会 422，
+    #       /users 页面因此直接落到「加载失败」错误态。这里放宽为只校验长度。
+    username: str = Field(..., min_length=1, max_length=50)
     id: int
     role: str
     is_active: bool

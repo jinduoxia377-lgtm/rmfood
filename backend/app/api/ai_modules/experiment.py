@@ -49,7 +49,7 @@ async def analyze_experiment(
             result = await db.execute(
                 Experiment.__table__.select().where(
                     Experiment.id == req.experiment_id,
-                    Experiment.owner_id == current_user.id,
+                    Experiment.researcher_id == current_user.id,
                 )
             )
             row = result.fetchone()

@@ -1,6 +1,10 @@
 """Authentication handler implementation."""
 
 import hashlib
+import logging  # A-27
+from fastapi import HTTPException  # A-27
+
+logger = logging.getLogger(__name__)  # A-27
 from typing import Optional
 
 class AuthHandler:

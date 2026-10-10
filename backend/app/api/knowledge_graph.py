@@ -14,7 +14,8 @@
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from collections import defaultdict  # A-27：detect_communities 用到，原先漏导入 → 恒定 500
+from typing import Any, Dict, List, Optional, Set  # A-27：Set 亦被用到，原先漏导入
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession

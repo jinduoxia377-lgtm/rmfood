@@ -442,12 +442,16 @@ class AdvancedPeptideAnalyzer:
                 logger.debug("肽段深度分析失败: %s", e)
 
         synergy_matrix = []
+        herb_sources: Dict[str, str] = {}
         for pep_idx, pep_analysis in enumerate(peptide_analyses):
             row = []
             for herb_name in herb_names:
                 synergy_score = self._calculate_single_synergy(
                     pep_analysis, herb_name
                 )
+                herb_effects = self._get_herb_primary_effects(herb_name)
+                # 记录该药材功效来源（TCMSP 真实库 / 回退 8 味对照 / 未收录）
+                herb_sources[herb_name] = herb_effects.get("_source", "not_in_knowledge_base") if herb_effects else "not_in_knowledge_base"
                 row.append({
                     "peptide": pep_analysis.sequence,
                     "herb": herb_name,
@@ -458,16 +462,28 @@ class AdvancedPeptideAnalyzer:
                     "recommendation": self._generate_synergy_recommendation(
                         synergy_score
                     ),
+                    "herb_source": herb_sources[herb_name],
                 })
             synergy_matrix.append(row)
 
         overall_synergy = self._compute_overall_synergy(synergy_matrix)
+
+        # ── 接入真实 HERB_INTERACTIONS 配伍关系（药-药协同/拮抗）──
+        # 当配方含多味药时，叠加配伍修正项：配伍对若命中真实协同关系则增强总分，
+        # 命中拮抗则削弱总分。来源 graph_service.HERB_INTERACTIONS（150+ 条真实配伍）。
+        herb_interaction_info = self._compute_herb_interactions(herb_names, overall_synergy)
+
+        tcm_count = sum(1 for v in herb_sources.values() if v.startswith("TCMSP"))
+        fallback_count = sum(1 for v in herb_sources.values() if v == "fallback_8herb_map")
+        unknown_count = sum(1 for v in herb_sources.values() if v == "not_in_knowledge_base")
 
         result = {
             "peptides_analyzed": len(peptide_analyses),
             "herbs_analyzed": len(herb_names),
             "synergy_matrix": synergy_matrix,
             "overall_synergy_score": round(overall_synergy, 3),
+            # 配伍修正后的总分（HERB_INTERACTIONS 叠加药-药协同/拮抗修正）
+            "overall_synergy_score_adjusted": herb_interaction_info.get("adjusted_overall", round(overall_synergy, 3)),
             "top_combinations": sorted(
                 [item for row in synergy_matrix for item in row],
                 key=lambda x: x["synergy_score"],
@@ -476,6 +492,16 @@ class AdvancedPeptideAnalyzer:
             "recommendations": self._generate_herb_peptide_recommendations(
                 synergy_matrix
             ),
+            # 诚实标注：药材功效来源（TCMSP 真实 319 种库 / 未收录）
+            "herb_knowledge_source": {
+                "tcmsp_matched": tcm_count,
+                "fallback_8herb": fallback_count,
+                "unknown": unknown_count,
+                "note": "药材功效优先查 TCMSP 真实知识库（319 种，含 effects/targets/diseases），未收录时协同分=0 并标注 not_in_knowledge_base（不再回退硬编码 8 味对照）。",
+                "sources": herb_sources,
+            },
+            # 诚实标注：药-药配伍关系（HERB_INTERACTIONS 真实 150+ 条）
+            "herb_interactions": herb_interaction_info,
             # 诚实标注：功效匹配度中 ACE 抑制活性已用真实 ML 模型分（DFBP 真实数据训练）
             "ml_model_provenance": {
                 "available": self._ml_model_available(),
@@ -485,7 +511,11 @@ class AdvancedPeptideAnalyzer:
             },
         }
 
-        logger.info(f"协同分析完成 - 总体协同得分: {overall_synergy:.3f}")
+        logger.info(
+            f"协同分析完成 - 总体协同得分: {overall_synergy:.3f}, "
+            f"药材来源: TCMSP {tcm_count} / fallback {fallback_count} / unknown {unknown_count}, "
+            f"配伍命中: {len(herb_interaction_info.get('matched_pairs', []))}"
+        )
         return result
 
     async def predict_solubility_profile(
@@ -995,38 +1025,136 @@ class AdvancedPeptideAnalyzer:
         return min(1.0, synergy)
 
     def _get_herb_primary_effects(self, herb_name: str) -> Dict[str, float]:
-        herb_database = {
-            "黄芪": {"增强免疫": 0.9, "补气": 0.95},
-            "人参": {"抗疲劳": 0.9, "补气养阴": 0.85},
-            "枸杞子": {"抗氧化": 0.88, "增强免疫": 0.75},
-            "山楂": {"降血压": 0.85, "助消化": 0.8},
-            "菊花": {"降血压": 0.82, "清热": 0.78},
-            "葛根": {"降血压": 0.88, "解热": 0.75},
-            "酸枣仁": {"改善睡眠": 0.92, "安神": 0.9},
-            "灵芝": {"增强免疫": 0.92, "抗疲劳": 0.85},
-        }
-        return herb_database.get(herb_name, {})
+        """
+        查询药材主功效（真实数据源优先）。
+
+        诚实策略：
+        1. 优先查 TCMSP_HERB_DATABASE（319 种真实药材知识库，含 effects/category/targets/diseases）
+        2. 命中时把 effects 字符串拆分为主功效词条，配权重（基于该药材 OB 值）
+        3. TCMSP 未收录时诚实返回空 dict（协同分=0，标注 not_in_knowledge_base）——
+           不再回退硬编码 8 味手写对照（那属于模拟数据残留，且 8 味大多已在 TCMSP 库内）
+        """
+        herb_name = (herb_name or "").strip()
+        if not herb_name:
+            return {}
+
+        # ① 真实 TCMSP 药材知识库查询（319 种）
+        try:
+            from app.services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
+            # 规范化：去括号
+            normalized = herb_name.split("（")[0].split("(")[0].strip()
+            matched = None
+            for h in TCMSP_HERB_DATABASE:
+                if h.get("name_cn") == normalized or normalized in (h.get("name_cn") or ""):
+                    matched = h
+                    break
+            if matched:
+                effects_str = (matched.get("effects") or "").replace("，", ",").replace("、", ",")
+                effect_terms = [e.strip() for e in effects_str.split(",") if e.strip()]
+                # 把功效词映射为权重（基于该药材在知识库中的 OB 值越高权重越大）
+                ob = matched.get("ob_percent") or 2.0
+                base_strength = min(0.95, 0.6 + ob * 0.05)
+                result: Dict[str, float] = {}
+                for i, term in enumerate(effect_terms[:6]):
+                    # 主功效权重略高，次要功效略低
+                    result[term] = round(base_strength - i * 0.03, 3)
+                # 补充类别（如"补气药"）作为辅助标签
+                if matched.get("category"):
+                    result[matched["category"]] = base_strength
+                # 记录来源，便于前端/下游展示
+                result["_source"] = f"TCMSP:{matched.get('name_cn')}({matched.get('name_latin')})"
+                return result
+        except Exception:
+            pass
+
+        # ② TCMSP 未收录：诚实返回空 dict（协同分=0，标注 not_in_knowledge_base）
+        # 不再回退硬编码 8 味手写对照——那 8 味大多也已在 TCMSP 库内（黄芪/人参/枸杞子/山楂/菊花/酸枣仁），
+        # 真正未收录的返回空比塞模拟值更诚实。
+        logger.debug(f"药材 {herb_name} 未在 TCMSP_HERB_DATABASE（319 种）中收录，协同分记为 0")
+        return {}
 
     def _map_effect_to_objective(self, effect: str) -> Optional[str]:
-        mapping = {
+        """
+        把 TCMSP 功效词映射到肽的多目标优化目标。
+        覆盖常见 TCM 功效词（基于其现代药理作用），未命中诚实返回 None（不参与协同）。
+        """
+        # 直接目标关键词 → 优化目标
+        direct = {
             "降血压": "ACE_inhibitory",
+            "降压": "ACE_inhibitory",
+            "抗高血压": "ACE_inhibitory",
             "抗氧化": "antioxidant",
+            "清除自由基": "antioxidant",
             "降血糖": "DPP_IV_inhibitory",
+            "降脂": "DPP_IV_inhibitory",
+            "降血脂": "DPP_IV_inhibitory",
             "增强免疫": "stability",
+            "调节免疫": "stability",
             "改善睡眠": "stability",
+            "安神": "stability",
+            "抗疲劳": "stability",
+            "健脾": "stability",
+            "补气": "stability",
+            "养阴": "stability",
         }
-        return mapping.get(effect)
+        if effect in direct:
+            return direct[effect]
+        # 中药类别词（TCMSP category 字段值）→ 目标（基于该药现代药理）
+        category_map = {
+            "补气药": "stability",
+            "补血药": "stability",
+            "活血化瘀药": "ACE_inhibitory",
+            "清热药": "antioxidant",
+            "安神药": "stability",
+            "利水渗湿药": "stability",
+            "理气药": "stability",
+            "化痰药": "antioxidant",
+            "养阴药": "stability",
+            "平肝息风药": "ACE_inhibitory",
+        }
+        if effect in category_map:
+            return category_map[effect]
+        # 模糊匹配（含关键词）
+        fuzzy = [
+            (("降压", "活血", "通络", "化瘀"), "ACE_inhibitory"),
+            (("氧化", "自由基", "清热", "解毒", "凉血"), "antioxidant"),
+            (("糖", "脂"), "DPP_IV_inhibitory"),
+            (("免疫", "安眠", "睡眠", "补", "养", "气", "阴"), "stability"),
+        ]
+        for keys, obj in fuzzy:
+            if any(k in effect for k in keys):
+                return obj
+        return None
 
     def _check_compatibility(self, pep_props: Dict, herb_name: str) -> float:
+        """
+        基于 TCMSP 药材真实属性（OB 值/类别）做兼容性修正，而非写死 4 味药名。
+
+        规则：
+        - 肽 logP 低（< -1，亲水）配 OB 高的补气/养阴类药（OB>2）→ 适当降权
+        - 肽 MW 高（>800）配清热/平肝类药（偏轻清）→ 适当降权
+        - 其余保持 1.0（兼容）
+        """
         logp = pep_props.get("logp", 0)
         mw = pep_props.get("molecular_weight", 500)
 
         compatibility = 1.0
-        if logp < -1.0 and herb_name in ["黄芪", "人参"]:
-            compatibility *= 0.9
-        if mw > 800 and herb_name in ["酸枣仁", "菊花"]:
-            compatibility *= 0.85
-
+        try:
+            from app.services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
+            normalized = herb_name.split("（")[0].split("(")[0].strip()
+            herb = next((h for h in TCMSP_HERB_DATABASE
+                         if h.get("name_cn") == normalized or normalized in (h.get("name_cn") or "")), None)
+            if herb:
+                ob = herb.get("ob_percent") or 0.0
+                category = herb.get("category") or ""
+                # 亲水肽配高 OB 补气养阴类 → 略降（生物利用度匹配）
+                if logp < -1.0 and ob > 2.0 and category in ("补气药", "养阴药", "补血药"):
+                    compatibility *= 0.9
+                # 大 MW 肽配轻清类 → 略降
+                if mw > 800 and category in ("清热药", "平肝息风药", "利水渗湿药"):
+                    compatibility *= 0.85
+        except Exception:
+            pass
         return compatibility
 
     def _infer_synergy_mechanism(
@@ -1064,6 +1192,74 @@ class AdvancedPeptideAnalyzer:
             return 0.0
         scores = [item["synergy_score"] for row in matrix for item in row]
         return sum(scores) / len(scores) if scores else 0
+
+    def _compute_herb_interactions(self, herb_names: List[str], base_synergy: float) -> Dict[str, Any]:
+        """
+        接入真实 HERB_INTERACTIONS（graph_service，150+ 条配伍关系），
+        计算配方内药-药配伍对命中的协同/拮抗关系，并修正总分。
+
+        诚实标注：
+        - 单味药或配方内药对未命中真实配伍库时，修正项=0，诚实报告"无已知配伍命中"
+        - 命中时：synergy 配伍对按强度加权增强总分；antagonism 配伍对削弱总分
+        """
+        try:
+            from app.services.data_sources.graph_service import HERB_INTERACTIONS
+        except Exception as e:
+            return {"available": False, "note": f"HERB_INTERACTIONS 加载失败: {e}", "matched_pairs": []}
+
+        if len(herb_names) < 2:
+            return {
+                "available": True,
+                "total_interactions_in_db": len(HERB_INTERACTIONS),
+                "note": "配方仅含单味药，无药-药配伍对可查",
+                "matched_pairs": [],
+                "net_adjustment": 0.0,
+                "adjusted_overall": round(base_synergy, 3),
+            }
+
+        # 配方内所有无序药对
+        pairs = []
+        for i in range(len(herb_names)):
+            for j in range(i + 1, len(herb_names)):
+                pairs.append((herb_names[i], herb_names[j]))
+
+        matched = []
+        net_adjustment = 0.0
+        for a, b in pairs:
+            # 查配伍库（双向匹配）
+            for inter in HERB_INTERACTIONS:
+                pair_match = (inter["a"] == a and inter["b"] == b) or (inter["a"] == b and inter["b"] == a)
+                if pair_match:
+                    strength = inter.get("strength", 0.5)
+                    itype = inter.get("type", "synergy")
+                    # synergy 配伍对：增强；antagonism 配伍对：削弱（修正项按 50% 权重叠加）
+                    adj = strength * 0.5 if itype == "synergy" else -strength * 0.5
+                    net_adjustment += adj
+                    matched.append({
+                        "a": a,
+                        "b": b,
+                        "type": itype,
+                        "strength": strength,
+                        "basis": inter.get("basis", ""),
+                        "adjustment": round(adj, 3),
+                    })
+                    break  # 同一对只取第一条命中
+
+        adjusted = max(0.0, min(1.0, base_synergy + net_adjustment))
+        synergy_hits = sum(1 for m in matched if m["type"] == "synergy")
+        antagonism_hits = sum(1 for m in matched if m["type"] == "antagonism")
+        return {
+            "available": True,
+            "total_interactions_in_db": len(HERB_INTERACTIONS),
+            "pairs_checked": len(pairs),
+            "matched_pairs": matched,
+            "synergy_hits": synergy_hits,
+            "antagonism_hits": antagonism_hits,
+            "net_adjustment": round(net_adjustment, 3),
+            "base_overall": round(base_synergy, 3),
+            "adjusted_overall": round(adjusted, 3),
+            "note": f"配方 {len(herb_names)} 味，药对 {len(pairs)} 个，命中真实配伍 {len(matched)} 组（协同 {synergy_hits} / 拮抗 {antagonism_hits}），净修正 {net_adjustment:+.3f}。",
+        }
 
     def _generate_herb_peptide_recommendations(
         self, matrix: List[List]

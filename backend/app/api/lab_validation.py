@@ -11,7 +11,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Query, Depends
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
-from datetime import datetime, date
+from datetime import datetime, date, timezone  # A-27: 473 行 timezone.utc 用到
 import json
 import logging
 
@@ -430,7 +430,9 @@ async def get_validation_dashboard(
         type_stats[t] = count
     
     # 平均偏差统计
-    all_records = await LabValidationData.filter(deviation_analysis__not_isnull()).all()
+    # A-27：原写 `deviation_analysis__not_isnull()` —— 这是一个【未定义的函数调用】，
+    #       一进来就抛 NameError。Tortoise 的写法是过滤关键字 + 布尔值。
+    all_records = await LabValidationData.filter(deviation_analysis__not_isnull=True).all()
     avg_deviations = []
     for r in all_records[:100]:  # 取最近100条
         if r.deviation_analysis and 'mean_absolute_percentage_error' in r.deviation_analysis:

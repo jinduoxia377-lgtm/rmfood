@@ -9,6 +9,7 @@ Webhook & API密钥 & 集成 API 路由
 """
 
 import logging
+import aiohttp  # A-27: 319 行 except aiohttp.ClientError 用到，原漏导入
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 from .deps import get_db_session, get_current_user
+from .api_key_deps import get_current_api_key, get_current_active_api_key, require_api_scope, ApiKeyPrincipal
 from ..core.api_framework.integration_framework import (
     WebhookService,
     APIKeyService,
@@ -344,40 +346,50 @@ async def list_events():
 # API Key Endpoints
 # ============================================================
 
+def _resolve_owner_id(current_user, api_key):
+    """从用户会话或 API 密钥中解析 owner_id；两者都缺则抛 401。"""
+    if current_user is not None:
+        return current_user.id
+    if api_key is not None:
+        return api_key.owner_id
+    raise HTTPException(
+        status_code=401,
+        detail="未认证：请提供有效的用户会话或 X-API-Key 请求头",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
 @router.post("/api-keys", summary="创建API密钥")
 async def create_api_key(
     request: CreateAPIKeyRequest,
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
+    api_key: Optional[ApiKeyPrincipal] = Depends(get_current_api_key),
 ):
-    """
-    创建新的API密钥
-    
-    ⚠️ 注意: 密钥仅在此响应中显示一次，请妥善保存！
-    
-    - 支持设置权限范围 (scopes)
-    - 可设置过期时间
-    - 自动生成安全密钥
+    """创建新的API密钥（用户会话或 API 密钥认证均可）
+
+    ⚠️ 密钥仅在此响应中显示一次，请妥善保存！
     """
     service = get_api_key_service(db)
+    owner_id = _resolve_owner_id(current_user, api_key)
 
-    api_key, plain_key = await service.create_api_key(
+    api_key_obj, plain_key = await service.create_api_key(
         name=request.name,
         scopes=request.scopes,
-        owner_id=current_user.id,
+        owner_id=owner_id,
         expires_in_days=request.expires_in_days,
     )
 
     return {
         "success": True,
         "api_key": {
-            "id": api_key.id,
-            "name": api_key.name,
-            "key_prefix": api_key.key_prefix,
+            "id": api_key_obj.id,
+            "name": api_key_obj.name,
+            "key_prefix": api_key_obj.key_prefix,
             "key": plain_key,
-            "scopes": api_key.scopes,
-            "expires_at": api_key.expires_at.isoformat() if api_key.expires_at else None,
-            "created_at": api_key.created_at.isoformat(),
+            "scopes": api_key_obj.scopes,
+            "expires_at": api_key_obj.expires_at.isoformat() if api_key_obj.expires_at else None,
+            "created_at": api_key_obj.created_at.isoformat(),
         },
         "warning": "⚠️ 请立即保存此密钥，它将不会再次显示！",
     }
@@ -387,16 +399,33 @@ async def create_api_key(
 async def list_api_keys(
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
+    api_key: Optional[ApiKeyPrincipal] = Depends(get_current_api_key),
 ):
-    """
-    列出用户的所有API密钥
-    
-    ⚠️ 不返回实际密钥值，仅显示前缀
-    """
+    """列出当前身份的所有API密钥（不返回明文，仅前缀）"""
     service = get_api_key_service(db)
-    keys = await service.list_keys(current_user.id)
+    owner_id = _resolve_owner_id(current_user, api_key)
+    keys = await service.list_keys(owner_id)
 
     return {"keys": keys}
+
+
+@router.get("/api-keys/me", summary="校验当前 API 密钥（程序化鉴权探针）")
+async def api_key_me(
+    principal: ApiKeyPrincipal = Depends(get_current_active_api_key),
+):
+    """校验 X-API-Key 并返回密钥身份。返回 200 即表示密钥鉴权已生效。"""
+    return {
+        "success": True,
+        "authenticated": True,
+        "key": {
+            "id": principal.id,
+            "name": principal.name,
+            "key_prefix": principal.key_prefix,
+            "owner_id": principal.owner_id,
+            "scopes": principal.scopes,
+        },
+        "note": "此密钥可通过 X-API-Key 请求头进行程序化鉴权。",
+    }
 
 
 @router.delete("/api-keys/{key_id}", summary="撤销API密钥")
@@ -404,10 +433,12 @@ async def revoke_api_key(
     key_id: str,
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
+    api_key: Optional[ApiKeyPrincipal] = Depends(get_current_api_key),
 ):
-    """撤销（禁用）指定的API密钥"""
+    """撤销（禁用）指定的API密钥（仅限所有者本人）"""
     service = get_api_key_service(db)
-    success = await service.revoke_key(key_id, current_user.id)
+    owner_id = _resolve_owner_id(current_user, api_key)
+    success = await service.revoke_key(key_id, owner_id)
 
     if not success:
         raise HTTPException(status_code=404, detail="密钥不存在")
@@ -430,6 +461,23 @@ async def list_scopes():
     ]
 
     return {"scopes": scopes}
+
+
+@router.get("/api-keys/scope-demo", summary="scope 强制示范端点")
+async def api_key_scope_demo(
+    principal: ApiKeyPrincipal = Depends(require_api_scope("read", "admin")),
+):
+    """示范 scope 强制：仅持有 read 或 admin scope 的密钥可访问。
+
+    业务端点接入模式（复用本依赖即可）:
+        @router.get("/business-data")
+        async def data(principal = Depends(require_api_scope("analytics:read"))): ...
+    """
+    return {
+        "success": True,
+        "note": "scope 强制已生效：该端点仅允许持有 read/admin scope 的 API 密钥访问",
+        "granted_scopes": principal.scopes,
+    }
 
 
 # ============================================================

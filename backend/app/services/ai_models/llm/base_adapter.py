@@ -1,5 +1,6 @@
 """Base adapter for LLM clients."""
 
+from typing import List  # A-27
 from typing import Dict, Any, Optional
 from .ports import LLMPort, ChatResponse, Message
 

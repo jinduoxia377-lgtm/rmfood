@@ -91,8 +91,8 @@ class KGNode(Base):
     )
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     outgoing_edges: Mapped[list["KGEdge"]] = relationship(
@@ -169,8 +169,8 @@ class KGEdge(Base):
     )
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     source_node: Mapped["KGNode"] = relationship(

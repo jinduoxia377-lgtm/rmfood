@@ -1,3 +1,4 @@
+import logging  # A-27：except 分支里用到 logger，原先未定义
 """RMFOOD 团队协作扩展 API Router
 
 提供团队仪表盘、统计和高级功能的RESTful接口。
@@ -13,6 +14,7 @@ from ...api.deps import get_current_active_user, CurrentUser, DbSession
 from ...services.team.team_impl import TeamService
 from ...services.team.team_dashboard import TeamDashboardService
 from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters
+logger = logging.getLogger(__name__)  # A-27：原缺失
 
 router = APIRouter(prefix="/teams/dashboard", tags=["Team Dashboard"])
 

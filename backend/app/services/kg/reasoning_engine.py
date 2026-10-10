@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import logging
+from collections import deque  # A-27
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

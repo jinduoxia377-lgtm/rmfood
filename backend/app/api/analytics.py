@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta, timezone
 import asyncio
+from ..utils.file_security import sanitize_filename  # A-27: 583 行导出文件名净化用到，原漏导入
 import json
 import logging
 import uuid
@@ -281,6 +282,10 @@ async def get_system_health(
 @router.get("/anomalies", summary="Detect data anomalies")
 async def get_anomalies(
     threshold: float = Query(2.5, ge=1.0, le=5.0, description="标准差倍数阈值"),
+    # A-48：函数体里一直在用 time_range，但签名里没有这个参数 —— 每次调用都 NameError，
+    # 又被下面的 except 统一转成 500「异常检测服务暂时不可用」，病根被完全盖住。
+    # 补上签名，取值口径与 /kpi 保持一致。
+    time_range: str = Query("30d", description="Time range: 7d/30d/90d/1y"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):

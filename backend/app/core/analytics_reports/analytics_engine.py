@@ -19,6 +19,11 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
+# A-48：下面 162 / 235 行用 isinstance(vv, Enum) 把枚举成员还原成原始值，
+# 但 Enum 从来没有导入过 —— 每次调用都 NameError，又被路由层的
+# except Exception -> HTTPException(500) 吞掉，表现成"服务器内部错误"。
+# /analytics/kpi 与 /analytics/anomalies 的 500 就是这个原因。
+from enum import Enum
 import uuid
 from sqlalchemy import text, func, DateTime, select
 from sqlalchemy.orm import aliased
@@ -44,6 +49,26 @@ class AnalyticsService:
         self.db = db
         self._cache: Dict[str, Tuple[datetime, Any]] = {}
         self._cache_ttl_seconds = 300
+
+    async def _rollback_quietly(self) -> None:
+        """A-50：出错后必须回滚，否则整条链上的后续查询全废。
+
+        PostgreSQL（asyncpg）的语义是：事务里任意一条语句失败，事务就被标记为
+        aborted，此后同一事务内的**每一条**语句都会抛
+        InFailedSQLTransactionError「当前事务被终止」。
+
+        本文件里到处是 `try: await self.db.execute(...) except: return 0` 这种
+        "打不过就降级"的写法 —— 只 catch 不 rollback，等于把一次局部失败放大成
+        整页数据全 0：实测 /analytics/kpi 因为 ai_generations 表不存在，
+        一次 UndefinedTableError 就让后面的 storage_usage / formula_status /
+        ai_generations_trend 全部变成 0，而接口照样返回 200（静默错误数据）。
+
+        所以凡是吞掉数据库异常的分支，都必须先把事务回滚干净。
+        """
+        try:
+            await self.db.rollback()
+        except Exception:
+            pass
 
     async def get_dashboard_stats(self) -> Dict[str, Any]:
         now = datetime.now(timezone.utc)
@@ -279,6 +304,7 @@ class AnalyticsService:
                 })
 
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"_get_recent_activity failed: {e}")
 
         # 按时间倒序合并，取最近 10 条
@@ -319,6 +345,7 @@ class AnalyticsService:
                 for row in result.fetchall()
             ]
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_top_entities failed: {e}")
             top["most_commented_formulas"] = []
         
@@ -352,8 +379,6 @@ class AnalyticsService:
     ) -> List[Dict[str, Any]]:
         """Get trend data for a given entity (formulas, experiments, users, ai_generations)."""
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-
             if entity == "formulas":
                 return await self._get_formula_trend_data(days, granularity)
             elif entity == "experiments":
@@ -667,31 +692,36 @@ class AnalyticsService:
             result = await self.db.execute(select(func.count(Formula.id)))
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_formulas failed: {e}")
             return 0
 
     async def _count_formulas_since(self, days: int) -> int:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # formulas.created_at 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             result = await self.db.execute(
                 select(func.count(Formula.id))
                 .where(Formula.created_at >= cutoff)
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ _count_formulas_since 查询失败 ({days}天): {e}")
             return 0
 
     async def _count_formulas_between(self, days_start: int, days_end: int) -> int:
         try:
-            cutoff_start = datetime.now(timezone.utc) - timedelta(days=days_start)
-            cutoff_end = datetime.now(timezone.utc) - timedelta(days=days_end)
+            # formulas.created_at 为 naive timestamp，绑定 naive UTC
+            cutoff_start = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days_start)
+            cutoff_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days_end)
             result = await self.db.execute(
                 select(func.count(Formula.id))
                 .where((Formula.created_at >= cutoff_start) & (Formula.created_at < cutoff_end))
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ _count_formulas_between 查询失败: {e}")
             return 0
 
@@ -703,6 +733,7 @@ class AnalyticsService:
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_formulas_by_status failed: {e}")
             return 0
 
@@ -711,6 +742,7 @@ class AnalyticsService:
             result = await self.db.execute(select(func.count(Experiment.id)))
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_experiments failed: {e}")
             return 0
 
@@ -722,43 +754,53 @@ class AnalyticsService:
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_experiments_by_status failed: {e}")
             return 0
 
     async def _count_active_users(self, days: int) -> int:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # users.last_login 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             result = await self.db.execute(
                 select(func.count(User.id))
                 .where(User.last_login >= cutoff)
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_active_users failed ({days} days): {e}")
             return 0
 
+    # A-50：AI 生成记录的实际落表是 formula_generation_history（含 created_at）。
+    # 原实现查的 ai_generations 在 models 里根本不存在，每次调用都 UndefinedTableError。
+    _AI_GEN_TABLE = "formula_generation_history"
+
     async def _count_ai_generations_recent(self, hours: int) -> int:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=hours)
             result = await self.db.execute(
-                text("SELECT COUNT(*) FROM ai_generations WHERE created_at >= :cutoff"),
+                text(f"SELECT COUNT(*) FROM {self._AI_GEN_TABLE} WHERE created_at >= :cutoff"),
                 {"cutoff": cutoff},
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ _count_ai_generations_recent 查询失败 ({hours}小时): {e}")
             return 0
 
     async def _count_ai_generations_between(self, hours_start: int, hours_end: int) -> int:
         try:
-            cutoff_start = datetime.now(timezone.utc) - timedelta(hours=hours_start)
-            cutoff_end = datetime.now(timezone.utc) - timedelta(hours=hours_end)
+            cutoff_start = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=hours_start)
+            cutoff_end = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=hours_end)
             result = await self.db.execute(
-                text("SELECT COUNT(*) FROM ai_generations WHERE created_at >= :start AND created_at < :end"),
+                text(f"SELECT COUNT(*) FROM {self._AI_GEN_TABLE} "
+                     "WHERE created_at >= :start AND created_at < :end"),
                 {"start": cutoff_start, "end": cutoff_end},
             )
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ _count_ai_generations_between 查询失败: {e}")
             return 0
 
@@ -770,12 +812,14 @@ class AnalyticsService:
             bytes_total = result.scalar() or 0
             return round(bytes_total / 1024 / 1024, 2)
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_storage_usage failed: {e}")
             return 0.0
 
     async def _get_formula_trend_data(self, days: int, granularity: TimeGranularity = TimeGranularity.DAILY) -> List[Dict]:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # formulas.created_at 为 timestamp WITHOUT time zone（naive），绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             
             if granularity == TimeGranularity.HOURLY:
                 result = await self.db.execute(text("""
@@ -806,12 +850,14 @@ class AnalyticsService:
             ]
             
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ 获取配方趋势数据失败 ({days}天): {e}")
             return []
 
     async def _get_experiment_trend_data(self, days: int) -> List[Dict]:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # experiments.created_at 为 timestamp WITHOUT time zone（naive），绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             result = await self.db.execute(text("""
                 SELECT DATE_TRUNC('day', created_at) as period, COUNT(*) as count
                 FROM experiments
@@ -832,12 +878,17 @@ class AnalyticsService:
             ]
             
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ 获取实验趋势数据失败 ({days}天): {e}")
             return []
 
     async def _get_user_trend_data(self, days: int) -> List[Dict]:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # 注意：users.last_login 列为 timestamp WITHOUT time zone（naive），
+            # 若绑定带时区的 datetime 会触发 asyncpg "can't subtract offset-naive
+            # and offset-aware" 错误。这里使用 naive UTC 与列的实际存储（datetime.utcnow()）
+            # 保持一致。
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             result = await self.db.execute(text("""
                 SELECT DATE_TRUNC('day', last_login) as period, COUNT(DISTINCT id) as count
                 FROM users
@@ -858,17 +909,19 @@ class AnalyticsService:
             ]
             
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ 获取用户趋势数据失败 ({days}天): {e}")
             return []
 
     async def _get_ai_generation_trend_data(self, days: int, granularity: TimeGranularity = TimeGranularity.DAILY) -> List[Dict]:
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # A-50：同 _AI_GEN_TABLE。created_at 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             time_unit = 'hour' if granularity == TimeGranularity.HOURLY else 'day'
-            
+
             result = await self.db.execute(text(f"""
                 SELECT DATE_TRUNC(:time_unit, created_at) as period, COUNT(*) as count
-                FROM ai_generations
+                FROM {self._AI_GEN_TABLE}
                 WHERE created_at >= :cutoff
                 GROUP BY period
                 ORDER BY period ASC
@@ -886,6 +939,7 @@ class AnalyticsService:
             ]
             
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"⚠️ 获取AI生成趋势数据失败 ({days}天, {granularity.value}): {e}")
             return []
 
@@ -899,7 +953,8 @@ class AnalyticsService:
     async def _get_formula_monthly_counts(self, months: int) -> List[int]:
         """单次 SQL 查询获取最近 N 个月的配方创建数（消除 N+1）。"""
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=30 * months)
+            # formulas.created_at 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30 * months)
             result = await self.db.execute(text("""
                 SELECT
                     TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS month,
@@ -913,18 +968,20 @@ class AnalyticsService:
 
             # 填充缺失月份（用 0）
             labels = [
-                (datetime.now(timezone.utc) - timedelta(days=30 * i)).strftime("%Y-%m")
+                (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30 * i)).strftime("%Y-%m")
                 for i in range(months - 1, -1, -1)
             ]
             return [row_map.get(label, 0) for label in labels]
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_formula_monthly_counts failed: {e}")
             return [0] * months
 
     async def _get_experiment_monthly_counts(self, months: int) -> List[int]:
         """单次 SQL 查询获取最近 N 个月的实验创建数（消除 N+1）。"""
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=30 * months)
+            # experiments.created_at 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30 * months)
             result = await self.db.execute(text("""
                 SELECT
                     TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS month,
@@ -937,11 +994,12 @@ class AnalyticsService:
             row_map = {row.month: row.count for row in result.fetchall()}
 
             labels = [
-                (datetime.now(timezone.utc) - timedelta(days=30 * i)).strftime("%Y-%m")
+                (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30 * i)).strftime("%Y-%m")
                 for i in range(months - 1, -1, -1)
             ]
             return [row_map.get(label, 0) for label in labels]
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_experiment_monthly_counts failed: {e}")
             return [0] * months
 
@@ -956,6 +1014,7 @@ class AnalyticsService:
             )
             return [row.category for row in result.fetchall()]
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_formula_category_labels failed: {e}")
             return []
 
@@ -970,6 +1029,7 @@ class AnalyticsService:
             )
             return [row[1] for row in result.fetchall()]
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _get_formula_category_counts failed: {e}")
             return []
 
@@ -1020,6 +1080,7 @@ class AnalyticsService:
                 return {"columns": [], "items": [], "total": 0}
                 
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _generate_table_widget failed: {e}")
             return {"columns": [], "items": [], "total": 0}
 
@@ -1075,6 +1136,7 @@ class AnalyticsService:
             result = await self.db.execute(select(func.count(User.id)))
             return result.scalar() or 0
         except Exception as e:
+            await self._rollback_quietly()
             logger.warning(f"Warning: _count_users failed: {e}")
             return 0
 

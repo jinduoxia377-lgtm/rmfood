@@ -5,9 +5,10 @@ import json
 import os
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status  # A-27: status 原漏导入
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select  # A-27: select 在 287 行被用到但原先未导入
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import (
@@ -70,8 +71,13 @@ async def debug_llm_test(
         LLMMessage(role="user", content="帮我设计一款针对高血糖人群的饮品配方"),
     ]
     
-    # Call LLM non-streaming
-    result = await llm_service.chat(messages)
+    # A-49：LLM 未配置时 llm_service 抛 RuntimeError，被全局兜底转成 500。
+    # 但"服务没配钥匙"是外部依赖不可用，不是服务端故障 —— 语义上应该是 503，
+    # 而且前端拿到 500 会误判成代码 bug。这里显式转成 503 并把原因带回给调用方。
+    try:
+        result = await llm_service.chat(messages)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=f"LLM 服务未就绪：{e}")
     content = result.content
     
     return {

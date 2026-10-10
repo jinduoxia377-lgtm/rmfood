@@ -3,7 +3,8 @@
 实验 CRUD、数据管理、进度跟踪
 """
 import logging
-from datetime import datetime
+import secrets
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -27,7 +28,11 @@ class ExperimentService:
         self.db = db
 
     async def _generate_experiment_code(self) -> str:
-        """生成实验编号: EXP-YYYYMMDD-XXXX"""
+        """生成实验编号: EXP-YYYYMMDD-XXXX
+
+        并发防护：基于当日计数 + 已存在校验 + 随机后缀兜底，
+        降低唯一约束冲突概率。
+        """
         today = datetime.now().strftime("%Y%m%d")
         prefix = f"EXP-{today}-"
 
@@ -38,7 +43,16 @@ class ExperimentService:
         )
         count = result.scalar() or 0
         seq = str(count + 1).zfill(4)
-        return f"{prefix}{seq}"
+        code = f"{prefix}{seq}"
+
+        # 校验是否已存在（极端并发下 count 可能撞号），存在则加随机后缀
+        exists = await self.db.execute(
+            select(Experiment.id).where(Experiment.code == code).limit(1)
+        )
+        if exists.scalar_one_or_none() is not None:
+            code = f"{prefix}{seq}-{secrets.token_hex(2).upper()}"
+
+        return code
 
     async def create_experiment(
         self,
@@ -115,6 +129,8 @@ class ExperimentService:
         formula_id: Optional[int] = None,
         search: Optional[str] = None,
         include_deleted: bool = False,
+        sort_field: str = "updated_at",
+        sort_order: str = "desc",
     ) -> tuple[list[Experiment], int]:
         """实验列表"""
         query = select(Experiment).options(
@@ -142,7 +158,19 @@ class ExperimentService:
         count_q = select(func.count()).select_from(query.subquery())
         total = (await self.db.execute(count_q)).scalar() or 0
 
-        query = query.order_by(Experiment.updated_at.desc())
+        # 排序字段白名单，防止任意 SQL 列注入
+        sort_columns = {
+            "title": Experiment.title,
+            "code": Experiment.code,
+            "status": Experiment.status,
+            "updated_at": Experiment.updated_at,
+            "created_at": Experiment.created_at,
+            "id": Experiment.id,
+        }
+        order_col = sort_columns.get(sort_field, Experiment.updated_at)
+        query = query.order_by(
+            order_col.asc() if sort_order == "asc" else order_col.desc()
+        )
         query = query.offset((page - 1) * page_size).limit(page_size)
         result = await self.db.execute(query)
 
@@ -205,8 +233,13 @@ class ExperimentService:
             )
 
         experiment.status = ExperimentStatus.IN_PROGRESS
-        experiment.actual_start = datetime.now()
-        await self.db.flush()
+        # 统一使用 naive UTC 墙钟，与 created_at/updated_at（now_utc_naive）及
+        # 趋势查询的 naive-UTC cutoff 保持一致；原 datetime.now() 为本地时间，会引入 8h 偏差。
+        experiment.actual_start = datetime.now(timezone.utc).replace(tzinfo=None)
+        # 显式 commit：get_db() 的条件 commit 检查（session.dirty/new）在 flush 之后
+        # 已被清空，若不在此处显式提交，本请求的状态变更不会真正落盘，
+        # 后续请求（如添加数据点、完成实验）读到的仍是 planned 旧状态。
+        await self.db.commit()
 
         return experiment
 
@@ -228,7 +261,8 @@ class ExperimentService:
             )
 
         experiment.status = ExperimentStatus.COMPLETED
-        experiment.actual_end = datetime.now()
+        # 与 actual_start 保持一致，使用 naive UTC 墙钟
+        experiment.actual_end = datetime.now(timezone.utc).replace(tzinfo=None)
         if results is not None:
             experiment.results = results
         if conclusions is not None:
@@ -244,6 +278,9 @@ class ExperimentService:
             entity_id=experiment_id,
             user_id=user_id,
         )
+
+        # 显式 commit：审计日志 + 状态流转需原子落盘。
+        await self.db.commit()
 
         return experiment
 
@@ -275,6 +312,10 @@ class ExperimentService:
         )
         self.db.add(data_point)
         await self.db.flush()
+        # 显式 commit：flush 后 session.new 已清空，get_db() 的条件 commit
+        # （if session.dirty or session.new）不会触发，不显式提交则本数据点
+        # 在 session.close() 时被回滚（实测 id 分配了但 DB 中查不到）。
+        await self.db.commit()
 
         return data_point
 
@@ -305,6 +346,8 @@ class ExperimentService:
             created.append(point)
 
         await self.db.flush()
+        # 显式 commit：保证本请求批量数据点原子落盘（同 add_data_point）。
+        await self.db.commit()
         return created
 
     async def get_data_points(self, experiment_id: int) -> list[ExperimentData]:
@@ -329,6 +372,8 @@ class ExperimentService:
             )
         await self.db.delete(point)
         await self.db.flush()
+        # 显式 commit：同上，避免 delete 被回滚。
+        await self.db.commit()
 
     # ── 实验统计 ──
 

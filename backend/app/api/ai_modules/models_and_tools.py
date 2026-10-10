@@ -275,17 +275,24 @@ class UpdateLLMConfigRequest(BaseModel):
 
 
 
-@sub_router.post("/models/config", dependencies=[Depends(require_role("ADMIN"))], summary="更新 LLM 配置")
+@sub_router.post("/models/config", dependencies=[Depends(require_role("ADMIN"))], summary="[已废弃] 更新 LLM 配置，请改用 /models/config/llm 或 /models/user-key")
 async def update_llm_config(
     req: UpdateLLMConfigRequest,
     current_user: User = Depends(get_current_active_user),
 ):
-    """更新 LLM 配置，仅管理员可执行"""
+    """[已废弃] 旧无参 LLM 配置更新端点。
+
+    D-3 收敛：前端调用方已迁移到
+      - POST /models/config/llm  （ADMIN 全局，有参端点）
+      - POST /models/user-key   （普通用户个人密钥）
+    此端点保留 30 天兼容期后删除；每次调用记录 warning 日志，
+    用于观察是否仍有未察觉的外部调用方（小程序/脚本/旧缓存）。
+    """
     from ...services.llm_service import LLMConfig, save_config_to_db, llm_service
 
     # 记录接收到的配置信息（脱敏处理）
     masked_key = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"
-    logger.info(f"收到 LLM 配置更新请求 - provider={req.provider}, model={req.model}, api_key={masked_key}, base_url={req.base_url}")
+    logger.warning(f"[DEPRECATED] 旧端点 POST /models/config 被调用 user={current_user.id} provider={req.provider} model={req.model} key={masked_key}，请迁移到 /models/config/llm 或 /models/user-key")
 
     # 构建配置并持久化到数据库
     config = LLMConfig(
@@ -409,7 +416,7 @@ async def get_ai_stats_summary(
         # 2. 配方数
         from ..models.formula import Formula
         result["generate_count"] = await _safe_count(db,
-            select(func.count(Formula.id)).where(Formula.owner_id == uid))
+            select(func.count(Formula.id)).where(Formula.creator_id == uid))
 
         # 3. 安全检查次数
         try:
@@ -430,7 +437,7 @@ async def get_ai_stats_summary(
         # 5/6. 口感/稳定性预测（共享 effect_predictions 表）
         try:
             from ..models.formula_deep_integration import EffectPredictionRecord
-            formula_ids_subq = select(Formula.id).where(Formula.owner_id == uid)
+            formula_ids_subq = select(Formula.id).where(Formula.creator_id == uid)
             result["taste_count"] = await _safe_count(db,
                 select(func.count(EffectPredictionRecord.id)).where(EffectPredictionRecord.formula_id.in_(formula_ids_subq)))
             result["stability_count"] = result["taste_count"]
@@ -649,6 +656,14 @@ async def get_user_llm_key_status(
 ):
     """返回当前用户是否配置了个人密钥及脱敏信息（不返回明文）"""
     from ...services.llm_service import LLMService, _user_key_config_key, _decrypt_api_key
+
+    if current_user is None:
+        # 未登录：可选认证端点，返回未配置状态而非 500
+        return {
+            "success": True,
+            "configured": False,
+            "note": "未登录，无法查询个人密钥状态；请登录后查看您的 LLM 密钥配置",
+        }
 
     user_cfg = await LLMService.get_user_service(current_user.id)
     if user_cfg is None:

@@ -27,6 +27,7 @@ RMFOOD 食品活性肽深度分析引擎 (Food-Active Peptide Deep Analyzer)
 from __future__ import annotations
 
 import asyncio
+import time  # A-27
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional

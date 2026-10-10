@@ -125,7 +125,7 @@ async def login(
     # ── Step 1: 检查IP限流 ──
     is_allowed, remaining_attempts = check_rate_limit(
         ip_address=client_ip,
-        max_attempts=getattr(settings, 'max_login_attempts_per_ip', 10),
+        max_attempts=getattr(settings.security, 'max_login_attempts_per_ip', 10),
         window_seconds=60,
     )
 
@@ -144,8 +144,8 @@ async def login(
 
     # ── Step 2: 初始化账号锁定管理器并检查 ──
     lockout = AccountLockout(
-        max_attempts=settings.max_login_attempts,
-        lockout_duration_minutes=settings.lockout_duration_minutes,
+        max_attempts=settings.security.max_login_attempts,
+        lockout_duration_minutes=settings.security.lockout_duration_minutes,
     )
 
     is_locked, lock_info = await lockout.is_account_locked(db, data.username)

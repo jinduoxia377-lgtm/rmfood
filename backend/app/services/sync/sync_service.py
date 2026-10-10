@@ -291,7 +291,7 @@ class SyncService:
                 success=False,
                 errors=["同步超时"],
             )
-            logger.error(f"[SyncService] 同步超时 ({sync_timeout}s)")
+            logger.error(f"[SyncService] 同步超时 ({self.sync_timeout}s)")  # A-27: 原引用了不存在的裸名
             
         except Exception as e:
             session.state = SyncState.FAILED

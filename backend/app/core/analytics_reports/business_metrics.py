@@ -53,7 +53,8 @@ class BusinessMetricsService:
 
         try:
             if days is not None:
-                cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+                # formulas.created_at 为 naive timestamp，绑定 naive UTC
+                cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
                 result = await self.db.execute(text("""
                     SELECT status, COUNT(*) as cnt
                     FROM formulas
@@ -149,7 +150,8 @@ class BusinessMetricsService:
         }
         """
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            # ai_generations.created_at 为 naive timestamp，绑定 naive UTC
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             result = await self.db.execute(text("""
                 SELECT
                     COUNT(*)                                              as total_generations,

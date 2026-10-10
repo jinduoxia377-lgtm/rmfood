@@ -14,6 +14,10 @@ from .deps import get_db_session
 from ..core.performance.cache_system import get_cache, MultiLevelCache
 from ..services.data_sources.tcmsp_client import tcmsp_service
 from ..services.data_sources.dfbp_client import dfbp_service
+# A-39：DFBP_PEPTIDE_DATABASE 是 dfbp_client 的【模块级】常量，不是
+#   DFBPSyncService 实例上的属性 —— 原先写 dfbp_service.DFBP_PEPTIDE_DATABASE
+#   在无过滤条件下会抛 AttributeError（GET /knowledge-base/peptide/search → 503）。
+from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
 from ..services.data_sources.china_food_regulations import regulation_service
 from ..services.intent_recognition import (
     intent_recognition_service,
@@ -283,6 +287,7 @@ async def get_tcm_herb_detail(
 @router.get("/tcm/compounds/{herb_name}", summary="获取药材化合物")
 async def get_tcm_compounds(
     herb_name: str,
+    db: AsyncSession = Depends(get_db_session),
     cache: MultiLevelCache = Depends(get_cache),
 ) -> Dict[str, Any]:
     """获取药材的活性化合物列表"""
@@ -290,8 +295,13 @@ async def get_tcm_compounds(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
-    compounds = await tcmsp_service.search_compounds(herb_name, None)
+
+    # A-39：search_compounds(herb_name, db) 会 db.execute(...) 查 TCMHerb，
+    #   原先这里写死传 None → AttributeError: 'NoneType' object has no attribute
+    #   'execute'（GET /knowledge-base/tcm/compounds/{herb_name} → 500）。
+    #   改为注入真实会话；服务内部在「库里没有该药材 / 无化合物」时已自带
+    #   回退到内置 TCMSP_HERB_DATABASE 的逻辑，所以这里不需要再兜一层。
+    compounds = await tcmsp_service.search_compounds(herb_name, db)
     result = {"herb_name": herb_name, "compounds": compounds}
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -336,7 +346,7 @@ async def search_peptides(
     elif source_protein:
         results = await dfbp_service.search_by_protein(source_protein)
     else:
-        results = dfbp_service.DFBP_PEPTIDE_DATABASE[:20]
+        results = DFBP_PEPTIDE_DATABASE[:20]
     
     result = {"peptides": results, "total": len(results)}
     await cache.set(cache_key, result, ttl=300)
@@ -707,7 +717,9 @@ async def get_page_rank(
     from ..services.kg.graph_engine import KnowledgeGraphEngine
     engine = KnowledgeGraphEngine()
 
-    scores = await engine.compute_pagerank(top_n=top_n)
+    # A-27：随 graph_engine 里同名方法的改名同步（原 compute_pagerank 被后面的
+    #       简化版覆盖，导致知识图谱的中心性接口 500）。
+    scores = await engine.compute_herb_pagerank(top_n=top_n)
     result = {
         "algorithm": "PageRank",
         "top_n": top_n,

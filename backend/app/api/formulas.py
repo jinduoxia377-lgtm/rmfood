@@ -2,6 +2,7 @@
 配方管理路由
 配方 CRUD、版本管理、审核流程、AI 推荐
 """
+import logging
 from typing import Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +26,7 @@ from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, re
 from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("", summary="获取配方列表")
@@ -435,8 +437,24 @@ async def get_formula_nutrition(
         }
 
     # 使用营养服务计算
-    service = FormulaNutritionService()
-    nutrition = service.calculate(ingredients_data, total_weight)
+    try:
+        service = FormulaNutritionService()
+        nutrition = service.calculate(ingredients_data, total_weight)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("配方营养成分计算失败 formula_id=%s", formula_id)
+        return {
+            "formula_id": formula_id,
+            "total_weight_g": round(total_weight, 2),
+            "nutrition_per_100g": {},
+            "total_nutrition": {},
+            "calories_per_100g": 0,
+            "total_calories": 0,
+            "allergens": [],
+            "compliance": {},
+            "warnings": [f"营养成分计算暂时不可用: {exc}"],
+            "known_ingredients": 0,
+            "unknown_ingredients": len(ingredients_data),
+        }
 
     return {
         "formula_id": formula_id,

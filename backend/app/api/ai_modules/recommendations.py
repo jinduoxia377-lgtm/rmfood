@@ -77,7 +77,7 @@ async def analyze_formula(
         if req.formula_id:
             from ..models.formula import Formula
             result = await db.execute(
-                select(Formula).where(Formula.id == req.formula_id, Formula.owner_id == current_user.id)
+                select(Formula).where(Formula.id == req.formula_id, Formula.creator_id == current_user.id)
             )
             formula = result.scalar_one_or_none()
             if formula:
@@ -138,7 +138,7 @@ async def get_recommendations(
 
         # 查询用户的配方（排除当前基于的配方）
         query = select(Formula).where(
-            Formula.owner_id == current_user.id,
+            Formula.creator_id == current_user.id,
             Formula.status == FormulaStatus.PUBLISHED,
         )
 
@@ -162,7 +162,7 @@ async def get_recommendations(
                 "match_reasons": ["与您近期的配方风格相似"],
                 "target_effects": f.target_effects or [],
                 "ingredient_count": len(f.ingredients) if f.ingredients else 0,
-                "overall_score": f.overall_score or 0,
+                # Formula 模型无 overall_score 列 → 省略，避免 AttributeError
                 "created_at": f.created_at.isoformat() if f.created_at else "",
             }
             recommendations.append(rec)

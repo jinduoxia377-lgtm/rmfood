@@ -15,6 +15,7 @@ if os.environ.get("ENV", "development") in ("development", "test"):
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from .core.config import settings
@@ -254,6 +255,23 @@ async def lifespan(app: FastAPI):
         await close_database()
     except Exception as e:
         logger.warning(f"[Shutdown] 数据库连接池关闭异常: {e}")
+
+
+def _eff_api_prefix(router, prefix: str = "/api/v1") -> str:
+    """
+    A-37b: 路由前缀去重。
+
+    ``app/api/*.py`` 里有一部分模块在自己声明 ``APIRouter(prefix="/api/v1/...")`` 时
+    就写死了完整前缀，而 ``create_app()`` 与 ``router_registry`` 都会再叠加一次全局
+    ``/api/v1``，结果实际挂出来的是 ``/api/v1/api/v1/...`` —— 可达但和 OpenAPI 文档、
+    前端调用路径都不一致，属于幽灵路由。
+
+    这里统一判断：路由器自身前缀若已以全局前缀开头，就不再叠加。
+    """
+    own = getattr(router, "prefix", "") or ""
+    return "" if own.startswith(prefix) else prefix
+
+
 def create_app() -> FastAPI:
     """创建 FastAPI 应用实例"""
     logger = get_logger(__name__)
@@ -437,7 +455,6 @@ Authorization: Bearer <your_access_token>
     from pydantic_core import ValidationError as PydanticValidationError
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request, exc):
-        from fastapi.responses import JSONResponse
         return JSONResponse(status_code=422, content={"success": False, "error": "数据验证失败", "detail": exc.errors()})
     @app.exception_handler(PydanticValidationError)
     async def pydantic_validation_exception_handler(request, exc):
@@ -490,22 +507,22 @@ Authorization: Bearer <your_access_token>
     # ── 配方案例库 API（必须在 api_router 之前注册，避免 /formulas/{id} 先匹配 /formulas/cases）──
     try:
         from .api.v1.formula_cases import router as formula_cases_router
-        app.include_router(formula_cases_router, prefix="/api/v1")
+        app.include_router(formula_cases_router, prefix=_eff_api_prefix(formula_cases_router))
         logger.info("[FormulaCases] Formula case study API registered")
     except Exception as e:
         logger.warning(f"[FormulaCases] Router registration failed (non-blocking): {e}")
     # ── 配料分析API（必须在 api_router 之前注册，避免 /ingredients/{id} 先匹配 /ingredients/additives 等）──
     try:
         from .api.v1.ingredient_analysis_router import router as ingredient_analysis_router
-        app.include_router(ingredient_analysis_router, prefix="/api/v1")
+        app.include_router(ingredient_analysis_router, prefix=_eff_api_prefix(ingredient_analysis_router))
         logger.info("[IngredientAnalysis] 配料分析路由注册成功")
     except Exception as e:
         logger.warning(f"[IngredientAnalysis] 配料分析路由注册失败（非阻塞）: {e}")
-    app.include_router(api_router, prefix="/api/v1")
+    app.include_router(api_router, prefix=_eff_api_prefix(api_router))
     # 🔒 P5: 注册企业级管理与合规路由
     try:
         from .api.enterprise import router as enterprise_router
-        app.include_router(enterprise_router, prefix="/api/v1")
+        app.include_router(enterprise_router, prefix=_eff_api_prefix(enterprise_router))
         logger.info("[EnterpriseRouter] 企业级管理路由注册成功")
     except Exception as e:
         logger.warning(f"[EnterpriseRouter] 企业级路由注册失败（非阻塞）: {e}")
@@ -544,132 +561,138 @@ Authorization: Bearer <your_access_token>
         )
     # ── 移动端专用 API ──
     try:
-        app.include_router(mobile.router, prefix="/api/v1")
+        app.include_router(mobile.router, prefix=_eff_api_prefix(mobile.router))
         logger.info("[MobileAPI] 移动端专用路由注册成功")
     except Exception as e:
         logger.warning(f"[MobileAPI] 移动端路由注册失败（非阻塞）: {e}")
     # ── Core system API (cache / tasks / health) ──
     try:
         from .api.v1.core_router import router as core_router
-        app.include_router(core_router, prefix="/api/v1")
+        app.include_router(core_router, prefix=_eff_api_prefix(core_router))
         logger.info("[CoreRouter] Core system API registered")
     except Exception as e:
         logger.warning(f"[CoreRouter] Core router registration failed (non-blocking): {e}")
     # ── AI Agent API ──
     try:
         from app.api.v1.agent_router import router as agent_router
-        app.include_router(agent_router, prefix="/api/v1")
+        app.include_router(agent_router, prefix=_eff_api_prefix(agent_router))
         logger.info("[AgentRouter] AI Agent API registered")
     except Exception as e:
         logger.warning(f"[AgentRouter] Agent router registration failed (non-blocking): {e}")
     # ── 实验室验证 API ──
     try:
         from .api.lab_validation import router as lab_validation_router
-        app.include_router(lab_validation_router, prefix="/api/v1")
+        app.include_router(lab_validation_router, prefix=_eff_api_prefix(lab_validation_router))
         logger.info("[LabValidation] Lab validation API registered")
     except Exception as e:
         logger.warning(f"[LabValidation] Router registration failed (non-blocking): {e}")
     # ── Data Flywheel API (P1-C: automated collection, validation, ML training) ──
     try:
         from .api.v1.data_flywheel_router import router as data_flywheel_router
-        app.include_router(data_flywheel_router, prefix="/api/v1")
+        app.include_router(data_flywheel_router, prefix=_eff_api_prefix(data_flywheel_router))
         logger.info("[DataFlywheel] Data flywheel router registered")
     except Exception as e:
         logger.warning(f"[DataFlywheel] Router registration failed (non-blocking): {e}")
     # ── 实时合规检查 API ──
     try:
         from .api.v1.compliance_router import router as compliance_router
-        app.include_router(compliance_router, prefix="/api/v1")
+        app.include_router(compliance_router, prefix=_eff_api_prefix(compliance_router))
         logger.info("[ComplianceRouter] Real-time compliance API registered")
     except Exception as e:
         logger.warning(f"[ComplianceRouter] Compliance router registration failed (non-blocking): {e}")
     # ── 实验数据解析 API ──
     try:
         from .api.v1.experiment_data_router import router as experiment_data_router
-        app.include_router(experiment_data_router, prefix="/api/v1")
+        app.include_router(experiment_data_router, prefix=_eff_api_prefix(experiment_data_router))
         logger.info("[ExperimentDataRouter] Experiment data parsing API registered")
     except Exception as e:
         logger.warning(f"[ExperimentDataRouter] Experiment data router registration failed (non-blocking): {e}")
     # ── 配方在线验证工作流 API ──
     try:
         from .api.formula_validation import router as formula_validation_router
-        app.include_router(formula_validation_router, prefix="/api/v1")
+        app.include_router(formula_validation_router, prefix=_eff_api_prefix(formula_validation_router))
         logger.info("[FormulaValidationRouter] Formula online validation workflow API registered")
     except Exception as e:
         logger.warning(f"[FormulaValidationRouter] Formula validation router registration failed (non-blocking): {e}")
     # ── 工作流执行 API ──
     try:
         from .api.v1.workflow_exec_router import router as workflow_exec_router
-        app.include_router(workflow_exec_router, prefix="/api/v1")
+        app.include_router(workflow_exec_router, prefix=_eff_api_prefix(workflow_exec_router))
         logger.info("[WorkflowExecRouter] Workflow execution API registered")
     except Exception as e:
         logger.warning(f"[WorkflowExecRouter] Workflow execution router registration failed (non-blocking): {e}")
     # ── 可解释性报告 API ──
     try:
         from .api.v1.explainability_router import router as explainability_router
-        app.include_router(explainability_router, prefix="/api/v1")
+        app.include_router(explainability_router, prefix=_eff_api_prefix(explainability_router))
         logger.info("[ExplainabilityRouter] Explainability report API registered")
     except Exception as e:
         logger.warning(f"[ExplainabilityRouter] Explainability router registration failed (non-blocking): {e}")
     # ── 报告导出 API ──
     try:
         from .api.v1.report_export_router import router as report_export_router
-        app.include_router(report_export_router, prefix="/api/v1")
+        app.include_router(report_export_router, prefix=_eff_api_prefix(report_export_router))
         logger.info("[ReportExportRouter] Report export API registered")
     except Exception as e:
         logger.warning(f"[ReportExportRouter] Report export router registration failed (non-blocking): {e}")
     # ── 产品方案报告 API ──
     try:
         from .api.v1.report_router import router as report_router
-        app.include_router(report_router, prefix="/api/v1")
+        app.include_router(report_router, prefix=_eff_api_prefix(report_router))
         logger.info("[ReportRouter] Product plan report API registered")
     except Exception as e:
         logger.warning(f"[ReportRouter] Product plan report router registration failed (non-blocking): {e}")
     # ── 知识图谱推理 API ──
     try:
         from .api.v1.kg_router import router as kg_router
-        app.include_router(kg_router, prefix="/api/v1")
+        app.include_router(kg_router, prefix=_eff_api_prefix(kg_router))
         logger.info("[KGRouter] Knowledge graph reasoning API registered")
     except Exception as e:
         logger.warning(f"[KGRouter] Knowledge graph router registration failed (non-blocking): {e}")
     # ── 多租户管理 API ──
     try:
         from .api.v1.tenant_router import router as tenant_router
-        app.include_router(tenant_router, prefix="/api/v1")
+        app.include_router(tenant_router, prefix=_eff_api_prefix(tenant_router))
         logger.info("[TenantRouter] Multi-tenant management API registered")
     except Exception as e:
         logger.warning(f"[TenantRouter] Tenant router registration failed (non-blocking): {e}")
     # ── 插件管理与开放 API ──
     try:
         from .api.v1.plugin_router import router as plugin_router
-        app.include_router(plugin_router, prefix="/api/v1")
+        app.include_router(plugin_router, prefix=_eff_api_prefix(plugin_router))
         logger.info("[PluginRouter] Plugin management API registered")
     except Exception as e:
         logger.warning(f"[PluginRouter] Plugin router registration failed (non-blocking): {e}")
     # ── 客户端性能指标上报 API ──
     try:
         from .api.v1.metrics_router import router as metrics_router
-        app.include_router(metrics_router, prefix="/api/v1")
+        app.include_router(metrics_router, prefix=_eff_api_prefix(metrics_router))
         logger.info("[MetricsRouter] Client performance metrics API registered")
     except Exception as e:
         logger.warning(f"[MetricsRouter] Metrics router registration failed (non-blocking): {e}")
     # ── Potion AI VFT: 搜索分析 API ──
     try:
-        app.include_router(search_analytics.router, prefix="/api/v1")
+        # A-37b: search_analytics.router 自带 prefix=/api/v1/search/analytics，
+        #   registry 自动发现时已按 effective="" 挂到正确路径；这里若再叠一层
+        #   /api/v1 会多出一份 /api/v1/api/v1/... 的幽灵路由（可达但与文档不符）。
+        app.include_router(
+            search_analytics.router,
+            prefix=_eff_api_prefix(search_analytics.router),
+        )
         logger.info("[SearchAnalytics] 搜索分析路由注册成功")
     except Exception as e:
         logger.warning(f"[SearchAnalytics] 搜索分析路由注册失败（非阻塞）: {e}")
     # ── 定时报表调度 API ──
     try:
         from .api.analytics_scheduler import router as analytics_scheduler_router
-        app.include_router(analytics_scheduler_router, prefix="/api/v1")
+        app.include_router(analytics_scheduler_router, prefix=_eff_api_prefix(analytics_scheduler_router))
         logger.info("[AnalyticsScheduler] 定时报表调度路由注册成功")
     except Exception as e:
         logger.warning(f"[AnalyticsScheduler] 定时报表路由注册失败（非阻塞）: {e}")
     # ── 健康知识文章 API ──
     try:
         from .api.articles import router as articles_router
-        app.include_router(articles_router, prefix="/api/v1")
+        app.include_router(articles_router, prefix=_eff_api_prefix(articles_router))
         logger.info("[Articles] 健康知识文章API注册成功")
     except Exception as e:
         logger.warning(f"[Articles] 文章路由注册失败（非阻塞）: {e}")

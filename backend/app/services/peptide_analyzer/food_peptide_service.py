@@ -47,13 +47,23 @@ class FoodPeptideAnalysis:
     dpp4_is_active: bool = False
     dpp4_motifs: List[str] = field(default_factory=list)
     
-    # 真实 ML 模型（DFBP 7540 条真数据训练）并列分数
+    # 真实 ML 模型（DFBP 库训练，含真实文献 + 程序合成两层来源）并列分数
     ml_ace_score: Optional[float] = None      # 真实 ML 模型 ACE 抑制分（0-1）
     ml_method: str = "unavailable"            # ml / fallback_rule / unavailable
     ml_training_samples: int = 0              # 实际训练子集（85%）
     ml_library_size: int = 0                 # DFBP 标注库总大小
     ml_validation_set_size: int = 0           # 验证子集（15%）
+    ml_library_real_count: int = 0            # 库中真实文献记录数
+    ml_library_synth_count: int = 0           # 库中程序合成记录数
+    ml_train_real_count: int = 0              # 训练子集中真实记录数
+    ml_train_synth_count: int = 0             # 训练子集中合成记录数
     ml_validation_accuracy: Optional[float] = None
+    ml_validation_f1: Optional[float] = None
+    ml_validation_balanced_accuracy: Optional[float] = None
+    ml_validation_majority_baseline: Optional[float] = None
+    ml_validation_precision: Optional[float] = None
+    ml_validation_recall: Optional[float] = None
+    ml_metrics_note: str = ""
     ml_model_name: str = "PeptideRanker-Mini"
     
     # 安全性评估结果
@@ -128,12 +138,22 @@ class FoodPeptideAnalysis:
                 "library_size": self.ml_library_size,
                 "training_samples": self.ml_training_samples,
                 "validation_samples": self.ml_validation_set_size,
+                "library_real_count": self.ml_library_real_count,
+                "library_synth_count": self.ml_library_synth_count,
+                "train_real_count": self.ml_train_real_count,
+                "train_synth_count": self.ml_train_synth_count,
                 "validation_accuracy": round(self.ml_validation_accuracy, 4) if self.ml_validation_accuracy is not None else None,
+                "validation_f1": round(self.ml_validation_f1, 4) if self.ml_validation_f1 is not None else None,
+                "validation_balanced_accuracy": round(self.ml_validation_balanced_accuracy, 4) if self.ml_validation_balanced_accuracy is not None else None,
+                "validation_majority_baseline": round(self.ml_validation_majority_baseline, 4) if self.ml_validation_majority_baseline is not None else None,
+                "validation_precision": round(self.ml_validation_precision, 4) if self.ml_validation_precision is not None else None,
+                "validation_recall": round(self.ml_validation_recall, 4) if self.ml_validation_recall is not None else None,
+                "metrics_note": self.ml_metrics_note,
                 "honest_note": (
-                    f"真实 ML 模型：用 DFBP 真实库 {self.ml_library_size} 条标注记录中 85% 子集"
-                    f"（{self.ml_training_samples} 训练 + {self.ml_validation_set_size} 验证）训练；"
-                    f"method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。"
-                ) if self.ml_library_size else "真实 ML 模型：用 DFBP 真实库标注数据训练；method=fallback_rule 表示未加载权重、回退规则分；unavailable 表示模型不可用。",
+                    f"真实 ML 模型：用 DFBP 库 {self.ml_library_size} 条标注记录训练"
+                    f"（真实文献 {self.ml_library_real_count} + 程序合成 {self.ml_library_synth_count}，合成已显式标注）；"
+                    f"训练子集 {self.ml_training_samples} 条 = 真实 {self.ml_train_real_count} + 合成 {self.ml_train_synth_count}。"
+                ) if self.ml_library_size else "真实 ML 模型：用 DFBP 库标注数据训练（合成数据已显式标注）",
             },
             
             "safety": {
@@ -461,9 +481,20 @@ class FoodPeptideAnalyzer:
             result.ml_training_samples = trainer.training_set_size
             result.ml_library_size = trainer.library_size
             result.ml_validation_set_size = trainer.validation_set_size
+            result.ml_library_real_count = trainer.library_real_count
+            result.ml_library_synth_count = trainer.library_synth_count
+            result.ml_train_real_count = trainer.train_real_count
+            result.ml_train_synth_count = trainer.train_synth_count
             val = (trainer.metrics or {}).get("validation", {})
             if val:
                 result.ml_validation_accuracy = val.get("accuracy")
+            # 诚实指标：不平衡数据集下 accuracy 具欺骗性，同时暴露 F1/balanced_accuracy/基线
+            result.ml_validation_f1 = val.get("f1")
+            result.ml_validation_balanced_accuracy = val.get("balanced_accuracy")
+            result.ml_validation_majority_baseline = val.get("majority_baseline")
+            result.ml_validation_precision = val.get("precision")
+            result.ml_validation_recall = val.get("recall")
+            result.ml_metrics_note = (trainer.metrics or {}).get("honest_note")
             logger.info(
                 f"真实 ML 预测: {sequence} → ACE={result.ml_ace_score} "
                 f"method={result.ml_method} samples={result.ml_training_samples}"

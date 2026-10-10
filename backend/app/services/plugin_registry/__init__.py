@@ -12,8 +12,6 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Protocol, runtime_checkable
 
-from . import core_plugins  # noqa: F401 触发核心插件注册
-
 logger = logging.getLogger(__name__)
 
 
@@ -189,3 +187,9 @@ def plugin_register(plugin_type: PluginType):
         register_plugin(spec, instance)
         return cls
     return decorator
+
+
+# 延迟触发核心插件注册：放在模块底部，避免 core_plugins 在 __init__ 尚未完成初始化时
+# import PluginInterface/PluginType 造成循环导入失败（原先在顶部触发会导致
+# "partially initialized module" 错误，使整个 plugin_router 无法加载）。
+from . import core_plugins  # noqa: F401,E402

@@ -21,7 +21,7 @@ from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import selectinload
 
 from app.models import Formula, Experiment, ExperimentStatus, Workflow, WorkflowTask, WorkflowStatus, TaskStatus, formula_ingredients
@@ -355,6 +355,7 @@ class EfficacyPredictionExecutor(BaseValidationExecutor):
 
         try:
             from app.services.formula.effect_simulator import EffectSimulator
+            from app.services.formula.herb_real_data import HerbRealDataService
             simulator = EffectSimulator()
 
             # 从 junction 表获取成分数据（含百分比）
@@ -362,11 +363,25 @@ class EfficacyPredictionExecutor(BaseValidationExecutor):
             for ing_data in ingredients:
                 ing_data["amount_mg"] = ing_data["amount"] * 1000
 
+            # ── 注入 DB 真实 PK/PD/剂量数据（替代内置占位参数）────
+            # - PK.F/ka/Vd/CL/t_lag ← tcm_herbs_pk 表（F 真实 OB%；ka/Vd/CL 模型推导已落库）
+            # - PD.E_max/EC50/Hill ← tcm_herbs_pd 表（E_max 真实评分；EC50 模型推导已落库）
+            # - 剂量 ← herb_food_herbs.max_dosage（DB 真实最大日用量）
+            # 缺失字段回退 tcm_herbs/tcm_compounds 直读或内置默认并标注来源。
+            rds = HerbRealDataService(self.db)
+            herb_names = [ing["name"] for ing in ingredients if ing.get("name")]
+            db_profiles = await rds.get_herb_profiles(herb_names)
+            db_overrides = {
+                name: {k: p[k] for k in ("pk", "pd", "dosage") if p.get(k)}
+                for name, p in db_profiles.items()
+            }
+
             prediction = simulator.predict_effect(
                 formula_ingredients=ingredients,
                 formula_id=str(formula.id),
                 body_weight_kg=context.get("body_weight_kg", 65),
                 simulation_hours=context.get("simulation_hours", 24),
+                db_overrides=db_overrides,
             )
 
             result.success = True
@@ -379,6 +394,11 @@ class EfficacyPredictionExecutor(BaseValidationExecutor):
                 "effect_duration_h": round(prediction.effect_duration, 2),
                 "auc": round(prediction.auc, 2),
                 "optimal_window": list(prediction.optimal_window),
+                "db_hit_ingredients": len(db_overrides),
+                "db_miss_ingredients": len(herb_names) - len(db_overrides),
+                "source": "PK: tcm_herbs_pk (F=TCMSP_OB%真实, ka/Vd/CL=模型推导已落库); "
+                          "PD: tcm_herbs_pd (E_max=efficacy_scores真实, EC50=模型推导已落库); "
+                          "剂量: herb_food_herbs.max_dosage (DB 真实)",
             }
 
         except Exception as e:
@@ -402,30 +422,86 @@ class StabilityPredictionExecutor(BaseValidationExecutor):
         result = StageResult(stage=self.stage, success=True, started_at=datetime.now(timezone.utc))
 
         try:
-            from app.services.formula.stability_predictor import StabilityPredictor
-            predictor = StabilityPredictor()
-
-            # 从 junction 表获取成分数据（含百分比）
+            # ── 使用 DB 真实稳定性数据（stability_data 表，Arrhenius 降解速率）──
+            # 此前用 STABILITY_DATABASE 硬编码 + 未知成分 min_shelf_life=999999 占位。
+            # 现改为：读 stability_data 表的真实 degradation_rate / shelf_life_months
+            # （由 hf_enriched_herbs 的 TCMSP 成分 logp + Arrhenius 模型推导并落库）。
+            # 无 stability_data 行的成分标注无数据，不计入（不伪造）。
+            from app.services.formula.herb_real_data import HerbRealDataService
+            rds = HerbRealDataService(self.db)
             ingredients = await _get_formula_ingredients_async(self.db, formula.id)
+            herb_names = [ing["name"] for ing in ingredients if ing.get("name")]
+            db_profiles = await rds.get_herb_profiles(herb_names)
 
-            prediction = predictor.predict_stability(
-                ingredients=ingredients,
-                storage_conditions={
-                    "temperature_c": context.get("storage_temp_c", 25),
-                    "humidity_pct": context.get("storage_humidity", 60),
-                    "light_exposure": "normal",
-                },
-            )
+            risk_factors = []
+            hit_count, miss_count = 0, 0
+            shelf_lives = []
+            degradation_rates = []
+
+            for ing in ingredients:
+                name = ing.get("name", "")
+                percentage = ing.get("percentage", 0)
+                prof = db_profiles.get(name)
+                stab = (prof or {}).get("stability")
+                if not stab:
+                    miss_count += 1
+                    risk_factors.append({
+                        "type": "no_stability_data",
+                        "severity": 0.2,
+                        "description": f"{name} 无稳定性数据（stability_data 表无行）",
+                    })
+                    continue
+                hit_count += 1
+                shelf = stab.get("shelf_life_months")
+                dr = stab.get("degradation_rate")
+                if shelf is not None:
+                    shelf_lives.append(shelf)
+                if dr is not None:
+                    degradation_rates.append(dr)
+                # 高风险判据：货架期 < 12 月 或 降解速率 > 0.05
+                if (shelf is not None and shelf < 12.0) or (dr is not None and dr > 0.05):
+                    risk_factors.append({
+                        "type": "degradation_risk",
+                        "severity": 0.4 if (shelf is not None and shelf < 6.0) else 0.25,
+                        "description": f"{name} 货架期={shelf}月, 降解速率={dr}, 脂溶成分多",
+                    })
+                # 脂溶性风险
+                logp_max = stab.get("logp_max")
+                if logp_max is not None and logp_max > 5.0:
+                    risk_factors.append({
+                        "type": "lipophilicity_risk",
+                        "severity": 0.3,
+                        "description": f"{name} 最高成分 logp={logp_max}，易氧化",
+                    })
+
+            # 货架期取各成分最短值（保守）；无数据给 12 月下限
+            predicted_shelf_life = min(shelf_lives) if shelf_lives else 12.0
+            avg_degradation = (sum(degradation_rates) / len(degradation_rates)) if degradation_rates else 0.0
+
+            # 评分：基于货架期（≥24月=100, 12-24月=80, 6-12月=60, <6月=40）
+            if predicted_shelf_life >= 24:
+                shelf_score = 100
+            elif predicted_shelf_life >= 12:
+                shelf_score = 80
+            elif predicted_shelf_life >= 6:
+                shelf_score = 60
+            else:
+                shelf_score = 40
+            risk_penalty = min(40, sum(r["severity"] for r in risk_factors) * 30)
+            score = max(0, shelf_score - risk_penalty)
 
             result.success = True
-            shelf_life_months = prediction.predicted_shelf_life_months if hasattr(prediction, 'predicted_shelf_life_months') else 0
-            result.passed = shelf_life_months >= 12
-            # 使用稳定性评分方法或从 shelf_life 推算
-            result.score = getattr(prediction, 'stability_score', min(100, shelf_life_months * 5))
+            result.passed = score >= 60
+            result.score = score
             result.details = {
-                "shelf_life_months": shelf_life_months,
-                "degradation_rate": getattr(prediction, 'degradation_rate_per_month', 0),
-                "risk_factors_count": len(prediction.risk_factors) if hasattr(prediction, 'risk_factors') else 0,
+                "shelf_life_months": round(predicted_shelf_life, 1),
+                "avg_degradation_rate": round(avg_degradation, 5),
+                "shelf_score": shelf_score,
+                "risk_factors_count": len(risk_factors),
+                "risk_factors": risk_factors[:5],
+                "db_hit_ingredients": hit_count,
+                "db_miss_ingredients": miss_count,
+                "source": "stability_data 表（TCMSP logp + Arrhenius 推导的真实降解速率/货架期），无数据成分不计入",
             }
 
         except Exception as e:
@@ -449,30 +525,58 @@ class TastePredictionExecutor(BaseValidationExecutor):
         result = StageResult(stage=self.stage, success=True, started_at=datetime.now(timezone.utc))
 
         try:
-            from app.services.formula.taste_predictor import TastePredictor
-            predictor = TastePredictor()
+            # ── 优先使用 DB 真实风味数据（mmid_herbs.flavor）─────
+            # 此前用 TASTE_DATABASE 代码内硬编码 + 未知成分默认 0.2，导致
+            # 风味恒 8 分失真。现改为：先查 DB，命中的成分用真实五味，
+            # 未命中成分不再伪造默认 0.2，而是标注"无数据"。
+            from app.services.formula.herb_real_data import HerbRealDataService
+            rds = HerbRealDataService(self.db)
+            ingredients = await _get_formula_ingredients_async(self.db, formula.id)
+            herb_names = [ing["name"] for ing in ingredients if ing.get("name")]
+            db_profiles = await rds.get_herb_profiles(herb_names)
 
-            # 从 SQLAlchemy relationship 获取成分数据
-            ingredients = [
-                {"name": ing.name}
-                for ing in (formula.ingredients or [])
-            ]
+            # 按成分百分比加权，仅对 DB 命中的成分累加（未命中跳过，不伪造）
+            total_pct = sum(ing.get("percentage", 0) for ing in ingredients) or 100.0
+            dims = {"sweet": 0.0, "bitter": 0.0, "sour": 0.0, "astringent": 0.0, "umami": 0.0}
+            hit_count, miss_count = 0, 0
+            for ing in ingredients:
+                name = ing.get("name", "")
+                pct = ing.get("percentage", 0) / 100.0
+                prof = db_profiles.get(name)
+                if not prof or not prof.get("taste"):
+                    miss_count += 1
+                    continue
+                hit_count += 1
+                taste_dims = prof["taste"]["dims"]
+                for d in dims:
+                    dims[d] += taste_dims.get(d, 0.0) * pct
 
-            prediction = predictor.predict_taste(ingredients)
+            # 归一化
+            for d in dims:
+                dims[d] = min(1.0, round(dims[d], 4))
 
-            # TasteProfile.acceptability 返回 [0,1] 接受度，转换为 0-100 分
-            acceptability = prediction.acceptability if hasattr(prediction, 'acceptability') else 0.0
+            # 接受度计算（与 TastePredictor.acceptability 公式一致）
+            acceptability = max(0.0, min(1.0,
+                dims["umami"] * 0.3 +
+                dims["sweet"] * 0.25 -
+                dims["bitter"] * 0.25 -
+                dims["astringent"] * 0.2 -
+                max(0.0, dims["sour"] - 0.3) * 0.1
+            ))
             score = acceptability * 100
             result.success = True
             result.passed = score >= 50
             result.score = score
             result.details = {
                 "overall_score": round(score, 2),
-                "sweetness": round(prediction.sweet, 4) if hasattr(prediction, 'sweet') else 0,
-                "bitterness": round(prediction.bitter, 4) if hasattr(prediction, 'bitter') else 0,
-                "sourness": round(prediction.sour, 4) if hasattr(prediction, 'sour') else 0,
-                "umami": round(prediction.umami, 4) if hasattr(prediction, 'umami') else 0,
-                "astringency": round(prediction.astringent, 4) if hasattr(prediction, 'astringent') else 0,
+                "sweetness": dims["sweet"],
+                "bitterness": dims["bitter"],
+                "sourness": dims["sour"],
+                "umami": dims["umami"],
+                "astringency": dims["astringent"],
+                "db_hit_ingredients": hit_count,
+                "db_miss_ingredients": miss_count,
+                "source": "mmid_herbs.flavor (DB 真实五味)，未命中成分不计入（不伪造）",
             }
 
         except Exception as e:
@@ -496,41 +600,58 @@ class SynergyAnalysisExecutor(BaseValidationExecutor):
         result = StageResult(stage=self.stage, success=True, started_at=datetime.now(timezone.utc))
 
         try:
-            from app.services.formula.synergy_engine import SynergyEngine
-            engine = SynergyEngine()
+            # ── 使用 DB 真实协同数据（synergy_interactions 表，TCMSP 靶点 Jaccard）──
+            # 此前 SynergyEngine 无系数 → overall_si=0.5 中性占位。
+            # 现改为：从 synergy_interactions 表读真实协同系数（每对药材的
+            # network_pharmacology 靶点 Jaccard 重叠度），配方内每对取系数；
+            # 无 DB 系数时不再给 0.5 中性分，而是 0。
+            from app.services.formula.herb_real_data import HerbRealDataService
+            rds = HerbRealDataService(self.db)
+            ingredients = await _get_formula_ingredients_async(self.db, formula.id)
+            ingredient_names = [ing["name"] for ing in ingredients if ing.get("name")]
+            db_profiles = await rds.get_herb_profiles(ingredient_names)
 
-            # 从 SQLAlchemy relationship 获取成分名称
-            ingredient_names = [ing.name for ing in (formula.ingredients or [])]
-
-            # SynergyEngine 没有 analyze_synergy 方法，需要通过各计算器 mixin 计算
-            # 使用 bliss_independence 机制作为基础协同指数
-            overall_si = 0.0
-            mechanism_scores: Dict[str, float] = {}
-
-            # 两两计算协同系数
+            # 配方内每对成分，取 synergy_interactions 的真实系数（若存在）
+            total_pairs = len(ingredient_names) * (len(ingredient_names) - 1) // 2
+            pair_coefficients = []
+            pair_details = []
             for i, name_a in enumerate(ingredient_names):
                 for name_b in ingredient_names[i + 1:]:
-                    # 尝试多种机制查询系数
-                    for mechanism in ["bliss_independence", "pk_interaction", "network_pharmacology"]:
-                        coeff = engine.get_coefficient(name_a, name_b, mechanism)
-                        if coeff is not None:
-                            mechanism_scores[mechanism] = mechanism_scores.get(mechanism, 0) + abs(coeff)
+                    prof_a = (db_profiles.get(name_a) or {}).get("synergy") or {}
+                    pairs_a = prof_a.get("pairs") or []
+                    si = None
+                    for p in pairs_a:
+                        if p.get("partner") == name_b:
+                            si = p.get("si")
+                            break
+                    if si is None:
+                        # 双向查（b 的 pairs 里可能有 a）
+                        prof_b = (db_profiles.get(name_b) or {}).get("synergy") or {}
+                        for p in (prof_b.get("pairs") or []):
+                            if p.get("partner") == name_a:
+                                si = p.get("si")
+                                break
+                    if si is not None:
+                        pair_coefficients.append(si)
+                        pair_details.append(f"{name_a}↔{name_b}={si}")
+                    else:
+                        pair_coefficients.append(0.0)
+                        pair_details.append(f"{name_a}↔{name_b}=0(无DB系数)")
 
-            # 计算综合协同指数（归一化到 0-1）
-            if mechanism_scores:
-                overall_si = sum(mechanism_scores.values()) / (len(mechanism_scores) * len(ingredient_names) * (len(ingredient_names) - 1) / 2)
-                overall_si = min(1.0, max(0.0, overall_si))
-            else:
-                # 无历史数据时给一个中性值
-                overall_si = 0.5 if len(ingredient_names) >= 2 else 0.0
+            # 综合协同指数 = 所有配对系数的均值（真实计算，无数据=0 而非 0.5）
+            overall_si = sum(pair_coefficients) / len(pair_coefficients) if pair_coefficients else 0.0
+            with_data = len([c for c in pair_coefficients if c > 0])
 
             result.success = True
             result.passed = overall_si >= 0.3
             result.score = overall_si * 100
             result.details = {
                 "overall_si": round(overall_si, 4),
-                "mechanism_scores": {k: round(v, 4) for k, v in mechanism_scores.items()},
-                "ingredient_pairs_checked": len(ingredient_names) * (len(ingredient_names) - 1) // 2,
+                "pair_coefficients": pair_details,
+                "pairs_with_db_data": with_data,
+                "total_pairs": total_pairs,
+                "db_evidence_only": True,
+                "source": "synergy_interactions (TCMSP 靶点 Jaccard 真实计算，无数据=0 而非占位 0.5)",
             }
 
         except Exception as e:
@@ -562,8 +683,14 @@ class DataComparisonExecutor(BaseValidationExecutor):
                 return result
 
             # 获取实验数据点
+            # 使用 selectinload 预取 data_points，避免在 async 上下文中触发
+            # ORM 同步懒加载（会抛 MissingGreenlet / "greenlet_spawn has not
+            # been called"）。此前实测该懒加载导致 data_comparison 阶段失败，
+            # 进而 comparisons 恒为 0（"预测值 vs 实测值" 对比无数据）。
             exp_result = await self.db.execute(
-                select(Experiment).where(Experiment.id == experiment_id)
+                select(Experiment)
+                .options(selectinload(Experiment.data_points))
+                .where(Experiment.id == experiment_id)
             )
             experiment = exp_result.scalar_one_or_none()
             if not experiment:
@@ -995,14 +1122,34 @@ class FormulaValidationService:
         data_points = exp_data_result.scalars().all()
 
         # 建立参数名映射
+        # key 同时匹配：英文键（如 risk_score）与中文参数名片段（如"毒性""降解"），
+        # 数据点来自实验记录，参数名多为中文（如"25℃加速降解率""感官评分"），
+        # 此前仅英文匹配导致 comparisons 恒为空——真实对比永远出不来。
         param_mapping = {
             "risk_score": ("safety_risk_score", "分", "safety_check", "risk_score"),
+            "毒性": ("safety_risk_score", "分", "safety_check", "risk_score"),
             "overall_score": ("compatibility_score", "分", "compatibility_check", "overall_score"),
+            "兼容": ("compatibility_score", "分", "compatibility_check", "overall_score"),
             "max_effect": ("efficacy_max_effect", "比例", "efficacy_prediction", "max_effect"),
+            "消化率": ("efficacy_max_effect", "比例", "efficacy_prediction", "max_effect"),
+            "排空": ("efficacy_peak_time", "h", "efficacy_prediction", "peak_time_h"),
+            "功效": ("efficacy_max_effect", "比例", "efficacy_prediction", "max_effect"),
             "shelf_life_months": ("shelf_life_months", "月", "stability_prediction", "shelf_life_months"),
+            "货架": ("shelf_life_months", "月", "stability_prediction", "shelf_life_months"),
+            "降解": ("degradation_rate", "每月", "stability_prediction", "degradation_rate"),
+            "稳定性": ("degradation_rate", "每月", "stability_prediction", "degradation_rate"),
             "overall_score": ("taste_overall_score", "分", "taste_prediction", "overall_score"),
+            "口感": ("taste_overall_score", "分", "taste_prediction", "overall_score"),
+            "感官": ("taste_overall_score", "分", "taste_prediction", "overall_score"),
             "overall_si": ("synergy_index", "SI", "synergy_analysis", "overall_si"),
+            "协同": ("synergy_index", "SI", "synergy_analysis", "overall_si"),
         }
+
+        # 规范化预测 details 中的数值（dict 拆分键，如 peak_time_h 直接存在）
+        for stage in result.stages:
+            d = stage.details or {}
+            if d:
+                prediction_map[stage.stage.value] = d
 
         for dp in data_points:
             param_name = dp.parameter
@@ -1100,8 +1247,11 @@ class FormulaValidationService:
         """推送进度到 WebSocket"""
         try:
             ws_mgr = get_ws_manager()
+            # to_ws_message() 已构造 WSMessage 对象；broadcast_all 接受
+            # WSMessage | Dict。此前调用不存在的 broadcast() 且把对象 json.dumps
+            # 成字符串，导致进度推送全部失败（"no attribute 'broadcast'"）。
             msg = progress.to_ws_message()
-            await ws_mgr.broadcast(json.dumps(msg.model_dump(), default=str))
+            await ws_mgr.broadcast_all(msg)
         except Exception as e:
             logger.warning("WebSocket 推送失败: %s", e)
 

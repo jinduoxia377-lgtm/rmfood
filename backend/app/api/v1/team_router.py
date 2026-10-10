@@ -3,6 +3,7 @@
 提供团队CRUD、成员管理、邀请链接和权限控制的RESTful接口。
 支持owner/admin/member/guest四级权限体系。
 """
+import logging  # A-27：except 分支里用到 logger，原先未定义
 import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -530,3 +531,4 @@ async def generate_invite_link(
 
 
 from ...core.config import settings
+logger = logging.getLogger(__name__)  # A-27：原缺失
