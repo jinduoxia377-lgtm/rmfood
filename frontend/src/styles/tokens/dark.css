@@ -68,6 +68,10 @@
   --color-accent-rgb: 167, 139, 250;
   --color-accent-hover: var(--color-accent-700);
   --color-accent-container: rgba(167, 139, 250, 0.15);
+  /* A-26：暗色下紫系色阶反转 —— accent-700(#c4b5fd) 是最亮的一档，配白字只有 1.4:1。
+     实底必须回落到最暗的 accent-200(#5b21b6)，白字 8.98:1 ✅（同 D-50 的
+     --color-primary-surface 处理手法）。 */
+  --color-accent-surface: var(--color-accent-200, #5b21b6);
 
   /* ═══ Semantic Colors (dark mode) ═══ */
   --color-success: var(--color-success-600);
@@ -81,15 +85,29 @@
   --color-error-text: var(--color-danger-600);
   --color-info: var(--color-info-100);
   --color-info-bg: #1e1b4b;
+  /* ═══ A-28：品牌族「实底配白字」令牌（暗色）═══
+     暗色色阶反转：700/800 是最亮的一档，白字压上去只有 1.4~1.75:1。
+     实底必须回落到最暗的 200/100 两档（同 base.css 的说明）。 */
+  --color-secondary-surface: var(--color-secondary-200, #1e40af);
+  --color-secondary-surface-deep: var(--color-secondary-100, #1e3a8a);
+  --color-success-surface: var(--color-success-200, #065f46);
+  --color-success-surface-deep: var(--color-success-100, #064e3b);
+  --color-warning-surface: var(--color-warning-200, #92400e);
+  --color-warning-surface-deep: var(--color-warning-100, #78350f);
+  --color-danger-surface: var(--color-danger-200, #991b1b);
+  --color-danger-surface-deep: var(--color-danger-100, #7f1d1d);
+  --color-info-surface: var(--color-secondary-200, #1e40af);
+  --color-info-surface-deep: var(--color-secondary-100, #1e3a8a);
+  --color-accent-surface-deep: var(--color-accent-100, #3b0764);
   /* ═══ Surface & Canvas — DESIGN.md: slate-950 (#020617) ═══ */
-  --bg-canvas: var(--color-neutral-50);       /* slate-950 — 页面全局背景 */
-  --bg-primary: var(--color-neutral-50);
+  --bg-canvas: var(--color-neutral-950);      /* slate-950 — 页面全局背景 */
+  --bg-primary: var(--color-neutral-950);
   --bg-secondary: #0f172a;    /* slate-900 — 卡片背景 */
   --bg-tertiary: #1e293b;     /* slate-800 */
   --card-bg: #0f172a;
   --card-bg-solid: #0f172a;
   --bg-surface-container: #0f172a;
-  --bg-surface-container-low: var(--color-neutral-50);
+  --bg-surface-container-low: var(--color-neutral-950);
 
   /* ═══ 网格背景（Dashboard 专用，暗色模式更淡）═══ */
   --grid-color-light: rgba(148, 163, 184, 0.06);   /* slate-400 @ 6% — 深色模式极淡网格 */
@@ -100,9 +118,9 @@
   --hover-bg: rgba(255, 255, 255, 0.04);
 
   /* ═══ Neutral Semantic Tokens (dark) ═══ */
-  --color-neutral-default: var(--color-neutral-50);  /* canvas 级背景 */
-  --color-neutral-subtle:  var(--color-neutral-100);  /* surface-elevated 级 */
-  --color-neutral-muted:   var(--color-neutral-200);  /* border 级 */
+  --color-neutral-default: var(--color-neutral-950); /* canvas 级背景 */
+  --color-neutral-subtle:  var(--color-neutral-900);  /* surface-elevated 级（#0f172a）*/
+  --color-neutral-muted:   var(--color-neutral-700);  /* border 级（#334155）*/
 
   /* ═══ Glassmorphism (Dark Acrylic) ═══ */
   --material-acrylic: rgba(15, 23, 42, 0.72);
@@ -113,7 +131,7 @@
   --glass-border: rgba(255, 255, 255, 0.05);
 
   /* ═══ Text Colors — DESIGN.md: ink-light/dark ═══ */
-  --text-primary: var(--color-neutral-900);   /* slate-100 */
+  --text-primary: var(--color-neutral-100);   /* slate-100 — 暗色正文为浅色 */
   --text-secondary: #94a3b8; /* slate-400 — 7.87:1 on canvas ✅ */
   --text-muted: #94a3b8;     /* slate-400 — 修正: 原 #64748b (3.91:1) 不达标 AA ✅ */
   --text-disabled: #94a3b8;  /* slate-400 — 7.87:1 on canvas ✅ AA OK（原 #475569=2.36:1 FAIL） */
@@ -164,7 +182,7 @@
 
   /* ═══ Layout Variables (dark) ═══ */
   --bg-surface-container: #0f172a;
-  --bg-surface-container-low: var(--color-neutral-50);
+  --bg-surface-container-low: var(--color-neutral-950);
   --bg-surface: #0f172a;
   --bg-surface-hover: rgba(255, 255, 255, 0.04);
   --color-primary-container: rgba(52, 211, 153, 0.15);
@@ -193,6 +211,16 @@
   --color-danger-600: #f87171;  --color-danger-700: #fca5a5;   --color-danger-800: #fecaca;
   --color-danger-900: #fee2e2;  --color-danger-950: #fef2f2;
 
+  /* D-64：error 族此前【只在 index.css 的 @theme 里写死亮色值】（600=#dc2626 /
+     700=#b91c1c / 800=#991b1c），dark.css 从未覆盖 —— 于是暗色下
+     `text-error-500 dark:text-error-600` 解析为 #dc2626，落在 --color-neutral-950
+     画布上仅 3.70:1（实测 /users「已禁用」FAIL）。此处按与 danger 相同的
+     反转规则补齐暗色色阶，@theme 桥接引用的是 var()，故运行时覆盖生效。 */
+  --color-error-50: #450a0a;    --color-error-100: #7f1d1d;    --color-error-200: #991b1b;
+  --color-error-300: #b91c1c;   --color-error-400: #dc2626;    --color-error-500: #ef4444;
+  --color-error-600: #f87171;   --color-error-700: #fca5a5;    --color-error-800: #fecaca;
+  --color-error-900: #fee2e2;   --color-error-950: #fef2f2;
+
   /* ═══ Typography Tokens (dark) ═══ */
   --text-h1: 2.25rem;  --text-h1-line-height: 1.22; --text-h1-font-weight: 600; --text-h1-tracking: -0.015em;
   --text-h2: 1.75rem;  --text-h2-line-height: 1.28; --text-h2-font-weight: 600; --text-h2-tracking: -0.01em;
@@ -202,7 +230,8 @@
   --text-body: 0.9375rem;  --text-body-line-height: 1.5;     --text-body-font-weight: 400;
   --text-body-sm: 0.875rem;--text-body-sm-line-height: 1.43;  --text-body-sm-font-weight: 400;
   --text-caption: 0.75rem; --text-caption-line-height: 1.33;  --text-caption-font-weight: 400;
-  --text-overline: 0.6875rem;--text-overline-line-height: 1.45;--text-overline-font-weight: 500;
+  /* A-11：与 base.css 同步，11px → 12px（中文最小可读地板） */
+  --text-overline: 0.75rem;  --text-overline-line-height: 1.45;--text-overline-font-weight: 500;
   --text-overline-tracking: 0.05em; --text-overline-transform: uppercase;
 
   /* ═══ Radius Tokens (dark) ═══ */
@@ -248,14 +277,20 @@
   --popover: var(--bg-surface-container, #0f172a);
   --popover-foreground: var(--color-neutral-100, #f1f5f9);
   --primary: var(--color-primary-400, #34d399);
-  --primary-foreground: var(--color-primary-950, #022c22);
+  /* D-58：原 --primary-foreground 指向 --color-primary-950，而暗色主色阶反转后
+     950 = #f0fdf4（近白绿），压在 bg-primary(#34d399 亮绿) 上仅 1.84:1。
+     改为暗色深绿 primary-100(#064e3b) → 5.7:1 ✅ AA。 */
+  --primary-foreground: var(--color-primary-100, #064e3b);
   --secondary: var(--color-secondary-400, #60a5fa);
   --secondary-foreground: #0f172a;
   --muted: var(--color-neutral-800, #1e293b);
   --muted-foreground: var(--color-neutral-400, #94a3b8);
   --accent: var(--color-accent-400, #c084fc);
   --accent-foreground: #0f172a;
-  --destructive: var(--color-error-400, #f87171);
+  /* A-19：原取 error-400，而暗色色阶反转后 400 档是【深红 #dc2626】——
+     实测 /users 的「加载失败」Alert（text-destructive）压在 #020617 画布上
+     只有 4.18:1。改用 600 档 #f87171（亮红）→ 7.7:1 ✅。 */
+  --destructive: var(--color-error-600, #f87171);
   --destructive-foreground: #0f172a;
   --success: var(--color-success-400, #34d399);
   --success-foreground: #0f172a;
@@ -266,17 +301,29 @@
   --ring: var(--color-primary-400, #34d399);
   --radius: var(--radius-md, 0.5rem);
 
-  /* ── 暗色模式 Neutral 色阶反转 ── */
-  --color-neutral-50: #020617;
-  --color-neutral-100: #0f172a;
-  --color-neutral-200: #1e293b;
-  --color-neutral-300: #334155;
-  --color-neutral-400: #475569;
+  /* ── 暗色模式 Neutral 色阶：与亮色【保持同一套数值】，不再反转 ──
+     P0-C 修复（2026-10-09）：
+     原状此处把色阶整体反转（50=#020617 … 900=#f1f5f9），与以下三处冲突——
+       ①  docs/DESIGN_SYSTEM.md §中性色阶 明文规定 50=#F8FAFC … 900=#0F172A；
+       ②  全项目 6 540 处 dark: 工具类均按 Tailwind 标准语义书写
+           （dark:bg-neutral-800/900 = 深色底；dark:text-neutral-200/300 = 浅色字），
+           反转后语义全部倒置：卡片底变亮、正文变暗；
+       ③  本文件下方 --foreground / --muted / --border 等别名带的硬编码回退值
+           （#f1f5f9 / #1e293b / #334155）本身就假设标准色阶。
+     反转回退后：dark:bg-neutral-900 → #0f172a（深底）、
+                 dark:text-neutral-300 → #cbd5e1（浅字），与书写意图一致。
+     注意：primary / secondary / accent 色阶的暗色提亮保持不变（D-50 语义另行约定）。 */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
   --color-neutral-500: #64748b;
-  --color-neutral-600: #94a3b8;
-  --color-neutral-700: #cbd5e1;
-  --color-neutral-800: #e2e8f0;
-  --color-neutral-900: #f1f5f9;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
 
   /* ── 暗色模式容器色 ── */
   --color-success-container: rgba(52, 211, 153, 0.12);
@@ -313,9 +360,18 @@
   --color-cyan-600: #0891b2;
   --color-cyan-700: #0e7490;
   --color-info-600: #2563eb;
+  /* D-66 配套：info 族在暗色下同样需要反转的 700 档（原缺失 →
+     text-info-700 解析为「无效变量」而回退到继承色）。 */
+  --color-info-700: #93c5fd;
 
   /* ── 暗色模式渐变背景 ── */
-  --bg-gradient-start: var(--color-neutral-50);
+  /* P0-C 回归修复（D-74）：这两档原本写 var(--color-neutral-50)，在暗色色阶
+     【反转】时期 (#020617) 恰好是深色，回退为标准色阶后变成 #f8fafc ——
+     实测 MainLayout 根容器 <div class="flex flex-col h-screen"> 在暗色下
+     整屏渲染成浅底 rgb(248,250,252)，导致「加载中…」(dark:text-neutral-400)
+     只有 2.45:1、错误 Alert「加载失败」白字压白底 1.05:1。
+     改指 950（暗色画布档），与 --bg-canvas 保持一致。 */
+  --bg-gradient-start: var(--color-neutral-950);
   --bg-gradient-end: var(--color-primary-100);
 
   /* ── 暗色模式滚动条 ── */

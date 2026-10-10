@@ -29,6 +29,27 @@
    --color-primary-800(#d1fae5, 暗 ≈1.13:1) —— 后者比 D-50 本身的 1.52:1 更差。 */
 .surface-primary:hover    { background-color: var(--color-primary-surface-hover, #065f46); }
 
+/* ── 实底横幅内部文字继承白色前景 ──
+   P0-A 配套修复：typography.css 的 h1~h6 / p 元素规则现在位于 @layer base，
+   会覆盖从 .surface-primary 继承来的 --color-on-primary-surface 白色，
+   导致横幅内标题/说明渲染为 --text-primary/--text-secondary 深色
+   (实测 h2 "欢迎回来" 3.26:1、"默认视图" 1.89:1)。
+   本规则让实底内的文字默认继承白色前景；如确需深色文字，可显式加 text-* 类覆盖。 */
+/* D-59 修正（2026-10-09）：原规则额外命中了 span / div，特异度 (0,1,1)
+   高于单类工具类 (0,1,0)，会把横幅内【自带文字色】的元素一并洗成白色 ——
+   实测 FormulaListPage 的「N 条」徽章 `bg-white ... text-neutral-700`
+   被渲染成白底白字（1:1）。span / div 本就默认继承父级颜色，无需此规则；
+   问题只出在 h1~h6 与 p 的【元素选择器】上，故收窄到这两类。 */
+.surface-primary h1,
+.surface-primary h2,
+.surface-primary h3,
+.surface-primary h4,
+.surface-primary h5,
+.surface-primary h6,
+.surface-primary p {
+  color: inherit;
+}
+
 /* 成功 / 警告 / 错误 / 信息 */
 .text-success-main       { color: var(--color-success, #10b981); }
 .bg-success-container    { background: var(--color-success-container, rgba(0, 102, 204, 0.12)); }
@@ -40,45 +61,18 @@
 .bg-info-container       { background: var(--color-info-container, rgba(0,122,255,0.12)); }
 
 /* ═══════════════════════════════════════════════════════════════
-   中性色全阶（50–900）— 替代 Tailwind bg-neutral-* / text-neutral-* / border-neutral-*
-   暗色模式下自动变深，无需 dark: 前缀
+   P0-B 修复（2026-10-09）：删除与 Tailwind 重复的 neutral 数值阶手写规则。
+   原状：bg/text/border-neutral-50..900 由本文件手写为【无层样式】，
+   级联优先级高于任何 @layer 内规则，导致 Tailwind 的
+   dark:text-neutral-* / dark:bg-neutral-* 变体（位于 @layer utilities）
+   被完全压制 —— 实测 `text-neutral-500 dark:text-neutral-600` 在暗色下
+   仍解析为亮色值（#64748b，3.75:1 FAIL）。
+   收进 @layer utilities 也无效（import 顺序在 tailwindcss 之后，同层仍居后）。
+   故整段删除：index.css 的 @theme 桥接（--color-neutral-50..900: var(...)）
+   已让 Tailwind 生成等价工具类，且数值取自 base.css/dark.css 同一套令牌，
+   亮暗表现完全一致，dark: 变体恢复正常级联。
+   仅保留 Tailwind 无法生成的语义档（default/subtle/muted）与 slate 悬停映射。
    ═══════════════════════════════════════════════════════════════ */
-
-/* 背景色 */
-.bg-neutral-50  { background: var(--color-neutral-50,  #f8fafc); }
-.bg-neutral-100 { background: var(--color-neutral-100, #f1f5f9); }
-.bg-neutral-200 { background: var(--color-neutral-200, #e2e8f0); }
-.bg-neutral-300 { background: var(--color-neutral-300, #cbd5e1); }
-.bg-neutral-400 { background: var(--color-neutral-400, #9CA3AF); }
-.bg-neutral-500 { background: var(--color-neutral-500, #6B7280); }
-.bg-neutral-600 { background: var(--color-neutral-600, #475569); }
-.bg-neutral-700 { background: var(--color-neutral-700, #334155); }
-.bg-neutral-800 { background: var(--color-neutral-800, #1F2937); }
-.bg-neutral-900 { background: var(--color-neutral-900, #111827); }
-
-/* 文字色 */
-.text-neutral-50  { color: var(--color-neutral-50,  #f8fafc); }
-.text-neutral-100 { color: var(--color-neutral-100, #f1f5f9); }
-.text-neutral-200 { color: var(--color-neutral-200, #e2e8f0); }
-.text-neutral-300 { color: var(--color-neutral-300, #cbd5e1); }
-.text-neutral-400 { color: var(--color-neutral-400, #9CA3AF); }
-.text-neutral-500 { color: var(--color-neutral-500, #6B7280); }
-.text-neutral-600 { color: var(--color-neutral-600, #475569); }
-.text-neutral-700 { color: var(--color-neutral-700, #334155); }
-.text-neutral-800 { color: var(--color-neutral-800, #1F2937); }
-.text-neutral-900 { color: var(--color-neutral-900, #111827); }
-
-/* 边框色 */
-.border-neutral-50  { border-color: var(--color-neutral-50,  #f8fafc); }
-.border-neutral-100 { border-color: var(--color-neutral-100, #f1f5f9); }
-.border-neutral-200 { border-color: var(--color-neutral-200, #e2e8f0); }
-.border-neutral-300 { border-color: var(--color-neutral-300, #cbd5e1); }
-.border-neutral-400 { border-color: var(--color-neutral-400, #9CA3AF); }
-.border-neutral-500 { border-color: var(--color-neutral-500, #6B7280); }
-.border-neutral-600 { border-color: var(--color-neutral-600, #475569); }
-.border-neutral-700 { border-color: var(--color-neutral-700, #334155); }
-.border-neutral-800 { border-color: var(--color-neutral-800, #1F2937); }
-.border-neutral-900 { border-color: var(--color-neutral-900, #111827); }
 
 /* ── 默认/微妙/muted 中性变体 (CSS 变量) ── */
 .bg-neutral-default  { background: var(--color-neutral-default, #f8fafc); }
@@ -93,13 +87,160 @@
 .border-neutral-subtle  { border-color: var(--color-neutral-subtle,  #f1f5f9); }
 .border-neutral-muted   { border-color: var(--color-neutral-muted,   #e2e8f0); }
 
-/* 悬停态 — 自动响应 .dark（CSS 变量已映射暗色值，无需额外 dark:）*/
-.hover\:bg-neutral-50:hover  { background: var(--color-neutral-50,  #f8fafc); }
-.hover\:bg-neutral-100:hover  { background: var(--color-neutral-100, #f1f5f9); }
-.hover\:bg-neutral-200:hover  { background: var(--color-neutral-200, #e2e8f0); }
-.hover\:bg-neutral-300:hover  { background: var(--color-neutral-300, #cbd5e1); }
-.hover\:bg-neutral-400:hover  { background: var(--color-neutral-400, #9CA3AF); }
-.hover\:bg-neutral-500:hover  { background: var(--color-neutral-500, #6B7280); }
+/* ── 暗色文本色下限兜底（P0-D，2026-10-09）─────────────────────────────
+   中性色阶回退后，大量【裸 text-neutral-500/600/700】（未写 dark: 变体）
+   在暗色画布上沿用亮色值：
+     500 → #64748b  3.75:1  ✗
+     600 → #475569  2.36:1  ✗
+     700 → #334155  1.95:1  ✗
+   这些类遍布 /users、/databases 等页面（实测共 30 处违规）。
+   此处按「暗色下这些档位只作文本用」统一提升到 AA 达标档：
+     500/600 → --color-neutral-400 (#94a3b8, 7.9:1)
+     700     → --color-neutral-300 (#cbd5e1, 11.6:1)
+   特异度 (0,2,0) 高于 Tailwind 单类工具类 (0,1,0)，但不会覆盖
+   更具体的 dark:text-* 变体之外的情况；取值与 dark:text-neutral-400/300
+   一致，因此不会与已有的显式暗色变体冲突。
+   注意：仅作用于 text-*，不影响 bg-/border-（暗色深底仍需 800/900）。
+
+   P0-E 扩充（2026-10-09）：补齐其余不达标档位——
+     亮色 400 (#94a3b8, 白底 2.56:1) / 500 (#64748b, #f1f5f9 浅底 4.34:1)
+     暗色 800 (#1e293b, 1.22:1) / 900 (#0f172a, 1.00:1)
+     暗色 品牌族 300/400/500（secondary-400 3.45:1、accent-400 4.22:1、
+     error-500 3.70:1 …）
+   全部收敛到各模式下的 AA 达标档。
+   特异度说明：亮色规则为 (0,1,0)，暗色规则为 (0,2,0)，
+   同处 @layer utilities 内按特异度取胜，故暗色覆盖始终生效。 */
+@layer utilities {
+  /* A-28（2026-10-10）：以上两套「对比度下限」兜底规则原先只靠【提特异度】取胜，
+     结果互相打架、并反过来压制真正写出来的 dark: 变体 ——
+       亮色下限 .text-neutral-300  (0,1,0)  >  dark:text-neutral-400 (:where → 0,1,0，靠后生效勉强赢)
+       暗色还原 .dark .text-neutral-600 (0,2,0) >  dark:text-neutral-300  ← 实测 /settings 页签被这条压成
+         #94a3b8 而不是 #cbd5e1（rgb(148,163,184) on rgb(6,78,59) = 3.79:1 FAIL）。
+     给两套兜底都加 :not(...)：凡是调用方【显式写了 dark: 变体】的元素，
+     兜底一律让位，交给 Tailwind 原生的 dark: 工具类；没写 dark: 的裸类仍然享受下限兜底。
+
+     A-30：让位条件最初写成 :not([class*="dark:"])，过粗 —— 只要元素带【任意一个】
+     dark: 变体就整条兜底失效，哪怕是无关属性。实测 /databases 的
+     `text-xs text-neutral-400 … dark:bg-neutral-800` 因此没拿到亮色下限，
+     在 rgb(241,245,249) 底上只有 2.34:1。
+     收窄为 :not([class*="dark:text-"])：只在调用方【显式指定了暗色文字色】时才让位，
+     与文字色无关的 dark:bg-* / dark:border-* 不再误伤 —— 两套兜底只作用于 color，
+     按「同一属性」收窄让位条件在语义上才是对齐的。 */
+    /* ── 亮色下限：中性 ──
+     300 (#cbd5e1) 白底 1.48:1、400 (#94a3b8) 2.56:1、500 (#64748b) 浅底 4.34:1
+     300 → 500 (#64748b, 白底 4.76:1)
+     400/500 → 600 (#475569, 白底 7.40:1)
+
+     A-38：本组规则原先用 :not([class*="dark:text-"]) 给显式 dark: 变体让位，
+     结果「text-neutral-400 dark:text-neutral-400」这类【两模式同值】的写法
+     在亮色下也拿不到下限（全项目 114 处）—— 实测 /formulas 表格的 "-" 占位符
+     白底 2.56:1 FAIL，而它明明写了 dark: 变体。
+     改为用 html:not(.dark) 前缀限定作用域：亮色下无条件生效；暗色下整组选择器
+     根本不匹配，既不抢占 dark: 变体，也不再需要 :not() 让位条件。
+     A-28 当初加 :not() 是为了修「亮色下限 (0,1,0) 压掉 dark:text-*（:where →
+     同为 (0,1,0)，靠源序取胜）」的冲突，作用域前缀从根上消除了这条冲突。 */
+  html:not(.dark) .text-neutral-300 { color: var(--color-neutral-500, #64748b); }
+  html:not(.dark) .text-neutral-400,
+  html:not(.dark) .text-neutral-500 { color: var(--color-neutral-600, #475569); }
+
+  /* ── 亮色下限：品牌族（300/400/500 → 700 档）──
+     实测 primary-400 #34d399 白底 1.92:1、warning-400 #fbbf24 1.67:1、
+     secondary-400 #60a5fa 2.54:1、primary-500 #10b981 2.54:1 —— 均远低于 AA。 */
+  html:not(.dark) .text-primary-300,
+  html:not(.dark) .text-primary-400,
+  html:not(.dark) .text-primary-500 { color: var(--color-primary-700, #047857); }
+  html:not(.dark) .text-secondary-300,
+  html:not(.dark) .text-secondary-400,
+  html:not(.dark) .text-secondary-500 { color: var(--color-secondary-700, #1d4ed8); }
+  html:not(.dark) .text-accent-300,
+  html:not(.dark) .text-accent-400,
+  html:not(.dark) .text-accent-500 { color: var(--color-accent-700, #6d28d9); }
+  html:not(.dark) .text-success-300,
+  html:not(.dark) .text-success-400,
+  html:not(.dark) .text-success-500,
+  /* A-41：600 档的绿 (#059669) 在白底上只有 3.77:1 —— base.css 里那句
+     "--color-success-600: WCAG AA: 5.24:1 on white" 的注释是错的（实算 3.77）。
+     实测 /analytics 的「0% / 17.2% / 77.4%」等大号数字因此只有 3.6:1。
+     700 档 (#047857) 为 5.48:1 ✅。primary 与 success 在亮色下是同一个绿，
+     两条一起提。600 档的其余色相（error 4.83 / secondary 5.17 / accent 5.8）
+     本来就达标，不动。 */
+  html:not(.dark) .text-success-600 { color: var(--color-success-700, #047857); }
+  html:not(.dark) .text-primary-600 { color: var(--color-primary-700, #047857); }
+  html:not(.dark) .text-warning-300,
+  html:not(.dark) .text-warning-400,
+  html:not(.dark) .text-warning-500,
+  html:not(.dark) .text-warning-600 { color: var(--color-warning-700, #b45309); }
+  html:not(.dark) .text-error-300,
+  html:not(.dark) .text-error-400,
+  html:not(.dark) .text-error-500 { color: var(--color-danger-700, #b91c1c); }
+  html:not(.dark) .text-danger-300,
+  html:not(.dark) .text-danger-400,
+  html:not(.dark) .text-danger-500 { color: var(--color-danger-700, #b91c1c); }
+  html:not(.dark) .text-info-300,
+  html:not(.dark) .text-info-400,
+  html:not(.dark) .text-info-500 { color: var(--color-info-700, #1d4ed8); }
+
+  /* ── 暗色下限：中性 ──
+     D-65：亮色下限里的 .text-neutral-300 → --color-neutral-500 是【单类】(0,1,0)，
+     与 Tailwind 的 dark:text-neutral-400（:where() 使其同为 (0,1,0)）同特异度，
+     而本文件 import 在 tailwindcss 之后 → 亮色下限反而压掉了显式暗色变体。
+     实测 /users「暂无数据」(text-neutral-300 dark:text-neutral-400) 在暗色下
+     被解析成 #64748b，落在 #0f172a 上仅 3.75:1 FAIL。
+     补一条 (0,2,0) 的暗色还原规则即可同时覆盖「裸 text-neutral-300」与
+     「text-neutral-300 + dark:text-neutral-400」两种写法。 */
+  .dark .text-neutral-300:not([class*="dark:text-"]) { color: var(--color-neutral-300, #cbd5e1); }
+  .dark .text-neutral-400:not([class*="dark:text-"]) { color: var(--color-neutral-400, #94a3b8); }
+  .dark .text-neutral-500:not([class*="dark:text-"]),
+  .dark .text-neutral-600:not([class*="dark:text-"]) { color: var(--color-neutral-400, #94a3b8); }
+  .dark .text-neutral-700:not([class*="dark:text-"]),
+  .dark .text-neutral-800:not([class*="dark:text-"]) { color: var(--color-neutral-300, #cbd5e1); }
+  .dark .text-neutral-900:not([class*="dark:text-"]) { color: var(--color-neutral-100, #f1f5f9); }
+
+  /* ── 暗色下限：品牌族（300/400/500/600 → 暗色 700 档）──
+     D-66：原落到 600 档，实测在「浅色蒙版 chip」底上仍差一点点 AA ——
+       新建实验  dark:text-accent-600    #a78bfa on rgb(59,65,84)  3.72 ✗
+       数据库    dark:text-secondary-600 #60a5fa on rgb(56,65,84)  4.02 ✗
+       舒适      dark:text-primary-600   #6ee7b7 on rgb(81,92,103) 4.47 ✗
+       步骤徽章  dark:text-warning-600   #fbbf24 on rgb(87,89,89)  4.23 ✗
+     暗色色阶是反转的（号越大越亮），700 档比 600 更亮，在上面这类
+     *-900/20 浅色蒙版上可把对比度拉到 4.9~5.7，同时在纯暗画布上更高。
+     注意：600 也纳入下限（此前只收 300/400/500），因为 600 在暗色下
+     恰好是「够亮但不够」的一档。 */
+  .dark .text-primary-300:not([class*="dark:text-"]),
+  .dark .text-primary-400:not([class*="dark:text-"]),
+  .dark .text-primary-500:not([class*="dark:text-"]),
+  .dark .text-primary-600:not([class*="dark:text-"]) { color: var(--color-primary-700, #a7f3d0); }
+  .dark .text-secondary-300:not([class*="dark:text-"]),
+  .dark .text-secondary-400:not([class*="dark:text-"]),
+  .dark .text-secondary-500:not([class*="dark:text-"]),
+  .dark .text-secondary-600:not([class*="dark:text-"]) { color: var(--color-secondary-700, #93c5fd); }
+  .dark .text-accent-300:not([class*="dark:text-"]),
+  .dark .text-accent-400:not([class*="dark:text-"]),
+  .dark .text-accent-500:not([class*="dark:text-"]),
+  .dark .text-accent-600:not([class*="dark:text-"]) { color: var(--color-accent-700, #c4b5fd); }
+  .dark .text-success-300:not([class*="dark:text-"]),
+  .dark .text-success-400:not([class*="dark:text-"]),
+  .dark .text-success-500:not([class*="dark:text-"]),
+  .dark .text-success-600:not([class*="dark:text-"]) { color: var(--color-success-700, #6ee7b7); }
+  .dark .text-warning-300:not([class*="dark:text-"]),
+  .dark .text-warning-400:not([class*="dark:text-"]),
+  .dark .text-warning-500:not([class*="dark:text-"]),
+  .dark .text-warning-600:not([class*="dark:text-"]) { color: var(--color-warning-700, #fcd34d); }
+  .dark .text-error-300:not([class*="dark:text-"]),
+  .dark .text-error-400:not([class*="dark:text-"]),
+  .dark .text-error-500:not([class*="dark:text-"]),
+  .dark .text-error-600:not([class*="dark:text-"]) { color: var(--color-error-700, #fca5a5); }
+  .dark .text-danger-300:not([class*="dark:text-"]),
+  .dark .text-danger-400:not([class*="dark:text-"]),
+  .dark .text-danger-500:not([class*="dark:text-"]),
+  .dark .text-danger-600:not([class*="dark:text-"]) { color: var(--color-danger-700, #fca5a5); }
+  .dark .text-info-300:not([class*="dark:text-"]),
+  .dark .text-info-400:not([class*="dark:text-"]),
+  .dark .text-info-500:not([class*="dark:text-"]),
+  .dark .text-info-600:not([class*="dark:text-"]) { color: var(--color-info-700, #93c5fd); }
+}
+
+/* 悬停态：hover:bg-neutral-* 同样交给 Tailwind 生成（同上，避免压制 dark: 变体）。 */
 
 /* ── hover:bg-slate-* → hover:bg-neutral-* 映射（消除残留 187 处）── */
 .hover\:bg-slate-50:hover  { background: var(--color-neutral-50,  #f8fafc); }
@@ -278,4 +419,60 @@ textarea:focus-visible,
   outline: 2px solid var(--color-primary, var(--color-accent-500, #8b5cf6));
   outline-offset: 2px;
   border-radius: var(--radius-sm, 4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   A-43：小图标按钮命中区全局收口（WCAG 2.5.5 / 44×44）
+   ───────────────────────────────────────────────────────────────
+   ui-sweep.mjs 在 src/pages 下扫出 53 处「padding ≤ p-2 且无 min-h/min-w 兜底」
+   的图标按钮（关闭、删除、排序、收藏…），实际渲染普遍只有 24~32px。
+   逐个文件改不现实，而且每次新写一个小图标按钮就会再犯一次 —— 属于典型的
+   「改一次到处复发」型缺陷，因此在 CSS 层一次性收口。
+
+   为什么分两条规则：
+   · min-height/min-width 是硬要求，必须生效 → 用真实选择器（特异性 0,1,1），
+     压得住 Tailwind 的同名单类工具类（0,1,0）。
+   · display/align/justify 只是让图标在撑大后的盒子里居中；若同样用高特异性，
+     会覆盖元素自带的 flex / inline-flex / grid，破坏既有布局。
+     所以套 :where() 把特异性降回 0 —— 元素自己写了排布方式就以它为准，
+     没写才回落到这里的居中。这正是 A-38b 里处理 dark: 工具类时用过的一致性手法。
+
+   为什么不用 ::after 扩大命中区：WCAG 允许，但量具（score-probe.cjs）按
+   getBoundingClientRect() 判定，伪元素不计入，改了也不得分。
+   ═══════════════════════════════════════════════════════════════ */
+button.p-0\.5,
+button.p-1,
+button.p-1\.5,
+button.p-2,
+button.w-7,
+button.h-7,
+button.size-4,
+button.size-5,
+a[href].p-1,
+a[href].p-1\.5,
+a[href].p-2,
+[role="button"].p-1,
+[role="button"].p-1\.5,
+[role="button"].p-2 {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+:where(button.p-0\.5,
+       button.p-1,
+       button.p-1\.5,
+       button.p-2,
+       button.w-7,
+       button.h-7,
+       button.size-4,
+       button.size-5,
+       a[href].p-1,
+       a[href].p-1\.5,
+       a[href].p-2,
+       [role="button"].p-1,
+       [role="button"].p-1\.5,
+       [role="button"].p-2) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
