@@ -58,7 +58,7 @@
   font-weight: 500;
 }
 
-/* 瀵规瘮缁撴灉 */
+/* 对比结果 */
 .result-header {
   margin: 24rpx 24rpx 0;
   padding: 24rpx;

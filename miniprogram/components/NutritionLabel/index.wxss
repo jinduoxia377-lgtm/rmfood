@@ -23,7 +23,7 @@
 .label-serving {
   text-align: center;
   font-size: 24rpx;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-caption);
   padding: 12rpx 20rpx;
   border-bottom: 2rpx solid var(--color-text-primary);
   background-color: var(--color-gray-50);
@@ -97,16 +97,16 @@
 
 /* NRV 颜色 */
 .nrv-high {
-  color: var(--color-danger);
+  color: var(--color-danger-text);
   font-weight: 700;
 }
 
 .nrv-medium {
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   font-weight: 600;
 }
 
 .nrv-low {
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-weight: 600;
 }

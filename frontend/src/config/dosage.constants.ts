@@ -61,8 +61,8 @@ export const DEFAULT_UNITS: Record<string, string> = {
 export const PERCENTAGE_COLOR_THRESHOLDS = [
   { max: 5, color: '#52c41a', label: '微量 (<5%)', bgClass: 'bg-success-50', textClass: 'text-success-700' },
   { max: 15, color: '#1890ff', label: '少量 (5-15%)', bgClass: 'bg-secondary-50', textClass: 'text-secondary-700' },
-  { max: 30, color: '#faad14', label: '中等 (15-30%)', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
-  { max: 50, color: '#fa8c16', label: '主要 (30-50%)', bgClass: 'bg-orange-50', textClass: 'text-orange-700' },
+  { max: 30, color: '#faad14', label: '中等 (15-30%)', bgClass: 'bg-warning-50', textClass: 'text-warning-700' },
+  { max: 50, color: '#fa8c16', label: '主要 (30-50%)', bgClass: 'bg-warning-50', textClass: 'text-warning-700' },
   { max: 100, color: '#f5222d', label: '核心 (>50%)', bgClass: 'bg-error-50', textClass: 'text-error-700' },
 ] as const
 

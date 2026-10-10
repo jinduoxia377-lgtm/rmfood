@@ -36,32 +36,32 @@ export const AI_ICONS = {
 
 export const AI_COLORS = {
   primary: {
-    text: 'text-primary-600 dark:text-primary-400',
+    text: 'text-primary-700 dark:text-primary-700',
     bg: 'bg-primary-50 dark:bg-primary-950/40',
     border: 'border-primary-100 dark:border-primary-900/30',
   },
   blue: {
-    text: 'text-secondary-600 dark:text-secondary-400',
-    bg: 'bg-secondary-50 dark:bg-blue-950/40',
-    border: 'border-blue-100 dark:border-blue-900/30',
+    text: 'text-secondary-600 dark:text-secondary-700',
+    bg: 'bg-secondary-50 dark:bg-secondary-950/40',
+    border: 'border-secondary-100 dark:border-secondary-900/30',
   },
   amber: {
-    text: 'text-warning-600 dark:text-warning-400',
-    bg: 'bg-warning-50 dark:bg-amber-950/40',
-    border: 'border-amber-100 dark:border-amber-900/30',
+    text: 'text-warning-600 dark:text-warning-700',
+    bg: 'bg-warning-50 dark:bg-warning-950/40',
+    border: 'border-warning-100 dark:border-warning-900/30',
   },
   emerald: {
-    text: 'text-primary-600 dark:text-primary-400',
-    bg: 'bg-primary-50 dark:bg-emerald-950/40',
-    border: 'border-emerald-100 dark:border-emerald-900/30',
+    text: 'text-primary-700 dark:text-primary-700',
+    bg: 'bg-primary-50 dark:bg-success-950/40',
+    border: 'border-success-100 dark:border-success-900/30',
   },
   red: {
-    text: 'text-error-600 dark:text-error-400',
-    bg: 'bg-error-50 dark:bg-red-950/40',
-    border: 'border-red-100 dark:border-red-900/30',
+    text: 'text-error-600 dark:text-error-600',
+    bg: 'bg-error-50 dark:bg-error-950/40',
+    border: 'border-error-100 dark:border-error-900/30',
   },
   accent: {
-    text: 'text-accent-600 dark:text-accent-400',
+    text: 'text-accent-600 dark:text-accent-700',
     bg: 'bg-accent-50 dark:bg-accent-950/40',
     border: 'border-accent-100 dark:border-accent-900/30',
   },

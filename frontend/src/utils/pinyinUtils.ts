@@ -152,7 +152,7 @@ export function highlightMatch(text: string, query: string): string {
   }
 
   const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi')
-  return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>')
+  return text.replace(regex, '<mark class="bg-warning-200 dark:bg-warning-800 px-0.5 rounded">$1</mark>')
 }
 
 /**

@@ -372,37 +372,10 @@ export class ModelClient {
   }
 
   /**
-   * 更新 LLM 配置到后端（同步到服务器内存，再返回最新状态）
+   * D-3 收敛：移除旧全局端点 POST /models/config（ADMIN-only）的调用方法。
+   * LLM 保存统一走 saveUserLlmKey（用户级通道）或 syncToBackend（有参端点，ADMIN），
+   * 此方法已无调用方，删除以消除多入口打架。
    */
-  static async setModelConfig(
-    provider: string,
-    apiKey: string,
-    baseUrl: string,
-    model: string,
-  ): Promise<{ success: boolean; status?: Record<string, ModelStatus>; error?: string }> {
-    try {
-      const response = await api.post('/ai/models/config', {
-        provider,
-        api_key: apiKey,
-        base_url: baseUrl,
-        model,
-        max_tokens: 4096,
-        temperature: 0.7,
-      })
-      if (response.data?.success) {
-        // 保存成功后立即 refetch 状态
-        const status = await this.getModelStatus()
-        return { success: true, status }
-      }
-      return { success: false, error: response.data?.message || '保存失败' }
-    } catch (error: unknown) {
-      const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
-      const status403 = axiosError.response?.status === 403
-      const msg = axiosError.response?.data?.message || (status403 ? '需要管理员权限才能修改 LLM 配置' : '保存失败，请检查后端服务')
-      logger.error('[ModelClient] setModelConfig failed:', msg)
-      return { success: false, error: msg }
-    }
-  }
 
   /**
    * 保存当前用户的个人 LLM 密钥（服务端存储，不影响全局配置）

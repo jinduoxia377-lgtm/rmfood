@@ -357,7 +357,7 @@ export function PerformanceMonitor({
                   justifyContent: 'space-between',
                   padding: '3px 0',
                   borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  fontSize: '11px',
+                  fontSize: '12px',
                 }}>
                   <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.id}</span>
                   <span style={{
@@ -434,7 +434,7 @@ export function PerformanceMonitor({
             <div style={{
               maxHeight: '150px',
               overflowY: 'auto',
-              fontSize: '11px',
+              fontSize: '12px',
               background: 'rgba(0,0,0,0.2)',
               borderRadius: '4px',
               padding: '6px',

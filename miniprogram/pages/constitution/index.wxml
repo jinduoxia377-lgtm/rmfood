@@ -1,10 +1,10 @@
 <!-- 体质测试页面 -->
-<view class="page-container">
+<view class="page-container {{themeClass}}">
   <!-- 顶部Header -->
   <view class="header">
     <view class="header-content">
       <view class="nav-btn" bindtap="goToHome" aria-label="返回首页">
-        <icon name="arrow-left" size="md" color="#FFFFFF" />
+        <icon name="arrow-left" size="md" color="var(--color-text-white)" />
       </view>
       <view class="header-title">
         <view class="title-main">中医体质测试</view>
@@ -20,8 +20,8 @@
       <view class="welcome-icon">🧬</view>
       <view class="welcome-title">了解你的中医体质</view>
       <view class="welcome-desc">
-        通过20道题目，帮您识别体质类型<br />
-        提供个性化养生建议
+        <view>通过20道题目，帮您识别体质类型</view>
+        <view>提供个性化养生建议</view>
       </view>
       <view class="constitution-preview">
         <view class="preview-item" wx:for="['平和质','气虚质','阳虚质','阴虚质','痰湿质','湿热质','血瘀质','气郁质','特禀质']" wx:key="*this">

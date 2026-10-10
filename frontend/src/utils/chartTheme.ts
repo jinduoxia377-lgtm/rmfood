@@ -51,8 +51,8 @@ const SERIES_COLORS_LIGHT = [
   'var(--color-warning, #FF9F0A)',
   'var(--color-error, #FF3B30)',
   'var(--color-info, var(--color-secondary-500))',
-  'var(--color-pink-500, #D946EF)',
-  'var(--color-orange-500, #EA580C)',
+  'var(--color-danger-500, #D946EF)',
+  'var(--color-warning-500, #EA580C)',
 ]
 
 const SERIES_COLORS_DARK = [
@@ -62,8 +62,8 @@ const SERIES_COLORS_DARK = [
   'var(--color-warning, #FF9F0A)',
   'var(--color-error, #FF453A)',
   'var(--color-info, #0A84FF)',
-  'var(--color-pink-400, #EC4899)',
-  'var(--color-orange-400, #FB923C)',
+  'var(--color-danger-400, #EC4899)',
+  'var(--color-warning-400, #FB923C)',
 ]
 
 export interface ChartThemeConfig {
@@ -137,7 +137,7 @@ export function getChartTheme(isDark: boolean): ChartThemeConfig {
     axis: {
       tick: {
         fill: colors.textSecondary,
-        fontSize: 11,
+        fontSize: 12,
       },
       axisLine: {
         stroke: colors.axisLine,
@@ -171,7 +171,7 @@ export function getSeriesColor(index: number, isDark: boolean): string {
 // 迁移时**为每个 var() 补上 fallback**。原实现引用了一批**并不存在**的令牌且无回退：
 //   · --color-success-light / -info-light / -warning-light / -error-light 四族缺失（D-4）
 //   · --color-chart-1..5 全缺（D-45）
-//   · --color-pink-500 / --color-cyan-500 / --color-sky-500 未定义
+//   · --color-danger-500 / --color-info-500 / --color-sky-500 未定义
 // 导致 GATE-08 报「无回退 var() 解析为空」——图表取色实际落到继承值。
 // 现改为：优先复用**确实存在**的语义令牌（暗色已由令牌自身承载亮色变体），
 // 并保留同色系 fallback 兜底。
@@ -182,14 +182,14 @@ export const FORMULA_ROLE_COLORS = {
   light: {
     君: 'var(--color-success, #10b981)',
     臣: 'var(--color-info, #3b82f6)',
-    佐: 'var(--color-purple-500, #a855f7)',
+    佐: 'var(--color-accent-500, #a855f7)',
     使: 'var(--color-warning, #f59e0b)',
     辅料: 'var(--color-neutral-500, #64748b)',
   },
   dark: {
     君: 'var(--color-success, #34d399)',
     臣: 'var(--color-info, #60a5fa)',
-    佐: 'var(--color-purple-400, #c084fc)',
+    佐: 'var(--color-accent-400, #c084fc)',
     使: 'var(--color-warning, #fcd34d)',
     辅料: 'var(--color-neutral-400, #94a3b8)',
   },
@@ -197,8 +197,8 @@ export const FORMULA_ROLE_COLORS = {
 
 /** 配方分类调色板（10 色，用于饼图/柱状图）。复用系列色板并补足到 10 色。 */
 export const FORMULA_CATEGORY_PALETTE = {
-  light: [...SERIES_COLORS_LIGHT, 'var(--color-cyan-600, var(--color-info-600))', 'var(--color-purple-600, #9333ea)'],
-  dark: [...SERIES_COLORS_DARK, 'var(--color-cyan-700, #0e7490)', 'var(--color-purple-500, #a855f7)'],
+  light: [...SERIES_COLORS_LIGHT, 'var(--color-info-600, var(--color-info-600))', 'var(--color-accent-600, #9333ea)'],
+  dark: [...SERIES_COLORS_DARK, 'var(--color-info-700, #0e7490)', 'var(--color-accent-500, #a855f7)'],
 } as const
 
 function detectDark(): boolean {

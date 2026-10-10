@@ -114,7 +114,7 @@ export function useAIRecommendations(effects: string[], enabled = false) {
 }
 
 // ── 实验列表 ──
-export function useExperiments(params?: { page?: number; page_size?: number; status?: string; search?: string }) {
+export function useExperiments(params?: { page?: number; page_size?: number; status?: string; search?: string; sort_field?: string; sort_order?: 'asc' | 'desc' }) {
   return useQuery({
     queryKey: ['experiments', params],
     queryFn: () => experimentApi.list(params),

@@ -243,15 +243,15 @@ export function useSemanticTheme(): SemanticColorVars {
  gradientTextSecondary: cssVar('--gradient-text-secondary'),
 
  // 补充色系
- orange500: cssVar('--color-orange-500'),
+ orange500: cssVar('--color-warning-500'),
  purple500: cssVar('--color-accent-500'),
- pink500: cssVar('--color-pink-500'),
- cyan500: cssVar('--color-cyan-500'),
+ pink500: cssVar('--color-danger-500'),
+ cyan500: cssVar('--color-info-500'),
  sky500: cssVar('--color-sky-500'),
- indigo500: cssVar('--color-indigo-500'),
+ indigo500: cssVar('--color-accent-500'),
  teal500: cssVar('--color-teal-500'),
- lime500: cssVar('--color-lime-500'),
- yellow500: cssVar('--color-yellow-500'),
+ lime500: cssVar('--color-success-500'),
+ yellow500: cssVar('--color-warning-500'),
  };
 }
 

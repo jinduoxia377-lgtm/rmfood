@@ -17,6 +17,9 @@ Create Date: 2026-06-30
 """
 from alembic import op
 import sqlalchemy as sa
+import logging
+
+logger = logging.getLogger(__name__)
 
 # revision identifiers
 revision = '20260630_000000_bigint_timezone_upgrade'
@@ -74,8 +77,8 @@ def upgrade() -> None:
                 type_=sa.BigInteger(),
                 postgresql_using='id::bigint',
             )
-        except Exception:
-            pass  # 列可能已经是 BigInteger
+        except Exception as e:
+            logger.debug(f"[bigint-upgrade] {table}.id 已是 BigInteger，跳过: {e}")
 
     # ═══════════════════════════════════════════════════════
     # Step 2: 修改所有表的 BigInteger 外键列
@@ -153,8 +156,8 @@ def upgrade() -> None:
                 type_=sa.BigInteger(),
                 postgresql_using=f"{column}::bigint",
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[bigint-upgrade] {table}.{column} 已是 BigInteger，跳过: {e}")
 
     # ═══════════════════════════════════════════════════════
     # Step 3: 修改所有表的 DateTime 列为带时区类型
@@ -247,8 +250,9 @@ def upgrade() -> None:
                 type_=sa.DateTime(timezone=True),
                 postgresql_using=f"{column} AT TIME ZONE 'UTC'",
             )
-        except Exception:
-            pass  # 列可能已经是带时区类型
+        except Exception as e:
+            # 不静默吞错：时区转换失败会直接导致 naive/aware 混存，必须可见
+            logger.warning(f"[tz-upgrade] 列 {table}.{column} 时区转换失败（保持原类型）: {e}")
 
     # ═══════════════════════════════════════════════════════
     # Step 4: 添加缺失的外键 ondelete 策略和索引

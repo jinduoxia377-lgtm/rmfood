@@ -102,18 +102,17 @@ export const ThemeImport: React.FC<ThemeImportProps> = ({ onImport }) => {
 
   return (
     <div className="space-y-2">
-      <label className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-lg,18px)] border-2 border-dashed border-gray-300 hover:border-green-500 cursor-pointer transition-colors">
+      <label className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-lg,18px)] border-2 border-dashed border-neutral-300 dark:border-neutral-600 hover:border-success-500 cursor-pointer transition-colors">
         <Upload size={16} />
         <span className="text-sm">导入主题配置</span>
         <input
           type="file"
           accept=".json"
           onChange={handleFileChange}
-          className="hidden"
-        />
+          className="hidden" aria-hidden="true" tabIndex={-1} />
       </label>
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-500">
+        <div className="flex items-center gap-2 text-sm text-error-500">
           <AlertCircle size={14} />
           <span>{error}</span>
         </div>

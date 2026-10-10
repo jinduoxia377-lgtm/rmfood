@@ -454,7 +454,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="p-6 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="p-6 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-error-100 dark:bg-error-800 rounded-full">
               <svg className="w-6 h-6 text-error-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -468,7 +468,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             </div>
             <div>
               <h3 className="text-lg font-semibold text-error-800 dark:text-error-200">组件出错</h3>
-              <p className="text-sm text-error-600 dark:text-error-300 mt-1">
+              <p className="text-sm text-error-600 dark:text-error-600 mt-1">
                 {this.state.error?.message || '发生了未知错误'}
               </p>
             </div>

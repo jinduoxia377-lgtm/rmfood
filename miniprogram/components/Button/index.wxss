@@ -1,4 +1,4 @@
-/** Button 鎸夐挳缁勪欢鏍峰紡 */
+/** Button 按钮组件样式 */
 .btn {
   display: inline-flex;
   align-items: center;

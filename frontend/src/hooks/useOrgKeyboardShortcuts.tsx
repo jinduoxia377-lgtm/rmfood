@@ -100,7 +100,7 @@ export function ShortcutHints() {
   ];
 
   return (
-    <div className="hidden xl:flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
+    <div className="hidden xl:flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-400">
       {hints.map((h) => (
         <span key={h.keys} className="flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700 font-mono text-neutral-500 dark:text-neutral-400">

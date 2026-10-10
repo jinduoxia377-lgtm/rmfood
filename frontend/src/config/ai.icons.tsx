@@ -131,11 +131,11 @@ const SIZE_MAP: Record<IconSize, number> = {
 
 const VARIANT_CLASSES: Record<IconVariant, string> = {
   default: 'text-neutral-600 dark:text-neutral-400',
-  primary: 'text-primary-600 dark:text-primary-400',
-  success: 'text-success-600 dark:text-success-400',
-  warning: 'text-yellow-600 dark:text-yellow-400',
-  danger: 'text-error-600 dark:text-error-400',
-  info: 'text-secondary-600 dark:text-secondary-400',
+  primary: 'text-primary-700 dark:text-primary-700',
+  success: 'text-success-600 dark:text-success-600',
+  warning: 'text-warning-600 dark:text-warning-700',
+  danger: 'text-error-600 dark:text-error-600',
+  info: 'text-secondary-600 dark:text-secondary-700',
 }
 
 export function StandardIcon({

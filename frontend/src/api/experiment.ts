@@ -89,6 +89,8 @@ export const experimentApi = {
     researcher_id?: number
     formula_id?: number
     search?: string
+    sort_field?: string
+    sort_order?: 'asc' | 'desc'
   }) => api.get<PaginatedResponse<Experiment>>('/experiments', { params }).then((r) => r.data),
 
   get: (id: number) => api.get<Experiment>(`/experiments/${id}`).then((r) => r.data),

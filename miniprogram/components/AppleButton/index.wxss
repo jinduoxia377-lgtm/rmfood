@@ -1,4 +1,4 @@
-/** AppleButton 缁勪欢鏍峰紡 */
+/** AppleButton 组件样式 */
 .apple-btn {
   display: flex;
   align-items: center;

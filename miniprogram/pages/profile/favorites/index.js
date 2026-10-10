@@ -1,5 +1,5 @@
 // 我的收藏页面
-const api = require('../../../../utils/api.js')
+const api = require('../../../utils/api.js')
 
 Page({
   data: {

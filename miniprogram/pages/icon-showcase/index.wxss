@@ -1,4 +1,4 @@
-/* 閸ョ偓鐖ｇ仦鏇犮仛妞ょ敻娼伴弽宄扮础 */
+/* 图标展示页面样式 */
 .page-container {
   padding: 24rpx;
   background: var(--color-bg-page);
@@ -23,7 +23,7 @@
   font-size: var(--font-size-md);
 }
 
-/* 閸掑棛琚弽鍥暯 */
+/* 分类标题 */
 .category-title {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
@@ -32,7 +32,7 @@
   padding-left: 16rpx;
 }
 
-/* 閸ョ偓鐖ｇ純鎴炵壐 */
+/* 图标网格 */
 .icon-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -106,7 +106,7 @@
   color: var(--color-text-tertiary);
 }
 
-/* 妫版粏澹婄仦鏇犮仛 */
+/* 颜色展示 */
 .color-demo {
   background: var(--color-bg-card);
   border-radius: var(--radius-lg);
