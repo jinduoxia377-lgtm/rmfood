@@ -29,15 +29,54 @@ function Get-PortPids {
     return $pids
 }
 
+# 收集某 PID 的整棵进程树（子进程 → 孙进程 ...）
+function Get-ProcessTree {
+    param([int]$RootPid)
+    $tree = @()
+    $queue = @([int]$RootPid)
+    while ($queue.Count -gt 0) {
+        $cur = $queue[0]; $queue = @($queue | Select-Object -Skip 1)
+        $tree += $cur
+        $children = Get-CimInstance Win32_Process -Filter "ParentProcessId = $($cur)" -ErrorAction SilentlyContinue
+        foreach ($c in $children) { if ($c.ProcessId -ne 0) { $queue += [int]$c.ProcessId } }
+    }
+    return $tree | Select-Object -Unique
+}
+
+# 查找残留的本项目后端服务进程（含 uvicorn --reload 的 reloader 父进程，其不占端口、杀端口后会自动重生）
+function Get-ServicePids {
+    $found = @()
+    $procs = Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue
+    foreach ($p in $procs) {
+        $cmd = [string]$p.CommandLine
+        if ([string]::IsNullOrEmpty($cmd)) { continue }
+        # 后端 uvicorn reloader：venv python -m uvicorn app.main:app
+        if ($cmd -match [regex]::Escape('app.main:app')) {
+            $found += [int]$p.ProcessId
+        }
+    }
+    return $found
+}
+
 function Kill-ByPort {
     param([int[]]$Ports)
+    # 收集端口监听者 + 已知服务进程，连同整棵进程树一起清理
+    $targets = @()
     foreach ($port in $Ports) {
         foreach ($procId in (Get-PortPids -Port $port)) {
             if ($procId -eq 0 -or $procId -eq 4) { continue }  # 跳过空闲地址占位(System/4)
-            try {
-                Stop-Process -Id $procId -Force -ErrorAction Stop
-                Write-Host ("  Killed PID " + $procId + " on port " + $port) -ForegroundColor DarkGray
-            } catch {}
+            $targets += Get-ProcessTree -RootPid $procId
+        }
+    }
+    foreach ($svcPid in (Get-ServicePids)) {
+        $targets += Get-ProcessTree -RootPid $svcPid
+    }
+    foreach ($procId in ($targets | Select-Object -Unique)) {
+        if ($procId -eq 0 -or $procId -eq 4) { continue }
+        try {
+            Stop-Process -Id $procId -Force -ErrorAction Stop
+        } catch {
+            # 进程可能已退出或属于系统，忽略
         }
     }
 }
@@ -50,26 +89,48 @@ function Wait-ForService {
     while ((Get-Date) -lt $start.AddSeconds($TimeoutSec)) {
         $attempt++
         Start-Sleep -Seconds 1
+        $ok = $false
+        $info = ""
+        # 首选 Invoke-WebRequest（PS5.1 默认可用；不传 -NoProxy/-HttpVersion 以免参数绑定异常）
         try {
-            # -NoProxy: 避免系统代理导致探测挂起
-            $r = Invoke-WebRequest -Uri $Url -TimeoutSec 5 -UseBasicParsing `
-                -NoProxy -HttpVersion 1.1 -MaximumRedirection 3
-            if ($r.StatusCode -eq 200) {
-                Write-Host (" OK (attempt " + $attempt + ")") -ForegroundColor Green
-                return $true
-            }
+            $r = Invoke-WebRequest -Uri $Url -TimeoutSec 5 -UseBasicParsing -MaximumRedirection 3
+            $code = [int]$r.StatusCode
+            $ok = ($code -eq 200 -or $code -lt 500)
+            $info = ("http " + $code)
         } catch {
-            # 网关返回 4xx 也说明服务已就绪（例如鉴权路由）
-            if ($_.Exception.Response -and ([int]$_.Exception.Response.StatusCode) -lt 500) {
-                Write-Host (" OK (attempt " + $attempt + ", http " + [int]$_.Exception.Response.StatusCode + ")") -ForegroundColor Green
-                return $true
+            # 捕获 HTTP 错误（如 4xx）——说明服务已响应
+            if ($_.Exception.Response) {
+                $code = [int]$_.Exception.Response.StatusCode
+                $ok = ($code -lt 500)
+                $info = ("http " + $code)
             }
+        }
+        # 兜底：纯 TCP 连接测试（Invoke-WebRequest 被代理/SSL 干扰时仍可能误判）
+        if (-not $ok) {
+            try {
+                $parts = [System.Uri]::Parse($Url)
+                $port = if ($parts.Port) { $parts.Port } else { if ($parts.Scheme -eq "https") { 443 } else { 80 } }
+                $tcp = New-Object System.Net.Sockets.TcpClient
+                $null = $tcp.Connect($parts.DnsHost, $port)
+                $tcp.Close()
+                if ($tcp.Connected) { $ok = $true; $info = "tcp" }
+            } catch {}
+        }
+        if ($ok) {
+            Write-Host (" OK (attempt " + $attempt + ", " + $info + ")") -ForegroundColor Green
+            return $true
         }
         if ($attempt % 10 -eq 0) {
             Write-Host "." -NoNewline
         }
     }
     Write-Host " TIMEOUT" -ForegroundColor Red
+    # 超时排障：尝试读取最近的后端错误日志末尾
+    $logFile = Join-Path (Split-Path -Parent $PSScriptRoot) "logs\backend-start.err.log"
+    if ($Name -eq "Backend" -and (Test-Path $logFile)) {
+        Write-Host "  --- last 5 lines of backend-start.err.log ---" -ForegroundColor Yellow
+        Get-Content $logFile -Tail 5 | ForEach-Object { Write-Host ("    " + $_) -ForegroundColor Yellow }
+    }
     return $false
 }
 
@@ -117,7 +178,8 @@ Write-Host ("  Frontend PID: " + $fproc.Id) -ForegroundColor Gray
 # Step 4: Wait and verify
 Write-Host "[4/4] Verifying services..." -ForegroundColor Yellow
 # 后端启动需完成建表/种子数据/AI 服务初始化，耗时较长，超时上限放宽到 5 分钟
-$bOk = Wait-ForService -Url "http://127.0.0.1:8000/api/v1/health" -Name "Backend" -TimeoutSec 300
+# 验证时给后端更充裕的启动时间（含建表/种子/AI 初始化），前端 180s
+$bOk = Wait-ForService -Url "http://127.0.0.1:8000/api/v1/health" -Name "Backend" -TimeoutSec 480
 $fOk = Wait-ForService -Url "http://127.0.0.1:3000" -Name "Frontend" -TimeoutSec 120
 
 Write-Host ""
