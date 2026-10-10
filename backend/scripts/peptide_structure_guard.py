@@ -356,6 +356,27 @@ CHECKS = [
         r"isOnline.*PMID|PMID.*isOnline|pmidMatch",
         "前端：来源证据链必须高亮 NCBI 在线文献",
     ),
+    # 第四阶段：真实 ML 模型分接入 Pareto 多目标优化 + 协同分析
+    (
+        "backend/app/services/ai_models/advanced_peptide_analyzer.py",
+        r"_predict_ace_with_ml",
+        "Pareto/协同：真实 ML 模型 ACE 预测 _predict_ace_with_ml 必须接入",
+    ),
+    (
+        "backend/app/services/ai_models/advanced_peptide_analyzer.py",
+        r"ml_model_provenance",
+        "Pareto/协同：结果必须附带真实 ML 模型溯源 ml_model_provenance",
+    ),
+    (
+        "backend/app/api/advanced_peptide.py",
+        r"ml_model_provenance",
+        "API：Pareto 端点必须返回 ml_model_provenance 字段",
+    ),
+    (
+        "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
+        r"ml_model_provenance",
+        "前端：Pareto/协同视图必须渲染真实 ML 模型溯源",
+    ),
 ]
 
 

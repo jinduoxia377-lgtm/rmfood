@@ -1290,10 +1290,26 @@ function DeepAnalysisView() {
             {Object.entries(bp).map(([key, val]: any) => (
               <div key={key} className="flex justify-between items-center text-xs">
                 <span className="text-[var(--text-secondary)] capitalize">{key.replace(/_/g, ' ')}</span>
-                <span className="font-mono font-medium">{typeof val === 'object' ? `${(val.score * 100).toFixed(1)}%` : `${val}`}</span>
+                <span className="font-mono font-medium">
+                  {typeof val === 'object' ? (
+                    <span className="flex items-center gap-1">
+                      {`${(val.score * 100).toFixed(1)}%`}
+                      {key === 'ACE_inhibitory' && val.ml_score != null && (
+                        <Badge variant={val.ml_method === 'ml' ? 'success' : 'neutral'} size="sm">
+                          ML {val.ml_score != null ? `${(val.ml_score * 100).toFixed(1)}%` : '-'}（{val.ml_method}）
+                        </Badge>
+                      )}
+                    </span>
+                  ) : `${val}`}
+                </span>
               </div>
             ))}
           </div>
+          {bp.ACE_inhibitory?.ml_provenance && (
+            <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+              ACE 抑制目标分来源：{bp.ACE_inhibitory.ml_provenance}
+            </div>
+          )}
         </Card>
         <Card className="p-4">
           <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
@@ -1429,6 +1445,21 @@ function OptimizeView() {
               ))}
             </div>
           )}
+          {/* 真实 ML 模型溯源（多目标寻优中 ACE 抑制目标分来源） */}
+          {result.ml_model_provenance && (
+            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-3 h-3 text-primary" />
+                <span className="font-medium">ACE 抑制目标分溯源</span>
+                <Badge variant={result.ml_model_provenance.available ? 'success' : 'neutral'} size="sm">
+                  {result.ml_model_provenance.model}
+                </Badge>
+              </div>
+              <div className="text-[var(--text-muted)]">
+                训练来源：{result.ml_model_provenance.training_source} · {result.ml_model_provenance.honest_note}
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>
@@ -1519,6 +1550,21 @@ function SynergyView() {
                     <span className="font-mono text-primary">{(c.synergy_score ?? 0).toFixed(3)}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+          {/* 真实 ML 模型溯源（协同功效匹配中 ACE 抑制分来源） */}
+          {result.ml_model_provenance && (
+            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-3 h-3 text-primary" />
+                <span className="font-medium">功效匹配 ACE 抑制分溯源</span>
+                <Badge variant={result.ml_model_provenance.available ? 'success' : 'neutral'} size="sm">
+                  {result.ml_model_provenance.model}
+                </Badge>
+              </div>
+              <div className="text-[var(--text-muted)]">
+                训练来源：{result.ml_model_provenance.training_source} · {result.ml_model_provenance.honest_note}
               </div>
             </div>
           )}

@@ -309,6 +309,7 @@ async def pareto_optimization(
                 ],
                 "diversity_metrics": result.diversity_metrics,
                 "processing_time_ms": result.processing_time_ms,
+                "ml_model_provenance": result.ml_model_provenance,
             },
         }
 
