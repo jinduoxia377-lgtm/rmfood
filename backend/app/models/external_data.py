@@ -129,11 +129,12 @@ class KnowledgeGraphNode(Base):
     __tablename__ = "knowledge_graph_nodes"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    neo4j_id: Mapped[str | None] = mapped_column(String(50))
     node_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    node_label: Mapped[str] = mapped_column(String(200), nullable=False)
+    name: Mapped[str] = mapped_column("name", String(200), nullable=False, index=True)
     properties: Mapped[dict | None] = mapped_column(JSON, default=dict)
-    source_db: Mapped[str | None] = mapped_column(String(50))
-    version: Mapped[str | None] = mapped_column(String(50))
+    source_database: Mapped[str | None] = mapped_column(String(50))
+    source_id: Mapped[str | None] = mapped_column(String(50))
+    confidence_score: Mapped[float | None] = mapped_column(Float)
+    last_validated: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
