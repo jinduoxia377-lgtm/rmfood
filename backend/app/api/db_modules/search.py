@@ -1,4 +1,4 @@
-﻿"""
+"""
 统一搜索、数据同步与快照 API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -33,8 +33,8 @@ async def search_knowledge_graph(
     count_query = select(func.count()).select_from(KnowledgeGraphNode)
 
     like_pattern = f"%{keyword}%"
-    query = query.where(KnowledgeGraphNode.node_label.ilike(like_pattern))
-    count_query = count_query.where(KnowledgeGraphNode.node_label.ilike(like_pattern))
+    query = query.where(KnowledgeGraphNode.name.ilike(like_pattern))
+    count_query = count_query.where(KnowledgeGraphNode.name.ilike(like_pattern))
 
     if node_type:
         query = query.where(KnowledgeGraphNode.node_type == node_type)
@@ -42,7 +42,7 @@ async def search_knowledge_graph(
 
     total = (await db.execute(count_query)).scalar() or 0
     items = (await db.execute(
-        query.order_by(KnowledgeGraphNode.node_label).limit(limit)
+        query.order_by(KnowledgeGraphNode.name).limit(limit)
     )).scalars().all()
 
     # 数据库有结果直接返回
@@ -52,9 +52,9 @@ async def search_knowledge_graph(
                 {
                     "id": n.id,
                     "node_type": n.node_type,
-                    "node_label": n.node_label,
+                    "node_label": n.name,
                     "properties": n.properties,
-                    "source_db": n.source_db,
+                    "source_db": n.source_database,
                 }
                 for n in items
             ],
