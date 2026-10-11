@@ -433,6 +433,7 @@ export const formulaApi = {
   predictFormulaEffect,
 
   // ===== 新增：模板管理 =====
+  getFormulaTemplates,
   createFormulaTemplate,
   updateFormulaTemplate,
   deleteFormulaTemplate,
@@ -698,6 +699,29 @@ export async function createBatchOperationLogs(
   }[],
 ): Promise<void> {
   await api.post(`${FORMULA_BASE_URL}/logs/batch`, logs)
+}
+
+// ==================== 17b. 配方模板 API ====================
+
+export interface FormulaTemplateItem {
+  id: number
+  code: string
+  name: string
+  description?: string | null
+  category?: string | null
+  effects: string[]
+  ingredients: { name: string; role?: string; dosage?: string; category?: string }[]
+  usage?: string | null
+  usage_count: number
+  is_featured: boolean
+  is_active: boolean
+}
+
+export async function getFormulaTemplates(
+  params?: { category?: string; include_inactive?: boolean },
+): Promise<{ items: FormulaTemplateItem[]; total: number }> {
+  const response = await api.get(`${FORMULA_BASE_URL}/templates`, { params })
+  return response.data
 }
 
 // ==================== 18. 权限检查 API ====================
