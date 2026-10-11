@@ -37,8 +37,12 @@ def _load_pubmed_augmentation() -> List[Dict[str, Any]]:
     Every record is a real peptide that co-occurs with an ACE-relevant cue in a
     real PubMed abstract; each carries a verifiable pmid. This is the real
     data-augmentation path that does NOT touch synthetic data.
+
+    Prefers the expanded dataset (300+ unique positives across 28 query
+    families); falls back to the original 15-record set if the expanded file
+    has not been generated yet.
     """
-    path = os.path.join(ARTIFACT_DIR, "ace_real_peptides.json")
+    path = os.path.join(ARTIFACT_DIR, "ace_real_peptides_final.json")
     if not os.path.exists(path):
         return []
     try:
@@ -47,11 +51,19 @@ def _load_pubmed_augmentation() -> List[Dict[str, Any]]:
     except Exception:
         return []
     out: List[Dict[str, Any]] = []
-    for rec in data.get("peptides", []):
-        seq = (rec.get("seq") or "").upper().replace("-", "")
+    # dedupe on sequence
+    seen = set()
+    # handle both the expanded schema (data["pairs"] with seq/pmid/cue/snippet)
+    # and the original schema (data["peptides"] with seq/pmid/note)
+    records = data.get("pairs", []) or data.get("peptides", [])
+    for rec in records:
+        seq = (rec.get("seq") or rec.get("sequence") or "").upper().replace("-", "")
         pmid = rec.get("pmid")
         if len(seq) < 2 or not pmid:
             continue  # no verifiable source -> exclude (honesty red line)
+        if seq in seen:
+            continue
+        seen.add(seq)
         out.append({
             "sequence": seq,
             "label": 1,  # confirmed ACE-inhibitory in the cited abstract
