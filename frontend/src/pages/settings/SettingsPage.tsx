@@ -9,7 +9,7 @@
  *   - 去除侧边栏，内容全宽展开
  */
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
@@ -716,10 +716,13 @@ export default function SettingsPage() {
   const importDataMutation = useImportData()
   const { data: loginHistoryData } = useLoginHistory()
   const clearDataMutation = useClearUserData()
+  const { data: preferencesData } = usePreferences()
   const { mode, setThemeMode } = useTheme()
 
   // ── State ─────────────────────────────────────────────────────
-  const [tab, setTab] = useState<TabId>('account')
+  const [searchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as TabId) || 'account'
+  const [tab, setTab] = useState<TabId>(initialTab)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(!!twoFaStatus?.enabled)
   useEffect(() => { if (twoFaStatus) setTwoFactorEnabled(!!twoFaStatus.enabled) }, [twoFaStatus])
 
@@ -759,7 +762,12 @@ export default function SettingsPage() {
   const [selectedTimezone, setSelectedTimezone] = useState('Asia/Shanghai')
   const [loadingLocale, setLoadingLocale] = useState(false)
 
-  const [notifPrefs, setNotifPrefs] = useState(() => {
+  const [notifPrefs, setNotifPrefs] = useState<{
+    formula_review: boolean; experiment_complete: boolean; ai_task_done: boolean;
+    system_updates: boolean; email_notifications: boolean; browser_push: boolean;
+    notification_frequency: 'realtime' | 'daily' | 'weekly';
+    notification_priority: 'high' | 'medium' | 'low';
+  }>(() => {
     const saved = localStorage.getItem('notif-prefs')
     return saved ? JSON.parse(saved) : {
       formula_review: true, experiment_complete: true,
@@ -770,11 +778,24 @@ export default function SettingsPage() {
     }
   })
 
+  // 从后端加载已保存的通知偏好（优先于 localStorage）
+  useEffect(() => {
+    if (preferencesData?.notifications && typeof preferencesData.notifications === 'object') {
+      setNotifPrefs(prev => {
+        const merged = { ...prev, ...preferencesData.notifications }
+        localStorage.setItem('notif-prefs', JSON.stringify(merged))
+        return merged
+      })
+    }
+  }, [preferencesData])
+
   // ── Handlers ──────────────────────────────────────────────────
   const saveNotifPrefs = (prefs: typeof notifPrefs) => {
     setNotifPrefs(prefs)
     localStorage.setItem('notif-prefs', JSON.stringify(prefs))
-    addToast({ type: 'success', message: '通知偏好已保存' })
+    // 落库到后端用户偏好（跨设备同步）
+    updatePrefsMutation.mutate({ notifications: prefs })
+    addToast({ type: 'success', message: '通知偏好已保存（已同步到云端）' })
   }
   const toggleNotifPref = (key: keyof typeof notifPrefs) =>
     saveNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] })
