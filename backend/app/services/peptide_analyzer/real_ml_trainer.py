@@ -129,6 +129,21 @@ def _load_real_training_set(
     return records
 
 
+def _load_generalization_report() -> Dict[str, Any]:
+    """Load the Step C-2 generalization report (sequence-leak-free 5-fold).
+
+    Returns {} if the report file has not been generated yet.
+    """
+    path = os.path.join(ARTIFACT_DIR, "generalization_report.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
 class RealModelTrainer:
     """用真实 DFBP 数据训练 MLP 并持久化权重（numpy 向量化 + Adam + 自适应阈值）"""
 
@@ -155,6 +170,8 @@ class RealModelTrainer:
         self.decision_threshold = 0.5
         self.best_f1 = None
         self.real_only = False
+        # 泛化测试（Step C-2）：序列级 5 折防泄漏数字，作为前端主显示
+        self.generalization_report = _load_generalization_report()
         self.library_size = 0            # DFBP 标注库总大小
         self.training_set_size = 0       # 实际训练子集（85%）
         self.validation_set_size = 0     # 验证子集（15%）

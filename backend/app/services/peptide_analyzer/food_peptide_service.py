@@ -74,6 +74,11 @@ class FoodPeptideAnalysis:
     # Step B：PubMed 审计真实正类样本（带可溯源 pmid，非合成）
     ml_library_pubmed_count: int = 0
     ml_include_pubmed: bool = False
+    # Step C-2 泛化测试：序列级 5 折防泄漏数字（主显示）+ 长肽 LOO 警示
+    ml_gen_five_fold_f1: Optional[float] = None
+    ml_gen_five_fold_balanced: Optional[float] = None
+    ml_gen_loo_long_recall: Optional[float] = None
+    ml_short_peptide_bias: str = ""
     ml_model_name: str = "PeptideRanker-Mini"
     
     # 安全性评估结果
@@ -168,6 +173,10 @@ class FoodPeptideAnalysis:
                 "is_predicted_active": self.ml_is_predicted_active,
                 "library_pubmed_count": self.ml_library_pubmed_count,
                 "include_pubmed": self.ml_include_pubmed,
+                "gen_five_fold_f1": self.ml_gen_five_fold_f1,
+                "gen_five_fold_balanced": self.ml_gen_five_fold_balanced,
+                "gen_loo_long_recall": self.ml_gen_loo_long_recall,
+                "short_peptide_bias": self.ml_short_peptide_bias,
                 "honest_note": (
                     f"真实 ML 模型：用 DFBP 库 {self.ml_library_size} 条标注记录训练"
                     f"（真实文献 {self.ml_library_real_count} + 程序合成 {self.ml_library_synth_count}，合成已显式标注）；"
@@ -523,6 +532,14 @@ class FoodPeptideAnalyzer:
             result.ml_trained_on_real_only = bool(getattr(trainer, "real_only", True))
             result.ml_decision_threshold = getattr(trainer, "decision_threshold", 0.5)
             result.ml_is_predicted_active = pred.get("is_predicted_active")
+            # 泛化测试（Step C-2）：序列级 5 折防泄漏数字 + 长肽 LOO 警示
+            _gen = getattr(trainer, "generalization_report", {}) or {}
+            _five = _gen.get("five_fold_sequence_level", {})
+            result.ml_gen_five_fold_f1 = _five.get("mean_best_f1")
+            result.ml_gen_five_fold_balanced = _five.get("mean_balanced_accuracy")
+            _loo = _gen.get("loo_long_peptides_ge8", {})
+            result.ml_gen_loo_long_recall = _loo.get("recall")
+            result.ml_short_peptide_bias = _gen.get("short_peptide_bias", "")
             logger.info(
                 f"真实 ML 预测: {sequence} → ACE={result.ml_ace_score} "
                 f"method={result.ml_method} samples={result.ml_training_samples}"

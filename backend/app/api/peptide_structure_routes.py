@@ -388,6 +388,11 @@ async def ml_status(target_activity: str = Query("ACE inhibitory")):
             "is_trustworthy": getattr(trainer, "is_trustworthy", False),
             "trust_note": getattr(trainer, "trust_note", ""),
             "decision_threshold": getattr(trainer, "decision_threshold", 0.5),
+            # Step C-2 泛化测试：序列级 5 折防泄漏数字 + 长肽 LOO
+            "gen_five_fold_f1": (getattr(trainer, "generalization_report", {}) or {}).get("five_fold_sequence_level", {}).get("mean_best_f1"),
+            "gen_five_fold_balanced": (getattr(trainer, "generalization_report", {}) or {}).get("five_fold_sequence_level", {}).get("mean_balanced_accuracy"),
+            "gen_loo_long_recall": (getattr(trainer, "generalization_report", {}) or {}).get("loo_long_peptides_ge8", {}).get("recall"),
+            "short_peptide_bias": (getattr(trainer, "generalization_report", {}) or {}).get("short_peptide_bias", ""),
             "training_samples": trainer.training_set_size,
             "validation_samples": trainer.validation_set_size,
             "train_real_count": trainer.train_real_count,
