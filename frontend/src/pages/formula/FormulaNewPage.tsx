@@ -1,6 +1,6 @@
 /**
  * 新建配方页 — Phase 6 专业增强版
- * 成分用量管理 + 拖拽排序 + 配方实时预览 + 表单验证增强
+ * 成分用量管理 + 上下按钮排序 + 配方实时预览 + 表单验证增强 + 实时分析
  */
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -43,8 +43,6 @@ import { formulaApi } from '@/api/formula';
 import { validateFullFormula, getErrorMessage } from '@/utils/formulaValidator';
 import type { TCMHerb } from '@/types';
 import type { FieldValidationError } from '@/types/formula';
-import { useOperationLogger } from '@/utils/operationLogger';
-import { FormulaFormSkeleton } from './components/FormulaFormSkeleton';
 
 // ── 成分项类型 ──
 interface IngredientItem {
@@ -217,6 +215,12 @@ export default function FormulaNewPage() {
     }, 0);
   }, [ingredients]);
 
+  // 单成分百分比
+  const getIngredientPct = (amt: string) => {
+    const num = parseFloat(amt) || 0;
+    return totalWeight > 0 ? Math.round((num / totalWeight) * 1000) / 10 : 0;
+  };
+
   // 表单完整性检查
   const formCompleteness = useMemo(() => {
     let filled = 0;
@@ -271,10 +275,12 @@ export default function FormulaNewPage() {
     name,
     description,
     effects,
+    dosage: dosage || undefined,
     ingredients: ingredients.map((ing) => ({
       name: ing.name,
       amount: ing.dosage_amount ? parseFloat(ing.dosage_amount) : undefined,
       unit: ing.dosage_unit,
+      percentage: getIngredientPct(ing.dosage_amount),
       role: ing.role || undefined,
     })),
   });
@@ -311,7 +317,7 @@ export default function FormulaNewPage() {
       const formula = await formulaApi.create({
         name,
         description: description || undefined,
-        effects: effects.length > 0 ? effects : undefined,
+        target_effects: effects.length > 0 ? effects : undefined,
         dosage: dosage || undefined,
         processing_method: processingMethod || undefined,
         storage_conditions: storageConditions || undefined,
@@ -327,6 +333,7 @@ export default function FormulaNewPage() {
             notes: ing.notes || undefined,
           })),
         },
+        ingredient_ids: ingredients.map((ing) => ing.id),
       });
       toast.success('配方创建成功');
 
@@ -784,6 +791,11 @@ export default function FormulaNewPage() {
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-sm font-semibold text-neutral-900 dark:text-white">{ing.name}</span>
                               <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ing.category}</span>
+                              {totalWeight > 0 && ing.dosage_amount && (
+                                <span className="text-xs text-primary-700 dark:text-primary-700 font-medium bg-primary-50 dark:bg-primary-300/20 px-1.5 py-0.5 rounded">
+                                  {getIngredientPct(ing.dosage_amount)}%
+                                </span>
+                              )}
                               {ing.is_food_homology && (
                                 <Badge variant="success" size="sm">
                                   药食同源
@@ -863,6 +875,136 @@ export default function FormulaNewPage() {
                   <Beaker size={32} className="mx-auto mb-2 text-neutral-200 dark:text-neutral-700" />
                   <p>搜索并添加药材到配方</p>
                   <p className="text-xs mt-1">支持 TCMSP 数据库中的 40+ 常用中药材</p>
+                </div>
+              )}
+
+              {/* 实时分析结果 */}
+              {ingredients.length >= 2 && (
+                <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4 mt-4">
+                  <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
+                    <FlaskConical size={14} className="text-accent-500" />
+                    实时分析
+                    {previewAnalysis.isRunning && (
+                      <span className="text-xs text-accent-500 font-normal">分析中...</span>
+                    )}
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* 协同分析 */}
+                    <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">协同分析</p>
+                      {previewAnalysis.synergy ? (
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            {previewAnalysis.synergy.overall_si != null
+          ? `${Math.round(previewAnalysis.synergy.overall_si * 100)}%`
+          : '—'}
+                          </p>
+                          {previewAnalysis.synergy.dominant_mechanism && (
+                            <p className="text-xs text-primary-700 dark:text-primary-700 mt-0.5">
+                              {String(previewAnalysis.synergy.dominant_mechanism).replace(/_/g, ' ')}
+                            </p>
+                          )}
+                          {previewAnalysis.synergy.mechanisms && (
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-2">
+                              {Object.keys(previewAnalysis.synergy.mechanisms).slice(0, 3).map(k => `${k.replace(/_/g, ' ')}: ${Math.round(previewAnalysis.synergy.mechanisms[k] * 100)}%`).join(' · ')}
+                            </p>
+                          )}
+                        </div>
+                      ) : previewAnalysis.isRunning ? (
+                        <p className="text-xs text-[color:var(--text-muted)]">加载中...</p>
+                      ) : (
+                        <p className="text-xs text-[color:var(--text-muted)]">暂无数据</p>
+                      )}
+                    </div>
+
+                    {/* 稳定性 */}
+                    <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">稳定性预测</p>
+                      {previewAnalysis.stability ? (
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            {previewAnalysis.stability.stability_score != null
+          ? `${Math.round(previewAnalysis.stability.stability_score)}分`
+          : '—'}
+                          </p>
+                          {previewAnalysis.stability.predicted_shelf_life_months != null && (
+                            <p className="text-xs text-success-700 dark:text-success-700 mt-0.5">
+                              保质期 ≈ {previewAnalysis.stability.predicted_shelf_life_months} 个月
+                            </p>
+                          )}
+                          {previewAnalysis.stability.risk_factors && previewAnalysis.stability.risk_factors.length > 0 && (
+                            <p className="text-xs text-error-500 mt-0.5 line-clamp-1">
+                              ⚠ {previewAnalysis.stability.risk_factors[0]?.description || previewAnalysis.stability.risk_factors[0]}
+                            </p>
+                          )}
+                        </div>
+                      ) : previewAnalysis.isRunning ? (
+                        <p className="text-xs text-[color:var(--text-muted)]">加载中...</p>
+                      ) : (
+                        <p className="text-xs text-[color:var(--text-muted)]">暂无数据</p>
+                      )}
+                    </div>
+
+                    {/* 风味预测 */}
+                    <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">风味预测</p>
+                      {previewAnalysis.taste ? (
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            接受度 {previewAnalysis.taste.acceptability != null
+          ? `${Math.round(previewAnalysis.taste.acceptability * 100)}%`
+          : '—'}
+                          </p>
+                          {previewAnalysis.taste.taste_profile && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(['bitter','sweet','umami','astringent','sour'] as const).map(t => (
+                                previewAnalysis.taste!.taste_profile![t] != null &&
+                                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                                  {t}: {Math.round(previewAnalysis.taste!.taste_profile![t] * 100)}%
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : previewAnalysis.isRunning ? (
+                        <p className="text-xs text-[color:var(--text-muted)]">加载中...</p>
+                      ) : (
+                        <p className="text-xs text-[color:var(--text-muted)]">暂无数据</p>
+                      )}
+                    </div>
+
+                    {/* 安全性 */}
+                    <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3">
+                      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">安全性检查</p>
+                      {previewAnalysis.safety ? (
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            {previewAnalysis.safety.is_safe
+          ? <span className="text-success-700 dark:text-success-700">✓ 安全</span>
+          : <span className="text-error-700 dark:text-error-700">✗ 需关注</span>}
+                          </p>
+                          {previewAnalysis.safety.overall_risk_score != null && (
+                            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
+                              风险评分: {Math.round(previewAnalysis.safety.overall_risk_score)}/100
+                            </p>
+                          )}
+                          {previewAnalysis.safety.alerts && previewAnalysis.safety.alerts.length > 0 && (
+                            <p className="text-xs text-warning-700 dark:text-warning-700 mt-0.5 line-clamp-1">
+                              ⚠ {previewAnalysis.safety.alerts[0]?.message || previewAnalysis.safety.alerts[0]}
+                            </p>
+                          )}
+                          {previewAnalysis.safety.blocked_by_critical && (
+                            <p className="text-xs text-error-700 dark:text-error-700 mt-0.5">已阻止保存</p>
+                          )}
+                        </div>
+                      ) : previewAnalysis.isRunning ? (
+                        <p className="text-xs text-[color:var(--text-muted)]">加载中...</p>
+                      ) : (
+                        <p className="text-xs text-[color:var(--text-muted)]">暂无数据</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -1044,6 +1186,49 @@ export default function FormulaNewPage() {
               </div>
             ))}
           </div>
+
+          {/* 分析结果 */}
+          {ingredients.length >= 2 && (previewAnalysis.synergy || previewAnalysis.stability || previewAnalysis.taste || previewAnalysis.safety) && (
+            <div>
+              <h4 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">分析结果</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {previewAnalysis.synergy && (
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同</p>
+                    <p className="text-sm font-semibold text-primary-700 dark:text-primary-700 mt-0.5">
+                      {previewAnalysis.synergy.overall_si != null ? `${Math.round(previewAnalysis.synergy.overall_si * 100)}%` : '—'}
+                    </p>
+                  </div>
+                )}
+                {previewAnalysis.stability && (
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">稳定性</p>
+                    <p className="text-sm font-semibold text-success-700 dark:text-success-700 mt-0.5">
+                      {previewAnalysis.stability.stability_score != null ? `${Math.round(previewAnalysis.stability.stability_score)}分` : '—'}
+                    </p>
+                  </div>
+                )}
+                {previewAnalysis.taste && (
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">接受度</p>
+                    <p className="text-sm font-semibold text-accent-700 dark:text-accent-700 mt-0.5">
+                      {previewAnalysis.taste.acceptability != null ? `${Math.round(previewAnalysis.taste.acceptability * 100)}%` : '—'}
+                    </p>
+                  </div>
+                )}
+                {previewAnalysis.safety && (
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">安全性</p>
+                    <p className="text-sm font-semibold mt-0.5">
+                      {previewAnalysis.safety.is_safe
+                        ? <span className="text-success-700 dark:text-success-700">✓ 安全</span>
+                        : <span className="text-error-700 dark:text-error-700">✗ 需关注</span>}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

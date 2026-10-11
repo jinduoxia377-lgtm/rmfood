@@ -10,6 +10,7 @@
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pydantic import BaseModel, Field
 from typing import Annotated, List, Dict, Optional, Any
 from datetime import datetime
@@ -44,6 +45,7 @@ class SynergyAnalysisResponse(BaseModel):
     dominant_mechanism: Optional[str] = None
     confidence: float = Field(default=0.8, ge=0, le=1)
     timestamp: str
+    data_source: Optional[Dict[str, Any]] = Field(default=None, description="真实数据来源标注（tcm_herbs 目标/OB%）")
 
 
 class RatioOptimizationRequest(BaseModel):
@@ -185,10 +187,66 @@ async def analyze_synergy(
     """
     try:
         from ..services.formula.synergy_engine import SynergyEngine
-        
+        from ..models.external_data import TCMHerb
+
+        # 从真实 tcm_herbs 表加载成分数据（OB%、靶点），填充分析 context
+        context = dict(request.context or {})
+        data_source: Dict[str, Any] = {"herb_a": {}, "herb_b": {}}
+
+        async def _load_herb(name: str) -> Optional[Dict[str, Any]]:
+            try:
+                result = await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))
+                herb = result.scalar_one_or_none()
+                if herb is None:
+                    return None
+                targets = getattr(herb, "targets", None) or []
+                if isinstance(targets, list):
+                    target_names = [t.get("name") for t in targets if isinstance(t, dict) and t.get("name")]
+                else:
+                    target_names = []
+                return {
+                    "ob_percent": getattr(herb, "ob_percent", None),
+                    "targets": target_names,
+                    "effects": getattr(herb, "effects", None),
+                }
+            except Exception:
+                return None
+
+        def _ob_to_efficacy(ob) -> float:
+            try:
+                return max(0.1, min(0.95, float(ob) / 150.0))
+            except Exception:
+                return 0.5
+
+        herb_a = await _load_herb(request.ingredient_a)
+        herb_b = await _load_herb(request.ingredient_b)
+
+        bliss_ctx = context.setdefault("bliss", {})
+        network_ctx = context.setdefault("network", {})
+
+        if herb_a:
+            data_source["herb_a"] = {
+                "ob_percent": herb_a["ob_percent"],
+                "target_count": len(herb_a["targets"]),
+            }
+            bliss_ctx.setdefault("efficacy_a", _ob_to_efficacy(herb_a["ob_percent"]))
+            network_ctx.setdefault("targets_a", herb_a["targets"])
+        else:
+            data_source["herb_a"]["note"] = "tcm_herbs 未收录，使用默认参数"
+
+        if herb_b:
+            data_source["herb_b"] = {
+                "ob_percent": herb_b["ob_percent"],
+                "target_count": len(herb_b["targets"]),
+            }
+            bliss_ctx.setdefault("efficacy_b", _ob_to_efficacy(herb_b["ob_percent"]))
+            network_ctx.setdefault("targets_b", herb_b["targets"])
+        else:
+            data_source["herb_b"]["note"] = "tcm_herbs 未收录，使用默认参数"
+
         engine = SynergyEngine()
-        report = engine.analyze_synergy(request.ingredient_a, request.ingredient_b, request.context)
-        
+        report = engine.analyze_synergy(request.ingredient_a, request.ingredient_b, context)
+
         return SynergyAnalysisResponse(
             success=True,
             ingredient_pair=f"{request.ingredient_a} + {request.ingredient_b}",
@@ -199,7 +257,8 @@ async def analyze_synergy(
             },
             dominant_mechanism=report.dominant_mechanism.value if report.dominant_mechanism else None,
             confidence=(sum(m.confidence for m in report.mechanisms) / len(report.mechanisms)) if report.mechanisms else 0.8,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
+            data_source=data_source
         )
         
     except ImportError as e:
