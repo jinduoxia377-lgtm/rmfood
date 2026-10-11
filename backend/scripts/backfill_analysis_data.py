@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """数据补全脚本 v4：knowledge_graph_nodes 全部用 naive datetime"""
 import sys, os, asyncio, json
 from datetime import datetime, timezone
@@ -124,3 +124,29 @@ async def backfill():
             print(t, "count:", r)
 
 asyncio.run(backfill())
+
+# ── Phase 4: 为无 alogp 的药材补全默认稳定性参数 ──
+async def backfill_stability_defaults():
+    async with async_session_factory() as db:
+        now = datetime.now(timezone.utc)
+        rows = (await db.execute(text(
+            "SELECT h.id, h.name_cn FROM tcm_herbs h WHERE NOT EXISTS (SELECT 1 FROM stability_data s WHERE s.herb_name_cn = h.name_cn)"
+        ))).fetchall()
+        default_logp = 2.0
+        deg = 0.0508 + 0.0023 * default_logp
+        shelf = 1.2 / deg
+        for hid, name in rows:
+            await db.execute(text(
+                "INSERT INTO stability_data (herb_id, herb_name_cn, degradation_rate, shelf_life_months, logp_avg, compounds_analyzed, derived_from, source, confidence, created_at, updated_at) "
+                "VALUES (:hid,:n,:d,:s,:av,0,:der,:src,:conf,:now,:now)"
+            ), {"hid": hid, "n": name, "d": round(deg,5), "s": round(shelf,1), "av": default_logp,
+                "der": "default_params(no_alogp_in_TCMSP)", "src": "model_derived_default", "conf": 0.4, "now": now})
+        await db.commit()
+        print("default stability rows added:", len(rows))
+
+# 入口：本文件可直接运行执行全部补全
+if __name__ == "__main__":
+    async def _run_all():
+        await backfill()
+        await backfill_stability_defaults()
+    asyncio.run(_run_all())
