@@ -3068,7 +3068,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <div className="text-lg font-bold text-primary">
                           {result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}
                         </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">ML 模型 ACE 分</div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">本条序列 ML 分</div>
                       </div>
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold text-primary">
@@ -3080,22 +3080,25 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <div className="text-lg font-bold text-primary">
                           {result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}
                         </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">验证 F1（推荐）</div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型验证 F1（推荐）</div>
                       </div>
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold">
                           {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">平衡准确率</div>
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型平衡准确率</div>
                       </div>
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold text-[var(--text-muted,#9A9A9F)]">
                           {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                          验证准确率 <span className="text-[var(--text-muted,#9A9A9F)] opacity-70">(基线 {result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(0) + '%' : '-'})</span>
+                          模型准确率 <span className="text-[var(--text-muted,#9A9A9F)] opacity-70">(基线 {result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(0) + '%' : '-'})</span>
                         </div>
                       </div>
+                    </div>
+                    <div className="text-[11px] text-[var(--text-muted,#9A9A9F)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 leading-relaxed">
+                      <strong>模型级指标</strong>（验证 F1 / 平衡准确率 / 准确率）：描述<strong>整个模型</strong>在训练时留出验证集上的整体表现，<strong>对所有序列恒定不变</strong>；逐条序列的判定结果请以<strong>上方「本条序列 ML 分」</strong>为准。
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
                       模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {Math.max(result.ml_model.library_real_count - (result.ml_model.library_pubmed_count || 0), 0)} + PubMed 审计正类 {result.ml_model.library_pubmed_count || 0} + 程序合成 {result.ml_model.library_synth_count}
