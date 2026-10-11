@@ -23,7 +23,7 @@ from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/formula", tags=["配方深度集成"])
+router = APIRouter(prefix="/api/v1/formulas", tags=["配方深度集成"])
 
 
 # ==================== Pydantic 模型 ====================
@@ -198,7 +198,7 @@ async def analyze_synergy(
                 for m in report.mechanisms
             },
             dominant_mechanism=report.dominant_mechanism.value if report.dominant_mechanism else None,
-            confidence=report.confidence,
+            confidence=(sum(m.confidence for m in report.mechanisms) / len(report.mechanisms)) if report.mechanisms else 0.8,
             timestamp=datetime.now().isoformat()
         )
         
@@ -403,12 +403,10 @@ async def check_safety(
         
         system = SafetyAlertSystem()
         result = system.check_formula_safety(
-            formula_data={
-                "ingredients": request.ingredients,
-                "daily_dosage_g": request.daily_dosage_g,
-                "usage_scenario": request.usage_scenario
-            },
-            target_group=request.target_group
+            ingredients=request.ingredients,
+            daily_dosage_g=request.daily_dosage_g,
+            target_group=request.target_group,
+            usage_scenario=request.usage_scenario
         )
         
         alerts_data = [
@@ -439,6 +437,99 @@ async def check_safety(
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
         logger.error("安全检查失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
+
+
+class GlobalStabilityRequest(BaseModel):
+    """全局稳定性预测请求（无需配方 ID）"""
+    ingredients: List[Dict[str, Any]] = Field(..., description="成分列表 [{name, percentage?}]")
+    temperature_c: float = Field(default=25.0)
+    humidity_pct: float = Field(default=60.0)
+    light_exposure: str = Field(default="normal")
+
+
+@router.post("/stability/predict", summary="预测配方稳定性（全局，无需配方ID）")
+async def predict_stability_global(
+    request: GlobalStabilityRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """基于成分列表直接预测稳定性（用于新建配方前的实时预览）"""
+    try:
+        from ..services.formula.stability_predictor import StabilityPredictor
+
+        n = len(request.ingredients)
+        if n == 0:
+            return {"message": "配方无成分数据", "stability_score": None}
+
+        predictor = StabilityPredictor()
+        ingredients_data = []
+        for ing in request.ingredients:
+            pct = ing.get("percentage")
+            if pct is None or pct == "":
+                pct = round(100.0 / n, 2)
+            ingredients_data.append({"name": ing.get("name", ""), "percentage": float(pct)})
+
+        pred = predictor.predict_stability(
+            ingredients_data,
+            storage_conditions={
+                "temperature_c": request.temperature_c,
+                "humidity_pct": request.humidity_pct,
+                "light_exposure": request.light_exposure,
+            },
+        )
+        return {
+            "ingredient_count": n,
+            "predicted_shelf_life_months": round(pred.predicted_shelf_life_months, 1),
+            "stability_score": round(pred.stability_score, 1),
+            "risk_factors": pred.risk_factors,
+            "storage_recommendations": pred.storage_recommendations,
+        }
+    except Exception as e:
+        logger.error("全局稳定性预测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
+
+
+class GlobalTasteRequest(BaseModel):
+    """全局风味预测请求（无需配方 ID）"""
+    ingredients: List[Dict[str, Any]] = Field(..., description="成分列表 [{name, percentage?}]")
+
+
+@router.post("/taste/predict", summary="预测配方风味（全局，无需配方ID）")
+async def predict_taste_global(
+    request: GlobalTasteRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """基于成分列表直接预测风味（用于新建配方前的实时预览）"""
+    try:
+        from ..services.formula.taste_predictor import TastePredictor
+
+        n = len(request.ingredients)
+        if n == 0:
+            return {"message": "配方无成分数据", "taste_profile": None}
+
+        predictor = TastePredictor()
+        ingredients_data = []
+        for ing in request.ingredients:
+            pct = ing.get("percentage")
+            if pct is None or pct == "":
+                pct = round(100.0 / n, 2)
+            ingredients_data.append({"name": ing.get("name", ""), "percentage": float(pct)})
+
+        profile = predictor.predict_taste(ingredients_data)
+        return {
+            "ingredient_count": n,
+            "taste_profile": {
+                "bitter": round(profile.bitter, 3),
+                "sweet": round(profile.sweet, 3),
+                "umami": round(profile.umami, 3),
+                "astringent": round(profile.astringent, 3),
+                "sour": round(profile.sour, 3),
+            },
+            "balance_score": round(profile.balance_score, 3),
+            "acceptability": round(profile.acceptability, 3),
+        }
+    except Exception as e:
+        logger.error("全局风味预测失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
@@ -535,8 +626,8 @@ async def get_safety_thresholds():
         
         return {
             "success": True,
-            "version": system.version,
-            "last_updated": system.last_updated.isoformat() if system.last_updated else None,
+            "version": getattr(system, "_current_version", "unknown"),
+            "last_updated": getattr(system, "last_updated", None),
             "thresholds": thresholds,
             "total_count": len(thresholds)
         }

@@ -4,7 +4,7 @@
 """
 import logging
 from typing import Dict, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -1498,3 +1498,376 @@ async def batch_delete_formulas(
         await db.commit()
 
     return {"success": deleted, "failed": len(ids) - deleted}
+
+
+# ═══════════════════════════════════════════════════════════
+# 配方导入导出
+# ═══════════════════════════════════════════════════════════
+
+@router.get("/import/template", summary="下载配方导入模板（CSV）")
+async def download_import_template(
+    current_user: Optional[User] = Depends(_optional_get_current_user),
+):
+    """返回带表头和示例行的 CSV 导入模板（UTF-8 BOM，Excel 可直接打开）"""
+    import csv
+    import io
+
+    from fastapi.responses import Response
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow([
+        "name", "description", "effects", "composition",
+        "processing_method", "dosage", "storage_conditions", "shelf_life",
+    ])
+    writer.writerow([
+        "四物汤", "补血养血经典方", "补血,养血,调经",
+        '{"当归": {"weight_g": 9, "unit": "g", "prep": "酒洗"}, "川芎": {"weight_g": 6, "unit": "g"}}',
+        "水煎服", "每日1剂，分2次温服", "阴凉干燥", 18,
+    ])
+    writer.writerow([
+        "四君子汤", "补气健脾基础方", "补气,健脾",
+        '{"人参": {"weight_g": 9, "unit": "g"}, "白术": {"weight_g": 9, "unit": "g"}}',
+        "水煎服", "每日1剂，分2次温服", "阴凉干燥", 18,
+    ])
+    return Response(
+        content=buffer.getvalue().encode("utf-8-sig"),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=formula_import_template.csv"},
+    )
+
+
+@router.post("/import", summary="批量导入配方（CSV/Excel）")
+async def import_formulas(
+    file: UploadFile = File(...),
+    mode: str = Form("all"),
+    options: str = Form("{}"),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.RESEARCHER, UserRole.FORMULATOR)),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """解析 CSV/Excel 文件，逐行创建配方。
+
+    支持列：name, description, effects, composition, processing_method,
+    dosage, storage_conditions, shelf_life
+    mode: all / valid_only / skip_errors
+    options: {"skipDuplicates": bool, "updateExisting": bool, "defaultStatus": str}
+    """
+    import io
+    import json as _json
+    import re as _re
+    import uuid
+    from datetime import datetime
+    import pandas as pd
+    from ..models.formula import Formula
+
+    try:
+        opts = _json.loads(options) if options else {}
+    except Exception:
+        opts = {}
+    skip_duplicates = opts.get("skipDuplicates", True)
+    update_existing = opts.get("updateExisting", False)
+    default_status = str(opts.get("defaultStatus", "draft")).lower()
+    if default_status not in {s.value for s in FormulaStatus}:
+        default_status = "draft"
+
+    content = await file.read()
+    filename = (file.filename or "").lower()
+    try:
+        if filename.endswith(".csv") or filename.endswith(".txt"):
+            df = pd.read_csv(io.BytesIO(content))
+        else:
+            df = pd.read_excel(io.BytesIO(content))
+    except Exception as e:
+        return {
+            "total": 0, "success": 0, "failed": 0, "skipped": 0,
+            "errors": [{"row": 0, "field": "file", "reason": f"文件解析失败: {e}", "severity": "error"}],
+        }
+
+    # 列名映射（同时支持前端中文模板与英文别名）
+    col_map = {}
+    for c in df.columns:
+        cl = str(c).strip().lower()
+        if "配方名称" in cl or cl == "name":
+            col_map["name"] = c
+        elif "描述" in cl or cl == "description":
+            col_map["description"] = c
+        elif "标签" in cl or cl == "effects":
+            col_map["effects"] = c
+        elif "成分" in cl or cl == "composition":
+            col_map["composition"] = c
+        elif "制作步骤" in cl or "制备" in cl or cl == "processing_method":
+            col_map["processing_method"] = c
+        elif "用法用量" in cl or cl == "dosage" or ("用量" in cl and "成分" not in cl):
+            col_map["dosage"] = c
+        elif "储存" in cl or "存储" in cl or cl == "storage_conditions":
+            col_map["storage_conditions"] = c
+        elif "保质期" in cl or cl == "shelf_life":
+            col_map["shelf_life"] = c
+        elif "状态" in cl or cl == "status":
+            col_map["status"] = c
+
+    if "name" not in col_map:
+        return {
+            "total": 0, "success": 0, "failed": 0, "skipped": 0,
+            "errors": [{"row": 0, "field": "name", "reason": "缺少必需列（配方名称 / name）", "severity": "error"}],
+        }
+
+    errors = []
+    success = 0
+    failed = 0
+    skipped = 0
+    total = 0
+
+    def _get(row, key):
+        col = col_map.get(key)
+        if col is None:
+            return None
+        val = row.get(col)
+        if isinstance(val, float) and pd.isna(val):
+            return None
+        return val
+
+    def _parse_effects(raw):
+        if raw is None:
+            return []
+        if isinstance(raw, list):
+            return [str(x).strip() for x in raw if str(x).strip()]
+        return [x.strip() for x in re.split(r"[;；,、]", str(raw)) if x.strip()]
+
+    def _parse_composition(raw):
+        if raw is None:
+            return {}
+        text = str(raw).strip()
+        # 若本身是 JSON dict，直接使用
+        if text.startswith("{"):
+            try:
+                parsed = _json.loads(text)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                pass
+        comp = {}
+        # 前端模板格式：金银花|10g|g|君药;连翘|8g|g|臣药
+        for part in _re.split(r"[;；]", text):
+            part = part.strip()
+            if not part:
+                continue
+            segs = _re.split(r"[|｜]", part)
+            name = segs[0].strip()
+            if not name:
+                continue
+            item = {}
+            if len(segs) > 1:
+                weight = segs[1].strip()
+                wm = _re.match(r"^([\d.]+)", weight)
+                item["weight_g"] = float(wm.group(1)) if wm else (weight if weight else 0)
+            else:
+                item["weight_g"] = 0
+            if len(segs) > 2 and segs[2].strip():
+                item["unit"] = segs[2].strip()
+            else:
+                item["unit"] = "g"
+            if len(segs) > 3 and segs[3].strip():
+                item["role"] = segs[3].strip()
+            comp[name] = item
+        # 若为空且包含 "名称:克数"，兼容简单格式
+        if not comp and (":" in text or "：" in text):
+            for part in _re.split(r"[;；]", text):
+                part = part.strip()
+                if ":" in part or "：" in part:
+                    seg = _re.split(r"[:：]", part, maxsplit=1)
+                    comp[seg[0].strip()] = {"weight_g": float(seg[1].strip()) if seg[1].strip().replace(".", "").isdigit() else seg[1].strip()}
+        return comp
+
+    _STATUS_MAP = {
+        "草稿": "draft", "待审核": "pending_review", "已通过": "approved", "通过": "approved",
+        "已发布": "published", "已驳回": "rejected", "已归档": "archived", "已取消": "cancelled",
+    }
+
+    def _parse_status(raw, fallback):
+        if raw is None:
+            return FormulaStatus(fallback)
+        text = str(raw).strip().lower()
+        if text in {s.value for s in FormulaStatus}:
+            return FormulaStatus(text)
+        if str(raw).strip() in _STATUS_MAP:
+            return FormulaStatus(_STATUS_MAP[str(raw).strip()])
+        return FormulaStatus(fallback)
+
+    for idx, row in df.iterrows():
+        total += 1
+        try:
+            name_raw = _get(row, "name")
+            name = str(name_raw).strip() if name_raw is not None else ""
+            if not name:
+                raise ValueError("配方名称为空")
+
+            code = f"RMF-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}"
+
+            # 重复检查（按 name 精确匹配）
+            if skip_duplicates:
+                dup = await db.execute(select(Formula).where(Formula.name == name))
+                if dup.scalar_one_or_none():
+                    if update_existing:
+                        existing = dup.scalar_one_or_none()
+                        existing.description = _get(row, "description")
+                        existing.target_effects = _parse_effects(_get(row, "effects"))
+                        existing.composition = _parse_composition(_get(row, "composition"))
+                        existing.processing_method = _get(row, "processing_method")
+                        existing.dosage = _get(row, "dosage")
+                        existing.storage_conditions = _get(row, "storage_conditions")
+                        shelf = _get(row, "shelf_life")
+                        if shelf is not None:
+                            try:
+                                existing.shelf_life = int(float(shelf))
+                            except Exception:
+                                pass
+                        await db.flush()
+                        success += 1
+                    else:
+                        skipped += 1
+                    continue
+
+            status_raw = _get(row, "status")
+            formula = Formula(
+                name=name,
+                code=code,
+                description=_get(row, "description"),
+                status=_parse_status(status_raw, default_status),
+                target_effects=_parse_effects(_get(row, "effects")),
+                composition=_parse_composition(_get(row, "composition")),
+                processing_method=_get(row, "processing_method"),
+                dosage=_get(row, "dosage"),
+                storage_conditions=_get(row, "storage_conditions"),
+                shelf_life=int(float(_get(row, "shelf_life"))) if _get(row, "shelf_life") is not None else None,
+                creator_id=current_user.id,
+            )
+            db.add(formula)
+            await db.flush()
+            success += 1
+        except Exception as e:
+            failed += 1
+            errors.append({
+                "row": int(idx) + 2,
+                "field": None,
+                "reason": str(e),
+                "severity": "error",
+            })
+
+    await db.commit()
+    return {
+        "total": total,
+        "success": success,
+        "failed": failed,
+        "skipped": skipped,
+        "errors": errors,
+    }
+
+
+@router.post("/export", summary="批量导出配方（CSV/Excel/PDF）")
+async def export_formulas_batch(
+    request: dict = Body(...),
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.RESEARCHER, UserRole.FORMULATOR)),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """按条件导出配方。
+
+    request: {"format": "csv"|"excel"|"pdf", "scope": "all"|"selected",
+              "ids": [..], "includeIngredients": bool}
+    """
+    import io
+    from fastapi.responses import Response
+    from ..models.formula import Formula
+
+    fmt = str(request.get("format", "csv")).lower()
+    ids = request.get("ids") or []
+    scope = request.get("scope", "all")
+
+    query = select(Formula).order_by(Formula.id.desc())
+    if ids:
+        valid_ids = [int(i) for i in ids if str(i).isdigit()]
+        if valid_ids:
+            query = query.where(Formula.id.in_(valid_ids))
+    if scope == "all":
+        pass  # 全部
+    result = await db.execute(query)
+    formulas = result.scalars().all()
+
+    rows = []
+    for f in formulas:
+        rows.append({
+            "配方名称": f.name,
+            "配方编码": f.code,
+            "描述": f.description or "",
+            "功效": ",".join(f.target_effects or []),
+            "成分组成": _json_compact(f.composition),
+            "制备方法": f.processing_method or "",
+            "用法用量": f.dosage or "",
+            "储存条件": f.storage_conditions or "",
+            "保质期(月)": f.shelf_life if f.shelf_life is not None else "",
+            "状态": f.status,
+            "创建时间": f.created_at.isoformat() if f.created_at else "",
+        })
+
+    if fmt == "excel":
+        import pandas as pd
+        buffer = io.BytesIO()
+        pd.DataFrame(rows).to_excel(buffer, index=False, engine="openpyxl")
+        buffer.seek(0)
+        return Response(
+            content=buffer.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=formulas.xlsx"},
+        )
+    elif fmt == "pdf":
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
+        styles = getSampleStyleSheet()
+        elements = []
+        if rows:
+            headers = list(rows[0].keys())
+            data = [headers]
+            for r in rows:
+                data.append([str(r.get(h, ""))[:60] for h in headers])
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F6FEB")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("FONTSIZE", (0, 0), (-1, -1), 7),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]))
+            elements.append(table)
+        doc.build(elements)
+        buffer.seek(0)
+        return Response(
+            content=buffer.getvalue(),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=formulas.pdf"},
+        )
+    else:
+        import csv
+        buffer = io.StringIO()
+        fieldnames = list(rows[0].keys()) if rows else ["配方名称"]
+        writer = csv.DictWriter(buffer, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in rows:
+            writer.writerow(r)
+        return Response(
+            content=buffer.getvalue().encode("utf-8-sig"),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=formulas.csv"},
+        )
+
+
+def _json_compact(obj) -> str:
+    import json as _json
+    try:
+        return _json.dumps(obj, ensure_ascii=False) if obj else ""
+    except Exception:
+        return ""

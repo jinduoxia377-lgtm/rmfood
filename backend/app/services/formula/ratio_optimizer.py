@@ -445,11 +445,12 @@ class RatioOptimizer:
         while fronts[current_front]:
             next_front = []
             for p in fronts[current_front]:
-                for q in dominated_solutions[population.index(p)]:
-                    domination_count[population.index(q)] -= 1
-                    if domination_count[population.index(q)] == 0:
-                        q.pareto_rank = current_front + 1
-                        next_front.append(q)
+                p_idx = population.index(p)
+                for q_idx in dominated_solutions[p_idx]:
+                    domination_count[q_idx] -= 1
+                    if domination_count[q_idx] == 0:
+                        population[q_idx].pareto_rank = current_front + 1
+                        next_front.append(population[q_idx])
             current_front += 1
             fronts.append(next_front)
         

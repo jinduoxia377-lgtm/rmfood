@@ -161,18 +161,45 @@ export default function FormulaNewPage() {
     }
   }, []);
 
-  // ── 实时分析 ──
+  // ── 实时分析（基于成分列表，无需配方 ID）──
   useEffect(() => {
     if (ingredients.length < 2) return;
     const timer = setTimeout(async () => {
       setPreviewAnalysis(prev => ({ ...prev, isRunning: true }));
       try {
         const { formulaApi } = await import('@/api/formula');
+        // 成分数据：按剂量换算 amount_mg，按总剂量计算百分比
+        const totalAmount = ingredients.reduce((sum, ing) => {
+          const amt = parseFloat(ing.dosage_amount) || 0;
+          return sum + (ing.dosage_unit === 'mg' ? amt / 1000 : amt); // 统一转 g
+        }, 0);
+        const ingData = ingredients.map(ing => {
+          const amt = parseFloat(ing.dosage_amount) || 0;
+          const amountG = ing.dosage_unit === 'mg' ? amt / 1000 : amt;
+          return {
+            name: ing.name,
+            percentage: totalAmount > 0 ? Math.round((amountG / totalAmount) * 10000) / 100 : undefined,
+            amount_mg: Math.round(amountG * 1000),
+          };
+        });
+
         const [synergy, stability, taste, safety] = await Promise.all([
-          formulaApi.analyzeFormulaSynergy(0).catch(() => null),
-          formulaApi.predictFormulaStability(0).catch(() => null),
-          formulaApi.predictFormulaTaste(0).catch(() => null),
-          formulaApi.checkFormulaSafety(0).catch(() => null),
+          formulaApi.analyzeSynergy({
+            ingredient_a: ingredients[0].name,
+            ingredient_b: ingredients[1].name,
+          }).catch(() => null),
+          formulaApi.predictStability({
+            ingredients: ingData.map(({ name, percentage }) => ({ name, percentage })),
+          }).catch(() => null),
+          formulaApi.predictTaste({
+            ingredients: ingData.map(({ name, percentage }) => ({ name, percentage })),
+          }).catch(() => null),
+          formulaApi.checkSafety({
+            ingredients: ingData.map(({ name, amount_mg, percentage }) => ({ name, amount_mg, percentage: percentage ?? 0 })),
+            daily_dosage_g: totalAmount > 0 ? totalAmount : 10,
+            target_group: 'adult',
+            usage_scenario: 'supplement',
+          }).catch(() => null),
         ]);
         setPreviewAnalysis({ synergy, stability, taste, safety, isRunning: false });
       } catch (e) {

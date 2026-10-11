@@ -186,6 +186,33 @@ export async function quickSafetyCheck(
   })
 }
 
+// ==================== 5b. 全局稳定性/风味预测（无需配方 ID）====================
+
+export interface GlobalStabilityRequest {
+  ingredients: { name: string; percentage?: number }[]
+  temperature_c?: number
+  humidity_pct?: number
+  light_exposure?: string
+}
+
+export async function predictStability(
+  request: GlobalStabilityRequest,
+): Promise<{ predicted_shelf_life_months: number; stability_score: number; risk_factors: any[]; storage_recommendations: string[] }> {
+  const response = await api.post(`${FORMULA_BASE_URL}/stability/predict`, request)
+  return response.data
+}
+
+export interface GlobalTasteRequest {
+  ingredients: { name: string; percentage?: number }[]
+}
+
+export async function predictTaste(
+  request: GlobalTasteRequest,
+): Promise<{ taste_profile: { bitter: number; sweet: number; umami: number; astringent: number; sour: number }; balance_score: number; acceptability: number }> {
+  const response = await api.post(`${FORMULA_BASE_URL}/taste/predict`, request)
+  return response.data
+}
+
 // ==================== 6. 增强配方生成 (完整管线) ====================
 
 export async function generateDeepFormula(
@@ -432,6 +459,10 @@ export const formulaApi = {
   checkFormulaCompatibility,
   predictFormulaEffect,
 
+  // ===== 新增：全局分析（无需配方 ID，用于新建配方实时预览）=====
+  predictStability,
+  predictTaste,
+
   // ===== 新增：模板管理 =====
   getFormulaTemplates,
   createFormulaTemplate,
@@ -447,32 +478,80 @@ export const formulaApi = {
   getAnalysisHistory,
 }
 
-// ==================== 9. 实验室验证 API ====================
+// ==================== 9. 实验室验证 API（真实后端 /api/v1/lab-validation）====================
+
+const LAB_VALIDATION_BASE_URL = '/lab-validation'
 
 export async function uploadLabValidationData(
   request: LabValidationUploadRequest,
 ): Promise<LabValidationResponse> {
-  const response = await api.post(`${FORMULA_BASE_URL}/lab-validation/upload`, request)
-  return response.data
+  // 前端请求形状 → 后端 LabExperimentData 形状
+  const payload = {
+    experiment_id: request.experiment_id,
+    lab_name: request.metadata?.lab_name || '未命名实验室',
+    experiment_date: (request.metadata?.test_date || new Date().toISOString().slice(0, 10)),
+    researcher_name: request.metadata?.researcher || 'unknown',
+    target_type: 'formula' as const,
+    target_name: String(request.formula_id),
+    target_id: Number(request.formula_id) || undefined,
+    method_description: request.metadata?.notes,
+    equipment_used: request.metadata?.instrument_info,
+    measured_parameters: (Array.isArray(request.raw_data) && request.raw_data[0]) || request.raw_data || {},
+    predicted_values: {},
+  }
+  const response = await api.post(`${LAB_VALIDATION_BASE_URL}/experiments`, payload)
+  const submitResult = response.data || {}
+
+  // 触发验证对比
+  let validation: Record<string, any> = {}
+  if (submitResult.experiment_id) {
+    try {
+      const vr = await api.post(`${LAB_VALIDATION_BASE_URL}/validate/${encodeURIComponent(submitResult.experiment_id)}`, {
+        experiment_id: submitResult.experiment_id,
+        tolerance_range: 0.1,
+        significance_level: 0.05,
+      })
+      validation = vr.data || {}
+    } catch (e) {
+      // 验证失败不阻断上传结果
+    }
+  }
+
+  return {
+    success: !!submitResult.success,
+    validation_id: submitResult.experiment_id || request.experiment_id,
+    data_points_count: Array.isArray(request.raw_data) ? request.raw_data.length : 0,
+    validation_summary: validation.validation_summary || {},
+    detailed_comparison: validation.parameter_comparisons || [],
+    recommendations: validation.recommendations || [],
+    quality_score: validation.overall_score || 0,
+  }
 }
 
 export async function getValidationResults(
   formulaId: string,
   params?: { data_type?: string; limit?: number; offset?: number },
-): Promise<{ results: LabValidationResponse[]; total: number }> {
-  const response = await api.get(`${FORMULA_BASE_URL}/lab-validation/results/${formulaId}`, { params })
-  return response.data
+): Promise<any> {
+  const response = await api.get(`${LAB_VALIDATION_BASE_URL}/experiments`, {
+    params: {
+      target_name: String(formulaId),
+      page: Math.floor((params?.offset || 0) / (params?.limit || 20)) + 1,
+      page_size: params?.limit || 20,
+    },
+  })
+  const data = response.data || {}
+  return {
+    results: data.data || [],
+    total: data.total || 0,
+  }
 }
 
 export async function generateValidationReport(
   validationId: string,
   config?: ValidationReportConfig,
-): Promise<Blob> {
-  const response = await api.post(
-    `${FORMULA_BASE_URL}/lab-validation/report/${validationId}`,
-    config || {},
-    { responseType: 'blob' },
-  )
+): Promise<any> {
+  // 后端当前无独立报告导出端点；返回实验完整详情（含验证结论与对比数据）
+  const response = await api.get(`${LAB_VALIDATION_BASE_URL}/experiments/${encodeURIComponent(validationId)}`)
   return response.data
 }
 
