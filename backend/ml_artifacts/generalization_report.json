@@ -1,0 +1,42 @@
+{
+  "generated_by": "stepC2_generalization.py",
+  "note": "Honest generalization numbers; 5-fold is sequence-leak-free.",
+  "five_fold_sequence_level": {
+    "mean_best_f1": 0.8382,
+    "mean_balanced_accuracy": 0.7153,
+    "per_fold": [
+      {
+        "n": 174,
+        "best_f1": 0.8448,
+        "bal": 0.757
+      },
+      {
+        "n": 173,
+        "best_f1": 0.8636,
+        "bal": 0.692
+      },
+      {
+        "n": 173,
+        "best_f1": 0.8356,
+        "bal": 0.757
+      },
+      {
+        "n": 173,
+        "best_f1": 0.8595,
+        "bal": 0.752
+      },
+      {
+        "n": 173,
+        "best_f1": 0.7874,
+        "bal": 0.619
+      }
+    ]
+  },
+  "loo_long_peptides_ge8": {
+    "pool_size": 129,
+    "best_f1": 0.6904,
+    "recall": 0.527,
+    "threshold": 0.05
+  },
+  "short_peptide_bias": "62% of positives are <=5 aa; recall degrades on >=8 aa"
+}

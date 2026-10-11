@@ -115,6 +115,11 @@ interface MLModelInfo {
   trained_on_real_only?: boolean;
   decision_threshold?: number;
   is_predicted_active?: boolean | null;
+  // Step C-2 泛化测试：序列级 5 折防泄漏数字 + 长肽 LOO 警示
+  gen_five_fold_f1?: number | null;
+  gen_five_fold_balanced?: number | null;
+  gen_loo_long_recall?: number | null;
+  short_peptide_bias?: string;
   honest_note?: string;
 }
 
@@ -3006,6 +3011,33 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                             请以 QSAR 规则分（{result.ace_inhibition ? (result.ace_inhibition.score * 100).toFixed(1) + '%' : '-'}）与下方文献证据为准。
                           </div>
                         </div>
+                      </div>
+                    )}
+                    {/* Step C-2 泛化测试：序列级 5 折防泄漏数字（主显示）+ 长肽 LOO 警示 */}
+                    {result.ml_model.is_trustworthy === true && (result.ml_model.gen_five_fold_balanced != null || result.ml_model.gen_loo_long_recall != null) && (
+                      <div className="p-2 rounded bg-info-50 dark:bg-info-950/30 text-info-700 dark:text-info-600 text-xs space-y-1">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <div>
+                            <strong>泛化测试（防泄漏）</strong>
+                            {result.ml_model.gen_five_fold_balanced != null && (
+                              <>
+                                {' · 序列级 5 折交叉验证 F1='}
+                                <span className="font-mono font-semibold">
+                                  {result.ml_model.gen_five_fold_f1 != null ? (result.ml_model.gen_five_fold_f1 * 100).toFixed(1) + '%' : '-'}
+                                </span>
+                                {' / 平衡准确率 '}
+                                <span className="font-mono font-semibold">{(result.ml_model.gen_five_fold_balanced * 100).toFixed(1)}%</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {result.ml_model.gen_loo_long_recall != null && (
+                          <div className="pl-5">
+                            长肽（≥8 个氨基酸）召回率 <span className="font-mono font-semibold">{(result.ml_model.gen_loo_long_recall * 100).toFixed(0)}%</span>
+                            {result.ml_model.short_peptide_bias ? ` — ${result.ml_model.short_peptide_bias}` : ''}
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="grid grid-cols-3 gap-3">
