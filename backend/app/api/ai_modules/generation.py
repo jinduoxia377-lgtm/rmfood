@@ -16,7 +16,7 @@ from . import (
     ai_service,
     router,
     get_db_session,
-    get_current_user,
+    get_current_user, get_current_active_user,
     User,
 )
 
@@ -78,7 +78,7 @@ from typing import Any
 async def generate_formula(
     req: FormulaGenerateRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User | None = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     基于遗传算法多目标优化的配方生成。
@@ -88,6 +88,13 @@ async def generate_formula(
     - 自动提取药材中文名和精确剂量
     - 失败时回退到规则引擎
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     logger.info(f"配方生成请求 - target_effects={req.target_effects}, constraints={req.constraints}")
     
     # ── 数据来源验证 ──
@@ -361,7 +368,7 @@ async def generate_formula(
 async def generate_formula_neural(
     req: NeuralGenerateRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     基于 NeuralFormulaEngine 神经网络模型生成配方方案。
@@ -371,9 +378,16 @@ async def generate_formula_neural(
     - 支持多种约束条件
     - 可选使用 PepINVERT 增强肽生成（use_pepinvent=true）
 
-    管线：候选生成 → 协同分析 → 安全检查 → 口感预测 → 稳定性预测
+    管线：候选生成 → 协同分析 →安全检查 → 口感预测 → 稳定性预测
     返回多套方案按综合评分排序。
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     logger.info(f"神经网络配方生成请求 - target_effects=%s, max_candidates=%s, use_pepinvent=%s",
                 req.target_effects, req.max_candidates, req.use_pepinvent)
 
@@ -481,7 +495,7 @@ class FormulaGenerateV2Request(BaseModel):
 async def generate_formula_v2(
     req: FormulaGenerateV2Request,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     统一配方生成引擎 v2
@@ -505,6 +519,13 @@ async def generate_formula_v2(
 
     返回格式与 /generate 一致，新增 strategy 和 execution_time_ms 字段。
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     logger.info(f"[GenerateV2] 统一引擎请求 - effects={req.target_effects}, "
                 f"new_engine={req.use_new_engine}, template={req.template}")
 
@@ -561,7 +582,7 @@ async def generate_formula_v2(
 async def safety_check(
     req: SafetyCheckRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     独立调用安全合规检查引擎。
@@ -580,7 +601,7 @@ async def safety_check(
 async def synergy_analysis(
     req: SynergyAnalysisRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     分析药材间、药材与肽之间的协同/拮抗关系。
@@ -608,7 +629,7 @@ class FormulaRecommendRequest(BaseModel):
 async def recommend_formula(
     req: FormulaRecommendRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     基于用户历史配方、数据库功效评分与协同配伍网络，
@@ -642,7 +663,7 @@ class FormulaInterpretRequest(BaseModel):
 async def interpret_formula(
     req: FormulaInterpretRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     基于网络药理学与中医理论，生成配方的方解与机理说明。
@@ -678,7 +699,7 @@ class SevenStepFormulaRequest(BaseModel):
 async def generate_formula_seven_step(
     req: SevenStepFormulaRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     七步专业配方设计引擎
@@ -693,6 +714,13 @@ async def generate_formula_seven_step(
     Step 7: 功能性设计（强化剂选择 + 保留率预测 + GB 14880合规）
     + 综合验证（协同效应 + 兼容性 + 安全预警）
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     logger.info(f"[SevenStep] 请求 - effects={req.target_effects}, form={req.product_form}")
 
     try:

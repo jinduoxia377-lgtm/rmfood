@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
-from ..api.deps import get_db_session, get_current_user
+from ..api.deps import get_db_session, get_current_active_user
 from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
 from ..models import User
 
@@ -123,7 +123,7 @@ async def add_favorite(
     item_type: str,
     item_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """添加到收藏夹"""
     engine = SearchEngine(db)
@@ -137,7 +137,7 @@ async def remove_favorite(
     item_type: str,
     item_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """从收藏夹移除"""
     engine = SearchEngine(db)
@@ -150,7 +150,7 @@ async def remove_favorite(
 async def list_favorites(
     type: Optional[str] = Query(None, description="按类型过滤"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取当前用户的收藏列表"""
     engine = SearchEngine(db)
@@ -164,7 +164,7 @@ async def check_favorite_status(
     item_type: str,
     item_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """检查某项是否已被收藏"""
     engine = SearchEngine(db)
@@ -182,7 +182,7 @@ async def record_view(
     item_type: str,
     item_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """记录一次页面访问"""
     engine = SearchEngine(db)
@@ -195,7 +195,7 @@ async def record_view(
 async def list_recent_views(
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取最近访问列表（按时间倒序）"""
     engine = SearchEngine(db)

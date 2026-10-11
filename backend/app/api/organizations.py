@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from .deps import get_db_session, get_current_user
+from .deps import get_db_session, get_current_active_user
 from ..core.multi_tenant.multi_tenant_service import (
     OrganizationService,
     OrganizationRole,
@@ -37,6 +37,31 @@ from ..core.multi_tenant.multi_tenant_service import (
 
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
+
+_PERMISSION_LABELS = {
+    "member_management": "成员管理",
+    "team_management": "团队管理",
+    "formula_access": "配方访问",
+    "experiment_access": "实验访问",
+    "data_export": "数据导出",
+    "api_access": "API 访问",
+}
+
+
+async def _require_org_permission(
+    org_id: int,
+    current_user,
+    setting_key: str,
+    db: AsyncSession,
+) -> None:
+    """组织权限开关校验：开关关闭时，仅 OWNER 可执行该操作。"""
+    service = get_org_service(db)
+    if not await service.check_org_permission(org_id, current_user.id, setting_key):
+        label = _PERMISSION_LABELS.get(setting_key, setting_key)
+        raise HTTPException(
+            status_code=403,
+            detail=f"该组织已关闭「{label}」权限，仅所有者可操作",
+        )
 
 
 # ============================================================
@@ -66,6 +91,37 @@ class ChangeRoleRequest(BaseModel):
     role: OrganizationRole
 
 
+class BatchMemberRequest(BaseModel):
+    user_ids: List[int]
+
+
+class BatchRoleRequest(BaseModel):
+    user_ids: List[int]
+    role: OrganizationRole
+
+
+class BatchPlanRequest(BaseModel):
+    org_ids: List[int]
+    plan: str
+
+
+class UpgradeSubscriptionRequest(BaseModel):
+    plan: str
+    billing_cycle: str = "monthly"
+
+
+class CustomRoleCreateRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+    permissions: List[str] = []
+
+
+class CustomRoleUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: Optional[List[str]] = None
+
+
 class CreateTeamRequest(BaseModel):
     name: str
     description: Optional[str] = None
@@ -79,7 +135,7 @@ class CreateTeamRequest(BaseModel):
 async def create_organization(
     request: CreateOrganizationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """创建新组织"""
     service = get_org_service(db)
@@ -95,11 +151,11 @@ async def create_organization(
         return {
             "success": True,
             "organization": {
-                "id": org.id,
-                "name": org.name,
-                "slug": org.slug,
-                "plan": org.plan.value,
-                "created_at": org.created_at.isoformat(),
+                "id": org["id"] if isinstance(org, dict) else org.id,
+                "name": org["name"] if isinstance(org, dict) else org.name,
+                "slug": org["slug"] if isinstance(org, dict) else org.slug,
+                "plan": org["plan"] if isinstance(org, dict) else (org.plan.value if hasattr(org.plan, "value") else org.plan),
+                "created_at": (org["created_at"].isoformat() if isinstance(org, dict) else org.created_at.isoformat()),
             },
         }
         
@@ -114,13 +170,15 @@ async def create_organization(
 @router.get("", summary="获取我的组织列表")
 async def list_my_organizations(
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取当前用户所属的所有组织"""
     if not current_user:
         raise HTTPException(status_code=401, detail="未提供有效的认证令牌")
     result = await db.execute(
-        text("""SELECT o.*, m.role as member_role
+        text("""SELECT o.*, m.role as member_role,
+               (SELECT COUNT(*) FROM organization_members mm WHERE mm.organization_id = o.id AND mm.is_active = TRUE) AS member_count,
+               (SELECT COUNT(*) FROM teams t WHERE t.org_id = o.id) AS team_count
                FROM organizations o
                JOIN organization_members m ON o.id = m.organization_id
                WHERE m.user_id = :user_id AND o.is_active = TRUE
@@ -138,6 +196,8 @@ async def list_my_organizations(
             "plan": row.plan,
             "member_role": row.member_role,
             "owner_id": row.owner_id,
+            "member_count": int(row.member_count or 0),
+            "team_count": int(row.team_count or 0),
             "created_at": row.created_at.isoformat() if row.created_at else None,
         })
     return {"organizations": organizations}
@@ -170,11 +230,83 @@ async def get_plans():
     return {"plans": plans}
 
 
+@router.get("/analytics", summary="组织全局数据分析（我的组织）")
+async def get_global_analytics(
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """返回当前用户所属组织的汇总分析数据。"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="未提供有效的认证令牌")
+
+    org_rows = (await db.execute(
+        text("""
+            SELECT o.id, o.name, o.plan,
+                   (SELECT COUNT(*) FROM organization_members m WHERE m.organization_id = o.id AND m.is_active = TRUE) AS member_count
+            FROM organizations o
+            JOIN organization_members me ON o.id = me.organization_id
+            WHERE me.user_id = :user_id AND o.is_active = TRUE
+            ORDER BY o.id DESC
+        """),
+        {"user_id": current_user.id},
+    )).fetchall()
+
+    total_orgs = len(org_rows)
+    total_members = sum(int(r.member_count or 0) for r in org_rows)
+    plan_distribution_obj = {"free": 0, "pro": 0, "enterprise": 0}
+    for r in org_rows:
+        plan = (r.plan or "free").lower()
+        if plan in plan_distribution_obj:
+            plan_distribution_obj[plan] += 1
+    plan_distribution = [
+        {"name": "企业版", "value": plan_distribution_obj["enterprise"], "color": "var(--color-accent-500, #A855F7)"},
+        {"name": "专业版", "value": plan_distribution_obj["pro"], "color": "var(--color-secondary, #0A84FF)"},
+        {"name": "免费版", "value": plan_distribution_obj["free"], "color": "var(--text-muted, #9A9A9F)"},
+    ]
+
+    # 近 30 天成员增长（所有我的组织）
+    member_trend_rows = (await db.execute(
+        text("""
+            SELECT DATE(joined_at) AS d, COUNT(*) AS cnt
+            FROM organization_members
+            WHERE organization_id IN (SELECT organization_id FROM organization_members WHERE user_id = :user_id)
+              AND joined_at >= CURRENT_DATE - INTERVAL '30 days'
+            GROUP BY DATE(joined_at) ORDER BY d ASC
+        """),
+        {"user_id": current_user.id},
+    )).fetchall()
+    member_trend = [{"date": str(r.d), "count": int(r.cnt)} for r in member_trend_rows]
+
+    api_calls = (await db.execute(
+        text("""
+            SELECT COUNT(*) FROM audit_logs
+            WHERE user_id IN (SELECT user_id FROM organization_members WHERE organization_id IN
+                (SELECT organization_id FROM organization_members WHERE user_id = :user_id))
+              AND created_at >= CURRENT_DATE - INTERVAL '30 days'
+        """),
+        {"user_id": current_user.id},
+    )).scalar() or 0
+
+    return {
+        "totalOrgs": total_orgs,
+        "totalMembers": total_members,
+        "avgStorageUsage": 0,
+        "monthlyApiCalls": int(api_calls),
+        "memberTrend": member_trend,
+        "storageTrend": [],
+        "orgActivity": [
+            {"name": r.name, "activity": int(r.member_count or 0)}
+            for r in org_rows[:10]
+        ],
+        "planDistribution": plan_distribution,
+    }
+
+
 @router.get("/{org_id_or_slug}", summary="获取组织详情")
 async def get_organization(
     org_id_or_slug: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """通过ID或slug获取组织详情"""
     service = get_org_service(db)
@@ -192,6 +324,31 @@ async def get_organization(
     if not membership:
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
 
+    # 真实成员数/团队数/存储用量（供详情页展示）
+    member_count = (await db.execute(
+        text("SELECT COUNT(*) FROM organization_members WHERE organization_id = :id AND is_active = TRUE"),
+        {"id": org.id},
+    )).scalar() or 0
+    team_count = (await db.execute(
+        text("SELECT COUNT(*) FROM teams WHERE org_id = :id"),
+        {"id": org.id},
+    )).scalar() or 0
+    storage_used_mb = (await db.execute(
+        text("""
+            SELECT COALESCE(SUM(a.file_size), 0) / 1048576.0
+            FROM attachments a
+            WHERE a.uploaded_by IN (SELECT user_id FROM organization_members WHERE organization_id = :id)
+        """),
+        {"id": org.id},
+    )).scalar() or 0
+
+    plan_key = org.plan.value if hasattr(org.plan, "value") else org.plan
+    try:
+        plan_enum = plan_key if isinstance(plan_key, OrganizationPlan) else OrganizationPlan(plan_key)
+    except ValueError:
+        plan_enum = OrganizationPlan.FREE
+    storage_limit_mb = PLAN_LIMITS.get(plan_enum, PLAN_LIMITS[OrganizationPlan.FREE]).storage_mb
+
     return {
         "organization": {
             "id": org.id,
@@ -199,10 +356,14 @@ async def get_organization(
             "slug": org.slug,
             "description": org.description,
             "logo_url": org.logo_url,
-            "plan": org.plan.value if hasattr(org.plan, 'value') else org.plan,
+            "plan": plan_key,
             "settings": org.settings,
             "owner_id": org.owner_id,
             "my_role": membership.role if hasattr(membership, 'role') else membership["role"],
+            "memberCount": int(member_count),
+            "teamCount": int(team_count),
+            "storageUsed": int(storage_used_mb * 1024 * 1024),
+            "storageLimit": int(storage_limit_mb * 1024 * 1024),
             "created_at": org.created_at.isoformat(),
             "updated_at": org.updated_at.isoformat(),
         }
@@ -214,7 +375,7 @@ async def update_organization(
     org_id: int,
     request: UpdateOrganizationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """更新组织基本信息（需ADMIN或OWNER权限）"""
     service = get_org_service(db)
@@ -231,7 +392,8 @@ async def update_organization(
 
     try:
         org = await service.update_organization(org_id, current_user.id, **updates)
-        return {"success": True, "organization": org.__dict__}
+        org_dict = dict(org._mapping) if hasattr(org, "_mapping") else org
+        return {"success": True, "organization": org_dict}
     except PermissionError as e:
         logger.error("更新组织权限不足: %s", e, exc_info=True)
         raise HTTPException(status_code=403, detail=str(e))
@@ -241,7 +403,7 @@ async def update_organization(
 async def delete_organization(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """删除组织（仅OWNER，慎用！）"""
     service = get_org_service(db)
@@ -262,7 +424,7 @@ async def delete_organization(
 async def get_members(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织所有成员"""
     service = get_org_service(db)
@@ -280,7 +442,7 @@ async def invite_member(
     org_id: int,
     request: InviteMemberRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """邀请新成员加入组织"""
     service = get_org_service(db)
@@ -288,28 +450,56 @@ async def invite_member(
     if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
         raise HTTPException(status_code=403, detail="需要管理员权限")
 
+    await _require_org_permission(org_id, current_user, "member_management", db)
+
     result = await db.execute(
-        "SELECT id FROM users WHERE email = :email",
+        text("SELECT id FROM users WHERE email = :email"),
         {"email": request.email},
     )
     user_row = result.fetchone()
-    
-    if not user_row:
-        raise HTTPException(status_code=404, detail=f"未找到邮箱为 {request.email} 的用户")
+    user_id = user_row.id if user_row else None
 
-    user_id = user_row.id
+    # 用户不存在 → 创建待接受邀请记录
+    if not user_id:
+        import uuid as _uuid
+        token = _uuid.uuid4().hex
+        await db.execute(
+            text("""
+                INSERT INTO organization_invitations
+                    (organization_id, email, role, token, status, invited_by, created_at, updated_at)
+                VALUES (:org_id, :email, :role, :token, 'pending', :invited_by, NOW(), NOW())
+            """),
+            {"org_id": org_id, "email": request.email, "role": request.role.value, "token": token, "invited_by": current_user.id},
+        )
+        await db.commit()
+        await service.record_activity(
+            org_id, current_user.id, "members.invite_sent",
+            target_type="user", target_id=None,
+            metadata={"email": request.email, "role": request.role.value, "status": "pending"},
+        )
+        return {
+            "success": True,
+            "invitation": {"email": request.email, "role": request.role.value, "status": "pending", "token": token},
+            "message": f"已向 {request.email} 发送邀请（用户尚未注册，等待接受）",
+        }
 
     try:
         member = await service.add_member(
-            org_id=org_id,
+            organization_id=org_id,
             user_id=user_id,
             role=request.role,
             invited_by=current_user.id,
             team_ids=request.team_ids,
         )
 
+        await service.record_activity(
+            org_id, current_user.id, "members.invite",
+            target_type="user", target_id=user_id,
+            metadata={"email": request.email, "role": request.role.value},
+        )
+
         from ..core.realtime.notification_center import notify_mention
-        
+
         await notify_mention(
             db=db,
             author_id=current_user.id,
@@ -321,10 +511,12 @@ async def invite_member(
 
         return {
             "success": True,
-            "member": member.__dict__,
+            "member": member,
             "message": f"已向 {request.email} 发送邀请",
         }
 
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
         logger.error("邀请成员失败: %s", e, exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -335,10 +527,11 @@ async def remove_member(
     org_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """从组织中移除成员"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
     
     try:
         success = await service.remove_member(org_id, user_id, current_user.id)
@@ -354,17 +547,23 @@ async def change_member_role(
     user_id: int,
     request: ChangeRoleRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """修改成员角色（需ADMIN或OWNER）"""
     service = get_org_service(db)
-    
+    await _require_org_permission(org_id, current_user, "member_management", db)
+
     try:
         success = await service.change_role(
-            org_id=org_id,
-            target_user_id=user_id,
-            new_role=request.role,
-            changer_id=current_user.id,
+            organization_id=org_id,
+            user_id=user_id,
+            role=request.role.value,
+            actor_id=current_user.id,
+        )
+        await service.record_activity(
+            org_id, current_user.id, "members.role_change",
+            target_type="user", target_id=user_id,
+            metadata={"role": request.role.value},
         )
         return {"success": success}
     except PermissionError as e:
@@ -377,10 +576,11 @@ async def suspend_member(
     org_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """停用成员（保留记录但禁止访问）"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
     
     try:
         success = await service.suspend_member(org_id, user_id, current_user.id)
@@ -396,10 +596,11 @@ async def resume_member(
     org_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """恢复成员"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
     
     try:
         success = await service.resume_member(org_id, user_id, current_user.id)
@@ -419,10 +620,11 @@ async def create_team(
     org_id: int,
     request: CreateTeamRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """在组织中创建新团队"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "team_management", db)
     
     try:
         team = await service.create_team(
@@ -431,26 +633,32 @@ async def create_team(
             creator_id=current_user.id,
             description=request.description,
         )
-        return {"success": True, "team": team.__dict__}
-    except ValueError as e:
-        logger.error("创建团队失败: %s", e, exc_info=True)
-        raise HTTPException(status_code=400, detail=str(e))
+        team_dict = dict(team._mapping) if hasattr(team, "_mapping") else team
+        await service.record_activity(
+            org_id, current_user.id, "teams.create",
+            target_type="team", target_id=team_dict.get("id"),
+            metadata={"name": request.name},
+        )
+        return {"success": True, "team": team_dict}
     except PermissionError as e:
         logger.error("创建团队权限不足: %s", e, exc_info=True)
         raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        logger.error("创建团队失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{org_id}/teams", summary="获取团队列表")
 async def get_teams(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织的所有团队"""
     service = get_org_service(db)
     
     teams = await service.get_teams(org_id)
-    return {"teams": [t.__dict__ for t in teams]}
+    return {"teams": [dict(t) if hasattr(t, "_mapping") else t for t in teams]}
 
 
 # ============================================================
@@ -461,7 +669,7 @@ async def get_teams(
 async def get_quotas(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织的资源配额使用详情"""
     service = get_org_service(db)
@@ -482,7 +690,7 @@ async def get_quotas(
 async def archive_organization(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """归档组织（软删除）"""
     service = get_org_service(db)
@@ -500,7 +708,7 @@ async def archive_organization(
 async def restore_organization(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """恢复已归档的组织"""
     service = get_org_service(db)
@@ -519,7 +727,7 @@ async def clone_organization(
     org_id: int,
     request: CreateOrganizationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """克隆组织（复制基本信息）"""
     service = get_org_service(db)
@@ -542,10 +750,11 @@ async def get_organization_analytics(
     org_id: int,
     time_range: str = Query(default="30d", description="时间范围: 7d, 30d, 90d"),
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织数据分析"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "api_access", db)
     
     try:
         analytics = await service.get_analytics(org_id, time_range)
@@ -561,14 +770,16 @@ async def get_audit_log(
     org_id: int,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    action_type: Optional[str] = Query(default=None, description="按动作类型筛选"),
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织审计日志"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "api_access", db)
     
     try:
-        log_data = await service.get_audit_log(org_id, limit, offset)
+        log_data = await service.get_audit_log(org_id, limit, offset, action_type)
         return log_data
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
@@ -579,10 +790,12 @@ async def export_organization(
     org_id: int,
     format_type: str = Query(default="json", description="导出格式: json, csv, excel"),
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """导出组织数据"""
     service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "data_export", db)
+    await _require_org_permission(org_id, current_user, "api_access", db)
     
     try:
         export_data = await service.export_organization(org_id, format_type)
@@ -597,7 +810,7 @@ async def export_organization(
 async def get_permissions(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取组织权限配置"""
     service = get_org_service(db)
@@ -611,7 +824,12 @@ async def get_permissions(
         raise HTTPException(status_code=404, detail="组织不存在")
     
     settings = org.settings or {}
-    
+    if isinstance(settings, str):
+        try:
+            settings = json.loads(settings)
+        except Exception:
+            settings = {}
+
     return {
         "organization_id": org_id,
         "permissions": {
@@ -631,7 +849,7 @@ async def update_permissions(
     org_id: int,
     permissions: Dict[str, bool],
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """更新组织权限配置（需OWNER或ADMIN）"""
     service = get_org_service(db)
@@ -644,15 +862,494 @@ async def update_permissions(
         raise HTTPException(status_code=404, detail="组织不存在")
     
     settings = org.settings or {}
+    if isinstance(settings, str):
+        try:
+            settings = json.loads(settings)
+        except Exception:
+            settings = {}
     settings["permissions"] = permissions
     
     await service.db.execute(
-        text("UPDATE organizations SET settings = :settings::jsonb, updated_at = NOW() WHERE id = :id"),
+        text("UPDATE organizations SET settings = CAST(:settings AS jsonb), updated_at = NOW() WHERE id = :id"),
         {"settings": json.dumps(settings), "id": org_id},
     )
     await service.db.commit()
     
     return {"success": True, "permissions": permissions}
+
+
+# ============================================================
+# 订阅 / 用量 / 批量成员操作（真实功能）
+# ============================================================
+
+@router.post("/batch-plan", summary="批量修改组织计划（管理员）")
+async def batch_change_org_plan(
+    request: BatchPlanRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """批量修改多个组织的计划（free/pro/enterprise），仅系统管理员可操作。"""
+    from ..models.enums import UserRole
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="仅系统管理员可批量修改组织计划")
+
+    try:
+        plan_enum = OrganizationPlan(request.plan)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"无效的计划: {request.plan}")
+
+    service = get_org_service(db)
+    updated = 0
+    for oid in request.org_ids:
+        await service.db.execute(
+            text("UPDATE organizations SET plan = :plan, updated_at = NOW() WHERE id = :id"),
+            {"plan": plan_enum.value, "id": oid},
+        )
+        # 同步订阅状态
+        existing = (await service.db.execute(
+            text("SELECT id FROM subscriptions WHERE organization_id = :id ORDER BY id DESC LIMIT 1"),
+            {"id": oid},
+        )).fetchone()
+        if existing:
+            await service.db.execute(
+                text("UPDATE subscriptions SET plan = :plan, status = 'active', updated_at = NOW() WHERE id = :sub_id"),
+                {"plan": plan_enum.value, "sub_id": existing.id},
+            )
+        else:
+            await service.db.execute(
+                text("INSERT INTO subscriptions (organization_id, plan, status, billing_cycle, created_at, updated_at) VALUES (:id, :plan, 'active', 'monthly', NOW(), NOW())"),
+                {"id": oid, "plan": plan_enum.value},
+            )
+        updated += 1
+    await service.db.commit()
+    return {"success": True, "updated": updated, "plan": plan_enum.value}
+
+
+@router.get("/{org_id}/invitations", summary="获取组织待接受邀请列表")
+async def list_invitations(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """获取组织的邀请记录（OWNER/ADMIN）"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+    rows = (await db.execute(
+        text("SELECT * FROM organization_invitations WHERE organization_id = :org_id ORDER BY created_at DESC"),
+        {"org_id": org_id},
+    )).fetchall()
+    return {"invitations": [dict(r._mapping) for r in rows]}
+
+
+@router.post("/invitations/{token}/accept", summary="接受组织邀请")
+async def accept_invitation(
+    token: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """被邀请用户接受邀请，自动加入组织。"""
+    service = get_org_service(db)
+    row = (await db.execute(
+        text("SELECT * FROM organization_invitations WHERE token = :token AND status = 'pending'"),
+        {"token": token},
+    )).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="邀请不存在或已失效")
+
+    inv = dict(row._mapping)
+    if inv["email"].lower() != (current_user.email or "").lower():
+        raise HTTPException(status_code=403, detail="该邀请不属于当前用户")
+
+    # 加入组织（若已是成员则跳过）
+    membership = await service._get_membership(inv["organization_id"], current_user.id)
+    if not membership:
+        await service.add_member(
+            organization_id=inv["organization_id"],
+            user_id=current_user.id,
+            role=OrganizationRole(inv["role"]),
+            invited_by=inv.get("invited_by"),
+        )
+    await db.execute(
+        text("UPDATE organization_invitations SET status = 'accepted', accepted_at = NOW() WHERE id = :id"),
+        {"id": inv["id"]},
+    )
+    await db.commit()
+    await service.record_activity(
+        inv["organization_id"], current_user.id, "members.invite_accepted",
+        target_type="user", target_id=current_user.id,
+        metadata={"email": current_user.email},
+    )
+    return {"success": True, "organization_id": inv["organization_id"], "message": "已加入组织"}
+
+
+@router.get("/{org_id}/subscription/orders", summary="获取组织订阅订单")
+async def list_subscription_orders(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """获取组织的订阅订单记录（OWNER/ADMIN）。"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+    rows = (await db.execute(
+        text("SELECT * FROM billing_orders WHERE organization_id = :org_id ORDER BY created_at DESC"),
+        {"org_id": org_id},
+    )).fetchall()
+    return {"orders": [dict(r._mapping) for r in rows]}
+
+
+@router.get("/billing/providers", summary="获取支付渠道配置")
+async def list_billing_providers():
+    """列出可用的支付渠道（本期仅模拟支付启用，真实渠道需配置商户密钥）。"""
+    providers = [
+        {"key": "mock", "name": "模拟支付", "enabled": True, "description": "测试环境专用，不产生真实扣款"},
+        {"key": "alipay", "name": "支付宝", "enabled": False, "description": "需配置支付宝商户号/应用私钥"},
+        {"key": "wechat", "name": "微信支付", "enabled": False, "description": "需配置微信商户号/API 密钥"},
+        {"key": "stripe", "name": "Stripe", "enabled": False, "description": "需配置 Stripe Secret Key"},
+    ]
+    return {"providers": providers}
+
+
+@router.get("/{org_id}/subscription", summary="获取组织订阅信息")
+async def get_subscription(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """获取当前计划、订阅状态与真实用量"""
+    service = get_org_service(db)
+    membership = await service._get_membership(org_id, current_user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+    try:
+        return await service.get_subscription(org_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/{org_id}/subscription/upgrade", summary="升级订阅（模拟支付）")
+async def upgrade_subscription(
+    org_id: int,
+    request: UpgradeSubscriptionRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """升级组织计划（模拟支付：生成已支付订单并更新计划）"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+    try:
+        return await service.upgrade_subscription(org_id, request.plan, request.billing_cycle, current_user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.post("/{org_id}/subscription/cancel", summary="取消订阅")
+async def cancel_subscription(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """取消订阅（模拟：状态置为 canceled）"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+    return await service.cancel_subscription(org_id, current_user.id)
+
+
+@router.get("/{org_id}/usage", summary="获取组织配额用量")
+async def get_org_usage(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """获取组织真实配额用量（含是否超限）"""
+    service = get_org_service(db)
+    membership = await service._get_membership(org_id, current_user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+    return await service.get_quota_usage(org_id)
+
+
+@router.post("/{org_id}/members/batch-role", summary="批量修改成员角色")
+async def batch_change_member_role(
+    org_id: int,
+    request: BatchRoleRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
+    try:
+        count = await service.batch_change_role(org_id, request.user_ids, request.role.value, current_user.id)
+        return {"success": True, "updated": count, "role": request.role.value}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{org_id}/members/batch-suspend", summary="批量停用成员")
+async def batch_suspend_members(
+    org_id: int,
+    request: BatchMemberRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
+    try:
+        count = await service.batch_suspend_members(org_id, request.user_ids, current_user.id)
+        return {"success": True, "updated": count}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.post("/{org_id}/members/batch-resume", summary="批量恢复成员")
+async def batch_resume_members(
+    org_id: int,
+    request: BatchMemberRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
+    try:
+        count = await service.batch_resume_members(org_id, request.user_ids, current_user.id)
+        return {"success": True, "updated": count}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.post("/{org_id}/members/batch-remove", summary="批量移除成员")
+async def batch_remove_members(
+    org_id: int,
+    request: BatchMemberRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    service = get_org_service(db)
+    await _require_org_permission(org_id, current_user, "member_management", db)
+    try:
+        count = await service.batch_remove_members(org_id, request.user_ids, current_user.id)
+        return {"success": True, "removed": count}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{org_id}/members/export", summary="导出组织成员")
+async def export_members(
+    org_id: int,
+    format_type: str = Query(default="csv", description="导出格式: csv / json"),
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """导出组织成员列表（CSV/JSON）"""
+    service = get_org_service(db)
+    membership = await service._get_membership(org_id, current_user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+    await _require_org_permission(org_id, current_user, "data_export", db)
+    await _require_org_permission(org_id, current_user, "api_access", db)
+
+    members = await service.get_members(org_id)
+    if format_type == "json":
+        from fastapi.responses import JSONResponse
+        import datetime as _dt
+        json_members = []
+        for m in members:
+            m = dict(m)
+            for k, v in list(m.items()):
+                if isinstance(v, (_dt.datetime, _dt.date)):
+                    m[k] = v.isoformat()
+            json_members.append(m)
+        return JSONResponse(content={"members": json_members})
+
+    import csv, io
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=["user_id", "username", "email", "role", "joined_at", "is_active"])
+    writer.writeheader()
+    for m in members:
+        writer.writerow({
+            "user_id": m.get("user_id"),
+            "username": m.get("username", ""),
+            "email": m.get("email", ""),
+            "role": m.get("role", ""),
+            "joined_at": m.get("joined_at", ""),
+            "is_active": m.get("is_active", True),
+        })
+    from fastapi.responses import Response
+    return Response(content="\ufeff" + buf.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="org_{org_id}_members.csv"'})
+
+
+# ============================================================
+# 组织自定义角色（权限集）管理
+# ============================================================
+
+def _load_custom_roles(settings: Any) -> list:
+    """从组织 settings 中读取自定义角色列表。"""
+    if isinstance(settings, str):
+        try:
+            settings = json.loads(settings)
+        except Exception:
+            settings = {}
+    settings = settings or {}
+    roles = settings.get("custom_roles") or []
+    return roles if isinstance(roles, list) else []
+
+
+def _save_custom_roles(settings: Any, roles: list) -> dict:
+    if isinstance(settings, str):
+        try:
+            settings = json.loads(settings)
+        except Exception:
+            settings = {}
+    settings = settings or {}
+    settings["custom_roles"] = roles
+    return settings
+
+
+@router.get("/{org_id}/roles", summary="获取组织角色列表（含自定义角色）")
+async def list_org_roles(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """返回系统预定义角色 + 组织自定义角色。"""
+    service = get_org_service(db)
+    membership = await service._get_membership(org_id, current_user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+    roles = _load_custom_roles(org.settings)
+    return {"roles": roles}
+
+
+@router.post("/{org_id}/roles", summary="创建自定义角色")
+async def create_org_role(
+    org_id: int,
+    request: CustomRoleCreateRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """创建组织自定义角色（OWNER/ADMIN）。"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+
+    import uuid as _uuid
+    roles = _load_custom_roles(org.settings)
+    code = f"custom_{_uuid.uuid4().hex[:8]}"
+    roles.append({
+        "code": code,
+        "name": request.name,
+        "description": request.description or "",
+        "permissions": request.permissions or {},
+    })
+    settings = _save_custom_roles(org.settings, roles)
+    await service.db.execute(
+        text("UPDATE organizations SET settings = CAST(:settings AS jsonb), updated_at = NOW() WHERE id = :id"),
+        {"settings": json.dumps(settings, ensure_ascii=False), "id": org_id},
+    )
+    await service.db.commit()
+    await service.record_activity(
+        org_id, current_user.id, "roles.create",
+        target_type="organization", target_id=org_id,
+        metadata={"role_code": code, "name": request.name},
+    )
+    return {"success": True, "role": {"code": code, "name": request.name, "description": request.description or "", "permissions": request.permissions or []}}
+
+
+@router.put("/{org_id}/roles/{role_code}", summary="更新自定义角色")
+async def update_org_role(
+    org_id: int,
+    role_code: str,
+    request: CustomRoleUpdateRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """更新组织自定义角色（OWNER/ADMIN）。"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+
+    roles = _load_custom_roles(org.settings)
+    for r in roles:
+        if r.get("code") == role_code:
+            if request.name is not None:
+                r["name"] = request.name
+            if request.description is not None:
+                r["description"] = request.description
+            if request.permissions is not None:
+                r["permissions"] = request.permissions
+            break
+    else:
+        raise HTTPException(status_code=404, detail="角色不存在")
+
+    settings = _save_custom_roles(org.settings, roles)
+    await service.db.execute(
+        text("UPDATE organizations SET settings = CAST(:settings AS jsonb), updated_at = NOW() WHERE id = :id"),
+        {"settings": json.dumps(settings, ensure_ascii=False), "id": org_id},
+    )
+    await service.db.commit()
+    await service.record_activity(
+        org_id, current_user.id, "roles.update",
+        target_type="organization", target_id=org_id,
+        metadata={"role_code": role_code},
+    )
+    return {"success": True, "role_code": role_code}
+
+
+@router.delete("/{org_id}/roles/{role_code}", summary="删除自定义角色")
+async def delete_org_role(
+    org_id: int,
+    role_code: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_active_user),
+):
+    """删除组织自定义角色（OWNER/ADMIN）。"""
+    service = get_org_service(db)
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="需要 OWNER 或 ADMIN 权限")
+
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+
+    roles = _load_custom_roles(org.settings)
+    new_roles = [r for r in roles if r.get("code") != role_code]
+    if len(new_roles) == len(roles):
+        raise HTTPException(status_code=404, detail="角色不存在")
+
+    settings = _save_custom_roles(org.settings, new_roles)
+    await service.db.execute(
+        text("UPDATE organizations SET settings = CAST(:settings AS jsonb), updated_at = NOW() WHERE id = :id"),
+        {"settings": json.dumps(settings, ensure_ascii=False), "id": org_id},
+    )
+    await service.db.commit()
+    await service.record_activity(
+        org_id, current_user.id, "roles.delete",
+        target_type="organization", target_id=org_id,
+        metadata={"role_code": role_code},
+    )
+    return {"success": True, "role_code": role_code}
 
 
 logger.info("多租户管理API路由加载完成")
