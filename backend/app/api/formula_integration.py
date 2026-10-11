@@ -94,6 +94,7 @@ class CompatibilityCheckResponse(BaseModel):
     error_count: int
     warning_count: int
     info_count: int
+    data_coverage: Optional[Dict[str, Any]] = Field(default=None, description="兼容性数据库覆盖情况")
 
 
 class EffectPredictionRequest(BaseModel):
@@ -223,6 +224,7 @@ async def analyze_synergy(
 
         bliss_ctx = context.setdefault("bliss", {})
         network_ctx = context.setdefault("network", {})
+        taste_ctx = context.setdefault("taste", {})
 
         if herb_a:
             data_source["herb_a"] = {
@@ -231,6 +233,16 @@ async def analyze_synergy(
             }
             bliss_ctx.setdefault("efficacy_a", _ob_to_efficacy(herb_a["ob_percent"]))
             network_ctx.setdefault("targets_a", herb_a["targets"])
+            try:
+                from ..services.formula.taste_predictor import TASTE_DATABASE
+                taste_a = TASTE_DATABASE.get(request.ingredient_a)
+                if taste_a is None and request.ingredient_a.endswith("子"):
+                    taste_a = TASTE_DATABASE.get(request.ingredient_a[:-1])
+                if taste_a:
+                    taste_ctx.setdefault("taste_profile_a", taste_a)
+                    data_source["herb_a"]["taste_profile"] = True
+            except Exception:
+                pass
         else:
             data_source["herb_a"]["note"] = "tcm_herbs 未收录，使用默认参数"
 
@@ -241,6 +253,16 @@ async def analyze_synergy(
             }
             bliss_ctx.setdefault("efficacy_b", _ob_to_efficacy(herb_b["ob_percent"]))
             network_ctx.setdefault("targets_b", herb_b["targets"])
+            try:
+                from ..services.formula.taste_predictor import TASTE_DATABASE
+                taste_b = TASTE_DATABASE.get(request.ingredient_b)
+                if taste_b is None and request.ingredient_b.endswith("子"):
+                    taste_b = TASTE_DATABASE.get(request.ingredient_b[:-1])
+                if taste_b:
+                    taste_ctx.setdefault("taste_profile_b", taste_b)
+                    data_source["herb_b"]["taste_profile"] = True
+            except Exception:
+                pass
         else:
             data_source["herb_b"]["note"] = "tcm_herbs 未收录，使用默认参数"
 
@@ -361,7 +383,28 @@ async def check_compatibility(
             formula_id=request.formula_id,
             target_population=request.target_population
         )
-        
+
+        # 计算兼容性数据库覆盖率（诚实标注：未覆盖成分可能存在未知相互作用）
+        try:
+            from ..services.formula.compatibility_checker import (
+                CHEMICAL_PROPERTIES_DB,
+                ANTINUTRIENT_FACTORS_DB,
+                GB2760_LIMITS_DB,
+            )
+            covered_names = set()
+            for db in (CHEMICAL_PROPERTIES_DB, ANTINUTRIENT_FACTORS_DB, GB2760_LIMITS_DB):
+                covered_names.update(db.keys())
+            total_ing = len(request.ingredients) or 0
+            covered_ing = sum(1 for i in request.ingredients if i.get("name") in covered_names)
+            data_coverage = {
+                "total_ingredients": total_ing,
+                "covered_ingredients": covered_ing,
+                "coverage_ratio": round(covered_ing / total_ing, 2) if total_ing else 0.0,
+                "note": "仅覆盖化学/营养/法规数据库收录的成分；未收录成分可能存在未知相互作用，得分不代表绝对安全。"
+            }
+        except Exception:
+            data_coverage = None
+
         issues_data = [
             {
                 "level": issue.level.value,
@@ -374,7 +417,7 @@ async def check_compatibility(
             }
             for issue in report.issues
         ]
-        
+
         return CompatibilityCheckResponse(
             success=True,
             overall_score=report.overall_score,
@@ -384,7 +427,8 @@ async def check_compatibility(
             recommendations=report.recommendations,
             error_count=report.error_count,
             warning_count=report.warning_count,
-            info_count=report.info_count
+            info_count=report.info_count,
+            data_coverage=data_coverage
         )
         
     except ImportError as e:
