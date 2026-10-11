@@ -38,13 +38,13 @@ class TCMHerbPK(Base):
     )
     herb_name_cn: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
-    # PK 一室模型参数
-    F: Mapped[Optional[float]] = mapped_column(Float)          # 生物利用度 [0,1]
-    F_source: Mapped[str] = mapped_column(String(80), default="tcm_herbs.ob_percent")
-    ka: Mapped[Optional[float]] = mapped_column(Float)          # 吸收速率常数 (h⁻¹)
-    Vd: Mapped[Optional[float]] = mapped_column(Float)          # 分布容积 (L/kg)
-    CL: Mapped[Optional[float]] = mapped_column(Float)         # 清除率 (L/h/kg)
-    t_lag: Mapped[Optional[float]] = mapped_column(Float)       # 吸收滞后 (h)
+    # PK 一室模型参数（列名显式映射到数据库小写列，避免 PostgreSQL 大小写折叠问题）
+    F: Mapped[Optional[float]] = mapped_column("f", Float)          # 生物利用度 [0,1]
+    F_source: Mapped[str] = mapped_column("f_source", String(80), default="tcm_herbs.ob_percent")
+    ka: Mapped[Optional[float]] = mapped_column("ka", Float)          # 吸收速率常数 (h⁻¹)
+    Vd: Mapped[Optional[float]] = mapped_column("vd", Float)          # 分布容积 (L/kg)
+    CL: Mapped[Optional[float]] = mapped_column("cl", Float)         # 清除率 (L/h/kg)
+    t_lag: Mapped[Optional[float]] = mapped_column("t_lag", Float)       # 吸收滞后 (h)
 
     # 推导依据（追溯用）
     derived_from: Mapped[Optional[str]] = mapped_column(Text)

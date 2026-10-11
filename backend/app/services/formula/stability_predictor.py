@@ -204,19 +204,26 @@ class StabilityPredictor:
     def predict_stability(
         self,
         ingredients: List[Dict[str, Any]],
-        storage_conditions: Optional[Dict[str, Any]] = None
+        storage_conditions: Optional[Dict[str, Any]] = None,
+        db_entries: Optional[Dict[str, Dict[str, Any]]] = None
     ) -> StabilityPrediction:
         """
         预测配方稳定性
-        
+
         Args:
             ingredients: [{"name": str, "percentage": float}, ...]
             storage_conditions: {"temperature_c": 25, "humidity_pct": 60, "light_exposure": "dark"}
-            
+            db_entries: 可选，数据库真实稳定性参数（stability_data 表），
+                键为成分名，值为稳定性条目结构，将覆盖内置默认库。
+
         Returns:
             StabilityPrediction: 预测结果
         """
         storage = storage_conditions or {"temperature_c": 25, "humidity_pct": 60, "light_exposure": "normal"}
+        # 合并数据库真实条目（若提供）
+        stab_db = dict(self._stability_db)
+        if db_entries:
+            stab_db.update(db_entries)
         
         risk_factors = []
         total_degradation = 0.0
@@ -227,7 +234,7 @@ class StabilityPredictor:
             name = ing.get("name", "")
             percentage = ing.get("percentage", 0)
 
-            if name not in self._stability_db:
+            if name not in stab_db:
                 # 别名回退：药材 → 活性成分（复用安全阈值别名映射）
                 resolved = name
                 try:
@@ -235,7 +242,7 @@ class StabilityPredictor:
                     resolved = HERB_ALIAS_MAP.get(name, name)
                 except Exception:
                     pass
-                if resolved in self._stability_db:
+                if resolved in stab_db:
                     name = resolved
                 else:
                     risk_factors.append({
@@ -247,7 +254,7 @@ class StabilityPredictor:
                     continue
 
             known_count += 1
-            stab = self._stability_db[name]
+            stab = stab_db[name]
             
             # 计算pH影响
             ph_risk = self._calculate_ph_risk(stab, storage)

@@ -672,9 +672,28 @@ async def predict_formula_stability(
 
     predictor = StabilityPredictor()
     n = len(ingredient_names)
+    # 从 stability_data 表加载真实稳定性参数
+    db_entries = {}
+    try:
+        from ..models.herb_pharmaco_params import StabilityData
+        result = await db.execute(select(StabilityData).where(StabilityData.herb_name_cn.in_(ingredient_names)))
+        for row in result.scalars().all():
+            db_entries[row.herb_name_cn] = {
+                "ph_stability": {"min": 4.0, "max": 9.0, "optimal": [5.0, 8.0]},
+                "temp_stability": {"max_temp_c": 80, "degradation_rate_25c": float(row.degradation_rate or 0.001)},
+                "light_sensitivity": "medium",
+                "oxidation_sensitivity": "medium",
+                "shelf_life_months": float(row.shelf_life_months or 24.0),
+                "source": row.source,
+                "confidence": row.confidence,
+            }
+    except Exception:
+        db_entries = {}
+
     pred = predictor.predict_stability(
         [{"name": name, "percentage": round(100.0 / n, 2)} for name in ingredient_names],
         storage_conditions={"temperature_c": temperature_c, "humidity_pct": 60, "light_exposure": "normal"},
+        db_entries=db_entries,
     )
 
     return {

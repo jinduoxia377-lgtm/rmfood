@@ -153,7 +153,8 @@ class FormulaIntegrationService:
     def orchestrate_deep_generation(
         self,
         request: DeepGenerationRequest,
-        progress_callback: Optional[Callable[[str, int, int], None]] = None
+        progress_callback: Optional[Callable[[str, int, int], None]] = None,
+        synergy_contexts: Optional[Dict[str, Dict]] = None,
     ) -> DeepGenerationResponse:
         """
         执行完整的增强配方生成管线
@@ -184,7 +185,7 @@ class FormulaIntegrationService:
         
         try:
             if request.mode == GenerationMode.DEEP_INTEGRATION:
-                response = self._execute_deep_pipeline(request, response, progress_callback)
+                response = self._execute_deep_pipeline(request, response, progress_callback, synergy_contexts=synergy_contexts)
             else:
                 response = self._execute_standard_pipeline(request, response)
             
@@ -217,7 +218,8 @@ class FormulaIntegrationService:
         self,
         request: DeepGenerationRequest,
         response: DeepGenerationResponse,
-        progress_callback: Optional[Callable]
+        progress_callback: Optional[Callable],
+        synergy_contexts: Optional[Dict[str, Dict]] = None,
     ) -> DeepGenerationResponse:
         """执行深度融合管线"""
         total_stages = 5
@@ -232,9 +234,12 @@ class FormulaIntegrationService:
         if self.synergy_engine:
             try:
                 names = [ing["name"] for ing in ingredients_data]
+                synergy_contexts = synergy_contexts or {}
                 for i in range(len(names)):
                     for j in range(i+1, len(names)):
-                        report = self.synergy_engine.analyze_synergy(names[i], names[j])
+                        pair_key = f"{names[i]}|{names[j]}"
+                        ctx = synergy_contexts.get(pair_key, synergy_contexts.get(f"{names[j]}|{names[i]}", {}))
+                        report = self.synergy_engine.analyze_synergy(names[i], names[j], ctx or None)
                         synergy_results.append(report)
                 
                 response.synergy_report = synergy_results[0] if synergy_results else None
