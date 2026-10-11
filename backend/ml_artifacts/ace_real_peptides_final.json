@@ -9,7 +9,8 @@
     "Blacklist filtering removed instrumentation / English / lab",
     "acronyms that happened to be valid AA-only 3-12 letter tokens.",
     "Allow-override kept well-documented real ACE inhibitors that",
-    "look like short all-caps sequences."
+    "look like short all-caps sequences.",
+    "METHOD LIMITATION (honest): a sequence is labelled positive when it co-occurs within 100 chars of an ACE-relevant cue in the abstract. Co-occurrence is evidence, not proof — some positives may be peptides mentioned in context without being the actually-tested ACE inhibitor. Treat predictions on rare / long sequences as indicative, not definitive."
   ],
   "source_abstracts": 593,
   "total_pairs": 559,

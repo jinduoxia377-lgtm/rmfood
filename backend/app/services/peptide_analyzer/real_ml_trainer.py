@@ -231,6 +231,9 @@ class RealModelTrainer:
             self.library_pubmed_count = payload.get("library_pubmed_count", 0)
             self.train_pubmed_count = payload.get("train_pubmed_count", 0)
             self.val_pubmed_count = payload.get("val_pubmed_count", 0)
+            # R1: 泛化测试报告随 artifact 加载（若本次启动前未重新训练，
+            # 也会从独立文件 generalization_report.json 补充）
+            self.generalization_report = payload.get("generalization", None) or _load_generalization_report()
             self.trained = True
             logger.info(f"已加载 ML 模型权重: {self.artifact_path}")
         except Exception as e:
@@ -415,16 +418,18 @@ class RealModelTrainer:
             "val_synth_count": self.val_synth_count,
             "metrics": self.metrics,
             "artifact": self.artifact_path,
+            # R4: 泛化测试（Step C-2）数字随训练报告返回，作为主宣传数字
+            "generalization": getattr(self, "generalization_report", {}) or {},
             "model_type": "NumpyMLP (numpy vectorised MLP + Adam + class-weighted, 444-dim rich features)",
             "honest_note": (
                 f"模型用 {self.library_size} 条标注记录训练：真实文献 {self.library_real_count - getattr(self, 'library_pubmed_count', 0)} 条"
                 f" + Step B PubMed 审计真实正类 {getattr(self, 'library_pubmed_count', 0)} 条（每条带可溯源 pmid）"
                 f"+ 程序合成 {self.library_synth_count} 条。"
                 f"合成数据已显式标注，仅用于库规模展示，不参与训练。"
-                f"验证 accuracy={self.metrics['validation']['accuracy']*100:.1f}% "
-                f"接近多数类基线 {self.metrics['validation']['majority_baseline']*100:.1f}%，不具判别力；"
-                f"请以 balanced_accuracy={self.metrics['validation']['balanced_accuracy']*100:.1f}% / "
-                f"F1={self.metrics['validation']['f1']*100:.1f}% 为准（判决阈值 {getattr(self, 'decision_threshold', 0.5)}）。"
+                f"泛化测试（序列级 5 折防泄漏）：F1={((getattr(self, 'generalization_report', {}) or {}).get('five_fold_sequence_level', {}) or {}).get('mean_best_f1')} / "
+                f"平衡准确率={((getattr(self, 'generalization_report', {}) or {}).get('five_fold_sequence_level', {}) or {}).get('mean_balanced_accuracy')}（主宣传数字）。"
+                f"长肽（≥8 aa）LOO 召回={((getattr(self, 'generalization_report', {}) or {}).get('loo_long_peptides_ge8', {}) or {}).get('recall')}，短肽偏置存在。"
+                f"判决阈值 {getattr(self, 'decision_threshold', 0.5)}。"
             ),
         }
 
@@ -475,9 +480,9 @@ class RealModelTrainer:
             "train_synth_count": self.train_synth_count,
             "val_real_count": self.val_real_count,
             "val_synth_count": self.val_synth_count,
-            "train_pubmed_count": getattr(self, "train_pubmed_count", 0),
-            "val_pubmed_count": getattr(self, "val_pubmed_count", 0),
-            "target_activity": self.target_activity,
+            # R3: 此前 payload 里 train_pubmed_count/val_pubmed_count 重复出现 3 次，
+            # 现在只在 include_pubmed 之后保留一次。
+            "generalization": getattr(self, "generalization_report", {}) or {},
             "real_only": getattr(self, "real_only", True),
             "balanced_accuracy": getattr(self, "balanced_accuracy", None),
             "is_trustworthy": getattr(self, "is_trustworthy", False),
@@ -499,7 +504,11 @@ class RealModelTrainer:
         else:
             score = 0.5
             method = "fallback_rule"
-        return {
+        # R1: 单序列预测也携带泛化测试数字（序列级 5 折防泄漏 + 长肽 LOO 警示）
+        _gen = getattr(self, "generalization_report", {}) or {}
+        _five = _gen.get("five_fold_sequence_level", {}) or {}
+        _loo = _gen.get("loo_long_peptides_ge8", {}) or {}
+        result = {
             "sequence": sequence.upper(),
             "score": round(score, 4),
             # 二分类判决：用验证集扫描选定的阈值，而非固定 0.5
@@ -516,6 +525,20 @@ class RealModelTrainer:
                 'hydrophobic_c_term', 'positive_n_term', 'has_pro_motif', 'aromatic_c_term'
             ], features[:12])},
         }
+        # 可信度 + 泛化字段（仅模型已加载时携带，fallback 时保持简洁）
+        if method == "ml":
+            result["is_trustworthy"] = getattr(self, "is_trustworthy", False)
+            result["trust_note"] = getattr(self, "trust_note", "")
+            result["gen_five_fold_f1"] = _five.get("mean_best_f1")
+            result["gen_five_fold_balanced"] = _five.get("mean_balanced_accuracy")
+            result["gen_loo_long_recall"] = _loo.get("recall")
+            result["short_peptide_bias"] = _gen.get("short_peptide_bias", "")
+            # 长度警示：预测对象是长肽时，提示长肽召回下降
+            result["length_caveat"] = (
+                f"序列长度 {len(sequence)} aa ≥ 8，长肽泛化召回约 {result.get('gen_loo_long_recall')}"
+                if len(sequence) >= 8 and _loo.get("recall") is not None else None
+            )
+        return result
 
 
 # 单例
