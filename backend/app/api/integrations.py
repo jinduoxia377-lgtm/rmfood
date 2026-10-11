@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from .deps import get_db_session, get_current_user
+from .deps import get_db_session, get_current_user, get_current_active_user
 from .api_key_deps import get_current_api_key, get_current_active_api_key, require_api_scope, ApiKeyPrincipal
 from ..core.api_framework.integration_framework import (
     WebhookService,
@@ -81,7 +81,7 @@ class TestWebhookRequest(BaseModel):
 async def create_webhook(
     request: CreateWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """
     创建新的Webhook
@@ -123,7 +123,7 @@ async def create_webhook(
 @router.get("/webhooks", summary="获取Webhook列表")
 async def list_webhooks(
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取当前用户的所有Webhook"""
     service = get_webhook_service(db)
@@ -151,7 +151,7 @@ async def list_webhooks(
 async def get_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """获取单个Webhook详情（包含secret）"""
     service = get_webhook_service(db)
@@ -181,7 +181,7 @@ async def update_webhook(
     webhook_id: str,
     request: UpdateWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """更新Webhook配置"""
     service = get_webhook_service(db)
@@ -206,7 +206,7 @@ async def update_webhook(
 async def delete_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """删除Webhook"""
     service = get_webhook_service(db)
@@ -222,7 +222,7 @@ async def delete_webhook(
 async def test_webhook(
     request: TestWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """
     发送测试请求到指定URL
@@ -488,7 +488,7 @@ async def api_key_scope_demo(
 async def create_integration(
     request: CreateIntegrationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """
     创建第三方服务集成
@@ -526,7 +526,7 @@ async def create_integration(
 @router.get("/third-party", summary="列出集成")
 async def list_integrations(
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """列出用户的所有第三方集成"""
     result = await db.execute(
@@ -554,7 +554,7 @@ async def list_integrations(
 async def delete_integration(
     integration_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_active_user),
 ):
     """删除第三方集成"""
     await db.execute(

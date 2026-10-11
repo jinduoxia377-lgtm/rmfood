@@ -34,10 +34,10 @@ class SearchAnalyticsService:
             text("""
                 SELECT query, COUNT(*) as search_count, MAX(created_at) as last_searched
                 FROM search_history
-                WHERE created_at >= NOW() - INTERVAL '%(days)s days'
+                WHERE created_at >= NOW() - make_interval(days => :days)
                 GROUP BY query
                 ORDER BY search_count DESC
-                LIMIT %(limit)s
+                LIMIT :limit
             """),
             {"days": time_window_days, "limit": limit},
         )
@@ -69,7 +69,7 @@ class SearchAnalyticsService:
                 SELECT DATE(created_at) as search_date, COUNT(*) as search_count
                 FROM search_history
                 WHERE query = :keyword
-                  AND created_at >= NOW() - INTERVAL '%(days)s days'
+                  AND created_at >= NOW() - make_interval(days => :days)
                 GROUP BY DATE(created_at)
                 ORDER BY search_date
             """),

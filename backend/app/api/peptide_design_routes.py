@@ -19,7 +19,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_user, PaginationParams
+from ..api.deps import get_db_session, get_current_active_user, PaginationParams
 from ..models.user_model import User
 from ..schemas.peptide_design import (
     PeptideDesignCreate, PeptideDesignUpdate,
@@ -44,7 +44,7 @@ router = APIRouter(prefix="/peptide-designs", tags=["肽设计优化"])
 async def create_project(
     data: PeptideDesignCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """创建新的肽设计项目"""
     try:
@@ -85,7 +85,7 @@ async def list_projects(
     sort_by: Optional[str] = Query("updated_at", description="排序字段"),
     sort_order: Optional[str] = Query("desc", description="排序方向"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取设计项目列表"""
     try:
@@ -143,7 +143,7 @@ async def get_project(
     design_id: int,
     include_candidates: bool = Query(True, description="是否包含候选方案"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取项目详情"""
     try:
@@ -201,7 +201,7 @@ async def update_project(
     design_id: int,
     data: PeptideDesignUpdate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """更新项目元数据"""
     try:
@@ -240,7 +240,7 @@ async def update_project_status(
     design_id: int,
     new_status: str = Query(..., description="目标状态"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """更新项目状态"""
     try:
@@ -273,7 +273,7 @@ async def update_project_status(
 async def archive_project(
     design_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """归档项目"""
     try:
@@ -300,7 +300,7 @@ async def add_candidates(
     design_id: int,
     candidates_data: List[PeptideDesignCandidateCreate],
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """添加候选方案到项目"""
     if len(candidates_data) > 50:
@@ -336,7 +336,7 @@ async def add_candidates(
 async def get_project_versions(
     design_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取版本历史"""
     try:
@@ -363,7 +363,7 @@ async def compare_versions(
     v1: int = Query(..., description="版本1编号"),
     v2: int = Query(..., description="版本2编号"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """对比两个版本"""
     try:

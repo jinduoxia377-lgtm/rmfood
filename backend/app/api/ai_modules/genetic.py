@@ -15,7 +15,7 @@ import logging
 import threading
 import time
 import uuid
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -112,6 +112,12 @@ class GeneticRequest(BaseModel):
     constraints: Optional[Dict[str, Any]] = Field(None, description="约束条件")
     include_herbs: Optional[List[str]] = Field(None, description="用户指定的基础配方药材（强制包含）")
     seed: Optional[int] = Field(None, description="随机种子（可选，用于可重复性）")
+    # 综合适应度权重，键：efficacy/safety/taste/cost(成本效率)/synergy/stability。
+    # 服务端会归一化，前端不必保证总和为 1；不传则用内置默认权重。
+    objective_weights: Optional[Dict[str, float]] = Field(
+        None,
+        description="自定义综合适应度权重（efficacy/safety/taste/cost/synergy/stability）",
+    )
 
 
 class MultiObjectiveRequest(BaseModel):
@@ -139,6 +145,57 @@ def _make_sse_event(event_type: str, data: Any) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+# 默认六维目标规格：(name, key, direction, weight)
+# 注意 key 用 NSGA-II 的命名 cost_efficiency（前端传 cost 时做映射）。
+_DEFAULT_OBJECTIVE_SPECS: List[Tuple[str, str, str, float]] = [
+    ("功效最大化", "efficacy", "maximize", 0.30),
+    ("安全性", "safety", "maximize", 0.25),
+    ("口感品质", "taste", "maximize", 0.10),
+    ("成本效率", "cost_efficiency", "maximize", 0.15),
+    ("协同效应", "synergy", "maximize", 0.10),
+    ("稳定性", "stability", "maximize", 0.10),
+]
+
+
+def _build_weighted_objectives(objective_weights: Optional[Dict[str, float]]):
+    """按前端传来的目标权重重建 NSGA-II objectives 列表。
+
+    不传/全零时返回内置默认权重（与原有行为一致）；传入时归一化为和为 1。
+    前端权重键 `cost` 映射到 NSGA-II 的 `cost_efficiency`。
+    """
+    from ...services.ai.algorithms.models import OptimizationObjective
+
+    weights: Dict[str, float] = {key: weight for _, key, _, weight in _DEFAULT_OBJECTIVE_SPECS}
+    has_user_weights = bool(
+        objective_weights
+        and isinstance(objective_weights, dict)
+        and any(v is not None for v in objective_weights.values())
+    )
+    if has_user_weights:
+        # 用户显式给定权重时，未列出的目标权重置 0 —— 与 Individual 里
+        # w.get(key, 0.0) 的口径保持一致，否则用户只想调 3 个目标时会
+        # 被另外 3 个默认值稀释。
+        weights = {key: 0.0 for _, key, _, _ in _DEFAULT_OBJECTIVE_SPECS}
+        for raw_key, raw_value in objective_weights.items():
+            if raw_value is None:
+                continue
+            try:
+                mapped = "cost_efficiency" if raw_key == "cost" else str(raw_key)
+                if mapped in weights:
+                    weights[mapped] = max(0.0, float(raw_value))
+            except (TypeError, ValueError):
+                continue
+
+    total = sum(weights.values())
+    if total <= 0:
+        total = 1.0
+
+    return [
+        OptimizationObjective(name=name, key=key, direction=direction, weight=weights[key] / total)
+        for name, key, direction, _weight in _DEFAULT_OBJECTIVE_SPECS
+    ]
+
+
 async def _stream_genetic(
     req: GeneticRequest,
     cancel_signal: threading.Event,
@@ -155,6 +212,7 @@ async def _stream_genetic(
         tournament_size=req.tournament_size,
         target_effects=req.target_effects,
         seed=req.seed,
+        objective_weights=req.objective_weights,
     )
     optimizer = GeneticFormulaOptimizer(config=config)
 
@@ -428,7 +486,7 @@ async def _stream_multi_objective(
 async def generate_genetic(
     req: GeneticRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """单目标遗传算法批量优化，返回最优候选方案"""
     from ...services.ai.algorithms.genetic_formula_optimizer import GeneticFormulaOptimizer, GAConfig
@@ -442,6 +500,7 @@ async def generate_genetic(
         tournament_size=req.tournament_size,
         target_effects=req.target_effects,
         seed=req.seed,
+        objective_weights=req.objective_weights,
     )
     optimizer = GeneticFormulaOptimizer(config=config)
     start = time.perf_counter()
@@ -484,7 +543,7 @@ async def generate_genetic(
 @sub_router.post("/generate/genetic/stream", summary="遗传算法配方优化（SSE 流式）")
 async def generate_genetic_stream(
     req: GeneticRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """单目标遗传算法 SSE 流式优化"""
     cancel = threading.Event()
@@ -502,7 +561,7 @@ async def generate_genetic_stream(
 @sub_router.post("/generate/genetic/hybrid", summary="遗传算法混合优化（非流式）")
 async def generate_genetic_hybrid(
     req: GeneticRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """混合模式：先遗传算法全局探索，再 NSGA-II 精细优化"""
     from ...services.ai.algorithms.genetic_formula_optimizer import GeneticFormulaOptimizer, GAConfig
@@ -518,6 +577,7 @@ async def generate_genetic_hybrid(
         tournament_size=req.tournament_size,
         target_effects=req.target_effects,
         seed=req.seed,
+        objective_weights=req.objective_weights,
     )
     ga = GeneticFormulaOptimizer(config=ga_config)
     ga_candidates, ga_history = ga.optimize(
@@ -528,14 +588,7 @@ async def generate_genetic_hybrid(
 
     # 用 GA 结果初始化 NSGA-II 种群
     nsga_config = OptimizationConfig(
-        objectives=[
-            OptimizationObjective(name="功效最大化", key="efficacy", direction="maximize", weight=0.30),
-            OptimizationObjective(name="安全性", key="safety", direction="maximize", weight=0.25),
-            OptimizationObjective(name="口感品质", key="taste", direction="maximize", weight=0.10),
-            OptimizationObjective(name="成本效率", key="cost_efficiency", direction="maximize", weight=0.15),
-            OptimizationObjective(name="协同效应", key="synergy", direction="maximize", weight=0.10),
-            OptimizationObjective(name="稳定性", key="stability", direction="maximize", weight=0.10),
-        ],
+        objectives=_build_weighted_objectives(req.objective_weights),
         mode="pareto",
         population_size=req.population_size,
         generations=max(20, req.generations // 2),
@@ -567,7 +620,7 @@ async def generate_genetic_hybrid(
 @sub_router.post("/generate/genetic/hybrid/stream", summary="遗传算法混合优化（SSE 流式）")
 async def generate_genetic_hybrid_stream(
     req: GeneticRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """混合遗传算法 SSE 流式优化"""
     cancel = threading.Event()
@@ -589,6 +642,7 @@ async def generate_genetic_hybrid_stream(
             tournament_size=req.tournament_size,
             target_effects=req.target_effects,
             seed=req.seed,
+            objective_weights=req.objective_weights,
         )
         ga = GeneticFormulaOptimizer(config=ga_config)
 
@@ -617,14 +671,7 @@ async def generate_genetic_hybrid_stream(
         # Phase 2: NSGA-II 精细优化
         yield _make_sse_event("phase", {"name": "nsga2_refine", "status": "running"})
         nsga_config = OptimizationConfig(
-            objectives=[
-                OptimizationObjective(name="功效最大化", key="efficacy", direction="maximize", weight=0.30),
-                OptimizationObjective(name="安全性", key="safety", direction="maximize", weight=0.25),
-                OptimizationObjective(name="口感品质", key="taste", direction="maximize", weight=0.10),
-                OptimizationObjective(name="成本效率", key="cost_efficiency", direction="maximize", weight=0.15),
-                OptimizationObjective(name="协同效应", key="synergy", direction="maximize", weight=0.10),
-                OptimizationObjective(name="稳定性", key="stability", direction="maximize", weight=0.10),
-            ],
+            objectives=_build_weighted_objectives(req.objective_weights),
             mode="pareto",
             population_size=req.population_size,
             generations=max(20, req.generations // 2),
@@ -693,7 +740,7 @@ async def generate_genetic_hybrid_stream(
 async def generate_multi_objective(
     req: MultiObjectiveRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """NSGA-II 多目标配方优化"""
     from ...services.ai.algorithms.algorithm import NSGAIIOptimizer
@@ -787,7 +834,7 @@ async def generate_multi_objective(
 @sub_router.post("/generate/multi-objective/stream", summary="NSGA-II 多目标优化（SSE 流式）")
 async def generate_multi_objective_stream(
     req: MultiObjectiveRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """NSGA-II 多目标配方优化，SSE 流式推送进化进度"""
     cancel = threading.Event()
@@ -804,7 +851,7 @@ async def generate_multi_objective_stream(
 
 @sub_router.get("/generate/multi-objective/presets", summary="获取多目标优化预设")
 async def get_mo_presets(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """返回可用的预设优化场景"""
     from ...services.ai.algorithms.presets import PRESET_SCENARIOS, _build_presets
@@ -837,7 +884,7 @@ async def get_ga_history(
     limit: int = 20,
     offset: int = 0,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取遗传算法/NSGA-II 优化历史记录"""
     try:
@@ -894,7 +941,7 @@ async def get_ga_history(
 async def get_ga_history_detail(
     run_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取指定运行 ID 的遗传算法优化历史详情"""
     try:
