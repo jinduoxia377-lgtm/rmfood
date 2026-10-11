@@ -195,7 +195,7 @@ async def preview_data(
     db: AsyncSession = Depends(get_db_session),
 ):
     """预览上传文件的前 N 行原始数据。"""
-    task = _get_task(task_id, db)
+    task = await _get_task(task_id, db)
 
     if task["status"] != "uploaded":
         raise HTTPException(status_code=400, detail="任务须处于已上传状态才能预览")
@@ -257,7 +257,7 @@ async def run_import(
     db: AsyncSession = Depends(get_db_session),
 ):
     """启动数据导入任务（异步非阻塞）。"""
-    task = _get_task(task_id, db)
+    task = await _get_task(task_id, db)
 
     if task["status"] not in ("uploaded", "failed"):
         raise HTTPException(
@@ -368,7 +368,7 @@ async def get_task_detail(
     task_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    task = _get_task(task_id, db)
+    task = await _get_task(task_id, db)
 
     # 优先从数据库读取最新状态
     result = await db.execute(
@@ -433,7 +433,7 @@ async def cancel_import(
     task_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
-    task = _get_task(task_id, db)
+    task = await _get_task(task_id, db)
 
     if task["status"] == "running":
         raise HTTPException(status_code=400, detail="无法取消运行中的任务")

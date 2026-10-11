@@ -41,6 +41,18 @@ async def main():
         await db.execute(text("CREATE INDEX IF NOT EXISTS idx_srv_user ON search_recent_views(user_id)"))
         await db.execute(text("CREATE TABLE IF NOT EXISTS import_tasks (task_id VARCHAR(100) PRIMARY KEY, user_id BIGINT, adapter_type VARCHAR(100), target_table VARCHAR(100), status VARCHAR(50), total_rows INTEGER DEFAULT 0, processed_rows INTEGER DEFAULT 0, inserted_rows INTEGER DEFAULT 0, updated_rows INTEGER DEFAULT 0, error_rows INTEGER DEFAULT 0, progress_pct FLOAT DEFAULT 0, error_summary TEXT, file_name VARCHAR(500), file_size_bytes BIGINT, mapping_config JSON, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now())"))
         await db.execute(text("CREATE INDEX IF NOT EXISTS idx_import_tasks_user ON import_tasks(user_id)"))
+        await db.execute(text("""
+            CREATE TABLE IF NOT EXISTS import_errors (
+                id BIGSERIAL PRIMARY KEY,
+                task_id VARCHAR(100),
+                row_number INTEGER,
+                raw_data TEXT,
+                error_message TEXT,
+                error_type VARCHAR(100),
+                created_at TIMESTAMPTZ DEFAULT now()
+            )
+        """))
+        await db.execute(text("CREATE INDEX IF NOT EXISTS idx_import_errors_task ON import_errors(task_id)"))
         for tbl, stmts in MIGRATIONS.items():
             for stmt in stmts:
                 await db.execute(text(f"ALTER TABLE {tbl} {stmt}"))
