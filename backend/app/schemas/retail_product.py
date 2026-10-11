@@ -23,8 +23,8 @@ class RetailProductResponse(BaseModel):
     category: Optional[str] = None
     sub_category: Optional[str] = None
     formulation_type: Optional[str] = None
-    effects: List[str] = Field(default_factory=list)
-    target_population: List[str] = Field(default_factory=list)
+    effects: Optional[List[str]] = Field(default_factory=list)
+    target_population: Optional[List[str]] = Field(default_factory=list)
     full_ingredients: Optional[str] = None
     key_ingredients: Dict[str, Any] = Field(default_factory=dict)
     price: Optional[float] = None
@@ -32,24 +32,24 @@ class RetailProductResponse(BaseModel):
     package_size: Optional[str] = None
     volume_ml: Optional[float] = None
     weight_g: Optional[float] = None
-    sales_channels: List[str] = Field(default_factory=list)
+    sales_channels: Optional[List[str]] = Field(default_factory=list)
     avg_rating: Optional[float] = None
     review_count: Optional[int] = None
     monthly_sales: Optional[int] = None
-    image_urls: List[str] = Field(default_factory=list)
+    image_urls: Optional[List[str]] = Field(default_factory=list)
     reg_number: Optional[str] = None
     reg_type: Optional[str] = None
     approved_region: Optional[str] = None
-    allergens_tags: List[str] = Field(default_factory=list, description="过敏原标签")
-    additives_tags: List[str] = Field(default_factory=list, description="添加剂标签")
+    allergens_tags: Optional[List[str]] = Field(default_factory=list, description="过敏原标签")
+    additives_tags: Optional[List[str]] = Field(default_factory=list, description="添加剂标签")
     ecoscore_grade: Optional[str] = None  # 生态评分等级
-    traces_tags: List[str] = Field(default_factory=list, description="潜在交叉污染物质")
-    contaminants: List[str] = Field(default_factory=list, description="污染物标签")
+    traces_tags: Optional[List[str]] = Field(default_factory=list, description="潜在交叉污染物质")
+    contaminants: Optional[List[str]] = Field(default_factory=list, description="污染物标签")
     source: str = "crawl"
     data_quality: float = 1.0
-    crawl_timestamp: Optional[str] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    crawl_timestamp: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True, "extra": "ignore"}
 
