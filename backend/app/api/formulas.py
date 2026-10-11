@@ -810,6 +810,7 @@ async def predict_formula_effect(
         {
             "name": ing.name,
             "amount_mg": round(((ing.properties or {}).get("weight_g", 0) / total_weight) * 1000),
+            "percentage": round(((ing.properties or {}).get("weight_g", 0) / total_weight) * 100, 2),
         }
         for ing in formula.ingredients
     ]

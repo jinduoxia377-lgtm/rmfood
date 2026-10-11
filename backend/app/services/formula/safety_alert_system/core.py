@@ -133,7 +133,8 @@ class SafetyAlertSystem(FormulaCheckMixin):
         """
         获取指定成分的安全阈值
 
-        优先返回自定义阈值，否则返回内置阈值
+        优先返回自定义阈值，否则返回内置阈值；
+        若未命中，尝试通过「药材→活性成分」别名映射回退。
 
         Args:
             ingredient_name: 成分名称
@@ -141,10 +142,21 @@ class SafetyAlertSystem(FormulaCheckMixin):
         Returns:
             SafetyThreshold 或 None
         """
-        return (
+        direct = (
             self._custom_thresholds.get(ingredient_name) or
             self._thresholds.get(ingredient_name)
         )
+        if direct:
+            return direct
+
+        from .thresholds import HERB_ALIAS_MAP
+        alias = HERB_ALIAS_MAP.get(ingredient_name)
+        if alias:
+            return (
+                self._custom_thresholds.get(alias) or
+                self._thresholds.get(alias)
+            )
+        return None
 
     def get_all_thresholds(
         self,
