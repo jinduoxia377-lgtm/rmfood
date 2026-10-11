@@ -263,6 +263,7 @@ async def get_tcm_herbs(
 @router.get("/tcm/herbs/{herb_name}", summary="获取药材详情")
 async def get_tcm_herb_detail(
     herb_name: str,
+    db: AsyncSession = Depends(get_db_session),
     cache: MultiLevelCache = Depends(get_cache),
 ) -> Dict[str, Any]:
     """获取药材详情信息"""
@@ -271,12 +272,12 @@ async def get_tcm_herb_detail(
     if cached:
         return cached
     
-    # 搜索药材
-    result = await tcmsp_service.get_food_homology_list(None, keyword=herb_name, page=1, page_size=1)
+    # 搜索药材（注入真实 db，避免 None.execute → 500）
+    result = await tcmsp_service.get_food_homology_list(db, keyword=herb_name, page=1, page_size=1)
     if result["total"] > 0:
         herb = result["items"][0]
         # 获取化合物信息
-        compounds = await tcmsp_service.search_compounds(herb_name, None)
+        compounds = await tcmsp_service.search_compounds(herb_name, db)
         herb["compounds"] = compounds
         await cache.set(cache_key, herb, ttl=300)
         return herb

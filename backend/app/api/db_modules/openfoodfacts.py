@@ -47,14 +47,19 @@ async def get_off_import_errors(
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取最近的导入错误（公开接口）"""
-    result = await db.execute(text("""
-        SELECT barcode, error_type, error_message, created_at
-        FROM off_import_errors
-        ORDER BY created_at DESC
-        LIMIT :limit
-    """), {"limit": limit})
+    try:
+        result = await db.execute(text("""
+            SELECT barcode, error_type, error_message, created_at
+            FROM off_import_errors
+            ORDER BY created_at DESC
+            LIMIT :limit
+        """), {"limit": limit})
+        rows = result.fetchall()
+    except Exception:
+        # off_import_errors 表尚未创建（OFF 导入未初始化）时优雅降级
+        rows = []
+        logger.warning("off_import_errors 表不存在，返回空错误列表")
 
-    rows = result.fetchall()
     return ImportErrorResponse(
         errors=[
             {
@@ -81,7 +86,7 @@ async def get_off_import_report(
         SELECT
             COUNT(*) as total,
             COUNT(CASE WHEN embedding IS NOT NULL THEN 1 END) as with_embedding,
-            ROUND(AVG(data_quality), 2) as avg_quality,
+            ROUND(AVG(data_quality)::numeric, 2) as avg_quality,
             COUNT(DISTINCT brand) as unique_brands,
             COUNT(DISTINCT category) as unique_categories,
             MIN(created_at) as first_import,
