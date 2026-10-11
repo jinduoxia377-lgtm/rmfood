@@ -11,7 +11,7 @@ from ..schemas.user import UserCreate, UserUpdate, UserResponse
 from ..services.user import UserService
 from ..services.auth import get_current_user, require_role
 from ..models import User, UserRole
-from ..api.deps import get_db_session, PaginationParams
+from ..api.deps import get_db_session, PaginationParams, get_current_active_user
 
 router = APIRouter(prefix="/users", tags=["用户管理"])
 
@@ -45,10 +45,12 @@ async def list_users(
 @router.get("/{user_id}", response_model=UserResponse, summary="获取用户详情")
 async def get_user(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """获取单个用户详情"""
+    """获取单个用户详情（仅本人或管理员）"""
+    if current_user.id != user_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="无权查看其他用户资料")
     service = UserService(db)
     return await service.get_user(user_id)
 
@@ -68,10 +70,12 @@ async def create_user(
 async def update_user(
     user_id: int,
     data: UserUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """更新用户信息"""
+    """更新用户信息（仅本人或管理员）"""
+    if current_user.id != user_id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="无权修改其他用户资料")
     service = UserService(db)
     return await service.update_user(user_id, data)
 

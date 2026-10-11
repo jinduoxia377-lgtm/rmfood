@@ -44,11 +44,11 @@ export interface User {
 }
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  RESEARCHER = 'RESEARCHER',
-  ANALYST = 'ANALYST',
-  VIEWER = 'VIEWER',
+  ADMIN = 'admin',
+  GUEST = 'guest',
+  RESEARCHER = 'researcher',
+  FORMULATOR = 'formulator',
+  REVIEWER = 'reviewer',
 }
 
 export interface UserPreferences {

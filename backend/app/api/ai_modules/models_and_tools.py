@@ -409,18 +409,18 @@ async def get_ai_stats_summary(
     }
     try:
         # 1. 对话会话数
-        from ..models.chat import ChatSession
+        from ...models.chat import ChatSession
         result["chat_count"] = await _safe_count(db,
             select(func.count(ChatSession.id)).where(ChatSession.user_id == uid, ChatSession.is_active == True))
 
         # 2. 配方数
-        from ..models.formula import Formula
+        from ...models.formula import Formula
         result["generate_count"] = await _safe_count(db,
             select(func.count(Formula.id)).where(Formula.creator_id == uid))
 
         # 3. 安全检查次数
         try:
-            from ..models.formula_deep_integration import SafetyAlertLog
+            from ...models.formula_deep_integration import SafetyAlertLog
             result["safety_checks"] = await _safe_count(db,
                 select(func.count(SafetyAlertLog.id)).where(SafetyAlertLog.user_id == uid))
         except Exception:
@@ -428,7 +428,7 @@ async def get_ai_stats_summary(
 
         # 4. 协同分析记录数
         try:
-            from ..models.formula_deep_integration import SynergyRecord
+            from ...models.formula_deep_integration import SynergyRecord
             result["synergy_count"] = await _safe_count(db,
                 select(func.count(SynergyRecord.id)).where(SynergyRecord.user_id == uid))
         except Exception:
@@ -436,7 +436,7 @@ async def get_ai_stats_summary(
 
         # 5/6. 口感/稳定性预测（共享 effect_predictions 表）
         try:
-            from ..models.formula_deep_integration import EffectPredictionRecord
+            from ...models.formula_deep_integration import EffectPredictionRecord
             formula_ids_subq = select(Formula.id).where(Formula.creator_id == uid)
             result["taste_count"] = await _safe_count(db,
                 select(func.count(EffectPredictionRecord.id)).where(EffectPredictionRecord.formula_id.in_(formula_ids_subq)))
@@ -446,7 +446,7 @@ async def get_ai_stats_summary(
 
         # 7. 肽序列分析数
         try:
-            from ..models.peptide_analysis import PeptideAnalysis
+            from ...models.peptide_analysis import PeptideAnalysis
             result["peptide_analyze_count"] = await _safe_count(db,
                 select(func.count(PeptideAnalysis.id)).where(PeptideAnalysis.user_id == uid))
         except Exception:
@@ -454,7 +454,7 @@ async def get_ai_stats_summary(
 
         # 8. 肽设计数
         try:
-            from ..models.peptide_design import PeptideDesign
+            from ...models.peptide_design import PeptideDesign
             result["peptide_design_count"] = await _safe_count(db,
                 select(func.count(PeptideDesign.id)).where(PeptideDesign.user_id == uid))
         except Exception:

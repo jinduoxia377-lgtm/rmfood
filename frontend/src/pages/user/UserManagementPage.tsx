@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRealtimeEntity, type CDCChangeEvent } from '@/hooks/useRealtimeSync';
 import {
   BarChart,
@@ -100,7 +99,32 @@ import {
 import { EmptyState, Skeleton, Pagination } from '@/components/ui/Common';
 import { Progress } from '@/components/ui/Progress';
 import { useToast } from '@/components/ui/Toast';
-import { ROLE_CONFIG, ROLE_OPTIONS, STATUS_OPTIONS, STATUS_CONFIG, PAGE_SIZE_OPTIONS, CHART_COLORS, resolveRoleKey, getRoleConfig, useDebounce, formatTimeAgo, SortField, SortDirection, UserDetail, ConfirmAction, OperationLog, ActivityRecord, MOCK_ACTIVITY_RECORDS, MOCK_OPERATION_LOGS } from './UserManagementHelpers'
+import { ROLE_CONFIG, ROLE_OPTIONS, STATUS_OPTIONS, STATUS_CONFIG, PAGE_SIZE_OPTIONS, CHART_COLORS, resolveRoleKey, getRoleConfig, useDebounce, formatTimeAgo, SortField, SortDirection, UserDetail, ConfirmAction } from './UserManagementHelpers'
+
+function generateRandomPassword(length = 12): string {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const special = '!@#$';
+  const all = upper + lower + digits + special;
+  const arr = new Uint32Array(length);
+  crypto.getRandomValues(arr);
+  const chars = [
+    upper[arr[0] % upper.length],
+    lower[arr[1] % lower.length],
+    digits[arr[2] % digits.length],
+    special[arr[3] % special.length],
+  ];
+  for (let i = 4; i < length; i++) {
+    chars.push(all[arr[i] % all.length]);
+  }
+  // 洗牌
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = arr[i] % (i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join('');
+}
 
 export default function UserManagementPage() {
   const currentUser = useAuthStore((s) => s.user);
@@ -137,14 +161,13 @@ export default function UserManagementPage() {
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
-  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
   const [createForm, setCreateForm] = useState({
     username: '',
     password: '',
     email: '',
     full_name: '',
-    role: UserRole.VIEWER,
+    role: UserRole.RESEARCHER,
     department: '',
     organization_id: null as number | null,
   });
@@ -153,9 +176,13 @@ export default function UserManagementPage() {
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editForm, setEditForm] = useState({ email: '', full_name: '', phone: '', department: '' });
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [resetPwdOpen, setResetPwdOpen] = useState(false);
+  const [resetPwdValue, setResetPwdValue] = useState('');
+  const [resetPwdResult, setResetPwdResult] = useState<string | null>(null);
+  const [resetPwdLoading, setResetPwdLoading] = useState(false);
 
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ['admin-users', page, pageSize, search, roleFilter, statusFilter, orgFilter],
+    queryKey: ['admin-users', page, pageSize, search, roleFilter, statusFilter, orgFilter, sortField, sortDir],
     queryFn: () =>
       adminApi.listUsers({
         page,
@@ -164,6 +191,8 @@ export default function UserManagementPage() {
         role: roleFilter !== 'all' ? roleFilter : undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         organization_id: orgFilter || undefined,
+        sort_field: sortField,
+        sort_dir: sortDir,
       }),
   });
   const { data: auditLogData } = useQuery({
@@ -194,7 +223,7 @@ export default function UserManagementPage() {
   const registrationTrendChart = useMemo(() => {
     if (!userTrendData?.data || !Array.isArray(userTrendData.data)) return [];
     return userTrendData.data.slice(-14).map((d: any) => ({
-      date: d.date || d.time || '',
+      date: d.period || d.date || d.time || '',
       count: Number(d.count ?? d.value ?? d.total ?? 0),
     }));
   }, [userTrendData]);
@@ -335,41 +364,20 @@ export default function UserManagementPage() {
         password: data.password,
         email: data.email,
         full_name: data.full_name || undefined,
+        department: data.department || undefined,
         role: data.role,
         organization_id: data.organization_id || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-users'] });
       setShowCreateModal(false);
-      setCreateForm({ username: '', password: '', email: '', full_name: '', role: UserRole.VIEWER, department: '', organization_id: null });
+      setCreateForm({ username: '', password: '', email: '', full_name: '', role: UserRole.RESEARCHER, department: '', organization_id: null });
       setCreateErrors({});
       toast.success('用户创建成功');
     },
-    onError: () => {
-      toast.error('用户创建失败，请检查输入信息后重试');
-    },
-  });
-
-  const deactivateUserMutation = useMutation({
-    mutationFn: (userId: number) => adminApi.toggleUserStatus(userId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('用户已禁用');
-    },
-    onError: () => {
-      toast.error('禁用用户失败，请重试');
-    },
-  });
-
-  const batchDeleteMutation = useMutation({
-    mutationFn: (userIds: number[]) => Promise.all(userIds.map((id) => adminApi.toggleUserStatus(id))),
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['admin-users'] });
-      setSelectedIds(new Set());
-      toast.success(`已成功禁用 ${vars.length} 个用户`);
-    },
-    onError: () => {
-      toast.error('批量禁用失败，请重试');
+    onError: (e: any) => {
+      const detail = e?.response?.data?.detail;
+      toast.error(typeof detail === 'string' ? detail : '用户创建失败，请检查输入信息后重试');
     },
   });
 
@@ -386,6 +394,26 @@ export default function UserManagementPage() {
       toast.error('更新失败，请重试');
     },
   });
+
+  const handleResetPassword = useCallback(async () => {
+    if (!detailUser) return;
+    setResetPwdLoading(true);
+    setResetPwdResult(null);
+    try {
+      const res = await adminApi.resetUserPassword(detailUser.id, resetPwdValue || undefined);
+      setResetPwdValue('');
+      setResetPwdResult(
+        res.temp_password
+          ? `用户「${res.username}」临时密码：${res.temp_password}（请转告用户首次登录后修改）`
+          : `用户「${res.username}」密码已重置`,
+      );
+      toast.success('密码已重置');
+    } catch {
+      toast.error('密码重置失败，请重试');
+    } finally {
+      setResetPwdLoading(false);
+    }
+  }, [detailUser, resetPwdValue, toast]);
 
   // CRITICAL #1: lockStatus moved to component top-level (was inside Modal IIFE - Rules of Hooks violation)
   const { data: lockStatus } = useQuery({
@@ -435,16 +463,6 @@ export default function UserManagementPage() {
     return result;
   }, [sortedUsers, statusFilter, orgFilter]);
 
-  // 虚拟滚动：数据量大时启用
-  const enableVirtualScroll = filteredUsers.length > 100;
-  const rowVirtualizer = useVirtualizer({
-    count: enableVirtualScroll ? filteredUsers.length : 0,
-    getScrollElement: () => tableBodyRef.current,
-    estimateSize: () => tableDensity === 'compact' ? 40 : 56,
-    overscan: 5,
-    enabled: enableVirtualScroll,
-  });
-
   const roleStats = useMemo(() => {
     const stats: Record<string, number> = {};
     Object.keys(ROLE_CONFIG).forEach((k) => {
@@ -474,13 +492,9 @@ export default function UserManagementPage() {
   );
 
   const anomalyCount = useMemo(() => {
-    if (auditLogData?.items) {
-      return auditLogData.items.filter(
-        (l: any) => l.action?.includes('login') || l.action?.includes('auth') || l.action?.includes('lock'),
-      ).length;
-    }
-    return MOCK_OPERATION_LOGS.filter(
-      (l) => l.type === 'login_anomaly' || l.type === 'security_event',
+    if (!auditLogData?.items) return 0;
+    return auditLogData.items.filter(
+      (l: any) => l.action?.includes('login') || l.action?.includes('auth') || l.action?.includes('lock'),
     ).length;
   }, [auditLogData]);
 
@@ -530,12 +544,6 @@ export default function UserManagementPage() {
         if (confirmAction.userIds && confirmAction.newValue)
           batchRoleMutation.mutate({ userIds: confirmAction.userIds, role: confirmAction.newValue });
         break;
-      case 'delete':
-        if (confirmAction.userId) deactivateUserMutation.mutate(confirmAction.userId);
-        break;
-      case 'batch_delete':
-        if (confirmAction.userIds) batchDeleteMutation.mutate(confirmAction.userIds);
-        break;
     }
     setConfirmAction(null);
   }, [
@@ -544,8 +552,6 @@ export default function UserManagementPage() {
     roleMutation,
     batchStatusMutation,
     batchRoleMutation,
-    deactivateUserMutation,
-    batchDeleteMutation,
   ]);
 
   const requestStatusToggle = useCallback(
@@ -664,41 +670,6 @@ export default function UserManagementPage() {
     createUserMutation.mutate(createForm);
   }, [createForm, createUserMutation]);
 
-  const requestDeleteUser = useCallback(
-    (user: UserDetail) => {
-      if (user.id === currentUser?.id) {
-        toast.warning('不能禁用自己的账户');
-        return;
-      }
-      setConfirmAction({
-        type: 'delete',
-        userId: user.id,
-        label: '禁用用户',
-        description: `确定要禁用用户「${user.username}」吗？禁用后该用户将无法登录系统。`,
-        confirmLabel: '确认禁用',
-        variant: 'danger',
-      });
-    },
-    [currentUser, toast],
-  );
-
-  const requestBatchDelete = useCallback(() => {
-    let ids = [...selectedIds];
-    if (ids.includes(currentUser?.id ?? -1)) {
-      toast.warning('批量操作中包含当前登录用户，已自动排除');
-      ids = ids.filter((id) => id !== currentUser?.id);
-      if (ids.length === 0) return;
-    }
-    setConfirmAction({
-      type: 'batch_delete',
-      userIds: ids,
-      label: '批量禁用用户',
-      description: `确定要禁用选中 ${ids.length} 个用户吗？禁用后这些用户将无法登录系统。`,
-      confirmLabel: `确认禁用 (${ids.length})`,
-      variant: 'danger',
-    });
-  }, [selectedIds, currentUser, toast]);
-
   const exportToCSV = useCallback(async () => {
     // Export ALL matching users (not just current page) by fetching all pages
     const headers = ['用户名', '姓名', '邮箱', '角色', '状态', '部门', '注册时间', '最后登录'];
@@ -738,7 +709,15 @@ export default function UserManagementPage() {
         u.last_login ? new Date(u.last_login).toLocaleDateString('zh-CN') : '',
       ]));
     }
-    const csv = [headers.join(','), ...allRows.map((r) => r.join(','))].join('\n');
+    // CSV 字段转义（防注入 + 正确处理逗号/引号/换行）
+    const csvEscape = (val: unknown): string => {
+      const s = String(val ?? '');
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [
+      headers.map(csvEscape).join(','),
+      ...allRows.map((r) => r.map(csvEscape).join(',')),
+    ].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -810,9 +789,7 @@ export default function UserManagementPage() {
     statusMutation.isPending ||
     batchRoleMutation.isPending ||
     batchStatusMutation.isPending ||
-    createUserMutation.isPending ||
-    deactivateUserMutation.isPending ||
-    batchDeleteMutation.isPending;
+    createUserMutation.isPending;
   const cellPadding = tableDensity === 'compact' ? 'px-4 py-2.5' : 'px-4 py-3';
   const textSize = tableDensity === 'compact' ? 'text-xs' : 'text-sm';
 
@@ -1086,7 +1063,12 @@ export default function UserManagementPage() {
               </Button>
             </div>
             <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
-              {(auditLogData?.items?.length ? auditLogData.items : MOCK_OPERATION_LOGS).slice(0, 10).map((log: any) => (
+              {!auditLogData?.items?.length && (
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] py-6 text-center">
+                  暂无操作日志
+                </p>
+              )}
+              {(auditLogData?.items ?? []).slice(0, 10).map((log: any) => (
                 <div key={log.id}>
                   <div
                     onClick={() => handleLogClick(log.id)}
@@ -1131,7 +1113,7 @@ export default function UserManagementPage() {
                         </span>
                       </div>
                       <p className="text-neutral-500 dark:text-neutral-400 mt-0.5 text-xs truncate">
-                        {log.details || log.action}
+                        {typeof log.details === 'string' ? log.details : log.action}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         <Clock className="w-3 h-3" />
@@ -1422,15 +1404,6 @@ export default function UserManagementPage() {
                 >
                   <Lock className="w-3.5 h-3.5 mr-1" /> 批量禁用
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-error-600 border-error-200 hover:bg-error-50 dark:border-error-800 dark:hover:bg-error-900/20"
-                  onClick={() => requestBatchDelete()}
-                  disabled={batchDeleteMutation.isPending}
-                >
-                  <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量禁用
-                </Button>
                 <Button size="sm" variant="ghost" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" onClick={() => setSelectedIds(new Set())}>
                   取消选择
                 </Button>
@@ -1543,7 +1516,7 @@ export default function UserManagementPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody ref={tableBodyRef} className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
                       {filteredUsers.map((user, idx) => {
                         const roleCfg = getRoleConfig(user.role);
                         const RoleIcon = roleCfg.icon;
@@ -1632,7 +1605,7 @@ export default function UserManagementPage() {
                                   !isSelf &&
                                   requestRoleChange(
                                     user,
-                                    user.role === UserRole.ADMIN ? UserRole.MANAGER : UserRole.ADMIN,
+                                    user.role === UserRole.ADMIN ? UserRole.REVIEWER : UserRole.ADMIN,
                                   )
                                 }
                                 disabled={isSelf}
@@ -1691,8 +1664,8 @@ export default function UserManagementPage() {
                                     <button
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700/50 transition-colors"
                                       onClick={() => {
-                                        // Cycle through roles: ADMIN -> MANAGER -> RESEARCHER -> ANALYST -> VIEWER -> ADMIN
-                                        const roleOrder = [UserRole.ADMIN, UserRole.MANAGER, UserRole.RESEARCHER, UserRole.ANALYST, UserRole.VIEWER];
+                                        // Cycle through roles: ADMIN -> REVIEWER -> RESEARCHER -> FORMULATOR -> GUEST -> ADMIN
+                                        const roleOrder = [UserRole.ADMIN, UserRole.REVIEWER, UserRole.RESEARCHER, UserRole.FORMULATOR, UserRole.GUEST];
                                         const currentIdx = roleOrder.indexOf(user.role as UserRole);
                                         const nextRole = roleOrder[(currentIdx + 1) % roleOrder.length];
                                         requestRoleChange(user, nextRole);
@@ -1724,16 +1697,6 @@ export default function UserManagementPage() {
                                           <Eye className="w-4 h-4" /> 启用账户
                                         </>
                                       )}
-                                    </button>
-                                    <button
-                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors"
-                                      onClick={() => {
-                                        requestDeleteUser(user);
-                                        setActionMenuId(null);
-                                      }}
-                                      disabled={isSelf}
-                                    >
-                                      <Trash2 className="w-4 h-4" /> 删除账户
                                     </button>
                                   </div>
                                 )}
@@ -2229,6 +2192,74 @@ export default function UserManagementPage() {
                       </div>
                     )}
 
+                    {/* 更改密码（管理员重置） */}
+                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+                          <KeyRound className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+                          更改密码
+                        </h4>
+                        {!isSelf && !resetPwdOpen && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => { setResetPwdOpen(true); setResetPwdResult(null); setResetPwdValue(''); }}
+                          >
+                            <KeyRound className="w-3.5 h-3.5 mr-1" /> 重置密码
+                          </Button>
+                        )}
+                      </div>
+                      {isSelf ? (
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                          不能在此修改自己的密码，请前往「个人设置」修改。
+                        </p>
+                      ) : resetPwdOpen ? (
+                        <div className="space-y-3 rounded-xl border border-primary-200 dark:border-primary-800/40 bg-white dark:bg-neutral-900/50 p-4">
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              value={resetPwdValue}
+                              onChange={(e) => setResetPwdValue(e.target.value)}
+                              placeholder="输入新密码（至少8位），留空则系统生成"
+                              prefix={<KeyRound size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
+                              size="sm"
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setResetPwdValue(generateRandomPassword())}
+                            >
+                              随机生成
+                            </Button>
+                          </div>
+                          {resetPwdValue && resetPwdValue.length < 8 && (
+                            <p className="text-xs text-error-500">密码至少 8 个字符</p>
+                          )}
+                          {resetPwdResult && (
+                            <div className="rounded-lg bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800/40 p-3 text-xs break-all text-warning-800 dark:text-warning-200">
+                              {resetPwdResult}
+                            </div>
+                          )}
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="ghost" onClick={() => { setResetPwdOpen(false); setResetPwdResult(null); }}>
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              disabled={resetPwdLoading || (resetPwdValue.length > 0 && resetPwdValue.length < 8)}
+                              onClick={handleResetPassword}
+                            >
+                              {resetPwdLoading ? '提交中...' : '确认重置'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                          点击「重置密码」可为该用户设置新密码或生成临时密码。
+                        </p>
+                      )}
+                    </div>
+
                     <div className="gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30 -mx-6 -mb-6 px-6 py-4 rounded-b-xl flex items-center">
                       {!detailUser.is_active && !isSelf && (
                         <Button
@@ -2255,20 +2286,6 @@ export default function UserManagementPage() {
                           disabled={statusMutation.isPending}
                         >
                           <EyeOff className="w-4 h-4 mr-1.5" /> 禁用此账户{' '}
-                        </Button>
-                      )}
-                      {!isSelf && (
-                        <Button
-                          size="sm"
-                          variant={'danger'}
-                          className="flex-1"
-                          onClick={() => {
-                            requestDeleteUser(detailUser);
-                            setDetailUser(null);
-                          }}
-                          disabled={deactivateUserMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4 mr-1.5" /> 删除账户
                         </Button>
                       )}
                       {lockStatus?.is_locked && !isSelf && (
@@ -2421,88 +2438,97 @@ export default function UserManagementPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
-                        <Clock className="w-4 h-4" /> 最近活动录{' '}
+                        <Clock className="w-4 h-4" /> 最近活动记录{' '}
                       </h4>
                       <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">最近 7 天</span>
                     </div>
 
-                    <div className="relative pl-4 border-l-2 border-neutral-200/80 dark:border-neutral-700/60 space-y-0">
-                      {(detailUser ? (
-        userActivityQuery.data?.items?.length
-          ? userActivityQuery.data.items.map((log) => ({
-              id: log.id,
-              action: log.action || '未知操作',
-              time: log.created_at || '',
-              ip: log.ip_address || '-',
-              location: '本地',
-              status: (log.status_code === 200 || log.status_code === undefined) ? 'success' : 'failed',
-            }))
-          : MOCK_ACTIVITY_RECORDS
-      ) : MOCK_ACTIVITY_RECORDS).map((record) => (
-                        <div key={record.id} className="relative pb-4 last:pb-0">
-                          <div
-                            className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 shadow-sm background-white dark:bg-neutral-900 ${
-                              record.status === 'success'
-                                ? 'border-success-500 bg-primary-500'
-                                : record.status === 'failed'
-                                  ? 'border-error-500 bg-error-500'
-                                  : 'border-warning-500 bg-warning-500'
-                            }`}
-                          />
-                          <div className="pl-4">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`text-xs font-medium ${
+                    {userActivityQuery.isLoading ? (
+                      <div className="py-8 text-center text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        加载中...
+                      </div>
+                    ) : !userActivityQuery.data?.items?.length ? (
+                      <div className="py-8 text-center text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        暂无活动记录
+                      </div>
+                    ) : (
+                      <div className="relative pl-4 border-l-2 border-neutral-200/80 dark:border-neutral-700/60 space-y-0">
+                        {userActivityQuery.data.items.map((log) => {
+                          const record = {
+                            id: log.id,
+                            action: log.action || '未知操作',
+                            time: log.created_at || '',
+                            ip: log.ip_address || '-',
+                            location: '本地',
+                            status: (log.status_code === 200 || log.status_code === undefined) ? 'success' : 'failed',
+                          };
+                          return (
+                            <div key={record.id} className="relative pb-4 last:pb-0">
+                              <div
+                                className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 shadow-sm background-white dark:bg-neutral-900 ${
                                   record.status === 'success'
-                                    ? 'text-primary-700'
+                                    ? 'border-success-500 bg-primary-500'
                                     : record.status === 'failed'
-                                      ? 'text-error-600'
-                                      : 'text-warning-600'
+                                      ? 'border-error-500 bg-error-500'
+                                      : 'border-warning-500 bg-warning-500'
                                 }`}
-                              >
-                                {record.action}
-                              </span>
-                              {record.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500" />}
+                              />
+                              <div className="pl-4">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`text-xs font-medium ${
+                                      record.status === 'success'
+                                        ? 'text-primary-700'
+                                        : record.status === 'failed'
+                                          ? 'text-error-600'
+                                          : 'text-warning-600'
+                                    }`}
+                                  >
+                                    {record.action}
+                                  </span>
+                                  {record.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500" />}
+                                </div>
+                                <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? record.time : d.toLocaleDateString('zh-CN'); })()}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); })()}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    {record.location}
+                                  </span>
+                                  <span className="flex items-center gap-1 font-mono">
+                                    <Wifi className="w-3 h-3" />
+                                    {record.ip}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? record.time : d.toLocaleDateString('zh-CN'); })()}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); })()}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {record.location}
-                              </span>
-                              <span className="flex items-center gap-1 font-mono">
-                                <Wifi className="w-3 h-3" />
-                                {record.ip}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700 grid grid-cols-3 gap-3">
                       <div className="text-center p-2 rounded-lg bg-primary-50 dark:bg-primary-300/15">
                         <p className="text-lg font-bold text-primary-700 tabular-nums">
-                          {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code === 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'success').length}
+                          {userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code === 200).length : 0}
                         </p>
                         <p className="text-xs text-primary-700/70">成功操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-error-50 dark:bg-error-300/15">
                         <p className="text-lg font-bold text-error-600 tabular-nums">
-                          {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code !== 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'failed').length}
+                          {userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code !== 200).length : 0}
                         </p>
                         <p className="text-xs text-error-600/70">失败操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-warning-50 dark:bg-warning-300/15">
                         <p className="text-lg font-bold text-warning-600 tabular-nums">
-                          {detailUser && userActivityQuery.data?.items?.[0]?.created_at ? formatTimeAgo(userActivityQuery.data.items[0].created_at) : formatTimeAgo(MOCK_ACTIVITY_RECORDS[0]?.time || '')}
+                          {userActivityQuery.data?.items?.[0]?.created_at ? formatTimeAgo(userActivityQuery.data.items[0].created_at) : '—'}
                         </p>
                         <p className="text-xs text-warning-600/70">最近活动</p>
                       </div>
@@ -2834,7 +2860,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                   password: '',
                   email: '',
                   full_name: '',
-                  role: UserRole.VIEWER,
+                  role: UserRole.RESEARCHER,
                   department: '',
                   organization_id: null,
                 });

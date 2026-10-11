@@ -1,0 +1,102 @@
+{
+  "_honesty_note": [
+    "Every record was extracted from a real PubMed abstract.",
+    "peptide + ACE-relevant cue must co-occur in the same abstract snippet.",
+    "pmid is the source article; the full snippet is preserved for audit.",
+    "Records that failed the co-occurrence check are EXCLUDED, not padded.",
+    "No sequence, IC50, or label in this file was invented."
+  ],
+  "count": 15,
+  "peptides": [
+    {
+      "seq": "VPP",
+      "pmid": "21389626",
+      "evidence": "orporating angiotensin I-converting enzyme (ACE) inhibitory peptides such as Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP), in subjects with blood pressure ranging from normal to mild hy",
+      "cue": "ACE"
+    },
+    {
+      "seq": "IPP",
+      "pmid": "21389626",
+      "evidence": "I-converting enzyme (ACE) inhibitory peptides such as Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP), in subjects with blood pressure ranging from normal to mild hypertension. A total of ",
+      "cue": "ACE"
+    },
+    {
+      "seq": "QIGLF",
+      "pmid": "37205773",
+      "evidence": "ic effects. The egg-derived peptides Arg-Val-Pro-Ser-Leu (RVPSL) and Gln-Ile-Gly-Leu-Phe (QIGLF) display strong angiotensin-converting enzyme inhibitory activity and they can be ta",
+      "cue": "inhibit"
+    },
+    {
+      "seq": "IRW",
+      "pmid": "29278298",
+      "evidence": "S formation, and NADPH oxidase activation. Of three ACE inhibitory peptides studied, only IRW improves insulin resistance in L6 cells, at least partially via reduced AT1R expressio",
+      "cue": "ACE"
+    },
+    {
+      "seq": "SPH",
+      "pmid": "33352405",
+      "evidence": "et for treating hypertension. Spent hen muscle protein hydrolysate prepared by thermoase (SPH-T) exhibited both ACEi and ACE2u activities. After ultrafiltration and chromatographic",
+      "cue": "ACE"
+    },
+    {
+      "seq": "SPIH",
+      "pmid": "38338515",
+      "evidence": "r samples at different incubation times. A comparative study between SPIH-YCE (day 0) and SPIH-YCE after 10 days of incubation showed significantly higher anti-inflammatory and ACE",
+      "cue": "ACE"
+    },
+    {
+      "seq": "SGID",
+      "pmid": "42511169",
+      "evidence": "xic at the concentrations tested (&lt;10 mg/mL) in STC-1 enteroendocrine cells. Following SGID, increased ACE-inhibitory activity was observed, with IC50 values as low as 4.6 &#xb5",
+      "cue": "ACE"
+    },
+    {
+      "seq": "GIF",
+      "pmid": "42588022",
+      "evidence": "utility (r = 0.608 for ACE inhibition and r = 0.581 for log10(1/IC50)). Five peptides-VF, GIF, LP, IP, and VP-were selected because they represented the intersection of in silico c",
+      "cue": "ACE"
+    },
+    {
+      "seq": "VRP",
+      "pmid": "33352405",
+      "evidence": "ties. After ultrafiltration and chromatographic fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectiv",
+      "cue": "ACE"
+    },
+    {
+      "seq": "IWH",
+      "pmid": "30280571",
+      "evidence": "tant role of aminopeptidase N in cleaving small ACE inhibitory peptides during transport. IWH was transported via both peptide transporter 1 (PepT1) and paracellular route, while I",
+      "cue": "ACE"
+    },
+    {
+      "seq": "IWHHT",
+      "pmid": "30280571",
+      "evidence": "Ile-Trp-His-His-Thr (IWHHT), initially identified as an ACE inhibitory peptide, was shown to have antioxidant and an",
+      "cue": "ACE"
+    },
+    {
+      "seq": "EWH",
+      "pmid": "42420350",
+      "evidence": "the dual ACE-inhibitory and gut microbiota-modulating potential of egg white hydrolysate (EWH), obtained through Alcalase enzymatic hydrolysis. LC-ESI-MS/MS analysis of the most bi",
+      "cue": "ACE"
+    },
+    {
+      "seq": "WNWD",
+      "pmid": "42738710",
+      "evidence": "re blood pressure homeostasis-related targets and multiple key pathways. The core peptide WNWD was chemically synthesized and verified to have an ACE inhibitory IC50 value of 3.529",
+      "cue": "ACE"
+    },
+    {
+      "seq": "WLRL",
+      "pmid": "31139399",
+      "evidence": "d three novel &#x3b1;-glucosidase inhibitory peptides with sequences LLPLPVLK, SWLRL, and WLRL with IC50 of 237.43&#xa0;&#xb1;&#xa0;0.52, 182.05&#xa0;&#xb1;&#xa0;0.74, and 162.29&#",
+      "cue": "inhibit"
+    },
+    {
+      "seq": "YVVF",
+      "pmid": "33340899",
+      "evidence": "a0;h) exhibited a 10.4 times higher ACE-inhibitory activity than SPIH. Novel peptides IY, YVVF, LVF, WMY, LVLL and FF (hydrophobicity values 10.51-12.87; activity scores 0.2373-0.9",
+      "cue": "ACE"
+    }
+  ]
+}

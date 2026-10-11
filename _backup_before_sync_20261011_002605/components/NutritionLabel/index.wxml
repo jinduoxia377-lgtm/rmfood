@@ -1,0 +1,6 @@
+<!-- 营养标签组件 -->
+<NutritionLabel
+  data="{{nutritionData}}"
+  serving-size="{{servingSize || '100g'}}"
+  class="{{className}}"
+/>

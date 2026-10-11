@@ -26,12 +26,26 @@ export class PermissionDeniedError extends Error {
 }
 
 export const ROLE_PERMISSIONS: RolePermissionMap = {
+  GUEST: [FormulaPermission.VIEW],
   VIEWER: [FormulaPermission.VIEW],
   RESEARCHER: [
     FormulaPermission.VIEW,
     FormulaPermission.CREATE,
     FormulaPermission.EDIT,
     FormulaPermission.EXPORT,
+  ],
+  FORMULATOR: [
+    FormulaPermission.VIEW,
+    FormulaPermission.CREATE,
+    FormulaPermission.EDIT,
+    FormulaPermission.EXPORT,
+  ],
+  REVIEWER: [
+    FormulaPermission.VIEW,
+    FormulaPermission.CREATE,
+    FormulaPermission.EDIT,
+    FormulaPermission.EXPORT,
+    FormulaPermission.AUDIT,
   ],
   ANALYST: [
     FormulaPermission.VIEW,

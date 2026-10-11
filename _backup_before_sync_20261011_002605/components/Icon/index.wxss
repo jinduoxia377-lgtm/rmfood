@@ -1,0 +1,18 @@
+﻿/* Icon缁勪欢 - 鍐呰仈SVG鏍峰紡 */
+.icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rpx;
+  height: 1rpx;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* 灏哄瑙勮寖 */
+.icon-xs { width: 16rpx; height: 16rpx; font-size: 16rpx; }
+.icon-sm { width: 24rpx; height: 24rpx; font-size: 24rpx; }
+.icon-md { width: 32rpx; height: 32rpx; font-size: 32rpx; }
+.icon-lg { width: 48rpx; height: 48rpx; font-size: 48rpx; }
+.icon-xl { width: 64rpx; height: 64rpx; font-size: 64rpx; }
+.icon-xxl { width: 96rpx; height: 96rpx; font-size: 96rpx; }

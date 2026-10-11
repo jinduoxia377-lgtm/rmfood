@@ -64,6 +64,16 @@ class FoodPeptideAnalysis:
     ml_validation_precision: Optional[float] = None
     ml_validation_recall: Optional[float] = None
     ml_metrics_note: str = ""
+    # 可信度门禁：平衡准确率≈0.5 表示模型无判别力，分数不可作为功效依据
+    ml_is_trustworthy: bool = False
+    ml_trust_note: str = ""
+    ml_balanced_accuracy: Optional[float] = None
+    ml_trained_on_real_only: bool = True
+    ml_decision_threshold: float = 0.5
+    ml_is_predicted_active: Optional[bool] = None
+    # Step B：PubMed 审计真实正类样本（带可溯源 pmid，非合成）
+    ml_library_pubmed_count: int = 0
+    ml_include_pubmed: bool = False
     ml_model_name: str = "PeptideRanker-Mini"
     
     # 安全性评估结果
@@ -149,6 +159,15 @@ class FoodPeptideAnalysis:
                 "validation_precision": round(self.ml_validation_precision, 4) if self.ml_validation_precision is not None else None,
                 "validation_recall": round(self.ml_validation_recall, 4) if self.ml_validation_recall is not None else None,
                 "metrics_note": self.ml_metrics_note,
+                # 可信度门禁状态（前端据此决定是否降级提示）
+                "is_trustworthy": self.ml_is_trustworthy,
+                "trust_note": self.ml_trust_note,
+                "balanced_accuracy": round(self.ml_balanced_accuracy, 4) if self.ml_balanced_accuracy is not None else None,
+                "trained_on_real_only": self.ml_trained_on_real_only,
+                "decision_threshold": self.ml_decision_threshold,
+                "is_predicted_active": self.ml_is_predicted_active,
+                "library_pubmed_count": self.ml_library_pubmed_count,
+                "include_pubmed": self.ml_include_pubmed,
                 "honest_note": (
                     f"真实 ML 模型：用 DFBP 库 {self.ml_library_size} 条标注记录训练"
                     f"（真实文献 {self.ml_library_real_count} + 程序合成 {self.ml_library_synth_count}，合成已显式标注）；"
@@ -483,6 +502,8 @@ class FoodPeptideAnalyzer:
             result.ml_validation_set_size = trainer.validation_set_size
             result.ml_library_real_count = trainer.library_real_count
             result.ml_library_synth_count = trainer.library_synth_count
+            result.ml_library_pubmed_count = getattr(trainer, "library_pubmed_count", 0)
+            result.ml_include_pubmed = getattr(trainer, "include_pubmed", False)
             result.ml_train_real_count = trainer.train_real_count
             result.ml_train_synth_count = trainer.train_synth_count
             val = (trainer.metrics or {}).get("validation", {})
@@ -495,6 +516,13 @@ class FoodPeptideAnalyzer:
             result.ml_validation_precision = val.get("precision")
             result.ml_validation_recall = val.get("recall")
             result.ml_metrics_note = (trainer.metrics or {}).get("honest_note")
+            # 可信度门禁：模型无判别力（平衡准确率≈0.5）时前端必须显式降级提示
+            result.ml_is_trustworthy = bool(getattr(trainer, "is_trustworthy", False))
+            result.ml_trust_note = getattr(trainer, "trust_note", "")
+            result.ml_balanced_accuracy = getattr(trainer, "balanced_accuracy", None)
+            result.ml_trained_on_real_only = bool(getattr(trainer, "real_only", True))
+            result.ml_decision_threshold = getattr(trainer, "decision_threshold", 0.5)
+            result.ml_is_predicted_active = pred.get("is_predicted_active")
             logger.info(
                 f"真实 ML 预测: {sequence} → ACE={result.ml_ace_score} "
                 f"method={result.ml_method} samples={result.ml_training_samples}"

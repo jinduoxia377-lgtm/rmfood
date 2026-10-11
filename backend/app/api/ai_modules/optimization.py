@@ -64,9 +64,12 @@ async def get_optimization_suggestions(
 
         # 从数据库加载配方（如果提供了 formula_id）
         if formula_data.formula_id:
-            from ..models.formula import Formula
+            from ...models.formula import Formula
+            from sqlalchemy.orm import selectinload
             result = await db.execute(
-                select(Formula).where(
+                select(Formula)
+                .options(selectinload(Formula.ingredients))
+                .where(
                     Formula.id == formula_data.formula_id,
                     Formula.creator_id == current_user.id,
                 )
@@ -150,9 +153,10 @@ async def recommend_formulas(
 ):
     """基于用户历史和当前项目提供真实配方推荐"""
     try:
-        from ..models.formula import Formula
+        from ...models.formula import Formula
+        from sqlalchemy.orm import selectinload
 
-        query = select(Formula).where(
+        query = select(Formula).options(selectinload(Formula.ingredients)).where(
             Formula.creator_id == current_user.id,
             Formula.status == FormulaStatus.PUBLISHED,
         )
@@ -197,8 +201,8 @@ async def predict_trends(
 ):
     """基于真实数据库数据统计的趋势预测"""
     try:
-        from ..models.formula import Formula
-        from ..models.experiment import Experiment
+        from ...models.formula import Formula
+        from ...models.experiment import Experiment
 
         # 获取真实统计数据
         formula_count = await db.execute(

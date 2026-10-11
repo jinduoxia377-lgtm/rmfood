@@ -1343,15 +1343,17 @@ async def batch_create_operation_logs(
         log_entry = AuditLog(
             user_id=current_user.id,
             action=log_data.get("action", ""),
-            entity_type=log_data.get("target_type", ""),
-            entity_id=int(log_data.get("target_id", 0)) if log_data.get("target_id") else None,
-            details=log_data.get("details", {}),
-            ip_address=log_data.get("ip_address") or current_user.last_login_ip,
-            username=log_data.get("operator_name") or current_user.username,
-            user_role=current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role),
-            method="POST",
-            path="/formulas/logs/batch",
-            status_code=200,
+            resource_type=log_data.get("target_type", ""),
+            resource_id=int(log_data.get("target_id", 0)) if log_data.get("target_id") else None,
+            details={
+                **(log_data.get("details", {}) or {}),
+                "username": log_data.get("operator_name") or current_user.username,
+                "user_role": current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role),
+                "method": "POST",
+                "path": "/formulas/logs/batch",
+                "status_code": 200,
+            },
+            ip_address=log_data.get("ip_address") or getattr(current_user, "last_login_ip", None),
         )
         db.add(log_entry)
         created += 1
@@ -1446,13 +1448,17 @@ async def batch_delete_formulas(
         log_entry = AuditLog(
             user_id=current_user.id,
             action="delete",
-            entity_type="formula",
-            details={"deleted_count": deleted, "ids": list(existing_ids)},
-            username=current_user.username,
-            user_role=current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role),
-            method="POST",
-            path="/formulas/batch-delete",
-            status_code=200,
+            resource_type="formula",
+            resource_id=None,
+            details={
+                "deleted_count": deleted,
+                "ids": list(existing_ids),
+                "username": current_user.username,
+                "user_role": current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role),
+                "method": "POST",
+                "path": "/formulas/batch-delete",
+                "status_code": 200,
+            },
             request_id=str(uuid.uuid4())[:16],
         )
         db.add(log_entry)

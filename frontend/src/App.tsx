@@ -191,7 +191,7 @@ function AdminGuard({ children }: { children: ReactNode }) {
     return <LoadingComponent />;
   }
 
-  if ((user.role as string).toUpperCase() !== UserRole.ADMIN) {
+  if ((user.role as string).toLowerCase() !== UserRole.ADMIN) {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -1,0 +1,1237 @@
+{
+  "generated_at": "2026-10-11T08:50:42+0800",
+  "honesty_note": "Every record is a real (peptide, evidence, pmid) triple from a PubMed abstract. No label is invented. 'kind' shows the textual cue that marked the snippet ACE-relevant. 'pmid' is the real source article.",
+  "source_abstracts": 169,
+  "pairs": [
+    {
+      "peptide": "RAS",
+      "evidence": "ACE), which are mainly involved in the regulation of blood pressure by RAS. ACE inhibitory peptides enhance endothelial nitric oxide's biosynthesis, which increases ni",
+      "kind": "inhibit",
+      "pmid": "34994309"
+    },
+    {
+      "peptide": "VPP",
+      "evidence": "taining casein hydrolysate, incorporating angiotensin I-converting enzyme (ACE) inhibitory peptides such as Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP), in subjects with b",
+      "kind": "inhibit",
+      "pmid": "21389626"
+    },
+    {
+      "peptide": "IPP",
+      "evidence": "taining casein hydrolysate, incorporating angiotensin I-converting enzyme (ACE) inhibitory peptides such as Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP), in subjects with b",
+      "kind": "inhibit",
+      "pmid": "21389626"
+    },
+    {
+      "peptide": "IWHHT",
+      "evidence": "Ile-Trp-His-His-Thr (IWHHT), initially identified as an ACE inhibitory peptide, was shown to have antioxidant and anti-inflammatory activities in c",
+      "kind": "inhibit",
+      "pmid": "30280571"
+    },
+    {
+      "peptide": "IWH",
+      "evidence": "s firstly evidenced an important role of aminopeptidase N in cleaving small ACE inhibitory peptides during transport. IWH was transported via both peptide transporter",
+      "kind": "inhibit",
+      "pmid": "30280571"
+    },
+    {
+      "peptide": "GIF",
+      "evidence": "ined predictive utility (r = 0.608 for ACE inhibition and r = 0.581 for log10(1/IC50)). Five peptides-VF, GIF, LP, IP, and VP-were selected because they represented",
+      "kind": "IC50",
+      "pmid": "42588022"
+    },
+    {
+      "peptide": "MALDI",
+      "evidence": "d low-mass MALDI features in the experimentally prepared hydrolysates. All five inhibited ACE (IC50 = 19.50-93.19 &#xb5;M); VF and GIF showed mixed-type inhibition, wh",
+      "kind": "inhibit",
+      "pmid": "42588022"
+    },
+    {
+      "peptide": "CFH",
+      "evidence": "eased (~40%). ACE inhibitory activity was also pronounced, particularly in CFH (IC50 = 59.5 &#xb5;g protein/mL), but digestion converged values between hydrolysates",
+      "kind": "IC50",
+      "pmid": "41596852"
+    },
+    {
+      "peptide": "LLPLPVLK",
+      "evidence": ";-glucosidase inhibitory peptides with sequences LLPLPVLK, SWLRL, and WLRL with IC50 of 237.43&#xa0;&#xb1;&#xa0;0.52, 182.05&#xa0;&#xb1;&#xa0;0.74, and 162.29&#xa0;",
+      "kind": "IC50",
+      "pmid": "31139399"
+    },
+    {
+      "peptide": "SWLRL",
+      "evidence": ";-glucosidase inhibitory peptides with sequences LLPLPVLK, SWLRL, and WLRL with IC50 of 237.43&#xa0;&#xb1;&#xa0;0.52, 182.05&#xa0;&#xb1;&#xa0;0.74, and 162.29&#xa0;",
+      "kind": "IC50",
+      "pmid": "31139399"
+    },
+    {
+      "peptide": "WLRL",
+      "evidence": ";-glucosidase inhibitory peptides with sequences LLPLPVLK, SWLRL, and WLRL with IC50 of 237.43&#xa0;&#xb1;&#xa0;0.52, 182.05&#xa0;&#xb1;&#xa0;0.74, and 162.29&#xa0;",
+      "kind": "IC50",
+      "pmid": "31139399"
+    },
+    {
+      "peptide": "ASC",
+      "evidence": "collagen (ASC) hydrolysate of T. bimaculatus. The antihypertensive effects and potential mechanism were conducted using Ang-II-induced human umbilical vein endotheli",
+      "kind": "potent",
+      "pmid": "34940654"
+    },
+    {
+      "peptide": "FNLRMQ",
+      "evidence": "ys. This study, herein, reveals that collagen peptide FNLRMQ could be used as a potential candidate compound for antihypertensive treatment, and could provide scienti",
+      "kind": "potent",
+      "pmid": "34940654"
+    },
+    {
+      "peptide": "PCM",
+      "evidence": "r antioxidant activity (IC&#x2085;&#x2080;&#xa0;=&#xa0;8.36&#xa0;mg/mL) and ACE inhibitory activity (IC&#x2085;&#x2080;&#xa0;=&#xa0;15.65&#xa0;mg/mL) compared with PCM",
+      "kind": "inhibit",
+      "pmid": "42680329"
+    },
+    {
+      "peptide": "QIGLF",
+      "evidence": "L) and Gln-Ile-Gly-Leu-Phe (QIGLF) display strong angiotensin-converting enzyme inhibitory activity and they can be taken up by intestinal epithelial cells. The intera",
+      "kind": "inhibit",
+      "pmid": "37205773"
+    },
+    {
+      "peptide": "KLPDMIL",
+      "evidence": "ce hydrophobicity. The &lt;1&#xa0;kDa hydrolysate fraction exhibited potent ACE-inhibitory activity (70.51%, P&#xa0;&lt;&#xa0;0.05). Among identified peptides, KLPDMIL",
+      "kind": "inhibit",
+      "pmid": "42048817"
+    },
+    {
+      "peptide": "KLPDMILY",
+      "evidence": "xa0;0.05). Among identified peptides, KLPDMILY was validated as the most potent inhibitor (94.87%, P&#xa0;&lt;&#xa0;0.05), with docking studies attributing its high ac",
+      "kind": "inhibit",
+      "pmid": "42048817"
+    },
+    {
+      "peptide": "VAP",
+      "evidence": "revealed that VAP is a non-competitive inhibitor with significant ACE activity (IC50&#xa0;=&#xa0;1.93&#xa0;&#xb1;&#xa0;0.17&#xa0;&#x3bc;M). It binds to key ACE site",
+      "kind": "IC50",
+      "pmid": "40737925"
+    },
+    {
+      "peptide": "ADF",
+      "evidence": "their absorption. This research aimed to study the molecular interaction of ACE inhibitory tri-peptides ADF, FGR, and MIR with DPPC membrane during absorption process.",
+      "kind": "inhibit",
+      "pmid": "35756460"
+    },
+    {
+      "peptide": "FGR",
+      "evidence": "their absorption. This research aimed to study the molecular interaction of ACE inhibitory tri-peptides ADF, FGR, and MIR with DPPC membrane during absorption process.",
+      "kind": "inhibit",
+      "pmid": "35756460"
+    },
+    {
+      "peptide": "MIR",
+      "evidence": "their absorption. This research aimed to study the molecular interaction of ACE inhibitory tri-peptides ADF, FGR, and MIR with DPPC membrane during absorption process.",
+      "kind": "inhibit",
+      "pmid": "35756460"
+    },
+    {
+      "peptide": "DPPC",
+      "evidence": "their absorption. This research aimed to study the molecular interaction of ACE inhibitory tri-peptides ADF, FGR, and MIR with DPPC membrane during absorption process.",
+      "kind": "inhibit",
+      "pmid": "35756460"
+    },
+    {
+      "peptide": "VRP",
+      "evidence": "fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectively, and four ACE2u peptides, V",
+      "kind": "IC50",
+      "pmid": "33352405"
+    },
+    {
+      "peptide": "LKY",
+      "evidence": "fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectively, and four ACE2u peptides, V",
+      "kind": "IC50",
+      "pmid": "33352405"
+    },
+    {
+      "peptide": "VRY",
+      "evidence": "fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectively, and four ACE2u peptides, V",
+      "kind": "IC50",
+      "pmid": "33352405"
+    },
+    {
+      "peptide": "KYKA",
+      "evidence": "fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectively, and four ACE2u peptides, V",
+      "kind": "IC50",
+      "pmid": "33352405"
+    },
+    {
+      "peptide": "LKYKA",
+      "evidence": "fractionation, five potent ACEi peptides, VRP, LKY, VRY, KYKA, and LKYKA, with IC50 values of 0.034-5.77&#xa0;&#x3bc;g/mL, respectively, and four ACE2u peptides, V",
+      "kind": "IC50",
+      "pmid": "33352405"
+    },
+    {
+      "peptide": "KDEDTEEVP",
+      "evidence": "he three peptides, KDEDTEEVP exhibited the highest ACE inhibitory activity with IC50 value of 69.63&#xa0;&#xb1;&#xa0;2.51&#xa0;&#x3bc;M. Furthermore, the results of",
+      "kind": "IC50",
+      "pmid": "29173094"
+    },
+    {
+      "peptide": "KDEDTEE",
+      "evidence": "tional peptides. Hence, we used rabbit lung angiotensin converting enzyme (ACE) inhibitor peptide AFKDEDTEEVPFR to prepare two analogous peptides KDEDTEEVP and KDEDTEE",
+      "kind": "inhibit",
+      "pmid": "29173094"
+    },
+    {
+      "peptide": "KDEDTEEVH",
+      "evidence": "de AFKDEDTEEVPFR to prepare two analogous peptides KDEDTEEVP and KDEDTEEVH. ACE inhibitory, antioxidant, and antimicrobial activities of three synthetic peptides were",
+      "kind": "inhibit",
+      "pmid": "29173094"
+    },
+    {
+      "peptide": "EWH",
+      "evidence": "This study investigated the dual ACE-inhibitory and gut microbiota-modulating potential of egg white hydrolysate (EWH), obta",
+      "kind": "inhibit",
+      "pmid": "42420350"
+    },
+    {
+      "peptide": "YINQMPQKSRE",
+      "evidence": "es. Peptide YIEAVNKVSPRAGQF exerted the strongest ACE inhibitory activity, with IC50 = 9.4 &#xb5;g/mL. The peptide YINQMPQKSRE showed the strongest DPPH free radica",
+      "kind": "IC50",
+      "pmid": "25408464"
+    },
+    {
+      "peptide": "VTGRFAGHPAAQ",
+      "evidence": "al scavenging and DPP-IV inhibitory activities and its ACE inhibitory activity (IC50) reached 10.1 &#xb5;g/mL. The peptide VTGRFAGHPAAQ revealed the highest &#x3b1;",
+      "kind": "IC50",
+      "pmid": "25408464"
+    },
+    {
+      "peptide": "PRAGQF",
+      "evidence": "PRAGQF). These peptides were chemically synthesized and showed antioxidant, ACE inhibitory or/and antidiabetic activities. Peptide YIEAVNKVSPRAGQF exerted the stronges",
+      "kind": "inhibit",
+      "pmid": "25408464"
+    },
+    {
+      "peptide": "NDRP",
+      "evidence": "esponsible for A1 fraction ACE inhibition (ACE inhibition = 87.75 &#xb1; 0.61%; IC50 = 148.28 &#xb1; 9.83 &#x3bc;g mL&#x2212;1). NDRP acts as a non-competitive inhi",
+      "kind": "IC50",
+      "pmid": "36076853"
+    },
+    {
+      "peptide": "SDS",
+      "evidence": "through SDS-PAGE. Fractions with MW &lt; 1 kDa were investigated for their ACE-inhibitory activity, and the most active one (A &lt; 1 kDa) was purified by semi-prepar",
+      "kind": "inhibit",
+      "pmid": "36076853"
+    },
+    {
+      "peptide": "PAGE",
+      "evidence": "through SDS-PAGE. Fractions with MW &lt; 1 kDa were investigated for their ACE-inhibitory activity, and the most active one (A &lt; 1 kDa) was purified by semi-prepar",
+      "kind": "inhibit",
+      "pmid": "36076853"
+    },
+    {
+      "peptide": "DTP",
+      "evidence": "DTP), which were prepared by solid-phase synthesis. The comparison of their ACE-inhibitory activities suggested that the novel peptide NDRP might be the main agent res",
+      "kind": "inhibit",
+      "pmid": "36076853"
+    },
+    {
+      "peptide": "LYDGELRQGQL",
+      "evidence": "ocking, and pre-incubation assays. Thermolysin generated the most potent DPP-IV inhibitory hydrolysate. Comparative LC-MS/MS analysis identified LYDGELRQGQL (LL-11) in",
+      "kind": "inhibit",
+      "pmid": "42838304"
+    },
+    {
+      "peptide": "LYDGELR",
+      "evidence": "n, kinetics, docking, and pre-incubation assays. Thermolysin generated the most potent DPP-IV inhibitory hydrolysate. Comparative LC-MS/MS analysis identified LYDGELR",
+      "kind": "potent",
+      "pmid": "42838304"
+    },
+    {
+      "peptide": "FRYR",
+      "evidence": "validation showed FRYR and FFRNR possessed strong ACE inhibitory activity, with IC50 values of 608&#xa0;&#x3bc;mol/L and 684&#xa0;&#x3bc;mol/L, respectively, lower",
+      "kind": "IC50",
+      "pmid": "41763798"
+    },
+    {
+      "peptide": "FFRNR",
+      "evidence": "validation showed FRYR and FFRNR possessed strong ACE inhibitory activity, with IC50 values of 608&#xa0;&#x3bc;mol/L and 684&#xa0;&#x3bc;mol/L, respectively, lower",
+      "kind": "IC50",
+      "pmid": "41763798"
+    },
+    {
+      "peptide": "YDPR",
+      "evidence": "nzyme inhibition assays confirmed their potent inhibitory effects on ACE (YDPR: IC50&#xa0;=&#xa0;89.05&#xa0;&#xb1;&#xa0;0.90&#xa0;&#x3bc;M; LPDYR IC50&#xa0;=&#xa0;1",
+      "kind": "IC50",
+      "pmid": "41224052"
+    },
+    {
+      "peptide": "LPDYR",
+      "evidence": "nzyme inhibition assays confirmed their potent inhibitory effects on ACE (YDPR: IC50&#xa0;=&#xa0;89.05&#xa0;&#xb1;&#xa0;0.90&#xa0;&#x3bc;M; LPDYR IC50&#xa0;=&#xa0;1",
+      "kind": "IC50",
+      "pmid": "41224052"
+    },
+    {
+      "peptide": "PPA",
+      "evidence": "on ACE (YDPR: IC50&#xa0;=&#xa0;89.05&#xa0;&#xb1;&#xa0;0.90&#xa0;&#x3bc;M; LPDYR IC50&#xa0;=&#xa0;170.50&#xa0;&#xb1;&#xa0;0.68&#xa0;&#x3bc;M) and PPA (YDPR: IC50&#xa",
+      "kind": "IC50",
+      "pmid": "41224052"
+    },
+    {
+      "peptide": "DYR",
+      "evidence": "DYR IC50&#xa0;=&#xa0;170.50&#xa0;&#xb1;&#xa0;0.68&#xa0;&#x3bc;M) and PPA (YDPR: IC50&#xa0;=&#xa0;76.30&#xa0;&#xb1;&#xa0;1.05&#xa0;&#x3bc;M; LPDYR: IC50&#xa0;=&#xa0;",
+      "kind": "IC50",
+      "pmid": "41224052"
+    },
+    {
+      "peptide": "APPLRP",
+      "evidence": "odel. Results demonstrated that APPLRP was an active competitive ACE inhibitor (IC50&#xa0;=&#xa0;29.93&#xa0;&#x3bc;M) that could bind to the active pocket S2 and S1",
+      "kind": "IC50",
+      "pmid": "39181368"
+    },
+    {
+      "peptide": "SPIH",
+      "evidence": "gests that SPIH-YCE conjugates could serve as an alternative substance with the potential to provide health benefits by mitigating or preventing non-communicable dise",
+      "kind": "potent",
+      "pmid": "38338515"
+    },
+    {
+      "peptide": "YCE",
+      "evidence": "gests that SPIH-YCE conjugates could serve as an alternative substance with the potential to provide health benefits by mitigating or preventing non-communicable dise",
+      "kind": "potent",
+      "pmid": "38338515"
+    },
+    {
+      "peptide": "VSF",
+      "evidence": ", VSF, IEL, and EVF. Among these peptides, IDL and VSF showed the strongest ACE inhibitory activities during the preliminary screening, and thus were selected for furt",
+      "kind": "inhibit",
+      "pmid": "41652705"
+    },
+    {
+      "peptide": "IEL",
+      "evidence": ", VSF, IEL, and EVF. Among these peptides, IDL and VSF showed the strongest ACE inhibitory activities during the preliminary screening, and thus were selected for furt",
+      "kind": "inhibit",
+      "pmid": "41652705"
+    },
+    {
+      "peptide": "EVF",
+      "evidence": ", VSF, IEL, and EVF. Among these peptides, IDL and VSF showed the strongest ACE inhibitory activities during the preliminary screening, and thus were selected for furt",
+      "kind": "inhibit",
+      "pmid": "41652705"
+    },
+    {
+      "peptide": "IDL",
+      "evidence": ", VSF, IEL, and EVF. Among these peptides, IDL and VSF showed the strongest ACE inhibitory activities during the preliminary screening, and thus were selected for furt",
+      "kind": "inhibit",
+      "pmid": "41652705"
+    },
+    {
+      "peptide": "VPP",
+      "evidence": "olled, this study suggests that continuous intake of VPP and IPP might have the potential to improve arterial stiffness as well as cSBP and peripheral brachial blood",
+      "kind": "potent",
+      "pmid": "19821692"
+    },
+    {
+      "peptide": "IPP",
+      "evidence": "olled, this study suggests that continuous intake of VPP and IPP might have the potential to improve arterial stiffness as well as cSBP and peripheral brachial blood",
+      "kind": "potent",
+      "pmid": "19821692"
+    },
+    {
+      "peptide": "LGG",
+      "evidence": "W) from simulated digestion of NK. LGG exhibited potent competitive inhibition (IC50&#xa0;=&#xa0;10.78&#xa0;&#x3bc;M), while TW acted noncompetitively. Molecular do",
+      "kind": "IC50",
+      "pmid": "41844106"
+    },
+    {
+      "peptide": "SGI",
+      "evidence": "INFOGEST-based SGI digestion. Bioactivities were evaluated using ACE and DPP-IV inhibition and DPPH radical scavenging assays. Protein degradation was assessed by SDS-",
+      "kind": "inhibit",
+      "pmid": "42709232"
+    },
+    {
+      "peptide": "SDS",
+      "evidence": "INFOGEST-based SGI digestion. Bioactivities were evaluated using ACE and DPP-IV inhibition and DPPH radical scavenging assays. Protein degradation was assessed by SDS-",
+      "kind": "inhibit",
+      "pmid": "42709232"
+    },
+    {
+      "peptide": "PAG",
+      "evidence": "INFOGEST-based SGI digestion. Bioactivities were evaluated using ACE and DPP-IV inhibition and DPPH radical scavenging assays. Protein degradation was assessed by SDS-PAG",
+      "kind": "inhibition",
+      "pmid": "42709232"
+    },
+    {
+      "peptide": "PSM",
+      "evidence": "ease PROTIN SD-NY10, we developed a processed soya milk (PSM) with enhanced ACE inhibitory activity. The ACE inhibitory activity of PSM (IC(50)=0.26 &#x3bc;g/ml) was g",
+      "kind": "inhibit",
+      "pmid": "23122104"
+    },
+    {
+      "peptide": "FFYY",
+      "evidence": "eater than that of regular soya milk (IC(50)=8.75 &#x3bc;g/ml). Eight novel ACE inhibitory peptides were purified from PSM by reversed-phase chromatography: FFYY (IC(5",
+      "kind": "inhibit",
+      "pmid": "23122104"
+    },
+    {
+      "peptide": "MALDI",
+      "evidence": "xa0;2.18&#xa0;&#x3bc;g trolox/mg peptide and 59.32&#xa0;&#xb1;&#xa0;9.97&#xa0;% inhibition, respectively. The most active fraction was subjected to MALDI-TOF/TOF MS/MS",
+      "kind": "inhibit",
+      "pmid": "27162402"
+    },
+    {
+      "peptide": "LDVSP",
+      "evidence": "ized peptides confirmed that LDVSP and LVSPL showed potent ACE inhibition, with IC50 values of 107.47&#xa0;&#xb1;&#xa0;6.57 and 127.06&#xa0;&#xb1;&#xa0;12.11&#xa0;&",
+      "kind": "IC50",
+      "pmid": "41996814"
+    },
+    {
+      "peptide": "LVSPL",
+      "evidence": "ized peptides confirmed that LDVSP and LVSPL showed potent ACE inhibition, with IC50 values of 107.47&#xa0;&#xb1;&#xa0;6.57 and 127.06&#xa0;&#xb1;&#xa0;12.11&#xa0;&",
+      "kind": "IC50",
+      "pmid": "41996814"
+    },
+    {
+      "peptide": "SPH",
+      "evidence": "were assessed initially for their in vitro angiotensin-converting enzyme (ACE) inhibitory activity, and three SPHs, prepared by Protex 26L (SPH-26L), pepsin (SPH-P),",
+      "kind": "inhibit",
+      "pmid": "33019511"
+    },
+    {
+      "peptide": "SPGPW",
+      "evidence": "spectively. SEGPK, FDGPY and SPGPW displayed remarkable anti-ACE activity, with IC50 values of 0.63, 0.94 and 0.71 mg/mL, respectively. Additionally, a molecular do",
+      "kind": "IC50",
+      "pmid": "37888451"
+    },
+    {
+      "peptide": "SEC",
+      "evidence": "peptide sequences (4-9 amino acids), with the most potent SEC fraction showing IC50 values of 0.89 and 0.45 mg Leu eq./mL for DPP-IV and ACE inhibition, respective",
+      "kind": "IC50",
+      "pmid": "42195990"
+    },
+    {
+      "peptide": "SPI",
+      "evidence": "osus EBD1. After fermentation, the in vitro angiotensin-converting enzyme (ACE) inhibitory activity of the product (P-SPI) increased from 60.8 &#xb1; 2.0% to 88.24 &#x",
+      "kind": "inhibit",
+      "pmid": "30934634"
+    },
+    {
+      "peptide": "GPKALPII",
+      "evidence": "5.4%. Mass spectrometry revealed the presence of three potent and abundant ACE inhibitory peptides, PPNNNPASPSFSSSS, GPKALPII, and IIRCTGC in P-SPI. Hydrolyzing P-SPI",
+      "kind": "inhibit",
+      "pmid": "30934634"
+    },
+    {
+      "peptide": "IIRCTGC",
+      "evidence": "5.4%. Mass spectrometry revealed the presence of three potent and abundant ACE inhibitory peptides, PPNNNPASPSFSSSS, GPKALPII, and IIRCTGC in P-SPI. Hydrolyzing P-SPI",
+      "kind": "inhibit",
+      "pmid": "30934634"
+    },
+    {
+      "peptide": "WPHY",
+      "evidence": "ng, and experimental validation were integrated to identify garlic-derived DPP4 inhibitory peptides. Five peptides-WPHY, IASW, WPQY, PPSPSY, and VAPGW-were synthesized",
+      "kind": "inhibit",
+      "pmid": "41905014"
+    },
+    {
+      "peptide": "IASW",
+      "evidence": "ng, and experimental validation were integrated to identify garlic-derived DPP4 inhibitory peptides. Five peptides-WPHY, IASW, WPQY, PPSPSY, and VAPGW-were synthesized",
+      "kind": "inhibit",
+      "pmid": "41905014"
+    },
+    {
+      "peptide": "WPQY",
+      "evidence": "ng, and experimental validation were integrated to identify garlic-derived DPP4 inhibitory peptides. Five peptides-WPHY, IASW, WPQY, PPSPSY, and VAPGW-were synthesized",
+      "kind": "inhibit",
+      "pmid": "41905014"
+    },
+    {
+      "peptide": "PPSPSY",
+      "evidence": "ng, and experimental validation were integrated to identify garlic-derived DPP4 inhibitory peptides. Five peptides-WPHY, IASW, WPQY, PPSPSY, and VAPGW-were synthesized",
+      "kind": "inhibit",
+      "pmid": "41905014"
+    },
+    {
+      "peptide": "VAPGW",
+      "evidence": "ng, and experimental validation were integrated to identify garlic-derived DPP4 inhibitory peptides. Five peptides-WPHY, IASW, WPQY, PPSPSY, and VAPGW-were synthesized",
+      "kind": "inhibit",
+      "pmid": "41905014"
+    },
+    {
+      "peptide": "SHR",
+      "evidence": "n fractions, previously characterized as in vitro angiotensin-converting enzyme-inhibitors, in spontaneously hypertensive rats (SHR). Systolic blood pressure (SBP) and",
+      "kind": "inhibit",
+      "pmid": "20397194"
+    },
+    {
+      "peptide": "VPP",
+      "evidence": "(pH, titratable acidity, free amino nitrogen, and viable bacterial counts), ACE-inhibitory activity, and contents of Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP) peptides o",
+      "kind": "inhibit",
+      "pmid": "25892687"
+    },
+    {
+      "peptide": "IPP",
+      "evidence": "(pH, titratable acidity, free amino nitrogen, and viable bacterial counts), ACE-inhibitory activity, and contents of Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP) peptides o",
+      "kind": "inhibit",
+      "pmid": "25892687"
+    },
+    {
+      "peptide": "LLRP",
+      "evidence": "novel potent ACE inhibitory peptides were screened from the hydrolysate: LLRP (IC50, 3.44 &#xb1; 0.19 &#x3bc;M), LHWPR (IC50, 17.67 &#xb1; 1.53 &#x3bc;M), and RFLR",
+      "kind": "IC50",
+      "pmid": "42313066"
+    },
+    {
+      "peptide": "LHWPR",
+      "evidence": "novel potent ACE inhibitory peptides were screened from the hydrolysate: LLRP (IC50, 3.44 &#xb1; 0.19 &#x3bc;M), LHWPR (IC50, 17.67 &#xb1; 1.53 &#x3bc;M), and RFLR",
+      "kind": "IC50",
+      "pmid": "42313066"
+    },
+    {
+      "peptide": "RFLR",
+      "evidence": "novel potent ACE inhibitory peptides were screened from the hydrolysate: LLRP (IC50, 3.44 &#xb1; 0.19 &#x3bc;M), LHWPR (IC50, 17.67 &#xb1; 1.53 &#x3bc;M), and RFLR",
+      "kind": "IC50",
+      "pmid": "42313066"
+    },
+    {
+      "peptide": "MLRVYLR",
+      "evidence": "e (91.1&#xa0;%) after gastrointestinal digestion and acted as a competitive ACE inhibitor. In addition, molecular docking showed MLRVYLR forms Pi-interactions and hydr",
+      "kind": "inhibit",
+      "pmid": "41239577"
+    },
+    {
+      "peptide": "CEI",
+      "evidence": "ted the angiotensin I-converting enzyme (ACE) activity. Three peptides with ACE-inhibiting activity were isolated from CEI. 4. It is suggested that ACE-inhibiting pept",
+      "kind": "inhibit",
+      "pmid": "1980446"
+    },
+    {
+      "peptide": "MVPFLQPK",
+      "evidence": "cally hydrolyzed camel casein components: MVPFLQPK, VPFLQPKVM, and QKWKFL, with IC50 values of 277.1, 396.9, and 486.9 &#x3bc;mol/L, respectively. Enzyme inhibition",
+      "kind": "IC50",
+      "pmid": "42124039"
+    },
+    {
+      "peptide": "VPFLQPKVM",
+      "evidence": "cally hydrolyzed camel casein components: MVPFLQPK, VPFLQPKVM, and QKWKFL, with IC50 values of 277.1, 396.9, and 486.9 &#x3bc;mol/L, respectively. Enzyme inhibition",
+      "kind": "IC50",
+      "pmid": "42124039"
+    },
+    {
+      "peptide": "QKWKFL",
+      "evidence": "cally hydrolyzed camel casein components: MVPFLQPK, VPFLQPKVM, and QKWKFL, with IC50 values of 277.1, 396.9, and 486.9 &#x3bc;mol/L, respectively. Enzyme inhibition",
+      "kind": "IC50",
+      "pmid": "42124039"
+    },
+    {
+      "peptide": "QPK",
+      "evidence": "QPK exhibited a non-competitive inhibition pattern, VPFLQPKVM exhibited a mixed inhibition pattern, and QKWKFL exhibited a competitive inhibition pattern. Molecular do",
+      "kind": "inhibit",
+      "pmid": "42124039"
+    },
+    {
+      "peptide": "LQPKVM",
+      "evidence": "LQPKVM exhibited a mixed inhibition pattern, and QKWKFL exhibited a competitive inhibition pattern. Molecular docking revealed that all three peptides formed hydrogen",
+      "kind": "inhibit",
+      "pmid": "42124039"
+    },
+    {
+      "peptide": "QSAR",
+      "evidence": "hip (QSAR) model. Soybean protein hydrolysate digested by thermolysin showed an IC50 value of 53.6 &#x3bc;g/mL, decreased slightly to 51.8 &#x3bc;g/mL after adding",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "IVF",
+      "evidence": "om LC-MS/MS. Five novel tripeptides, IVF, LLF, LNF, LSW and LEF, with predicted IC50 values lower than 10 &#x3bc;M were synthesized and validated. The results showe",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "LLF",
+      "evidence": "om LC-MS/MS. Five novel tripeptides, IVF, LLF, LNF, LSW and LEF, with predicted IC50 values lower than 10 &#x3bc;M were synthesized and validated. The results showe",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "LNF",
+      "evidence": "om LC-MS/MS. Five novel tripeptides, IVF, LLF, LNF, LSW and LEF, with predicted IC50 values lower than 10 &#x3bc;M were synthesized and validated. The results showe",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "LSW",
+      "evidence": "om LC-MS/MS. Five novel tripeptides, IVF, LLF, LNF, LSW and LEF, with predicted IC50 values lower than 10 &#x3bc;M were synthesized and validated. The results showe",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "LEF",
+      "evidence": "om LC-MS/MS. Five novel tripeptides, IVF, LLF, LNF, LSW and LEF, with predicted IC50 values lower than 10 &#x3bc;M were synthesized and validated. The results showe",
+      "kind": "IC50",
+      "pmid": "23871011"
+    },
+    {
+      "peptide": "IQW",
+      "evidence": "-Trp), IQW (Ile-Gln-Trp), or LKP (Leu-Lys-Pro) are previously identified as the inhibitors of angiotensin-converting enzyme (ACE), a key enzyme in the RAS. This study",
+      "kind": "inhibit",
+      "pmid": "29278298"
+    },
+    {
+      "peptide": "LKP",
+      "evidence": "-Trp), IQW (Ile-Gln-Trp), or LKP (Leu-Lys-Pro) are previously identified as the inhibitors of angiotensin-converting enzyme (ACE), a key enzyme in the RAS. This study",
+      "kind": "inhibit",
+      "pmid": "29278298"
+    },
+    {
+      "peptide": "RAS",
+      "evidence": "-Trp), IQW (Ile-Gln-Trp), or LKP (Leu-Lys-Pro) are previously identified as the inhibitors of angiotensin-converting enzyme (ACE), a key enzyme in the RAS. This study",
+      "kind": "inhibit",
+      "pmid": "29278298"
+    },
+    {
+      "peptide": "NADPH",
+      "evidence": "ated AT1R expression, ROS formation, and NADPH oxidase activation. Of three ACE inhibitory peptides studied, only IRW improves insulin resistance in L6 cells, at least",
+      "kind": "inhibit",
+      "pmid": "29278298"
+    },
+    {
+      "peptide": "IRW",
+      "evidence": "ated AT1R expression, ROS formation, and NADPH oxidase activation. Of three ACE inhibitory peptides studied, only IRW improves insulin resistance in L6 cells, at least",
+      "kind": "inhibit",
+      "pmid": "29278298"
+    },
+    {
+      "peptide": "VPP",
+      "evidence": "PP), which are tripeptides derived from proteolytic hydrolysate of milk casein, inhibit angiotensin-converting enzyme (ACE), suggesting that both VPP and IPP may impro",
+      "kind": "inhibit",
+      "pmid": "17664851"
+    },
+    {
+      "peptide": "IPP",
+      "evidence": "PP), which are tripeptides derived from proteolytic hydrolysate of milk casein, inhibit angiotensin-converting enzyme (ACE), suggesting that both VPP and IPP may impro",
+      "kind": "inhibit",
+      "pmid": "17664851"
+    },
+    {
+      "peptide": "QSAR",
+      "evidence": "teractions with ACE catalytic residues. QSAR models predicted an ACE-inhibitory IC50 of 21.29&#xa0;&#xb5;M for SVIKPPTDE. This is the first report on the production",
+      "kind": "IC50",
+      "pmid": "35430540"
+    },
+    {
+      "peptide": "SVIKPPTDE",
+      "evidence": "teractions with ACE catalytic residues. QSAR models predicted an ACE-inhibitory IC50 of 21.29&#xa0;&#xb5;M for SVIKPPTDE. This is the first report on the production",
+      "kind": "IC50",
+      "pmid": "35430540"
+    },
+    {
+      "peptide": "SPHA",
+      "evidence": "#xb1; 3.89%, respectively). SPHA also shows an improvement in pancreatic lipase inhibition (29.43 &#xb1; 1.94%) when compared to the SPHM (23.34 &#xb1; 3.75%). Further",
+      "kind": "inhibit",
+      "pmid": "39410079"
+    },
+    {
+      "peptide": "SPHM",
+      "evidence": "#xb1; 3.89%, respectively). SPHA also shows an improvement in pancreatic lipase inhibition (29.43 &#xb1; 1.94%) when compared to the SPHM (23.34 &#xb1; 3.75%). Further",
+      "kind": "inhibit",
+      "pmid": "39410079"
+    },
+    {
+      "peptide": "FRAP",
+      "evidence": "results indicate that conjugated mixtures significantly enhance the antioxidant potential demonstrated via the DPPH and FRAP assays. SPHA exhibits superior DPPH scave",
+      "kind": "potent",
+      "pmid": "39410079"
+    },
+    {
+      "peptide": "VPP",
+      "evidence": "pergillus oryzae protease, containing the major angiotensin-I-converting enzyme inhibitory peptides Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP) in a single-blind, placebo-",
+      "kind": "inhibit",
+      "pmid": "16115337"
+    },
+    {
+      "peptide": "IPP",
+      "evidence": "pergillus oryzae protease, containing the major angiotensin-I-converting enzyme inhibitory peptides Val-Pro-Pro (VPP) and Ile-Pro-Pro (IPP) in a single-blind, placebo-",
+      "kind": "inhibit",
+      "pmid": "16115337"
+    },
+    {
+      "peptide": "YAEERYPIL",
+      "evidence": "AEVYEHTEGSTTSY, and YAEERYPIL), and are reported to display antioxidant and ACE inhibitory activity.",
+      "kind": "inhibit",
+      "pmid": "33530390"
+    },
+    {
+      "peptide": "VGTVEK",
+      "evidence": "ed and confirmed to contain crucial amino acids and therefore verified as COX-2 inhibitors. VGTVEK has the most potent interaction, as shown by the lowest binding ener",
+      "kind": "inhibit",
+      "pmid": "41000217"
+    },
+    {
+      "peptide": "ARDASVLK",
+      "evidence": "opy and molecular docking were performed to investigate the &#x3b1;-glucosidase inhibitory mechanism of the oligopeptides ARDASVLK and HNKPEVEVR from soft-shelled turt",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "HNKPEVEVR",
+      "evidence": "opy and molecular docking were performed to investigate the &#x3b1;-glucosidase inhibitory mechanism of the oligopeptides ARDASVLK and HNKPEVEVR from soft-shelled turt",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "DASVLK",
+      "evidence": "ly, and their digestive products (mainly DASVLK and HNKPEVEV) still showed high inhibitory effects on &#x3b1;-glucosidase (about 35% inhibition). This study sheds ligh",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "HNKPEVEV",
+      "evidence": "ly, and their digestive products (mainly DASVLK and HNKPEVEV) still showed high inhibitory effects on &#x3b1;-glucosidase (about 35% inhibition). This study sheds ligh",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "NKPEVEV",
+      "evidence": "NKPEVEV) still showed high inhibitory effects on &#x3b1;-glucosidase (about 35% inhibition). This study sheds light on the mechanism of oligopeptides derived from soft",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "PRACTICAL",
+      "evidence": "gopeptides derived from soft-shelled turtle eggs as a novel &#x3b1;-glucosidase inhibitor for diabetes. PRACTICAL APPLICATIONS: Oligopeptides from egg protein hydrolys",
+      "kind": "inhibit",
+      "pmid": "35894555"
+    },
+    {
+      "peptide": "WNWD",
+      "evidence": "peptide WNWD was chemically synthesized and verified to have an ACE inhibitory IC50 value of 3.529 mM. This study demonstrates that IPM is a promising food-derived",
+      "kind": "IC50",
+      "pmid": "42738710"
+    },
+    {
+      "peptide": "IPM",
+      "evidence": "peptide WNWD was chemically synthesized and verified to have an ACE inhibitory IC50 value of 3.529 mM. This study demonstrates that IPM is a promising food-derived",
+      "kind": "IC50",
+      "pmid": "42738710"
+    },
+    {
+      "peptide": "PEP",
+      "evidence": "(IC50: 13-14 &#xb5;g/mL), dipeptidyl peptidase IV (DPP-IV) inhibitory activity (IC50: 0.66-0.69 mg/mL), and prolyl endopeptidase (PEP) inhibitory activity (IC50: 0.",
+      "kind": "IC50",
+      "pmid": "42511169"
+    },
+    {
+      "peptide": "SGID",
+      "evidence": "ine cells. Following SGID, increased ACE-inhibitory activity was observed, with IC50 values as low as 4.6 &#xb5;g/mL, whereas DPP-IV and PEP-inhibitory activities d",
+      "kind": "IC50",
+      "pmid": "42511169"
+    },
+    {
+      "peptide": "STC",
+      "evidence": "ed (&lt;10 mg/mL) in STC-1 enteroendocrine cells. Following SGID, increased ACE-inhibitory activity was observed, with IC50 values as low as 4.6 &#xb5;g/mL, whereas DP",
+      "kind": "inhibit",
+      "pmid": "42511169"
+    },
+    {
+      "peptide": "IRW",
+      "evidence": "Egg ovotransferrin-derived angiotensin converting enzyme (ACE) inhibitory peptide IRW was previously shown to reduce blood pressure in spontaneously h",
+      "kind": "inhibit",
+      "pmid": "26016560"
+    },
+    {
+      "peptide": "VCAM",
+      "evidence": "VCAM-1 in mesenteric arteries. Our research showed for the first time that ACE inhibitory peptide IRW could contribute to its antihypertensive activity through increa",
+      "kind": "inhibit",
+      "pmid": "26016560"
+    },
+    {
+      "peptide": "SFE",
+      "evidence": ";3&#xa0;kDa peptides, respectively). Finally, the antioxidant potential and ACE-inhibitory activity were increased after hydrolysis, being the SFE the one that showed",
+      "kind": "inhibit",
+      "pmid": "34194108"
+    },
+    {
+      "peptide": "PPF",
+      "evidence": "Y, PPF, GPIVL, and SFNPTQL exhibited potent inhibitory effects, with micromolar IC50 values for ACE and/or DPP-IV. In comparison to chemically synthesized ACE inhib",
+      "kind": "IC50",
+      "pmid": "41763818"
+    },
+    {
+      "peptide": "GPIVL",
+      "evidence": "Y, PPF, GPIVL, and SFNPTQL exhibited potent inhibitory effects, with micromolar IC50 values for ACE and/or DPP-IV. In comparison to chemically synthesized ACE inhib",
+      "kind": "IC50",
+      "pmid": "41763818"
+    },
+    {
+      "peptide": "SFNPTQL",
+      "evidence": "Y, PPF, GPIVL, and SFNPTQL exhibited potent inhibitory effects, with micromolar IC50 values for ACE and/or DPP-IV. In comparison to chemically synthesized ACE inhib",
+      "kind": "IC50",
+      "pmid": "41763818"
+    },
+    {
+      "peptide": "LRF",
+      "evidence": "everal peptides such as LRF, QW, GAWY, PPF, GPIVL, and SFNPTQL exhibited potent inhibitory effects, with micromolar IC50 values for ACE and/or DPP-IV. In comparison to",
+      "kind": "inhibit",
+      "pmid": "41763818"
+    },
+    {
+      "peptide": "GAWY",
+      "evidence": "everal peptides such as LRF, QW, GAWY, PPF, GPIVL, and SFNPTQL exhibited potent inhibitory effects, with micromolar IC50 values for ACE and/or DPP-IV. In comparison to",
+      "kind": "inhibit",
+      "pmid": "41763818"
+    },
+    {
+      "peptide": "PYPDWSFAK",
+      "evidence": "ong which PYPDWSFAK and RPYPDWSF exhibited potent ACE-inhibitory activity, with IC50 values of 110 &#xb1; 1.02 &#x3bc;mol/L and 204 &#xb1; 0.61 &#x3bc;mol/L, respec",
+      "kind": "IC50",
+      "pmid": "41517150"
+    },
+    {
+      "peptide": "RPYPDWSF",
+      "evidence": "ong which PYPDWSFAK and RPYPDWSF exhibited potent ACE-inhibitory activity, with IC50 values of 110 &#xb1; 1.02 &#x3bc;mol/L and 204 &#xb1; 0.61 &#x3bc;mol/L, respec",
+      "kind": "IC50",
+      "pmid": "41517150"
+    },
+    {
+      "peptide": "LKYAT",
+      "evidence": "LKYAT, INKVVR, LFLIKH, and LGHWVY) with good GI resistance were identified with IC50 values &lt;20 &#x3bc;M, especially LKYAT (0.09 &#x3bc;M). The structure-activit",
+      "kind": "IC50",
+      "pmid": "31140270"
+    },
+    {
+      "peptide": "INKVVR",
+      "evidence": "LKYAT, INKVVR, LFLIKH, and LGHWVY) with good GI resistance were identified with IC50 values &lt;20 &#x3bc;M, especially LKYAT (0.09 &#x3bc;M). The structure-activit",
+      "kind": "IC50",
+      "pmid": "31140270"
+    },
+    {
+      "peptide": "LFLIKH",
+      "evidence": "LKYAT, INKVVR, LFLIKH, and LGHWVY) with good GI resistance were identified with IC50 values &lt;20 &#x3bc;M, especially LKYAT (0.09 &#x3bc;M). The structure-activit",
+      "kind": "IC50",
+      "pmid": "31140270"
+    },
+    {
+      "peptide": "LGHWVY",
+      "evidence": "LKYAT, INKVVR, LFLIKH, and LGHWVY) with good GI resistance were identified with IC50 values &lt;20 &#x3bc;M, especially LKYAT (0.09 &#x3bc;M). The structure-activit",
+      "kind": "IC50",
+      "pmid": "31140270"
+    },
+    {
+      "peptide": "MPRRF",
+      "evidence": "MPRRF peptides had a low binding index to ACE (&lt;-8.5 kcal/mol), indicating a potentially high inhibitory activity of these peptides against DPP-IV and ACE. The pre",
+      "kind": "potent",
+      "pmid": "42272414"
+    },
+    {
+      "peptide": "ACEIP",
+      "evidence": "Food-derived angiotensin-converting enzyme inhibitory peptide (ACEIP) has an effect in supportive therapeutic on hypertension. Bov",
+      "kind": "inhibit",
+      "pmid": "39561530"
+    },
+    {
+      "peptide": "WESLSRLLG",
+      "evidence": "peptide revealed a sequence of WESLSRLLG (MW: 1060&#xa0;Da; WG-9). This peptide inhibited linoleic acid oxidation and acted as a DPPH (IC50&#xa0;=&#xa0;15&#xa0;&#xb1;&",
+      "kind": "inhibit",
+      "pmid": "28911587"
+    },
+    {
+      "peptide": "HFLF",
+      "evidence": "ity against an HFLF-PI-5&#xa0;cell line. In conclusion, the WG-9 peptide showed potent antioxidant and ACE-inhibitory activity.",
+      "kind": "potent",
+      "pmid": "28911587"
+    },
+    {
+      "peptide": "PEP",
+      "evidence": "PEP database. The major bioactivities of tempe peptides obtained were as an ACE inhibitor, antioxidant, and antithrombotic.",
+      "kind": "inhibit",
+      "pmid": "32516711"
+    },
+    {
+      "peptide": "ASTCMAR",
+      "evidence": "ractions with key active residues, with ASTCMAR showing the highest inhibition (IC50: 408.63&#xa0;&#x3bc;mol/L). Such dual effects of salt reduction and ACE inhibit",
+      "kind": "IC50",
+      "pmid": "40912119"
+    },
+    {
+      "peptide": "QVPLW",
+      "evidence": "pid rafts by using methyl-&#x3b2;-cyclodextrin (M&#x3b2;CD). QVPLW and LCAY can inhibit ACE activity by preventing ACE recruitment into lipid rafts, with in situ IC50",
+      "kind": "inhibit",
+      "pmid": "34448567"
+    },
+    {
+      "peptide": "LCAY",
+      "evidence": "pid rafts by using methyl-&#x3b2;-cyclodextrin (M&#x3b2;CD). QVPLW and LCAY can inhibit ACE activity by preventing ACE recruitment into lipid rafts, with in situ IC50",
+      "kind": "inhibit",
+      "pmid": "34448567"
+    },
+    {
+      "peptide": "QIGLF",
+      "evidence": "The angiotensin-converting enzyme (ACE) inhibitory peptide QIGLF derived from egg white was shown to have significant in vivo a",
+      "kind": "inhibit",
+      "pmid": "34581184"
+    },
+    {
+      "peptide": "ATCC",
+      "evidence": "oteinase of Lactobacillus casei subsp. casei (ATCC 15008) showed quite high ACE-inhibitory activity. The peptide fraction from &#x3b1;-casein with molecular weight bet",
+      "kind": "inhibit",
+      "pmid": "23015408"
+    },
+    {
+      "peptide": "VRP",
+      "evidence": "spent hen muscle proteins, including three angiotensin-converting enzyme (ACE) inhibitory (ACEi) peptides (VRP, LKY, and VRY), and one ACE2 upregulating (ACE2u) pepti",
+      "kind": "inhibit",
+      "pmid": "33671990"
+    },
+    {
+      "peptide": "LKY",
+      "evidence": "spent hen muscle proteins, including three angiotensin-converting enzyme (ACE) inhibitory (ACEi) peptides (VRP, LKY, and VRY), and one ACE2 upregulating (ACE2u) pepti",
+      "kind": "inhibit",
+      "pmid": "33671990"
+    },
+    {
+      "peptide": "VRY",
+      "evidence": "spent hen muscle proteins, including three angiotensin-converting enzyme (ACE) inhibitory (ACEi) peptides (VRP, LKY, and VRY), and one ACE2 upregulating (ACE2u) pepti",
+      "kind": "inhibit",
+      "pmid": "33671990"
+    },
+    {
+      "peptide": "MKP",
+      "evidence": "(or MKP) was identified as a novel peptide with strong ACE-inhibitory activity (IC50=0.12 &#x3bc;g/mL, 0.3 &#x3bc;M). The MKP peptide constituted only 0.053% of CH-",
+      "kind": "IC50",
+      "pmid": "23993549"
+    },
+    {
+      "peptide": "PEP",
+      "evidence": "b0;C and 4.5-5.0, respectively. An-PEP was activated and stabilized by Ca2+ but inhibited by Fe3+. The enzymatic application of purified An-PEP was evaluated by hydrol",
+      "kind": "inhibit",
+      "pmid": "33347934"
+    },
+    {
+      "peptide": "PGAR",
+      "evidence": "ed that tetrapeptides PGAR and IGPR showed potent ACE inhibitory activity, with IC50 values of 0.598&#x2009;&#xb1;&#x2009;0.12 and 0.43&#x2009;&#xb1;&#x2009;0.09&#x",
+      "kind": "IC50",
+      "pmid": "29369350"
+    },
+    {
+      "peptide": "IGPR",
+      "evidence": "ed that tetrapeptides PGAR and IGPR showed potent ACE inhibitory activity, with IC50 values of 0.598&#x2009;&#xb1;&#x2009;0.12 and 0.43&#x2009;&#xb1;&#x2009;0.09&#x",
+      "kind": "IC50",
+      "pmid": "29369350"
+    },
+    {
+      "peptide": "IDYRY",
+      "evidence": "eptide IDYRY&#xa0;(ID-5) was identified from C.&#xa0;reinhardtii, exhibiting an IC50&#xa0;value of&#xa0;18.54&#xa0;&#xb1;&#xa0;5.57&#xa0;&#x3bc;M. ID-5 was characte",
+      "kind": "IC50",
+      "pmid": "41763799"
+    },
+    {
+      "peptide": "CRPA",
+      "evidence": "ii. Among these, the alkaline protease hydrolysate (CRPA) demonstrated the most potent activity, exhibiting strong angiotensin-I converting enzyme (ACE) inhibitory ac",
+      "kind": "potent",
+      "pmid": "41763799"
+    },
+    {
+      "peptide": "LLY",
+      "evidence": "n hydrolysate with the amino acid sequence Leu-Leu-Tyr (LLY) exhibited high ACE-inhibitory activity and stability, which holds significant implications for biochemistr",
+      "kind": "inhibit",
+      "pmid": "39684732"
+    },
+    {
+      "peptide": "SFNLPILR",
+      "evidence": "d peptides -SFNLPILR, FNLPILR, and AFEDGFEWVSFK- previously identified as renin inhibitors. We assessed their ability to inhibit angiotensin-converting enzyme (ACE), m",
+      "kind": "inhibit",
+      "pmid": "41518456"
+    },
+    {
+      "peptide": "FNLPILR",
+      "evidence": "d peptides -SFNLPILR, FNLPILR, and AFEDGFEWVSFK- previously identified as renin inhibitors. We assessed their ability to inhibit angiotensin-converting enzyme (ACE), m",
+      "kind": "inhibit",
+      "pmid": "41518456"
+    },
+    {
+      "peptide": "AFEDGFEWVSFK",
+      "evidence": "d peptides -SFNLPILR, FNLPILR, and AFEDGFEWVSFK- previously identified as renin inhibitors. We assessed their ability to inhibit angiotensin-converting enzyme (ACE), m",
+      "kind": "inhibit",
+      "pmid": "41518456"
+    },
+    {
+      "peptide": "EWVSFK",
+      "evidence": "EWVSFK- previously identified as renin inhibitors. We assessed their ability to inhibit angiotensin-converting enzyme (ACE), modulate ACE2 activity, and their bioavail",
+      "kind": "inhibit",
+      "pmid": "41518456"
+    },
+    {
+      "peptide": "RAS",
+      "evidence": "ted by the renin-angiotensin system (RAS). This study evaluates the multitarget potential of three amaranth-derived peptides -SFNLPILR, FNLPILR, and AFEDGFEWVSFK- pre",
+      "kind": "potent",
+      "pmid": "41518456"
+    },
+    {
+      "peptide": "IDFDF",
+      "evidence": "sed on scoring. IDFDF, DVNFR, and SFHRL showed the highest ACE inhibition, with IC50 values of 16.9 &#x3bc;M, 42.5 &#x3bc;M, and 242.6 &#x3bc;M, respectively. Linew",
+      "kind": "IC50",
+      "pmid": "42121479"
+    },
+    {
+      "peptide": "DVNFR",
+      "evidence": "sed on scoring. IDFDF, DVNFR, and SFHRL showed the highest ACE inhibition, with IC50 values of 16.9 &#x3bc;M, 42.5 &#x3bc;M, and 242.6 &#x3bc;M, respectively. Linew",
+      "kind": "IC50",
+      "pmid": "42121479"
+    },
+    {
+      "peptide": "SFHRL",
+      "evidence": "sed on scoring. IDFDF, DVNFR, and SFHRL showed the highest ACE inhibition, with IC50 values of 16.9 &#x3bc;M, 42.5 &#x3bc;M, and 242.6 &#x3bc;M, respectively. Linew",
+      "kind": "IC50",
+      "pmid": "42121479"
+    },
+    {
+      "peptide": "FPQYLQYPY",
+      "evidence": "d identified as Phe-Pro-Gln-Tyr-Leu-Gln-Tyr-Pro-Tyr (FPQYLQYPY). The results of inhibitory kinetics studies indicated that the peptide was a non-competitive inhibitor",
+      "kind": "inhibit",
+      "pmid": "35479750"
+    },
+    {
+      "peptide": "HCP",
+      "evidence": "mechanisms may involve (1) HCP-C7C12 acting as an angiotensin-converting enzyme inhibitor, reducing angiotensin II production, and (2) modulating amino acid abundance",
+      "kind": "inhibit",
+      "pmid": "40263513"
+    },
+    {
+      "peptide": "SICR",
+      "evidence": "reening with molecular docking yielded five peptide candidates. Of these, SICR (IC50&#x202f;=&#x202f;106.5&#x202f;&#x3bc;g/mL) and MTKW (IC50&#x202f;=&#x202f;55.23&",
+      "kind": "IC50",
+      "pmid": "42221875"
+    },
+    {
+      "peptide": "MTKW",
+      "evidence": "reening with molecular docking yielded five peptide candidates. Of these, SICR (IC50&#x202f;=&#x202f;106.5&#x202f;&#x3bc;g/mL) and MTKW (IC50&#x202f;=&#x202f;55.23&",
+      "kind": "IC50",
+      "pmid": "42221875"
+    },
+    {
+      "peptide": "ESM",
+      "evidence": "membrane (ESM) keratin as a novel source of angiotensin-converting enzyme (ACE)-inhibitory peptides. LC-MS/MS coupled with in silico analysis identified protein A0A8V0",
+      "kind": "inhibit",
+      "pmid": "42221875"
+    },
+    {
+      "peptide": "NLFRP",
+      "evidence": "seven synthesized peptides showed ACE inhibition activity, particularly NLFRP (IC50&#xa0;=&#xa0;3.33&#xa0;&#xb1;&#xa0;0.19&#xa0;&#x3bc;M). Molecular docking reveal",
+      "kind": "IC50",
+      "pmid": "40712418"
+    },
+    {
+      "peptide": "SDNRNQGY",
+      "evidence": "protein by gel filtration and exhibited high ACE inhibitory activity (69%) and IC50 value (3.35 mg/mL). The SDNRNQGY peptide (10 mg/mL) had ACE inhibitory activity",
+      "kind": "IC50",
+      "pmid": "26690134"
+    },
+    {
+      "peptide": "EYGF",
+      "evidence": "ion fractions (EYGF). Of these, two fractions, EYGF-23 and EYGF-33, effectively inhibited the peroxides and thiobarbituric acid reactive substance (TBARS) in an oxidiz",
+      "kind": "inhibit",
+      "pmid": "26690134"
+    },
+    {
+      "peptide": "YPSPV",
+      "evidence": "aptopril (0.5 mg/mL). In addition, YPSPV in (EYGF-33) (10 mg/mL) had higher ACE inhibitory activity compared with captopril. These findings indicated a substantial pot",
+      "kind": "inhibit",
+      "pmid": "26690134"
+    },
+    {
+      "peptide": "SRP",
+      "evidence": "ibiting bioactivities beyond its canonical proteolytic role. SRP inhibited ACE (IC50 = 108.84 &#xb1; 3.42 &#x3bc;g mL-1) through strong intermolecular interactions,",
+      "kind": "IC50",
+      "pmid": "42485057"
+    },
+    {
+      "peptide": "ESI",
+      "evidence": "ability index (ESI), and antioxidant and Angiotensin I-converting enzyme (ACEI) inhibitory activities. Hydrolysates were fractionated using 5 and 1&#xa0;kDa ultrafiltr",
+      "kind": "inhibit",
+      "pmid": "40505913"
+    },
+    {
+      "peptide": "LFEY",
+      "evidence": "ingle enzyme reaction. It also increased the antioxidant properties and the ACE inhibitory activity by nearly two and three times that of the LFEY, respectively. UF fr",
+      "kind": "inhibit",
+      "pmid": "40505913"
+    },
+    {
+      "peptide": "WLH",
+      "evidence": "the antihypertensive capacity by in-vitro Angiotensin-I Converting Enzyme (ACE) inhibition assay. WLH fried standard egg hydrolysate showed a high ORAC antioxidant act",
+      "kind": "inhibit",
+      "pmid": "34959785"
+    },
+    {
+      "peptide": "QIGLF",
+      "evidence": "GG) pathway analysis. QIGLF might exert antihypertensive effects in the SHRs by inhibiting Na+ reabsorption and oxidative stress, restoring gap junction and tight junc",
+      "kind": "inhibit",
+      "pmid": "35878667"
+    },
+    {
+      "peptide": "SPH",
+      "evidence": "SPH. SPH70:CPH30 exhibited higher ACE, &#x3b1;-glucosidase, and &#x3b1;-amylase inhibitory activities among all samples due to its specific peptides with high capacity",
+      "kind": "inhibit",
+      "pmid": "36911847"
+    },
+    {
+      "peptide": "FSM",
+      "evidence": "Angiotensin-converting enzyme (ACE) inhibitory activity of fermented soybean milk (FSM) by Lactobacillus casei strains in v",
+      "kind": "inhibit",
+      "pmid": "27139252"
+    },
+    {
+      "peptide": "WKY",
+      "evidence": "(WKY) rats. Results showed that, CICC 20280 and CICC 23184 FSM showed high ACE inhibitory activity in vitro test and ACE inhibitory activity of CICC 23184 FSM was hig",
+      "kind": "inhibit",
+      "pmid": "27139252"
+    },
+    {
+      "peptide": "CICC",
+      "evidence": "(WKY) rats. Results showed that, CICC 20280 and CICC 23184 FSM showed high ACE inhibitory activity in vitro test and ACE inhibitory activity of CICC 23184 FSM was hig",
+      "kind": "inhibit",
+      "pmid": "27139252"
+    },
+    {
+      "peptide": "MMPH",
+      "evidence": "MMPH. In which, APFLAG showed the greatest inhibitory effects in vitro with an IC50 value of 69.45 &#xb1; 2.93 &#xb5;M, followed by FDHKKFF (212.85 &#xb1; 3.19 &#x",
+      "kind": "IC50",
+      "pmid": "41392825"
+    },
+    {
+      "peptide": "APFLAG",
+      "evidence": "MMPH. In which, APFLAG showed the greatest inhibitory effects in vitro with an IC50 value of 69.45 &#xb1; 2.93 &#xb5;M, followed by FDHKKFF (212.85 &#xb1; 3.19 &#x",
+      "kind": "IC50",
+      "pmid": "41392825"
+    },
+    {
+      "peptide": "FDHKKFF",
+      "evidence": "MMPH. In which, APFLAG showed the greatest inhibitory effects in vitro with an IC50 value of 69.45 &#xb1; 2.93 &#xb5;M, followed by FDHKKFF (212.85 &#xb1; 3.19 &#x",
+      "kind": "IC50",
+      "pmid": "41392825"
+    },
+    {
+      "peptide": "LAAHFAR",
+      "evidence": ", exhibited low micromolar inhibition. The most potent peptide, LAAHFAR with an IC50 of 6.01 &#xb1; 1.06 &#x3bc;M, was subject to molecular dynamics simulations for",
+      "kind": "IC50",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "YAAPYR",
+      "evidence": "e sites. More than 58% peptides were biologically active, showing more than 50% inhibition to ACE at 400 &#x3bc;M. Four peptides, LAAHFAR, YAAPYR, NGAGPYGRP, and FTTFG",
+      "kind": "inhibit",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "NGAGPYGRP",
+      "evidence": "e sites. More than 58% peptides were biologically active, showing more than 50% inhibition to ACE at 400 &#x3bc;M. Four peptides, LAAHFAR, YAAPYR, NGAGPYGRP, and FTTFG",
+      "kind": "inhibit",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "FTTFG",
+      "evidence": "e sites. More than 58% peptides were biologically active, showing more than 50% inhibition to ACE at 400 &#x3bc;M. Four peptides, LAAHFAR, YAAPYR, NGAGPYGRP, and FTTFG",
+      "kind": "inhibit",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "FTTFGK",
+      "evidence": "Four peptides, LAAHFAR, YAAPYR, NGAGPYGRP, and FTTFGK, exhibited low micromolar inhibition. The most potent peptide, LAAHFAR with an IC50 of 6.01 &#xb1; 1.06 &#x3bc;M,",
+      "kind": "inhibit",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "FTT",
+      "evidence": "ive sites. More than 58% peptides were biologically active, showing more than 50% inhibition to ACE at 400 &#x3bc;M. Four peptides, LAAHFAR, YAAPYR, NGAGPYGRP, and FTT",
+      "kind": "% inhib",
+      "pmid": "41828750"
+    },
+    {
+      "peptide": "SPIH",
+      "evidence": "999) might be the main contributors to SPIH's ACE inhibition. IY had the lowest IC50 (0.53&#xa0;&#xb1;&#xa0;0.02&#xa0;&#x3bc;M). YVVF had the greatest affinity (-9.",
+      "kind": "IC50",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "YVVF",
+      "evidence": "999) might be the main contributors to SPIH's ACE inhibition. IY had the lowest IC50 (0.53&#xa0;&#xb1;&#xa0;0.02&#xa0;&#x3bc;M). YVVF had the greatest affinity (-9.",
+      "kind": "IC50",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "SPI",
+      "evidence": "his study attempts to investigate natural angiotensin-I converting enzyme (ACE) inhibitors. Soybean protein isolated (SPI) hydrolysate (SPIH) was prepared by Alcalase",
+      "kind": "inhibit",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "LVF",
+      "evidence": "and time 2&#xa0;h; desorption time 2&#xa0;h) exhibited a 10.4 times higher ACE-inhibitory activity than SPIH. Novel peptides IY, YVVF, LVF, WMY, LVLL and FF (hydropho",
+      "kind": "inhibit",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "WMY",
+      "evidence": "and time 2&#xa0;h; desorption time 2&#xa0;h) exhibited a 10.4 times higher ACE-inhibitory activity than SPIH. Novel peptides IY, YVVF, LVF, WMY, LVLL and FF (hydropho",
+      "kind": "inhibit",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "LVLL",
+      "evidence": "and time 2&#xa0;h; desorption time 2&#xa0;h) exhibited a 10.4 times higher ACE-inhibitory activity than SPIH. Novel peptides IY, YVVF, LVF, WMY, LVLL and FF (hydropho",
+      "kind": "inhibit",
+      "pmid": "33340899"
+    },
+    {
+      "peptide": "QIGLF",
+      "evidence": "biosynthesis. These findings suggest that QIGLF might alleviate hypertension by inhibiting renal inflammation, promoting natriuresis, and regulating renal nitric oxide",
+      "kind": "inhibit",
+      "pmid": "35761693"
+    },
+    {
+      "peptide": "TNGIIR",
+      "evidence": "stion and absorption of egg white-derived angiotensin I-converting enzyme (ACE)-inhibitory peptide TNGIIR in human intestinal Caco-2 cell monolayers. Results showed th",
+      "kind": "inhibit",
+      "pmid": "26883099"
+    },
+    {
+      "peptide": "GPC",
+      "evidence": "tepwise purifications of the hydrolysates enhanced the ACE-inhibitory capacity (IC50) by two to nine folds after GPC to approximately 85, 64, and 93&#xa0;&#xb5;g/mL",
+      "kind": "IC50",
+      "pmid": "39980267"
+    },
+    {
+      "peptide": "SGID",
+      "evidence": "ysate generated directly following simulated gastrointestinal digestion (SGID) (IC50 2.59 &#xb1; 0.04 mg mL(-1)) was significantly lower than that of the collagen t",
+      "kind": "IC50",
+      "pmid": "25082083"
+    },
+    {
+      "peptide": "CTH",
+      "evidence": ")) was significantly lower than that of the collagen tryptic hydrolysate (CTH) (IC50 1.53 &#xb1; 0.01 mg mL(-1)). The antioxidant activities of collagen and CTH usi",
+      "kind": "IC50",
+      "pmid": "25082083"
+    },
+    {
+      "peptide": "SDS",
+      "evidence": "ydrolysates was compared by determining the angiotensin converting enzyme (ACE) inhibitory activity. SDS-PAGE and LC-MS/MS analysis confirmed pepsin selectivity to gly",
+      "kind": "inhibit",
+      "pmid": "23514371"
+    },
+    {
+      "peptide": "PAGE",
+      "evidence": "ydrolysates was compared by determining the angiotensin converting enzyme (ACE) inhibitory activity. SDS-PAGE and LC-MS/MS analysis confirmed pepsin selectivity to gly",
+      "kind": "inhibit",
+      "pmid": "23514371"
+    },
+    {
+      "peptide": "SPI",
+      "evidence": "apain-hydrolyzed &#x3b2;-conglycinin-rich fraction had more than double the ACE inhibitory activity of that of pepsin-hydrolyzed SPI and pepsin-hydrolyzed glycinin-ric",
+      "kind": "inhibit",
+      "pmid": "23514371"
+    },
+    {
+      "peptide": "LAPYK",
+      "evidence": "tivity. Among them, LAPYK possessed the strongest activity with ABTS scavenging IC50 of 5.29&#xa0;&#xb1;&#xa0;0.24&#xa0;&#xb5;M, ORAC of 1.50&#xa0;&#xb1;&#xa0;0.04&",
+      "kind": "IC50",
+      "pmid": "32598493"
+    }
+  ]
+}

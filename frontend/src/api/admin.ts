@@ -52,7 +52,7 @@ export const notificationApi = {
 }
 
 export const adminApi = {
-  listUsers: (params?: { page?: number; page_size?: number; role?: string; search?: string; status?: string; organization_id?: number }) =>
+  listUsers: (params?: { page?: number; page_size?: number; role?: string; search?: string; status?: string; organization_id?: number; sort_field?: string; sort_dir?: string }) =>
     api.get<any>('/admin/users', { params }).then((r) => {
       const raw = r.data;
       // Backend returns {items, total, page, page_size}
@@ -74,7 +74,7 @@ export const adminApi = {
       };
     }),
 
-  createUser: (data: { username: string; password: string; email: string; full_name?: string; role?: string; organization_id?: number }) =>
+  createUser: (data: { username: string; password: string; email: string; full_name?: string; department?: string; role?: string; organization_id?: number }) =>
     api.post<User>('/users', data).then((r) => r.data),
 
   deleteUser: (userId: number) =>
@@ -110,7 +110,7 @@ export const adminApi = {
     }),
 
   getUserActivity: (userId: number, params?: { days?: number; limit?: number }) =>
-    api.get<{ items: any[]; total: number }>('/activity/timeline', { params }).then((r) => r.data),
+    api.get<{ items: any[]; total: number }>('/activity/timeline', { params: { ...params, user_id: userId } }).then((r) => r.data),
 
   batchImportUsers: (file: File) => {
     const formData = new FormData();
@@ -125,6 +125,12 @@ export const adminApi = {
 
   unlockUserAccount: (userId: number) =>
     api.post(`/admin/users/${userId}/unlock`).then((r) => r.data),
+
+  resetUserPassword: (userId: number, password?: string) =>
+    api.post<{ detail: string; username: string; temp_password: string | null }>(
+      `/admin/users/${userId}/reset-password`,
+      { password: password || undefined },
+    ).then((r) => r.data),
 
   getUserTrend: (days?: number) =>
     api.get<any>('/analytics/trends/users', { params: { days: days ?? 30, granularity: 'daily' } }).then((r) => r.data),

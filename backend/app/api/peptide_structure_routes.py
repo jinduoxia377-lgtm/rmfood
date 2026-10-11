@@ -380,14 +380,27 @@ async def ml_status(target_activity: str = Query("ACE inhibitory")):
             "library_size": trainer.library_size,
             "library_real_count": trainer.library_real_count,
             "library_synth_count": trainer.library_synth_count,
+            "library_pubmed_count": getattr(trainer, "library_pubmed_count", 0),
+            "train_pubmed_count": getattr(trainer, "train_pubmed_count", 0),
+            "val_pubmed_count": getattr(trainer, "val_pubmed_count", 0),
+            "include_pubmed": getattr(trainer, "include_pubmed", False),
+            "balanced_accuracy": getattr(trainer, "balanced_accuracy", None),
+            "is_trustworthy": getattr(trainer, "is_trustworthy", False),
+            "trust_note": getattr(trainer, "trust_note", ""),
+            "decision_threshold": getattr(trainer, "decision_threshold", 0.5),
             "training_samples": trainer.training_set_size,
             "validation_samples": trainer.validation_set_size,
             "train_real_count": trainer.train_real_count,
             "train_synth_count": trainer.train_synth_count,
             "note": (
-                f"模型用 DFBP 库 {trainer.library_size} 条标注记录训练：真实文献 {trainer.library_real_count} 条 + "
-                f"程序合成 {trainer.library_synth_count} 条（合成已显式标注，非冒充真实数据）。"
-                f"实际训练子集 {trainer.training_set_size} 条：真实 {trainer.train_real_count} + 合成 {trainer.train_synth_count}。"
+                f"模型用 {trainer.library_size} 条标注记录训练：真实文献 "
+                f"{trainer.library_real_count - getattr(trainer, 'library_pubmed_count', 0)} 条 + "
+                f"Step B PubMed 审计真实正类 {getattr(trainer, 'library_pubmed_count', 0)} 条"
+                f"（每条带可溯源 pmid）+ 程序合成 {trainer.library_synth_count} 条。"
+                f"合成数据仅用于库规模展示，不参与训练。"
+                f"判决阈值 {getattr(trainer, 'decision_threshold', 0.5)}，"
+                f"可信度门禁：balanced_accuracy={getattr(trainer, 'balanced_accuracy', None)}，"
+                f"is_trustworthy={getattr(trainer, 'is_trustworthy', False)}。"
                 f"trained=False 时 /ml-predict 回退规则并标记 fallback_rule。"
             ),
         }

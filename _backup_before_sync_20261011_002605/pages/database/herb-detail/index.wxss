@@ -1,0 +1,677 @@
+/* 閼筋垱娼楃拠锔藉剰妞ゅ灚鐗卞?*/
+
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--color-bg-page) 0%, var(--color-bg-card) 100%);
+
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+ }
+
+/* 妞ゅ爼鍎寸€佃壈鍩?*/
+.header {
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
+  padding: 0 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.back-btn {
+  width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.back-icon {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-bg-card);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.title-main {
+  color: var(--color-bg-card);
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-weight: 500;
+}
+
+.header-actions {
+  width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-icon {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+/* 閸旂姾娴囬悩鑸碘偓?*/
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.loading-spinner {
+  width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  border: 3rpx solid var(--color-border-light);
+  border-top-color: var(--color-brand-500);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-placeholder);
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+/* 濠婃艾濮╅崠鍝勭厵 */
+.content-scroll {
+  height: calc(100vh - 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        );
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  box-sizing: border-box;
+
+  height: 0;
+ }
+
+/* 閸╃儤婀版穱鈩冧紖閸楋紕澧?*/
+.info-card {
+  background: var(--color-bg-card);
+  border-radius: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  box-shadow: 0 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         rgba(0, 0, 0, 0.06);
+}
+
+.herb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.herb-name-section {
+  flex: 1;
+}
+
+.herb-name {
+  display: block;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-weight: 600;
+  color: var(--color-brand-500);
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.herb-latin {
+  display: block;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-placeholder);
+  font-style: italic;
+}
+
+.herb-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.badge {
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  border-radius: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-weight: 500;
+}
+
+.badge.homology {
+  background: linear-gradient(135deg, var(--color-warning), var(--color-warning));
+  color: var(--color-text-inverse);
+}
+
+.badge.category {
+  background: var(--color-bg-hover);
+  color: var(--color-text-tertiary);
+}
+
+.herb-meta {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  border-top: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         solid var(--color-bg-hover);
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.meta-label {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-placeholder);
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.meta-value {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.nature-ping { color: var(--color-success); }
+.nature-han { color: var(--color-info); }
+.nature-liang { color: var(--color-accent-300); }
+.nature-wen { color: var(--color-warning); }
+.nature-re { color: var(--color-danger); }
+
+/* 缁旂姾濡崡锛勫 */
+.section-card {
+  background: var(--color-bg-card);
+  border-radius: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  box-shadow: 0 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         rgba(0, 0, 0, 0.06);
+}
+
+.section-card.warning {
+  border-left: 4rpx solid var(--color-warning);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.section-title {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.section-more {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-brand-500);
+}
+
+.section-stats {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-placeholder);
+}
+
+.section-content {
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         0;
+}
+
+.content-text {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  line-height: 1.8;
+  color: var(--color-text-tertiary);
+}
+
+/* 閸栨牕鎮庨悧鈺佸灙鐞?*/
+.compound-list {
+  display: flex;
+  flex-direction: column;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.compound-item {
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  background: var(--color-bg-tertiary);
+  border-radius: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.compound-name {
+  display: block;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.compound-meta {
+  display: flex;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-tertiary);
+}
+
+.compound-mw { color: var(--color-brand-500); }
+.compound-ob { color: var(--color-warning); }
+.compound-dl { color: var(--color-info); }
+
+/* 閻儴鐦戦崶鎹愭皑 */
+.graph-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.graph-node {
+  display: flex;
+  align-items: center;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  background: var(--color-bg-tertiary);
+  border-radius: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.node-dot {
+  width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  border-radius: 50%;
+}
+
+.node-dot.herb { background: var(--color-brand-500); }
+.node-dot.compound { background: var(--color-warning); }
+.node-dot.target { background: var(--color-info); }
+.node-dot.disease { background: var(--color-danger); }
+
+.node-label {
+  color: var(--color-text-secondary);
+  max-width: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 鐠€锕€鎲￠崚妤勩€?*/
+.warning-item {
+  display: flex;
+  align-items: center;
+  gap: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         0;
+}
+
+.warning-icon {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.warning-text {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-tertiary);
+}
+
+.no-warning {
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         0;
+}
+
+.safe-text {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-success);
+}
+
+/* 缁岃櫣濮搁幀?*/
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+         
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.empty-icon {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  margin-bottom: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+.empty-text {
+  font-size: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+  color: var(--color-text-placeholder);
+}
+
+/* 鎼存洟鍎撮梻纾嬬獩 */
+.bottom-spacing {
+  height: 
+            param($m)
+            $val = [int]$m.Groups[1].Value
+            "$($val * 2)rpx"
+        ;
+}
+
+/* ============================================
+   搴曢儴瀹夊叏鍖?   ============================================ */
+.bottom-spacing {
+  height: calc(40rpx + env(safe-area-inset-bottom));
+}

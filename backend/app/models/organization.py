@@ -3,7 +3,7 @@
 Supports multi-tenant organization management.
 """
 from datetime import datetime
-from sqlalchemy import String, Integer, Text, Boolean, Enum as SAEnum
+from sqlalchemy import String, Integer, Text, Boolean, BigInteger, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List
 
@@ -23,11 +23,13 @@ class Organization(BaseModel):
     owner_id: Mapped[int] = mapped_column(BigInteger, nullable=True, index=True)
 
     members: Mapped[List["OrganizationMember"]] = relationship(
-        "OrganizationMember", back_populates="organization", cascade="all, delete-orphan"
+        "OrganizationMember", back_populates="organization", cascade="all, delete-orphan",
+        foreign_keys="[OrganizationMember.organization_id]",
     )
 
     api_keys: Mapped[List["ApiKey"]] = relationship(
-        "ApiKey", back_populates="organization", cascade="all, delete-orphan"
+        "ApiKey", back_populates="organization", cascade="all, delete-orphan",
+        foreign_keys="[ApiKey.organization_id]",
     )
 
     def to_dict(self) -> dict:
@@ -53,7 +55,8 @@ class OrganizationMember(BaseModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     organization: Mapped["Organization"] = relationship(
-        "Organization", back_populates="members"
+        "Organization", back_populates="members",
+        foreign_keys="[OrganizationMember.organization_id]",
     )
 
     def to_dict(self) -> dict:

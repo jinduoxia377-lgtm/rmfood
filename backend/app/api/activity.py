@@ -23,11 +23,16 @@ router = APIRouter(prefix="/activity", tags=["活动统计"])
 async def get_timeline(
     days: int = Query(7, ge=1, le=90, description="天数"),
     limit: int = Query(20, ge=1, le=50),
+    user_id: int | None = Query(None, description="仅返回该用户的活动（管理员可查看任意用户）"),
     db: AsyncSession = Depends(get_db_session),
     current_user: UserModel = Depends(get_current_user),
 ):
     """获取最近的活动时间线"""
     since = datetime.now().replace(tzinfo=None) - timedelta(days=days)  # naive datetime
+
+    # 非管理员只能查看自己的活动；管理员可指定任意 user_id
+    if user_id is not None and current_user.role.value not in ("admin", "reviewer"):
+        user_id = current_user.id
 
     events = []
 
@@ -38,6 +43,8 @@ async def get_timeline(
         .order_by(Formula.updated_at.desc())
         .limit(limit)
     )
+    if user_id is not None:
+        stmt = stmt.where(Formula.creator_id == user_id)
     formulas = (await db.execute(stmt)).scalars().all()
     for f in formulas:
         events.append({
@@ -47,6 +54,7 @@ async def get_timeline(
             "status": f.status.value if hasattr(f.status, "value") else str(f.status),
             "created_at": f.updated_at.isoformat(),
             "event": "配方更新",
+            "user_id": f.creator_id,
         })
 
     # 实验事件
@@ -56,6 +64,8 @@ async def get_timeline(
         .order_by(Experiment.updated_at.desc())
         .limit(limit)
     )
+    if user_id is not None:
+        stmt = stmt.where(Experiment.researcher_id == user_id)
     experiments = (await db.execute(stmt)).scalars().all()
     for e in experiments:
         event_type = "实验更新"
@@ -70,43 +80,46 @@ async def get_timeline(
             "status": e.status.value if hasattr(e.status, "value") else str(e.status),
             "created_at": e.updated_at.isoformat(),
             "event": event_type,
+            "user_id": e.researcher_id,
         })
 
-    # 术语分类事件
-    stmt = (
-        select(TermCategory)
-        .where(TermCategory.updated_at >= since)
-        .order_by(TermCategory.updated_at.desc())
-        .limit(limit // 3)
-    )
-    categories = (await db.execute(stmt)).scalars().all()
-    for c in categories:
-        events.append({
-            "id": c.id,
-            "type": "category",
-            "title": c.name,
-            "status": "success",
-            "created_at": c.updated_at.isoformat(),
-            "event": "分类更新",
-        })
+    # 术语分类/术语事件为全局数据，仅在未指定用户时展示
+    if user_id is None:
+        # 术语分类事件
+        stmt = (
+            select(TermCategory)
+            .where(TermCategory.updated_at >= since)
+            .order_by(TermCategory.updated_at.desc())
+            .limit(limit // 3)
+        )
+        categories = (await db.execute(stmt)).scalars().all()
+        for c in categories:
+            events.append({
+                "id": c.id,
+                "type": "category",
+                "title": c.name,
+                "status": "success",
+                "created_at": c.updated_at.isoformat(),
+                "event": "分类更新",
+            })
 
-    # 术语事件
-    stmt = (
-        select(Term)
-        .where(Term.updated_at >= since)
-        .order_by(Term.updated_at.desc())
-        .limit(limit // 3)
-    )
-    terms = (await db.execute(stmt)).scalars().all()
-    for t in terms:
-        events.append({
-            "id": t.id,
-            "type": "term",
-            "title": t.term,
-            "status": "success",
-            "created_at": t.updated_at.isoformat(),
-            "event": "术语更新",
-        })
+        # 术语事件
+        stmt = (
+            select(Term)
+            .where(Term.updated_at >= since)
+            .order_by(Term.updated_at.desc())
+            .limit(limit // 3)
+        )
+        terms = (await db.execute(stmt)).scalars().all()
+        for t in terms:
+            events.append({
+                "id": t.id,
+                "type": "term",
+                "title": t.term,
+                "status": "success",
+                "created_at": t.updated_at.isoformat(),
+                "event": "术语更新",
+            })
 
     # 按时间排序
     events.sort(key=lambda x: x["created_at"], reverse=True)

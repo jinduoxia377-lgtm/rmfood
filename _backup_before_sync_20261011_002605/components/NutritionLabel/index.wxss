@@ -1,0 +1,112 @@
+/* 营养成分表组件样式 - 升级版 */
+.nutrition-label {
+  background-color: var(--color-bg-card);
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid var(--color-gray-300);
+}
+
+/* 标题 */
+.label-title {
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  padding: 24rpx 20rpx 16rpx;
+  background: linear-gradient(180deg, var(--color-bg-tertiary), var(--color-bg-card));
+  border-bottom: 4rpx solid var(--color-text-primary);
+  letter-spacing: 2rpx;
+}
+
+/* 份量说明 */
+.label-serving {
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--color-text-tertiary);
+  padding: 12rpx 20rpx;
+  border-bottom: 2rpx solid var(--color-text-primary);
+  background-color: var(--color-gray-50);
+}
+
+/* 表格 */
+.label-table {
+  border-bottom: 4rpx solid var(--color-text-primary);
+}
+
+.table-header,
+.table-row {
+  display: flex;
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid var(--color-gray-300);
+  align-items: center;
+}
+
+.table-header {
+  font-weight: 700;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  background: linear-gradient(180deg, var(--color-gray-100), var(--color-gray-200));
+  border-bottom: 2rpx solid var(--color-text-primary);
+}
+
+.table-row {
+  font-size: 26rpx;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.table-row.important {
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--color-warning-bg), transparent);
+  border-left: 4rpx solid var(--color-warning);
+}
+
+/* 列样式 */
+.th-name, .td-name {
+  flex: 2;
+  color: var(--color-text-secondary);
+}
+
+.th-amount, .td-amount {
+  flex: 2;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.th-nrv, .td-nrv {
+  flex: 1;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* 页脚 */
+.label-footer {
+  padding: 20rpx 24rpx;
+  background: linear-gradient(180deg, var(--color-gray-50), var(--color-gray-100));
+}
+
+.label-footer .label-text {
+  font-size: 22rpx;
+  color: var(--color-text-placeholder);
+  line-height: 1.5;
+}
+
+/* NRV 颜色 */
+.nrv-high {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.nrv-medium {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.nrv-low {
+  color: var(--color-success);
+  font-weight: 600;
+}
