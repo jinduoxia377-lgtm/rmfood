@@ -41,18 +41,18 @@ class OFFLoader:
             return "NULL"
 
         if col in self.ARRAY_COLS:
-            if isinstance(val, list) and len(val) == 0:
-                return "{}"  # PostgreSQL array literal (no quotes!)
-            elif isinstance(val, list):
+            # 数组列：生成 PostgreSQL 数组字面量 '{"a","b"}'::text[]
+            if isinstance(val, list):
                 items = []
                 for v in val:
                     if v is None:
                         continue
-                    s = str(v).replace("'", "''")
-                    items.append(f"'{s}'")
-                return "{" + ",".join(items) + "}"  # PostgreSQL array literal
-            else:
-                return "{}"
+                    items.append(json.dumps(str(v), ensure_ascii=False))
+                arr_literal = "{" + ",".join(items) + "}"
+                # SQL 字符串字面量内单引号需双写转义
+                return f"'{arr_literal.replace(chr(39), chr(39)+chr(39))}'::text[]"
+            # dict 或其他非列表值 → 空数组
+            return "'{}'::text[]"
 
         if col == "key_ingredients":
             if isinstance(val, dict):
@@ -67,9 +67,9 @@ class OFFLoader:
 
     def _build_upsert_sql(self, product: Dict[str, Any]) -> str:
         """为单个产品生成 upsert SQL"""
-        cols = ", ".join(self.COLUMNS)
+        cols = ", ".join(self.COLUMNS + ["created_at", "updated_at"])
         values = ", ".join(
-            self._format_value(col, product.get(col)) for col in self.COLUMNS
+            [self._format_value(col, product.get(col)) for col in self.COLUMNS] + ["NOW()", "NOW()"]
         )
 
         update_parts = []
