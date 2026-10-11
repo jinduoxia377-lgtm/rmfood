@@ -1,0 +1,317 @@
+{
+  "source": "DFBP real-only (non-synthetic)",
+  "target": "ACE inhibitory IC50 (μM)",
+  "n": 62,
+  "records": [
+    {
+      "seq": "ILEPROPRO",
+      "ic50_um": 5.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "VALPROPRO",
+      "ic50_um": 9.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "LEUARGALA",
+      "ic50_um": 12.5,
+      "unit": "μM"
+    },
+    {
+      "seq": "TYRPROLYS",
+      "ic50_um": 28.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "PHEPHEVALALAPRO",
+      "ic50_um": 22.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "GLYTHRTRP",
+      "ic50_um": 470.0,
+      "unit": "mM"
+    },
+    {
+      "seq": "LEUILEVALPRO",
+      "ic50_um": 5.2,
+      "unit": "μM"
+    },
+    {
+      "seq": "ALALEUPROMETHISILEARG",
+      "ic50_um": 7.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "LYSTRP",
+      "ic50_um": 0.52,
+      "unit": "μM"
+    },
+    {
+      "seq": "PROPROLYS",
+      "ic50_um": 45.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "ARGPROPRO",
+      "ic50_um": 30.2,
+      "unit": "μM"
+    },
+    {
+      "seq": "GLYPROHYP",
+      "ic50_um": 3500.0,
+      "unit": "mM"
+    },
+    {
+      "seq": "GLYLYSVALPRO",
+      "ic50_um": 15.8,
+      "unit": "μM"
+    },
+    {
+      "seq": "ALAHISILEARG",
+      "ic50_um": 8.5,
+      "unit": "μM"
+    },
+    {
+      "seq": "GLYPROSERLYS",
+      "ic50_um": 18.2,
+      "unit": "μM"
+    },
+    {
+      "seq": "TYRVALALAPRO",
+      "ic50_um": 11.5,
+      "unit": "μM"
+    },
+    {
+      "seq": "PHELYSPRO",
+      "ic50_um": 32.5,
+      "unit": "μM"
+    },
+    {
+      "seq": "ALALEUPROARG",
+      "ic50_um": 6.8,
+      "unit": "μM"
+    },
+    {
+      "seq": "GLULYSTRP",
+      "ic50_um": 19.5,
+      "unit": "μM"
+    },
+    {
+      "seq": "LEUTYRPRO",
+      "ic50_um": 24.2,
+      "unit": "μM"
+    },
+    {
+      "seq": "PROSERLYS",
+      "ic50_um": 35.8,
+      "unit": "μM"
+    },
+    {
+      "seq": "ARGILEGLY",
+      "ic50_um": 42.0,
+      "unit": "μM"
+    },
+    {
+      "seq": "IPP",
+      "ic50_um": 5.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VPP",
+      "ic50_um": 9.1,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "LKP",
+      "ic50_um": 12.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IY",
+      "ic50_um": 3.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "ALPMHIR",
+      "ic50_um": 2.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IVGRPR",
+      "ic50_um": 4.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "TTMPLW",
+      "ic50_um": 6.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "TNGIIR",
+      "ic50_um": 8.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "RYLGY",
+      "ic50_um": 5.6,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "YQEPVLGPVR",
+      "ic50_um": 3.9,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "GVSVAK",
+      "ic50_um": 15.3,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "PYFVPDE",
+      "ic50_um": 11.7,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VRPGL",
+      "ic50_um": 8.9,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "YGFSSNA",
+      "ic50_um": 7.4,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VPVGTP",
+      "ic50_um": 16.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "LQPE",
+      "ic50_um": 13.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "MAKIS",
+      "ic50_um": 18.6,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "SKVY",
+      "ic50_um": 9.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "RVCLQ",
+      "ic50_um": 7.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "TPSKTPV",
+      "ic50_um": 10.4,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "KVGNPWDVK",
+      "ic50_um": 2.1,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "LGY",
+      "ic50_um": 4.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VAP",
+      "ic50_um": 6.3,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "MGP",
+      "ic50_um": 5.9,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "LNYLRAP",
+      "ic50_um": 3.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VDFAEDDEC",
+      "ic50_um": 4.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "WLAHK",
+      "ic50_um": 6.1,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "ERPC",
+      "ic50_um": 8.7,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "GVAGVPR",
+      "ic50_um": 7.6,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "GPAGE",
+      "ic50_um": 11.3,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IAP",
+      "ic50_um": 6.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IV",
+      "ic50_um": 4.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "AL",
+      "ic50_um": 5.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IA",
+      "ic50_um": 7.2,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "LA",
+      "ic50_um": 8.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "IVAL",
+      "ic50_um": 3.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "ALPM",
+      "ic50_um": 4.5,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "TPA",
+      "ic50_um": 5.9,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "NGR",
+      "ic50_um": 6.8,
+      "unit": "μmol/L"
+    },
+    {
+      "seq": "VEP",
+      "ic50_um": 9.2,
+      "unit": "μmol/L"
+    }
+  ]
+}

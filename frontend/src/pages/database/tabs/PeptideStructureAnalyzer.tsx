@@ -2170,8 +2170,26 @@ function QuantitativePredictorView() {
               {result.ace_inhibition.predicted_ic50.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.ace_inhibition.ic50_unit}</span>
             </div>
             <div className="text-xs text-[var(--text-muted)] mt-1">
-              95% CI: [{result.ace_inhibition.confidence_interval.lower.toFixed(3)}, {result.ace_inhibition.confidence_interval.upper.toFixed(3)}]
+              CI: [{(result.ace_inhibition.confidence_interval?.lower ?? 0).toFixed(3)}, {(result.ace_inhibition.confidence_interval?.upper ?? 0).toFixed(3)}]
             </div>
+            {/* Step D 真实回归标识：方法 + R² + 诚实说明 */}
+            {result.ace_inhibition.method && result.ace_inhibition.method !== 'QSAR-rule-fallback' ? (
+              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 space-y-0.5">
+                <div className="font-medium">方法：真实数据回归（{result.ace_inhibition.method}）</div>
+                <div>
+                  由 DFBP 真实 {result.ace_inhibition.n_train ?? '-'} 条 ACE 抑制肽 IC50 拟合，
+                  训练 R²={(result.ace_inhibition.r2_train ?? 0).toFixed(2)}（解释力有限，指示性估计）
+                </div>
+                {result.ace_inhibition.honest_note && (
+                  <div className="opacity-70">{result.ace_inhibition.honest_note}</div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5">
+                方法：QSAR 规则估计（真实回归系数缺失时的诚实回退）
+                {result.ace_inhibition.honest_note ? ` — ${result.ace_inhibition.honest_note}` : ''}
+              </div>
+            )}
           </Card>
           <Card className="p-4">
             <h3 className="text-sm font-medium mb-2">抗氧化活性</h3>
@@ -2179,7 +2197,12 @@ function QuantitativePredictorView() {
               {result.antioxidant.predicted_activity.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.antioxidant.activity_unit}</span>
             </div>
             <div className="text-xs text-[var(--text-muted)] mt-1">
-              95% CI: [{result.antioxidant.confidence_interval.lower.toFixed(3)}, {result.antioxidant.confidence_interval.upper.toFixed(3)}]
+              {result.antioxidant.confidence_interval
+                ? `CI: [${(result.antioxidant.confidence_interval.lower ?? 0).toFixed(3)}, ${(result.antioxidant.confidence_interval.upper ?? 0).toFixed(3)}]`
+                : '（规则估计，无数据回归置信区间）'}
+            </div>
+            <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 opacity-80">
+              方法：QSAR 规则估计（DFBP 抗氧化定量值量纲混杂，暂未做真实回归，诚实标注）
             </div>
           </Card>
         </div>

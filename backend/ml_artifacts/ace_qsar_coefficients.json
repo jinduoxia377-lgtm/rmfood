@@ -1,0 +1,45 @@
+{
+  "target": "ACE inhibitory IC50 (μM)",
+  "model": "log10(IC50_μM) = intercept + Σ w_j·x_j",
+  "n_train": 62,
+  "feature_names": [
+    "length",
+    "hydrophobic_ratio",
+    "positive_ratio",
+    "negative_ratio",
+    "aromatic_ratio",
+    "proline_ratio",
+    "cysteine_ratio",
+    "mw_normalized",
+    "hydrophobic_c_term",
+    "positive_n_term",
+    "has_pro_motif",
+    "aromatic_c_term"
+  ],
+  "intercept": 0.7236621180514978,
+  "weights": [
+    -0.010308006077128874,
+    -0.4465435867691308,
+    0.5916431807877461,
+    -0.20866475472432117,
+    0.39015219193967976,
+    0.06033243946757865,
+    0.03986649148258323,
+    0.40002306883514127,
+    0.2700996513784143,
+    -0.34115009988478884,
+    -0.06420598088568152,
+    -0.13476627506341693
+  ],
+  "r2_train_full": 0.1155,
+  "r2_holdout_8": -0.3201,
+  "honest_note": [
+    "Coefficients regressed from 62 DFBP real-only ACE-inhibitory records",
+    "with genuine IC50 values (unit-normalized to μM). No fabricated data.",
+    "Target is log10(IC50_μM); range spans 3 decades (0.5–3500 μM).",
+    "Held-out R² on 8 samples = -0.32 — a weak estimate; treat predictions",
+    "as indicative, not definitive. The 5-fold / LOO generalization of the",
+    "binary classifier (0.7153) is the stronger reliability signal."
+  ],
+  "source_artifact": "ml_artifacts/ace_ic50_regression.json"
+}
