@@ -266,6 +266,25 @@ async def analyze_synergy(
         else:
             data_source["herb_b"]["note"] = "tcm_herbs 未收录，使用默认参数"
 
+        # Mechanism-2: PK 交互 —— 接入 tcm_herbs_pk 真实参数（F/CL → AUC 代理）
+        try:
+            from ..models.herb_pharmaco_params import TCMHerbPK
+            pk_a = (await db.execute(select(TCMHerbPK).where(TCMHerbPK.herb_name_cn == request.ingredient_a))).scalar_one_or_none()
+            pk_b = (await db.execute(select(TCMHerbPK).where(TCMHerbPK.herb_name_cn == request.ingredient_b))).scalar_one_or_none()
+            if pk_a and pk_b and pk_a.CL and pk_b.CL:
+                dose_mg = 100.0
+                auc_a = dose_mg * (pk_a.F or 0.5) / pk_a.CL
+                auc_b = dose_mg * (pk_b.F or 0.5) / pk_b.CL
+                pk_ctx = context.setdefault("pk", {})
+                pk_ctx.setdefault("auc_a", round(auc_a, 2))
+                pk_ctx.setdefault("auc_b", round(auc_b, 2))
+                pk_ctx.setdefault("auc_combination", round(auc_a + auc_b, 2))
+                pk_ctx.setdefault("bioavailability_base", round(min(pk_a.F or 0.5, pk_b.F or 0.5), 3))
+                data_source["herb_a"]["pk"] = {"F": pk_a.F, "CL": pk_a.CL, "confidence": pk_a.confidence}
+                data_source["herb_b"]["pk"] = {"F": pk_b.F, "CL": pk_b.CL, "confidence": pk_b.confidence}
+        except Exception:
+            pass
+
         engine = SynergyEngine()
         report = engine.analyze_synergy(request.ingredient_a, request.ingredient_b, context)
 
@@ -582,6 +601,28 @@ async def predict_stability_global(
                 pct = round(100.0 / n, 2)
             ingredients_data.append({"name": ing.get("name", ""), "percentage": float(pct)})
 
+        # 从 stability_data 表加载真实稳定性参数（模型推导，来源 TCMSP alogP+Arrhenius）
+        db_entries: Dict[str, Dict[str, Any]] = {}
+        try:
+            from ..models.herb_pharmaco_params import StabilityData
+            names = [i.get("name", "") for i in ingredients_data]
+            result = await db.execute(select(StabilityData).where(StabilityData.herb_name_cn.in_(names)))
+            for row in result.scalars().all():
+                db_entries[row.herb_name_cn] = {
+                    "ph_stability": {"min": 4.0, "max": 9.0, "optimal": [5.0, 8.0]},
+                    "temp_stability": {
+                        "max_temp_c": 80,
+                        "degradation_rate_25c": float(row.degradation_rate or 0.001),
+                    },
+                    "light_sensitivity": "medium",
+                    "oxidation_sensitivity": "medium",
+                    "shelf_life_months": float(row.shelf_life_months or 24.0),
+                    "source": row.source,
+                    "confidence": row.confidence,
+                }
+        except Exception:
+            db_entries = {}
+
         pred = predictor.predict_stability(
             ingredients_data,
             storage_conditions={
@@ -589,6 +630,7 @@ async def predict_stability_global(
                 "humidity_pct": request.humidity_pct,
                 "light_exposure": request.light_exposure,
             },
+            db_entries=db_entries,
         )
         return {
             "ingredient_count": n,
@@ -670,7 +712,63 @@ async def deep_generation(
         )
         
         service = FormulaIntegrationService()
-        
+
+        # 预计算真实 synergy context（tcm_herbs OB/靶点 + 风味档案 + PK 参数）
+        synergy_contexts: Dict[str, Dict] = {}
+        try:
+            from ..models.external_data import TCMHerb
+            from ..models.herb_pharmaco_params import TCMHerbPK
+            from ..services.formula.taste_predictor import TASTE_DATABASE
+
+            async def _load_synergy_ctx(name: str) -> Dict:
+                ctx: Dict = {"bliss": {}, "network": {}, "taste": {}, "pk": {}}
+                herb = (await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))).scalar_one_or_none()
+                if herb is not None:
+                    ob = getattr(herb, "ob_percent", None)
+                    if ob:
+                        ctx["bliss"]["efficacy"] = max(0.1, min(0.95, float(ob) / 150.0))
+                    targets = getattr(herb, "targets", None) or []
+                    ctx["network"]["targets"] = [t.get("name") for t in targets if isinstance(t, dict) and t.get("name")]
+                taste = TASTE_DATABASE.get(name)
+                if taste is None and name.endswith("子"):
+                    taste = TASTE_DATABASE.get(name[:-1])
+                if taste:
+                    ctx["taste"]["profile"] = taste
+                pk = (await db.execute(select(TCMHerbPK).where(TCMHerbPK.herb_name_cn == name))).scalar_one_or_none()
+                if pk is not None and pk.CL:
+                    ctx["pk"]["auc"] = round(100.0 * (pk.F or 0.5) / pk.CL, 2)
+                return ctx
+
+            names = [i.get("name", "") for i in request.ingredients]
+            loaded = {}
+            for name in set(names):
+                loaded[name] = await _load_synergy_ctx(name)
+            for i in range(len(names)):
+                for j in range(i + 1, len(names)):
+                    a, b = names[i], names[j]
+                    ctx_a, ctx_b = loaded.get(a, {}), loaded.get(b, {})
+                    pair_ctx: Dict = {}
+                    if "efficacy" in ctx_a.get("bliss", {}):
+                        pair_ctx.setdefault("bliss", {})["efficacy_a"] = ctx_a["bliss"]["efficacy"]
+                    if "efficacy" in ctx_b.get("bliss", {}):
+                        pair_ctx.setdefault("bliss", {})["efficacy_b"] = ctx_b["bliss"]["efficacy"]
+                    if ctx_a.get("network", {}).get("targets"):
+                        pair_ctx.setdefault("network", {})["targets_a"] = ctx_a["network"]["targets"]
+                    if ctx_b.get("network", {}).get("targets"):
+                        pair_ctx.setdefault("network", {})["targets_b"] = ctx_b["network"]["targets"]
+                    if ctx_a.get("taste", {}).get("profile"):
+                        pair_ctx.setdefault("taste", {})["taste_profile_a"] = ctx_a["taste"]["profile"]
+                    if ctx_b.get("taste", {}).get("profile"):
+                        pair_ctx.setdefault("taste", {})["taste_profile_b"] = ctx_b["taste"]["profile"]
+                    if ctx_a.get("pk", {}).get("auc") and ctx_b.get("pk", {}).get("auc"):
+                        pk_ctx = pair_ctx.setdefault("pk", {})
+                        pk_ctx["auc_a"] = ctx_a["pk"]["auc"]
+                        pk_ctx["auc_b"] = ctx_b["pk"]["auc"]
+                        pk_ctx["auc_combination"] = round(ctx_a["pk"]["auc"] + ctx_b["pk"]["auc"], 2)
+                    synergy_contexts[f"{a}|{b}"] = pair_ctx
+        except Exception:
+            synergy_contexts = {}
+
         dg_request = DGRequest(
             ingredients=request.ingredients,
             mode=GenerationMode.DEEP_INTEGRATION if request.mode == "deep_integration" 
@@ -681,8 +779,8 @@ async def deep_generation(
             target_population=request.target_population,
             use_caching=request.use_caching
         )
-        
-        response = service.orchestrate_deep_generation(dg_request)
+
+        response = service.orchestrate_deep_generation(dg_request, synergy_contexts=synergy_contexts)
         
         return DeepGenerationResponse(
             success=response.success,
