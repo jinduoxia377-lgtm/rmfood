@@ -355,10 +355,20 @@ async def predict_effect(
     """
     try:
         from ..services.formula.effect_simulator import EffectSimulator
-        
+
+        # 补齐 percentage：按 amount_mg 占比归一化，避免模拟器因缺省权重输出全 0
+        ingredients = list(request.formula_ingredients)
+        total_mg = sum(float(i.get("amount_mg", 0)) for i in ingredients)
+        if total_mg <= 0:
+            total_mg = len(ingredients) or 1
+        for ing in ingredients:
+            if ing.get("percentage") is None or ing.get("percentage") == "":
+                amt = float(ing.get("amount_mg", 0))
+                ing["percentage"] = round(amt / total_mg * 100, 2) if total_mg > 0 else round(100.0 / len(ingredients), 2)
+
         simulator = EffectSimulator()
         prediction = simulator.predict_effect(
-            formula_ingredients=request.formula_ingredients,
+            formula_ingredients=ingredients,
             body_weight_kg=request.body_weight_kg,
             simulation_hours=request.simulation_hours,
             time_points=request.time_points
@@ -411,12 +421,12 @@ async def check_safety(
         
         alerts_data = [
             {
-                "level": alert.level.value,
+                "level": alert.alert_level.value,
                 "ingredient": alert.ingredient_name,
                 "parameter": alert.parameter,
                 "current_value": alert.current_value,
                 "threshold_value": alert.threshold_value,
-                "percentage": alert.percentage,
+                "percentage": round(alert.percentage, 2),
                 "message": alert.message,
                 "recommendation": alert.recommendation,
                 "blocking": alert.blocking

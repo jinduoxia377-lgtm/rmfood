@@ -221,20 +221,32 @@ class StabilityPredictor:
         risk_factors = []
         total_degradation = 0.0
         min_shelf_life = 999999.0  # 用大数替代 Infinity，避免 JSONB 序列化错误
-        
+        known_count = 0
+
         for ing in ingredients:
             name = ing.get("name", "")
             percentage = ing.get("percentage", 0)
-            
+
             if name not in self._stability_db:
-                risk_factors.append({
-                    "type": "unknown_ingredient",
-                    "severity": 0.3,
-                    "description": f"未知成分: {name}，使用默认稳定性参数"
-                })
-                total_degradation += 0.001 * percentage
-                continue
-            
+                # 别名回退：药材 → 活性成分（复用安全阈值别名映射）
+                resolved = name
+                try:
+                    from .safety_alert_system.thresholds import HERB_ALIAS_MAP
+                    resolved = HERB_ALIAS_MAP.get(name, name)
+                except Exception:
+                    pass
+                if resolved in self._stability_db:
+                    name = resolved
+                else:
+                    risk_factors.append({
+                        "type": "unknown_ingredient",
+                        "severity": 0.3,
+                        "description": f"未知成分: {name}，使用默认稳定性参数"
+                    })
+                    total_degradation += 0.001 * percentage
+                    continue
+
+            known_count += 1
             stab = self._stability_db[name]
             
             # 计算pH影响
@@ -275,7 +287,17 @@ class StabilityPredictor:
         risk_factors.extend(interaction_risks)
         
         # 计算最终预测
+        # 若数据库无任何已知成分 → 使用保守默认货架期（24 个月），
+        # 避免 999999 占位值泄漏给用户；同时所有结果封顶 120 个月。
+        if known_count == 0:
+            min_shelf_life = 24.0
+            risk_factors.append({
+                "type": "data_insufficient",
+                "severity": 0.2,
+                "description": "成分稳定性数据库未覆盖，货架期采用保守默认值（24 个月）"
+            })
         predicted_shelf_life = max(3, min_shelf_life - sum(r["severity"] for r in risk_factors) * 2)
+        predicted_shelf_life = min(predicted_shelf_life, 120.0)
         degradation_rate = total_degradation / max(1, sum(i.get("percentage", 0) for i in ingredients))
         
         # 生成储存建议
