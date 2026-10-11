@@ -6,6 +6,7 @@ import logging
 from typing import Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from ..schemas import (
     FormulaCreate, FormulaUpdate, FormulaResponse, FormulaListResponse,
@@ -193,7 +194,7 @@ async def get_formula_statistics(
     }
 
 
-@router.get("/{formula_id}", response_model=FormulaResponse, summary="获取配方详情")
+@router.get("/{formula_id:int}", response_model=FormulaResponse, summary="获取配方详情")
 async def get_formula(
     formula_id: int,
     tenant: TenantContext = Depends(require_tenant),
@@ -253,6 +254,14 @@ async def create_formula(
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新配方（草稿状态）"""
+    # 组织计划配额拦截：配方数超限时阻止创建
+    if tenant.org_id:
+        from ..core.multi_tenant.multi_tenant_service import get_org_service
+        try:
+            await get_org_service(db)._check_quota(tenant.org_id, "formulas")
+        except PermissionError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+
     service = FormulaService(db)
     return await service.create_formula(data, creator_id=current_user.id, organization_id=tenant.org_id)
 
@@ -817,6 +826,30 @@ async def predict_formula_effect(
     }
 
 # ── 配方模板 CRUD（管理员）──
+
+@router.get("/templates", response_model=dict, summary="获取配方模板列表")
+async def list_formula_templates(
+    category: Optional[str] = None,
+    include_inactive: bool = False,
+    current_user: Optional[User] = Depends(_optional_get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """获取配方模板列表（默认仅返回激活模板，可按分类筛选）"""
+    from ..models.formula_template import FormulaTemplate
+
+    query = select(FormulaTemplate)
+    if not include_inactive:
+        query = query.where(FormulaTemplate.is_active.is_(True))
+    if category:
+        query = query.where(FormulaTemplate.category == category)
+    query = query.order_by(FormulaTemplate.is_featured.desc(), FormulaTemplate.usage_count.desc())
+
+    result = await db.execute(query)
+    templates = result.scalars().all()
+    return {
+        "items": [t.to_dict() for t in templates],
+        "total": len(templates),
+    }
 
 @router.post("/templates", response_model=dict, summary="创建配方模板")
 async def create_formula_template(

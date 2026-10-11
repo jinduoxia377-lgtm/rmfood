@@ -124,6 +124,43 @@ export default function FormulaNewPage() {
     isRunning?: boolean;
   }>({ isRunning: false });
 
+  // ── 模板预填：从模板库"使用此模板"跳转时读取 sessionStorage 并填充表单 ──
+  useEffect(() => {
+    try {
+      const fromTemplate = new URLSearchParams(window.location.search).get('from_template');
+      if (fromTemplate !== 'true') return;
+      const raw = sessionStorage.getItem('formula_template');
+      if (!raw) return;
+      const tpl = JSON.parse(raw);
+      if (tpl.name) setName(String(tpl.name));
+      if (tpl.description) setDescription(String(tpl.description));
+      if (Array.isArray(tpl.effects) && tpl.effects.length > 0) setEffects(tpl.effects.map(String));
+      if (Array.isArray(tpl.ingredients) && tpl.ingredients.length > 0) {
+        const parsed = tpl.ingredients.map((ing: Record<string, string>, idx: number) => {
+          const dosageStr = (ing.dosage || '').trim();
+          const match = dosageStr.match(/^([\d.]+)\s*([a-zA-Z%]*)$/);
+          const amount = match ? match[1] : '';
+          const unit = match ? (match[2] || 'g') : 'g';
+          return {
+            id: idx + 1,
+            name: String(ing.name || ''),
+            category: String(ing.category || ''),
+            is_food_homology: false,
+            dosage_amount: amount,
+            dosage_unit: unit,
+            role: String(ing.role || ''),
+            notes: '',
+          };
+        });
+        setIngredients(parsed);
+      }
+      // 清理存储，避免刷新后重复填充
+      sessionStorage.removeItem('formula_template');
+    } catch (e) {
+      logger.error('[FormulaNewPage] 模板预填失败:', e);
+    }
+  }, []);
+
   // ── 实时分析 ──
   useEffect(() => {
     if (ingredients.length < 2) return;

@@ -1,146 +1,16 @@
 /**
- * 配方模板库页面 - Phase 5 增强
- * 预设常用配方模板，支持一键创建配方
+ * 配方模板库页面 - 真实数据版
+ * 模板数据来自后端 GET /api/v1/formulas/templates（真实数据库）
+ * 支持搜索、分类筛选、收藏、一键使用模板（跳转新建配方页并预填）
  */
 import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
-import { Plus, Search, FlaskConical, Sparkles, Star, ArrowRight, Copy, Clock, Zap } from 'lucide-react'
+import { Plus, Search, FlaskConical, Sparkles, Star, ArrowRight, Copy, Clock, Zap, RefreshCw } from 'lucide-react'
 import { Button, Input, PageHeader, Badge, Card, CardContent } from '@/components/ui'
-import { EmptyState } from '@/components/ui/Common'
+import { EmptyState, Skeleton } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
-
-// 预设配方模板
-const FORMULA_TEMPLATES = [
-  {
-    id: 'immune-boost',
-    name: '增强免疫配方',
-    description: '枸杞子、黄芪、人参等补气养阴药材组合，适用于免疫力低下人群',
-    effects: ['增强免疫', '补气养阴', '抗疲劳'],
-    ingredients: [
-      { name: '枸杞子', role: '君', dosage: '10g', category: '补益药' },
-      { name: '黄芪', role: '臣', dosage: '15g', category: '补益药' },
-      { name: '人参', role: '君', dosage: '5g', category: '补益药' },
-      { name: '红枣', role: '佐', dosage: '10g', category: '补益药' },
-      { name: '山药', role: '使', dosage: '15g', category: '补益药' },
-    ],
-    usage: '每日1-2次，每次5g，温水冲服',
-    tags: ['热门', '免疫力', '药食同源'],
-    usage_count: 328,
-    color: 'var(--color-primary, var(--color-primary-400))',
-  },
-  {
-    id: 'sleep-aid',
-    name: '改善睡眠配方',
-    description: '酸枣仁、百合、茯苓等安神药材组合，适用于失眠多梦人群',
-    effects: ['改善睡眠', '安神', '养心'],
-    ingredients: [
-      { name: '酸枣仁', role: '君', dosage: '15g', category: '安神药' },
-      { name: '百合', role: '臣', dosage: '10g', category: '补益药' },
-      { name: '茯苓', role: '佐', dosage: '15g', category: '利水渗湿药' },
-      { name: '莲子', role: '使', dosage: '10g', category: '补益药' },
-    ],
-    usage: '睡前30分钟服用，每次8g，温水冲泡',
-    tags: ['睡眠', '安神', '药食同源'],
-    usage_count: 256,
-    color: 'var(--color-tertiary, var(--color-accent-500))',
-  },
-  {
-    id: 'blood-sugar',
-    name: '辅助降血糖配方',
-    description: '苦瓜、黄精、桑叶等清热生津药材组合，适用于血糖偏高人群',
-    effects: ['降血糖', '清热生津', '养阴润燥'],
-    ingredients: [
-      { name: '苦瓜', role: '君', dosage: '10g', category: '清热药' },
-      { name: '黄精', role: '臣', dosage: '15g', category: '补益药' },
-      { name: '桑叶', role: '佐', dosage: '10g', category: '解表药' },
-      { name: '玉米须', role: '使', dosage: '15g', category: '利水渗湿药' },
-    ],
-    usage: '每日2次，餐后30分钟服用，每次6g',
-    tags: ['降血糖', '清热', '慢性病'],
-    usage_count: 189,
-    color: 'var(--color-secondary, #0A84FF)',
-  },
-  {
-    id: 'blood-pressure',
-    name: '辅助降血压配方',
-    description: '决明子、山楂、葛根等活血化瘀药材组合，适用于血压偏高人群',
-    effects: ['降血压', '活血化瘀', '清肝明目'],
-    ingredients: [
-      { name: '决明子', role: '君', dosage: '10g', category: '清热药' },
-      { name: '山楂', role: '臣', dosage: '15g', category: '消食药' },
-      { name: '葛根', role: '佐', dosage: '15g', category: '解表药' },
-      { name: '槐米', role: '使', dosage: '10g', category: '止血药' },
-    ],
-    usage: '每日1-2次，每次5g，饭后服用',
-    tags: ['降血压', '活血', '慢性病'],
-    usage_count: 167,
-    color: 'var(--color-error, #FF3B30)',
-  },
-  {
-    id: 'beauty-skin',
-    name: '美容养颜配方',
-    description: '玫瑰花、白芷、茯苓等养血活血药材组合，适用于面色暗沉人群',
-    effects: ['美容养颜', '养血活血', '祛斑'],
-    ingredients: [
-      { name: '玫瑰花', role: '君', dosage: '6g', category: '理气药' },
-      { name: '白芷', role: '臣', dosage: '10g', category: '解表药' },
-      { name: '茯苓', role: '佐', dosage: '15g', category: '利水渗湿药' },
-      { name: '红枣', role: '使', dosage: '10g', category: '补益药' },
-    ],
-    usage: '每日早晚各一次，每次5g，温水冲服',
-    tags: ['美容', '养颜', '女性'],
-    usage_count: 412,
-    color: 'var(--color-danger-500, #D946EF)',
-  },
-  {
-    id: 'digestive',
-    name: '调理肠胃配方',
-    description: '山楂、陈皮、薏苡仁等健脾消食药材组合，适用于消化不良人群',
-    effects: ['调理肠胃', '健脾消食', '祛湿'],
-    ingredients: [
-      { name: '山楂', role: '君', dosage: '15g', category: '消食药' },
-      { name: '陈皮', role: '臣', dosage: '10g', category: '理气药' },
-      { name: '薏苡仁', role: '佐', dosage: '20g', category: '利水渗湿药' },
-      { name: '茯苓', role: '使', dosage: '15g', category: '利水渗湿药' },
-    ],
-    usage: '每日2次，餐后服用，每次8g',
-    tags: ['肠胃', '消食', '祛湿'],
-    usage_count: 234,
-    color: 'var(--color-warning, #FF9F0A)',
-  },
-  {
-    id: 'anti-fatigue',
-    name: '抗疲劳配方',
-    description: '红景天、五味子、西洋参等补气提神药材组合，适用于疲劳人群',
-    effects: ['抗疲劳', '补气提神', '增强体力'],
-    ingredients: [
-      { name: '红景天', role: '君', dosage: '10g', category: '补益药' },
-      { name: '五味子', role: '臣', dosage: '6g', category: '收涩药' },
-      { name: '西洋参', role: '佐', dosage: '5g', category: '补益药' },
-      { name: '枸杞子', role: '使', dosage: '10g', category: '补益药' },
-    ],
-    usage: '每日1次，运动前30分钟服用，每次6g',
-    tags: ['抗疲劳', '补气', '运动'],
-    usage_count: 198,
-    color: 'var(--color-teal-500, #14B8A6)',
-  },
-  {
-    id: 'slimming',
-    name: '辅助减肥配方',
-    description: '荷叶、山楂、决明子等清热利湿药材组合，适用于肥胖人群',
-    effects: ['辅助减肥', '清热利湿', '润肠通便'],
-    ingredients: [
-      { name: '荷叶', role: '君', dosage: '10g', category: '利水渗湿药' },
-      { name: '山楂', role: '臣', dosage: '15g', category: '消食药' },
-      { name: '决明子', role: '佐', dosage: '10g', category: '清热药' },
-      { name: '番泻叶', role: '使', dosage: '3g', category: '泻下药' },
-    ],
-    usage: '每日1-2次，餐后服用，每次5g',
-    tags: ['减肥', '清热', '塑身'],
-    usage_count: 289,
-    color: 'var(--color-tertiary, var(--color-accent-500))',
-  },
-]
+import { formulaApi, getFormulaTemplates, type FormulaTemplateItem } from '@/api/formula'
 
 type Category = 'all' | '热门' | '免疫力' | '睡眠' | '肠胃' | '美容' | '慢性病' | '其他'
 
@@ -155,12 +25,53 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: '其他', label: '其他功效' },
 ]
 
+// 类别 → 视觉颜色（纯展示用，非数据字段）
+const CATEGORY_COLORS: Record<string, string> = {
+  免疫力: 'var(--color-primary, var(--color-primary-400))',
+  睡眠: 'var(--color-tertiary, var(--color-accent-500))',
+  慢性病: 'var(--color-secondary, #0A84FF)',
+  美容: 'var(--color-danger-500, #D946EF)',
+  肠胃: 'var(--color-warning, #FF9F0A)',
+  其他: 'var(--color-teal-500, #14B8A6)',
+}
+
+const OTHER_CATEGORY_KEYS = ['免疫力', '睡眠', '肠胃', '美容', '慢性病']
+
+// 后端模板 → 卡片展示字段映射
+function mapTemplate(t: FormulaTemplateItem) {
+  return {
+    id: String(t.id),
+    code: t.code,
+    name: t.name,
+    description: t.description || '',
+    effects: t.effects || [],
+    ingredients: (t.ingredients || []).map((ing) => ({
+      name: ing.name,
+      role: ing.role || '',
+      dosage: ing.dosage || '',
+      category: ing.category || '',
+    })),
+    usage: t.usage || '',
+    usage_count: t.usage_count || 0,
+    tags: [t.category || '其他'],
+    is_featured: t.is_featured,
+    color: CATEGORY_COLORS[t.category || '其他'] || 'var(--color-primary, var(--color-primary-400))',
+  }
+}
+
 export default function FormulaTemplatesPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<Category>('all')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [showFavOnly, setShowFavOnly] = useState(false)
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['formula-templates'],
+    queryFn: () => getFormulaTemplates(),
+  })
+
+  const templates = useMemo(() => (data?.items || []).map(mapTemplate), [data])
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => {
@@ -172,31 +83,31 @@ export default function FormulaTemplatesPage() {
   }
 
   const filteredTemplates = useMemo(() => {
-    let templates = [...FORMULA_TEMPLATES]
-    if (showFavOnly) templates = templates.filter(t => favorites.has(t.id))
+    let result = [...templates]
+    if (showFavOnly) result = result.filter(t => favorites.has(t.id))
     if (category !== 'all') {
       if (category === '热门') {
-        templates = templates.filter(t => t.tags.includes('热门'))
+        result = result.filter(t => t.is_featured)
       } else if (category === '其他') {
-        templates = templates.filter(t =>
-          !t.tags.some(tag => ['热门', '免疫力', '睡眠', '肠胃', '美容', '慢性病'].includes(tag)),
-        )
+        result = result.filter(t => !OTHER_CATEGORY_KEYS.includes(t.tags[0] || ''))
       } else {
-        templates = templates.filter(t => t.tags.includes(category))
+        result = result.filter(t => t.tags.includes(category))
       }
     }
     if (search.trim()) {
       const keyword = search.toLowerCase()
-      templates = templates.filter(t =>
+      result = result.filter(t =>
         t.name.toLowerCase().includes(keyword) ||
         t.description.toLowerCase().includes(keyword) ||
         t.effects.some(e => e.toLowerCase().includes(keyword)),
       )
     }
-    return templates.sort((a, b) => b.usage_count - a.usage_count)
-  }, [search, category, favorites, showFavOnly])
+    return result.sort((a, b) => b.usage_count - a.usage_count)
+  }, [templates, search, category, favorites, showFavOnly])
 
-  const handleUseTemplate = (template: typeof FORMULA_TEMPLATES[0]) => {
+  const totalUsage = useMemo(() => templates.reduce((sum, t) => sum + t.usage_count, 0), [templates])
+
+  const handleUseTemplate = (template: ReturnType<typeof mapTemplate>) => {
     // 将模板数据存储到 sessionStorage，跳转到新建配方页
     sessionStorage.setItem('formula_template', JSON.stringify(template))
     navigate('/formulas/new?from_template=true')
@@ -217,6 +128,7 @@ export default function FormulaTemplatesPage() {
                   ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-600'
                   : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600',
               )}
+              title={showFavOnly ? '显示全部模板' : '仅显示收藏模板'}
             >
               <Star size={18} className={showFavOnly ? 'fill-warning-400' : ''} />
             </button>
@@ -265,18 +177,49 @@ export default function FormulaTemplatesPage() {
         )}
         <span className="flex items-center gap-1">
           <FlaskConical size={12} />
-          已使用 {FORMULA_TEMPLATES.reduce((sum, t) => sum + t.usage_count, 0).toLocaleString()} 次
+          已使用 {totalUsage.toLocaleString()} 次
         </span>
+        {isError && (
+          <button onClick={() => refetch()} className="flex items-center gap-1 text-error-600 hover:underline">
+            <RefreshCw size={12} /> 加载失败，点击重试
+          </button>
+        )}
       </div>
 
       {/* 模板网格 */}
-      {filteredTemplates.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="h-1.5 bg-neutral-200 dark:bg-neutral-700" />
+              <CardContent className="p-5 space-y-3">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-3/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-14" />
+                  <Skeleton className="h-5 w-14" />
+                  <Skeleton className="h-5 w-14" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : filteredTemplates.length === 0 ? (
         <EmptyState
           icon={<Sparkles size={48} />}
-          title="未找到匹配模板"
-          description={showFavOnly ? "您还没有收藏任何模板" : "尝试调整搜索条件或分类筛选"}
+          title={isError ? '模板加载失败' : showFavOnly ? '您还没有收藏任何模板' : '未找到匹配模板'}
+          description={
+            isError
+              ? '后端模板服务暂不可用，请检查网络后重试'
+              : showFavOnly
+                ? '点击卡片右上角星标收藏常用模板'
+                : '尝试调整搜索条件或分类筛选'
+          }
           action={
-            showFavOnly ? (
+            isError ? (
+              <Button variant="secondary" onClick={() => refetch()}>重新加载</Button>
+            ) : showFavOnly ? (
               <Button variant="secondary" onClick={() => setShowFavOnly(false)}>显示全部模板</Button>
             ) : undefined
           }
@@ -320,34 +263,40 @@ export default function FormulaTemplatesPage() {
                 </p>
 
                 {/* 功效标签 */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {template.effects.map(effect => (
-                    <Badge key={effect} variant="primary" size="sm">{effect}</Badge>
-                  ))}
-                </div>
+                {template.effects.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {template.effects.map(effect => (
+                      <Badge key={effect} variant="primary" size="sm">{effect}</Badge>
+                    ))}
+                  </div>
+                )}
 
                 {/* 成分预览 */}
-                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
-                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">成分组成</p>
-                  <div className="flex flex-wrap gap-1">
-                    {template.ingredients.slice(0, 4).map(ing => (
-                      <span key={ing.name} className="text-xs text-neutral-600 dark:text-neutral-400">
-                        {ing.name}
-                        {ing.role && <span className="text-primary-500 ml-0.5">({ing.role})</span>}
-                        {ing.dosage && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{ing.dosage}</span>}
-                      </span>
-                    ))}
-                    {template.ingredients.length > 4 && (
-                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.ingredients.length - 4}种</span>
-                    )}
+                {template.ingredients.length > 0 && (
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
+                    <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">成分组成</p>
+                    <div className="flex flex-wrap gap-1">
+                      {template.ingredients.slice(0, 4).map(ing => (
+                        <span key={ing.name} className="text-xs text-neutral-600 dark:text-neutral-400">
+                          {ing.name}
+                          {ing.role && <span className="text-primary-500 ml-0.5">({ing.role})</span>}
+                          {ing.dosage && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{ing.dosage}</span>}
+                        </span>
+                      ))}
+                      {template.ingredients.length > 4 && (
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">+{template.ingredients.length - 4}种</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* 服用方法 */}
-                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4 flex items-center gap-1">
-                  <Clock size={10} />
-                  {template.usage}
-                </p>
+                {template.usage && (
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4 flex items-center gap-1">
+                    <Clock size={10} />
+                    {template.usage}
+                  </p>
+                )}
 
                 {/* 操作 */}
                 <div className="flex items-center gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
@@ -360,12 +309,6 @@ export default function FormulaTemplatesPage() {
                   >
                     使用此模板
                   </Button>
-                  <button
-                    className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-primary-700 hover:border-primary-300 transition-colors"
-                    title="预览配方详情"
-                  >
-                    <ArrowRight size={14} />
-                  </button>
                 </div>
               </CardContent>
             </Card>
