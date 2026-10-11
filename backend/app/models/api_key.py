@@ -1,6 +1,6 @@
 """API keys and webhooks ORM models"""
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, DateTime
+from sqlalchemy import String, Text, Boolean, DateTime, Integer, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -21,7 +21,8 @@ class ApiKey(BaseModel):
     permissions: Mapped[str] = mapped_column(Text, default="")
 
     organization: Mapped["Organization"] = relationship(
-        "Organization", back_populates="api_keys"
+        "Organization", back_populates="api_keys",
+        foreign_keys="[ApiKey.organization_id]",
     )
 
     def to_dict(self) -> dict:

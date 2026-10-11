@@ -45,7 +45,7 @@ async def analyze_experiment(
         experiment_data = req.experiment_data
 
         if req.experiment_id:
-            from ..models.experiment import Experiment
+            from ...models.experiment import Experiment
             result = await db.execute(
                 Experiment.__table__.select().where(
                     Experiment.id == req.experiment_id,

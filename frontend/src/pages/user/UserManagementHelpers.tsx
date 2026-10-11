@@ -26,8 +26,8 @@ export const ROLE_CONFIG: Record<
     bgColor: 'bg-error-50 dark:bg-error-950/30',
     chartColor: 'var(--color-error, #FF3B30)',
   },
-  [UserRole.MANAGER]: {
-    label: '管理员',
+  [UserRole.REVIEWER]: {
+    label: '审核员',
     color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
     icon: ShieldCheck,
     description: '管理用户和内容审核',
@@ -42,15 +42,15 @@ export const ROLE_CONFIG: Record<
     bgColor: 'bg-secondary-50 dark:bg-secondary-950/30',
     chartColor: 'var(--color-secondary, #0A84FF)',
   },
-  [UserRole.ANALYST]: {
-    label: '分析师',
+  [UserRole.FORMULATOR]: {
+    label: '配方师',
     color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
     icon: Filter,
-    description: '数据分析与评估',
+    description: '配方设计与开发',
     bgColor: 'bg-accent-50 dark:bg-accent-950/30',
     chartColor: 'var(--color-accent-500, #A855F7)',
   },
-  [UserRole.VIEWER]: {
+  [UserRole.GUEST]: {
     label: '访客',
     color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
     icon: Eye,
@@ -83,14 +83,14 @@ export const PAGE_SIZE_OPTIONS = [
 export const CHART_COLORS = ['var(--color-error, #FF3B30)', '#EA580C', 'var(--color-secondary, #0A84FF)', '#a855f7', 'var(--text-muted, #9A9A9F)'];
 
 export function resolveRoleKey(role: string | undefined): string {
-  if (!role) return UserRole.VIEWER;
-  const upper = role.toUpperCase();
-  if (upper in ROLE_CONFIG) return upper;
-  return UserRole.VIEWER;
+  if (!role) return UserRole.GUEST;
+  const lower = role.toLowerCase();
+  if (lower in ROLE_CONFIG) return lower;
+  return UserRole.GUEST;
 }
 
 export function getRoleConfig(role: string | undefined) {
-  return ROLE_CONFIG[resolveRoleKey(role)] || ROLE_CONFIG[UserRole.VIEWER];
+  return ROLE_CONFIG[resolveRoleKey(role)] || ROLE_CONFIG[UserRole.GUEST];
 }
 
 export type SortField = 'username' | 'full_name' | 'role' | 'created_at' | 'last_login';
@@ -115,7 +115,7 @@ export interface UserDetail {
 }
 
 export interface ConfirmAction {
-  type: 'status' | 'role' | 'batch_status' | 'batch_role' | 'delete' | 'batch_delete';
+  type: 'status' | 'role' | 'batch_status' | 'batch_role';
   userId?: number;
   userIds?: number[];
   currentValue?: string;

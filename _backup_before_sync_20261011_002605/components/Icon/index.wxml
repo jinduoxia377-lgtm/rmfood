@@ -1,0 +1,4 @@
+<!-- Icon 图标组件 - 内联 SVG 路径方案 -->
+<svg class="icon-wrap {{sizeClass}}" viewBox="0 0 24 24" style="{{style}}">
+  <path d="{{svgPath}}" fill="currentColor"/>
+</svg>

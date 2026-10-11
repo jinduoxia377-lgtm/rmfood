@@ -75,9 +75,12 @@ async def analyze_formula(
         target_effects = req.target_effects
 
         if req.formula_id:
-            from ..models.formula import Formula
+            from ...models.formula import Formula
+            from sqlalchemy.orm import selectinload
             result = await db.execute(
-                select(Formula).where(Formula.id == req.formula_id, Formula.creator_id == current_user.id)
+                select(Formula)
+                .options(selectinload(Formula.ingredients))
+                .where(Formula.id == req.formula_id, Formula.creator_id == current_user.id)
             )
             formula = result.scalar_one_or_none()
             if formula:
@@ -134,10 +137,11 @@ async def get_recommendations(
     3. 返回真实数据库中的配方
     """
     try:
-        from ..models.formula import Formula
+        from ...models.formula import Formula
+        from sqlalchemy.orm import selectinload
 
         # 查询用户的配方（排除当前基于的配方）
-        query = select(Formula).where(
+        query = select(Formula).options(selectinload(Formula.ingredients)).where(
             Formula.creator_id == current_user.id,
             Formula.status == FormulaStatus.PUBLISHED,
         )

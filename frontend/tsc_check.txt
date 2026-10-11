@@ -1,0 +1,1 @@
+﻿src/pages/formula/components/NotificationCenter.tsx(39,17): error TS2339: Property 'metadata' does not exist on type 'Notification'.

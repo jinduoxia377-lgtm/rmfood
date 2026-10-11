@@ -96,12 +96,25 @@ class UserService:
                     detail=f"{field} 已存在",
                 )
 
+        # 角色：默认研究员；仅接受后端枚举中的角色
+        role = UserRole.RESEARCHER
+        if data.role:
+            try:
+                role = UserRole(data.role)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"无效的角色: {data.role}",
+                )
+
         user = User(
             username=data.username,
             email=data.email,
             hashed_password=get_password_hash(data.password),
             full_name=data.full_name,
-            role=UserRole.RESEARCHER,
+            role=role,
+            department=data.department,
+            organization_id=data.organization_id,
         )
         self.db.add(user)
         await self.db.flush()
@@ -161,8 +174,8 @@ class UserService:
         """记录审计日志"""
         log = AuditLog(
             action=action,
-            entity_type=entity_type,
-            entity_id=entity_id,
+            resource_type=entity_type,
+            resource_id=entity_id,
             details=details,
         )
         self.db.add(log)

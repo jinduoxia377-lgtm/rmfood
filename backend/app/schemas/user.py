@@ -16,6 +16,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """用户创建"""
     password: str = Field(..., min_length=8, max_length=100)
+    role: Optional[str] = Field(None, description="角色: admin/reviewer/researcher/formulator/guest，默认 researcher")
+    department: Optional[str] = Field(None, max_length=100)
+    organization_id: Optional[int] = None
 
 
 class UserUpdate(BaseModel):
@@ -41,6 +44,8 @@ class UserResponse(UserBase):
     department: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    organization_id: Optional[int] = None
+    organization_name: Optional[str] = None
     created_at: datetime
     last_login: Optional[datetime] = None
     login_attempts: int = 0

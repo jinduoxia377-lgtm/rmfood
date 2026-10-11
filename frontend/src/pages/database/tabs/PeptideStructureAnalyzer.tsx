@@ -98,6 +98,8 @@ interface MLModelInfo {
   validation_samples: number;
   library_real_count: number;
   library_synth_count: number;
+  library_pubmed_count?: number;
+  include_pubmed?: boolean;
   train_real_count: number;
   train_synth_count: number;
   validation_accuracy: number | null;
@@ -107,6 +109,12 @@ interface MLModelInfo {
   validation_precision: number | null;
   validation_recall: number | null;
   metrics_note?: string;
+  is_trustworthy?: boolean;
+  trust_note?: string;
+  balanced_accuracy?: number | null;
+  trained_on_real_only?: boolean;
+  decision_threshold?: number;
+  is_predicted_active?: boolean | null;
   honest_note?: string;
 }
 
@@ -2988,6 +2996,18 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 </h3>
                 {result.ml_model ? (
                   <div className="space-y-2">
+                    {/* 可信度门禁：模型无判别力时必须显式降级提示，避免误导 */}
+                    {result.ml_model.is_trustworthy === false && (
+                      <div className="flex items-start gap-2 p-2 rounded bg-error-50 dark:bg-error-950/30 text-error-700 dark:text-error-600 text-xs">
+                        <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <div>
+                          <strong>模型未达可信标准</strong>：{result.ml_model.trust_note || '平衡准确率接近随机水平，ML 分数不可作为功效依据。'}
+                          <div className="mt-0.5 opacity-80">
+                            请以 QSAR 规则分（{result.ace_inhibition ? (result.ace_inhibition.score * 100).toFixed(1) + '%' : '-'}）与下方文献证据为准。
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
                         <div className="text-lg font-bold text-primary">
@@ -3023,35 +3043,38 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {result.ml_model.library_real_count} + 程序合成 {result.ml_model.library_synth_count}
+                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {Math.max(result.ml_model.library_real_count - (result.ml_model.library_pubmed_count || 0), 0)} + PubMed 审计正类 {result.ml_model.library_pubmed_count || 0} + 程序合成 {result.ml_model.library_synth_count}
                       {` · 训练 ${result.ml_model.training_samples} 条（真实 ${result.ml_model.train_real_count} + 合成 ${result.ml_model.train_synth_count}）`}
                     </div>
-                    {/* 数据来源构成条（诚实标注真实文献 vs 程序合成占比） */}
-                    {result.ml_model.library_size > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-[var(--text-muted,#9A9A9F)]">训练数据来源构成</span>
-                          <span className="font-mono">
-                            真实 {result.ml_model.train_real_count}（{Math.round(result.ml_model.train_real_count / Math.max(result.ml_model.training_samples,1)*100)}%）
-                            {' / '}合成 {result.ml_model.train_synth_count}（{Math.round(result.ml_model.train_synth_count / Math.max(result.ml_model.training_samples,1)*100)}%）
-                          </span>
+                    {/* 数据来源构成条（诚实标注三路：真实文献 / PubMed 审计 / 程序合成） */}
+                    {result.ml_model.library_size > 0 && (() => {
+                      const pubmed = result.ml_model.library_pubmed_count || 0;
+                      const synth = result.ml_model.library_synth_count || 0;
+                      const realLit = Math.max(result.ml_model.library_real_count - pubmed, 0);
+                      const total = Math.max(result.ml_model.library_size, 1);
+                      return (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-[var(--text-muted,#9A9A9F)]">库数据来源构成</span>
+                            <span className="font-mono">
+                              真实文献 {realLit}（{Math.round(realLit / total * 100)}%）
+                              {' / '}PubMed 审计 {pubmed}（{Math.round(pubmed / total * 100)}%）
+                              {' / '}合成 {synth}（{Math.round(synth / total * 100)}%）
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-700 rounded overflow-hidden flex">
+                            <div className="h-full bg-primary" style={{ width: `${Math.round(realLit / total * 100)}%` }} />
+                            <div className="h-full bg-success-500" style={{ width: `${Math.round(pubmed / total * 100)}%` }} />
+                            <div className="h-full bg-warning-400" style={{ width: `${Math.round(synth / total * 100)}%` }} />
+                          </div>
+                          <div className="text-[10px] text-[var(--text-muted,#9A9A9F)]">
+                            <span className="text-primary">■</span> 真实文献{' '}
+                            <span className="text-success-500">■</span> PubMed 审计正类（带可溯源 pmid，不参与合成训练）{' '}
+                            <span className="text-warning-400">■</span> 程序合成（仅库规模展示，不参与训练）
+                          </div>
                         </div>
-                        <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-700 rounded overflow-hidden flex">
-                          <div
-                            className="h-full bg-primary"
-                            style={{ width: `${Math.round(result.ml_model.train_real_count / Math.max(result.ml_model.training_samples,1)*100)}%` }}
-                          />
-                          <div
-                            className="h-full bg-warning-400"
-                            style={{ width: `${Math.round(result.ml_model.train_synth_count / Math.max(result.ml_model.training_samples,1)*100)}%` }}
-                          />
-                        </div>
-                        <div className="text-[10px] text-[var(--text-muted,#9A9A9F)]">
-                          <span className="text-primary">■</span> 真实文献{' '}
-                          <span className="text-warning-400">■</span> 程序合成（generate_peptides random 生成，已显式标注，非冒充真实数据）
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     {/* 诚实指标说明：不平衡数据集下 accuracy 具欺骗性 */}
                     {result.ml_model.validation_f1 != null && (
                       <div className="text-[11px] text-[var(--text-muted,#9A9A9F)] leading-relaxed">

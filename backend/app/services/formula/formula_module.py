@@ -757,8 +757,8 @@ class FormulaService:
         log = AuditLog(
             user_id=user_id,
             action=action,
-            entity_type=entity_type,
-            entity_id=entity_id,
+            resource_type=entity_type,
+            resource_id=entity_id,
             details=details,
         )
         self.db.add(log)
