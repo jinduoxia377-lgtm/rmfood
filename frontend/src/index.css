@@ -234,6 +234,40 @@
   --color-accent-foreground: var(--accent-foreground, #ffffff);
   --color-destructive: var(--destructive, #b91c1c);
   --color-destructive-foreground: var(--destructive-foreground, #ffffff);
+
+  /* ── D-66：品牌族【语义令牌】统一登记 —— 补齐 @theme 桥接盲区 ──────
+     原状：L0（base.css / dark.css）已定义 -main / -container / -surface /
+     -surface-hover / -hover / -text / -light / -dark / -contrast-text，
+     但本 @theme 只登记了档位（-50..-950）与裸族名，语义令牌全部漏登记。
+     浏览器实测后果：
+       · bg-primary-main 零 CSS 产物 → ThemeSwitcher 状态圆点背景透明、整颗不可见
+       · text-primary-container 零产物 → 静默继承父级色
+       · 所有透明度修饰符（ring-primary-main/30、border-primary-main/50 等）
+         一律零产物 —— semantic-utils.css 的手工逃生舱只能顶住裸类名，
+         结构上无法覆盖 /N 变体（Tailwind 需 @theme 登记才走 color-mix 派生）
+     登记后由 Tailwind 原生生成，值仍取自 base.css / dark.css 的无层声明
+     （无层 > @layer theme，故本处自引用只作「命名登记」，不改变取值）。 */
+  --color-primary-main: var(--color-primary-main);
+  --color-primary-container: var(--color-primary-container);
+  --color-primary-surface: var(--color-primary-surface);
+  --color-primary-surface-hover: var(--color-primary-surface-hover);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-text: var(--color-primary-text);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-contrast-text: var(--color-primary-contrast-text);
+  --color-secondary-main: var(--color-secondary-main);
+  --color-secondary-container: var(--color-secondary-container);
+  --color-secondary-hover: var(--color-secondary-hover);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-accent-main: var(--color-accent-main);
+  --color-accent-container: var(--color-accent-container);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-dark: var(--color-accent-dark);
+  --color-success-main: var(--color-success-main);
+  --color-warning-main: var(--color-warning-main);
+  --color-error-main: var(--color-error-main);
+  --color-info-main: var(--color-info-main);
   --color-success: var(--success, #047857);
   --color-success-foreground: var(--success-foreground, #ffffff);
   --color-warning: var(--warning, #b45309);

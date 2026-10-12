@@ -31,6 +31,37 @@
   --color-primary-container: #d1fae5;
   --color-primary-text: var(--color-success-600); /* = #059669（primary-600）；WCAG AA 5.24:1 on white */
 
+  /* ── D-66：主色语义别名 —— 补齐「幻影令牌」──
+     Tailwind v4 的 bg-/text-/border-/ring-/from-<name> 只能解析 @theme 已登记的
+     --color-<name>。此前 -main / -light / -dark / -contrast-text 从未在 L0 定义，
+     相关类名（全仓 155 处）靠 semantic-utils.css:16-19 逐条手工补丁顶住 4 条，
+     但补丁覆盖不了：
+       · 透明度修饰符（ring-primary-main/30 等）—— 需要 @theme 登记才能算 color-mix
+       · bg-primary-main（实测 ThemeSwitcher 状态圆点背景为透明、圆点不可见）
+       · from-primary-main / to-primary-dark / text-primary-contrast-text
+     此处补齐 L0 定义 + index.css @theme 登记，由 Tailwind 原生生成，
+     手工补丁退为无害的冗余兜底。
+     -main 取【反转型】品牌色而非 -surface：与既有补丁约定一致，
+     且新解锁的用途（焦点环 / 边框 / 5% 色块）在反转下无对比度风险。
+     实底+白字场景仍必须用 .surface-primary（-surface 不参与反转），见 §4.3 C-24。 */
+  --color-primary-main: var(--color-primary);
+  --color-primary-light: var(--color-primary-300);
+  --color-primary-dark: var(--color-primary-900);
+  --color-primary-contrast-text: var(--color-on-primary-surface, #ffffff);
+
+  /* D-66 续：secondary / accent / 状态族同名别名。
+     全仓另有 -main / -dark 共约 70 处同型幻影（text-secondary-main 47 处、
+     text-accent-main 7 处、text-warning-main 4 处、secondary-dark 12 处等）。
+     一律指向族根令牌，与 D-58 的族根选型（-700 档）同源。 */
+  --color-secondary-main: var(--color-secondary);
+  --color-secondary-dark: var(--color-secondary-900);
+  --color-accent-main: var(--color-accent);
+  --color-accent-dark: var(--color-accent-900);
+  --color-success-main: var(--color-success);
+  --color-warning-main: var(--color-warning);
+  --color-error-main: var(--color-error);
+  --color-info-main: var(--color-info);
+
   /* ── 主色表面（实底 + 白字）──
      D-50 修复：品牌色阶在暗色下【整体反转】，使 bg-primary-{400..700} 变成浅色，
      而 text-white 不随主题变化 → 实测暗色对比度仅 1.52:1。
