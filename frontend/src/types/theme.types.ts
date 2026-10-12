@@ -122,6 +122,23 @@ export interface FontFamily {
 
 /** 字体大小层级（一致的 type scale） */
 export interface FontSize {
+  // ── A3：L0 正文族键名（经 toKebab 产出 --text-body / --text-body-sm /
+  // --text-caption / --text-body-lg / --text-overline / --text-tiny），
+  // 与 base.css 的 --text-* 逐值对齐。这四个是全站正文实际消费的令牌。
+  body: string;         // 15px - 正文基准
+  bodySm: string;       // 14px - 次级正文
+  caption: string;      // 12px - 注释/说明
+  bodyLg: string;       // 16px - 导语段
+  overline: string;     // 12px - 标签/徽标
+  tiny: string;         // 12px - 极小字
+  // ── A3：L0 标题族键名（产出 --text-h1..h6）
+  h1: string;           // 36px - 页面标题
+  h2: string;           // 28px - 区块标题
+  h3: string;           // 24px - 子标题
+  h4: string;           // 22px - 卡片标题
+  h5: string;           // 18px
+  h6: string;           // 16px
+  // ── Tailwind 默认档（保留以兼容 text-xs / text-sm / text-base 工具类）
   xs: string;           // 12px - 小标签
   sm: string;           // 14px - 次要文字
   base: string;         // 16px - 正文基准（移动端最小）
@@ -431,6 +448,20 @@ export interface CustomThemeOverrides {
   transitions?: Partial<Transitions>;
 }
 
+/**
+ * 面板选项选择态（执行方案阶段 B2）
+ *
+ * 与运行时覆盖一并持久化，供 UI **派生**选中态（U-6：选中态必须从 store 派生）。
+ * 原实现在 ThemePanel 里用局部 state 记录「当前选了哪个配色/字号」，刷新即丢，
+ * 且直接渲染成 `aria-checked={false}` —— 用户完全看不出当前生效的方案。
+ */
+export interface ThemeOptionMeta {
+  /** 当前选中的配色方案 key（theme-palette 的 HIGPalette.key，如 'green' / 'blue'） */
+  paletteKey?: string;
+  /** 当前选中的字体档位（'compact' / 'standard' / 'relaxed'） */
+  fontScale?: string;
+}
+
 // ============================================================================
 // 主题状态
 // ============================================================================
@@ -461,6 +492,22 @@ export interface ThemeState {
   /** 用户保存的自定义主题列表 */
   customThemes: ThemeConfig[];
 
+  /**
+   * 运行时覆盖（执行方案阶段 B1/B2）
+   *
+   * 面板「配色方案」「字体大小」等控件产生的**累计**覆盖，持久化后在冷启动回放。
+   * 这是 R1 的根治点：原实现每次 applyCustomTheme 都用 `custom-${Date.now()}` 生成
+   * 新 ID 并追加进 customThemes，而 initialize() 只用 `presetThemes[activeThemeId]`
+   * 查表 —— 查不到就 warn 并回退 light-default，用户在设置里选的配色/字号刷新即丢。
+   */
+  runtimeOverrides: CustomThemeOverrides;
+
+  /** 当前选中的配色方案 key（派生选中态用，空串 = 未选择） */
+  paletteKey: string;
+
+  /** 当前选中的字体档位（派生选中态用） */
+  fontScale: string;
+
   /** 初始化状态 */
   isInitialized: boolean;
 }
@@ -477,7 +524,7 @@ export interface ThemeActions {
   setPresetTheme: (themeId: PresetThemeId) => void;
 
   /** 应用自定义主题 */
-  applyCustomTheme: (overrides: CustomThemeOverrides) => void;
+  applyCustomTheme: (overrides: CustomThemeOverrides, meta?: ThemeOptionMeta) => void;
 
   /** 设置辅助功能模式 */
   setAccessibilityMode: (mode: AccessibilityMode) => void;

@@ -96,3 +96,128 @@ describe('isSafeToken — 令牌值白名单', () => {
     expect(isSafeToken(undefined as unknown as string, '#fff')).toBe(false);
   });
 });
+
+/**
+ * 执行方案阶段 A1 / A2 / A3 回归锁
+ *
+ * A1：mergeThemeOverrides 的 colors/typography 必须两级深合并。
+ *     原 category 层浅合并会用 override 整体替换同名角色 —— 覆盖 colors.primary
+ *     时连带丢掉 primary.main，而 --color-primary 正是 chartTheme.ts 与 11 处
+ *     L1 消费者依赖的唯一令牌（L1 缺陷）。
+ * A2：色阶 fallback 路径（COLOR_MAIN_TO_L0 未命中 → --color-<cat>-<档>）
+ *     必须产出合法且可被 isSafeToken 接受的令牌名。
+ * A3：fontSize 键名必须 kebab 化，否则 --text-body-sm 被写成 --text-bodySm
+ *     而在 :723 静默拒收，字号运行时覆盖整体失效。
+ */
+import { generateCSSVariables, getDefaultTheme, mergeThemeOverrides, presetThemes } from '../theme.presets';
+
+describe('mergeThemeOverrides — A1 两级深合并', () => {
+  it('覆盖 colors.primary 的某个属性时，保留 primary 的其余属性', () => {
+    const base = getDefaultTheme();
+    const before = base.colors.primary;
+    const after = mergeThemeOverrides(base, {
+      colors: { primary: { main: '#007aff' } },
+    });
+    // 被覆盖的属性生效
+    expect(after.colors.primary.main).toBe('#007aff');
+    // 未覆盖的属性全部保留（L1 回归锁）
+    for (const k of Object.keys(before)) {
+      if (k !== 'main') {
+        expect(after.colors.primary[k], k).toBe(before[k]);
+      }
+    }
+  });
+
+  it('覆盖一个角色时，其余角色完全不受影响', () => {
+    const base = getDefaultTheme();
+    const after = mergeThemeOverrides(base, { colors: { primary: { main: '#007aff' } } });
+    for (const k of Object.keys(base.colors)) {
+      if (k !== 'primary') {
+        expect(after.colors[k], k).toEqual(base.colors[k]);
+      }
+    }
+  });
+
+  it('覆盖 typography.fontSize 的一个键时，保留其余排版键', () => {
+    const base = getDefaultTheme();
+    const before = base.typography.fontSize;
+    const after = mergeThemeOverrides(base, {
+      typography: { fontSize: { body: '14px' } },
+    });
+    expect(after.typography.fontSize.body).toBe('14px');
+    for (const k of Object.keys(before)) {
+      if (k !== 'body') {
+        expect(after.typography.fontSize[k], k).toBe(before[k]);
+      }
+    }
+    // 同一 typography 下的其他维度也不受影响
+    expect(after.typography.fontFamily).toEqual(base.typography.fontFamily);
+  });
+
+  it('presetThemes 全部预设经深合并后角色数不减少（结构性不回归）', () => {
+    for (const [id, theme] of Object.entries(presetThemes)) {
+      const after = mergeThemeOverrides(theme, {
+        colors: { primary: { main: '#123456' } },
+        typography: { fontSize: { body: '16px' } },
+      });
+      expect(Object.keys(after.colors).length, id).toBe(Object.keys(theme.colors).length);
+      expect(Object.keys(after.typography.fontSize).length, id).toBe(
+        Object.keys(theme.typography.fontSize).length,
+      );
+    }
+  });
+});
+
+describe('generateCSSVariables — A2 色阶 fallback 路径', () => {
+  const SCALE_TIERS = ['100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+
+  it('COLOR_MAIN_TO_L0 未命中的色档键产出 --color-<角色>-<档>，且全部通过 isSafeToken', () => {
+    const base = getDefaultTheme();
+    const colorOverrides = SCALE_TIERS.reduce<Record<string, string>>((acc, t) => {
+      acc[t] = '#10b981';
+      return acc;
+    }, {});
+    const theme = mergeThemeOverrides(base, {
+      colors: { primary: { ...colorOverrides, main: '#007aff' } },
+    });
+    const vars = generateCSSVariables(theme);
+
+    for (const t of SCALE_TIERS) {
+      const name = `--color-primary-${t}`;
+      expect(name in vars, name).toBe(true);
+      expect(isSafeToken(name, vars[name]), name).toBe(true);
+    }
+    // primary-main 仍命中映射 → 写 --color-primary（不得被色档覆盖）
+    expect(vars['--color-primary']).toBe('#007aff');
+    expect(isSafeToken('--color-primary', vars['--color-primary'])).toBe(true);
+  });
+
+  it('所有生成的变量名均通过 SAFE_TOKEN_NAME 白名单', () => {
+    const vars = generateCSSVariables(mergeThemeOverrides(getDefaultTheme(), {
+      colors: { primary: { '100': '#d1fae5', '950': '#022c22' } },
+    }));
+    const rejected = Object.keys(vars).filter((n) => !isSafeToken(n, vars[n]));
+    expect(rejected, `应无令牌被拒收: ${rejected.join(', ')}`).toHaveLength(0);
+  });
+});
+
+describe('generateCSSVariables — A3 字体键名 kebab 化', () => {
+  it('驼峰排版键产出带连字符的 L0 令牌名', () => {
+    const vars = generateCSSVariables(getDefaultTheme());
+    // L0 实际消费的正文令牌（base.css --text-body / --text-body-sm / --text-caption / --text-body-lg）
+    for (const n of ['--text-body', '--text-body-sm', '--text-caption', '--text-body-lg', '--text-h1']) {
+      expect(n in vars, n).toBe(true);
+      expect(isSafeToken(n, vars[n]), n).toBe(true);
+    }
+    // 不得产出未 kebab 化的孤儿名（会在 :723 被拒收）
+    for (const n of ['--text-bodySm', '--text-bodyLg']) {
+      expect(n in vars, n).toBe(false);
+    }
+  });
+
+  it('standard 预设的 --text-body 与 base.css 的 0.9375rem 一致', () => {
+    const vars = generateCSSVariables(getDefaultTheme());
+    expect(vars['--text-body']).toBe('0.9375rem');
+  });
+});
+

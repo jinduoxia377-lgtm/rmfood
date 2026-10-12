@@ -34,7 +34,9 @@ import { logger } from '@/utils/safeLogger';
  * 用于在从localStorage恢复状态时检查主题是否存在
  */
 function isValidThemeId(themeId: string): boolean {
-  return themeId in presetThemes;
+  // RUNTIME_THEME_ID 是运行时覆盖的稳定 ID（不落 presetThemes），
+  // 必须放行 —— 否则 onRehydrateStorage 会把它判为无效并强制改回 light-default。
+  return themeId in presetThemes || themeId === RUNTIME_THEME_ID;
 }
 
 /**
@@ -78,6 +80,88 @@ function syncA11yAttributes(mode: AccessibilityMode, themeMode: ThemeMode): void
 }
 
 // ============================================================================
+// 运行时覆盖合成（执行方案阶段 B1 / B2 —— R1 根治）
+// ----------------------------------------------------------------------------
+// R1 根因链：applyCustomTheme 用 `custom-${Date.now()}` 生成新 ID 并追加进 customThemes
+// → initialize() 只用 `presetThemes[activeThemeId]` 查表 → 查不到 → warn「无效的主题ID」
+// → 回退 light-default。用户在设置里选的配色/字号刷新即丢，且连带把 mode 打回亮色。
+//
+// 修复：覆盖以**幂等累计**的方式存进持久化的 runtimeOverrides，activeThemeId 用稳定
+// ID；任何需要主题的代码路径都经 composeTheme() 重建（预设 × 覆盖 × 无障碍变体），
+// 而不是各自拼一遍 —— 原先 setThemeMode / setPresetTheme / setAccessibilityMode
+// 三条路径各自手搓 base 主题，漏掉了 runtimeOverrides 这一层。
+// ============================================================================
+
+/** 运行时自定义主题的稳定 ID（不再每次新建，避免 customThemes 无限膨胀） */
+export const RUNTIME_THEME_ID = 'custom-runtime';
+
+/** 覆盖对象是否非空 */
+function hasOverrides(o: CustomThemeOverrides | undefined | null): o is CustomThemeOverrides {
+  if (!o) return false;
+  return !!(o.colors || o.typography || o.spacing || o.borderRadius || o.transitions);
+}
+
+/** 同维度浅合并（override 优先，缺省保留 prev） */
+function mergeDim<T>(prev: T | undefined, next: T | undefined): T | undefined {
+  if (!prev) return next;
+  if (!next) return prev;
+  return { ...prev, ...next };
+}
+
+/** 累计合并两次覆盖 */
+function mergeCustomOverrides(
+  prev: CustomThemeOverrides,
+  next: CustomThemeOverrides,
+): CustomThemeOverrides {
+  return {
+    colors: mergeDim(prev.colors, next.colors),
+    typography: mergeDim(prev.typography, next.typography),
+    spacing: mergeDim(prev.spacing, next.spacing),
+    borderRadius: mergeDim(prev.borderRadius, next.borderRadius),
+    transitions: mergeDim(prev.transitions, next.transitions),
+  };
+}
+
+/**
+ * 按当前 mode 解析底层预设 ID（system 时按系统实际偏好）。
+ * 原先 initialize / setThemeMode / setAccessibilityMode 三处各自手写这段判断。
+ */
+function systemThemeIdFor(mode: ThemeMode): PresetThemeId {
+  if (mode !== 'system') {
+    return mode === 'dark' ? 'dark-default' : 'light-default';
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark-default'
+    : 'light-default';
+}
+
+/**
+ * 合成最终主题：预设 × 运行时覆盖 × 无障碍变体。
+ *
+ * @param themeId  作为底层的预设 ID
+ * @param overrides 持久化的运行时覆盖（可选）
+ * @param a11yMode 无障碍模式（可选，normal 时不转换）
+ */
+function composeTheme(
+  themeId: PresetThemeId,
+  overrides?: CustomThemeOverrides,
+  a11yMode: AccessibilityMode = 'normal',
+): ThemeConfig {
+  let theme = presetThemes[themeId] || presetThemes['light-default'];
+  if (hasOverrides(overrides)) {
+    theme = mergeThemeOverrides(theme, overrides);
+    // 打上运行时 ID：data-theme 应反映「这是带覆盖的主题」；
+    // 也令 isCleanBuiltinPreset 的第一条判定（id 不在 presetThemes）直接判非纯净，
+    // 避免「id 仍是 light-default 但 colors 已被改」这种语义上自相矛盾的对象。
+    theme = { ...theme, id: RUNTIME_THEME_ID, name: 'Custom Theme', isPreset: false };
+  }
+  if (a11yMode !== 'normal') {
+    theme = getAccessibilityTheme(theme, a11yMode);
+  }
+  return theme;
+}
+
+// ============================================================================
 // 初始状态
 // ============================================================================
 
@@ -94,6 +178,9 @@ const initialState: ThemeState = {
   transitionType: 'fade',
   isTransitioning: false,
   customThemes: [],
+  runtimeOverrides: {},
+  paletteKey: '',
+  fontScale: 'standard',
   isInitialized: false,
 };
 
@@ -135,24 +222,25 @@ export const useThemeStore = create<ThemeStore>()(
           // 而非直接沿用持久化的 activeThemeId。原实现算了 effectiveMode 却只用于
           // 日志（见下方 logger），导致「跟随系统」在冷启动时失效 ——
           // 例如用户在亮色下把 mode 设为 system 后熄灯，下次冷启动仍应用亮色预设。
-          const systemThemeId: PresetThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
-          let resolvedThemeId: PresetThemeId = state.mode === 'system'
-            ? systemThemeId
-            : (state.activeThemeId as PresetThemeId);
+          const systemThemeId: PresetThemeId = systemThemeIdFor(effectiveMode);
+          // B1：activeThemeId 可能是运行时自定义 ID（custom-runtime / 旧版 custom-* /
+          // imported-*），presetThemes 查不到。这类 ID 必须按 mode 解析出预设，
+          // 而不是落到下面「无效的主题ID」分支回退 light-default —— 那正是 R1 的表现：
+          // 用户选了配色/字号后刷新，配色丢失且 mode 被连带打回亮色。
+          const persistedId = state.activeThemeId as PresetThemeId;
+          const resolvedThemeId: PresetThemeId =
+            state.mode === 'system' || !presetThemes[persistedId]
+              ? systemThemeId
+              : persistedId;
 
-          let baseTheme = presetThemes[resolvedThemeId];
-
-          // 防御性检查：如果主题ID无效，回退到默认主题
-          if (!baseTheme) {
-            logger.warn('[Theme System] ⚠️ 无效的主题ID:', state.activeThemeId, '，回退到默认主题');
-            resolvedThemeId = 'light-default';
-            baseTheme = presetThemes['light-default'];
-          }
-
-          // 如果是辅助功能模式，获取对应的辅助功能主题变体
-          if (state.accessibilityMode !== 'normal') {
-            baseTheme = getAccessibilityTheme(baseTheme, state.accessibilityMode);
-          }
+          // resolvedThemeId 必为 systemThemeIdFor() 的两个合法返回值之一，
+          // presetThemes 必然命中，故此处无需「无效 ID」回退分支 —— 该分支在旧实现里
+          // 正是 R1 的触发点（查不到就回退亮色默认并丢覆盖），已随 composeTheme 移除。
+          let baseTheme = composeTheme(
+            resolvedThemeId,
+            state.runtimeOverrides,
+            state.accessibilityMode,
+          );
 
           // 5. 应用运动偏好
           const motionPrefs: MotionPreferences = {
@@ -164,8 +252,11 @@ export const useThemeStore = create<ThemeStore>()(
           set({
             activeTheme: baseTheme,
             // D-37：system 模式下解析出的实际预设要回写，避免 activeThemeId 与
-            // activeTheme 长期不一致（前者可能是用户上次的显式选择）
-            activeThemeId: resolvedThemeId,
+            // activeTheme 长期不一致。B1：带运行时覆盖时回写稳定 ID，
+            // 使 activeThemeId 与 activeTheme（id=custom-runtime）保持一致。
+            activeThemeId: hasOverrides(state.runtimeOverrides)
+              ? RUNTIME_THEME_ID
+              : resolvedThemeId,
             motionPreferences: motionPrefs,
             isInitialized: true,
           });
@@ -222,24 +313,18 @@ export const useThemeStore = create<ThemeStore>()(
           effectiveMode = prefersDark ? 'dark' : 'light';
         }
 
-        // 根据新模式确定基础主题 ID
-        let newBaseThemeId = state.activeThemeId;
-        if (!newBaseThemeId.includes('custom')) {
-          newBaseThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
-        }
+        // 根据新模式确定底层预设（mode 决定明暗，与是否带运行时覆盖无关）
+        const baseThemeId: PresetThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
 
-        // 获取基础主题
-        let newTheme = presetThemes[newBaseThemeId as PresetThemeId] || presetThemes['light-default'];
-
-        // 应用辅助功能模式
-        if (state.accessibilityMode !== 'normal') {
-          newTheme = getAccessibilityTheme(newTheme, state.accessibilityMode);
-        }
+        // B1：叠加持久化的运行时覆盖（配色/字号）—— 原实现只在 activeThemeId 不含
+        // 'custom' 时才按 mode 换预设，一旦带了自定义 ID 就把上一次的覆盖结果当 base，
+        // 明暗切换后覆盖语义彻底错乱。
+        const newTheme = composeTheme(baseThemeId, state.runtimeOverrides, state.accessibilityMode);
 
         // 更新状态并应用
         set({
           mode,
-          activeThemeId: newBaseThemeId,
+          activeThemeId: hasOverrides(state.runtimeOverrides) ? RUNTIME_THEME_ID : baseThemeId,
           activeTheme: newTheme,
         });
 
@@ -252,13 +337,8 @@ export const useThemeStore = create<ThemeStore>()(
       setPresetTheme: (themeId: PresetThemeId) => {
         const state = get();
 
-        // 获取预设主题
-        let baseTheme = presetThemes[themeId] || presetThemes['light-default'];
-
-        // 应用辅助功能模式
-        if (state.accessibilityMode !== 'normal') {
-          baseTheme = getAccessibilityTheme(baseTheme, state.accessibilityMode);
-        }
+        // B1：经 composeTheme 统一重建，切换预设后仍需叠加运行时覆盖（配色/字号）
+        const baseTheme = composeTheme(themeId, state.runtimeOverrides, state.accessibilityMode);
 
         // D-34 修复：**不再**按 ID 前缀强写 mode。
         // 原实现 `const newMode = themeId.startsWith('dark-') ? 'dark' : 'light'` 会
@@ -279,23 +359,27 @@ export const useThemeStore = create<ThemeStore>()(
       /**
        * 应用自定义主题覆盖
        */
-      applyCustomTheme: (overrides: CustomThemeOverrides) => {
+      applyCustomTheme: (overrides, meta) => {
         const state = get();
 
-        // 合并自定义配置与当前主题
-        const customTheme = mergeThemeOverrides(state.activeTheme, overrides);
-
-        // 生成唯一 ID
-        const customThemeId = `custom-${Date.now()}`;
-        customTheme.id = customThemeId;
+        // B2：稳定 ID + 幂等累计。
+        // 原实现每次生成 `custom-${Date.now()}` 新 ID 并追加进 customThemes ——
+        // 面板每次点配色/字号都新建一条，列表无限膨胀，且新 ID 在 presetThemes 查不到，
+        // 冷启动时 initialize() 只能 warn「无效的主题ID」并回退亮色默认（R1）。
+        // 现改为覆盖累计进持久化的 runtimeOverrides，ID 固定为 RUNTIME_THEME_ID。
+        const nextOverrides = mergeCustomOverrides(state.runtimeOverrides, overrides);
+        const presetId = presetThemes[state.activeThemeId as PresetThemeId]
+          ? (state.activeThemeId as PresetThemeId)
+          : systemThemeIdFor(state.mode);
+        const customTheme = composeTheme(presetId, nextOverrides, state.accessibilityMode);
         customTheme.name = 'Custom Theme';
-        customTheme.isPreset = false;
 
-        // 更新状态
         set({
-          activeThemeId: customThemeId,
+          activeThemeId: RUNTIME_THEME_ID,
           activeTheme: customTheme,
-          customThemes: [...state.customThemes, customTheme],
+          runtimeOverrides: nextOverrides,
+          ...(meta?.paletteKey !== undefined && { paletteKey: meta.paletteKey }),
+          ...(meta?.fontScale !== undefined && { fontScale: meta.fontScale }),
         });
 
         applyThemeWithTransition(customTheme, state.transitionType);
@@ -307,18 +391,13 @@ export const useThemeStore = create<ThemeStore>()(
       setAccessibilityMode: (mode: AccessibilityMode) => {
         const state = get();
 
-        // 获取基础主题：优先从 presetThemes 查找，否则使用当前 activeTheme
-        let baseTheme = presetThemes[state.activeThemeId as PresetThemeId];
-        if (!baseTheme) {
-          // custom/imported 主题直接作为 base
-          baseTheme = state.activeTheme;
-        }
-
-        // 应用辅助功能变体
-        let finalTheme = baseTheme;
-        if (mode !== 'normal') {
-          finalTheme = getAccessibilityTheme(baseTheme, mode);
-        }
+        // B1：经 composeTheme 统一重建，确保运行时覆盖（配色/字号）在无障碍切换后
+        // 依然保留 —— 原实现查不到 preset 时直接把 activeTheme 当 base 再叠无障碍变体，
+        // 会把上一次的覆盖结果当成底层预设，语义混乱。
+        const basePresetId: PresetThemeId = presetThemes[state.activeThemeId as PresetThemeId]
+          ? (state.activeThemeId as PresetThemeId)
+          : systemThemeIdFor(state.mode);
+        const finalTheme = composeTheme(basePresetId, state.runtimeOverrides, mode);
 
         set({
           accessibilityMode: mode,
@@ -501,10 +580,14 @@ export const useThemeStore = create<ThemeStore>()(
         motionPreferences: state.motionPreferences,
         transitionType: state.transitionType,
         customThemes: state.customThemes.map(t => ({ ...t })),
+        // B2：运行时覆盖 + 面板选项选择态必须持久化，否则刷新即丢（R1）
+        runtimeOverrides: state.runtimeOverrides,
+        paletteKey: state.paletteKey,
+        fontScale: state.fontScale,
       }),
       // ── 兼容旧版 themeStorage 写入的 CUSTOM_THEMES 键 ──
       // migrate 阶段从 themeStorage 迁移旧数据（一次性）
-      version: 4, // 版本号升级到4（添加旧版 customThemes 迁移）
+      version: 5, // v5：运行时覆盖改为持久化 runtimeOverrides + 稳定 ID（B1/B2）
 
       // 主题ID迁移与验证（v3新增）
       migrate: (persistedState: any, version) => {
@@ -539,6 +622,26 @@ export const useThemeStore = create<ThemeStore>()(
             localStorage.removeItem('rmfood-theme-versions');
           } catch { /* 忽略迁移错误 */ }
         }
+
+        // v5：运行时覆盖迁移（B1/B2）。
+        // v4 及以前 applyCustomTheme 用 `custom-${Date.now()}` 生成一次性 ID，这些 ID
+        // 不在 presetThemes 中，冷启动会被判为「无效的主题ID」并回退亮色默认（R1）。
+        // 覆盖现由 runtimeOverrides 承载、ID 统一为 RUNTIME_THEME_ID。旧版覆盖无法从
+        // 合并结果反推，故只规范化 ID —— 用户下一次在面板点选即恢复。
+        if (version === undefined || version < 5) {
+          const id = String(persistedState?.activeThemeId ?? '');
+          if (id && !isValidThemeId(id)) {
+            logger.info(`[Theme System] 🔄 v${version ?? '0'}→v5 规范化非预设主题ID: ${id} → light-default`);
+            persistedState.activeThemeId = 'light-default';
+          }
+        }
+        // 旧版存储无这三个键时补默认值（persist 合并时 undefined 不会覆盖 initialState，
+        // 但显式兜底更直观，也保证 migrate 产物结构完整）
+        if (!persistedState.runtimeOverrides || typeof persistedState.runtimeOverrides !== 'object') {
+          persistedState.runtimeOverrides = {};
+        }
+        persistedState.paletteKey ??= '';
+        persistedState.fontScale ??= 'standard';
 
         return persistedState;
       },

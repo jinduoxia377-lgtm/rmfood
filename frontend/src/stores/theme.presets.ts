@@ -180,6 +180,24 @@ const typography: Typography = {
     mono: "'JetBrains Mono', 'Fira Code', Consolas, ui-monospace, monospace",
   },
   fontSize: {
+    // A3：正文族键名与 L0 令牌同名（经 toKebab 产出 --text-body / --text-body-sm /
+    // --text-caption / --text-body-lg）。这四个是全站正文实际消费的令牌
+    // （typography.css 的 .text-body/.text-caption 等类 + 199 处 var(--text-body*)），
+    // 此前 preset 只有 xs/sm/base/lg 这套 Tailwind 键名，注入的是无 L0 定义、无消费者的孤儿令牌。
+    body: '0.9375rem', // 15px — 正文基准（= base.css --text-body ⭐️）
+    bodySm: '0.875rem', // 14px — 次级正文（= --text-body-sm）
+    caption: '0.75rem', // 12px — 注释/说明（= --text-caption）
+    bodyLg: '1rem', // 16px — 导语段（= --text-body-lg）
+    overline: '0.75rem', // 12px — 标签/徽标（= --text-overline）
+    tiny: '0.75rem', // 12px — 极小字（= --text-tiny）
+    // 标题族（经 toKebab 产出 --text-h1..h6，与 base.css 逐值一致）
+    h1: '2.25rem', // 36px — 页面标题
+    h2: '1.75rem', // 28px — 区块标题
+    h3: '1.5rem', // 24px — 子标题
+    h4: '1.375rem', // 22px — 卡片标题
+    h5: '1.125rem', // 18px
+    h6: '1rem', // 16px
+    // Tailwind 默认档：保留以兼容 text-xs / text-sm / text-base 等工具类
     xs: '0.75rem', // 12px
     sm: '0.875rem', // 14px
     base: '1rem', // 16px (移动端最小可读字体)
@@ -476,11 +494,42 @@ export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: Accessibilit
 // 辅助功能：合并自定义主题覆盖
 // ============================================================================
 
+// L1 修复（执行方案阶段 A1）：`colors` / `typography` 里存在「对象套对象」的角色
+// （primary/secondary/background/...），原先的浅合并（{ ...base.colors, ...overrides.colors }）
+// 会用 override 整体替换同名角色 —— 覆盖 colors.primary 时连带丢掉 primary.main，而
+// --color-primary 正是 chartTheme.ts 与 11 处 L1 消费者依赖的唯一令牌。
+//
+// 注意 SemanticColors 同时含**标量别名**（surfaceVariant / errorContainer / outline /
+// outlineVariant，声明为 string）。因此这里必须形状感知：对象对对象才做属性级合并，
+// 任一为标量则直接取 override（或保留 base）—— 绝不可对字符串做 spread，
+// 那会把 '#F3F4F6' 展开成 {0:'#', 1:'F', ...}。
+function isPlainRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+// SemanticColors / Typography 是 interface（无字符串索引签名），故 T 只约束为 object，
+// 内部用 Record<string, unknown> 视图做键遍历。
+function mergeNested<T extends object>(base: T, overrides: Partial<T>): T {
+  const b = base as Record<string, unknown>;
+  const o = overrides as Record<string, unknown>;
+  const result = {} as Record<string, unknown>;
+  for (const k of new Set<string>([...Object.keys(b), ...Object.keys(o)])) {
+    const baseV = b[k];
+    const oV = o[k];
+    result[k] = isPlainRecord(baseV) && isPlainRecord(oV)
+      ? { ...baseV, ...oV }
+      : oV !== undefined
+        ? oV
+        : baseV;
+  }
+  return result as T;
+}
+
 export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOverrides): ThemeConfig {
   return {
     ...base,
-    ...(overrides.colors && { colors: { ...base.colors, ...overrides.colors } }),
-    ...(overrides.typography && { typography: { ...base.typography, ...overrides.typography } }),
+    ...(overrides.colors && { colors: mergeNested<SemanticColors>(base.colors, overrides.colors) }),
+    ...(overrides.typography && { typography: mergeNested<Typography>(base.typography, overrides.typography) }),
     ...(overrides.spacing && { spacing: { ...base.spacing, ...overrides.spacing } }),
     ...(overrides.borderRadius && { borderRadius: { ...base.borderRadius, ...overrides.borderRadius } }),
     ...(overrides.transitions && { transitions: { ...base.transitions, ...overrides.transitions } }),
@@ -554,19 +603,29 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
     if (typeof values === 'object' && !Array.isArray(values)) {
       Object.entries(values as Record<string, string>).forEach(([key, value]) => {
         const l0 = COLOR_MAIN_TO_L0[`${category}-${key}`];
-        // T-B2a/T-B2b：命中映射时写 L0 名；否则 kebab 化（D-53）后写
+        // T-B2a/T-B2b：命中映射时写 L0 名；否则 kebab 化（D-53）后写。
+        // D-54：category 名同样必须 kebab 化 —— presetThemes 里有 surfaceVariant /
+        // errorContainer / outlineVariant 这类驼峰角色名，原实现产出
+        // --color-surfaceVariant-0 这类含大写的名字，在 applyThemeToDOM 的 isSafeToken
+        // 校验处被整批拒收（一次主题应用打 21 条 warn）。映射表查找仍用原始名，
+        // 命中 COLOR_MAIN_TO_L0 的行为完全不变。
         const kebabKey = toKebab(key);
-        vars[l0 ?? `--color-${category}-${kebabKey}`] = value;
+        const kebabCategory = toKebab(category);
+        vars[l0 ?? `--color-${kebabCategory}-${kebabKey}`] = value;
       });
     }
   });
 
   // 排版变量
+  // A3 修复（执行方案阶段 A3）：键名必须 kebab 化。L0 的正文令牌是 --text-body-sm /
+  // --text-body-lg 这类带连字符的名字，而 ThemeConfig 的 fontSize 键是 bodySm / bodyLg。
+  // 原实现直接拼 `--text-${key}` 会产出 --text-bodySm —— SAFE_TOKEN_NAME（只放行全小写
+  // kebab）在 :723 拒收，字号运行时覆盖因此静默失效。复用下方 toKebab 保持与 T-D5 同源。
   Object.entries(theme.typography.fontFamily).forEach(([key, value]) => {
-    vars[`--font-${key}`] = value;
+    vars[`--font-${toKebab(key)}`] = value;
   });
   Object.entries(theme.typography.fontSize).forEach(([key, value]) => {
-    vars[`--text-${key}`] = value;
+    vars[`--text-${toKebab(key)}`] = value;
   });
   // T-D5：不再导出 --weight-*。
   // 实测全项目 var(--weight-*) 消费者 = 0；L0 的字重令牌命名为

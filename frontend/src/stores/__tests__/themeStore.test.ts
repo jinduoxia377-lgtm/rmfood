@@ -340,3 +340,199 @@ describe('T-W1 initialize() 后无障碍属性写入', () => {
     expect(document.documentElement.getAttribute('data-reading-mode')).toBe('sepia');
   });
 });
+
+// ============================================================================
+// B1 / B2：运行时覆盖持久化与冷启动回放（R1 根治）
+//
+// R1：用户在 /settings 选配色/字号后刷新全丢，且连带把明暗打回亮色。
+// 根因：applyCustomTheme 用一次性 ID 并追加 customThemes，initialize 只查 presetThemes。
+// 现改为覆盖累计进持久化 runtimeOverrides + 稳定 ID，冷启动回放。
+// ============================================================================
+describe('B1/B2 运行时覆盖持久化与冷启动回放（R1）', () => {
+  // 蓝色方案（苹果蓝）的完整 primary 映射：main + 10 个色阶档
+  const BLUE_PRIMARY = {
+    main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff',
+    '100': '#d6e9ff', '200': '#acd6ff', '300': '#79bfff', '400': '#46a5ff',
+    '500': '#0a84ff', '600': '#007aff', '700': '#0066cc', '800': '#00518f',
+    '900': '#003d6b', '950': '#00253f',
+  };
+
+  function resetStore(overrides: Record<string, unknown> = {}) {
+    useThemeStore.setState({
+      activeThemeId: 'light-default' as any,
+      activeTheme: presetThemes['light-default'],
+      mode: 'light' as any,
+      accessibilityMode: 'normal' as any,
+      transitionType: 'none' as any,
+      customThemes: [],
+      runtimeOverrides: {} as any,
+      paletteKey: '',
+      fontScale: 'standard',
+      isInitialized: false,
+      ...overrides,
+    });
+  }
+
+  function setMatchMedia(prefersDark = false) {
+    window.matchMedia = vi.fn().mockImplementation((q: string) => ({
+      matches: /prefers-color-scheme:\s*dark/.test(q) ? prefersDark : false,
+      media: q,
+      onchange: null,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as any;
+  }
+
+  it('applyCustomTheme 使用稳定 ID，且不向 customThemes 追加（原实现每次点选新建一条）', () => {
+    resetStore();
+    store().applyCustomTheme({ colors: { primary: BLUE_PRIMARY } as any }, { paletteKey: 'blue' });
+
+    expect(store().activeThemeId).toBe('custom-runtime');
+    expect(store().activeTheme.id).toBe('custom-runtime');
+    expect(store().activeTheme.isPreset).toBe(false);
+    expect(store().customThemes).toHaveLength(0);
+    expect(store().paletteKey).toBe('blue');
+
+    // 连续两次调用：ID 不变、列表不增长、覆盖继续生效
+    store().applyCustomTheme({ colors: { primary: { ...BLUE_PRIMARY, '500': '#0a84ff' } } as any });
+    expect(store().activeThemeId).toBe('custom-runtime');
+    expect(store().customThemes).toHaveLength(0);
+  });
+
+  it('多次 applyCustomTheme 是【累计合并】：先换配色再改字号，两者都保留', () => {
+    resetStore();
+    store().applyCustomTheme({ colors: { primary: BLUE_PRIMARY } as any }, { paletteKey: 'blue' });
+    store().applyCustomTheme(
+      { typography: { fontSize: { body: '1.125rem' } } as any },
+      { fontScale: 'relaxed' },
+    );
+
+    const s = store();
+    expect(s.runtimeOverrides.colors?.primary?.main).toBe('#007aff');   // 第一次的覆盖仍在
+    expect(s.runtimeOverrides.typography?.fontSize?.body).toBe('1.125rem'); // 第二次的也在
+    expect(s.paletteKey).toBe('blue');
+    expect(s.fontScale).toBe('relaxed');
+    expect(s.activeThemeId).toBe('custom-runtime');
+  });
+
+  it('覆盖会注入到 DOM 的 CSS 变量（配色真的生效，不只是改了 store）', () => {
+    resetStore();
+    store().applyCustomTheme({ colors: { primary: BLUE_PRIMARY } as any }, { paletteKey: 'blue' });
+    const root = document.documentElement;
+    expect(root.style.getPropertyValue('--color-primary-500')).toBe('#0a84ff');
+    expect(root.style.getPropertyValue('--color-primary')).toBe('#007aff');
+    expect(root.getAttribute('data-theme')).toBe('custom-runtime');
+  });
+
+  it('R1 核心：冷启动 initialize() 回放运行时覆盖（配色 + 字号 + 明暗三者全保留）', async () => {
+    setMatchMedia(false);
+    // 模拟「刷新后从 localStorage 恢复」的 state：覆盖还在，但 activeTheme 尚未重建
+    resetStore({
+      activeThemeId: 'custom-runtime',
+      activeTheme: presetThemes['light-default'],
+      runtimeOverrides: {
+        colors: { primary: BLUE_PRIMARY },
+        typography: { fontSize: { body: '1.125rem' } },
+      } as any,
+      paletteKey: 'blue',
+      fontScale: 'relaxed',
+      isInitialized: false,
+    });
+
+    await store().initialize();
+
+    const s = store();
+    // 覆盖被回放到 activeTheme
+    expect(s.activeThemeId).toBe('custom-runtime');
+    expect(s.activeTheme.colors.primary.main).toBe('#007aff');
+    expect(s.activeTheme.typography.fontSize.body).toBe('1.125rem');
+    expect(s.activeTheme.mode).toBe('light');
+    // DOM 侧真实注入（这才是用户看到的效果）
+    expect(document.documentElement.style.getPropertyValue('--color-primary-500')).toBe('#0a84ff');
+    // 选项选择态原样保留
+    expect(s.paletteKey).toBe('blue');
+    expect(s.fontScale).toBe('relaxed');
+  });
+
+  it('R1 连带缺陷：mode=system 时按系统偏好选预设，覆盖不丢、明暗不被回滚', async () => {
+    setMatchMedia(true); // 系统暗色
+    resetStore({
+      activeThemeId: 'custom-runtime',
+      activeTheme: presetThemes['light-default'],
+      mode: 'system' as any,
+      runtimeOverrides: { colors: { primary: BLUE_PRIMARY } } as any,
+      paletteKey: 'blue',
+      isInitialized: false,
+    });
+
+    await store().initialize();
+
+    // 系统暗色 → 底是 dark-default，而不是被「无效 ID」分支打回 light-default
+    expect(store().activeTheme.mode).toBe('dark');
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    // 且覆盖仍在
+    expect(store().activeTheme.colors.primary.main).toBe('#007aff');
+    expect(document.documentElement.style.getPropertyValue('--color-primary-500')).toBe('#0a84ff');
+  });
+
+  it('setThemeMode 切明暗后运行时覆盖仍保留（原实现按 ID 前缀判断，切暗色即丢）', () => {
+    resetStore({
+      activeThemeId: 'custom-runtime' as any,
+      activeTheme: { ...presetThemes['light-default'], id: 'custom-runtime' },
+      runtimeOverrides: { colors: { primary: BLUE_PRIMARY } } as any,
+      paletteKey: 'blue',
+    });
+
+    store().setThemeMode('dark');
+
+    expect(store().mode).toBe('dark');
+    expect(store().activeTheme.mode).toBe('dark');
+    expect(store().activeThemeId).toBe('custom-runtime');
+    expect(store().activeTheme.colors.primary.main).toBe('#007aff');
+  });
+
+  it('resetToDefault 清空运行时覆盖与选项选择态', () => {
+    resetStore({
+      runtimeOverrides: { colors: { primary: BLUE_PRIMARY } } as any,
+      paletteKey: 'blue',
+      fontScale: 'relaxed',
+      activeThemeId: 'custom-runtime' as any,
+    });
+
+    store().resetToDefault();
+
+    const s = store();
+    expect(s.activeThemeId).toBe('light-default');
+    expect(s.runtimeOverrides).toEqual({});
+    expect(s.paletteKey).toBe('');
+    expect(s.fontScale).toBe('standard');
+    // DOM 内联覆盖一并清除
+    expect(document.documentElement.style.getPropertyValue('--color-primary-500')).toBe('');
+  });
+
+  it('partialize 持久化 runtimeOverrides / paletteKey / fontScale', () => {
+    resetStore({
+      activeThemeId: 'custom-runtime' as any,
+      runtimeOverrides: { colors: { primary: BLUE_PRIMARY } } as any,
+      paletteKey: 'blue',
+      fontScale: 'relaxed',
+    });
+    const s = store();
+    expect(s.runtimeOverrides).toEqual({ colors: { primary: BLUE_PRIMARY } });
+    expect(s.paletteKey).toBe('blue');
+    expect(s.fontScale).toBe('relaxed');
+  });
+
+  it('未选过任何方案时（runtimeOverrides 为空）initialize 不注入，行为与旧版一致', async () => {
+    setMatchMedia(false);
+    resetStore({ isInitialized: false });
+
+    await store().initialize();
+
+    expect(store().activeThemeId).toBe('light-default');
+    expect(document.documentElement.style.getPropertyValue('--color-primary-500')).toBe('');
+    expect(store().paletteKey).toBe('');
+    expect(store().fontScale).toBe('standard');
+  });
+});
