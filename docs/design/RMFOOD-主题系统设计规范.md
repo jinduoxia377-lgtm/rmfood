@@ -4,7 +4,7 @@
 |:-----|:-----|
 | **文档编号** | RMFOOD-DS-THEME-001 |
 | **标题** | RMFOOD 配方研发平台 — 主题系统设计规范 |
-| **版本** | **v1.1.10** |
+| **版本** | **v1.1.11** |
 | **状态** | 正式发布（Normative） |
 | **适用平台** | Web 前端（`frontend/`，React 19 + Vite 8 + Tailwind CSS v4） |
 | **不适用范围** | 微信小程序（`miniprogram/`，另见 `docs/theme-system-spec.md`） |
@@ -47,7 +47,24 @@
 > **theme-gate 16 pass / 0 fail / 0 skip**、E1/E2 探针 16/16、E3 探针 35/35。
 > **E5 阴影暂缓**（D-63）：L0 的 `--shadow-*` 是模式相关（亮 alpha .06~.14 / 暗 .3~.45），preset `shadows` 是单一对象无法表达双模式，须先扩数据模型（51 处消费者）。
 >
+> **v1.1.11 相对 v1.1.10 的关键变化（D-66：`@theme` 语义令牌登记盲区）**：
+> 对 F2 开放项做根因复查时，顺带发现一类**此前全部 14 项门禁都探测不到**的缺陷：`@theme` 只登记了档位（`-50..-950`）与裸族名，
+> 而 L0 早已定义的**语义令牌**（`-main` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `-light` / `-dark` / `-contrast-text`）从未登记 →
+> Tailwind v4 对其**一律不生成工具类**。此前靠 `semantic-utils.css:16-19` 的 4 条手工逃生舱顶住，但**结构上无法覆盖**：
+> ① 透明度修饰符（`ring-primary-main/30`、`border-primary-main/50`、`bg-primary-main/5` 等，Tailwind 需 `@theme` 登记才走 `color-mix` 派生）；
+> ② 未列入逃生舱的变体（`bg-primary-main`、`from-primary-main`、`to-primary-dark`、`text-primary-contrast-text`、`text-primary-container`、`bg-primary-light`）。
+> **浏览器实测后果**：`bg-primary-main` 零 CSS 产物 → **ThemeSwitcher 主题状态圆点背景透明、整颗不可见**；全部透明度修饰符焦点环/边框描边静默失效。
+> 波及面：`-main` **157 处 / 55 文件**、`-container` 128 处、`secondary-main` 47 处、`secondary-dark` 12 处、`accent-main` 7 处、`warning-main` 4 处。
+> 修复：`base.css` 补 12 枚族别名（`<family>-main → var(--color-<family>)`，与 D-58 族根选型同源）+ `index.css` `@theme` 统一登记 22 条，
+> 由 Tailwind 原生生成，手工逃生舱退为无害冗余兜底。修复后产物实测含 16 条 `primary-main`/`-light` 规则，`color-mix` 覆盖 5%~50% 全部透明度档位。
+> **方法记注（两次自我更正）**：① 首轮扫描把 `--color-text-primary` 等 **577 处**报为幻影，实为项目第二层手写工具类
+> （`.text-text-primary { color: var(--text-primary) }` 等）已正确指向有值的 shadcn 源令牌，**非缺陷** —— 判「幻影令牌」必须同时扫 `@theme` 与**全仓所有手写类**。
+> ② 改 `index.css` 后立即跑 gate，GATE-15 瞬态失败（「运行时样式表缺失」）—— 是 Vite 对 `@theme` 变更做 HMR 全量重编译期间的产物不一致，
+> 非代码回归；重编译完成后连跑 **3/3 通过**。做二分判定时须先等 HMR 沉降，否则会误判自己引入回归。
+> 终态：主题五套件 **130/130**、`theme:validate` **0 error / 4 warn**（基线不变）、**theme-gate 16/0/0**、E1/E2 探针 16/16、E3 探针 35/35。
+>
 > **历史版本摘要**
+> - **v1.1.11**（2026-10-13）：D-66 `@theme` 语义令牌登记盲区 —— L0 已定义的 9 类语义令牌从未进 `@theme`，致 `bg-primary-main` 与全部透明度修饰符零 CSS 产物（ThemeSwitcher 状态圆点不可见），`base.css` 补 12 枚别名 + `@theme` 登记 22 条；附两条方法记注（幻影令牌须扫全仓手写类、HMR 沉降前勿做二分判定）。
 > - **v1.1.10**（2026-10-12）：E 阶段能力补齐（E1 导出/导入、E2 圆角、E3 次色/强调色、E4 导入通道收口）、U-8 推广为三族、门禁接入 CI（G-4 关闭）、推翻 3 项原方案错误前提。
 > - **v1.1.9**：C1 / C1.5 双作用域色阶（U-8 新增）、GATE-15~18、设置面板产品化与 R1 根因修复。
 > - **v1.1.2**：M1（止血）执行完成，修复 15 项缺陷（D-1/8/9/10/11/12b/21/22/33/39/41/49/50/51/52），门禁 M1 范围退出码 0。
@@ -1286,6 +1303,11 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
  > 10. **E2 圆角可配（间距明确不做）**：`mergeThemeOverrides` 与 `mergeCustomOverrides` 对 `spacing` / `borderRadius` 本就是同维度浅合并，而两者都是**扁平 map**（`key → 值`），浅合并已足够——原方案记的「深合并同类隐患」不成立。`radiusScale` 状态链落地（types → initialState → `applyCustomTheme` meta → export → partialize → migrate 兜底 → 面板 ⑩ 区块），持久化 v5→v6。半径真实生效链路：`--radius-*` 已在 `index.css:185-191` 登记，`rounded-*` 工具类共 4 196 处消费（`lg` 1 959 / `full` 968 / `xl` 817 / `md` 307 / `2xl` 115 / `sm` 30 / `xs` 0）。**间距不做**（D-65）：`--space-*` 未登记进 `@theme`，Tailwind 间距工具类不解析到它，全项目仅 24 处显式 `var(--space-*)`，加控件属误导性设置。
  > 11. **E3 次色 / 强调色三族纳入双作用域（U-8 从单族推广）**：原判断「需先在 `COLOR_MAIN_TO_L0` 补 scale 映射」**不成立**——`secondary-main` / `tertiary-main` → `--color-secondary` / `--color-accent` 的映射在 T-B2a 早已存在，真正缺的是档位与语义族的模式相关注入与 UI 入口。`ModeRamps` 从 `primary` / `primaryDark` 扩为 `primary` / `secondary` / `accent` × 明暗 6 键；`generateModeRampCSS` 按族独立产出 `:root` / `.dark` 块（只选次色不触碰主色与强调色）；`generateCSSVariables` 的让位从「有 `modeRamps` 就让位」收窄为**按族判定**。两条 L0 差异需固化：① 次色 / 强调色的 500 锚点在两种模式下**相同**（`base.css:46` / `dark.css:42` 同为 `#3b82f6`），明暗差异完全由档位反转承载，故单锚点即可派生两组作用域，与主色维护 light / dark 双锚点不同；② 内外名不一致——对外族名 `accent`，`ThemeConfig` 内部角色名 `tertiary`（`COLOR_MAIN_TO_L0` 的 `'tertiary-main'` → `--color-accent`），故 `colors` 写 `tertiary`、`modeRamps` 写 `accent`。语义族由 `FAMILY_TIER_RULES` 按 L0 逐条推导（暗色 main / rgb 取 600、`-surface-deep` 取代 `-surface-hover`、亮色 main 按 AA 门槛选档），测试锁定「用 L0 权威默认阶喂注入器，推导出的 12 枚语义族令牌与 `base.css` / `dark.css` 逐条相等」（默认零漂移）。持久化 v6→v7，`migrate` 顺带清理旧版可能写入的未知色阶族键。**影响面 3 462 处**（`--color-secondary-*` 1 922 + `--color-accent-*` 1 540）。
  > 12. **CHK-03 孤儿令牌与 G-4 门禁接入 CI**：原报告称 6 个令牌为「dark-only 孤儿」，实测 **4/6 系误报**——`--color-error-50/100/200/300/400/500/600/700/800/900` 实际定义在 `index.css:158-169` 的 `@theme`（与 secondary / accent 在 `index.css:91` 的自引用注册同源，进度报告只比对了 `base.css` 与 `dark.css` 两个文件）。真正孤儿的只有 `--color-knowledge-default` / `--color-knowledge-text`，已补亮色值对齐内联 fallback（`#9CA3AF` / `#6B7280`）。14 项门禁接入 GitHub Actions（`theme-gate` job 起 Vite 后带 `--require-render` 运行，`THEME_GATE_USER` / `PASS` 注入），失败即退出并上传日志。**GATE-09 / GATE-14 保持 warn**：前者是 `@theme` 自引用注册的设计使然，后者是 8 处已知 D-50 存量。
+  > 13. **D-66：`@theme` 语义令牌登记盲区（新增，已修复）**：本轮对 F2 做根因复查时发现一类**全部 14 项门禁都探测不到**的缺陷——`@theme` 只登记了档位（`-50..-950`）与裸族名，L0 早已定义的语义令牌（`-main` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `-light` / `-dark` / `-contrast-text`）**从未登记**，Tailwind v4 对其一律不生成工具类。此前靠 `semantic-utils.css:16-19` 的 **4 条手工逃生舱**顶住，但结构上覆盖不了：① **透明度修饰符**（`ring-primary-main/30`、`border-primary-main/50`、`bg-primary-main/5` 等——Tailwind 需 `@theme` 登记才走 `color-mix` 派生，手写类无从表达）；② 未列入逃生舱的变体（`bg-primary-main`、`from-primary-main`、`to-primary-dark`、`text-primary-contrast-text`、`text-primary-container`、`bg-primary-light`）。**浏览器实测后果**：`bg-primary-main` 零 CSS 产物 → **`ThemeSwitcher` 主题状态圆点背景透明、整颗不可见**；全部透明度修饰符的焦点环 / 边框描边静默失效。波及面：`-main` **157 处 / 55 文件**、`-container` 128 处、`secondary-main` 47 处、`secondary-dark` 12 处、`accent-main` 7 处、`warning-main` 4 处。
+  > **修复**：`base.css` 补 12 枚族别名（`<family>-main → var(--color-<family>)`，与 D-58 族根选型同源；`-dark → -900`；`-contrast-text → var(--color-on-primary-surface, #ffffff)`）+ `index.css` `@theme` 统一登记 22 条。**登记后由 Tailwind 原生生成**，产物实测含 16 条 `primary-main` / `-light` 规则，`color-mix` 覆盖 5%~50% 全部透明度档位；`semantic-utils.css:16-19` 的逃生舱因取值同源（`var(--color-primary)`）退为无害冗余兜底，**未删除**以保持 P0-B 优先级语义不变。`-main` 刻意取**反转型**族根而非 `-surface`：与逃生舱既有约定一致，且新解锁的用途（焦点环 / 边框 / 5% 色块）在色阶反转下无对比度风险；实底+白字场景仍必须用 `.surface-primary`（`-surface` 不参与反转，见 §4.3 C-24）。**与第 8 项的关系**：当年 `ThemePanel` 7 处 `ring-primary-main/50` → `ring-primary-500/50` 的绕行现已不再必要（原类名可正常生成），保留不动以缩小回归面。
+  > **F2 结论不变（互补而非推翻）**：F2 的 2.24:1 对比度测量仍然成立——逃生舱覆盖了 `text-primary-main` 的**基础形态**（`#047857` 文字压 `#d1fae5` 容器），本轮修复前后该值同源等价；D-66 补的是逃生舱覆盖不到的**其余约 10 个类变体**，两类缺陷正交。F2 亮色对比度缺口仍为开放项，处置路径不变。
+  > **方法记注**：① 首轮自动扫描把 `--color-text-primary` 等 **577 处**报为幻影令牌，实为项目第二层手写工具类（`.text-text-primary { color: var(--text-primary) }`、`.bg-surface-default { background: var(--bg-surface-container, …) }` 等）已正确指向有值的 shadcn 源令牌，**非缺陷**——判「幻影令牌」必须同时扫 `@theme` 与**全仓所有手写类**，仅比对 L0 会产生大规模误报。② 改 `index.css` 后立即跑 gate，**GATE-15 瞬态失败**（「刷新后运行时样式表缺失」）；实为 Vite 对 `@theme` 变更做 HMR 全量重编译期间的产物不一致，非代码回归，重编译完成后连跑 **3/3 通过**——做二分判定前须先等 HMR 沉降，否则会把自身判成回归源。
+  > **门禁缺口（建议新增）**：GATE-12 只查档位类、GATE-13 只查 `var()` 字面引用，**均未覆盖「源码类名 → 其 `--color-*` 是否在 `@theme` 登记」这条链**，故 D-66 在 14 项门禁全绿的背景下潜伏至今。建议扩 GATE-13 或新增 GATE-19，由源码类名反推 `--color-<name>` 并校验 `@theme` 登记与 L0 定义两侧齐备。
  > **终态（E3 后刷新）**：tsc 0 错 · 主题五套件 **130/130**（`theme-palette` 34 + `theme.presets` 38 + `themeStore` 35 + `ThemeProvider` 6 + `ThemeImport` 17）· `theme:validate` **0 error / 4 warn** · **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· E1/E2 探针 16/16 · E3 探针 35/35 · pre-commit 64 项核心门禁全绿 + UI/a11y 护栏 0 违规。
  > **上一轮终态（C1.5 阶段，保留可追溯）**：tsc 0 错 · 主题三套件 **79/79**（`theme-palette` 16 + `theme.presets` 30 + `themeStore` 33）· **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· `/ai` 渲染探针 **亮 0 / 暗 0** · `/settings?tab=theme` 面板 64 个叶节点 **0 处不达标**（亮 + 暗 + 5 配色，`panel-darkscan.cjs`）· pre-commit UI/a11y 护栏 0 违规。
 > **工具落库**：`scripts/theme-audit/` 新增 `g1518.mjs`（GATE-15/16/17/18，独立可运行）、`container-pair-probe.cjs`（配色语义族对比度矩阵）、`panel-darkscan.cjs`（面板双模式 × 5 配色叶节点扫描）。
@@ -1339,6 +1361,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 `--color-text-secondary`（`FormulaSharePanel.tsx`/`typography.ts`）、`--color-text-muted`（`ScoreRadarChart.tsx`）、`--color-brand-400`（`FocusRing.tsx`，§8.1 登记的焦点环违规死代码）、`--color-danger`（`IngredientAnalysisPage.tsx`/`StabilityPage.tsx`，误用名，功能色族权威名为 `--color-error`）。**已修消费者**（`g13-fix.mjs`，对齐 L0 权威名 `--text-secondary`/`--text-muted`/`--color-primary`/`--color-error`，**不补 L0 新定义**避免第二真相源），`GATE-13` 转 pass。
 
 **2026-10-12 新增 F2（`container-pair-probe.cjs` 实测，P1，开放）**：`bg-primary-container` + `text-primary-main` 是全站 **89 处**使用的 L2 语义配对（`semantic-utils.css:16,18`），在**亮色模式下系统性低于 AA 4.5:1**——green **2.24** / orange **1.99** / red **3.01** / blue **3.44** / purple **3.55**；**暗色五色板全部达标（4.78~8.32）**。根因是设计层面的：`-container` 取同色族的极浅档（亮 `ramp[100]`）而 `-main` 取中段（`ramp[500]`），二者同族导致亮色下明度差不足。**不批量改动 89 处消费面**（回归面过大，且当前所有渲染门禁与渲染探针均为 0）；替代路径：① 需要承载文字的场景改用 `.surface-primary` + `--color-on-primary-surface`（实测全配色 **4.85~14.41:1**，唯一双模式达标）；② 次选 `text-primary-700`（亮 green **4.84** / blue **6.73** / purple **6.87** / red **6.11** ✅，唯 orange **4.39** 差 0.11 未达）；③ 若要系统性闭合，须在 L0 层重算 `-container` 的亮色取值（提深至 200 档）或引入独立的 `-on-container` 前景令牌，属 L0 令牌变更，需走 §9.1 RFC 并评估 89 处消费面。
+**⚠️ 2026-10-13 D-66 关联澄清（不改本条结论）**：根因复查时发现本条测量的两个类**曾长期处于「半生效」状态**——`text-primary-main` 由 `semantic-utils.css:16` 的手工逃生舱顶住（故 2.24:1 的测量有效、结论成立），但同一令牌的**其余约 10 个类变体从未生效**（`bg-primary-main`、`from-primary-main`、`to-primary-dark`、`text-primary-contrast-text`、`text-primary-container`、`bg-primary-light` 及全部 `/N` 透明度修饰符），因 `--color-primary-main` 等语义令牌**从未登记进 `@theme`**。已按 §11.2 第 13 项修复；因逃生舱取值与修复后同源（均为 `var(--color-primary)`），**本条的 89 处消费面与全部对比度数值不受影响**。真正被本轮修复改变的是那些「一直想显示却没显示」的元素——典型如 `ThemeSwitcher` 的主题状态圆点。
 
 ---
 
@@ -1401,6 +1424,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
 | 30 | 实现 **GATE-11**（令牌/语义类登记校验）与 **GATE-12**（105 处条件类静态断言） |
 | **36（2026-10-12 新增 · E 阶段）** | **设置面板能力补齐：E1 导出/导入 + E2 圆角 + E3 次色/强调色 + E4 导入通道收口**。E1：`ThemeImport.tsx` 由零消费者孤儿组件重构为 `<button>` 触发的 v2 快照导入（旧版只导合并结果，丢 `modeRamps` 与选中态），导入侧接受 v2 / 嵌套 / 扁平三种形态。E2：`radiusScale` 状态链 + 面板 ⑩ 区块（4 196 处 `rounded-*` 消费者），间距明确不做（D-65，`--space-*` 未进 `@theme`）。**E3 是本轮核心**：U-8 从 primary 单族推广为三族，`ModeRamps` 扩 6 键、`generateModeRampCSS` 按族独立产出双作用域块、`generateCSSVariables` 按族让位，影响面 3 462 处；测试锁定「L0 默认阶喂推导器 → 12 枚语义族与 `base.css`/`dark.css` 逐条相等」。E4：`store.importTheme` 并入 `normalizeThemeImport` → `applyCustomTheme` 单通道，残余 `customThemes` 命名/列表/删除 UI 待产品决策。持久化 v5→v6→v7，导出快照 v2.0.0→v2.1.0。**E5 阴影暂缓**（D-63）：L0 的 `--shadow-*` 是模式相关（亮 alpha .06~.14 / 暗 .3~.45），preset `shadows` 是单一对象无法表达双模式，须先扩数据模型（51 处消费者）。E1/E2/E3 均有独立浏览器探针（16/16、35/35） |
+| **37（2026-10-13 新增 · D-66）** | **`@theme` 语义令牌登记盲区修复（已关闭）**。复查 F2 时发现 L0 早已定义的 9 类语义令牌（`-main` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `-light` / `-dark` / `-contrast-text`）从未进 `@theme` → Tailwind 一律不生成，全站仅靠 `semantic-utils.css:16-19` 的 4 条手工逃生舱顶住。**实测后果**：`bg-primary-main` 零产物致 `ThemeSwitcher` 主题状态圆点背景透明不可见；全部 `/N` 透明度修饰符（`ring-primary-main/30` 等）焦点环 / 描边静默失效。波及 `-main` 157 处 / 55 文件、`-container` 128、`secondary-main` 47、`secondary-dark` 12、`accent-main` 7、`warning-main` 4。**修法**：`base.css` 补 12 枚族别名 + `index.css` `@theme` 登记 22 条，产物实测 16 条规则、`color-mix` 覆盖 5%~50% 全档位；`-main` 刻意取反转型族根（与逃生舱同源，新解锁用途无对比度风险），实底+白字仍走 `.surface-primary`。**门禁缺口**：GATE-12 只查档位、GATE-13 只查 `var()` 引用，均不覆盖「类名 → `@theme` 登记」这条链，建议新增 GATE-19。附两条方法记注（幻影令牌须扫全仓手写类；HMR 沉降前勿做二分判定） |
 
 ### 阶段 3 — 治理落地（P2–P3）
 
