@@ -835,14 +835,75 @@ function hexToRgbTriplet(hex: string | undefined): string | null {
   return `${r}, ${g}, ${b}`;
 }
 
+/** WCAG 2.1 相对亮度（0..1）。口径与 theme-palette.ts 的 relLuminance 一致；
+ *  此处就地实现以避免 stores → components 的跨层依赖。 */
+function relLuminance(hex: string | undefined): number {
+  if (typeof hex !== 'string') return 0;
+  let h = hex.trim().replace(/^#/, '');
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  if (!/^[0-9a-f]{6}$/i.test(h)) return 0;
+  const lin = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return (
+    0.2126 * lin(parseInt(h.slice(0, 2), 16)) +
+    0.7152 * lin(parseInt(h.slice(2, 4), 16)) +
+    0.0722 * lin(parseInt(h.slice(4, 6), 16))
+  );
+}
+
+function contrastRatio(fg: string | undefined, bg: string | undefined): number {
+  const a = relLuminance(fg);
+  const b = relLuminance(bg);
+  if (!a && !b) return 1;
+  const hi = Math.max(a, b);
+  const lo = Math.min(a, b);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** AA 正常文本门槛 */
+const AA_MIN_RATIO = 4.5;
+/** 候选档位：下限 700 对齐 L0 的 D-58 裁决（--color-primary 从 primary-500 提到 700） */
+const AA_TIER_CANDIDATES = ['700', '800', '900', '950'] as const;
+
+/**
+ * 亮色模式下为 `--color-primary` 挑选达标档位。
+ *
+ * 该令牌既做背景又做文字色（`text-primary-main` 解析到它，共 97 处消费），
+ * 因此必须同时压过【白底】与【本配色的 light container】。500 档对五色板均不达标
+ * （白底 2.20~4.13:1；container 1.99~3.55:1），700 档救回 4/5，橙色需 800。
+ *
+ *   palette  700 白底/container        →  结果
+ *   green    5.49 / 4.91  ✅          700
+ *   blue     7.87 / 6.73  ✅          700
+ *   purple   7.99 / 6.87  ✅          700
+ *   red      7.20 / 6.11  ✅          700
+ *   orange   4.85 / 4.39  ❌ → 800   （7.85 / 7.11 ✅）
+ *
+ * 取首个达标档 = 「满足无障碍前提下最小的品牌偏移」，比固定 700 更普适。
+ * 全不达标时回退 950（最深档，白底必然 ≥ 4.5）。
+ */
+function pickAATextTier(ramp: Record<string, string>, container: string): string {
+  for (const tier of AA_TIER_CANDIDATES) {
+    const v = ramp[tier];
+    if (!v) continue;
+    if (contrastRatio(v, '#ffffff') >= AA_MIN_RATIO && contrastRatio(v, container) >= AA_MIN_RATIO) {
+      return tier;
+    }
+  }
+  return '950';
+}
+
 /**
  * 从某一模式的完整色阶推导该模式的 primary 语义族取值。
  *
- * 推导规则与 L0 的定义**逐条对齐**（base.css:26-39 / dark.css:22-37）：
+ * 推导规则与 L0 的定义逐条对齐（base.css:26-39 / dark.css:21-34），
+ * 唯一例外是亮色 --color-primary —— 见下方「亮色 --color-primary 为何不取 500」：
  *
  *   | 令牌                     | 亮色            | 暗色                       |
  *   |--------------------------|-----------------|----------------------------|
- *   | --color-primary          | ramp[500]       | ramp[500]                  |
+ *   | --color-primary          | pickAATextTier() | ramp[500]                  |
  *   | --color-primary-rgb      | rgb(ramp[500])  | rgb(ramp[500])             |
  *   | --color-primary-container| ramp[100]       | rgba(ramp[500], 0.15)      |
  *   | --color-primary-surface  | ramp[700]       | ramp[200]                  |
@@ -851,9 +912,15 @@ function hexToRgbTriplet(hex: string | undefined): string | null {
  *   | --color-primary-text     | ramp[600]       | ramp[600]                  |
  *   | --color-on-primary-surface | #ffffff       | #ffffff                    |
  *
- * 因为规则与 L0 一致，对「默认绿」而言推导值与 L0 **逐值相等**
- * （亮 #d1fae5 / 暗 rgba(52,211,153,.15) / 亮表面 #047857 / 暗表面 #065f46 …），
- * 所以选择默认绿不产生任何视觉漂移 —— 与「默认绿逐档等于 L0」是同一约束的延伸。
+ * 暗色侧与 dark.css 逐条一致（primary=500 / text=600 / surface=200 /
+ * surface-hover=300 / container=rgba(500,.15)），任一配色均无漂移。
+ * 亮色除 --color-primary 外亦与 base.css 的档位选择一致（container=100 /
+ * surface=700 / surface-hover=800 / text=hover=600）。
+ *
+ * 亮色 --color-primary 为何不取 500：L0 的 D-58 已把它从 primary-500 提到
+ * primary-700，因为 500 档白底仅 2.54:1（base.css:21-25）。若此处取 500，
+ * 会同时回退 D-58、并产生 F2（text-primary-main 压 bg-primary-container
+ * 亮色 1.99~3.55:1）—— 实测复现过。故亮色改按 AA 门槛选档（见 pickAATextTier）。
  */
 function derivePrimaryFamily(
   ramp: Record<string, string> | undefined,
@@ -865,11 +932,16 @@ function derivePrimaryFamily(
   const surface = ramp[dark ? '200' : '700'];
   const surfaceHover = ramp[dark ? '300' : '800'];
   const mid = ramp['600'];
-  if (!ramp['500'] || !ramp['100'] || !surface || !surfaceHover || !mid) return {};
+  const container = dark ? `rgba(${rgb}, 0.15)` : ramp['100'];
+  if (!ramp['500'] || !ramp['100'] || !surface || !surfaceHover || !mid || !container) return {};
+
+  // 亮色：按 AA 门槛选档（下限 700，对齐 L0 D-58）；暗色：与 dark.css 一致取 500
+  const primaryTier = dark ? ramp['500'] : ramp[pickAATextTier(ramp, container)];
+
   return {
-    '--color-primary': ramp['500'],
+    '--color-primary': primaryTier,
     '--color-primary-rgb': rgb,
-    '--color-primary-container': dark ? `rgba(${rgb}, 0.15)` : ramp['100'],
+    '--color-primary-container': container,
     '--color-primary-surface': surface,
     '--color-primary-surface-hover': surfaceHover,
     '--color-primary-hover': mid,
