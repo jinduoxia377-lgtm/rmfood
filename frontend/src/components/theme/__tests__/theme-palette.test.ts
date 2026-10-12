@@ -15,6 +15,9 @@ import {
   FONT_SCALE_KEYS,
   FONT_SCALES,
   PRIMARY_TIERS,
+  RADIUS_SCALE_KEYS,
+  RADIUS_SCALE_META,
+  RADIUS_SCALES,
   buildDarkRamp,
   buildFontScale,
   buildLightRamp,
@@ -177,5 +180,64 @@ describe('FONT_SCALES — 完整 L0 排版档', () => {
     const s = buildFontScale(20);
     expect(parseFloat(s.body.replace('rem', '')) * 16).toBe(20);
     expect(parseFloat(s.bodySm.replace('rem', '')) * 16).toBeCloseTo(14 * (20 / 15), 0);
+  });
+});
+
+describe('RADIUS_SCALES — 圆角方案', () => {
+  // 基准值取自 base.css:255-261（--radius-sm..full）
+  const L0 = {
+    sm: '6px', md: '8px', lg: '12px', xl: '16px', '2xl': '20px', full: '9999px',
+  };
+  const px = (v: string) => parseFloat(v.replace('px', ''));
+
+  it('三个方案覆盖全部键，且均为合法 px 值', () => {
+    for (const k of Object.keys(RADIUS_SCALES)) {
+      for (const key of RADIUS_SCALE_KEYS) {
+        expect(RADIUS_SCALES[k][key], `${k}.${key}`).toMatch(/^(0|\d+px)$/);
+      }
+    }
+  });
+
+  it('standard 档逐值等于 base.css L0 —— 选它等于无变化', () => {
+    for (const [key, value] of Object.entries(L0)) {
+      expect(RADIUS_SCALES.standard[key as keyof typeof L0], key).toBe(value);
+    }
+    expect(RADIUS_SCALES.standard.none).toBe('0');
+  });
+
+  it('锐利 < 标准 < 圆润 严格单调（none/full 两端钉死不变）', () => {
+    // none 恒为 0、full 恒为 9999px：两端钉死，不参与排序比较
+    for (const scale of Object.values(RADIUS_SCALES)) {
+      expect(scale.none).toBe('0');
+      expect(scale.full).toBe('9999px');
+    }
+    for (const key of RADIUS_SCALE_KEYS) {
+      if (key === 'none' || key === 'full') continue;
+      const s = px(RADIUS_SCALES.sharp[key]);
+      const m = px(RADIUS_SCALES.standard[key]);
+      const r = px(RADIUS_SCALES.rounded[key]);
+      expect(s, `${key}/sharp<standard`).toBeLessThan(m);
+      expect(m, `${key}/standard<rounded`).toBeLessThan(r);
+    }
+  });
+
+  it('RADIUS_SCALE_META 与 RADIUS_SCALES 的键集一致，且各档可区分', () => {
+    expect(RADIUS_SCALE_META.length).toBe(3);
+    const metaKeys = RADIUS_SCALE_META.map((m) => m.key);
+    expect(new Set(metaKeys).size).toBe(3);
+    for (const m of RADIUS_SCALE_META) {
+      expect(RADIUS_SCALES[m.key], m.key).toBeDefined();
+      // 预览值必须等于该档的 lg，否则面板上的圆角方块会与实际取值不符
+      expect(m.lg, m.key).toBe(RADIUS_SCALES[m.key].lg);
+    }
+  });
+
+  it('全部令牌名与值都能通过 isSafeToken 白名单（注入安全边界）', async () => {
+    const { isSafeToken } = await import('../../../stores/theme.presets');
+    for (const scale of Object.values(RADIUS_SCALES)) {
+      for (const key of RADIUS_SCALE_KEYS) {
+        expect(isSafeToken(`--radius-${key}`, scale[key]), `--radius-${key}`).toBe(true);
+      }
+    }
   });
 });

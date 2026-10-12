@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import {
   Sun, Moon, Monitor, Gauge, Eye, Palette, Type, RotateCcw, Accessibility,
+  Square, Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useThemeStore, useIsDarkMode,
   type TransitionType, type AccessibilityMode,
 } from '@/theme';
-import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } from './theme-palette';
+import {
+  APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales,
+  RADIUS_SCALE_META, RADIUS_SCALES,
+} from './theme-palette';
+import { ThemeImport } from '../../theme/ThemeImport';
 
 /**
  * ThemePanel — 全站主题控制核心模块（嵌入 SettingsPage「主题」tab）
@@ -26,7 +31,7 @@ import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } f
  *    （不可反转，非 400..950 色阶配白字），双模式对比度合规
  *  - §10.3 GATE-12/13：只用 L1 已登记语义类 / L0 已登记令牌
  *
- * 九区块：
+ * 十一区块：
  *  ① 明暗三态切换（light/dark/system，setThemeMode）
  *  ② 跟随系统实时状态（matchMedia 只读 + useIsDarkMode）
  *  ③ 切换过渡动画（fade/scale/none，setTransitionType）
@@ -38,6 +43,12 @@ import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } f
  *  ⑨ 无障碍模式四态（normal/high-contrast/reading/color-blind，setAccessibilityMode）
  *     —— C3：四态原只在侧栏 ThemeSwitcher 的下拉里可达，/settings 主入口反而够不着。
  *     主入口补全后 Switcher 退化为轻量明暗切换器（C5），不再重复/丢失功能。
+ *  ⑩ 圆角方案（锐利/标准/圆润 → --radius-* 令牌，Tailwind rounded-* 即解析到它）
+ *  ⑪ 配置备份（导出 JSON / 导入 JSON，跨设备还原）
+ *
+ * ⑩ 为何不做「间距」方案：--space-* 未登记进 index.css 的 @theme，Tailwind 的
+ * p-* / m-* / gap-* 工具类不解析到它；全项目仅 24 处显式 var(--space-*)（主要是
+ * 登录页与侧栏边距）。加控件会「点了几乎看不到变化」，是误导性设置，故不做。
  *
  * ⑦⑧ 持久性：覆盖累计进 store.runtimeOverrides 并持久化，冷启动由 initialize()
  * 回放，刷新后配色/字号/明暗三者全部保持（GATE-15 断言）。
@@ -51,14 +62,15 @@ export const ThemePanel: React.FC = () => {
     applyCustomTheme, resetToDefault,
     transitionType, setTransitionType,
     motionPreferences, setMotionPreferences,
-    paletteKey, fontScale,
+    paletteKey, fontScale, radiusScale,
     accessibilityMode, setAccessibilityMode,
   } = useThemeStore();
   const isDark = useIsDarkMode();
 
-  // ⑦⑧ 的选中态基线：未做任何选择时视同「默认绿」与「标准」字号。
+  // ⑦⑧⑩ 的选中态基线：未做任何选择时视同「默认绿」「标准」字号与「标准」圆角。
   const activePalette = paletteKey || 'green';
   const activeFontScale = fontScale || 'standard';
+  const activeRadiusScale = radiusScale || 'standard';
 
   // ── ⑥ Ctrl+Shift+T 快捷键实际绑定（在 light/dark 间切换）──
   useEffect(() => {
@@ -187,6 +199,57 @@ export const ThemePanel: React.FC = () => {
     // resetToDefault 清空 runtimeOverrides → applyThemeToDOM 同时清除 <html>
     // 内联自定义属性与运行时色阶 <style>，回到 L0 基线。无需手动 removeProperty。
     resetToDefault();
+  };
+
+  // ── ⑩ 圆角方案（--radius-* 令牌）──
+  const RADIUS_SIZES = RADIUS_SCALE_META.map((s) => ({
+    key: s.key,
+    label: s.label,
+    desc: s.desc,
+    lg: s.lg,
+  }));
+
+  /**
+   * ⑩ 应用圆角方案。
+   *
+   * --radius-* 登记在 index.css 的 @theme 里，Tailwind 的 rounded-* 工具类即解析
+   * 到这些令牌（rounded-lg 1 959 处 / full 968 / xl 817 / md 307 / 2xl 115 /
+   * sm 30，rounded-xs 0 处）。写 inline 会按 inline 优先级压过 :root 的定义，
+   * 从而影响全站 rounded-* —— 这正是「圆角」设置想要的作用范围。
+   *
+   * 与色阶不同，--radius-* **不是模式相关的**（base.css 一份，dark.css 无覆盖），
+   * 所以 inline 单作用域即正确，无需运行时 <style> 双作用域块；重置由
+   * resetToDefault → clearInlineCustomProps + 重新注入 L0 承担。
+   *
+   * standard 档与 base.css L0 逐值一致，选它等于无变化。
+   */
+  const applyRadius = (key: string) => {
+    applyCustomTheme(
+      { borderRadius: RADIUS_SCALES[key] },
+      { radiusScale: key },
+    );
+  };
+
+  /**
+   * 导出当前主题配置为 JSON 文件。
+   *
+   * 导出的是 store 的持久化快照（activeTheme + 模式 + 无障碍 + 覆盖态），
+   * 可直接用下方「导入」还原到另一台设备。
+   */
+  const handleExport = () => {
+    const st = useThemeStore.getState();
+    const json = st.exportTheme();
+    const stamp = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rmfood-theme-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // 稍后释放，避免部分浏览器因立即 revoke 导致下载中断
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const cardBase = 'rounded-2xl border border-neutral-200 dark:border-neutral-700 surface-card p-5';
@@ -484,12 +547,86 @@ export const ThemePanel: React.FC = () => {
         </div>
       </section>
 
+      {/* ═══ ⑩ 圆角方案（--radius-* 令牌）═══ */}
+      <section className={cardBase} aria-labelledby="tp-radius-h">
+        <div className={headBase}>
+          <Square size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-radius-h" className={headTitle}>圆角</h3>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">全站 rounded-* 生效</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="圆角方案">
+          {RADIUS_SIZES.map((r) => {
+            const active = activeRadiusScale === r.key;
+            return (
+              <button
+                key={r.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${r.label}圆角方案`}
+                onClick={() => applyRadius(r.key)}
+                className={cn(
+                  'relative flex flex-col items-center gap-2.5 rounded-xl border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
+                  active ? tileActive : tileIdle
+                )}
+                title={`${r.label}：${r.desc}`}
+              >
+                <span
+                  className="h-8 w-8 border-2 border-primary-main"
+                  style={{ borderRadius: r.lg }}
+                  aria-hidden
+                />
+                <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{r.label}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{r.desc}</span>
+                {active && (
+                  <span className="absolute top-2.5 right-2.5 text-xs font-semibold text-primary-700" aria-hidden>✓</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
+          当前：{RADIUS_SIZES.find(r => r.key === activeRadiusScale)?.label ?? '标准'}
+          · 影响 rounded-lg 1 959 处 / rounded-full 968 处 / rounded-xl 817 处等，刷新后保留
+        </p>
+      </section>
+
+      {/* ═══ ⑪ 配置备份：导出 / 导入 ═══ */}
+      <section className={cardBase} aria-labelledby="tp-io-h">
+        <div className={headBase}>
+          <Download size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-io-h" className={headTitle}>配置备份</h3>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">跨设备迁移当前全部设置</span>
+        </div>
+        <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">
+          把当前配色 / 字号 / 圆角 / 明暗 / 无障碍设置导出为 JSON，可在另一台设备上导入还原。
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">导出</p>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-300 surface-hover px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:border-primary-main hover:text-primary-main dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-primary-main dark:hover:text-primary-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
+            >
+              <Download size={16} aria-hidden />
+              <span>下载 JSON 配置</span>
+            </button>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">导入</p>
+            <ThemeImport hint="选择 JSON 配置文件" />
+          </div>
+        </div>
+      </section>
+
       {/* 当前状态摘要（全部从 store 派生，U-6） */}
       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-1" aria-live="polite">
         当前：{isDark ? '深色' : '浅色'}渲染
         · 模式：{mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
         · 配色：{PALETTES.find((p) => p.key === activePalette)?.name ?? '默认绿'}
         · 字号：{FONT_SIZES.find((f) => f.key === activeFontScale)?.label ?? '标准'}
+        · 圆角：{RADIUS_SIZES.find(r => r.key === activeRadiusScale)?.label ?? '标准'}
         · 过渡：{TRANSITIONS.find(t => t.t === transitionType)?.label ?? transitionType}
         · 无障碍：{A11Y_MODES.find((m) => m.key === accessibilityMode)?.label ?? '标准'}
         · 减少动画：{motionPreferences.reducedMotion ? '开启' : '关闭'}

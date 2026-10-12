@@ -217,3 +217,38 @@ export const FONT_SCALES: Record<string, FontScale> = {
   standard: buildFontScale(15),
   relaxed: buildFontScale(18),
 };
+
+// ============================================================================
+// ⑩ 圆角方案
+// ============================================================================
+//
+// 键集与 theme.types 的 BorderRadius 一致；standard 逐值照抄 L0 权威值
+//（base.css:255-261 的 --radius-sm..full），保证「选标准 = 无变化」，
+// 否则会像早期「默认绿」一样悄悄改变全站 rounded-* 消费。
+//
+// 影响面（2026-10 实测）：--radius-* 登记在 index.css:185-191 的 @theme 里，
+// Tailwind 的 rounded-* 工具类即解析到这些令牌 —— rounded-lg 1 959 处、
+// rounded-full 968、rounded-xl 817、rounded-md 307、rounded-2xl 115、
+// rounded-sm 30，合计约 4 200 处；rounded-xs 0 处（故本方案不含 xs）。
+// 这是设计意图而非副作用：用户选「圆润」就该全站圆角变圆。
+//
+// 与色阶不同，--radius-* 不是模式相关的（base.css 一份，dark.css 无覆盖），
+// 所以走 inline 单作用域即正确，无需运行时 <style> 双作用域块。
+// 重置由 resetToDefault → applyThemeToDOM(clearInlineCustomProps + 重新注入 L0) 承担。
+
+export const RADIUS_SCALE_KEYS = ['none', 'sm', 'md', 'lg', 'xl', '2xl', 'full'] as const;
+export type RadiusScaleKey = (typeof RADIUS_SCALE_KEYS)[number];
+export type RadiusScale = Record<RadiusScaleKey, string>;
+
+export const RADIUS_SCALE_META: { key: string; label: string; desc: string; lg: string }[] = [
+  { key: 'sharp', label: '锐利', desc: '2–10px，接近直角', lg: '6px' },
+  { key: 'standard', label: '标准', desc: '6–20px，默认', lg: '12px' },
+  { key: 'rounded', label: '圆润', desc: '10–32px，柔和', lg: '20px' },
+];
+
+/** 三个方案的完整圆角档（standard 与 base.css L0 逐值一致） */
+export const RADIUS_SCALES: Record<string, RadiusScale> = {
+  sharp: { none: '0', sm: '2px', md: '4px', lg: '6px', xl: '8px', '2xl': '10px', full: '9999px' },
+  standard: { none: '0', sm: '6px', md: '8px', lg: '12px', xl: '16px', '2xl': '20px', full: '9999px' },
+  rounded: { none: '0', sm: '10px', md: '14px', lg: '20px', xl: '26px', '2xl': '32px', full: '9999px' },
+};
