@@ -68,7 +68,7 @@ export default function TerminologyPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 顶部横幅 */}
-      <div className="rounded-2xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-6 text-white shadow-lg">
+      <div className="rounded-2xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-hover)] p-6 text-white shadow-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">术语库管理</h1>

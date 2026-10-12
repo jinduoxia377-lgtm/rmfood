@@ -608,8 +608,16 @@ describe('C1 模式反转色阶整链（配色 10/10 双作用域）', () => {
     for (const t of Object.keys(LIGHT_RAMP)) {
       expect(document.documentElement.style.getPropertyValue(`--color-primary-${t}`), t).toBe('');
     }
-    // 角色令牌仍走 inline
-    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('#007aff');
+    // C1.5：primary 语义族（含锚点 --color-primary）同为模式相关令牌，
+    // 也一并让位给运行时 <style> 双作用域块 —— inline 不得再出现锚点值，
+    // 否则 inline 压过 .dark 会让暗色模式沿用亮色锚点/容器底色。
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
+    expect(document.documentElement.style.getPropertyValue('--color-primary-container')).toBe('');
+    // 锚点与语义族按作用域给出，并随配色整体迁移（而非停留在品牌绿）
+    expect(rootBlock).toContain('--color-primary: #0a84ff;');
+    expect(rootBlock).toContain('--color-primary-container: #d6e9ff;');
+    expect(darkBlock).toContain('--color-primary: #46a5ff;');
+    expect(darkBlock).toContain('--color-primary-container: rgba(70, 165, 255, 0.15);');
     expect(store().runtimeOverrides.modeRamps?.primary?.['500']).toBe('#0a84ff');
   });
 
@@ -636,7 +644,10 @@ describe('C1 模式反转色阶整链（配色 10/10 双作用域）', () => {
     expect(el?.textContent).toContain(':root {');
     expect(el?.textContent).toContain('.dark {');
     expect(el?.textContent).toContain('--color-primary-500: #0a84ff');
-    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('#007aff');
+    // C1.5：锚点与语义族随色阶一起重建，inline 无残留
+    expect(el?.textContent).toContain('--color-primary: #0a84ff;');
+    expect(el?.textContent).toContain('--color-primary-container: #d6e9ff;');
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
     expect(store().activeThemeId).toBe('custom-runtime');
   });
 

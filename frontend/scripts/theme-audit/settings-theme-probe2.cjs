@@ -13,10 +13,37 @@ const CONTRAST = `(function(){
 
 const SCOPED_SCAN = `(() => {
   const out={issues:[],checked:0};
-  function effBg(el){let n=el;while(n&&n!==document.documentElement){
-    const bg=getComputedStyle(n).backgroundColor;
-    if(bg&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent')return bg; n=n.parentElement;}
-    return getComputedStyle(document.body).backgroundColor;}
+  const parse=(c)=>{const m=String(c).match(/rgba?\\(([^)]+)\\)/);if(!m)return null;
+    const p=m[1].split(',').map(function(s){return parseFloat(s.trim());});
+    return {r:p[0],g:p[1],b:p[2],a:p.length===4?p[3]:1};};
+  /**
+   * 有效底色：元素自身底色与全部祖先底色逐层 alpha 合成。
+   * 旧实现只取「第一个不透明的祖先底色」，半透明卡片叠在半透明/浅色页底上
+   * 时会漏算底层实底，把真实的 ~9.6:1 误判成 2.03:1（假低值，D5）。
+   */
+  function effBg(el){
+    const stack=[];
+    let n=el.parentElement;
+    while(n){const bg=getComputedStyle(n).backgroundColor;
+      if(bg&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent')stack.push(bg); n=n.parentElement;}
+    let acc=null;
+    for(let i=stack.length-1;i>=0;i--){
+      const layer=parse(stack[i]); if(!layer)continue;
+      if(!acc){acc=layer;continue;}
+      const a=layer.a,b=acc.a*(1-a),A=a+b; if(A===0)continue;
+      acc={r:(layer.r*a+acc.r*b)/A,g:(layer.g*a+acc.g*b)/A,b:(layer.b*a+acc.b*b)/A,a:A};
+    }
+    const own=parse(getComputedStyle(el).backgroundColor);
+    if(own&&own.a>0){
+      if(!acc){acc=own;}else{
+        const a=own.a,b=acc.a*(1-a),A=a+b; if(A>0)
+        acc={r:(own.r*a+acc.r*b)/A,g:(own.g*a+acc.g*b)/A,b:(own.b*a+acc.b*b)/A,a:A};}
+    }
+    if(!acc)acc={r:255,g:255,b:255,a:1};
+    if(acc.a<1){const a=1-acc.a;
+      acc={r:(acc.r*acc.a+255*a),g:(acc.g*acc.a+255*a),b:(acc.b*acc.a+255*a),a:1};}
+    return 'rgb('+Math.round(acc.r)+', '+Math.round(acc.g)+', '+Math.round(acc.b)+')';
+  }
   for(const e of document.querySelectorAll('body *')){
     const r=e.getBoundingClientRect(); if(r.width<8||r.height<8)continue;
     const t=(e.innerText||'').trim(); if(!t||e.children.length>0)continue;

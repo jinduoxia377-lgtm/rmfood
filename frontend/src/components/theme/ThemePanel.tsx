@@ -145,14 +145,22 @@ export const ThemePanel: React.FC = () => {
   /**
    * ⑧ 应用配色方案。
    *
-   * 分两层，因为两类令牌的【作用域模型】不同：
-   *  - `colors.primary` 只带模式无关的角色字段（main / light / dark /
-   *    contrastText），映射到 `--color-primary` 等语义令牌，走 inline 单作用域。
-   *  - `--color-primary-<档>` 是模式反转令牌（base.css 100 浅→950 深、
-   *    dark.css 100 深→950 浅，暗色值作用域在 `.dark`），inline 无法区分二者，
-   *    故由 modeRamps 携带亮/暗两组【完整 10 档】色阶，经运行时 `<style>`
-   *    双作用域落地。整档同向替换保证单调性，不会出现「500-700 换色而两头
-   *    仍是品牌绿」的断裂梯度。
+   * 全部 primary 令牌都走运行时 `<style>` 双作用域块（见 theme.presets 的
+   * generateModeRampCSS），因为整族都是**模式相关**的：
+   *  - `--color-primary-<档>` 模式反转（base.css 100 浅→950 深、dark.css 反之，
+   *    暗色值作用域在 `.dark`）。
+   *  - `--color-primary` / `-container` / `-surface` / `-text` / `-rgb` 在 base.css
+   *    与 dark.css 各有一份不同取值。
+   *
+   * inline 自定义属性优先级高于任何非 !important 选择器，在 <html> 上写入会
+   * **同时压过** `:root` 与 `.dark` —— 所以这两类令牌都不能走 inline：
+   * 档位令牌会形成「500-700 换色、两头仍是品牌绿」的断裂梯度；语义令牌会形成
+   * 「选蓝色后 --color-primary-container 仍是品牌绿 #d1fae5」的混排
+   *（实测复现）。整档同向替换 + 语义族按同一模式推导，保证单调性与内部一致。
+   *
+   * 因 `--color-primary` 已由双作用域块按模式给出，`colors.primary.main` 只需
+   * 携带规范锚点（亮色值），不再需要 isDark 分支；该字段其余仍用于图表等
+   * 读取 theme.colors 的数据面。
    *
    * 旧实现 applyBrandScale 只改 500/600/700 三档并直写 inline —— 既产生断裂
    * 梯度，又因 inline 压过 .dark 导致暗色模式错用亮色值，且完全不持久化。
@@ -163,7 +171,7 @@ export const ThemePanel: React.FC = () => {
       {
         colors: {
           primary: {
-            main: isDark ? p.dark : p.light,
+            main: p.light,
             light: p.sub,
             dark: p.subDark,
             contrastText: p.contrastText,
@@ -207,14 +215,21 @@ export const ThemePanel: React.FC = () => {
                 aria-checked={active}
                 onClick={() => setThemeMode(m)}
                 className={cn(
-                  'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                   active ? tileActive : tileIdle
                 )}
               >
                 <Icon size={22} className={active ? 'text-primary-main' : 'text-neutral-700'} aria-hidden />
                 <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{label}</span>
                 <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{desc}</span>
-                {active && <span className="absolute top-2.5 right-2.5 text-xs font-semibold text-primary-main">✓</span>}
+                {active && (
+                  <span
+                    className="absolute top-2.5 right-2.5 text-xs font-semibold text-primary-700"
+                    aria-hidden
+                  >
+                    ✓
+                  </span>
+                )}
               </button>
             );
           })}
@@ -269,7 +284,7 @@ export const ThemePanel: React.FC = () => {
                 aria-checked={active}
                 onClick={() => setTransitionType(t)}
                 className={cn(
-                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                   active ? tileActive : tileIdle
                 )}
               >
@@ -295,7 +310,7 @@ export const ThemePanel: React.FC = () => {
             aria-label="切换减少动画"
             onClick={() => setMotionPreferences({ reducedMotion: !motionPreferences.reducedMotion })}
             className={cn(
-              'relative h-7 w-12 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+              'relative h-7 w-12 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
               motionPreferences.reducedMotion ? 'bg-primary-main' : 'border border-neutral-300 dark:border-neutral-700'
             )}
           >
@@ -331,7 +346,7 @@ export const ThemePanel: React.FC = () => {
                 aria-label={`${m.label}无障碍模式`}
                 onClick={() => setAccessibilityMode(m.key)}
                 className={cn(
-                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                   active ? tileActive : tileIdle
                 )}
               >
@@ -363,12 +378,10 @@ export const ThemePanel: React.FC = () => {
         >
           <div className="flex items-center gap-3">
             <div
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-lg',
-                isDark ? 'bg-primary-container' : 'bg-primary-container'
-              )}
+              className="surface-primary flex h-10 w-10 items-center justify-center rounded-lg"
+              aria-hidden
             >
-              {isDark ? <Moon size={18} className="text-primary-main" aria-hidden /> : <Sun size={18} className="text-primary-main" aria-hidden />}
+              {isDark ? <Moon size={18} /> : <Sun size={18} />}
             </div>
             <div className="min-w-0 flex-1">
               <div className={cn('h-2.5 w-28 rounded-full', isDark ? 'bg-neutral-600' : 'bg-neutral-300')} />
@@ -378,11 +391,10 @@ export const ThemePanel: React.FC = () => {
           <button
             type="button"
             className={cn(
-              'mt-4 w-full rounded-lg py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-              'bg-primary-container text-primary-main'
+              'surface-primary mt-4 w-full rounded-lg py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
             )}
           >
-            主按钮示例（不可反转底色 + 语义前景）
+            主按钮示例（.surface-primary：不可反转表面 + 白色前景）
           </button>
         </div>
       </section>
@@ -406,7 +418,7 @@ export const ThemePanel: React.FC = () => {
                 aria-label={`${f.label}字号方案`}
                 onClick={() => applyFont(f.key)}
                 className={cn(
-                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                   active ? tileActive : tileIdle
                 )}
               >
@@ -442,7 +454,7 @@ export const ThemePanel: React.FC = () => {
                 aria-label={`${p.name}配色方案`}
                 onClick={() => applyPalette(p)}
                 className={cn(
-                  'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                   active ? tileActive : tileIdle
                 )}
                 title={`${p.name}：${p.note}`}
@@ -465,7 +477,7 @@ export const ThemePanel: React.FC = () => {
           <button
             type="button"
             onClick={handleReset}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 surface-hover px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 surface-hover px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50"
           >
             <RotateCcw size={14} aria-hidden /> 重置默认
           </button>

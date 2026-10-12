@@ -347,7 +347,7 @@ export function FormulaCasesPage() {
     <div className="max-w-7xl mx-auto space-y-6 px-4 lg:px-6 py-6">
 
       {/* ── 渐变 Hero Banner（对齐 FormulaListPage）────────── */}
-      <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-5 text-white shadow-card-hover">
+      <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-hover)] p-5 text-white shadow-card-hover">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
