@@ -533,6 +533,14 @@ export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOve
     ...(overrides.spacing && { spacing: { ...base.spacing, ...overrides.spacing } }),
     ...(overrides.borderRadius && { borderRadius: { ...base.borderRadius, ...overrides.borderRadius } }),
     ...(overrides.transitions && { transitions: { ...base.transitions, ...overrides.transitions } }),
+    // C1：模式反转色阶按作用域分别合并 —— primary 与 primaryDark 是两组独立值，
+    // 缺省的一组保留底层预设的值（内置预设无 modeRamps，故实际就是 override 值）。
+    ...(overrides.modeRamps && {
+      modeRamps: {
+        ...base.modeRamps,
+        ...overrides.modeRamps,
+      },
+    }),
   };
 }
 
@@ -598,6 +606,13 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   // kebab，故生成器必须规范化键名，否则这些维度被静默拒绝、无法自定义）。
   const toKebab = (k: string) => k.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
+  // C1：模式反转色阶改由运行时 `<style>` 双作用域块提供（见 generateModeRampCSS）。
+  // 若 inline 也写 `--color-primary-<档>`，会同时压过 `:root` 与 `.dark`，
+  // 使暗色模式错用亮色 ramp —— 故把落在 modeRamps 覆盖范围内的档位令牌让位出去。
+  const rampTokens = new Set<string>(
+    Object.keys(theme.modeRamps?.primary ?? {}).map((k) => `--color-primary-${k}`),
+  );
+
   // 颜色变量
   Object.entries(theme.colors).forEach(([category, values]) => {
     if (typeof values === 'object' && !Array.isArray(values)) {
@@ -611,7 +626,9 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
         // 命中 COLOR_MAIN_TO_L0 的行为完全不变。
         const kebabKey = toKebab(key);
         const kebabCategory = toKebab(category);
-        vars[l0 ?? `--color-${kebabCategory}-${kebabKey}`] = value;
+        const name = l0 ?? `--color-${kebabCategory}-${kebabKey}`;
+        if (rampTokens.has(name)) return;
+        vars[name] = value;
       });
     }
   });
@@ -755,6 +772,84 @@ function clearInlineCustomProps(): void {
   for (const nm of names) root.style.removeProperty(nm);
 }
 
+// ============================================================================
+// C1：模式反转色阶的运行时双作用域样式表
+// ----------------------------------------------------------------------------
+// 为什么不能沿用 inline setProperty：base.css 的 `--color-primary-<档>` 定义在
+// `:root`，dark.css 的同名令牌定义在 `.dark`（dark.css:7）。inline 自定义属性的
+// 优先级高于任何非 !important 选择器，因此在 <html> 上 setProperty 会**同时压过**
+// `:root` 与 `.dark` —— 选完配色后切到暗色模式，暗色画布上显示的仍是亮色 ramp。
+// 这正是一次实测复现的「断裂梯度」：500/600/700 被换成品牌新色，而 100-400 与
+// 800-950 依旧是 L0 品牌绿（暗色下是浅绿），中间换色 + 两头不变 = 梯度断裂，
+// 且暗色下 800-950 的浅色档若配白字即对比度崩塌。
+//
+// 唯一正确写法：把两组值一并写进运行时 <style> 的 `:root` / `.dark` 块。
+// 该 <style> 由 applyThemeToDOM 统一写入/清除，仍是「applyCustomTheme →
+// mergeThemeOverrides → generateCSSVariables → applyThemeToDOM」单通道。
+// ============================================================================
+
+const RUNTIME_THEME_STYLE_ID = 'rmfood-runtime-theme';
+
+/** 档位键：纯数字（50 / 100..950），用于识别 L0 静态色阶令牌 */
+const TIER_KEY = /^\d{2,3}$/;
+
+/**
+ * 生成模式反转色阶的双作用域 CSS 文本。
+ * 无覆盖时返回空串（applyRuntimeThemeStyle 会移除样式元素，回到 L0 基线）。
+ */
+export function generateModeRampCSS(theme: ThemeConfig): string {
+  const ramps = theme?.modeRamps;
+  if (!ramps || (!ramps.primary && !ramps.primaryDark)) return '';
+
+  const renderBlock = (
+    sel: string,
+    values: Record<string, string> | undefined,
+  ): string => {
+    if (!values) return '';
+    const decls: string[] = [];
+    for (const [k, v] of Object.entries(values)) {
+      if (!TIER_KEY.test(k)) continue; // 只处理档位键，其余由 generateCSSVariables 负责
+      const name = `--color-primary-${k}`;
+      // 复用同一套安全校验：值不允许逃逸声明位置（与 inline 通道一致的安全边界）
+      if (!isSafeToken(name, v)) {
+        logger.warn('[Theme System] 拒绝不安全的色阶令牌值', { name, value: String(v).slice(0, 60) });
+        continue;
+      }
+      decls.push(`  ${name}: ${v};`);
+    }
+    if (!decls.length) return '';
+    return `${sel} {\n${decls.join('\n')}\n}`;
+  };
+
+  const blocks = [renderBlock(':root', ramps.primary), renderBlock('.dark', ramps.primaryDark)]
+    .filter(Boolean);
+  if (!blocks.length) return '';
+  return `/* RMFOOD runtime theme ramp (${theme.id}) */\n${blocks.join('\n')}\n`;
+}
+
+/**
+ * 写入（或清空）运行时色阶样式表。
+ *
+ * 插入位置：置于 `document.head` 的 `@theme` 编译产物之后（作为最后一个 <style>
+ * 追加），使其优先级不高于内联样式、且覆盖 L0 的 `:root` / `.dark` 定义。
+ */
+export function applyRuntimeThemeStyle(css: string): void {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById(RUNTIME_THEME_STYLE_ID) as HTMLStyleElement | null;
+  if (!css) {
+    el?.remove();
+    return;
+  }
+  if (!el) {
+    const style = document.createElement('style');
+    style.id = RUNTIME_THEME_STYLE_ID;
+    document.head.appendChild(style);
+    style.textContent = css;
+    return;
+  }
+  el.textContent = css;
+}
+
 export function applyThemeToDOM(theme: ThemeConfig): void {
   // 防御性检查：如果theme无效，不执行任何操作
   if (!theme?.colors) {
@@ -770,6 +865,9 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
   const skipInjection = isCleanBuiltinPreset(theme);
   if (skipInjection) {
     clearInlineCustomProps();
+    // C1：运行时色阶样式表与内联属性同生命周期 —— 切回内置预设时一并清除，
+    // 保证「内置预设下 <html> 内联自定义属性 = 0 且无残留运行时 <style>」。
+    applyRuntimeThemeStyle('');
   } else {
     const cssVars = generateCSSVariables(theme);
     clearInlineCustomProps();
@@ -789,6 +887,8 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
     if (rejected > 0) {
       logger.warn(`[Theme System] 共拒绝 ${rejected} 个不安全的令牌值（已跳过，未写入 DOM）`);
     }
+    // C1：模式反转色阶走运行时双作用域样式表（inline 无法区分明暗，见上方说明）
+    applyRuntimeThemeStyle(generateModeRampCSS(theme));
   }
 
   // 设置 data 属性用于 CSS 选择器

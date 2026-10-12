@@ -34,7 +34,7 @@ export { useThemeStore } from '../stores/themeStore';
 export { ThemeProvider, useTheme, useThemeColors, useTypography, useSpacing, useIsDarkMode, useThemedValue, useCSSVariable } from '../stores/ThemeProvider';
 
 // ==================== 预设主题 ====================
-export { presetThemes, getDefaultTheme, getAccessibilityTheme, mergeThemeOverrides, generateCSSVariables, applyThemeToDOM } from '../stores/theme.presets';
+export { presetThemes, getDefaultTheme, getAccessibilityTheme, mergeThemeOverrides, generateCSSVariables, applyThemeToDOM, generateModeRampCSS, applyRuntimeThemeStyle, isSafeToken, isCleanBuiltinPreset } from '../stores/theme.presets';
 
 // ==================== 持久化存储 ====================
 export { themeStorage, ThemeStorage } from '../stores/theme.storage';

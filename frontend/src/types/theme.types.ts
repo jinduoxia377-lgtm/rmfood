@@ -138,15 +138,20 @@ export interface FontSize {
   h4: string;           // 22px - 卡片标题
   h5: string;           // 18px
   h6: string;           // 16px
-  // ── Tailwind 默认档（保留以兼容 text-xs / text-sm / text-base 工具类）
-  xs: string;           // 12px - 小标签
-  sm: string;           // 14px - 次要文字
-  base: string;         // 16px - 正文基准（移动端最小）
-  lg: string;           // 18px - 小标题
-  xl: string;           // 24px - 标题
-  '2xl': string;        // 32px - 大标题
-  '3xl': string;        // 40px - 展示标题
-  '4xl': string;        // 48px+ - 超大展示
+  // ── Tailwind 默认档（可选）──
+  // 可选（C1）：这 8 个键对应 Tailwind v4 默认主题变量（--text-xs 等），
+  // base.css 未定义、走 Tailwind 编译期默认值。运行时字号覆盖只针对 L0
+  // 正文/标题家族（上方 12 个键），不接管 Tailwind 工具类档位 —— 否则
+  // 「调大字号」会把 text-xs 这类全站微型标签一起放大，超出用户预期。
+  // 预设主题仍提供完整取值（presets 的 fontSize 全 20 键）。
+  xs?: string;          // 12px - 小标签
+  sm?: string;         // 14px - 次要文字
+  base?: string;       // 16px - 正文基准（移动端最小）
+  lg?: string;         // 18px - 小标题
+  xl?: string;         // 24px - 标题
+  '2xl'?: string;      // 32px - 大标题
+  '3xl'?: string;      // 40px - 展示标题
+  '4xl'?: string;      // 48px+ - 超大展示
 }
 
 /** 行高（body text 1.5-1.75） */
@@ -430,6 +435,30 @@ export interface ThemeConfig {
 
   /** 自定义 CSS 变量覆盖 */
   cssVariables?: Record<string, string>;
+
+  /** 模式反转色阶（执行方案阶段 C1），由运行时样式表承载 */
+  modeRamps?: ModeRamps;
+}
+
+/**
+ * 模式反转色阶（执行方案阶段 C1）
+ *
+ * L0 约定：`--color-primary-<档>` 在两种模式下是【有意反转】的 ——
+ *   base.css 亮色：100 最浅 → 950 最深
+ *   dark.css 暗色：100 最深 → 950 最浅，且值作用域在 `.dark` 选择器上
+ *
+ * 因此这类令牌**不能**走 `root.style.setProperty` 的 inline 通道：inline 属性会
+ * 同时压过 `:root` 与 `.dark`，导致选定配色后暗色模式仍显示亮色 ramp ——
+ * 已实测该形态会产生「断裂梯度」（500-700 换色而 100-400 / 800-950 仍是品牌绿
+ * 的反转值），暗色下 800-950 是浅色档，叠白字即对比度崩塌。
+ *
+ * 唯一正确写法：写成运行时 `<style>` 的双作用域块，两组值一并携带。
+ */
+export interface ModeRamps {
+  /** 亮色（`:root`）作用域的主色阶 */
+  primary?: Record<string, string>;
+  /** 暗色（`.dark`）作用域的主色阶 */
+  primaryDark?: Record<string, string>;
 }
 
 // ============================================================================
@@ -446,6 +475,8 @@ export interface CustomThemeOverrides {
   spacing?: Partial<Spacing>;
   borderRadius?: Partial<BorderRadius>;
   transitions?: Partial<Transitions>;
+  /** 模式反转色阶（C1）：不能走 inline 通道，见 ModeRamps 说明 */
+  modeRamps?: ModeRamps;
 }
 
 /**

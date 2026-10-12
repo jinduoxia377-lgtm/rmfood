@@ -98,7 +98,10 @@ export const RUNTIME_THEME_ID = 'custom-runtime';
 /** 覆盖对象是否非空 */
 function hasOverrides(o: CustomThemeOverrides | undefined | null): o is CustomThemeOverrides {
   if (!o) return false;
-  return !!(o.colors || o.typography || o.spacing || o.borderRadius || o.transitions);
+  return !!(
+    o.colors || o.typography || o.spacing || o.borderRadius || o.transitions ||
+    (o.modeRamps && (o.modeRamps.primary || o.modeRamps.primaryDark))
+  );
 }
 
 /** 同维度浅合并（override 优先，缺省保留 prev） */
@@ -119,6 +122,10 @@ function mergeCustomOverrides(
     spacing: mergeDim(prev.spacing, next.spacing),
     borderRadius: mergeDim(prev.borderRadius, next.borderRadius),
     transitions: mergeDim(prev.transitions, next.transitions),
+    // C1：模式反转色阶。整体替换语义 —— 换配色方案时上一方案的 ramp 必须被完全
+    // 取代，否则会与 L0 混成「断裂梯度」。两组作用域各自 mergeDim：同组内的档位
+    // 由下一份完整 ramp 全量覆盖（getPaletteScales 每次返回全部 10 档）。
+    modeRamps: mergeDim(prev.modeRamps, next.modeRamps),
   };
 }
 

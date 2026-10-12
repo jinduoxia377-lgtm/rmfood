@@ -536,3 +536,156 @@ describe('B1/B2 运行时覆盖持久化与冷启动回放（R1）', () => {
     expect(store().fontScale).toBe('standard');
   });
 });
+
+// ============================================================================
+// C1：模式反转色阶的整链闭环（applyCustomTheme → DOM → 冷启动 → 切模式）
+//
+// 断裂梯度（500-700 换色而 100-400 / 800-950 仍是品牌绿）与「暗色错用亮色
+// ramp」两个缺陷都出在色阶的写入通道上，故在此锁整链：
+//   档位令牌只走运行时 <style> 的 :root / .dark 双作用域，绝不落 inline。
+// ============================================================================
+describe('C1 模式反转色阶整链（配色 10/10 双作用域）', () => {
+  const LIGHT_RAMP = {
+    '100': '#d6e9ff', '200': '#acd6ff', '300': '#79bfff', '400': '#46a5ff', '500': '#0a84ff',
+    '600': '#007aff', '700': '#0066cc', '800': '#00518f', '900': '#003d6b', '950': '#00253f',
+  };
+  const DARK_RAMP = {
+    '100': '#003d6b', '200': '#00518f', '300': '#0066cc', '400': '#007aff', '500': '#46a5ff',
+    '600': '#79bfff', '700': '#acd6ff', '800': '#d6e9ff', '900': '#e8f2ff', '950': '#f4f8ff',
+  };
+
+  function resetStore(overrides: Record<string, unknown> = {}) {
+    useThemeStore.setState({
+      activeThemeId: 'light-default' as any,
+      activeTheme: presetThemes['light-default'],
+      mode: 'light' as any,
+      accessibilityMode: 'normal' as any,
+      transitionType: 'none' as any,
+      customThemes: [],
+      runtimeOverrides: {} as any,
+      paletteKey: '',
+      fontScale: 'standard',
+      isInitialized: false,
+      ...overrides,
+    });
+  }
+
+  function setMatchMedia(prefersDark = false) {
+    window.matchMedia = vi.fn().mockImplementation((q: string) => ({
+      matches: /prefers-color-scheme:\s*dark/.test(q) ? prefersDark : false,
+      media: q,
+      onchange: null,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as any;
+  }
+
+  it('applyCustomTheme 带 modeRamps：10 档全部落到运行时 <style>，inline 无档位令牌', () => {
+    resetStore();
+    store().applyCustomTheme(
+      {
+        colors: { primary: { main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff' } } as any,
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      },
+      { paletteKey: 'blue' },
+    );
+
+    const el = document.getElementById('rmfood-runtime-theme');
+    expect(el).toBeTruthy();
+    const css = el?.textContent || '';
+    // 亮色 10 档全在 :root 块
+    const rootBlock = css.split('.dark')[0];
+    for (const [t, v] of Object.entries(LIGHT_RAMP)) {
+      expect(rootBlock, `:root/${t}`).toContain(`--color-primary-${t}: ${v}`);
+    }
+    // 暗色 10 档全在 .dark 块
+    const darkBlock = css.slice(css.indexOf('.dark'));
+    for (const [t, v] of Object.entries(DARK_RAMP)) {
+      expect(darkBlock, `.dark/${t}`).toContain(`--color-primary-${t}: ${v}`);
+    }
+    // inline 不得有任何档位令牌（否则暗色模式错用亮色 ramp）
+    for (const t of Object.keys(LIGHT_RAMP)) {
+      expect(document.documentElement.style.getPropertyValue(`--color-primary-${t}`), t).toBe('');
+    }
+    // 角色令牌仍走 inline
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('#007aff');
+    expect(store().runtimeOverrides.modeRamps?.primary?.['500']).toBe('#0a84ff');
+  });
+
+  it('冷启动回放：modeRamps 持久化后经 initialize 重建运行时样式表', async () => {
+    setMatchMedia(false);
+    resetStore({
+      activeThemeId: 'custom-runtime' as any,
+      activeTheme: presetThemes['light-default'],
+      mode: 'light' as any,
+      runtimeOverrides: {
+        colors: { primary: { main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff' } },
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      } as any,
+      paletteKey: 'blue',
+      isInitialized: false,
+    });
+    // 模拟「刷新」：DOM 侧无任何运行时样式表
+    document.getElementById('rmfood-runtime-theme')?.remove();
+
+    await store().initialize();
+
+    const el = document.getElementById('rmfood-runtime-theme');
+    expect(el).toBeTruthy();
+    expect(el?.textContent).toContain(':root {');
+    expect(el?.textContent).toContain('.dark {');
+    expect(el?.textContent).toContain('--color-primary-500: #0a84ff');
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('#007aff');
+    expect(store().activeThemeId).toBe('custom-runtime');
+  });
+
+  it('切明暗模式后运行时样式表仍保留（配色不被 setThemeMode 清掉）', () => {
+    resetStore({
+      activeThemeId: 'custom-runtime' as any,
+      activeTheme: { ...presetThemes['light-default'], id: 'custom-runtime' },
+      runtimeOverrides: {
+        colors: { primary: { main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff' } },
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      } as any,
+      paletteKey: 'blue',
+    });
+    store().applyCustomTheme(
+      {
+        colors: { primary: { main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff' } } as any,
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      },
+      { paletteKey: 'blue' },
+    );
+
+    store().setThemeMode('dark');
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    const el = document.getElementById('rmfood-runtime-theme');
+    expect(el).toBeTruthy();
+    const css = el?.textContent || '';
+    // 双作用域完整保留，暗色值仍可取
+    expect(css).toContain('.dark {');
+    expect(css).toContain('--color-primary-500: #46a5ff');
+    expect(css).toContain('--color-primary-950: #f4f8ff');
+    expect(store().activeThemeId).toBe('custom-runtime');
+  });
+
+  it('resetToDefault 同时移除运行时样式表与 inline 覆盖', () => {
+    resetStore();
+    store().applyCustomTheme(
+      {
+        colors: { primary: { main: '#007aff', light: '#64b5f6', dark: '#00518f', contrastText: '#ffffff' } } as any,
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      },
+      { paletteKey: 'blue' },
+    );
+    expect(document.getElementById('rmfood-runtime-theme')).toBeTruthy();
+
+    store().resetToDefault();
+
+    expect(document.getElementById('rmfood-runtime-theme')).toBeNull();
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
+    expect(document.documentElement.style.getPropertyValue('--text-body')).toBe('');
+  });
+});
