@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Sun, Moon, Monitor, Gauge, Eye, Palette, Type, RotateCcw,
+  Sun, Moon, Monitor, Gauge, Eye, Palette, Type, RotateCcw, Accessibility,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useThemeStore, useIsDarkMode,
-  type TransitionType,
+  type TransitionType, type AccessibilityMode,
 } from '@/theme';
 import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } from './theme-palette';
 
@@ -26,7 +26,7 @@ import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } f
  *    （不可反转，非 400..950 色阶配白字），双模式对比度合规
  *  - §10.3 GATE-12/13：只用 L1 已登记语义类 / L0 已登记令牌
  *
- * 八区块：
+ * 九区块：
  *  ① 明暗三态切换（light/dark/system，setThemeMode）
  *  ② 跟随系统实时状态（matchMedia 只读 + useIsDarkMode）
  *  ③ 切换过渡动画（fade/scale/none，setTransitionType）
@@ -34,12 +34,16 @@ import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } f
  *  ⑤ 明暗实时预览（随当前明暗即时渲染的迷你卡片）
  *  ⑥ 快捷键实际绑定（Ctrl+Shift+T 在明暗间切换）
  *  ⑦ 字体方案（紧凑/标准/宽松 → 完整 L0 排版档 12 键，--text-* 令牌）
- *  ⑧ 配色方案（Apple HIG 系统色板 → 主色阶整档 10/10 双作用域注入）
+ *  ⑧ 配色方案（Apple HIG 系统色板 → 主色阶整档 11/11 双作用域注入）
+ *  ⑨ 无障碍模式四态（normal/high-contrast/reading/color-blind，setAccessibilityMode）
+ *     —— C3：四态原只在侧栏 ThemeSwitcher 的下拉里可达，/settings 主入口反而够不着。
+ *     主入口补全后 Switcher 退化为轻量明暗切换器（C5），不再重复/丢失功能。
  *
  * ⑦⑧ 持久性：覆盖累计进 store.runtimeOverrides 并持久化，冷启动由 initialize()
  * 回放，刷新后配色/字号/明暗三者全部保持（GATE-15 断言）。
  * ⑧ 的色阶走运行时 `<style>` 双作用域块（见 theme-palette 的档位单调性说明），
  * 切明暗模式不再丢失配色。
+ * ⑨ 的 accessibilityMode 已由 partialize 持久化，刷新后保持。
  */
 export const ThemePanel: React.FC = () => {
   const {
@@ -48,6 +52,7 @@ export const ThemePanel: React.FC = () => {
     transitionType, setTransitionType,
     motionPreferences, setMotionPreferences,
     paletteKey, fontScale,
+    accessibilityMode, setAccessibilityMode,
   } = useThemeStore();
   const isDark = useIsDarkMode();
 
@@ -98,6 +103,16 @@ export const ThemePanel: React.FC = () => {
     { t: 'fade', label: '淡入淡出', desc: '柔和过渡（默认）' },
     { t: 'scale', label: '缩放', desc: '轻微缩放过渡' },
     { t: 'none', label: '无过渡', desc: '即时切换' },
+  ];
+
+  // ⑨ 无障碍模式四态（C3：原仅侧栏 ThemeSwitcher 下拉可达，主入口补全）
+  // 状态走 store（持久化），DOM 副作用 data-a11y-mode / data-reading-mode 由
+  // setAccessibilityMode → applyThemeWithTransition → syncA11yAttributes 统一写入。
+  const A11Y_MODES: { key: AccessibilityMode; label: string; desc: string }[] = [
+    { key: 'normal', label: '标准', desc: '默认视觉' },
+    { key: 'high-contrast', label: '高对比度', desc: '增强前景/背景对比' },
+    { key: 'reading', label: '阅读模式', desc: '纸感底色，长文舒适' },
+    { key: 'color-blind', label: '色觉辅助', desc: '规避红绿混淆' },
   ];
 
   // ── ⑦ 字体方案（完整 L0 排版档 12 键 → --text-* 令牌）──
@@ -295,6 +310,43 @@ export const ThemePanel: React.FC = () => {
         </div>
       </section>
 
+      {/* ═══ ⑨ 无障碍模式（C3：从侧栏 Switcher 迁入主入口）═══ */}
+      <section className={cardBase} aria-labelledby="tp-a11y-h">
+        <div className={headBase}>
+          <Accessibility size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-a11y-h" className={headTitle}>无障碍模式</h3>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">
+            {A11Y_MODES.find((m) => m.key === accessibilityMode)?.label ?? '标准'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" role="radiogroup" aria-label="无障碍模式">
+          {A11Y_MODES.map((m) => {
+            const active = accessibilityMode === m.key;
+            return (
+              <button
+                key={m.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${m.label}无障碍模式`}
+                onClick={() => setAccessibilityMode(m.key)}
+                className={cn(
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  active ? tileActive : tileIdle
+                )}
+              >
+                <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{m.label}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
+          写入 <code className="font-mono">data-a11y-mode</code> / <code className="font-mono">data-reading-mode</code>，
+          刷新后保持；「重置默认」回到标准模式
+        </p>
+      </section>
+
       {/* ═══ ⑤ 明暗实时预览 ═══ */}
       <section className={cardBase} aria-labelledby="tp-preview-h">
         <div className={headBase}>
@@ -427,6 +479,7 @@ export const ThemePanel: React.FC = () => {
         · 配色：{PALETTES.find((p) => p.key === activePalette)?.name ?? '默认绿'}
         · 字号：{FONT_SIZES.find((f) => f.key === activeFontScale)?.label ?? '标准'}
         · 过渡：{TRANSITIONS.find(t => t.t === transitionType)?.label ?? transitionType}
+        · 无障碍：{A11Y_MODES.find((m) => m.key === accessibilityMode)?.label ?? '标准'}
         · 减少动画：{motionPreferences.reducedMotion ? '开启' : '关闭'}
       </p>
     </div>
