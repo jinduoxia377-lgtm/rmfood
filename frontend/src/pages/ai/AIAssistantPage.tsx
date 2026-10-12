@@ -28,9 +28,9 @@ import { Badge, Tabs, TabsList, TabsTrigger, TabsContent, StatCard, Input } from
 import { Skeleton as SkeletonComp } from '@/components/ui/Skeleton';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ToastContainer } from '@/components/ui/ToastContainer';
-import { ModelConfigPanel } from '@/components/ai/ModelConfigPanel';
+// ModelConfigPanel 改用下方懒加载版本（ModelConfigPanelLazy），此前的即时导入从未被引用。
 import { ConfigManagementPanel } from '@/components/ai/ConfigManagementPanel';
-import { ModelSelector } from '@/components/ai/ModelSelector';
+// ModelSelector 在本页从未使用，已移除（模型选择由各 Tab 内部自行持有）。
 import { ChatTab } from '@/components/ai/features';
 import { ChatStateProvider } from '@/components/ai/features/ChatStateProvider';
 import {
@@ -53,6 +53,7 @@ import {
   FlaskConical,
   FileText,
   Brain,
+  AlertTriangle,
 } from 'lucide-react';
 import { logger } from '@/utils/safeLogger';
 import { useFeedbackSystem, useAccessibility, useResponsive } from '@/utils/uiuxEnhancement';
@@ -173,6 +174,8 @@ export default function AIAssistantPage() {
     peptideAnalyzeCount,
     peptideDesignCount,
     knowledgeDocCount,
+    isError: statsIsError,
+    errorMessage: statsErrorMessage,
   } = useAISummaryStats();
 
   useEffect(() => {
@@ -570,6 +573,19 @@ export default function AIAssistantPage() {
               onClick={() => handleStatCardClick('knowledge', '知识库')}
             />
           </section>
+
+          {/* 统计接口失败时必须显式提示，否则 9 张卡片会静默显示全 0 */}
+          {statsIsError && (
+            <div
+              role="status"
+              className="flex items-center gap-2 rounded-lg border border-warning-200 bg-warning-50 dark:border-warning-700/50 dark:bg-warning-900/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-600"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>
+                统计数据加载失败（{statsErrorMessage}），上方数字为 0，不代表从未使用。
+              </span>
+            </div>
+          )}
 
           {/* ── Tab 导航 — 三列并排布局，Dashboard 风格 ── */}
           <nav aria-label="AI助手功能标签导航" className="space-y-4">

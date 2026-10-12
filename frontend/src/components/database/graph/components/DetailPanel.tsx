@@ -160,7 +160,7 @@ export default function DetailPanel({
       <div className="px-4 py-2.5 border-t border-neutral-200/70 dark:border-neutral-700/50 bg-neutral-50/50 dark:bg-neutral-800/30 flex gap-2">
         <button
           onClick={() => onNodeClick?.(selectedNode)}
-          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] hover:from-[var(--color-primary-surface-deep)] hover:to-[var(--color-primary-surface-deep)] text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+          className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-hover)] hover:from-[var(--color-primary-surface-hover)] hover:to-[var(--color-primary-surface-hover)] text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
         >
           查看完整详情
         </button>

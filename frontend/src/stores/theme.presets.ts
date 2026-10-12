@@ -612,6 +612,11 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   const rampTokens = new Set<string>(
     Object.keys(theme.modeRamps?.primary ?? {}).map((k) => `--color-primary-${k}`),
   );
+  // C1.5：primary 语义族同样是模式相关令牌，需一并让位给运行时双作用域块，
+  // 否则选配色后 --color-primary / --color-primary-container 只更新为「当前模式」
+  // 的锚点，切到另一模式即出现「容器底色仍是上一模式值」的混排。
+  // 仅在存在 modeRamps 时让位：无障碍变体等无 modeRamps 的主题仍走原 inline 通道。
+  const hasRamps = Boolean(theme.modeRamps?.primary || theme.modeRamps?.primaryDark);
 
   // 颜色变量
   Object.entries(theme.colors).forEach(([category, values]) => {
@@ -627,7 +632,7 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
         const kebabKey = toKebab(key);
         const kebabCategory = toKebab(category);
         const name = l0 ?? `--color-${kebabCategory}-${kebabKey}`;
-        if (rampTokens.has(name)) return;
+        if (rampTokens.has(name) || (hasRamps && PRIMARY_FAMILY_TOKENS.has(name))) return;
         vars[name] = value;
       });
     }
@@ -794,7 +799,87 @@ const RUNTIME_THEME_STYLE_ID = 'rmfood-runtime-theme';
 const TIER_KEY = /^\d{2,3}$/;
 
 /**
- * 生成模式反转色阶的双作用域 CSS 文本。
+ * primary 语义族令牌名（C1.5）。
+ *
+ * 这些令牌在 L0 中是**模式相关**的：base.css 与 dark.css 各自给出不同取值
+ * （如 `--color-primary-container` 亮色 #d1fae5 / 暗色 rgba(52,211,153,.15)），
+ * 因此与档位令牌一样**不能**走 inline 单作用域通道 —— 否则选完配色后切到
+ * 暗色模式，容器底色仍是亮色值（实测：选苹果蓝后 --color-primary 变为 #0A84FF
+ * 而 --color-primary-container 依旧是品牌绿 #d1fae5，全站 89 处
+ * `bg-primary-container` 呈绿色 + 蓝色混排的可见缺陷）。
+ *
+ * 必须与档位令牌一起由 generateModeRampCSS 写入运行时 `<style>` 的
+ * `:root` / `.dark` 双作用域块；generateCSSVariables 需对它们让位。
+ */
+const PRIMARY_FAMILY_TOKENS = new Set<string>([
+  '--color-primary',
+  '--color-primary-rgb',
+  '--color-primary-container',
+  '--color-primary-surface',
+  '--color-primary-surface-hover',
+  '--color-primary-hover',
+  '--color-primary-text',
+  '--color-on-primary-surface',
+]);
+
+/** 取 hex 的 `r, g, b` 三元组字符串（供 --color-primary-rgb 使用） */
+function hexToRgbTriplet(hex: string | undefined): string | null {
+  if (typeof hex !== 'string') return null;
+  let h = hex.trim().replace(/^#/, '');
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
+  return `${r}, ${g}, ${b}`;
+}
+
+/**
+ * 从某一模式的完整色阶推导该模式的 primary 语义族取值。
+ *
+ * 推导规则与 L0 的定义**逐条对齐**（base.css:26-39 / dark.css:22-37）：
+ *
+ *   | 令牌                     | 亮色            | 暗色                       |
+ *   |--------------------------|-----------------|----------------------------|
+ *   | --color-primary          | ramp[500]       | ramp[500]                  |
+ *   | --color-primary-rgb      | rgb(ramp[500])  | rgb(ramp[500])             |
+ *   | --color-primary-container| ramp[100]       | rgba(ramp[500], 0.15)      |
+ *   | --color-primary-surface  | ramp[700]       | ramp[200]                  |
+ *   | --color-primary-surface-hover | ramp[800] | ramp[300]                |
+ *   | --color-primary-hover    | ramp[600]       | ramp[600]                  |
+ *   | --color-primary-text     | ramp[600]       | ramp[600]                  |
+ *   | --color-on-primary-surface | #ffffff       | #ffffff                    |
+ *
+ * 因为规则与 L0 一致，对「默认绿」而言推导值与 L0 **逐值相等**
+ * （亮 #d1fae5 / 暗 rgba(52,211,153,.15) / 亮表面 #047857 / 暗表面 #065f46 …），
+ * 所以选择默认绿不产生任何视觉漂移 —— 与「默认绿逐档等于 L0」是同一约束的延伸。
+ */
+function derivePrimaryFamily(
+  ramp: Record<string, string> | undefined,
+  dark: boolean,
+): Record<string, string> {
+  if (!ramp) return {};
+  const rgb = hexToRgbTriplet(ramp['500']);
+  if (!rgb) return {};
+  const surface = ramp[dark ? '200' : '700'];
+  const surfaceHover = ramp[dark ? '300' : '800'];
+  const mid = ramp['600'];
+  if (!ramp['500'] || !ramp['100'] || !surface || !surfaceHover || !mid) return {};
+  return {
+    '--color-primary': ramp['500'],
+    '--color-primary-rgb': rgb,
+    '--color-primary-container': dark ? `rgba(${rgb}, 0.15)` : ramp['100'],
+    '--color-primary-surface': surface,
+    '--color-primary-surface-hover': surfaceHover,
+    '--color-primary-hover': mid,
+    '--color-primary-text': mid,
+    '--color-on-primary-surface': '#ffffff',
+  };
+}
+
+/**
+ * 生成模式反转色阶 + primary 语义族的双作用域 CSS 文本。
  * 无覆盖时返回空串（applyRuntimeThemeStyle 会移除样式元素，回到 L0 基线）。
  */
 export function generateModeRampCSS(theme: ThemeConfig): string {
@@ -807,15 +892,22 @@ export function generateModeRampCSS(theme: ThemeConfig): string {
   ): string => {
     if (!values) return '';
     const decls: string[] = [];
-    for (const [k, v] of Object.entries(values)) {
-      if (!TIER_KEY.test(k)) continue; // 只处理档位键，其余由 generateCSSVariables 负责
-      const name = `--color-primary-${k}`;
+    const push = (name: string, value: string) => {
       // 复用同一套安全校验：值不允许逃逸声明位置（与 inline 通道一致的安全边界）
-      if (!isSafeToken(name, v)) {
-        logger.warn('[Theme System] 拒绝不安全的色阶令牌值', { name, value: String(v).slice(0, 60) });
-        continue;
+      if (!isSafeToken(name, value)) {
+        logger.warn('[Theme System] 拒绝不安全的色阶令牌值', { name, value: String(value).slice(0, 60) });
+        return;
       }
-      decls.push(`  ${name}: ${v};`);
+      decls.push(`  ${name}: ${value};`);
+    };
+    // ① primary 语义族（模式相关，必须按作用域给出）
+    for (const [name, value] of Object.entries(derivePrimaryFamily(values, sel === '.dark'))) {
+      push(name, value);
+    }
+    // ② 11 档静态色阶
+    for (const [k, v] of Object.entries(values)) {
+      if (!TIER_KEY.test(k)) continue; // 只处理档位键，其余角色字段由 generateCSSVariables 负责
+      push(`--color-primary-${k}`, v);
     }
     if (!decls.length) return '';
     return `${sel} {\n${decls.join('\n')}\n}`;

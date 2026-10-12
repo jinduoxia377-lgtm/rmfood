@@ -625,24 +625,64 @@ async function g06(env) {
   await env.page.evaluate(async () => { await window.__setTheme('light-default'); });
   await env.page.waitForTimeout(1000);
   return env.page.evaluate(() => {
+    const parse = (c) => {
+      const m = String(c).match(/rgba?\(([^)]+)\)/);
+      if (!m) return null;
+      const p = m[1].split(',').map(s => parseFloat(s.trim()));
+      return { r: p[0], g: p[1], b: p[2], a: p.length === 4 ? p[3] : 1 };
+    };
+    const isOpaqueBg = (c) => c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent';
+
+    /**
+     * 有效底色：把元素自身底色与**全部祖先**底色逐层 alpha 合成。
+     *
+     * v1.1.8 修复（D5）：旧实现只与 document.body 底色合成一层。白字压在
+     * 「浅色半透明卡片 + 白色页面底」时，单层合成会把 8% 不透明的浅色当成
+     * 「叠在 body 色上的薄纱」直接返回，实测出 2.03:1 之类的假低值，
+     * 与真实观感（约 9.6:1）严重不符，导致误报。
+     * 正确做法：从最远祖先往当前元素方向累积合成，最后再垫浏览器画布白底。
+     */
+    function effBgOf(el) {
+      const stack = [];
+      for (let n = el.parentElement; n; n = n.parentElement) {
+        if (isOpaqueBg(getComputedStyle(n).backgroundColor)) stack.push(getComputedStyle(n).backgroundColor);
+      }
+      let acc = null;
+      // stack[0] 最近、stack[last] 最远；合成顺序从远到近
+      for (let i = stack.length - 1; i >= 0; i--) {
+        const layer = parse(stack[i]);
+        if (!layer) continue;
+        if (!acc) { acc = layer; continue; }
+        const a = layer.a, b = acc.a * (1 - a), A = a + b;
+        if (A === 0) continue;
+        acc = { r: (layer.r * a + acc.r * b) / A, g: (layer.g * a + acc.g * b) / A,
+                b: (layer.b * a + acc.b * b) / A, a: A };
+      }
+      const own = parse(getComputedStyle(el).backgroundColor);
+      if (own && own.a > 0) {
+        if (!acc) acc = own;
+        else {
+          const a = own.a, b = acc.a * (1 - a), A = a + b;
+          if (A > 0) acc = { r: (own.r * a + acc.r * b) / A, g: (own.g * a + acc.g * b) / A,
+                             b: (own.b * a + acc.b * b) / A, a: A };
+        }
+      }
+      if (!acc) acc = parse('rgb(255, 255, 255)');   // 无任何底色：垫浏览器画布白底
+      if (acc.a < 1) {
+        const a = 1 - acc.a;
+        acc = { r: (acc.r * acc.a + 255 * a) / 1, g: (acc.g * acc.a + 255 * a) / 1,
+                b: (acc.b * acc.a + 255 * a) / 1, a: 1 };
+      }
+      return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
+    }
+
     const mk = (cls) => {
       const d = document.createElement('div');
       d.className = cls; d.textContent = '草稿';
       d.style.cssText = 'position:fixed;left:-9999px;top:0';
       document.body.appendChild(d);
       const cs = getComputedStyle(d);
-      const bodyBg = getComputedStyle(document.body).backgroundColor;
-      const m = cs.backgroundColor.match(/rgba?\(([^)]+)\)/);
-      let eff = cs.backgroundColor;
-      if (m) {
-        const p = m[1].split(',').map(s => parseFloat(s.trim()));
-        const bb = bodyBg.match(/rgba?\(([^)]+)\)/);
-        if (bb && p.length === 4) {
-          const b = bb[1].split(',').map(s => parseFloat(s.trim()));
-          const a = p[3];
-          eff = `rgb(${Math.round(p[0]*a + b[0]*(1-a))}, ${Math.round(p[1]*a + b[1]*(1-a))}, ${Math.round(p[2]*a + b[2]*(1-a))})`;
-        }
-      }
+      const eff = effBgOf(d);
       return { cls, color: cs.color, effectiveBg: eff, ratio: window.__contrast(cs.color, eff) };
     };
     const names = ['badge-draft','badge-approved','badge-pending','badge-rejected','badge-revision','badge-archived'];
@@ -728,6 +768,10 @@ async function main() {
   const g1314 = await import('./g1314.mjs');
   g1314.setGateRec(rec);
   g1314.run();
+  // GATE-16/17/18（M4，主题设置模块执行方案阶段 D）：静态断言，不依赖渲染环境
+  const g1518 = await import('./g1518.mjs');
+  g1518.setGateRec(rec);
+  g1518.g16(); g1518.g17(); g1518.g18();
 
   log('');
   log('── 渲染断言 ──');
@@ -740,6 +784,7 @@ async function main() {
       ['GATE-06', 'M1', '徽章类亮色对比度达标'],
       ['GATE-07', 'M2', '无障碍属性刷新后保留'],
       ['GATE-08', 'M2', 'var(--x) 全部可解析'],
+      ['GATE-15', 'M4', '配色/字号/明暗刷新后保持（冷启动回放）'],
     ]) {
       rec(id, ms, t, OPT.requireRender ? 'fail' : 'skip', why);
     }
@@ -828,6 +873,11 @@ async function main() {
             '故「有引用、全文无声明」才是真缺陷）');
         }
       } catch (e) { rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail', String(e).slice(0, 200)); }
+
+      // GATE-15（M4）：配色 / 字号 / 明暗经刷新后全部保持（R1 防回归）
+      try {
+        await g1518.g15(env.page, OPT.baseUrl);
+      } catch (e) { rec('GATE-15', 'M4', '配色/字号/明暗刷新后保持（冷启动回放）', 'fail', String(e).slice(0, 200)); }
     } finally {
       await env.browser.close();
     }

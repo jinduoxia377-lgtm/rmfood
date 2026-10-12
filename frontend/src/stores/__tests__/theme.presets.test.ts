@@ -305,8 +305,15 @@ describe('C1 generateCSSVariables — 让位模式反转令牌', () => {
     };
     const vars = generateCSSVariables(theme);
     for (const t of ['100', '500', '950']) expect(vars[`--color-primary-${t}`], t).toBeUndefined();
-    // 角色字段不受影响，仍走 inline
-    expect(vars['--color-primary']).toBe(base.colors.primary.main);
+    // C1.5：primary 语义族同为模式相关令牌（base.css / dark.css 各一份），
+    // 一并让位给运行时 <style> 双作用域块 —— 否则选配色后切模式会出现容器底色
+    // 仍是上一模式值的混排（实测：选蓝色后 --color-primary-container 仍为品牌绿）。
+    expect(vars['--color-primary']).toBeUndefined();
+    expect(vars['--color-primary-container']).toBeUndefined();
+    expect(vars['--color-primary-text']).toBeUndefined();
+    expect(vars['--color-primary-rgb']).toBeUndefined();
+    // 非 primary 族的角色令牌不受影响，仍走 inline
+    expect(vars['--color-secondary']).toBe(base.colors.secondary.main);
   });
 
   it('无 modeRamps 时档位令牌照旧进入 inline 通道（导入主题等既有路径不变）', () => {
@@ -363,8 +370,77 @@ describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
     for (const t of ['100', '500', '950']) {
       expect(root.style.getPropertyValue(`--color-primary-${t}`)).toBe('');
     }
-    // 而角色令牌仍走 inline
-    expect(root.style.getPropertyValue('--color-primary')).not.toBe('');
+    // C1.5：primary 语义族同为模式相关令牌，也不得走 inline
+    //（inline 压过 .dark 会让容器底色停留在上一模式的值）
+    expect(root.style.getPropertyValue('--color-primary')).toBe('');
+    expect(root.style.getPropertyValue('--color-primary-container')).toBe('');
+  });
+
+  it('运行时样式表按作用域推导 primary 语义族（C1.5），且默认绿逐值等于 L0', () => {
+    // 完整 11 档默认绿 ramp：取自 base.css / dark.css 的 L0 权威值
+    const LIGHT: Record<string, string> = {
+      '50': '#ecfdf5', '100': '#d1fae5', '200': '#a7f3d0', '300': '#6ee7b7', '400': '#34d399',
+      '500': '#10b981', '600': '#059669', '700': '#047857', '800': '#065f46', '900': '#064e3b', '950': '#022c22',
+    };
+    const DARK: Record<string, string> = {
+      '50': '#022c22', '100': '#064e3b', '200': '#065f46', '300': '#047857', '400': '#059669',
+      '500': '#34d399', '600': '#6ee7b7', '700': '#a7f3d0', '800': '#d1fae5', '900': '#ecfdf5', '950': '#f0fdf4',
+    };
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime',
+      isPreset: false,
+      modeRamps: { primary: LIGHT, primaryDark: DARK },
+    });
+
+    const split = (sel: string) =>
+      css.slice(css.indexOf(`${sel} {`)).split('}')[0].trim();
+
+    const light = split(':root');
+    // 与 base.css:26-39 的 L0 定义逐值对齐
+    expect(light).toContain('--color-primary: #10b981;');
+    expect(light).toContain('--color-primary-rgb: 16, 185, 129;');
+    expect(light).toContain('--color-primary-container: #d1fae5;');
+    expect(light).toContain('--color-primary-surface: #047857;');
+    expect(light).toContain('--color-primary-surface-hover: #065f46;');
+    expect(light).toContain('--color-primary-hover: #059669;');
+    expect(light).toContain('--color-primary-text: #059669;');
+    expect(light).toContain('--color-on-primary-surface: #ffffff;');
+
+    const dark = split('.dark');
+    // 与 dark.css:22-37 的 L0 定义逐值对齐
+    expect(dark).toContain('--color-primary: #34d399;');
+    expect(dark).toContain('--color-primary-rgb: 52, 211, 153;');
+    expect(dark).toContain('--color-primary-container: rgba(52, 211, 153, 0.15);');
+    expect(dark).toContain('--color-primary-surface: #065f46;');
+    expect(dark).toContain('--color-primary-surface-hover: #047857;');
+    expect(dark).toContain('--color-primary-text: #6ee7b7;');
+
+    // 作用域隔离：亮色块不得泄漏暗色语义值，反之亦然
+    //（注意 #34d399 是亮色档 400 的合法值，故按「声明」而非「字面」断言）
+    expect(light).not.toContain('--color-primary-container: rgba(');
+    expect(light).not.toContain('--color-primary-surface: #065f46;');
+    expect(dark).not.toContain('--color-primary: #10b981;');
+    expect(dark).not.toContain('--color-primary-container: #d1fae5;');
+    expect(dark).not.toContain('--color-primary-surface: #047857;');
+  });
+
+  it('语义族从非绿配色正确推导（修复「选蓝后容器仍是品牌绿」的混排）', () => {
+    const BLUE_LIGHT: Record<string, string> = {
+      '100': '#d1e9ff', '200': '#b3d9ff', '300': '#8cc5ff', '400': '#60afff', '500': '#007aff',
+      '600': '#0066cc', '700': '#0055aa', '800': '#004488', '900': '#003366',
+    };
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime',
+      isPreset: false,
+      modeRamps: { primary: BLUE_LIGHT },
+    });
+    const light = css.slice(css.indexOf(':root {')).split('}')[0];
+    // 容器底色必须随配色变为蓝色系，而非 L0 品牌绿 #d1fae5
+    expect(light).toContain('--color-primary-container: #d1e9ff;');
+    expect(light).not.toContain('--color-primary-container: #d1fae5;');
+    expect(light).toContain('--color-primary: #007aff;');
   });
 
   it('切回内置纯净预设时移除运行时样式表，回到 L0 基线', () => {

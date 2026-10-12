@@ -435,7 +435,7 @@ export default function RegulationsPage() {
         {/* ════════════════════════════════════════════ */}
         {/*  欢迎横幅（参照 DashboardPage）               */}
         {/* ════════════════════════════════════════════ */}
-        <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-deep)] p-6 text-white shadow-sm">
+        <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-hover)] p-6 text-white shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-xl font-semibold leading-snug tracking-tight">合规标准中心</h1>
