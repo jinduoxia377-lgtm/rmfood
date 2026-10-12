@@ -11,6 +11,8 @@ import type {
   AccessibilityMode,
   TransitionType,
   PresetThemeId,
+  CustomThemeOverrides,
+  ThemeOptionMeta,
 } from '../types/theme.types';
 import { presetThemes } from './theme.presets';
 import { logger } from '@/utils/safeLogger';
@@ -44,8 +46,18 @@ interface ThemeContextValue {
   /** 应用预设主题 */
   setPresetTheme: (themeId: PresetThemeId) => void;
 
-  /** 应用自定义主题覆盖 */
-  applyCustomTheme: (overrides: Record<string, unknown>) => void;
+  /**
+   * 应用自定义主题覆盖。
+   *
+   * R1（刷新丢配置）相关：`meta` **必须**透传给 store —— 它承载
+   * `paletteKey` / `fontScale` 等选中态键，是 `partialize` 持久化与冷启动回放
+   * 的依据。本包装器曾是单参签名，若在此吞掉 `meta`，配色/字号会在刷新后静默
+   * 丢失（与 store 内部旧 `custom-${Date.now()}` ID 问题是同一类断裂）。
+   *
+   * `overrides` 用 `CustomThemeOverrides` 而非 `Record<string, unknown>`：
+   * 后者会让拼错的键名（如 `color` 写成 `colors2`）静默通过而不生效。
+   */
+  applyCustomTheme: (overrides: CustomThemeOverrides, meta?: ThemeOptionMeta) => void;
 
   /** 设置辅助功能模式 */
   setAccessibilityMode: (mode: AccessibilityMode) => void;
@@ -203,9 +215,10 @@ export function ThemeProvider({
             logger.error('[ThemeProvider] setPresetTheme error:', err);
           }
         },
-        applyCustomTheme: (overrides: Record<string, unknown>) => {
+        applyCustomTheme: (overrides: CustomThemeOverrides, meta?: ThemeOptionMeta) => {
           try {
-            store.applyCustomTheme(overrides);
+            // meta 必须透传：paletteKey / fontScale 靠它持久化，吞掉则刷新后丢失
+            store.applyCustomTheme(overrides, meta);
           } catch (err) {
             logger.error('[ThemeProvider] applyCustomTheme error:', err);
           }

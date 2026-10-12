@@ -376,7 +376,7 @@ describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
     expect(root.style.getPropertyValue('--color-primary-container')).toBe('');
   });
 
-  it('运行时样式表按作用域推导 primary 语义族（C1.5），且默认绿逐值等于 L0', () => {
+  it('运行时样式表按作用域推导 primary 语义族（C1.5），默认绿与 L0 逐值对齐', () => {
     // 完整 11 档默认绿 ramp：取自 base.css / dark.css 的 L0 权威值
     const LIGHT: Record<string, string> = {
       '50': '#ecfdf5', '100': '#d1fae5', '200': '#a7f3d0', '300': '#6ee7b7', '400': '#34d399',
@@ -398,7 +398,11 @@ describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
 
     const light = split(':root');
     // 与 base.css:26-39 的 L0 定义逐值对齐
-    expect(light).toContain('--color-primary: #10b981;');
+    // --color-primary 走 pickAATextTier：green 的 700 档对白底 4.83 / 对 container 4.84，
+    // 均达 AA，故选 700 —— 与 L0 的 D-58 裁决（primary-500 → primary-700）一致。
+    // 若此处返回 #10b981（500 档，白底仅 2.54），则是 D-58 回退。
+    expect(light).toContain('--color-primary: #047857;');
+    expect(light).not.toContain('--color-primary: #10b981;');
     expect(light).toContain('--color-primary-rgb: 16, 185, 129;');
     expect(light).toContain('--color-primary-container: #d1fae5;');
     expect(light).toContain('--color-primary-surface: #047857;');
@@ -440,7 +444,29 @@ describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
     // 容器底色必须随配色变为蓝色系，而非 L0 品牌绿 #d1fae5
     expect(light).toContain('--color-primary-container: #d1e9ff;');
     expect(light).not.toContain('--color-primary-container: #d1fae5;');
-    expect(light).toContain('--color-primary: #007aff;');
+    // --color-primary 按 AA 选档：blue 的 700 档（#0055aa）白底 7.30 / container 5.84，
+    // 故选 700 而非 500（#007aff 白底仅 4.02，不达标）
+    expect(light).toContain('--color-primary: #0055aa;');
+    expect(light).not.toContain('--color-primary: #007aff;');
+  });
+
+  it('选档不足时逐级加深：橙色的 700 档压不过自己的 container，须落到 800（F2 收口）', () => {
+    // 橙色是唯一 700 档不达标的配色：白底 4.85 ✅ 但 container 4.39 ❌（差 0.11）
+    const ORANGE_LIGHT: Record<string, string> = {
+      '50': '#fff5eb', '100': '#fff2e0', '200': '#ffdcb0', '300': '#ffc578', '400': '#ffaf42',
+      '500': '#ff9500', '600': '#e68600', '700': '#a66100', '800': '#663c00',
+      '900': '#331f00', '950': '#2a1a00',
+    };
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime',
+      isPreset: false,
+      modeRamps: { primary: ORANGE_LIGHT },
+    });
+    const light = css.slice(css.indexOf(':root {')).split('}')[0];
+    // 700 对 container 仅 4.39（差 0.11），必须加深到 800（container 7.11 ✅）
+    expect(light).not.toContain('--color-primary: #a66100;');
+    expect(light).toContain('--color-primary: #663c00;');
   });
 
   it('切回内置纯净预设时移除运行时样式表，回到 L0 基线', () => {

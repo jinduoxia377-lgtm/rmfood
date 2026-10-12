@@ -614,7 +614,10 @@ describe('C1 模式反转色阶整链（配色 10/10 双作用域）', () => {
     expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
     expect(document.documentElement.style.getPropertyValue('--color-primary-container')).toBe('');
     // 锚点与语义族按作用域给出，并随配色整体迁移（而非停留在品牌绿）
-    expect(rootBlock).toContain('--color-primary: #0a84ff;');
+    // 锚点按 AA 门槛选档（不再等于 500 品牌色）：本 ramp 的 700 档对 container 仅
+    // 4.496（差 0.004 未达 AA），故落到 800。选档规则由 theme.presets.test.ts 覆盖。
+    expect(rootBlock).not.toContain('--color-primary: #0a84ff;');
+    expect(rootBlock).toContain('--color-primary: #00518f;');
     expect(rootBlock).toContain('--color-primary-container: #d6e9ff;');
     expect(darkBlock).toContain('--color-primary: #46a5ff;');
     expect(darkBlock).toContain('--color-primary-container: rgba(70, 165, 255, 0.15);');
@@ -645,7 +648,8 @@ describe('C1 模式反转色阶整链（配色 10/10 双作用域）', () => {
     expect(el?.textContent).toContain('.dark {');
     expect(el?.textContent).toContain('--color-primary-500: #0a84ff');
     // C1.5：锚点与语义族随色阶一起重建，inline 无残留
-    expect(el?.textContent).toContain('--color-primary: #0a84ff;');
+    expect(el?.textContent).not.toContain('--color-primary: #0a84ff;');
+    expect(el?.textContent).toContain('--color-primary: #00518f;');
     expect(el?.textContent).toContain('--color-primary-container: #d6e9ff;');
     expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
     expect(store().activeThemeId).toBe('custom-runtime');
