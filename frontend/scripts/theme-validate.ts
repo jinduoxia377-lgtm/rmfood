@@ -95,6 +95,35 @@ function getReplacement(hex: string): string {
   return map[hex] ?? '使用 CSS 变量替代';
 }
 
+/**
+ * 判断 line 中 index 位置是否位于 var(...) 调用内部（含其 fallback 部分）。
+ *
+ * 为什么要区分：本检查的规则是「禁止裸 hex 字面量」，而
+ *   color: var(--text-primary, #F5F5F7);
+ * 里的 #F5F5F7 是**防御性 fallback**（令牌未定义时才生效），不是直接使用字面量。
+ * 旧实现把 fallback 也判为 error —— index.css:272 因此长期报 1 个 error，
+ * 使 theme:validate 恒为 exit 1，无法接入 CI（G-4）。
+ */
+function inVarCall(line: string, index: number): boolean {
+  for (let i = index - 1; i >= 0; i--) {
+    if (line.slice(i, i + 4) === 'var(') {
+      let depth = 0;
+      for (let j = i + 3; j < line.length; j++) {
+        if (line[j] === '(') depth++;
+        else if (line[j] === ')') {
+          depth--;
+          if (depth === 0) return index < j; // index 落在配对括号内 → 是 fallback
+        } else if (j === index) {
+          return true;
+        }
+      }
+      return index > i + 3; // 括号在本行未闭合，仍视为 var 内部
+    }
+    if (line[i] === ';') return false; // 越过语句边界，停止回溯
+  }
+  return false;
+}
+
 function checkFile(filePath: string) {
   if (IGNORE_PATTERNS.some(p => p.test(filePath))) return;
   const rel = relative(SRC_DIR, filePath).replace(/\\/g, '/');
@@ -114,6 +143,11 @@ function checkFile(filePath: string) {
       const hex = m[1].toLowerCase();
       if (HEX_WHITELIST.has(hex)) continue;
       if (hex.length === 4) continue;
+
+      // var() fallback 不算「直接使用字面量」：主来源是令牌，字面量仅在令牌
+      // 未定义时兜底。若也判违规，则 var(--text-primary, #F5F5F7) 这类
+      // 正当写法无法通过检查（index.css:268-275 的明暗文字回退块）。
+      if (inVarCall(line, m.index ?? 0)) continue;
 
       if (FORBIDDEN_COLORS.some(f => f.toLowerCase() === hex)) {
         findings.push({

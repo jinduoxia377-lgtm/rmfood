@@ -16,14 +16,14 @@
  * 运行：npx vitest run src/theme/__tests__/ThemeImport.test.ts
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useThemeStore } from '@/stores/themeStore';
+import { RUNTIME_THEME_ID, useThemeStore } from '@/stores/themeStore';
 import { presetThemes, applyThemeToDOM } from '@/stores/theme.presets';
 import { RADIUS_SCALES } from '@/components/theme/theme-palette';
 import {
   isHexColor,
   normalizeImportedConfig,
   pickContrastText,
-} from '../ThemeImport';
+} from '../normalizeThemeImport';
 
 // ── 工具 ────────────────────────────────────────────────────────────────
 
@@ -67,6 +67,13 @@ function resetStore() {
 beforeEach(() => {
   resetStore();
 });
+
+/**
+ * 规范化调用：baseTheme 取当前 activeTheme（resetStore 已置为 light-default）。
+ * 纯函数要求注入 baseTheme 而非内部读 store，故测试显式传入。
+ */
+const norm = (raw: Record<string, unknown>) =>
+  normalizeImportedConfig(raw, useThemeStore.getState().activeTheme);
 
 // ============================================================================
 // 基础校验函数
@@ -116,7 +123,7 @@ describe('normalizeImportedConfig', () => {
       radiusScale: 'rounded',
     };
 
-    const result = normalizeImportedConfig(raw);
+    const result = norm(raw);
     expect(result).not.toBeNull();
     expect(result!.overrides).toBe(raw.runtimeOverrides); // 同一引用，零拷贝
     expect(result!.meta).toEqual({
@@ -127,7 +134,7 @@ describe('normalizeImportedConfig', () => {
   });
 
   it('v2 形态但无选中态键：meta 为 undefined（不传空对象）', () => {
-    const result = normalizeImportedConfig({
+    const result = norm({
       runtimeOverrides: { colors: { primary: BLUE_PRIMARY } },
       paletteKey: '',
     });
@@ -136,7 +143,7 @@ describe('normalizeImportedConfig', () => {
   });
 
   it('嵌套形态：{ colors } 直接当覆盖，不额外规范化', () => {
-    const result = normalizeImportedConfig({
+    const result = norm({
       colors: { primary: { main: '#ff3b30', contrastText: '#ffffff' } },
     });
     expect(result!.overrides).toEqual({
@@ -146,7 +153,7 @@ describe('normalizeImportedConfig', () => {
 
   it('扁平形态：映射到 colors 并补 contrastText（D-36 回归锁定）', () => {
     // 扁平对象若直接传给 applyCustomTheme 会静默无效；此处必须被映射
-    const result = normalizeImportedConfig({
+    const result = norm({
       primary: '#ff3b30',
       accent: '#ff9500',
     });
@@ -162,7 +169,7 @@ describe('normalizeImportedConfig', () => {
   });
 
   it('扁平形态非法颜色值：跳过该字段而非中断', () => {
-    const result = normalizeImportedConfig({
+    const result = norm({
       primary: 'not-a-color',
       secondary: '#007aff',
     });
@@ -171,9 +178,9 @@ describe('normalizeImportedConfig', () => {
   });
 
   it('无任何可接受字段：返回 null（UI 侧据此报错）', () => {
-    expect(normalizeImportedConfig({})).toBeNull();
-    expect(normalizeImportedConfig({ foo: 'bar' })).toBeNull();
-    expect(normalizeImportedConfig({ colors: 'not-an-object' })).toBeNull();
+    expect(norm({})).toBeNull();
+    expect(norm({ foo: 'bar' })).toBeNull();
+    expect(norm({ colors: 'not-an-object' })).toBeNull();
   });
 });
 
@@ -223,7 +230,7 @@ describe('导出 / 导入往返闭环', () => {
     // 清空 store，模拟另一台设备 / 冷启动
     resetStore();
 
-    const result = normalizeImportedConfig(snap)!;
+    const result = norm(snap)!;
     useThemeStore.getState().applyCustomTheme(result.overrides as any, result.meta as any);
 
     const after = useThemeStore.getState();
@@ -237,7 +244,7 @@ describe('导出 / 导入往返闭环', () => {
     const snap = applyAndExport();
     resetStore();
 
-    const result = normalizeImportedConfig(snap)!;
+    const result = norm(snap)!;
     useThemeStore.getState().applyCustomTheme(result.overrides as any, result.meta as any);
     applyThemeToDOM(useThemeStore.getState().activeTheme);
 
@@ -248,7 +255,7 @@ describe('导出 / 导入往返闭环', () => {
   it('导入 v2 快照后「重置默认」能完全回到 L0 基线', () => {
     const snap = applyAndExport();
     resetStore();
-    const result = normalizeImportedConfig(snap)!;
+    const result = norm(snap)!;
     useThemeStore.getState().applyCustomTheme(result.overrides as any, result.meta as any);
 
     useThemeStore.getState().resetToDefault();
@@ -257,5 +264,77 @@ describe('导出 / 导入往返闭环', () => {
     expect(s.runtimeOverrides).toEqual({});
     expect(s.paletteKey).toBe('');
     expect(s.radiusScale).toBe('standard');
+  });
+});
+
+// ============================================================================
+// store.importTheme 单通道（E4 残余收口）
+//
+// 旧实现把导入配置塞进 customThemes 并写 `imported-${Date.now()}` 作为
+// activeThemeId —— 该 ID 冷启动查表未命中即回退 light-default（R1 同型），
+// 且 customThemes 无任何 UI 删除入口，导入一次永久残留。
+// 现统一走 applyCustomTheme，与 ThemeImport 组件共用 normalizeImportedConfig。
+// ============================================================================
+
+describe('store.importTheme（与组件同通道）', () => {
+  function snapshot() {
+    return {
+      runtimeOverrides: {
+        colors: { primary: BLUE_PRIMARY },
+        borderRadius: RADIUS_SCALES.rounded,
+        modeRamps: { primary: LIGHT_RAMP, primaryDark: DARK_RAMP },
+      },
+      paletteKey: 'blue',
+      fontScale: 'relaxed',
+      radiusScale: 'rounded',
+    };
+  }
+
+  it('v2 快照：还原选中态与覆盖，并落到稳定 RUNTIME_THEME_ID', () => {
+    const ok = useThemeStore.getState().importTheme(JSON.stringify(snapshot()));
+
+    expect(ok).toBe(true);
+    const s = useThemeStore.getState();
+    expect(s.paletteKey).toBe('blue');
+    expect(s.fontScale).toBe('relaxed');
+    expect(s.radiusScale).toBe('rounded');
+    expect(s.runtimeOverrides.modeRamps).toEqual({ primary: LIGHT_RAMP, primaryDark: DARK_RAMP });
+    // B2：ID 固定而非时间戳，冷启动 initialize() 才能解析
+    expect(s.activeThemeId).toBe(RUNTIME_THEME_ID);
+    expect(s.activeThemeId).toMatch(/^custom-runtime$/);
+  });
+
+  it('扁平形态：规范化为 colors 后生效（D-36）', () => {
+    const ok = useThemeStore.getState().importTheme(
+      JSON.stringify({ primary: '#ff3b30', accent: '#ff9500' }),
+    );
+
+    expect(ok).toBe(true);
+    const colors = useThemeStore.getState().runtimeOverrides.colors as Record<string, any>;
+    expect(colors.primary.main).toBe('#ff3b30');
+    expect(colors.tertiary.main).toBe('#ff9500');
+  });
+
+  it('不再写 customThemes（旧实现永久残留、无删除入口）', () => {
+    useThemeStore.getState().importTheme(JSON.stringify(snapshot()));
+    useThemeStore.getState().importTheme(JSON.stringify(snapshot()));
+
+    expect(useThemeStore.getState().customThemes).toEqual([]);
+  });
+
+  it('非法输入一律返回 false，且不改动现有状态', () => {
+    const before = { ...useThemeStore.getState() };
+    expect(useThemeStore.getState().importTheme('{not json')).toBe(false);
+    expect(useThemeStore.getState().importTheme(JSON.stringify({}))).toBe(false);
+    expect(useThemeStore.getState().importTheme(JSON.stringify({ foo: 'bar' }))).toBe(false);
+    expect(useThemeStore.getState().importTheme(JSON.stringify({ colors: 'x' }))).toBe(false);
+
+    // 失败不得污染已选中的配色 / 覆盖
+    useThemeStore.getState().importTheme(JSON.stringify(snapshot()));
+    const s = useThemeStore.getState();
+    expect(useThemeStore.getState().importTheme('{bad')).toBe(false);
+    expect(useThemeStore.getState().paletteKey).toBe(s.paletteKey);
+    expect(useThemeStore.getState().runtimeOverrides).toEqual(s.runtimeOverrides);
+    expect(Object.keys(before)).toEqual(Object.keys(useThemeStore.getState()));
   });
 });
