@@ -4,7 +4,7 @@
 |:-----|:-----|
 | **文档编号** | RMFOOD-DS-THEME-001 |
 | **标题** | RMFOOD 配方研发平台 — 主题系统设计规范 |
-| **版本** | **v1.1.9** |
+| **版本** | **v1.1.10** |
 | **状态** | 正式发布（Normative） |
 | **适用平台** | Web 前端（`frontend/`，React 19 + Vite 8 + Tailwind CSS v4） |
 | **不适用范围** | 微信小程序（`miniprogram/`，另见 `docs/theme-system-spec.md`） |
@@ -35,7 +35,21 @@
 > 门禁从 9 项 → **12 项**，并于本版**首次全绿**（通过 11 / 失败 0 / 退出码 0）。
 > 同步更新 §10.1 检查清单、§11.2 状态表与 §12 路线图。
 >
+> **v1.1.10 相对 v1.1.9 的关键变化（E 阶段能力补齐 + 规范自洽）**：
+> 按《主题设置模块系统性控制执行方案》落地 **E1 / E2 / E3 / E4**，把「设置 → 主题」从「只管主色与字号」扩展为**整项目系统性控制**：
+> **E1 导出 / 导入**（`ThemeImport.tsx` 由零消费者孤儿组件重构为可键盘触发的 v2 快照导入，快照 v2.0.0→v2.1.0）、
+> **E2 圆角可配**（4 196 处 `rounded-*` 消费者；**间距明确不做**，D-65：`--space-*` 未进 `@theme`，加控件属误导性设置）、
+> **E3 次色 / 强调色**（**本轮核心**：U-8 从 primary 单族推广为三族，影响面 **3 462 处**）、
+> **E4 导入通道收口**（`store.importTheme` 并入 `normalizeThemeImport` → `applyCustomTheme` 单通道）。
+> 同时**推翻 3 项原方案的错误前提**：① R3「`COLOR_MAIN_TO_L0` 无 secondary/accent 映射」不成立——映射在 T-B2a 早已存在，缺的是双作用域注入与 UI 入口；② A1「`mergeThemeOverrides` 有深合并隐患」不成立——`borderRadius` / `spacing` 是扁平 map，浅合并已足够；③ CHK-03 六个孤儿令牌中 **4 个是误报**（`--color-error-*` 实定义在 `index.css:158-169` 的 `@theme`，原进度报告只比对了 `base.css` 与 `dark.css`）。
+> **U-8 增补两条 L0 差异**：次色 / 强调色的 500 锚点两模式相同（单锚点派生双作用域）、强调色内外名不一致（对外 `accent` / 内部 `tertiary`）。
+> 14 项门禁接入 CI（G-4 关闭）；持久化版本 v5→v6→v7。终态：主题五套件 **130/130**、`theme:validate` **0 error**、
+> **theme-gate 16 pass / 0 fail / 0 skip**、E1/E2 探针 16/16、E3 探针 35/35。
+> **E5 阴影暂缓**（D-63）：L0 的 `--shadow-*` 是模式相关（亮 alpha .06~.14 / 暗 .3~.45），preset `shadows` 是单一对象无法表达双模式，须先扩数据模型（51 处消费者）。
+>
 > **历史版本摘要**
+> - **v1.1.10**（2026-10-12）：E 阶段能力补齐（E1 导出/导入、E2 圆角、E3 次色/强调色、E4 导入通道收口）、U-8 推广为三族、门禁接入 CI（G-4 关闭）、推翻 3 项原方案错误前提。
+> - **v1.1.9**：C1 / C1.5 双作用域色阶（U-8 新增）、GATE-15~18、设置面板产品化与 R1 根因修复。
 > - **v1.1.2**：M1（止血）执行完成，修复 15 项缺陷（D-1/8/9/10/11/12b/21/22/33/39/41/49/50/51/52），门禁 M1 范围退出码 0。
 > - **v1.1.1**：交付 `theme:gate` 门禁后立即发现 P0 **D-51**（`@theme` 悬空自引用致 `--color-blue-50..900` 循环引用，约 347 处 `blue-*` 工具类失去颜色），新增 T13。
 > - **v1.1.0**：全部缺陷升级为**真实 Chromium 渲染实测**复核。**推翻 1 项**（D-5 内联累加）、**更正 4 项**（D-2/D-3/D-4 变量缺失范围、D-39 缺陷边界、§1.2 静态启发式、D-4 精确缺失清单）、**新增 1 项 P0**（D-50 反转色阶配白字，实测 1.52:1）。
@@ -811,11 +825,12 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 - **U-6** 主题 UI 预设选中态**必须**从 store 派生。
   > 违规：`ThemeSettingsPage.tsx:65` `selectedPreset` 初值恒为 `'light-default'` → 高亮永久错误。
 - **U-7** 预设清单**必须**单一来源。当前在 3 处硬编码（`presetThemes`、`ThemeSwitcher.tsx:229`、`ThemeSettingsPage.tsx:65`）→ D-47。
-- **U-8**（2026-10-12 新增）**模式相关令牌禁止走 inline 单作用域通道**，**必须**经运行时 `<style id="rmfood-runtime-theme">` 的 `:root` / `.dark` 双作用域块落地。
-  > 适用范围：**档位色阶** `--color-primary-{50..950}`（base.css 100 浅→950 深、dark.css 100 深→950 浅）+ **primary 语义族**（`--color-primary` / `-rgb` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `--color-on-primary-surface`）——后者在 base.css:26-39 与 dark.css:22-37 **各有一份不同取值**，与档位色阶同属模式相关。
+- **U-8**（2026-10-12 新增，E3 由单族推广为三族）**模式相关令牌禁止走 inline 单作用域通道**，**必须**经运行时 `<style id="rmfood-runtime-theme">` 的 `:root` / `.dark` 双作用域块落地。
+  > 适用范围：**三个品牌族的档位色阶** `--color-{primary|secondary|accent}-{50..950}` + **三族语义族令牌**（主色 8 枚：`--color-primary` / `-rgb` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `--color-on-primary-surface`；次色与强调色各 6 枚：`--color-{secondary|accent}` / `-rgb` / `-container` / `-surface` / `-surface-deep` / `-hover`）——每一族在 `base.css` 与 `dark.css` 里**各有一份不同取值**，与档位色阶同属模式相关。
   > 原因：inline 自定义属性的优先级高于任何非 `!important` 选择器，在 `<html>` 上 `setProperty` 会**同时压过** `:root` 与 `.dark` —— 暗色模式随即错用亮色取值。档位色阶表现为「断裂梯度」（中间换色、两头仍是品牌绿）；语义族表现为「选苹果蓝后 `--color-primary` 变为 `#0A84FF` 而 `--color-primary-container` 仍是品牌绿 `#d1fae5`」，全站 89 处 `bg-primary-container` 呈绿/蓝混排。
-  > 唯一实现路径：`theme.presets.ts` 的 `generateModeRampCSS()`（`derivePrimaryFamily()` 从各模式完整色阶推导语义族，规则与 L0 逐条对齐，故默认绿推导值与 L0 逐值相等）+ `applyRuntimeThemeStyle()`；`generateCSSVariables()` 在存在 `modeRamps` 时对档位与语义族**让位**，不再产出这些名字。
-  > 配套门禁：**GATE-17**（档位令牌 `setProperty` 白名单，仅放行 `stores/theme.presets.ts`）+ **GATE-15**（冷启动回放后断言运行时样式表存在、含 `:root`/`.dark` 双块、11/11 档注入、**inline 零档位令牌泄漏**）+ **GATE-16**（L0 整档单调，违背 0 处）。
+  > **两条 L0 差异（E3 固化）**：① 主色的 500 锚点在两模式下不同（亮 `#10b981` / 暗 `#34d399`），须维护 light / dark 双锚点；次色与强调色的 500 锚点两模式**相同**（`base.css:46` / `dark.css:42` 同为 `#3b82f6`，`base.css:65` / `dark.css:60` 同为 `#8b5cf6`），明暗差异完全由档位反转承载，故单锚点即可派生两组作用域。② 强调色的对外族名是 `accent`，而 `ThemeConfig` 内部角色名是 `tertiary`（`COLOR_MAIN_TO_L0` 的 `'tertiary-main'` → `--color-accent`），故 `colors` 写 `tertiary`、`modeRamps` 写 `accent`。
+  > 唯一实现路径：`theme.presets.ts` 的 `generateModeRampCSS()`（`derivePrimaryFamily()` / `FAMILY_TIER_RULES` 从各模式完整色阶推导语义族，规则与 L0 逐条对齐，故三族默认阶的推导值与 L0 逐值相等，**零漂移**）+ `applyRuntimeThemeStyle()`；`generateCSSVariables()` 对**已选择过的族**按族让位（未选择的族不写运行时块、继续走既有路径），避免选中一次次色就牵连主色与强调色。
+  > 配套门禁：**GATE-17**（档位令牌 `setProperty` 白名单，仅放行 `stores/theme.presets.ts`）+ **GATE-15**（冷启动回放后断言运行时样式表存在、含 `:root`/`.dark` 双块、11/11 档注入、**inline 零档位令牌泄漏**）+ **GATE-16**（L0 整档单调，违背 0 处）；E3 另有单测锁定「L0 默认阶喂入推导器 → 12 枚语义族令牌与 `base.css` / `dark.css` 逐条相等」。
 
 ### 8.4 后期开发操作手册（SOP）
 
@@ -1267,7 +1282,12 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 6. **GATE-13 消费方修正**：`--color-primary-surface-deep` 有 5 个消费者但 L0 无定义（TerminologyPage/RegulationsPage/FormulaCasesPage/DetailPanel/EditIndicator 的 `bg-gradient-to-r`）→ 改用已登记 `--color-primary-surface-hover`（亮/暗两模式白字对比均达标；`-hover` 在暗色为更浅档，不适合作深字底色，故不沿用 `-surface` 之外的其它语义令牌）。
 > 7. **探针底色合成修正（D5 / D6，方法论级）**：`settings-theme-probe2` 与 `ai-audit-settled` 的 `effBg` 改为**自身 + 全部祖先逐层 alpha 合成、最终与白底合成**——旧实现只取「第一个不透明祖先」，把真实的 ~9.6:1 误判成 2.03:1（GATE-06 由假 fail 转 pass：draft 5.26 / approved 4.85 / pending 6.42 / rejected 4.65 / revision 6.61 / archived 5.77 全部 ≥ 4.5）。新增 `container-pair-probe` 再补一层：Tailwind v4 的 `bg-white/90` 编译成 **`color-mix()`**，仅 `rgba()` 正则会把半透明底色 alpha 静默丢弃当不透明参与计算——**暗色下把真实的 4.78~8.32 误读成 1.0**。据此**修正既有结论**：`text-primary-main` 压 `bg-primary-container` 的缺口**仅存在于亮色**（green 2.24 / orange 1.99 / red 3.01 / blue 3.44 / purple 3.55），**暗色五色板全部达标**（4.78~8.32）。→ **新增 F2 开放项**（登记于下方「残余风险」，89 处消费面，本轮不批量改动）。
 > 8. **附带修复**：① `AIAssistantPage` 统计失败横幅 `dark:text-warning-300` → `dark:text-warning-600`（暗色 `warning-300` 是反转后的偏暗 `#b45309`，压近黑底仅 4.02:1）；② `ThemePanel` 选中态 ✓ 改 `text-primary-700`（原 `text-primary-main` 亮色 3.54:1；且写 `text-[color:var(--color-primary-surface)]` 会**绕过** `semantic-utils.css:197-212` 的暗色下限安全网 `.dark .text-*:not([class*="dark:text-"])`——该安全网是暗色下裸 `text-neutral-900` 类标签不失效的关键机制，arbitrary value 写法不进网）；③ `ThemePanel` 7 处 `focus-visible:ring-primary-main/50` → `ring-primary-500/50`（`--color-primary-main` 未登记，该类不会生成）；④ 预览卡改用 `.surface-primary`（实测全配色 4.85~14.41:1），移除无意义 `isDark` 三元。
-> **终态**：tsc 0 错 · 主题三套件 **79/79**（`theme-palette` 16 + `theme.presets` 30 + `themeStore` 33）· **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· `/ai` 渲染探针 **亮 0 / 暗 0** · `/settings?tab=theme` 面板 64 个叶节点 **0 处不达标**（亮 + 暗 + 5 配色，`panel-darkscan.cjs`）· pre-commit UI/a11y 护栏 0 违规。
+> 9. **E1 导出 / 导入收口（v2.1 快照）**：原判断「`ThemeImport.tsx` 未接线」不准确——该组件早已存在但**零消费者**（孤儿），且其 `<label>` 包裹了 `aria-hidden` + `tabIndex={-1}` 的 file input，键盘用户无法触发。重构为 `<button>` 触发 + 隐藏 input 并接入面板 ⑪ 区块。旧 `exportTheme` 只导 `theme`（base × 覆盖的合并结果），丢掉了解析不了的 `modeRamps` 与三个选中态，导入后配色按钮失高亮、色阶退回品牌绿；v2 快照改导 `runtimeOverrides` + `paletteKey` / `fontScale` / `radiusScale`（E3 再加 `secondaryPaletteKey` / `accentPaletteKey`，版本 v2.0.0→v2.1.0）+ `settings`。导入侧接受三种形态（v2 / 嵌套 `{colors}` / 扁平 `{primary,...}`）。**E4 通道分裂同期收口**：`store.importTheme` 原先并行一条通道（写 `imported-${Date.now()}` + 追加 `customThemes`，与组件导入分裂、且 `customThemes` 无删除入口），现抽出纯层 `normalizeThemeImport.ts`，store 与组件共用 `normalizeImportedConfig` → `applyCustomTheme` 单通道。残余：`customThemes` 的命名 / 列表 / 删除 UI 属产品交互设计，需产品决策。
+ > 10. **E2 圆角可配（间距明确不做）**：`mergeThemeOverrides` 与 `mergeCustomOverrides` 对 `spacing` / `borderRadius` 本就是同维度浅合并，而两者都是**扁平 map**（`key → 值`），浅合并已足够——原方案记的「深合并同类隐患」不成立。`radiusScale` 状态链落地（types → initialState → `applyCustomTheme` meta → export → partialize → migrate 兜底 → 面板 ⑩ 区块），持久化 v5→v6。半径真实生效链路：`--radius-*` 已在 `index.css:185-191` 登记，`rounded-*` 工具类共 4 196 处消费（`lg` 1 959 / `full` 968 / `xl` 817 / `md` 307 / `2xl` 115 / `sm` 30 / `xs` 0）。**间距不做**（D-65）：`--space-*` 未登记进 `@theme`，Tailwind 间距工具类不解析到它，全项目仅 24 处显式 `var(--space-*)`，加控件属误导性设置。
+ > 11. **E3 次色 / 强调色三族纳入双作用域（U-8 从单族推广）**：原判断「需先在 `COLOR_MAIN_TO_L0` 补 scale 映射」**不成立**——`secondary-main` / `tertiary-main` → `--color-secondary` / `--color-accent` 的映射在 T-B2a 早已存在，真正缺的是档位与语义族的模式相关注入与 UI 入口。`ModeRamps` 从 `primary` / `primaryDark` 扩为 `primary` / `secondary` / `accent` × 明暗 6 键；`generateModeRampCSS` 按族独立产出 `:root` / `.dark` 块（只选次色不触碰主色与强调色）；`generateCSSVariables` 的让位从「有 `modeRamps` 就让位」收窄为**按族判定**。两条 L0 差异需固化：① 次色 / 强调色的 500 锚点在两种模式下**相同**（`base.css:46` / `dark.css:42` 同为 `#3b82f6`），明暗差异完全由档位反转承载，故单锚点即可派生两组作用域，与主色维护 light / dark 双锚点不同；② 内外名不一致——对外族名 `accent`，`ThemeConfig` 内部角色名 `tertiary`（`COLOR_MAIN_TO_L0` 的 `'tertiary-main'` → `--color-accent`），故 `colors` 写 `tertiary`、`modeRamps` 写 `accent`。语义族由 `FAMILY_TIER_RULES` 按 L0 逐条推导（暗色 main / rgb 取 600、`-surface-deep` 取代 `-surface-hover`、亮色 main 按 AA 门槛选档），测试锁定「用 L0 权威默认阶喂注入器，推导出的 12 枚语义族令牌与 `base.css` / `dark.css` 逐条相等」（默认零漂移）。持久化 v6→v7，`migrate` 顺带清理旧版可能写入的未知色阶族键。**影响面 3 462 处**（`--color-secondary-*` 1 922 + `--color-accent-*` 1 540）。
+ > 12. **CHK-03 孤儿令牌与 G-4 门禁接入 CI**：原报告称 6 个令牌为「dark-only 孤儿」，实测 **4/6 系误报**——`--color-error-50/100/200/300/400/500/600/700/800/900` 实际定义在 `index.css:158-169` 的 `@theme`（与 secondary / accent 在 `index.css:91` 的自引用注册同源，进度报告只比对了 `base.css` 与 `dark.css` 两个文件）。真正孤儿的只有 `--color-knowledge-default` / `--color-knowledge-text`，已补亮色值对齐内联 fallback（`#9CA3AF` / `#6B7280`）。14 项门禁接入 GitHub Actions（`theme-gate` job 起 Vite 后带 `--require-render` 运行，`THEME_GATE_USER` / `PASS` 注入），失败即退出并上传日志。**GATE-09 / GATE-14 保持 warn**：前者是 `@theme` 自引用注册的设计使然，后者是 8 处已知 D-50 存量。
+ > **终态（E3 后刷新）**：tsc 0 错 · 主题五套件 **130/130**（`theme-palette` 34 + `theme.presets` 38 + `themeStore` 35 + `ThemeProvider` 6 + `ThemeImport` 17）· `theme:validate` **0 error / 4 warn** · **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· E1/E2 探针 16/16 · E3 探针 35/35 · pre-commit 64 项核心门禁全绿 + UI/a11y 护栏 0 违规。
+ > **上一轮终态（C1.5 阶段，保留可追溯）**：tsc 0 错 · 主题三套件 **79/79**（`theme-palette` 16 + `theme.presets` 30 + `themeStore` 33）· **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· `/ai` 渲染探针 **亮 0 / 暗 0** · `/settings?tab=theme` 面板 64 个叶节点 **0 处不达标**（亮 + 暗 + 5 配色，`panel-darkscan.cjs`）· pre-commit UI/a11y 护栏 0 违规。
 > **工具落库**：`scripts/theme-audit/` 新增 `g1518.mjs`（GATE-15/16/17/18，独立可运行）、`container-pair-probe.cjs`（配色语义族对比度矩阵）、`panel-darkscan.cjs`（面板双模式 × 5 配色叶节点扫描）。
 
 | 缺陷 | 状态 | 验证证据 |
@@ -1380,13 +1400,13 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 28 | 补主题回归测试，消除 0 覆盖（D-46） |
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
 | 30 | 实现 **GATE-11**（令牌/语义类登记校验）与 **GATE-12**（105 处条件类静态断言） |
-| **35（2026-10-06 新增）** | **实现 GATE-13（自有 `--color-*` 令牌登记校验，白名单制）+ GATE-14（`bg-{primary,secondary,accent}-{400..950} text-white` 条件类字符串静态清零）**。`g1314.mjs` 已落地并接入 `theme-gate.mjs`（门禁 12 → 14 项）；4 个未登记消费已修（`g13-fix.mjs`，对齐 L0 权威名）；GATE-14 存量 165 处 → **全库 0 处**（`g14-clean.mjs` 批量清 79 文件/136 行 + DashboardLayout 3 处 + 5 处渐变 D-50 + SynergyTab 动态档位 bug；**2026-10-07 `74a9252` 接线删除 SettingsPage 旧面板，最后一处 WIP 残余清零，GATE-14 转 pass，门禁 13/0/1**）。配套 §8.4 操作手册 |
+| **36（2026-10-12 新增 · E 阶段）** | **设置面板能力补齐：E1 导出/导入 + E2 圆角 + E3 次色/强调色 + E4 导入通道收口**。E1：`ThemeImport.tsx` 由零消费者孤儿组件重构为 `<button>` 触发的 v2 快照导入（旧版只导合并结果，丢 `modeRamps` 与选中态），导入侧接受 v2 / 嵌套 / 扁平三种形态。E2：`radiusScale` 状态链 + 面板 ⑩ 区块（4 196 处 `rounded-*` 消费者），间距明确不做（D-65，`--space-*` 未进 `@theme`）。**E3 是本轮核心**：U-8 从 primary 单族推广为三族，`ModeRamps` 扩 6 键、`generateModeRampCSS` 按族独立产出双作用域块、`generateCSSVariables` 按族让位，影响面 3 462 处；测试锁定「L0 默认阶喂推导器 → 12 枚语义族与 `base.css`/`dark.css` 逐条相等」。E4：`store.importTheme` 并入 `normalizeThemeImport` → `applyCustomTheme` 单通道，残余 `customThemes` 命名/列表/删除 UI 待产品决策。持久化 v5→v6→v7，导出快照 v2.0.0→v2.1.0。**E5 阴影暂缓**（D-63）：L0 的 `--shadow-*` 是模式相关（亮 alpha .06~.14 / 暗 .3~.45），preset `shadows` 是单一对象无法表达双模式，须先扩数据模型（51 处消费者）。E1/E2/E3 均有独立浏览器探针（16/16、35/35） |
 
 ### 阶段 3 — 治理落地（P2–P3）
 
 | 序 | 动作 |
 |:--|:-----|
-| 31 | 注册 `theme:validate` 到 `package.json` + CI（G-4）；补齐 `lint-staged` 配置（现为空操作） |
+| **31** | `theme:validate` 注册到 `package.json` + CI（G-4）；补齐 `lint-staged` 配置 | ✅ **已完成（2026-10-12）**——`theme:validate` 与 `ui:guard` 已接入 `frontend-ci` job，新增独立 `theme-gate` job：checkout → `npm ci` → Playwright Chromium → 起 Vite（`curl` 轮询 90 次就绪探测）→ `theme:gate:ci --require-render`（`THEME_GATE_USER` / `THEME_GATE_PASS` 注入）→ 始终上传门禁日志。`lint-staged` 仍为空操作，待后续批次 |
 | 32 | 按 §14.3 处置 6 份废弃文档；ADR 编号去重（7 组重号） |
 | 33 | 统一审计清单与弃用策略模板（G-1/G-8） |
 | 34 | 清理 4 个僵尸存储键（R-15；`rmfood-theme-settings-v2` 已随 D-11 消除） |
