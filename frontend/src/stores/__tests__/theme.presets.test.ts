@@ -221,3 +221,159 @@ describe('generateCSSVariables — A3 字体键名 kebab 化', () => {
   });
 });
 
+import {
+  generateModeRampCSS,
+  applyThemeToDOM,
+  presetThemes,
+  type ThemeConfig,
+} from '../theme.presets';
+
+// ============================================================================
+// C1：模式反转色阶的运行时双作用域样式表
+// ----------------------------------------------------------------------------
+// 为什么必须双作用域：base.css 的 --color-primary-<档> 定义在 :root，
+// dark.css 的同名令牌定义在 .dark（dark.css:7）。inline setProperty 的优先级
+// 高于任何非 !important 选择器，会同时压过 :root 与 .dark —— 选完配色后切到
+// 暗色模式，暗色画布上仍显示亮色 ramp，形成「断裂梯度」。
+// ============================================================================
+describe('C1 generateModeRampCSS — 双作用域色阶', () => {
+  const LIGHT = {
+    '100': '#d1fae5', '200': '#a7f3d0', '300': '#6ee7b7', '400': '#34d399', '500': '#10b981',
+    '600': '#059669', '700': '#047857', '800': '#065f46', '900': '#064e3b', '950': '#022c22',
+  };
+  const DARK = {
+    '100': '#064e3b', '200': '#065f46', '300': '#047857', '400': '#059669', '500': '#34d399',
+    '600': '#6ee7b7', '700': '#a7f3d0', '800': '#d1fae5', '900': '#ecfdf5', '950': '#f0fdf4',
+  };
+
+  it('同时产出 :root 与 .dark 两个块，各 10 档', () => {
+    const theme: ThemeConfig = { ...presetThemes['light-default'], modeRamps: { primary: LIGHT, primaryDark: DARK } };
+    const css = generateModeRampCSS(theme);
+    expect(css).toContain(':root {');
+    expect(css).toContain('.dark {');
+    for (const [t, v] of Object.entries(LIGHT)) expect(css, t).toContain(`--color-primary-${t}: ${v}`);
+    for (const [t, v] of Object.entries(DARK)) expect(css, t).toContain(`--color-primary-${t}: ${v}`);
+  });
+
+  it('两组值落在各自作用域内 —— 暗色 500 只在 .dark 块，不出现在 :root 块', () => {
+    const theme: ThemeConfig = { ...presetThemes['light-default'], modeRamps: { primary: LIGHT, primaryDark: DARK } };
+    const css = generateModeRampCSS(theme);
+    const root = css.split('.dark')[0];
+    expect(root).not.toContain('--color-primary-500: #34d399');
+    expect(root).not.toContain('--color-primary-950: #f0fdf4');
+    expect(css.slice(css.indexOf('.dark'))).toContain('--color-primary-500: #34d399');
+  });
+
+  it('无覆盖时返回空串', () => {
+    expect(generateModeRampCSS(presetThemes['light-default'])).toBe('');
+    expect(generateModeRampCSS({ ...presetThemes['light-default'], modeRamps: {} })).toBe('');
+  });
+
+  it('拒绝越界的令牌值（与 inline 通道同一安全边界）', () => {
+    const theme: ThemeConfig = {
+      ...presetThemes['light-default'],
+      modeRamps: { primary: { '500': '#10b981; background:url(x)', '600': 'ok' } },
+    };
+    const css = generateModeRampCSS(theme);
+    expect(css).toContain('--color-primary-600: ok');
+    expect(css).not.toContain('background');
+  });
+
+  it('忽略非档位键 —— colors 角色字段仍归 generateCSSVariables', () => {
+    const theme: ThemeConfig = {
+      ...presetThemes['light-default'],
+      modeRamps: { primary: { main: '#ff0000', container: '#00ff00', '500': '#10b981' } },
+    };
+    const css = generateModeRampCSS(theme);
+    expect(css).toContain('--color-primary-500: #10b981');
+    expect(css).not.toContain('main');
+    expect(css).not.toContain('container');
+  });
+});
+
+describe('C1 generateCSSVariables — 让位模式反转令牌', () => {
+  it('落在 modeRamps 覆盖范围内的档位令牌不出现在 inline 通道（避免 inline 压过 .dark）', () => {
+    const LIGHT = { '100': '#d1fae5', '500': '#10b981', '950': '#022c22' };
+    const base = presetThemes['light-default'];
+    const theme: ThemeConfig = {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: { ...base.colors.primary, '100': '#d1fae5', '500': '#10b981', '950': '#022c22' },
+      },
+      modeRamps: { primary: LIGHT },
+    };
+    const vars = generateCSSVariables(theme);
+    for (const t of ['100', '500', '950']) expect(vars[`--color-primary-${t}`], t).toBeUndefined();
+    // 角色字段不受影响，仍走 inline
+    expect(vars['--color-primary']).toBe(base.colors.primary.main);
+  });
+
+  it('无 modeRamps 时档位令牌照旧进入 inline 通道（导入主题等既有路径不变）', () => {
+    const base = presetThemes['light-default'];
+    const theme: ThemeConfig = {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: { ...base.colors.primary, '500': '#ff0000' },
+      },
+    };
+    const vars = generateCSSVariables(theme);
+    expect(vars['--color-primary-500']).toBe('#ff0000');
+  });
+});
+
+describe('C1 mergeThemeOverrides — modeRamps 合并', () => {
+  it('亮/暗两组作用域各自独立合并', () => {
+    const base: ThemeConfig = { ...presetThemes['light-default'], modeRamps: { primary: { '500': '#10b981' } } };
+    const merged = mergeThemeOverrides(base, { modeRamps: { primaryDark: { '500': '#34d399' } } });
+    expect(merged.modeRamps?.primary?.['500']).toBe('#10b981');
+    expect(merged.modeRamps?.primaryDark?.['500']).toBe('#34d399');
+  });
+
+  it('换方案时整组替换，不残留上一方案的档位', () => {
+    const base: ThemeConfig = {
+      ...presetThemes['light-default'],
+      modeRamps: { primary: { '100': '#aaaaaa', '500': '#10b981', '950': '#111111' } },
+    };
+    const merged = mergeThemeOverrides(base, { modeRamps: { primary: { '500': '#007aff', '950': '#001a4d' } } });
+    expect(merged.modeRamps?.primary?.['500']).toBe('#007aff');
+    expect(merged.modeRamps?.primary?.['950']).toBe('#001a4d');
+    expect(merged.modeRamps?.primary?.['100']).toBeUndefined();
+  });
+});
+
+describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
+  it('带 modeRamps 的主题写入 #rmfood-runtime-theme，且 <html> 内联无主色档位令牌', () => {
+    const LIGHT = { '100': '#d1fae5', '500': '#10b981', '950': '#022c22' };
+    const DARK = { '100': '#064e3b', '500': '#34d399', '950': '#f0fdf4' };
+    applyThemeToDOM({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime',
+      isPreset: false,
+      modeRamps: { primary: LIGHT, primaryDark: DARK },
+    });
+
+    const el = document.getElementById('rmfood-runtime-theme');
+    expect(el).toBeTruthy();
+    expect(el?.textContent).toContain(':root {');
+    expect(el?.textContent).toContain('.dark {');
+    // 关键：inline 不得出现档位令牌，否则暗色模式会错用亮色 ramp
+    const root = document.documentElement;
+    for (const t of ['100', '500', '950']) {
+      expect(root.style.getPropertyValue(`--color-primary-${t}`)).toBe('');
+    }
+    // 而角色令牌仍走 inline
+    expect(root.style.getPropertyValue('--color-primary')).not.toBe('');
+  });
+
+  it('切回内置纯净预设时移除运行时样式表，回到 L0 基线', () => {
+    expect(document.getElementById('rmfood-runtime-theme')).toBeTruthy();
+
+    applyThemeToDOM(presetThemes['light-default']);
+
+    expect(document.getElementById('rmfood-runtime-theme')).toBeNull();
+    expect(document.documentElement.style.getPropertyValue('--color-primary')).toBe('');
+  });
+});
+

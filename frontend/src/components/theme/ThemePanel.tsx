@@ -4,47 +4,56 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  useTheme, useThemeStore, useIsDarkMode,
+  useThemeStore, useIsDarkMode,
   type TransitionType,
 } from '@/theme';
-import { APPLE_HIG_PALETTES, FONT_SCALES } from './theme-palette';
+import { APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales } from './theme-palette';
 
 /**
- * ThemePanel — 明暗主题核心模块（嵌入 SettingsPage「主题」tab）
+ * ThemePanel — 全站主题控制核心模块（嵌入 SettingsPage「主题」tab）
  *
- * 设计原则（按产品要求：只聚焦明/暗主题核心，不引入其他主题）：
- *  - 全部调用 themeStore / useTheme 现成 API，不新增 store 代码
- *  - §8.2 U-4：状态读写一律走 useTheme() / useThemeStore()
+ * 设计原则（执行方案《RMFOOD-主题设置模块系统性控制执行方案》基线 1）：
+ *  - **单通道落地**：所有覆盖一律经
+ *      applyCustomTheme → mergeThemeOverrides → generateCSSVariables → applyThemeToDOM
+ *    UI 层**不得**直接 `root.style.setProperty`（GATE-17 门禁拦截）。
+ *    旧实现里 `applyFontScale` / `applyBrandScale` 两条直写路径已被删除：
+ *    它们只改当前明暗模式的 3 个档 / 3 个正文字号，既造不成整档一致，
+ *    又因写在 inline 上而无法区分 `:root` 与 `.dark` 作用域。
+ *  - §8.2 U-4：状态读写一律走 useThemeStore()
+ *  - §8.2 U-6：**选中态从 store 派生**（paletteKey / fontScale 持久化），
+ *    禁止 `aria-checked={false}` 这类写死值 —— 用户必须看得出当前生效方案。
  *  - §4.3 C-24：选中态用 .border-primary-main + .bg-primary-container
  *    （不可反转，非 400..950 色阶配白字），双模式对比度合规
  *  - §10.3 GATE-12/13：只用 L1 已登记语义类 / L0 已登记令牌
  *
- * 五区块（均为明暗核心能力）：
+ * 八区块：
  *  ① 明暗三态切换（light/dark/system，setThemeMode）
- *  ② 跟随系统实时状态（matchMedia 只读 + useIsDarkMode，system 态下显示系统实际偏好）
+ *  ② 跟随系统实时状态（matchMedia 只读 + useIsDarkMode）
  *  ③ 切换过渡动画（fade/scale/none，setTransitionType）
  *  ④ 减少动画开关（motionPreferences，setMotionPreferences）
- *  ⑤ 明暗实时预览（随当前明暗即时渲染的迷你卡片，证明双模式生效）
- *  ⑥ 快捷键实际绑定（Ctrl+Shift+T 在明暗间切换；reducedMotion 时即时切换）
- *  ⑦ 字体方案（紧凑/标准/宽松 三档字号，applyCustomTheme → --text-* 令牌）
- *  ⑧ 配色方案（参照 Apple HIG 系统色板：默认绿 / 苹果蓝 / 紫色 / 橙色 / 红色，
- *     每方案含明暗双值，applyCustomTheme → --color-primary 令牌）
+ *  ⑤ 明暗实时预览（随当前明暗即时渲染的迷你卡片）
+ *  ⑥ 快捷键实际绑定（Ctrl+Shift+T 在明暗间切换）
+ *  ⑦ 字体方案（紧凑/标准/宽松 → 完整 L0 排版档 12 键，--text-* 令牌）
+ *  ⑧ 配色方案（Apple HIG 系统色板 → 主色阶整档 10/10 双作用域注入）
  *
- * ⑦⑧ 说明：应用方案会生成一条 custom-* 主题并即时注入 L0 令牌；
- * 切换明暗模式（setThemeMode）后自定义注入会被清除，恢复默认主色 ——
- * 这是数据层既有行为（applyThemeToDOM 的 clean preset 判定），面板只做
- * 「快捷应用 + 恢复默认」，不建持久化自定义管理（产品要求：不引入第三套主题）。
+ * ⑦⑧ 持久性：覆盖累计进 store.runtimeOverrides 并持久化，冷启动由 initialize()
+ * 回放，刷新后配色/字号/明暗三者全部保持（GATE-15 断言）。
+ * ⑧ 的色阶走运行时 `<style>` 双作用域块（见 theme-palette 的档位单调性说明），
+ * 切明暗模式不再丢失配色。
  */
 export const ThemePanel: React.FC = () => {
   const {
     mode, setThemeMode,
     applyCustomTheme, resetToDefault,
-  } = useTheme();
-  const {
     transitionType, setTransitionType,
     motionPreferences, setMotionPreferences,
+    paletteKey, fontScale,
   } = useThemeStore();
   const isDark = useIsDarkMode();
+
+  // ⑦⑧ 的选中态基线：未做任何选择时视同「默认绿」与「标准」字号。
+  const activePalette = paletteKey || 'green';
+  const activeFontScale = fontScale || 'standard';
 
   // ── ⑥ Ctrl+Shift+T 快捷键实际绑定（在 light/dark 间切换）──
   useEffect(() => {
@@ -59,19 +68,6 @@ export const ThemePanel: React.FC = () => {
         st.setTransitionType('fade');
       } else {
         st.setThemeMode(next);
-      }
-      // 保持当前 custom 注入（若之前应用了字体/配色方案）：用当前 activeTheme
-      // 的非预设部分重新生成一条 custom 注入，避免 setThemeMode 清掉内联变量后
-      // 字体/配色方案丢失。
-      const custom = st.activeTheme;
-      if (custom && !custom.isPreset) {
-        st.applyCustomTheme({
-          colors: { primary: custom.colors.primary, secondary: custom.colors.secondary, tertiary: custom.colors.tertiary },
-          typography: {
-            fontSize: custom.typography.fontSize,
-            fontFamily: custom.typography.fontFamily,
-          },
-        });
       }
     };
     window.addEventListener('keydown', onKey);
@@ -104,93 +100,70 @@ export const ThemePanel: React.FC = () => {
     { t: 'none', label: '无过渡', desc: '即时切换' },
   ];
 
-  // ── ⑦ 字体方案（走 applyCustomTheme → --text-* 令牌）──
-  const FONT_SIZES = ['compact', 'standard', 'relaxed'].map((k) => {
-    const label = k === 'compact' ? '紧凑' : k === 'relaxed' ? '宽松' : '标准';
-    const s = FONT_SCALES[k];
-    return { key: k, label, desc: k === 'compact' ? '14px 基准，信息密度高' : k === 'relaxed' ? '18px 基准，易读' : '16px 基准，默认', base: s.body };
-  });
+  // ── ⑦ 字体方案（完整 L0 排版档 12 键 → --text-* 令牌）──
+  const FONT_SIZES = FONT_SCHEME_META.map((s) => ({
+    key: s.key,
+    label: s.label,
+    desc: s.desc,
+    base: FONT_SCALES[s.key].body,
+  }));
 
-  // ── ⑧ 配色方案（参照 Apple HIG 系统色板，含明暗双值；注入 --color-primary）──
+  // ── ⑧ 配色方案（Apple HIG 系统色板，含明暗双值 + 整档色阶）──
   const PALETTES = APPLE_HIG_PALETTES;
 
-  // ── ⑦ 字体方案（走 applyCustomTheme → 排版令牌 --text-*）──
-  // 关键：generateCSSVariables 把 typography.fontSize 生成 `--text-xs/--text-sm/...`，
-  // 但项目的**实际正文令牌是 `--text-body` / `--text-body-sm` / `--text-caption`**
-  // （typography.css 的 .text-body/.text-sm 等类消费它；`--text-*` 无 L0 定义）。
-  // 若只走 applyCustomTheme 注入 --text-base 等【孤儿令牌】，全站字号纹丝不动 ——
-  // 这就是「骨架」。现：applyCustomTheme（记录/持久化 custom 主题）+ 直接按方案注入
-  // 真实消费的 L0 正文令牌（setProperty 幂等，切预设时被 clean-preset 清除，行为一致）。
-  const applyFontScale = (base: string, bodySm: string, caption: string) => {
-    const root = document.documentElement;
-    root.style.setProperty('--text-body', base);
-    root.style.setProperty('--text-body-sm', bodySm);
-    root.style.setProperty('--text-caption', caption);
+  /**
+   * ⑦ 应用字体方案。
+   *
+   * FONT_SCALES 产出 12 个 L0 排版键（body / bodySm / caption / bodyLg /
+   * overline / tiny / h1..h6），generateCSSVariables 经 toKebab 生成
+   * `--text-body-sm` 这类正确命名后写入 inline。
+   * 排版令牌在两种模式下取值相同，inline 单作用域即正确，无需双作用域块。
+   * （旧实现只注入 3 个键，且直写 inline，既覆盖不全又绕过持久化通道。）
+   */
+  const applyFont = (key: string) => {
+    applyCustomTheme(
+      { typography: { fontSize: FONT_SCALES[key] } },
+      { fontScale: key },
+    );
   };
 
-  // ── ⑧ 配色方案（参照 Apple HIG 系统色板，注入品牌色令牌）──
-  // 关键：组件主色实际消费 **Tailwind 静态色阶 `--color-primary-{50..950}`**
-  // （base.css/dark.css 定义的 :root 级变量，1277 处 bg-primary-*/text-primary-* 消费），
-  // 而 applyCustomTheme 的 COLOR_MAIN_TO_L0 只写 `--color-primary`（语义别名令牌，
-  // 仅 .text-primary-main 等 11 处 L1 类消费）→ 只注入 --color-primary 时
-  // 全站主色（按钮/链接/图标/渐变）几乎不变 —— 同样是「骨架」。
-  // 现：applyCustomTheme（记录/持久化）+ 直接注入当前明暗模式的静态色阶 500/600/700
-  // （与 Apple HIG 色板同档语义：500 主色 / 600 hover / 700 按压），明暗双值各归其位。
-  const applyBrandScale = (key: string, light: string, dark: string) => {
-    const root = document.documentElement;
-    const main = isDark ? dark : light;
-    // 500 = 主色 / 600 = hover / 700 = 按压（与 Apple HIG 同族档语义一致）
-    const HOVER: Record<string, string> = { green: '#059669', blue: '#0066CC', purple: '#8E3DA8', orange: '#C86F00', red: '#D70015' };
-    const PRESSED: Record<string, string> = { green: '#047857', blue: '#00518F', purple: '#6D2E84', orange: '#9C5700', red: '#A50011' };
-    root.style.setProperty('--color-primary-500', main);
-    root.style.setProperty('--color-primary-600', HOVER[key] ?? main);
-    root.style.setProperty('--color-primary-700', PRESSED[key] ?? main);
-    root.style.setProperty('--color-primary', main);
-  };
-
+  /**
+   * ⑧ 应用配色方案。
+   *
+   * 分两层，因为两类令牌的【作用域模型】不同：
+   *  - `colors.primary` 只带模式无关的角色字段（main / light / dark /
+   *    contrastText），映射到 `--color-primary` 等语义令牌，走 inline 单作用域。
+   *  - `--color-primary-<档>` 是模式反转令牌（base.css 100 浅→950 深、
+   *    dark.css 100 深→950 浅，暗色值作用域在 `.dark`），inline 无法区分二者，
+   *    故由 modeRamps 携带亮/暗两组【完整 10 档】色阶，经运行时 `<style>`
+   *    双作用域落地。整档同向替换保证单调性，不会出现「500-700 换色而两头
+   *    仍是品牌绿」的断裂梯度。
+   *
+   * 旧实现 applyBrandScale 只改 500/600/700 三档并直写 inline —— 既产生断裂
+   * 梯度，又因 inline 压过 .dark 导致暗色模式错用亮色值，且完全不持久化。
+   */
   const applyPalette = (p: (typeof PALETTES)[number]) => {
-    // 记录到 custom 主题（持久化/可重置），并注入当前明暗模式的真实消费令牌
-    applyCustomTheme({
-      colors: {
-        primary: {
-          main: isDark ? p.dark : p.light,
-          light: p.sub,
-          dark: p.subDark,
-          contrastText: p.key === 'green' ? '#052E16' : '#FFFFFF',
+    const scales = getPaletteScales(p);
+    applyCustomTheme(
+      {
+        colors: {
+          primary: {
+            main: isDark ? p.dark : p.light,
+            light: p.sub,
+            dark: p.subDark,
+            contrastText: p.contrastText,
+          },
         },
+        modeRamps: { primary: scales.light, primaryDark: scales.dark },
       },
-    });
-    applyBrandScale(p.key, p.light, p.dark);
-  };
-
-  const applyFont = (f: (typeof FONT_SIZES)[number]) => {
-    // 持久化记录层：applyCustomTheme 生成一条 custom 主题（随 customThemes 持久化，
-    // initialize/migrate 恢复时用 typography.fontSize 重建）——与下方运行时注入表同源。
-    applyCustomTheme({
-      typography: {
-        fontSize: {
-          xs: FONT_SCALES.compact.caption, sm: FONT_SCALES.compact.bodySm, base: f.base,
-          lg: FONT_SCALES.relaxed.bodySm, xl: '1.25rem',
-          '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
-        },
-      },
-    });
-    // 按方案注入真实消费的 L0 正文令牌（紧凑 14px / 标准 15px / 宽松 18px 基准）
-    const scales: Record<string, [string, string, string]> = {
-      compact: [FONT_SCALES.compact.body, FONT_SCALES.compact.bodySm, FONT_SCALES.compact.caption],
-      standard: [FONT_SCALES.standard.body, FONT_SCALES.standard.bodySm, FONT_SCALES.standard.caption],
-      relaxed: [FONT_SCALES.relaxed.body, FONT_SCALES.relaxed.bodySm, FONT_SCALES.relaxed.caption],
-    };
-    const [b, s, c] = scales[f.key];
-    applyFontScale(b, s, c);
+      { paletteKey: p.key },
+    );
   };
 
   const handleReset = () => {
+    // resetToDefault 清空 runtimeOverrides → applyThemeToDOM 同时清除 <html>
+    // 内联自定义属性与运行时色阶 <style>，回到 L0 基线。无需手动 removeProperty。
     resetToDefault();
-    // 清除手动注入的 L0 令牌内联（回到 base.css/dark.css 默认值）
-    const root = document.documentElement;
-    ['--color-primary-500', '--color-primary-600', '--color-primary-700', '--color-primary',
-     '--text-body', '--text-body-sm', '--text-caption'].forEach((v) => root.style.removeProperty(v));
   };
 
   const cardBase = 'rounded-2xl border border-neutral-200 dark:border-neutral-700 surface-card p-5';
@@ -370,24 +343,31 @@ export const ThemePanel: React.FC = () => {
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">调整全局正文字号</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="字体大小">
-          {FONT_SIZES.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              role="radio"
-              aria-checked={false}
-              onClick={() => applyFont(f)}
-              className={cn(
-                'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-                tileIdle
-              )}
-            >
-              <span className="text-sm font-medium text-neutral-700">{f.label}</span>
-              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{f.desc}</span>
-            </button>
-          ))}
+          {FONT_SIZES.map((f) => {
+            const active = activeFontScale === f.key;
+            return (
+              <button
+                key={f.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${f.label}字号方案`}
+                onClick={() => applyFont(f.key)}
+                className={cn(
+                  'flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  active ? tileActive : tileIdle
+                )}
+              >
+                <span className={cn('text-sm font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{f.label}</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{f.desc}</span>
+              </button>
+            );
+          })}
         </div>
-        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">点击即时生效（标准 = 默认字号）；切换明暗模式后恢复默认</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
+          当前：{FONT_SIZES.find((f) => f.key === activeFontScale)?.label ?? '标准'}
+          · 覆盖 12 个 L0 排版档，刷新后保持；「重置默认」回到标准字号
+        </p>
       </section>
 
       {/* ═══ ⑧ 配色方案（Apple HIG）═══ */}
@@ -398,30 +378,36 @@ export const ThemePanel: React.FC = () => {
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">参照 Apple HIG 系统色板</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3" role="radiogroup" aria-label="配色方案">
-          {PALETTES.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              role="radio"
-              aria-checked={false}
-              onClick={() => applyPalette(p)}
-              className={cn(
-                'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
-                tileIdle
-              )}
-              title={`${p.name}：${p.note}`}
-            >
-              <span
-                className="h-8 w-8 rounded-full border border-black/10"
-                style={{ background: p.light }}
-                aria-hidden
-              />
-              <span className="text-xs font-medium text-neutral-700">{p.name}</span>
-            </button>
-          ))}
+          {PALETTES.map((p) => {
+            const active = activePalette === p.key;
+            const swatch = isDark ? p.dark : p.light;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${p.name}配色方案`}
+                onClick={() => applyPalette(p)}
+                className={cn(
+                  'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50',
+                  active ? tileActive : tileIdle
+                )}
+                title={`${p.name}：${p.note}`}
+              >
+                <span
+                  className="h-8 w-8 rounded-full border border-black/10"
+                  style={{ background: swatch }}
+                  aria-hidden
+                />
+                <span className={cn('text-xs font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{p.name}</span>
+              </button>
+            );
+          })}
         </div>
         <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
-          每方案含明暗双值（如苹果蓝 亮 #007AFF / 暗 #0A84FF）；点击即时生效；「重置默认」恢复品牌默认绿
+          当前：{PALETTES.find((p) => p.key === activePalette)?.name ?? '默认绿'}
+          · 整档 10 档同步注入，明暗双作用域，切模式不丢失；「重置默认」恢复品牌默认绿
         </p>
         <div className="mt-3">
           <button
@@ -434,10 +420,12 @@ export const ThemePanel: React.FC = () => {
         </div>
       </section>
 
-      {/* 当前状态摘要 */}
+      {/* 当前状态摘要（全部从 store 派生，U-6） */}
       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] px-1" aria-live="polite">
         当前：{isDark ? '深色' : '浅色'}渲染
         · 模式：{mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
+        · 配色：{PALETTES.find((p) => p.key === activePalette)?.name ?? '默认绿'}
+        · 字号：{FONT_SIZES.find((f) => f.key === activeFontScale)?.label ?? '标准'}
         · 过渡：{TRANSITIONS.find(t => t.t === transitionType)?.label ?? transitionType}
         · 减少动画：{motionPreferences.reducedMotion ? '开启' : '关闭'}
       </p>

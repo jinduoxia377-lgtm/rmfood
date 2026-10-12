@@ -88,7 +88,7 @@ describe('APPLE_HIG_PALETTES — 五个方案双模式色阶', () => {
     expect(blue['950']).not.toBe(green['950']);
   });
 
-  it('色阶覆盖完整 10 档，且每档均为合法 hex', () => {
+  it('色阶覆盖完整 11 档（50..950），且每档均为合法 hex', () => {
     for (const p of APPLE_HIG_PALETTES) {
       for (const { light, dark } of [getPaletteScales(p)]) {
         for (const tier of PRIMARY_TIERS) {
@@ -101,12 +101,14 @@ describe('APPLE_HIG_PALETTES — 五个方案双模式色阶', () => {
 });
 
 describe('DEFAULT_GREEN_*_SCALE — 与 L0 逐档一致', () => {
-  // 基准值取自 base.css:10-19（亮）与 dark.css:10-19（暗）
+  // 基准值取自 base.css:9-19（亮）与 dark.css:9-19（暗）
   const L0_LIGHT = {
+    '50': '#ecfdf5',
     '100': '#d1fae5', '200': '#a7f3d0', '300': '#6ee7b7', '400': '#34d399', '500': '#10b981',
     '600': '#059669', '700': '#047857', '800': '#065f46', '900': '#064e3b', '950': '#022c22',
   };
   const L0_DARK = {
+    '50': '#022c22',
     '100': '#064e3b', '200': '#065f46', '300': '#047857', '400': '#059669', '500': '#34d399',
     '600': '#6ee7b7', '700': '#a7f3d0', '800': '#d1fae5', '900': '#ecfdf5', '950': '#f0fdf4',
   };
