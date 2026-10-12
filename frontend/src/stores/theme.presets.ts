@@ -606,17 +606,36 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   // kebab，故生成器必须规范化键名，否则这些维度被静默拒绝、无法自定义）。
   const toKebab = (k: string) => k.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
-  // C1：模式反转色阶改由运行时 `<style>` 双作用域块提供（见 generateModeRampCSS）。
-  // 若 inline 也写 `--color-primary-<档>`，会同时压过 `:root` 与 `.dark`，
+  // C1 / E3：模式反转色阶改由运行时 `<style>` 双作用域块提供（见 generateModeRampCSS）。
+  // 若 inline 也写 `--color-<族>-<档>`，会同时压过 `:root` 与 `.dark`，
   // 使暗色模式错用亮色 ramp —— 故把落在 modeRamps 覆盖范围内的档位令牌让位出去。
-  const rampTokens = new Set<string>(
-    Object.keys(theme.modeRamps?.primary ?? {}).map((k) => `--color-primary-${k}`),
-  );
-  // C1.5：primary 语义族同样是模式相关令牌，需一并让位给运行时双作用域块，
-  // 否则选配色后 --color-primary / --color-primary-container 只更新为「当前模式」
+  // 三个品牌族（primary / secondary / accent）各自独立判定：用户只选了次色时，
+  // 主色与强调色的档位令牌仍走原 inline 通道。
+  const rampTokens = new Set<string>();
+  for (const family of BRAND_FAMILIES) {
+    const ramp = theme.modeRamps?.[family];
+    if (!ramp) continue;
+    for (const k of Object.keys(ramp)) {
+      rampTokens.add(`--color-${family}-${k}`);
+    }
+  }
+  // C1.5 / E3：语义族同样是模式相关令牌，需一并让位给运行时双作用域块，
+  // 否则选配色后 --color-<族> / --color-<族>-container 只更新为「当前模式」
   // 的锚点，切到另一模式即出现「容器底色仍是上一模式值」的混排。
-  // 仅在存在 modeRamps 时让位：无障碍变体等无 modeRamps 的主题仍走原 inline 通道。
-  const hasRamps = Boolean(theme.modeRamps?.primary || theme.modeRamps?.primaryDark);
+  // 仅对【实际被选择过】的族让位：未选中的族保持原 inline 通道，
+  // 避免把「用户没动过」的族强行变成运行时覆盖。
+  const rampedFamilies = new Set<BrandFamily>();
+  for (const family of BRAND_FAMILIES) {
+    if (theme.modeRamps?.[family] || theme.modeRamps?.[`${family}Dark` as const]) {
+      rampedFamilies.add(family);
+    }
+  }
+  const cedeSemanticToken = (name: string): boolean => {
+    for (const family of rampedFamilies) {
+      if (FAMILY_SEMANTIC_TOKENS[family].has(name)) return true;
+    }
+    return false;
+  };
 
   // 颜色变量
   Object.entries(theme.colors).forEach(([category, values]) => {
@@ -632,7 +651,7 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
         const kebabKey = toKebab(key);
         const kebabCategory = toKebab(category);
         const name = l0 ?? `--color-${kebabCategory}-${kebabKey}`;
-        if (rampTokens.has(name) || (hasRamps && PRIMARY_FAMILY_TOKENS.has(name))) return;
+        if (rampTokens.has(name) || cedeSemanticToken(name)) return;
         vars[name] = value;
       });
     }
@@ -799,7 +818,7 @@ const RUNTIME_THEME_STYLE_ID = 'rmfood-runtime-theme';
 const TIER_KEY = /^\d{2,3}$/;
 
 /**
- * primary 语义族令牌名（C1.5）。
+ * 三个品牌族的语义族令牌名（C1.5；E3 从 primary 单族扩展为三族）。
  *
  * 这些令牌在 L0 中是**模式相关**的：base.css 与 dark.css 各自给出不同取值
  * （如 `--color-primary-container` 亮色 #d1fae5 / 暗色 rgba(52,211,153,.15)），
@@ -810,7 +829,19 @@ const TIER_KEY = /^\d{2,3}$/;
  *
  * 必须与档位令牌一起由 generateModeRampCSS 写入运行时 `<style>` 的
  * `:root` / `.dark` 双作用域块；generateCSSVariables 需对它们让位。
+ *
+ * 三个族逐条对照 L0（base.css / dark.css）确认全部是模式相关：
+ *   primary    base.css:25-39 / dark.css:21-34
+ *   secondary  base.css:54-57 / dark.css:49-52
+ *   accent     base.css:72-79 / dark.css:67-70
+ *
+ * 注意：`--color-info-surface` / `--color-info-surface-deep` 虽在语义上属 info，
+ * 但 L0 定义为 `var(--color-secondary-700)` / `var(--color-secondary-800)`，
+ * 会随 secondary 档位自动跟随，无需（也不应）单独登记为模式相关令牌。
  */
+export const BRAND_FAMILIES = ['primary', 'secondary', 'accent'] as const;
+export type BrandFamily = (typeof BRAND_FAMILIES)[number];
+
 const PRIMARY_FAMILY_TOKENS = new Set<string>([
   '--color-primary',
   '--color-primary-rgb',
@@ -821,6 +852,34 @@ const PRIMARY_FAMILY_TOKENS = new Set<string>([
   '--color-primary-text',
   '--color-on-primary-surface',
 ]);
+
+export const FAMILY_SEMANTIC_TOKENS: Record<BrandFamily, ReadonlySet<string>> = {
+  primary: PRIMARY_FAMILY_TOKENS,
+  secondary: new Set<string>([
+    '--color-secondary',
+    '--color-secondary-rgb',
+    '--color-secondary-hover',
+    '--color-secondary-container',
+    '--color-secondary-surface',
+    '--color-secondary-surface-deep',
+  ]),
+  accent: new Set<string>([
+    '--color-accent',
+    '--color-accent-rgb',
+    '--color-accent-hover',
+    '--color-accent-container',
+    '--color-accent-surface',
+    '--color-accent-surface-deep',
+  ]),
+};
+
+/** 判断某令牌是否属于任一品牌族的模式相关语义令牌（供 generateCSSVariables 让位判定） */
+export function isBrandFamilyToken(name: string): boolean {
+  for (const f of BRAND_FAMILIES) {
+    if (FAMILY_SEMANTIC_TOKENS[f].has(name)) return true;
+  }
+  return false;
+}
 
 /** 取 hex 的 `r, g, b` 三元组字符串（供 --color-primary-rgb 使用） */
 function hexToRgbTriplet(hex: string | undefined): string | null {
@@ -951,42 +1010,160 @@ function derivePrimaryFamily(
 }
 
 /**
- * 生成模式反转色阶 + primary 语义族的双作用域 CSS 文本。
+ * 次色 / 强调色语义族的档位规则（E3）。
+ *
+ * 逐条对齐 L0：
+ *   | 令牌后缀            | 亮色              | 暗色                |
+ *   |---------------------|-------------------|---------------------|
+ *   | main（--color-<族>）| pickAATextTier()  | secondary/accent 600|
+ *   | -rgb                | rgb(ramp[500])    | rgb(ramp[600])      |
+ *   | -hover              | secondary 700 /   | secondary/accent    |
+ *   |                     | accent 600        | 均 700              |
+ *   | -container          | ramp[100]         | rgba(ramp[600],.15) |
+ *   | -surface            | ramp[700]         | ramp[200]           |
+ *   | -surface-deep       | ramp[800]         | ramp[100]           |
+ *
+ * 与 primary 的两处差异（照抄 L0，不做统一化）：
+ *   1. 暗色 main 取 600 而非 500 —— base.css 的次色/强调色暗色锚点比主色浅，
+ *      dark.css:49 / :67 明确取 600 档。
+ *   2. 第二档表面令牌名是 `-surface-deep`（primary 是 `-surface-hover`）。
+ * primary 因有额外两个令牌（-text / --color-on-primary-surface）与暗色 main=500
+ * 的 D-58 历史裁决，仍走独立的 derivePrimaryFamily，不并入本表。
+ *
+ * 亮色 main 统一按 AA 门槛选档：`-surface` / `-surface-deep` 常配白字
+ *（实测 secondary-surface 15 文件、accent-surface 23 文件、accent-surface-deep
+ * 18 文件都在 gradient 实底上叠白字），500 档必然不达标。
+ */
+type FamilyTierRule = {
+  /** 亮色 main 档；'aa' = 按 AA 门槛自动选档（下限 700） */
+  main: 'aa' | string;
+  rgb: string;
+  hover: string;
+  /** 亮色 -container = ramp[container]（实色浅底） */
+  container: string;
+  /** 暗色 -container = rgba(ramp[containerRgb], 0.15) */
+  containerRgb: string;
+  surface: string;
+  deep: string;
+  /** 第二档表面令牌的完整名（primary 与 secondary/accent 不同） */
+  deepName: string;
+};
+
+const BRAND_FAMILY_TIER_RULES: Record<'secondary' | 'accent', { light: FamilyTierRule; dark: FamilyTierRule }> = {
+  secondary: {
+    light: {
+      main: 'aa', rgb: '500', hover: '700', container: '100',
+      containerRgb: '600', surface: '700', deep: '800', deepName: '--color-secondary-surface-deep',
+    },
+    dark: {
+      main: '600', rgb: '600', hover: '700', container: '100',
+      containerRgb: '600', surface: '200', deep: '100', deepName: '--color-secondary-surface-deep',
+    },
+  },
+  accent: {
+    light: {
+      main: 'aa', rgb: '500', hover: '600', container: '100',
+      containerRgb: '600', surface: '700', deep: '800', deepName: '--color-accent-surface-deep',
+    },
+    dark: {
+      main: '600', rgb: '600', hover: '700', container: '100',
+      containerRgb: '600', surface: '200', deep: '100', deepName: '--color-accent-surface-deep',
+    },
+  },
+};
+
+/**
+ * 从某一模式的完整色阶推导 secondary / accent 的语义族取值。
+ * primary 走 derivePrimaryFamily（保留其 -text / on-primary-surface 与
+ * 暗色 main=500 的特殊规则）。
+ *
+ * 返回空对象表示无法推导（ramp 缺失或档位不全），调用方据此跳过该族。
+ */
+function deriveBrandFamilyTokens(
+  family: BrandFamily,
+  ramp: Record<string, string> | undefined,
+  dark: boolean,
+): Record<string, string> {
+  if (family === 'primary') return derivePrimaryFamily(ramp, dark);
+
+  const rule = BRAND_FAMILY_TIER_RULES[family][dark ? 'dark' : 'light'];
+  if (!ramp) return {};
+
+  const rgb = hexToRgbTriplet(ramp[rule.rgb]);
+  if (!rgb) return {};
+
+  // 亮色：按 AA 门槛选档（下限 700，与 primary 同一函数，对齐 D-58）
+  // 暗色：按 L0 固定取 600
+  const mainTier = rule.main === 'aa' && !dark ? pickAATextTier(ramp, ramp[rule.container] ?? '#ffffff') : rule.main;
+  const main = ramp[mainTier];
+  const surface = ramp[rule.surface];
+  const deep = ramp[rule.deep];
+  const hover = ramp[rule.hover];
+  if (!main || !surface || !deep || !hover) return {};
+
+  const container = dark
+    ? `rgba(${hexToRgbTriplet(ramp[rule.containerRgb]) ?? ''}, 0.15)`
+    : (ramp[rule.container] ?? '');
+  if (!container) return {};
+
+  return {
+    [`--color-${family}`]: main,
+    [`--color-${family}-rgb`]: rgb,
+    [`--color-${family}-hover`]: hover,
+    [`--color-${family}-container`]: container,
+    [`--color-${family}-surface`]: surface,
+    [rule.deepName]: deep,
+  };
+}
+
+/**
+ * 生成模式反转色阶 + 品牌族语义令牌的双作用域 CSS 文本。
+ *
+ * E3：从 primary 单族扩展为三个品牌族（primary / secondary / accent）。
+ * 每个族独立判定 —— 用户只选了次色时，只写次色的两组作用域块，
+ * 主色与强调色保持 L0 基线（不写 `:root { --color-primary-... }` 的默认值，
+ * 避免把「用户没动过」的族也变成运行时覆盖）。
+ *
  * 无覆盖时返回空串（applyRuntimeThemeStyle 会移除样式元素，回到 L0 基线）。
  */
 export function generateModeRampCSS(theme: ThemeConfig): string {
   const ramps = theme?.modeRamps;
-  if (!ramps || (!ramps.primary && !ramps.primaryDark)) return '';
+  if (!ramps) return '';
 
-  const renderBlock = (
-    sel: string,
-    values: Record<string, string> | undefined,
-  ): string => {
-    if (!values) return '';
-    const decls: string[] = [];
-    const push = (name: string, value: string) => {
-      // 复用同一套安全校验：值不允许逃逸声明位置（与 inline 通道一致的安全边界）
-      if (!isSafeToken(name, value)) {
-        logger.warn('[Theme System] 拒绝不安全的色阶令牌值', { name, value: String(value).slice(0, 60) });
-        return;
+  const blocks: string[] = [];
+
+  for (const family of BRAND_FAMILIES) {
+    const lightRamp = ramps[family];
+    const darkRamp = ramps[`${family}Dark` as const];
+    if (!lightRamp && !darkRamp) continue; // 该族未被选择过
+
+    const renderBlock = (sel: string, values: Record<string, string> | undefined): string => {
+      if (!values) return '';
+      const decls: string[] = [];
+      const push = (name: string, value: string) => {
+        // 复用同一套安全校验：值不允许逃逸声明位置（与 inline 通道一致的安全边界）
+        if (!isSafeToken(name, value)) {
+          logger.warn('[Theme System] 拒绝不安全的色阶令牌值', { name, value: String(value).slice(0, 60) });
+          return;
+        }
+        decls.push(`  ${name}: ${value};`);
+      };
+      // ① 该族语义令牌（模式相关，必须按作用域给出）
+      for (const [name, value] of Object.entries(deriveBrandFamilyTokens(family, values, sel === '.dark'))) {
+        push(name, value);
       }
-      decls.push(`  ${name}: ${value};`);
+      // ② 11 档静态色阶
+      for (const [k, v] of Object.entries(values)) {
+        if (!TIER_KEY.test(k)) continue; // 只处理档位键，其余角色字段由 generateCSSVariables 负责
+        push(`--color-${family}-${k}`, v);
+      }
+      if (!decls.length) return '';
+      return `${sel} {\n${decls.join('\n')}\n}`;
     };
-    // ① primary 语义族（模式相关，必须按作用域给出）
-    for (const [name, value] of Object.entries(derivePrimaryFamily(values, sel === '.dark'))) {
-      push(name, value);
-    }
-    // ② 11 档静态色阶
-    for (const [k, v] of Object.entries(values)) {
-      if (!TIER_KEY.test(k)) continue; // 只处理档位键，其余角色字段由 generateCSSVariables 负责
-      push(`--color-primary-${k}`, v);
-    }
-    if (!decls.length) return '';
-    return `${sel} {\n${decls.join('\n')}\n}`;
-  };
 
-  const blocks = [renderBlock(':root', ramps.primary), renderBlock('.dark', ramps.primaryDark)]
-    .filter(Boolean);
+    blocks.push(renderBlock(':root', lightRamp), renderBlock('.dark', darkRamp));
+  }
+
   if (!blocks.length) return '';
   return `/* RMFOOD runtime theme ramp (${theme.id}) */\n${blocks.join('\n')}\n`;
 }

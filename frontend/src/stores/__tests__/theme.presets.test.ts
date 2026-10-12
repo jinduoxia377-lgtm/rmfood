@@ -479,3 +479,206 @@ describe('C1 applyThemeToDOM — 运行时样式表生命周期', () => {
   });
 });
 
+// ============================================================================
+// E3：次色 / 强调色的双作用域注入
+// ----------------------------------------------------------------------------
+// 三个品牌族（primary / secondary / accent）共享同一套模式反转机制：
+//   档位令牌与语义族令牌都写进运行时 <style> 的 :root / .dark 块，
+//   generateCSSVariables 对已选择过的族让位。
+//
+// 关键不变量：用【L0 默认色阶】喂入注入器，推导出的语义族取值必须与
+// base.css / dark.css 的逐条定义完全一致 —— 这既证明「选默认 = 无变化」，
+// 也证明 E3 的档位规则表没有偏离 L0。
+// ============================================================================
+
+describe('E3 generateModeRampCSS — 次色族', () => {
+  // L0 权威值（base.css:41-52 亮 / dark.css:37-47 暗）
+  const SEC_LIGHT: Record<string, string> = {
+    '50': '#eff6ff', '100': '#dbeafe', '200': '#bfdbfe', '300': '#93c5fd', '400': '#60a5fa',
+    '500': '#3b82f6', '600': '#2563eb', '700': '#1d4ed8', '800': '#1e40af', '900': '#1e3a8a', '950': '#172554',
+  };
+  const SEC_DARK: Record<string, string> = {
+    '50': '#172554', '100': '#1e3a8a', '200': '#1e40af', '300': '#1d4ed8', '400': '#2563eb',
+    '500': '#3b82f6', '600': '#60a5fa', '700': '#93c5fd', '800': '#bfdbfe', '900': '#dbeafe', '950': '#eff6ff',
+  };
+
+  it('只选了次色时产出次色块，且不触碰主色与强调色（按族独立判定）', () => {
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      modeRamps: { secondary: SEC_LIGHT, secondaryDark: SEC_DARK },
+    });
+    expect(css).toContain(':root {');
+    expect(css).toContain('.dark {');
+    for (const [t, v] of Object.entries(SEC_LIGHT)) {
+      expect(css, `secondary-${t}`).toContain(`--color-secondary-${t}: ${v}`);
+    }
+    // 未选择的族不得被写入运行时覆盖（否则会把「没动过」的族变成运行时态）
+    expect(css).not.toContain('--color-primary-');
+    expect(css).not.toContain('--color-accent-');
+  });
+
+  it('亮色块语义族与 base.css 逐条一致（container/surface 随色族走，不再残留上一模式值）', () => {
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime', isPreset: false,
+      modeRamps: { secondary: SEC_LIGHT, secondaryDark: SEC_DARK },
+    });
+    const light = css.slice(css.indexOf(':root {')).split('\n}')[0];
+    // base.css:54 --color-secondary: var(--color-secondary-700)
+    expect(light).toContain('--color-secondary: #1d4ed8;');
+    // base.css:55 --color-secondary-rgb: 59, 130, 246（取 500 档）
+    expect(light).toContain('--color-secondary-rgb: 59, 130, 246;');
+    // base.css:56 --color-secondary-hover: var(--color-secondary-700)
+    expect(light).toContain('--color-secondary-hover: #1d4ed8;');
+    // base.css:57 --color-secondary-container: #dbeafe（100 档实色浅底）
+    expect(light).toContain('--color-secondary-container: #dbeafe;');
+    // base.css:135 --color-secondary-surface: var(--color-secondary-700)
+    expect(light).toContain('--color-secondary-surface: #1d4ed8;');
+    // base.css:136 --color-secondary-surface-deep: var(--color-secondary-800)
+    expect(light).toContain('--color-secondary-surface-deep: #1e40af;');
+  });
+
+  it('暗色块语义族与 dark.css 逐条一致（main/rgb 取 600，container 为 rgba(600,.15)）', () => {
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime', isPreset: false,
+      modeRamps: { secondary: SEC_LIGHT, secondaryDark: SEC_DARK },
+    });
+    const dark = css.slice(css.indexOf('.dark {')).split('\n}')[0];
+    // dark.css:49 --color-secondary: var(--color-secondary-600)
+    expect(dark).toContain('--color-secondary: #60a5fa;');
+    // dark.css:50 --color-secondary-rgb: 96, 165, 250
+    expect(dark).toContain('--color-secondary-rgb: 96, 165, 250;');
+    // dark.css:51 --color-secondary-hover: var(--color-secondary-700)
+    expect(dark).toContain('--color-secondary-hover: #93c5fd;');
+    // dark.css:52 --color-secondary-container: rgba(96, 165, 250, 0.15)
+    expect(dark).toContain('--color-secondary-container: rgba(96, 165, 250, 0.15);');
+    // dark.css:91/92 surface=200 / surface-deep=100
+    expect(dark).toContain('--color-secondary-surface: #1e40af;');
+    expect(dark).toContain('--color-secondary-surface-deep: #1e3a8a;');
+    // 作用域隔离：暗色块不得出现亮色实色容器
+    expect(dark).not.toContain('--color-secondary-container: #dbeafe;');
+  });
+});
+
+describe('E3 generateModeRampCSS — 强调色族', () => {
+  // L0 权威值（base.css:60-70 亮 / dark.css:55-65 暗）
+  const ACC_LIGHT: Record<string, string> = {
+    '50': '#faf5ff', '100': '#f3e8ff', '200': '#e8d5ff', '300': '#c084fc', '400': '#c084fc',
+    '500': '#8b5cf6', '600': '#7c3aed', '700': '#6d28d9', '800': '#5b21b6', '900': '#3b0764', '950': '#1a0542',
+  };
+  const ACC_DARK: Record<string, string> = {
+    '50': '#1a0542', '100': '#3b0764', '200': '#5b21b6', '300': '#6d28d9', '400': '#7c3aed',
+    '500': '#8b5cf6', '600': '#a78bfa', '700': '#c4b5fd', '800': '#ddd6fe', '900': '#ede9fe', '950': '#faf5ff',
+  };
+
+  it('亮色块语义族与 base.css 逐条一致', () => {
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime', isPreset: false,
+      modeRamps: { accent: ACC_LIGHT, accentDark: ACC_DARK },
+    });
+    const light = css.slice(css.indexOf(':root {')).split('\n}')[0];
+    // base.css:72 accent=700 / :73 rgb=139,92,246（500）/ :74 hover=600 / :75 container=100
+    expect(light).toContain('--color-accent: #6d28d9;');
+    expect(light).toContain('--color-accent-rgb: 139, 92, 246;');
+    expect(light).toContain('--color-accent-hover: #7c3aed;');
+    expect(light).toContain('--color-accent-container: #f3e8ff;');
+    // base.css:79 surface=700 / :145 surface-deep=800
+    expect(light).toContain('--color-accent-surface: #6d28d9;');
+    expect(light).toContain('--color-accent-surface-deep: #5b21b6;');
+  });
+
+  it('暗色块语义族与 dark.css 逐条一致', () => {
+    const css = generateModeRampCSS({
+      ...presetThemes['light-default'],
+      id: 'custom-runtime', isPreset: false,
+      modeRamps: { accent: ACC_LIGHT, accentDark: ACC_DARK },
+    });
+    const dark = css.slice(css.indexOf('.dark {')).split('\n}')[0];
+    // dark.css:67 accent=600 / :68 rgb=167,139,250 / :69 hover=700 / :70 container=rgba(600,.15)
+    expect(dark).toContain('--color-accent: #a78bfa;');
+    expect(dark).toContain('--color-accent-rgb: 167, 139, 250;');
+    expect(dark).toContain('--color-accent-hover: #c4b5fd;');
+    expect(dark).toContain('--color-accent-container: rgba(167, 139, 250, 0.15);');
+    // dark.css:74 surface=200 / :101 surface-deep=100
+    expect(dark).toContain('--color-accent-surface: #5b21b6;');
+    expect(dark).toContain('--color-accent-surface-deep: #3b0764;');
+  });
+});
+
+describe('E3 generateCSSVariables — 按族让位模式相关令牌', () => {
+  // 让位边界说明：`--color-<族>-container` / `-surface` / `-surface-deep` / `-hover` /
+  // `-rgb` 从不由 generateCSSVariables 产出 —— SemanticColors 的品牌角色只有
+  // { main, light, dark, contrastText } 四个字段，这些令牌只存在于 L0 的
+  // base.css / dark.css 里。inline 通道因此与它们没有直接冲突；让位的作用是把
+  // `--color-<族>`（= main 的映射目标）从 inline 手里移交给运行时 <style>，
+  // 使「主令牌 + 语义族 + 整档色阶」三者都按同一模式取值，不会出现选完配色
+  // 后切模式时主令牌与容器底色各属于一个模式的混排。
+  const SEC_LIGHT: Record<string, string> = { '100': '#dbeafe', '500': '#3b82f6', '950': '#172554' };
+
+  it('选了次色时次色档位与语义令牌让位；主色 / 强调色不受影响（按族独立）', () => {
+    const base = presetThemes['light-default'];
+    const theme: ThemeConfig = {
+      ...base,
+      colors: {
+        ...base.colors,
+        secondary: { ...base.colors.secondary, '500': '#3b82f6', '950': '#172554' },
+      },
+      modeRamps: { secondary: SEC_LIGHT },
+    };
+    const vars = generateCSSVariables(theme);
+    // 次色：档位 + 语义族全部让位给运行时 <style>
+    for (const t of ['100', '500', '950']) expect(vars[`--color-secondary-${t}`], t).toBeUndefined();
+    expect(vars['--color-secondary']).toBeUndefined();
+    expect(vars['--color-secondary-container']).toBeUndefined();
+    expect(vars['--color-secondary-surface']).toBeUndefined();
+    expect(vars['--color-secondary-rgb']).toBeUndefined();
+    // 未选择的族照旧走 inline（不因次色被选而被牵连）
+    expect(vars['--color-primary']).toBeDefined();
+    expect(vars['--color-accent']).toBeDefined();
+  });
+
+  it('未选任何族时三族全部照旧走 inline（既有路径零回归）', () => {
+    const base = presetThemes['light-default'];
+    const vars = generateCSSVariables(base);
+    expect(vars['--color-primary']).toBeDefined();
+    expect(vars['--color-secondary']).toBe(base.colors.secondary.main);
+    expect(vars['--color-accent']).toBeDefined();
+  });
+
+  it('只选主色时次色 / 强调色不被牵连让位（C1.5 的按族边界在 E3 后仍成立）', () => {
+    const base = presetThemes['light-default'];
+    const theme: ThemeConfig = {
+      ...base,
+      modeRamps: { primary: { '500': '#10b981' } },
+    };
+    const vars = generateCSSVariables(theme);
+    expect(vars['--color-primary']).toBeUndefined();
+    expect(vars['--color-secondary']).toBe(base.colors.secondary.main);
+    expect(vars['--color-accent']).toBeDefined();
+  });
+
+  it('三族同时选择时全部让位，且三族块都出现在运行时样式表', () => {
+    const base = presetThemes['light-default'];
+    const theme: ThemeConfig = {
+      ...base,
+      modeRamps: {
+        primary: { '500': '#10b981' },
+        secondary: { '500': '#3b82f6' },
+        accent: { '500': '#8b5cf6' },
+      },
+    };
+    const vars = generateCSSVariables(theme);
+    for (const fam of ['primary', 'secondary', 'accent']) {
+      expect(vars[`--color-${fam}`], fam).toBeUndefined();
+      expect(vars[`--color-${fam}-container`], `${fam}-container`).toBeUndefined();
+      expect(vars[`--color-${fam}-rgb`], `${fam}-rgb`).toBeUndefined();
+    }
+    const css = generateModeRampCSS(theme);
+    expect(css).toContain('--color-primary-500: #10b981');
+    expect(css).toContain('--color-secondary-500: #3b82f6');
+    expect(css).toContain('--color-accent-500: #8b5cf6');
+  });
+});
+

@@ -9,8 +9,10 @@ import {
   type TransitionType, type AccessibilityMode,
 } from '@/theme';
 import {
-  APPLE_HIG_PALETTES, FONT_SCALES, FONT_SCHEME_META, getPaletteScales,
+  APPLE_HIG_PALETTES, ACCENT_PALETTES, SECONDARY_PALETTES,
+  FONT_SCALES, FONT_SCHEME_META, getPaletteScales, getBrandFamilyScales,
   RADIUS_SCALE_META, RADIUS_SCALES,
+  type BrandColorPalette,
 } from './theme-palette';
 import { ThemeImport } from '../../theme/ThemeImport';
 
@@ -40,6 +42,8 @@ import { ThemeImport } from '../../theme/ThemeImport';
  *  ⑥ 快捷键实际绑定（Ctrl+Shift+T 在明暗间切换）
  *  ⑦ 字体方案（紧凑/标准/宽松 → 完整 L0 排版档 12 键，--text-* 令牌）
  *  ⑧ 配色方案（Apple HIG 系统色板 → 主色阶整档 11/11 双作用域注入）
+ *  ⑧b 次色方案（--color-secondary-* 整档 11/11 + 6 语义令牌，双作用域）
+ *  ⑧c 强调色方案（--color-accent-* 整档 11/11 + 6 语义令牌，双作用域）
  *  ⑨ 无障碍模式四态（normal/high-contrast/reading/color-blind，setAccessibilityMode）
  *     —— C3：四态原只在侧栏 ThemeSwitcher 的下拉里可达，/settings 主入口反而够不着。
  *     主入口补全后 Switcher 退化为轻量明暗切换器（C5），不再重复/丢失功能。
@@ -62,13 +66,17 @@ export const ThemePanel: React.FC = () => {
     applyCustomTheme, resetToDefault,
     transitionType, setTransitionType,
     motionPreferences, setMotionPreferences,
-    paletteKey, fontScale, radiusScale,
+    paletteKey, secondaryPaletteKey, accentPaletteKey,
+    fontScale, radiusScale,
     accessibilityMode, setAccessibilityMode,
   } = useThemeStore();
   const isDark = useIsDarkMode();
 
   // ⑦⑧⑩ 的选中态基线：未做任何选择时视同「默认绿」「标准」字号与「标准」圆角。
+  // E3 的次色 / 强调色同样沿用「未选择 = 视同 L0 默认」，保证刷新前后 UI 一致。
   const activePalette = paletteKey || 'green';
+  const activeSecondaryPalette = secondaryPaletteKey || 'blue';
+  const activeAccentPalette = accentPaletteKey || 'purple';
   const activeFontScale = fontScale || 'standard';
   const activeRadiusScale = radiusScale || 'standard';
 
@@ -192,6 +200,46 @@ export const ThemePanel: React.FC = () => {
         modeRamps: { primary: scales.light, primaryDark: scales.dark },
       },
       { paletteKey: p.key },
+    );
+  };
+
+  /**
+   * ⑧b / ⑧c 应用次色 / 强调色方案（E3）。
+   *
+   * 与主色同一套双作用域机制（见 theme.presets 的 generateModeRampCSS）：
+   * 整族 11 档 + 语义令牌（-main / -rgb / -hover / -container / -surface /
+   * -surface-deep）都写进运行时 `<style>` 的 `:root` / `.dark` 块，
+   * generateCSSVariables 对这两族让位，避免 inline 同时压过两个作用域。
+   *
+   * 次色与强调色的 L0 锚点在两种模式下相同（base.css:46 / dark.css:42 同为
+   * #3b82f6），故一份锚点即可派生两组作用域 —— 明暗差异由档位反转承载，
+   * 与主色维护 light/dark 两个锚点不同。
+   *
+   * 内外角色名不一致：强调色的对外/令牌族名是 `accent`，而 ThemeConfig 的内部
+   * 角色名是 `tertiary`（COLOR_MAIN_TO_L0 的 'tertiary-main' → --color-accent），
+   * 故 colors 里必须写 tertiary，modeRamps 里写 accent。
+   */
+  const applyBrandPalette = (family: 'secondary' | 'accent', p: BrandColorPalette) => {
+    const scales = getBrandFamilyScales(family, p);
+    const role = family === 'secondary' ? 'secondary' : 'tertiary';
+    applyCustomTheme(
+      {
+        colors: {
+          [role]: {
+            main: p.anchor,
+            light: p.anchor,
+            dark: p.anchor,
+            contrastText: p.anchor,
+          },
+        },
+        modeRamps: {
+          [family]: scales.light,
+          [`${family}Dark`]: scales.dark,
+        },
+      },
+      family === 'secondary'
+        ? { secondaryPaletteKey: p.key }
+        : { accentPaletteKey: p.key },
     );
   };
 
@@ -545,6 +593,86 @@ export const ThemePanel: React.FC = () => {
             <RotateCcw size={14} aria-hidden /> 重置默认
           </button>
         </div>
+      </section>
+
+      {/* ═══ ⑧b 次色方案（E3）═══ */}
+      <section className={cardBase} aria-labelledby="tp-secondary-palette-h">
+        <div className={headBase}>
+          <Palette size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-secondary-palette-h" className={headTitle}>次色方案</h3>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">--color-secondary-*</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3" role="radiogroup" aria-label="次色方案">
+          {SECONDARY_PALETTES.map((p) => {
+            const active = activeSecondaryPalette === p.key;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${p.name}次色方案`}
+                onClick={() => applyBrandPalette('secondary', p)}
+                className={cn(
+                  'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
+                  active ? tileActive : tileIdle
+                )}
+                title={`${p.name}：${p.note}`}
+              >
+                <span
+                  className="h-8 w-8 rounded-full border border-black/10"
+                  style={{ background: p.anchor }}
+                  aria-hidden
+                />
+                <span className={cn('text-xs font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{p.name}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
+          当前：{SECONDARY_PALETTES.find((p) => p.key === activeSecondaryPalette)?.name ?? '海洋蓝'}
+          · 11 档整阶 + 6 个语义令牌（container / surface 等）同步，1 922 处引用受益
+        </p>
+      </section>
+
+      {/* ═══ ⑧c 强调色方案（E3）═══ */}
+      <section className={cardBase} aria-labelledby="tp-accent-palette-h">
+        <div className={headBase}>
+          <Palette size={18} className="text-primary-main" aria-hidden />
+          <h3 id="tp-accent-palette-h" className={headTitle}>强调色方案</h3>
+          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">--color-accent-*</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3" role="radiogroup" aria-label="强调色方案">
+          {ACCENT_PALETTES.map((p) => {
+            const active = activeAccentPalette === p.key;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={`${p.name}强调色方案`}
+                onClick={() => applyBrandPalette('accent', p)}
+                className={cn(
+                  'flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
+                  active ? tileActive : tileIdle
+                )}
+                title={`${p.name}：${p.note}`}
+              >
+                <span
+                  className="h-8 w-8 rounded-full border border-black/10"
+                  style={{ background: p.anchor }}
+                  aria-hidden
+                />
+                <span className={cn('text-xs font-medium', active ? 'text-neutral-900' : 'text-neutral-700')}>{p.name}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2">
+          当前：{ACCENT_PALETTES.find((p) => p.key === activeAccentPalette)?.name ?? '生物紫'}
+          · 11 档整阶 + 6 个语义令牌同步，1 540 处引用受益
+        </p>
       </section>
 
       {/* ═══ ⑩ 圆角方案（--radius-* 令牌）═══ */}

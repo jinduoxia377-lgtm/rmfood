@@ -441,11 +441,16 @@ export interface ThemeConfig {
 }
 
 /**
- * 模式反转色阶（执行方案阶段 C1）
+ * 模式反转色阶（执行方案阶段 C1；E3 扩展为三品牌族）
  *
- * L0 约定：`--color-primary-<档>` 在两种模式下是【有意反转】的 ——
+ * L0 约定：`--color-<族>-<档>` 在两种模式下是【有意反转】的 ——
  *   base.css 亮色：100 最浅 → 950 最深
  *   dark.css 暗色：100 最深 → 950 最浅，且值作用域在 `.dark` 选择器上
+ *
+ * 涉及三个品牌族，均为模式相关：
+ *   - primary   ：base.css 亮色锚点 #10b981 / dark.css 暗色锚点 #34d399（500 档两态不同）
+ *   - secondary ：两态 500 锚点同为 #3b82f6，靠档位反转区分明暗
+ *   - accent    ：两态 500 锚点同为 #8b5cf6，同上
  *
  * 因此这类令牌**不能**走 `root.style.setProperty` 的 inline 通道：inline 属性会
  * 同时压过 `:root` 与 `.dark`，导致选定配色后暗色模式仍显示亮色 ramp ——
@@ -453,12 +458,23 @@ export interface ThemeConfig {
  * 的反转值），暗色下 800-950 是浅色档，叠白字即对比度崩塌。
  *
  * 唯一正确写法：写成运行时 `<style>` 的双作用域块，两组值一并携带。
+ *
+ * 命名约定：`<族>` 为亮色（`:root`）作用域，`<族>Dark` 为暗色（`.dark`）作用域。
+ * 键名可选 —— 只携带用户实际选择过的族，未选中的族不写，保持 L0 基线。
  */
 export interface ModeRamps {
   /** 亮色（`:root`）作用域的主色阶 */
   primary?: Record<string, string>;
   /** 暗色（`.dark`）作用域的主色阶 */
   primaryDark?: Record<string, string>;
+  /** 亮色作用域的次色色阶（--color-secondary-*） */
+  secondary?: Record<string, string>;
+  /** 暗色作用域的次色色阶 */
+  secondaryDark?: Record<string, string>;
+  /** 亮色作用域的强调色色阶（--color-accent-*） */
+  accent?: Record<string, string>;
+  /** 暗色作用域的强调色色阶 */
+  accentDark?: Record<string, string>;
 }
 
 // ============================================================================
@@ -487,8 +503,24 @@ export interface CustomThemeOverrides {
  * 且直接渲染成 `aria-checked={false}` —— 用户完全看不出当前生效的方案。
  */
 export interface ThemeOptionMeta {
-  /** 当前选中的配色方案 key（theme-palette 的 HIGPalette.key，如 'green' / 'blue'） */
+  /** 当前选中的主色配色方案 key（theme-palette 的 HIGPalette.key，如 'green' / 'blue'） */
   paletteKey?: string;
+  /**
+   * 当前选中的次色配色方案 key（E3）。
+   *
+   * 内部族名 `secondary`（COLOR_MAIN_TO_L0 的 'secondary-main' → --color-secondary），
+   * 色阶作用域为 `:root` / `.dark` 的 `--color-secondary-<档>`。
+   */
+  secondaryPaletteKey?: string;
+  /**
+   * 当前选中的强调色配色方案 key（E3）。
+   *
+   * 注意内外名不一致：ThemeConfig 内部角色名是 `tertiary`
+   * （COLOR_MAIN_TO_L0 的 'tertiary-main' → --color-accent），
+   * 而 L0 令牌族名是 `accent`。对外一律用 `accent`（与用户认知及 L0 令牌一致），
+   * 由调用方在写入 colors 时映射到 tertiary。
+   */
+  accentPaletteKey?: string;
   /** 当前选中的字体档位（'compact' / 'standard' / 'relaxed'） */
   fontScale?: string;
   /** 当前选中的圆角档位（'sharp' / 'standard' / 'rounded'） */
@@ -537,6 +569,12 @@ export interface ThemeState {
 
   /** 当前选中的配色方案 key（派生选中态用，空串 = 未选择） */
   paletteKey: string;
+
+  /** 当前选中的次色方案 key（E3，派生选中态用，空串 = 未选择） */
+  secondaryPaletteKey: string;
+
+  /** 当前选中的强调色方案 key（E3，派生选中态用，空串 = 未选择） */
+  accentPaletteKey: string;
 
   /** 当前选中的字体档位（派生选中态用） */
   fontScale: string;

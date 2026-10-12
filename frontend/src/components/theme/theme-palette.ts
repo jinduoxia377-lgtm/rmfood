@@ -167,6 +167,94 @@ export function getPaletteScales(p: HIGPalette): { light: PrimaryScale; dark: Pr
 }
 
 // ============================================================================
+// ⑧b / ⑧c 次色 / 强调色：单锚点色板（执行方案阶段 E3）
+// ============================================================================
+//
+// 与主色不同，次色与强调色在 L0 里的 500 锚点【两种模式相同】：
+//   --color-secondary-500  亮 / 暗 均为 #3b82f6（base.css:46 / dark.css:42）
+//   --color-accent-500     亮 / 暗 均为 #8b5cf6（base.css:65 / dark.css:60）
+// 明暗差异完全由档位反转承载（亮色 100 浅→950 深、暗色反之），
+// 故一份锚点即可派生两组作用域，不必像主色那样维护 light / dark 两个锚点。
+//
+// 「选默认 = 无变化」沿用主色的约定：默认方案逐档照抄 L0 权威值，不程序化生成。
+// buildLightRamp 从 500 锚点插值，与 Tailwind 手工调校过的 L0 档位有细微偏差
+//（accent 亮色 300 与 400 在 L0 里同为 #c084fc，生成器无法复现这个「压平」），
+// 若默认方案也走生成器，「选默认」就会悄悄改变全站次色/强调色的渲染。
+// 其余方案程序化生成 —— RAMP_WEIGHTS 的幅值严格递增保证亮度单调，
+// 可被 GATE-16 断言（生成 ramp 不可能出现中间档换色的断裂梯度）。
+//
+// 影响面（2026-10 实测）：--color-secondary-* 共 1 922 处引用（700 档 457、
+// 500 档 379、600 档 314 最多）；--color-accent-* 共 1 540 处（500 档 317、
+// 700 档 300、600 档 231 最多）。两族都不是小面，故走全量 11 档整档替换。
+
+/** 次色 / 强调色方案：单锚点（500 档，两态通用） */
+export interface BrandColorPalette {
+  key: string;
+  name: string;
+  /** 500 档锚点 hex，两种模式共用 */
+  anchor: string;
+  note: string;
+}
+
+/** 次色方案（L0 默认 Ocean Blue #3B82F6） */
+export const SECONDARY_PALETTES: BrandColorPalette[] = [
+  { key: 'blue',   name: '海洋蓝', anchor: '#3B82F6', note: 'L0 默认' },
+  { key: 'sky',    name: '天青',   anchor: '#0EA5E9', note: '明亮通透' },
+  { key: 'cyan',   name: '青',     anchor: '#06B6D4', note: '科技感' },
+  { key: 'teal',   name: '蓝绿',   anchor: '#14B8A6', note: '沉稳偏冷' },
+  { key: 'indigo', name: '靛蓝',   anchor: '#4F46E5', note: '深邃' },
+];
+
+/** 强调色方案（L0 默认 Bio Purple #8B5CF6） */
+export const ACCENT_PALETTES: BrandColorPalette[] = [
+  { key: 'purple', name: '生物紫', anchor: '#8B5CF6', note: 'L0 默认' },
+  { key: 'violet', name: '紫罗兰', anchor: '#7C3AED', note: '偏蓝紫' },
+  { key: 'indigo', name: '靛蓝',   anchor: '#6366F1', note: '中性冷色' },
+  { key: 'pink',   name: '品红',   anchor: '#EC4899', note: '活泼' },
+  { key: 'orange', name: '橙',     anchor: '#EA580C', note: '暖色强调' },
+];
+
+// L0 权威值逐档照抄（base.css:41-70 亮 / dark.css:37-65 暗）。
+// 不得程序化生成 —— 见上方「选默认 = 无变化」说明。
+export const DEFAULT_SECONDARY_LIGHT_SCALE: PrimaryScale = {
+  '50': '#eff6ff', '100': '#dbeafe', '200': '#bfdbfe', '300': '#93c5fd', '400': '#60a5fa',
+  '500': '#3b82f6', '600': '#2563eb', '700': '#1d4ed8', '800': '#1e40af', '900': '#1e3a8a', '950': '#172554',
+};
+export const DEFAULT_SECONDARY_DARK_SCALE: PrimaryScale = {
+  '50': '#172554', '100': '#1e3a8a', '200': '#1e40af', '300': '#1d4ed8', '400': '#2563eb',
+  '500': '#3b82f6', '600': '#60a5fa', '700': '#93c5fd', '800': '#bfdbfe', '900': '#dbeafe', '950': '#eff6ff',
+};
+export const DEFAULT_ACCENT_LIGHT_SCALE: PrimaryScale = {
+  '50': '#faf5ff', '100': '#f3e8ff', '200': '#e8d5ff', '300': '#c084fc', '400': '#c084fc',
+  '500': '#8b5cf6', '600': '#7c3aed', '700': '#6d28d9', '800': '#5b21b6', '900': '#3b0764', '950': '#1a0542',
+};
+export const DEFAULT_ACCENT_DARK_SCALE: PrimaryScale = {
+  '50': '#1a0542', '100': '#3b0764', '200': '#5b21b6', '300': '#6d28d9', '400': '#7c3aed',
+  '500': '#8b5cf6', '600': '#a78bfa', '700': '#c4b5fd', '800': '#ddd6fe', '900': '#ede9fe', '950': '#faf5ff',
+};
+
+/**
+ * 取某品牌的次色 / 强调色双模式整档色阶。
+ *
+ * 默认方案返回 L0 权威值；其余方案由锚点经 buildLightRamp / buildDarkRamp
+ * 派生（权重取负即得暗色反转，500 锚点钉死在两态中间）。
+ */
+export function getBrandFamilyScales(
+  family: 'secondary' | 'accent',
+  p: BrandColorPalette,
+): { light: PrimaryScale; dark: PrimaryScale } {
+  const isDefault =
+    (family === 'secondary' && p.key === 'blue') ||
+    (family === 'accent' && p.key === 'purple');
+  if (isDefault) {
+    return family === 'secondary'
+      ? { light: DEFAULT_SECONDARY_LIGHT_SCALE, dark: DEFAULT_SECONDARY_DARK_SCALE }
+      : { light: DEFAULT_ACCENT_LIGHT_SCALE, dark: DEFAULT_ACCENT_DARK_SCALE };
+  }
+  return { light: buildLightRamp(p.anchor), dark: buildDarkRamp(p.anchor) };
+}
+
+// ============================================================================
 // ⑦ 字体方案：完整 L0 排版档
 // ============================================================================
 

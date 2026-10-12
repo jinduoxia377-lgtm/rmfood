@@ -204,10 +204,11 @@ describe('导出 / 导入往返闭环', () => {
     return JSON.parse(useThemeStore.getState().exportTheme()) as any;
   }
 
-  it('导出快照含全部可回放字段（含 modeRamps 与三个选中态键）', () => {
+  it('导出快照含全部可回放字段（含 modeRamps 与五个选中态键）', () => {
     const snap = applyAndExport();
 
-    expect(snap.version).toBe('2.0.0');
+    // v2.1.0：E3 新增 secondaryPaletteKey / accentPaletteKey 两个选中态键
+    expect(snap.version).toBe('2.1.0');
     expect(snap.app).toBe('rmfood-theme');
     expect(typeof snap.exportedAt).toBe('string');
     // 用户实际的选择 —— 导入回放的全部依据
@@ -218,9 +219,43 @@ describe('导出 / 导入往返闭环', () => {
     expect(snap.paletteKey).toBe('blue');
     expect(snap.fontScale).toBe('relaxed');
     expect(snap.radiusScale).toBe('rounded');
+    // E3：次色 / 强调色选中态必须出现在快照里（未选过则为空串）
+    expect(typeof snap.secondaryPaletteKey).toBe('string');
+    expect(typeof snap.accentPaletteKey).toBe('string');
     // 模式类设置
     expect(snap.settings.mode).toBe('light');
     expect(snap.theme).toBeDefined();
+  });
+
+  it('E3：三个品牌族的选中态经导出 / 导入往返后全部还原', () => {
+    const st = useThemeStore.getState();
+    st.applyCustomTheme(
+      {
+        modeRamps: {
+          primary: LIGHT_RAMP, primaryDark: DARK_RAMP,
+          secondary: LIGHT_RAMP, secondaryDark: DARK_RAMP,
+          accent: LIGHT_RAMP, accentDark: DARK_RAMP,
+        },
+      } as any,
+      { paletteKey: 'blue', secondaryPaletteKey: 'sky', accentPaletteKey: 'pink' },
+    );
+    const snap = JSON.parse(useThemeStore.getState().exportTheme()) as any;
+
+    expect(snap.runtimeOverrides.modeRamps).toEqual({
+      primary: LIGHT_RAMP, primaryDark: DARK_RAMP,
+      secondary: LIGHT_RAMP, secondaryDark: DARK_RAMP,
+      accent: LIGHT_RAMP, accentDark: DARK_RAMP,
+    });
+
+    resetStore();
+    const result = norm(snap)!;
+    useThemeStore.getState().applyCustomTheme(result.overrides as any, result.meta as any);
+
+    const after = useThemeStore.getState();
+    expect(after.paletteKey).toBe('blue');
+    expect(after.secondaryPaletteKey).toBe('sky');
+    expect(after.accentPaletteKey).toBe('pink');
+    expect(after.runtimeOverrides.modeRamps).toEqual(snap.runtimeOverrides.modeRamps);
   });
 
   it('整链往返：导出 → 规范化 → 回放，选中态与覆盖全部还原', () => {
