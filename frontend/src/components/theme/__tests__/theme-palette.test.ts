@@ -9,18 +9,25 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
+  ACCENT_PALETTES,
   APPLE_HIG_PALETTES,
+  DEFAULT_ACCENT_DARK_SCALE,
+  DEFAULT_ACCENT_LIGHT_SCALE,
   DEFAULT_GREEN_DARK_SCALE,
   DEFAULT_GREEN_LIGHT_SCALE,
+  DEFAULT_SECONDARY_DARK_SCALE,
+  DEFAULT_SECONDARY_LIGHT_SCALE,
   FONT_SCALE_KEYS,
   FONT_SCALES,
   PRIMARY_TIERS,
   RADIUS_SCALE_KEYS,
   RADIUS_SCALE_META,
   RADIUS_SCALES,
+  SECONDARY_PALETTES,
   buildDarkRamp,
   buildFontScale,
   buildLightRamp,
+  getBrandFamilyScales,
   getPaletteScales,
   mixColor,
   relLuminance,
@@ -237,6 +244,142 @@ describe('RADIUS_SCALES — 圆角方案', () => {
     for (const scale of Object.values(RADIUS_SCALES)) {
       for (const key of RADIUS_SCALE_KEYS) {
         expect(isSafeToken(`--radius-${key}`, scale[key]), `--radius-${key}`).toBe(true);
+      }
+    }
+  });
+});
+
+// ============================================================================
+// ⑧b / ⑧c 次色 / 强调色方案（执行方案阶段 E3）
+//
+// 锁定与主色同级的三条约定：
+//   1. 默认方案逐档等于 L0 —— 选「海洋蓝」「生物紫」不得改变全站既有渲染。
+//   2. 非默认方案的 11 档亮度单调（亮色递减、暗色递增），500 档 = 锚点。
+//   3. 次色 / 强调色的 500 锚点在两种模式下相同（与主色维护 light/dark 双锚点不同），
+//      明暗差异完全由档位反转承载。
+// ============================================================================
+
+describe('DEFAULT_SECONDARY_*_SCALE — 与 L0 逐档一致（base.css:41-52 / dark.css:37-47）', () => {
+  it('亮色档逐值等于 base.css 的 --color-secondary-<档>', () => {
+    const L0: Record<PrimaryTier, string> = {
+      '50': '#eff6ff', '100': '#dbeafe', '200': '#bfdbfe', '300': '#93c5fd', '400': '#60a5fa',
+      '500': '#3b82f6', '600': '#2563eb', '700': '#1d4ed8', '800': '#1e40af', '900': '#1e3a8a', '950': '#172554',
+    };
+    expect(DEFAULT_SECONDARY_LIGHT_SCALE).toEqual(L0);
+  });
+
+  it('暗色档逐值等于 dark.css 的 --color-secondary-<档>', () => {
+    const L0: Record<PrimaryTier, string> = {
+      '50': '#172554', '100': '#1e3a8a', '200': '#1e40af', '300': '#1d4ed8', '400': '#2563eb',
+      '500': '#3b82f6', '600': '#60a5fa', '700': '#93c5fd', '800': '#bfdbfe', '900': '#dbeafe', '950': '#eff6ff',
+    };
+    expect(DEFAULT_SECONDARY_DARK_SCALE).toEqual(L0);
+  });
+
+  it('暗色档是亮色档的反转且 500 锚点钉死不变', () => {
+    expect(DEFAULT_SECONDARY_DARK_SCALE['50']).toBe(DEFAULT_SECONDARY_LIGHT_SCALE['950']);
+    expect(DEFAULT_SECONDARY_DARK_SCALE['950']).toBe(DEFAULT_SECONDARY_LIGHT_SCALE['50']);
+    expect(DEFAULT_SECONDARY_DARK_SCALE['500']).toBe(DEFAULT_SECONDARY_LIGHT_SCALE['500']);
+  });
+});
+
+describe('DEFAULT_ACCENT_*_SCALE — 与 L0 逐档一致（base.css:60-70 / dark.css:55-65）', () => {
+  it('亮色档逐值等于 base.css 的 --color-accent-<档>', () => {
+    const L0: Record<PrimaryTier, string> = {
+      '50': '#faf5ff', '100': '#f3e8ff', '200': '#e8d5ff', '300': '#c084fc', '400': '#c084fc',
+      '500': '#8b5cf6', '600': '#7c3aed', '700': '#6d28d9', '800': '#5b21b6', '900': '#3b0764', '950': '#1a0542',
+    };
+    expect(DEFAULT_ACCENT_LIGHT_SCALE).toEqual(L0);
+  });
+
+  it('暗色档逐值等于 dark.css 的 --color-accent-<档>', () => {
+    const L0: Record<PrimaryTier, string> = {
+      '50': '#1a0542', '100': '#3b0764', '200': '#5b21b6', '300': '#6d28d9', '400': '#7c3aed',
+      '500': '#8b5cf6', '600': '#a78bfa', '700': '#c4b5fd', '800': '#ddd6fe', '900': '#ede9fe', '950': '#faf5ff',
+    };
+    expect(DEFAULT_ACCENT_DARK_SCALE).toEqual(L0);
+  });
+
+  it('L0 的 300 与 400 同为 #c084fc（压平档）—— 故默认方案不得走生成器', () => {
+    // 这是「选默认 = 无变化」必须由 L0 权威值承载的直接证据：
+    // buildLightRamp('#8b5cf6') 会给出 300 ≠ 400，无法复现这个压平。
+    expect(DEFAULT_ACCENT_LIGHT_SCALE['300']).toBe('#c084fc');
+    expect(DEFAULT_ACCENT_LIGHT_SCALE['400']).toBe('#c084fc');
+    expect(buildLightRamp('#8b5cf6')['400']).not.toBe(buildLightRamp('#8b5cf6')['300']);
+  });
+});
+
+describe('SECONDARY_PALETTES / ACCENT_PALETTES — 方案元数据', () => {
+  it('每个方案的锚点都是合法 hex，且 key 各自唯一', () => {
+    for (const p of SECONDARY_PALETTES) {
+      expect(/^#[0-9A-Fa-f]{6}$/.test(p.anchor), `${p.key} anchor`).toBe(true);
+      expect(p.name.length, `${p.key} name`).toBeGreaterThan(0);
+    }
+    for (const p of ACCENT_PALETTES) {
+      expect(/^#[0-9A-Fa-f]{6}$/.test(p.anchor), `${p.key} anchor`).toBe(true);
+      expect(p.name.length, `${p.key} name`).toBeGreaterThan(0);
+    }
+    expect(new Set(SECONDARY_PALETTES.map((p) => p.key)).size).toBe(SECONDARY_PALETTES.length);
+    expect(new Set(ACCENT_PALETTES.map((p) => p.key)).size).toBe(ACCENT_PALETTES.length);
+  });
+
+  it('默认方案就是 L0 锚点（#3B82F6 / #8B5CF6），选它等于无变化', () => {
+    const secDefault = SECONDARY_PALETTES.find((p) => p.key === 'blue');
+    const accDefault = ACCENT_PALETTES.find((p) => p.key === 'purple');
+    expect(secDefault?.anchor.toLowerCase()).toBe('#3b82f6');
+    expect(accDefault?.anchor.toLowerCase()).toBe('#8b5cf6');
+  });
+
+  it('所有锚点都能通过 isSafeToken 注入白名单', async () => {
+    const { isSafeToken } = await import('../../../stores/theme.presets');
+    for (const p of [...SECONDARY_PALETTES, ...ACCENT_PALETTES]) {
+      expect(isSafeToken('--color-primary', p.anchor), `${p.key} anchor`).toBe(true);
+    }
+  });
+});
+
+describe('getBrandFamilyScales — 默认走 L0 权威值，其余由锚点生成', () => {
+  it('默认方案返回 L0 权威值而非程序化生成值', () => {
+    const sec = getBrandFamilyScales('secondary', SECONDARY_PALETTES[0]);
+    const acc = getBrandFamilyScales('accent', ACCENT_PALETTES[0]);
+    expect(sec.light).toBe(DEFAULT_SECONDARY_LIGHT_SCALE);
+    expect(sec.dark).toBe(DEFAULT_SECONDARY_DARK_SCALE);
+    expect(acc.light).toBe(DEFAULT_ACCENT_LIGHT_SCALE);
+    expect(acc.dark).toBe(DEFAULT_ACCENT_DARK_SCALE);
+  });
+
+  it('非默认方案：亮色阶亮度递减、暗色阶递增，500 档 = 锚点', () => {
+    for (const family of ['secondary', 'accent'] as const) {
+      const list = family === 'secondary' ? SECONDARY_PALETTES : ACCENT_PALETTES;
+      for (const p of list.slice(1)) {
+        const { light, dark } = getBrandFamilyScales(family, p);
+        expect(wrongDirectionLumaSum(light, 'desc'), `${family}/${p.key} light`).toBeLessThan(0.05);
+        expect(wrongDirectionLumaSum(dark, 'asc'), `${family}/${p.key} dark`).toBeLessThan(0.05);
+        expect(light['500'].toLowerCase(), `${family}/${p.key} light 500`).toBe(p.anchor.toLowerCase());
+        expect(dark['500'].toLowerCase(), `${family}/${p.key} dark 500`).toBe(p.anchor.toLowerCase());
+      }
+    }
+  });
+
+  it('所有方案覆盖完整 11 档且每档均为合法 hex', () => {
+    for (const family of ['secondary', 'accent'] as const) {
+      const list = family === 'secondary' ? SECONDARY_PALETTES : ACCENT_PALETTES;
+      for (const p of list) {
+        const { light, dark } = getBrandFamilyScales(family, p);
+        for (const tier of PRIMARY_TIERS) {
+          expect(light[tier], `${family}/${p.key} light ${tier}`).toMatch(/^#[0-9a-fA-F]{6}$/);
+          expect(dark[tier], `${family}/${p.key} dark ${tier}`).toMatch(/^#[0-9a-fA-F]{6}$/);
+        }
+      }
+    }
+  });
+
+  it('生成的双模式 ramp 500 锚点相同（次色/强调色的 L0 约定）', () => {
+    for (const family of ['secondary', 'accent'] as const) {
+      const list = family === 'secondary' ? SECONDARY_PALETTES : ACCENT_PALETTES;
+      for (const p of list.slice(1)) {
+        const { light, dark } = getBrandFamilyScales(family, p);
+        expect(light['500'], `${family}/${p.key}`).toBe(dark['500']);
       }
     }
   });

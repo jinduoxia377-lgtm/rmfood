@@ -16,6 +16,7 @@ import type {
   MotionPreferences,
 } from '../types/theme.types';
 import {
+  BRAND_FAMILIES,
   presetThemes,
   getAccessibilityTheme,
   mergeThemeOverrides,
@@ -24,6 +25,13 @@ import {
 import { themeStorage } from './theme.storage';
 import { normalizeImportedConfig } from '../theme/normalizeThemeImport';
 import { logger } from '@/utils/safeLogger';
+
+// E3：modeRamps 允许的族键白名单（与 theme.presets 的 BRAND_FAMILIES 同步）。
+// 用于 migrate 时丢弃旧版可能写入的未知族键（如手写导入的脏数据）。
+const BRAND_FAMILY_KEYS: readonly string[] = [
+  ...BRAND_FAMILIES,
+  ...BRAND_FAMILIES.map((f) => `${f}Dark`),
+];
 
 
 // ============================================================================
@@ -188,6 +196,8 @@ const initialState: ThemeState = {
   customThemes: [],
   runtimeOverrides: {},
   paletteKey: '',
+  secondaryPaletteKey: '',
+  accentPaletteKey: '',
   fontScale: 'standard',
   radiusScale: 'standard',
   isInitialized: false,
@@ -388,6 +398,8 @@ export const useThemeStore = create<ThemeStore>()(
           activeTheme: customTheme,
           runtimeOverrides: nextOverrides,
           ...(meta?.paletteKey !== undefined && { paletteKey: meta.paletteKey }),
+          ...(meta?.secondaryPaletteKey !== undefined && { secondaryPaletteKey: meta.secondaryPaletteKey }),
+          ...(meta?.accentPaletteKey !== undefined && { accentPaletteKey: meta.accentPaletteKey }),
           ...(meta?.fontScale !== undefined && { fontScale: meta.fontScale }),
           ...(meta?.radiusScale !== undefined && { radiusScale: meta.radiusScale }),
         });
@@ -538,13 +550,15 @@ export const useThemeStore = create<ThemeStore>()(
       exportTheme: (): string => {
         const state = get();
         return JSON.stringify({
-          version: '2.0.0',
+          version: '2.1.0',
           exportedAt: new Date().toISOString(),
           app: 'rmfood-theme',
           // 用户实际做的选择（可经 applyCustomTheme 原样回放）
           runtimeOverrides: state.runtimeOverrides,
           // 选中态：还原后 UI 按钮高亮与当前值一致（U-6）
           paletteKey: state.paletteKey,
+          secondaryPaletteKey: state.secondaryPaletteKey,
+          accentPaletteKey: state.accentPaletteKey,
           fontScale: state.fontScale,
           radiusScale: state.radiusScale,
           settings: {
@@ -597,12 +611,15 @@ export const useThemeStore = create<ThemeStore>()(
         // B2：运行时覆盖 + 面板选项选择态必须持久化，否则刷新即丢（R1）
         runtimeOverrides: state.runtimeOverrides,
         paletteKey: state.paletteKey,
+        // E3：次色 / 强调色的选中态
+        secondaryPaletteKey: state.secondaryPaletteKey,
+        accentPaletteKey: state.accentPaletteKey,
         fontScale: state.fontScale,
         radiusScale: state.radiusScale,
       }),
       // ── 兼容旧版 themeStorage 写入的 CUSTOM_THEMES 键 ──
       // migrate 阶段从 themeStorage 迁移旧数据（一次性）
-      version: 6, // v6：新增 radiusScale（圆角档位选中态，E2）
+      version: 7, // v7：新增 secondaryPaletteKey / accentPaletteKey（E3 次色/强调色）
 
       // 主题ID迁移与验证（v3新增）
       migrate: (persistedState: any, version) => {
@@ -652,12 +669,28 @@ export const useThemeStore = create<ThemeStore>()(
         }
         // 旧版存储无这三个键时补默认值（persist 合并时 undefined 不会覆盖 initialState，
         // 但显式兜底更直观，也保证 migrate 产物结构完整）
+        // v7：modeRamps 结构向后兼容（v6 的 { primary, primaryDark } 是 v7 ModeRamps
+        // 的子集），只需清理旧版可能写入的未知族键，避免脏数据进注入器。
         if (!persistedState.runtimeOverrides || typeof persistedState.runtimeOverrides !== 'object') {
           persistedState.runtimeOverrides = {};
         }
         persistedState.paletteKey ??= '';
         persistedState.fontScale ??= 'standard';
         persistedState.radiusScale ??= 'standard';
+        // v7 新增的两个选中态键（空串 = 未选择，与 paletteKey 语义一致）
+        if (version === undefined || version < 7) {
+          persistedState.secondaryPaletteKey ??= '';
+          persistedState.accentPaletteKey ??= '';
+          if (persistedState.runtimeOverrides && persistedState.runtimeOverrides.modeRamps) {
+            const ramps = persistedState.runtimeOverrides.modeRamps;
+            for (const key of Object.keys(ramps)) {
+              if (!BRAND_FAMILY_KEYS.includes(key)) {
+                logger.info(`[Theme System] 🔄 v${version ?? '0'}→v7 丢弃未知色阶族键: modeRamps.${key}`);
+                delete ramps[key];
+              }
+            }
+          }
+        }
 
         return persistedState;
       },

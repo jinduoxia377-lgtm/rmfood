@@ -28,7 +28,7 @@ UI 层**禁止**直接 `root.style.setProperty('--...')`。所有运行时覆盖
 |:---|:-----|:-------------------|:-------|:---------|
 | R1 | 刷新后配色+字号全丢，且连带丢明暗 | `themeStore.ts:289/296` `applyCustomTheme` 写 `activeThemeId='custom-${Date.now()}'` → `:498` 持久化该 id → `initialize()` `:143` 用 `presetThemes[id]` 查表未命中 → `:147-149` warn「无效的主题ID」→ 回退 `light-default` | **解析层** | B1 |
 | R2 | 配色覆盖率 63.2%（1 965/3 108 处） | `theme-palette.ts:15-21` 每方案仅 4 值；`ThemePanel.tsx:139-149` 只写 500/600/700 | **数据层 + UI 层** | A4 + C1 |
-| R3 | 次色/强调色完全不受控 | `applyPalette` 只写 `colors.primary`；`COLOR_MAIN_TO_L0`（`theme.presets.ts:520-538`）无 secondary/accent 档映射 | **数据层** | A2 + E3 |
+| R3 | 次色/强调色完全不受控 | ~~`applyPalette` 只写 `colors.primary`；`COLOR_MAIN_TO_L0`（`theme.presets.ts:520-538`）无 secondary/accent 档映射~~ → **已解（E3）**。复核结论：`secondary-main` / `tertiary-main` → `--color-secondary` / `--color-accent` 的映射在 T-B2a 早已存在（`:577-581`），真正缺的是档位与语义族的**双作用域注入**与 UI 入口。现已三族同机制（1 922 + 1 540 = 3 462 处引用受益） | **数据层** | A2 + **E3 ✅** |
 | R4 | 字号只 3 档、`--text-body-lg` 不跟随 | `FONT_SCALES` 只 3 键；且 preset `typography.fontSize`（`theme.presets.ts:182-193`）键名是 `xs/sm/base/lg/xl`，与 L0 实际消费的 `--text-body/-sm/-caption/-body-lg` **不同名** → store 通道产出的是无消费者的 `--text-xs..--text-4xl` | **数据层（键名错配）** | A3 |
 | R5 | 字体/配色选中态永不显示 | `ThemePanel.tsx:378`、`:406` `aria-checked={false}` 硬编码 | UI 层 | C2 |
 | R6 | 面板无无障碍入口 | 能力只在 `ThemeSwitcher.tsx:170-193` | 集成层 | C3 |
@@ -93,8 +93,8 @@ UI 层**禁止**直接 `root.style.setProperty('--...')`。所有运行时覆盖
 |:--:|:-----|:-----|:-----|
 | **E1** | **导出 / 导入** | **已完成**。修正了原「面板未接线」判断：`ThemeImport.tsx` 早已存在但**零消费者**（孤儿组件），且其 label 包裹 `aria-hidden` + `tabIndex={-1}` 的 file input，键盘用户无法触发。已重构为 `<button>` 触发 + 隐藏 input，接入面板 ⑪ 区块。另修 `exportTheme`：旧版只导 `theme`（base × 覆盖的合并结果），丢掉解析不了的 `modeRamps` 与选中态，导入后配色按钮失高亮、色阶退回品牌绿；v2 快照改导 `runtimeOverrides` + `paletteKey` / `fontScale` / `radiusScale` + `settings`。导入侧接受三种形态（v2 / 嵌套 `{colors}` / 扁平 `{primary,...}`），扁平形态经规范化（D-36 回归锁定） | 无 |
 | **E2** | **圆角 / 间距** | **圆角已完成，间距明确不做**（见下 D-65）。`mergeThemeOverrides`（`theme.presets.ts:528-534`）与 `mergeCustomOverrides`（`themeStore.ts:115-123`）对 `spacing` / `borderRadius` 本就是同维度浅合并，而两者都是**扁平 map**（`key → 值`），浅合并即已足够 —— 原方案记的「深合并同类隐患」不成立。已落：`radiusScale` 状态链（types → store initialState → `partialize` → `migrate` 兜底 → panel ⑩ 区块），持久化版本号 v5→v6 | A1 依赖不成立（无隐患可依赖） |
-| E3 | 次色 / 强调色 | 需先在 `COLOR_MAIN_TO_L0`（`:520`）补 scale 映射 | A2 |
-| E4 | 预设管理 | `customThemes` 可增不可命名/列表/删除（`deleteCustomTheme:417` 存在但未暴露） | B2 |
+| **E3** | **次色 / 强调色** | **已完成**（2026-10-12）。原判断「需先补 `COLOR_MAIN_TO_L0` 的 scale 映射」**不成立**：`secondary-main` / `tertiary-main` → `--color-secondary` / `--color-accent` 的映射在 T-B2a 早已存在（`:577-581`），缺的是**档位与语义族的双作用域注入**。已落：① `ModeRamps` 扩为 `primary/secondary/accent` 三族 × 明暗 6 键；② `theme-palette.ts` 新增 `SECONDARY_PALETTES`（5）/ `ACCENT_PALETTES`（5）与 L0 权威默认阶（逐档照抄，保证「选默认 = 无变化」）；③ `generateModeRampCSS` 按族独立产出 `:root` / `.dark` 块，语义族经 `FAMILY_TIER_RULES` 推导（次色/强调色暗色 main/rgb 取 600、`-surface-deep` 取代 `-surface-hover`，逐条对齐 `base.css` / `dark.css`）；④ `generateCSSVariables` 的让位从「有 `modeRamps` 就让位」收窄为**按族判定**，避免选次色时主色/强调色被牵连；⑤ `secondaryPaletteKey` / `accentPaletteKey` 选中态状态链，持久化 v6→v7（`migrate` 兜底 + 未知族键清理）；⑥ 面板 ⑧b / ⑧c 两区块。测试锁定「用 L0 默认阶喂注入器，推导出的语义族必须与 `base.css` / `dark.css` 逐条一致」（12 项断言全等）。实测 35/35 通过 | A2 依赖不成立（映射早已存在） |
+| **E4** | **预设管理** | **通道分裂已收口**（2026-10-12）：`store.importTheme` 原先并行一条通道（写 `imported-${Date.now()}` + 追加 `customThemes`），与组件导入分裂。已抽出纯层 `normalizeThemeImport.ts`，store 与组件共用 `normalizeImportedConfig` → `applyCustomTheme` 单通道（D-36 回归锁定 +4 测试）。**残余未做**：`customThemes` 的命名 / 列表 / 删除 UI（`deleteCustomTheme:417` 存在但未暴露）—— 属产品交互设计，非通道缺陷，需产品决策 | B2 部分（通道已收口，UI 待决策） |
 | E5 | 阴影 | **暂缓**：需先扩展数据模型支持双模式阴影（L2），否则会把亮色阴影注入暗色（51 处消费者） | T-B2b 数据模型重构 |
 | E6 | 规范同步 | 更新 §8.1 现状盘点、§8.2 增补 **U-8**（面板控件状态必须可派生选中态且跨刷新持久）、关闭 §12 阶段 3 序 26 | C3/C5 完成 |
 
@@ -178,7 +178,22 @@ UI 层**禁止**直接 `root.style.setProperty('--...')`。所有运行时覆盖
 E 阶段待 D-60/61/64 决策后另起批次。
 
 **实际进度（2026-10-12）**：A / B / C / D 四阶段已全部落地并提交。
-E 阶段中 **E1（导出/导入）与 E2（圆角）已完成** —— 两者均无需产品决策，
-原表格的「需 D-60/61/64 决策」仅适用于 E3（次色/强调色）、E4（预设管理）、
-E5（阴影）。E1/E2 实际耗时约 1 人日。
-剩余 E3 / E4 / E5 仍待决策；D-65（间距控件）本轮已决为「不做」。
+E 阶段中 **E1（导出/导入）、E2（圆角）、E3（次色/强调色）已完成**，
+**E4 的通道分裂已收口**（残余为 `customThemes` 的命名/列表/删除 UI，需产品决策）。
+四者均无需产品决策，原表格的「需 D-60/61/64 决策」仅适用于 E5（阴影）。
+**D-65（间距控件）已决为「不做」**，理由见阶段 E 表下。
+
+E3 交付要点与实测证据：
+- 三族（`primary` / `secondary` / `accent`）共用同一套「运行时 `<style>` 双作用域」机制，
+  且**按族独立判定**：只选次色不会牵连主色与强调色。
+- 次色 / 强调色的 L0 锚点在两种模式下相同（`base.css:46` / `dark.css:42` 同为 `#3b82f6`），
+  一份锚点即可派生两组作用域，明暗差异由档位反转承载 —— 与主色维护 light/dark 双锚点不同。
+- 内外名不一致：强调色的对外族名是 `accent`，`ThemeConfig` 内部角色名是 `tertiary`
+  （`COLOR_MAIN_TO_L0` 的 `'tertiary-main'` → `--color-accent`），故 `colors` 写 `tertiary`、
+  `modeRamps` 写 `accent`。
+- **默认零漂移已验证**：用 L0 权威默认阶喂入注入器，推导出的 12 个语义族令牌与
+  `base.css` / `dark.css` 逐条相等（测试 `E3 generateModeRampCSS — 次色族 / 强调色族`）。
+  连带修掉 `base.css:23` 一处过期注释（注释称 `--color-primary-text` = `#047857`，
+  实际 `var(--color-success-600)` = `#059669` = `ramp['600']`，与推导值一致，无漂移）。
+- 验证：5 套件 **130/130**、`theme:validate` **0 error**、
+  `theme:gate` **16 通过 / 0 失败**、实测探针 **35/35**。
