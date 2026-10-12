@@ -188,6 +188,7 @@ const initialState: ThemeState = {
   runtimeOverrides: {},
   paletteKey: '',
   fontScale: 'standard',
+  radiusScale: 'standard',
   isInitialized: false,
 };
 
@@ -387,6 +388,7 @@ export const useThemeStore = create<ThemeStore>()(
           runtimeOverrides: nextOverrides,
           ...(meta?.paletteKey !== undefined && { paletteKey: meta.paletteKey }),
           ...(meta?.fontScale !== undefined && { fontScale: meta.fontScale }),
+          ...(meta?.radiusScale !== undefined && { radiusScale: meta.radiusScale }),
         });
 
         applyThemeWithTransition(customTheme, state.transitionType);
@@ -525,19 +527,33 @@ export const useThemeStore = create<ThemeStore>()(
 
       /**
        * 导出主题配置为 JSON 字符串
+       *
+       * 导出的是**可往返**的完整快照：runtimeOverrides（用户实际改了什么）
+       * + 选中态键（paletteKey / fontScale / radiusScale）+ 模式类设置。
+       * 只导 activeTheme 不够 —— 它是 base × 覆盖的合并结果，丢掉了解析不了
+       * 的 modeRamps（整档色阶）与选中态，导入后配色按钮会失去高亮、色阶会退回
+       * 品牌绿。
        */
       exportTheme: (): string => {
         const state = get();
         return JSON.stringify({
-          version: '1.0.0',
+          version: '2.0.0',
           exportedAt: new Date().toISOString(),
-          theme: state.activeTheme,
+          app: 'rmfood-theme',
+          // 用户实际做的选择（可经 applyCustomTheme 原样回放）
+          runtimeOverrides: state.runtimeOverrides,
+          // 选中态：还原后 UI 按钮高亮与当前值一致（U-6）
+          paletteKey: state.paletteKey,
+          fontScale: state.fontScale,
+          radiusScale: state.radiusScale,
           settings: {
             mode: state.mode,
             accessibilityMode: state.accessibilityMode,
             motionPreferences: state.motionPreferences,
             transitionType: state.transitionType,
           },
+          // 便于人读 / 旧版消费的合并结果
+          theme: state.activeTheme,
         }, null, 2);
       },
 
@@ -591,10 +607,11 @@ export const useThemeStore = create<ThemeStore>()(
         runtimeOverrides: state.runtimeOverrides,
         paletteKey: state.paletteKey,
         fontScale: state.fontScale,
+        radiusScale: state.radiusScale,
       }),
       // ── 兼容旧版 themeStorage 写入的 CUSTOM_THEMES 键 ──
       // migrate 阶段从 themeStorage 迁移旧数据（一次性）
-      version: 5, // v5：运行时覆盖改为持久化 runtimeOverrides + 稳定 ID（B1/B2）
+      version: 6, // v6：新增 radiusScale（圆角档位选中态，E2）
 
       // 主题ID迁移与验证（v3新增）
       migrate: (persistedState: any, version) => {
@@ -649,6 +666,7 @@ export const useThemeStore = create<ThemeStore>()(
         }
         persistedState.paletteKey ??= '';
         persistedState.fontScale ??= 'standard';
+        persistedState.radiusScale ??= 'standard';
 
         return persistedState;
       },

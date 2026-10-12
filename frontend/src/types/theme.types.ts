@@ -491,6 +491,8 @@ export interface ThemeOptionMeta {
   paletteKey?: string;
   /** 当前选中的字体档位（'compact' / 'standard' / 'relaxed'） */
   fontScale?: string;
+  /** 当前选中的圆角档位（'sharp' / 'standard' / 'rounded'） */
+  radiusScale?: string;
 }
 
 // ============================================================================
@@ -538,6 +540,9 @@ export interface ThemeState {
 
   /** 当前选中的字体档位（派生选中态用） */
   fontScale: string;
+
+  /** 当前选中的圆角档位（派生选中态用，'sharp' / 'standard' / 'rounded'） */
+  radiusScale: string;
 
   /** 初始化状态 */
   isInitialized: boolean;

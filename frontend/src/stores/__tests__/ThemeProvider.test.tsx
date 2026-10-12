@@ -88,6 +88,19 @@ describe('ThemeProvider.applyCustomTheme 必须透传 meta', () => {
     expect(useThemeStore.getState().fontScale).toBe('relaxed');
   });
 
+  it('透传 radiusScale：context 调用后 store 的圆角档被写入', () => {
+    const { result } = renderThemeHook();
+
+    act(() => {
+      result.current.applyCustomTheme(
+        { borderRadius: { sm: '10px', md: '14px', lg: '20px' } as any },
+        { radiusScale: 'rounded' },
+      );
+    });
+
+    expect(useThemeStore.getState().radiusScale).toBe('rounded');
+  });
+
   it('同一次调用同时携带两个键，两者都被写入', () => {
     const { result } = renderThemeHook();
 
