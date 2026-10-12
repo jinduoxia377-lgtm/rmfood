@@ -5,7 +5,7 @@
 //   ② 圆角选中：点击「圆润」→ --radius-lg 变为 20px；选中态 aria-checked 同步
 //   ③ 圆角刷新持久：刷新后 --radius-lg 仍为 20px、选中态仍为「圆润」
 //   ④ 半径真实生效：Tailwind rounded-lg 元素计算出的 border-radius 跟随令牌变化
-//   ⑤ 导出：下载触发且 JSON 含 runtimeOverrides / paletteKey / radiusScale
+//   ⑤ 导出：下载触发且 JSON 为 v2.1 快照（含 runtimeOverrides + 五选中态键，E3 起）
 //   ⑥ 重置默认：--radius-lg 回到 L0 的 12px、选中态回到「标准」
 //
 // 运行：cd frontend && node scripts/theme-audit/e1e2-probe.cjs
@@ -100,6 +100,9 @@ const GROUP = (label) => `[role="radiogroup"][aria-label="${label}"] [role="radi
     paletteKey: snap.paletteKey,
     fontScale: snap.fontScale,
     radiusScale: snap.radiusScale,
+    // E3 新增：次色 / 强调色选中态。此场景未选，应为空串（= 视同 L0 默认）
+    secondaryPaletteKey: snap.secondaryPaletteKey,
+    accentPaletteKey: snap.accentPaletteKey,
     hasRuntimeOverrides: !!snap.runtimeOverrides,
     hasSettings: !!snap.settings,
     hasTheme: !!snap.theme,
@@ -137,10 +140,12 @@ const GROUP = (label) => `[role="radiogroup"][aria-label="${label}"] [role="radi
   check('刷新后选中态仍为「圆润」',
     R.checkedAfterReload.filter(v => v === 'true').length === 1 && R.checkedAfterReload[2] === 'true');
   check('导出文件名带日期', /^rmfood-theme-\d{4}-\d{2}-\d{2}\.json$/.test(R.downloadName));
-  check('导出 JSON 为 v2 快照（含 runtimeOverrides + 三选中态键）',
-    R.snap.version === '2.0.0' && R.snap.app === 'rmfood-theme' &&
+  check('导出 JSON 为 v2.1 快照（含 runtimeOverrides + 五选中态键）',
+    R.snap.version === '2.1.0' && R.snap.app === 'rmfood-theme' &&
     R.snap.hasRuntimeOverrides && R.snap.paletteKey === 'blue' &&
-    R.snap.fontScale === 'relaxed' && R.snap.radiusScale === 'rounded');
+    R.snap.fontScale === 'relaxed' && R.snap.radiusScale === 'rounded' &&
+    typeof R.snap.secondaryPaletteKey === 'string' &&
+    typeof R.snap.accentPaletteKey === 'string');
   check('导出快照的 borderRadius.lg 与实际生效值一致', R.snap.borderRadiusLg === '20px');
   check('重置默认后 --radius-lg 回到 12px', R.radiusAfterReset === '12px');
   check('重置默认后选中态回到「标准」',
