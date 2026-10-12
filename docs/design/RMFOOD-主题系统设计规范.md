@@ -782,18 +782,22 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 ### 8.1 现状盘点
 
+> **2026-10-12 更新**（提交 `7251601`）：本节原登记的死代码清单**已全部删除**，主题设置面已完成产品化收口。当前存量如下：
+
 | 组件 | 行数 | 挂载状态 | 说明 |
 |:-----|-----:|:---------|:-----|
-| `components/theme/ThemeSwitcher.tsx` | 263 | ✅ **唯一可达** | `MainLayout.tsx:459` 以 `variant="icon-only"` 挂载 |
-| `pages/settings/ThemeSettingsPage.tsx` | 505 | ❌ **孤儿页** | `/settings` 渲染的是 `SettingsPage`；本文件 0 引用 |
-| `components/theme/ThemeEditor.tsx` | 319 | ❌ 未挂载 | 仅由 `components/theme/index.ts:1` 导出，而该 index **0 外部引用** |
-| `components/theme/ThemePreviewOverlay.tsx` | 90 | ❌ 未挂载 | 同上 |
-| `components/theme/ThemeOnboarding.tsx` | 126 | ❌ 未挂载 | 0 引用 |
-| `components/theme/ColorEditor.tsx` / `VersionHistoryPanel.tsx` | — | ❌ 未挂载 | 仅被 `ThemeEditor` 使用 |
-| `hooks/useThemedComponent.tsx` | 171 | ❌ **100% 死代码** | 导出 6 个组件，**全部 0 命中** |
-| **合计死代码** | **≈1 382 行** | | |
+| `components/theme/ThemePanel.tsx` | 501 | ✅ **唯一产品入口** | 9 个区块（明暗 / 过渡 / 无障碍 / 预览 / 字体 / 配色 / 持久化 / 重置 / 摘要），由 `SettingsPage.tsx:1460-1461` 的 `renderThemePanel` 挂载，注册于 `:1691` 的 `theme` 标签页 |
+| `components/theme/ThemeSwitcher.tsx` | 175 | ✅ 顶栏挂载 | `MainLayout` 的明暗切换；仅负责 mode 切换 + 跳转 `/settings?tab=theme`，不承担设置职责 |
+| `components/theme/theme-palette.ts` | 191 | ✅ 数据源 | Apple HIG 五色板 + 字号刻度 + 色阶生成（纯数据，无副作用） |
+| `components/theme/__tests__/theme-palette.test.ts` | — | ✅ | 色板/刻度/单通道断言 |
+| `stores/themeStore.ts` / `theme.presets.ts` | 631 / 1006 | ✅ | 状态与运行时令牌生成（含 C1.5 双作用域语义族，见 U-8） |
+| `pages/settings/ThemeSettingsPage.tsx` | 505 | ❌ **孤儿页** | `/settings` 渲染的是 `SettingsPage`；本文件 0 引用。U-2 冻结中 |
 
-真正对用户可见的主题设置入口是 `pages/settings/SettingsPage.tsx` 的 `renderThemePanel`（约 `:1407-1474`），仅暴露「浅色 / 深色」切换与 `Ctrl+Shift+T`。
+**已删除的死代码**（§8.1 原表 ≈1 382 行，`dc3393d` + `eb86dff` 两批提交清完）：
+`ThemeEditor` / `ThemePreviewOverlay` / `ThemeOnboarding` / `ColorEditor` / `VersionHistoryPanel` / `components/theme/index.ts` / `hooks/useThemedComponent.tsx`（6 个导出全 0 命中）/ `hooks/useTheme.tsx`。
+→ **D-25 / D-40 / D-18 / D-19 / D-27 / D-30 / D-42 / D-48 关闭**；§12 第 26 / 27 / 29 项对应的删除动作已完成。
+
+唯一对用户可见的主题设置入口是 `SettingsPage` 的 `renderThemePanel → <ThemePanel />`（`SettingsPage.tsx:1460-1461`，标签页注册 `:1691`）。
 
 ### 8.2 强制条款
 
@@ -807,6 +811,11 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 - **U-6** 主题 UI 预设选中态**必须**从 store 派生。
   > 违规：`ThemeSettingsPage.tsx:65` `selectedPreset` 初值恒为 `'light-default'` → 高亮永久错误。
 - **U-7** 预设清单**必须**单一来源。当前在 3 处硬编码（`presetThemes`、`ThemeSwitcher.tsx:229`、`ThemeSettingsPage.tsx:65`）→ D-47。
+- **U-8**（2026-10-12 新增）**模式相关令牌禁止走 inline 单作用域通道**，**必须**经运行时 `<style id="rmfood-runtime-theme">` 的 `:root` / `.dark` 双作用域块落地。
+  > 适用范围：**档位色阶** `--color-primary-{50..950}`（base.css 100 浅→950 深、dark.css 100 深→950 浅）+ **primary 语义族**（`--color-primary` / `-rgb` / `-container` / `-surface` / `-surface-hover` / `-hover` / `-text` / `--color-on-primary-surface`）——后者在 base.css:26-39 与 dark.css:22-37 **各有一份不同取值**，与档位色阶同属模式相关。
+  > 原因：inline 自定义属性的优先级高于任何非 `!important` 选择器，在 `<html>` 上 `setProperty` 会**同时压过** `:root` 与 `.dark` —— 暗色模式随即错用亮色取值。档位色阶表现为「断裂梯度」（中间换色、两头仍是品牌绿）；语义族表现为「选苹果蓝后 `--color-primary` 变为 `#0A84FF` 而 `--color-primary-container` 仍是品牌绿 `#d1fae5`」，全站 89 处 `bg-primary-container` 呈绿/蓝混排。
+  > 唯一实现路径：`theme.presets.ts` 的 `generateModeRampCSS()`（`derivePrimaryFamily()` 从各模式完整色阶推导语义族，规则与 L0 逐条对齐，故默认绿推导值与 L0 逐值相等）+ `applyRuntimeThemeStyle()`；`generateCSSVariables()` 在存在 `modeRamps` 时对档位与语义族**让位**，不再产出这些名字。
+  > 配套门禁：**GATE-17**（档位令牌 `setProperty` 白名单，仅放行 `stores/theme.presets.ts`）+ **GATE-15**（冷启动回放后断言运行时样式表存在、含 `:root`/`.dark` 双块、11/11 档注入、**inline 零档位令牌泄漏**）+ **GATE-16**（L0 整档单调，违背 0 处）。
 
 ### 8.4 后期开发操作手册（SOP）
 
@@ -1249,6 +1258,18 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 > 3. **最终门禁/验证终态（干净重跑）**：14 门禁 **12 pass / 0 fail / 0 skip**，2 合法 warn（GATE-09 + GATE-14）；GATE-04/05（渲染断言反转色阶 + text-white 元素）达标；tsc 0 错 · build ✓ · vitest 29/29；双模式渲染探针（/ai 页）**亮 0 / 暗 0 不达标**（此前瞬态 11 处为探针扫到另一会话 Rhine landing 页 WIP，重跑归零）。
 > 4. **收尾结论（选 3）**：工作树层全仓归零已达成；提交层 47 纯令牌化文件已入库（`5477767`）；**87 混合 WIP 文件 + GATE-14 7 处 D-50 + CareersPage/ThemeImport 2 文件**的令牌化改动均保留在工作树（不会丢失），交 WIP 会话收敛后随其提交回填，本主题规范化到此收尾。回填清单完整保留在 §11.2 各批次登记与 `RMFOOD-主题规范化最终复核报告-v4.md`。
 
+> **2026-10-12 主题设置模块系统性控制落地登记**（阶段 A→D，提交 `2e9eaa2`/`43d2f2e`/`83f55cc`/`e432950`/`224a616`/`7100b58`/`7251601`；方案见 `RMFOOD-主题设置模块系统性控制执行方案.md`，核查见 `RMFOOD-主题设置模块功能核查报告.md`）：
+> 1. **设置面板产品化**：`ThemePanel.tsx`（501 行 / 9 区块）由 `SettingsPage` 挂载为唯一产品入口（`:1460-1461`，`theme` 标签页 `:1691`）；`ThemeSwitcher.tsx` 重写为纯明暗切换器（175 行），仅保留 mode 切换 + `/settings?tab=theme` 深链。持久化 `version: 5`，`partialize` 纳入 `runtimeOverrides`/`paletteKey`/`fontScale`。
+> 2. **R1 根因修复（刷新丢配置）**：旧 `applyCustomTheme` 写 `activeThemeId='custom-${Date.now()}'` → 被持久化 → `initialize()` 查 `presetThemes[state.activeThemeId]` 得 `undefined` → 告警「无效的主题ID」并重置为 `light-default`，配色/字号/明暗三项全丢。改为**累加式** `runtimeOverrides` + 稳定 id `custom-runtime`，四条路径（`setThemeMode`/`setPresetTheme`/`setAccessibilityMode`/冷启动）统一经 `composeTheme` 重放。→ **GATE-15 实测三项全部保持**。
+> 3. **C1 档位色阶整档双作用域**：`PRIMARY_TIERS` 扩至 11 档（50..950；`--color-primary-50` 有 150+ 消费者，漏掉会出现可见绿缝）。`RAMP_WEIGHTS_DARK` 取**负权**而非反转（反转会破坏 500 锚点）。绿色板逐档等于 L0（1277 处品牌绿消费者）。新增 `TIER_KEY = /^\d{2,3}$/` 只识别档位键。
+> 4. **C1.5 primary 语义族纳入双作用域（本阶段核心发现）**：`container-pair-probe` 实测——选苹果蓝后 `--color-primary` 变 `#0A84FF` 而 `--color-primary-container` 仍是品牌绿 `#d1fae5`，`--color-primary` 锚点亦因 inline 单作用域在暗色沿用亮值；语义令牌**不随配色迁移**，全站 89 处 `bg-primary-container` 绿/蓝混排。新增 `derivePrimaryFamily()` 从各模式完整色阶推导 8 枚语义令牌（规则与 base.css:26-39 / dark.css:22-37 逐条对齐 → 默认绿推导值与 L0 **逐值相等**，零漂移），由 `generateModeRampCSS()` 与档位色阶一并写入 `:root`/`.dark` 双块；`generateCSSVariables()` 在存在 `modeRamps` 时对语义族让位（无障碍变体等无 `modeRamps` 的主题行为不变）。**→ 新增 U-8。**
+> 5. **GATE-16/17/18 落地**（`g1518.mjs` 独立可运行）：16 L0 整档单调；17 档位 `setProperty` 白名单（仅 `stores/theme.presets.ts`）；18 `aria-checked` 必须由状态表达式求值。**两处误报已修**：17 只匹配 `/^--color-[a-z0-9]+(?:-[a-z0-9]+)*-\d{2,3}$/`（避免误伤模式无关的 `--theme-transition-*`）；18 增加 `stripComments()`（等长空白替换以保留行号，`//` 前为冒号时视为 URL 不剥离）。
+> 6. **GATE-13 消费方修正**：`--color-primary-surface-deep` 有 5 个消费者但 L0 无定义（TerminologyPage/RegulationsPage/FormulaCasesPage/DetailPanel/EditIndicator 的 `bg-gradient-to-r`）→ 改用已登记 `--color-primary-surface-hover`（亮/暗两模式白字对比均达标；`-hover` 在暗色为更浅档，不适合作深字底色，故不沿用 `-surface` 之外的其它语义令牌）。
+> 7. **探针底色合成修正（D5 / D6，方法论级）**：`settings-theme-probe2` 与 `ai-audit-settled` 的 `effBg` 改为**自身 + 全部祖先逐层 alpha 合成、最终与白底合成**——旧实现只取「第一个不透明祖先」，把真实的 ~9.6:1 误判成 2.03:1（GATE-06 由假 fail 转 pass：draft 5.26 / approved 4.85 / pending 6.42 / rejected 4.65 / revision 6.61 / archived 5.77 全部 ≥ 4.5）。新增 `container-pair-probe` 再补一层：Tailwind v4 的 `bg-white/90` 编译成 **`color-mix()`**，仅 `rgba()` 正则会把半透明底色 alpha 静默丢弃当不透明参与计算——**暗色下把真实的 4.78~8.32 误读成 1.0**。据此**修正既有结论**：`text-primary-main` 压 `bg-primary-container` 的缺口**仅存在于亮色**（green 2.24 / orange 1.99 / red 3.01 / blue 3.44 / purple 3.55），**暗色五色板全部达标**（4.78~8.32）。→ **新增 F2 开放项**（登记于下方「残余风险」，89 处消费面，本轮不批量改动）。
+> 8. **附带修复**：① `AIAssistantPage` 统计失败横幅 `dark:text-warning-300` → `dark:text-warning-600`（暗色 `warning-300` 是反转后的偏暗 `#b45309`，压近黑底仅 4.02:1）；② `ThemePanel` 选中态 ✓ 改 `text-primary-700`（原 `text-primary-main` 亮色 3.54:1；且写 `text-[color:var(--color-primary-surface)]` 会**绕过** `semantic-utils.css:197-212` 的暗色下限安全网 `.dark .text-*:not([class*="dark:text-"])`——该安全网是暗色下裸 `text-neutral-900` 类标签不失效的关键机制，arbitrary value 写法不进网）；③ `ThemePanel` 7 处 `focus-visible:ring-primary-main/50` → `ring-primary-500/50`（`--color-primary-main` 未登记，该类不会生成）；④ 预览卡改用 `.surface-primary`（实测全配色 4.85~14.41:1），移除无意义 `isDark` 三元。
+> **终态**：tsc 0 错 · 主题三套件 **79/79**（`theme-palette` 16 + `theme.presets` 30 + `themeStore` 33）· **theme-gate 16 pass / 0 fail / 0 skip**（告警仅 GATE-09 自引用令牌 + GATE-14 8 处 D-50 存量，均已知接受项）· `/ai` 渲染探针 **亮 0 / 暗 0** · `/settings?tab=theme` 面板 64 个叶节点 **0 处不达标**（亮 + 暗 + 5 配色，`panel-darkscan.cjs`）· pre-commit UI/a11y 护栏 0 违规。
+> **工具落库**：`scripts/theme-audit/` 新增 `g1518.mjs`（GATE-15/16/17/18，独立可运行）、`container-pair-probe.cjs`（配色语义族对比度矩阵）、`panel-darkscan.cjs`（面板双模式 × 5 配色叶节点扫描）。
+
 | 缺陷 | 状态 | 验证证据 |
 |:-----|:-----|:---------|
 | **D-1** | ✅ 已修复 | 加入 `@custom-variant dark`；编译产物 `prefers-color-scheme` 内的 `.dark\:` 由 **1467 → 0**（CHK-05/22 通过） |
@@ -1296,6 +1317,8 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 **2026-10-06 新增（GATE-13 检出，M4 治理）**：4 个**未登记的自有 `--color-*` 消费**（L0 无定义 → 解析为空，消费者失去颜色）：
 `--color-text-secondary`（`FormulaSharePanel.tsx`/`typography.ts`）、`--color-text-muted`（`ScoreRadarChart.tsx`）、`--color-brand-400`（`FocusRing.tsx`，§8.1 登记的焦点环违规死代码）、`--color-danger`（`IngredientAnalysisPage.tsx`/`StabilityPage.tsx`，误用名，功能色族权威名为 `--color-error`）。**已修消费者**（`g13-fix.mjs`，对齐 L0 权威名 `--text-secondary`/`--text-muted`/`--color-primary`/`--color-error`，**不补 L0 新定义**避免第二真相源），`GATE-13` 转 pass。
+
+**2026-10-12 新增 F2（`container-pair-probe.cjs` 实测，P1，开放）**：`bg-primary-container` + `text-primary-main` 是全站 **89 处**使用的 L2 语义配对（`semantic-utils.css:16,18`），在**亮色模式下系统性低于 AA 4.5:1**——green **2.24** / orange **1.99** / red **3.01** / blue **3.44** / purple **3.55**；**暗色五色板全部达标（4.78~8.32）**。根因是设计层面的：`-container` 取同色族的极浅档（亮 `ramp[100]`）而 `-main` 取中段（`ramp[500]`），二者同族导致亮色下明度差不足。**不批量改动 89 处消费面**（回归面过大，且当前所有渲染门禁与渲染探针均为 0）；替代路径：① 需要承载文字的场景改用 `.surface-primary` + `--color-on-primary-surface`（实测全配色 **4.85~14.41:1**，唯一双模式达标）；② 次选 `text-primary-700`（亮 green **4.84** / blue **6.73** / purple **6.87** / red **6.11** ✅，唯 orange **4.39** 差 0.11 未达）；③ 若要系统性闭合，须在 L0 层重算 `-container` 的亮色取值（提深至 200 档）或引入独立的 `-on-container` 前景令牌，属 L0 令牌变更，需走 §9.1 RFC 并评估 89 处消费面。
 
 ---
 
@@ -1352,7 +1375,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 23 | 分阶段建立 primitive→semantic 的 `var()` 组合（D-24），先做颜色域 |
 | ~~24~~ | ~~主题过渡改 CSS 类 + `transitionend`~~ **✅ 已于 M1 完成（D-8）** — 原表此项与阶段 0 重复，已合并 |
 | 25 | `partialize` 纳入 `activeTheme`（D-37）；确认 `.dark` 无新增写手（D-38 收敛目标已随 D-41 达成） |
-| 26 | 主题 UI 产品决策：删除孤儿页 **或** 收敛进 `SettingsPage`；删除 `useThemedComponent`（D-25） |
+| **26** | 主题 UI 产品决策：删除孤儿页 **或** 收敛进 `SettingsPage`；删除 `useThemedComponent`（D-25） | 🔶 **收敛完成 / 孤儿页待决**（2026-10-12）—— 收敛侧：`ThemePanel` 已挂载进 `SettingsPage`（`:1460-1461`，`theme` 标签页 `:1691`）并成为唯一产品入口；`useThemedComponent.tsx` 已删除（`dc3393d`，**D-25 / D-40 关闭**）。删除侧：`ThemeSettingsPage.tsx`（505 行，0 引用）仍存，U-2 冻结中，待产品明确裁决 |
 | 27 | 删除死文件：`adjustments.css`、`ThemeEventBus`、`themeColorMapper`、`useThemeInit`、`utils/theme/*`、根目录 `chatTheme.css`、`design-system/rmfood/*`（D-18/19/27/30/42/45） |
 | 28 | 补主题回归测试，消除 0 覆盖（D-46） |
 | 29 | 收敛两个 `useTheme`（D-40）；勘误 `theme-mode.ts` 描述并删除（§14.1） |
