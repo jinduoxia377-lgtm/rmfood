@@ -22,6 +22,7 @@ import {
   applyThemeToDOM,
 } from './theme.presets';
 import { themeStorage } from './theme.storage';
+import { normalizeImportedConfig } from '../theme/normalizeThemeImport';
 import { logger } from '@/utils/safeLogger';
 
 
@@ -559,33 +560,23 @@ export const useThemeStore = create<ThemeStore>()(
 
       /**
        * 导入主题配置
+       *
+       * 与 ThemeImport 组件共用 normalizeImportedConfig，再走 applyCustomTheme 单通道。
+       *
+       * 旧实现的两处缺陷（已消除）：
+       *   1. id 用 `imported-${Date.now()}` —— 冷启动 initialize() 查表未命中即
+       *      回退 light-default 并打「无效的主题ID」warn（R1 同型缺陷）。
+       *   2. 写入 customThemes —— 该列表没有任何 UI 删除入口，导入一次永久残留，
+       *      且与 applyCustomTheme 的运行时覆盖通道分裂为两套真相。
        */
       importTheme: (configJson: string): boolean => {
         try {
-          const config = JSON.parse(configJson);
+          const config = JSON.parse(configJson) as Record<string, unknown>;
+          const result = normalizeImportedConfig(config, get().activeTheme);
+          if (!result) return false;
 
-          if (config.theme?.colors) {
-            const importedTheme: ThemeConfig = {
-              ...config.theme,
-              id: `imported-${Date.now()}`,
-              name: config.theme.name || 'Imported Theme',
-              isPreset: false,
-            };
-
-            get().saveCustomTheme(importedTheme);
-
-            // 导入后自动应用
-            set({
-              activeThemeId: importedTheme.id,
-              activeTheme: importedTheme,
-            });
-
-            applyThemeWithTransition(importedTheme, get().transitionType);
-
-            return true;
-          }
-
-          return false;
+          get().applyCustomTheme(result.overrides as CustomThemeOverrides, result.meta);
+          return true;
         } catch (error) {
           logger.error('[Theme System] Import failed:', error);
           return false;

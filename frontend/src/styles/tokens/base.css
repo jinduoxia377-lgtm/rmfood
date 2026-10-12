@@ -191,6 +191,15 @@
      提到 neutral-600 (#475569) → 白底 7.40:1 / 浅底 7.40:1 ✅。 */
   --text-disabled: var(--color-neutral-600, #475569);
 
+  /* ═══ Knowledge Graph（仅 database/graph 域使用）═══
+     CHK-03 收口：这两枚令牌原先只在 dark.css:195-196 定义，base.css 缺失 →
+     亮色模式下 17 处消费者全部落到行内 fallback。此处补齐亮色值，
+     取值与既有 fallback **逐字相等**（#9CA3AF / #6B7280），故补齐后
+     亮色渲染零变化，仅消除「令牌亮色不存在」的假缺口。
+     暗色侧 dark.css 仍给出 #94a3b8 / #64748b（slate-400/500），不受影响。 */
+  --color-knowledge-default: #9CA3AF;   /* gray-400 — 节点/连线中性描边 */
+  --color-knowledge-text: #6B7280;      /* gray-500 — 白底 4.83:1 ✅ AA（小字图例） */
+
   /* ═══ Borders ═══ */
   --border-color: var(--color-neutral-200);   /* slate-200 */
   --border-color-hover: rgba(0, 0, 0, 0.1);
