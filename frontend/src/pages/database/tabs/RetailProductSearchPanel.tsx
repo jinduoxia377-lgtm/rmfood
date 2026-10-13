@@ -17,7 +17,7 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
   Badge,
   Switch,
-  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+  Tooltip,
   EmptyState,
   Alert,
   Accordion, AccordionItem, AccordionTrigger, AccordionContent,
@@ -134,8 +134,7 @@ const ProductCard: React.FC<{
 
   return (
     <div
-      className="card card-hover cursor-pointer mb-3 p-4 rounded-lg border border-border"
-       role="button" tabIndex={0} onClick={onClick}
+      className="card card-hover mb-3 p-4 rounded-lg border border-border"
     >
       {hasImage && (
         <img
@@ -148,41 +147,44 @@ const ProductCard: React.FC<{
       <div className="flex justify-between items-start">
         <div className="flex-1 min-w-0">
           <div className="font-semibold mb-1.5 flex items-center gap-1.5">
-            <span className="truncate">{product.product_name}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <span
-                     role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
-                    className="cursor-pointer text-lg leading-none"
-                  >
-                    {isFav ? <Flame className="h-4 w-4 text-warning fill-warning" /> : <Star className="h-4 w-4 text-muted-foreground" />}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>{isFav ? '取消收藏' : '收藏'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <span
-                     role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                    className="cursor-pointer text-lg leading-none ml-2"
-                  >
-                    {isSelected ? (
-                      <Check className="h-4 w-4 text-primary" />
-                    ) : (
-                      <span className="text-muted-foreground">☐</span>
-                    )}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>{isSelected ? '取消选择' : '选择对比'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {onClick ? (
+              <button
+                type="button"
+                onClick={onClick}
+                className="truncate text-left font-semibold cursor-pointer hover:underline rounded-none px-0"
+              >
+                {product.product_name}
+              </button>
+            ) : (
+              <span className="truncate">{product.product_name}</span>
+            )}
+            {/* 用 wrapper 原生 API：Tooltip 自带 Provider，Trigger 以 asChild 合并到
+                <button> 上，不再多渲染一层 <button>（见文件顶部同型注释）。 */}
+            <Tooltip content={isFav ? '取消收藏' : '收藏'} position="top">
+              <button
+                type="button"
+                aria-label={isFav ? '取消收藏' : '收藏'}
+                onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
+                className="cursor-pointer text-lg leading-none border-0 bg-transparent p-0 rounded"
+              >
+                {isFav ? <Flame className="h-4 w-4 text-warning fill-warning" /> : <Star className="h-4 w-4 text-muted-foreground" />}
+              </button>
+            </Tooltip>
+            <Tooltip content={isSelected ? '取消选择' : '选择对比'} position="top">
+              <button
+                type="button"
+                aria-label={isSelected ? '取消选择' : '选择对比'}
+                aria-pressed={isSelected}
+                onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                className="cursor-pointer text-lg leading-none ml-2 border-0 bg-transparent p-0 rounded"
+              >
+                {isSelected ? (
+                  <Check className="h-4 w-4 text-primary" />
+                ) : (
+                  <span className="text-muted-foreground">☐</span>
+                )}
+              </button>
+            </Tooltip>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="info">{product.brand}</Badge>
@@ -686,22 +688,26 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               />
             </div>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded cursor-help">
-                    <Zap className={`h-4 w-4 ${realtime ? 'text-warning' : 'text-muted-foreground'}`} />
-                    <Switch
-                      checked={realtime}
-                      onCheckedChange={setRealtime}
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p>开启后直接调用 OpenFoodFacts REST API，获取最新数据</p>
-                </TooltipContent>
+            {/* 注意：@/components/ui 把 TooltipWrapper 导出为 Tooltip，它内部自带一层
+                TooltipTrigger。因此不能用 <Tooltip><TooltipTrigger>…</TooltipTrigger>
+                的标准 shadcn 嵌套写法 —— 那会再包一层 <button>，与 Switch（也是
+                <button>）形成 button 套 button 的无效 HTML。
+                用 wrapper 原生 API：<Tooltip content="…"> 直接包裹 Switch，
+                asChild 默认开启，Trigger 行为合并到 Switch 自身，只留一个交互元素。 */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded">
+              <Zap className={`h-4 w-4 ${realtime ? 'text-warning' : 'text-muted-foreground'}`} aria-hidden="true" />
+              <Tooltip
+                content="开启后直接调用 OpenFoodFacts REST API，获取最新数据"
+                position="top"
+                className="max-w-xs"
+              >
+                <Switch
+                  checked={realtime}
+                  onCheckedChange={setRealtime}
+                  aria-label="实时数据源"
+                />
               </Tooltip>
-            </TooltipProvider>
+            </div>
 
             {dataSource && (
               <Badge variant={dataSource.includes('api') ? 'warning' : 'info'}>

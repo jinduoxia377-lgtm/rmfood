@@ -24,6 +24,13 @@ const AA_COLORS: Record<string, string> = {
   S: 'var(--color-secondary, #0A84FF)', T: 'var(--color-secondary, #0A84FF)', W: 'var(--color-danger-500, #D946EF)', Y: 'var(--color-warning-700, #B45309)', V: 'var(--color-primary-hover, var(--color-primary-500))',
 }
 
+// ─── 氨基酸底色（10% 浓度半透明） ───
+// 注意：不能写成 `${color}18` —— AA_COLORS 的值是 `var(--color-primary, …)` 引用，
+// 拼上 "18" 会得到 `var(--color-primary, …)18`，这是非法 CSS，浏览器会丢弃整条
+// backgroundColor 声明（实测氨基酸网格 20 格全部背景透明、无底色）。
+// 用 color-mix 对任意颜色值（含 var() 引用）取 10% 浓度，等价于原意的 #RRGGBB18。
+const aaBg = (c: string) => `color-mix(in srgb, ${c} 10%, transparent)`
+
 export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide }) {
   const sequence = peptide.sequence || ''
   const aaCount = sequence.length
@@ -60,7 +67,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
                 {chunk.split('').map((aa, idx) => (
                   <span key={idx} title={`${AA_NAMES[aa] || aa} (${aa})`}
                     className="w-6 h-7 flex items-center justify-center rounded text-xs font-bold transition-all hover:scale-110 cursor-default"
-                    style={{ backgroundColor: `${AA_COLORS[aa] || 'var(--text-muted, #9A9A9F)'}18`, color: AA_COLORS[aa] || 'var(--text-muted, #9A9A9F)' }}>
+                    style={{ backgroundColor: aaBg(AA_COLORS[aa] || 'var(--text-muted, #9A9A9F)'), color: AA_COLORS[aa] || 'var(--text-muted, #9A9A9F)' }}>
                     {aa}
                   </span>
                 ))}
@@ -73,7 +80,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
           {Object.entries(AA_NAMES).slice(0, 10).map(([letter, name]) => (
             <div key={letter} className="flex items-center gap-1 text-xs">
               <div className="w-3.5 h-3.5 rounded flex items-center justify-center text-[8px] font-bold"
-                style={{ backgroundColor: `${AA_COLORS[letter]}18`, color: AA_COLORS[letter] }}>{letter}</div>
+                style={{ backgroundColor: aaBg(AA_COLORS[letter]), color: AA_COLORS[letter] }}>{letter}</div>
               <span className="text-[var(--text-muted,#9A9A9F)]">{name}</span>
             </div>
           ))}
