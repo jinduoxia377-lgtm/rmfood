@@ -44,6 +44,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
     switch (gen) {
       case 'llm': return 'AI 大模型'
       case 'neural_network': return '神经网络'
+      case 'ga': return '遗传算法优化'
       default: return '规则引擎'
     }
   }
@@ -53,6 +54,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
     switch (gen) {
       case 'llm': return 'accent'
       case 'neural_network': return 'danger'
+      case 'ga': return 'accent'
       default: return 'neutral'
     }
   }

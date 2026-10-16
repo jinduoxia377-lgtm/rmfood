@@ -53,6 +53,7 @@ from .core.realtime.websocket_manager import get_ws_manager
 from .api import api_router, register_lazy_routers
 from .api.router_registry import registry as router_registry
 from .api import mobile  # 🔒 P2-5: 移动端专用 API
+from .api import search as search_router_module  # 🔒 全局搜索 API
 from .api import search_analytics  # 🔒 Potion AI VFT: 搜索分析
 # 🔒 P1-5: API 版本管理
 from .api.api_version import (
@@ -152,6 +153,22 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] AI 服务初始化完成")
     except Exception as e:
         logger.error(f"[Startup] AI 服务初始化失败: {e}")
+
+    # 4.2 任务持久化恢复（P2 演进项）：启动时扫描超时任务
+    try:
+        from .services.ai.agent.task_team_service import recover_stale_tasks
+        await recover_stale_tasks(timeout_minutes=30)
+        logger.info("[Startup] 超时任务扫描完成")
+    except Exception as e:
+        logger.warning(f"[Startup] 超时任务扫描失败（非阻塞）: {e}")
+
+    # 4.3 预置内置 GitHub MCP 服务器（方案 A：用户零配置）
+    try:
+        from .services.ai.agent.task_team_service import seed_github_mcp_server
+        await seed_github_mcp_server()
+        logger.info("[Startup] GitHub MCP 内置服务器就绪")
+    except Exception as e:
+        logger.warning(f"[Startup] GitHub MCP 种子失败（非阻塞）: {e}")
     
     # 4.5. 验证配方生成数据完整性
     try:
@@ -220,9 +237,35 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] 账号锁定过期清理完成")
     except Exception as e:
         logger.warning(f"[Startup] 账号锁定清理失败（非致命）: {e}")
+
+    # 4.6 启动任务超时定时恢复循环（P0-3：运行中卡住的任务也能自动恢复）
+    stale_loop_task = None
+    try:
+        import asyncio as _asyncio
+        from .services.ai.agent.task_team_service import recover_stale_tasks
+
+        async def _stale_recovery_loop():
+            while True:
+                await _asyncio.sleep(300)
+                try:
+                    await recover_stale_tasks(timeout_minutes=30)
+                except Exception as e:
+                    logger.warning(f"[TaskRecovery] 定时扫描失败（非致命）: {e}")
+
+        stale_loop_task = _asyncio.create_task(_stale_recovery_loop())
+        logger.info("[Startup] 任务超时定时恢复循环已启动（每5分钟）")
+    except Exception as e:
+        logger.warning(f"[Startup] 任务超时定时恢复循环启动失败（非致命）: {e}")
+
     yield
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
+    # 5a. 取消任务超时定时恢复循环
+    if stale_loop_task is not None:
+        try:
+            stale_loop_task.cancel()
+        except Exception:
+            pass
     # 5b. 停止定时同步调度器
     try:
         from app.services.data_sources.auto_sync import stop_auto_sync
@@ -579,6 +622,48 @@ Authorization: Bearer <your_access_token>
         logger.info("[AgentRouter] AI Agent API registered")
     except Exception as e:
         logger.warning(f"[AgentRouter] Agent router registration failed (non-blocking): {e}")
+    # ── 多智能体协作 Bot API（DS Bot 移植）──
+    try:
+        from app.api.v1.bot_router import router as bot_router
+        app.include_router(bot_router, prefix=_eff_api_prefix(bot_router))
+        logger.info("[BotRouter] 多智能体协作 Bot API registered")
+    except Exception as e:
+        logger.warning(f"[BotRouter] Bot router registration failed (non-blocking): {e}")
+    # ── 群聊协作 API（DS Bot 移植 Phase 2）──
+    try:
+        from app.api.v1.group_router import router as group_router
+        app.include_router(group_router, prefix=_eff_api_prefix(group_router))
+        logger.info("[GroupRouter] 群聊协作 API registered")
+    except Exception as e:
+        logger.warning(f"[GroupRouter] Group router registration failed (non-blocking): {e}")
+    # ── 研发任务中心 API（v3.3 任务驱动自动建群）──
+    try:
+        from app.api.v1.task_router import router as task_router
+        app.include_router(task_router, prefix=_eff_api_prefix(task_router))
+        logger.info("[TaskRouter] 研发任务中心 API registered")
+    except Exception as e:
+        logger.warning(f"[TaskRouter] Task router registration failed (non-blocking): {e}")
+    # ── MCP 服务器管理 API（v3.3）──
+    try:
+        from app.api.v1.admin_mcp_router import router as admin_mcp_router
+        app.include_router(admin_mcp_router, prefix=_eff_api_prefix(admin_mcp_router))
+        logger.info("[AdminMcpRouter] MCP 服务器管理 API registered")
+    except Exception as e:
+        logger.warning(f"[AdminMcpRouter] MCP router registration failed (non-blocking): {e}")
+    # ── GitHub MCP 代理端点（方案 A 内置）──
+    try:
+        from app.api.v1.github_mcp_router import router as github_mcp_router
+        app.include_router(github_mcp_router, prefix=_eff_api_prefix(github_mcp_router))
+        logger.info("[GithubMcpRouter] GitHub MCP 代理端点 registered")
+    except Exception as e:
+        logger.warning(f"[GithubMcpRouter] GitHub MCP router registration failed (non-blocking): {e}")
+    # ── AI 用量统计 API（Phase 3）──
+    try:
+        from app.api.v1.usage_router import router as usage_router
+        app.include_router(usage_router, prefix=_eff_api_prefix(usage_router))
+        logger.info("[UsageRouter] AI 用量统计 API registered")
+    except Exception as e:
+        logger.warning(f"[UsageRouter] Usage router registration failed (non-blocking): {e}")
     # ── 实验室验证 API ──
     try:
         from .api.lab_validation import router as lab_validation_router
@@ -600,6 +685,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[ComplianceRouter] Real-time compliance API registered")
     except Exception as e:
         logger.warning(f"[ComplianceRouter] Compliance router registration failed (non-blocking): {e}")
+    # ── 配料表核查 API ──
+    try:
+        from .api.v1.label_check_router import router as label_check_router
+        app.include_router(label_check_router, prefix=_eff_api_prefix(label_check_router))
+        logger.info("[LabelCheckRouter] Ingredient label check API registered")
+    except Exception as e:
+        logger.warning(f"[LabelCheckRouter] Label check router registration failed (non-blocking): {e}")
     # ── 实验数据解析 API ──
     try:
         from .api.v1.experiment_data_router import router as experiment_data_router
@@ -682,6 +774,15 @@ Authorization: Bearer <your_access_token>
         logger.info("[SearchAnalytics] 搜索分析路由注册成功")
     except Exception as e:
         logger.warning(f"[SearchAnalytics] 搜索分析路由注册失败（非阻塞）: {e}")
+    # ── 全局搜索 API ──
+    try:
+        app.include_router(
+            search_router_module.router,
+            prefix=_eff_api_prefix(search_router_module.router),
+        )
+        logger.info("[Search] 全局搜索路由注册成功")
+    except Exception as e:
+        logger.warning(f"[Search] 全局搜索路由注册失败（非阻塞）: {e}")
     # ── 定时报表调度 API ──
     try:
         from .api.analytics_scheduler import router as analytics_scheduler_router
@@ -740,7 +841,13 @@ Authorization: Bearer <your_access_token>
         }
     # ── 静态文件服务 ──
     import os
+    import mimetypes
     from pathlib import Path
+    # Windows 的 mimetypes 注册表常缺少 webp/avif/svg 映射，
+    # 否则图片会以 text/plain 返回，浏览器拒绝渲染（头像显示破碎图标）
+    mimetypes.add_type("image/webp", ".webp")
+    mimetypes.add_type("image/avif", ".avif")
+    mimetypes.add_type("image/svg+xml", ".svg")
     # 使用应用根目录作为基准，避免 Docker 内相对路径问题
     app_root = Path(__file__).resolve().parent.parent  # backend/
     uploads_dir = app_root / "uploads"

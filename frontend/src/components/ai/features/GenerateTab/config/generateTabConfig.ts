@@ -18,7 +18,7 @@ export type InputMode = 'effects' | 'manual'
 export type ViewMode = 'card' | 'compare'
 
 // 生成器类型
-export type GeneratorType = 'rule_engine' | 'llm' | 'neural_network'
+export type GeneratorType = 'rule_engine' | 'ga' | 'llm' | 'neural_network'
 
 // 配方分类类型
 export type FormulaCategory =

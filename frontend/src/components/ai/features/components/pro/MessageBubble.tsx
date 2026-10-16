@@ -25,12 +25,69 @@ import {
 	ThumbsUp, ThumbsDown, Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
 	FileText, AlertTriangle, MoreHorizontal,
-	GitBranch, Share2,
+	GitBranch, Share2, Cpu,
 } from 'lucide-react'
 import { userProfileManager } from '../../services/userProfileService'
 import { logger } from '@/utils/safeLogger'
 
 type Reaction = 'like' | 'dislike' | null
+
+/**
+ * ModelSourceBadge — 回复来源徽标
+ *
+ * 后端 chat_engine.py 在 LLM 不可用（额度不足 / Key 无效 / 超时）时会
+ * 降级到本地规则引擎，并把 result.model 标为 "rule-engine-fallback" 或
+ * "ultimate-fallback"。此前 ChatMessage 类型甚至没有 model 字段，前端完全
+ * 丢弃该信息，导致用户无法分辨「大模型推理」与「规则引擎降级」。
+ *
+ * 这是「配方设计专家」系统的能力真实性底线：不能让规则引擎冒充大模型。
+ * 该徽标取代了此处原有的调试块（黄色内联样式显示 struct:Xblks）。
+ */
+function ModelSourceBadge({ model }: { model: string }) {
+	// 三级降级均失败：固定文案兜底（最严重的诚实性问题）
+	if (model === 'ultimate-fallback') {
+		return (
+			<div
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-[11px] leading-tight text-warning-700 dark:text-warning-400"
+				role="note"
+			>
+				<AlertTriangle className="h-3 w-3 shrink-0" />
+				<span>大模型三级降级均失败，以下为固定引导文案，非智能生成</span>
+			</div>
+		)
+	}
+	// 规则引擎降级：内容真实但来源不是大模型
+	if (model === 'rule-engine-fallback') {
+		return (
+			<div
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-[11px] leading-tight text-warning-700 dark:text-warning-400"
+				role="note"
+			>
+				<AlertTriangle className="h-3 w-3 shrink-0" />
+				<span>大模型不可用，以下由本地配方引擎生成，非大模型推理</span>
+			</div>
+		)
+	}
+	// 生成失败
+	if (model === 'error') {
+		return (
+			<div
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-error-200 dark:border-error-500/40 bg-error-50 dark:bg-error-500/15 px-2 py-1 text-[11px] leading-tight text-error-700 dark:text-error-400"
+				role="alert"
+			>
+				<AlertTriangle className="h-3 w-3 shrink-0" />
+				<span>回复生成失败</span>
+			</div>
+		)
+	}
+	// 真实大模型推理：低调呈现模型名，作为能力凭据
+	return (
+		<div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] leading-tight text-neutral-600 dark:bg-neutral-700/60 dark:text-neutral-300">
+			<Cpu className="h-3 w-3 shrink-0" />
+			<span>{model}</span>
+		</div>
+	)
+}
 
 export interface MessageBubbleProps {
 	msg: ChatMessage
@@ -342,6 +399,59 @@ function renderMessageContent(
 
 // ── 主组件 ────────────────────────────────────────────────────────
 
+export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<ChatMessage['dialectics']> }) {
+	if (!dialectics) return null
+
+	// 急症：红色警示卡片
+	if (dialectics.urgent) {
+		return (
+			<div className="mb-2 p-3 rounded-xl border border-danger-300 bg-danger-50 dark:bg-danger-900/15 text-sm">
+				<div className="flex items-start gap-2">
+					<AlertTriangle className="w-4 h-4 mt-0.5 text-danger-600 flex-shrink-0" />
+					<div>
+						<p className="font-semibold text-danger-700 dark:text-danger-600">⚠️ 建议立即就医</p>
+						<p className="mt-1 text-danger-600 dark:text-danger-500">{dialectics.referral_message || '您的描述可能属于急重症表现，请立即就医，不要依赖食疗调理。'}</p>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	// 常规辨证：体质倾向 + 调理方向 + 证据参考
+	const goals = dialectics.regulation_goals || []
+	const evidence = dialectics.evidence || []
+	return (
+		<div className="mb-2 p-3 rounded-xl border border-primary-100 dark:border-primary-800/30 bg-primary-50/60 dark:bg-primary-900/10 text-sm">
+			<p className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-1.5 flex items-center gap-1.5">
+				<Cpu className="w-3.5 h-3.5" /> 辨证分析
+				{dialectics.engine === 'rule_engine_fallback' && (
+					<span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">规则引擎降级</span>
+				)}
+			</p>
+			{dialectics.constitution_tendency && (
+				<p className="text-neutral-800 dark:text-neutral-200">
+					<span className="font-medium">体质倾向：</span>{dialectics.constitution_tendency}
+				</p>
+			)}
+			{goals.length > 0 && (
+				<div className="mt-1.5">
+					<p className="text-xs text-muted-foreground mb-1">调理方向：</p>
+					<ul className="space-y-0.5 text-xs text-neutral-700 dark:text-neutral-300">
+						{goals.map((g, i) => <li key={i}>· {g}</li>)}
+					</ul>
+				</div>
+			)}
+			{evidence.length > 0 && (
+				<div className="mt-1.5 space-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+					{evidence.slice(0, 3).map((e, i) => (
+						<p key={i}><span className="text-info-600 dark:text-info-500">[{e.level}]</span> {e.claim}{e.source ? `（来源：${e.source}）` : ''}</p>
+					))}
+				</div>
+			)}
+		</div>
+	)
+}
+
 export function MessageBubble({
 	msg,
 	index,
@@ -509,12 +619,9 @@ export function MessageBubble({
 											isThinking={isStreaming && index === allMessages.length - 1}
 										/>
 									)}
-									{msg.role === 'assistant' && (
-								<div style={{fontSize:10,color:"#ff0",padding:"2px 4px",background:"#333",borderRadius:2,marginBottom:4}}>
-									{(() => { const _s=detectStructuredContent(msg.content); return _s ? `struct:${_s.blocks.length}blks` : 'NO_STRUCT'; })()}
-								</div>
-							)}
-							{renderMessageContent(msg, index, allMessages, isStreaming)}
+									{msg.role === 'assistant' && msg.model && <ModelSourceBadge model={msg.model} />}
+									{msg.role === 'assistant' && msg.dialectics && <DialecticsCallout dialectics={msg.dialectics} />}
+									{renderMessageContent(msg, index, allMessages, isStreaming)}
 								</>
 							)}
 						</div>

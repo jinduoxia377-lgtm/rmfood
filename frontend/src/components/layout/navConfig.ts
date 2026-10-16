@@ -30,8 +30,10 @@ import {
   FileCheck,
   Scale,
   ScanLine,
+  ScanText,
   Barcode,
   Dna,
+  Bot,
 } from 'lucide-react';
 
 // ── 类型定义 ──
@@ -72,6 +74,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: '合规质量',
     items: [
       { to: '/compliance',      label: '合规核验', icon: Scale },
+      { to: '/label-check',     label: '配料核查', icon: ScanText },
       { to: '/ingredient-analysis', label: '配料分析', icon: ScanLine },
       { to: '/labels',          label: '标签生成', icon: Barcode },
     ],
@@ -80,6 +83,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: '智能工具',
     items: [
       { to: '/ai',              label: '智能助手',   icon: Brain },
+      { to: '/agent',           label: '智能协作',   icon: Bot },
       { to: '/academic-report', label: '学术报告',   icon: FileText },
       { to: '/databases',       label: '数据检索',   icon: Database },
       { to: '/peptide-structure', label: '肽链结构', icon: Dna },

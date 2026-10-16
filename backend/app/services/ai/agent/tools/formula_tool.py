@@ -1,7 +1,7 @@
 """
 配方生成工具
 
-基于 KnowledgeRetriever + FormulaDesigner，为 Agent 提供配方自动生成能力。
+基于统一配方生成服务（真实 GA + 数据库药材），为 Agent 提供配方自动生成能力。
 """
 from __future__ import annotations
 
@@ -9,15 +9,13 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from app.services.knowledge_retriever import KnowledgeRetriever
-from app.services.formula_designer import FormulaDesigner
 from . import BaseAgentTool, ToolResult, register_tool
 from .compliance_tool import FOOD_HERB_LIMITS
 
 logger = logging.getLogger(__name__)
 
 
-# 内置知识库种子（小样本，实际数据从 TCMSP/DFBP 导入）
+# 内置知识库种子（仅用于 IngredientInfoTool 单味药材查询；配方生成已走统一服务）
 _KB_SEED: Dict[str, Dict[str, Any]] = {
     "人参": {
         "pinyin": "ren shen",
@@ -138,11 +136,6 @@ class FormulaGenerationTool(BaseAgentTool):
             "required": ["target_effects"],
         }
 
-    def __init__(self):
-        self._knowledge_base = _KB_SEED
-        self._retriever = KnowledgeRetriever(self._knowledge_base)
-        self._designer = FormulaDesigner(self._knowledge_base)
-
     async def execute(self, params: dict, context: dict) -> ToolResult:
         start = time.time()
         try:
@@ -150,31 +143,57 @@ class FormulaGenerationTool(BaseAgentTool):
             product_type: str = params.get("product_type", "饮品")
             population: str = params.get("target_population", "adults")
 
-            # 构建意图
-            intent = {
-                "target_effects": target_effects,
-                "product_type": product_type,
-                "target_population": population,
+            # 统一生成服务：真实 GA + 数据库药材（与 /ai/generate 同一套引擎）
+            from app.services.ai.formula_generation_service import run_ga_generation
+
+            constraints: dict[str, Any] = {
+                "max_candidates": 5,
+                "total_dosage_g": 100.0,
             }
+            if params.get("budget_constraint"):
+                constraints["budget_constraint"] = params["budget_constraint"]
 
-            # 检索相关知识
-            retrieval_result = self._retriever.retrieve(intent)
+            result = await run_ga_generation(target_effects, constraints)
+            candidates = result.get("candidates") or []
+            if not candidates:
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error="配方生成服务未返回候选方案",
+                    latency_ms=(time.time() - start) * 1000,
+                )
 
-            # 设计配方
-            formula_result = await self._designer.design(intent, self._knowledge_base)
+            # 取综合评分最高的候选，保持与 orchestrator 期望的 data/scores 结构兼容
+            top = candidates[0]
+            herbs = top.get("herb_combination") or []
+            top_score = top.get("overall_score", 0)
+            scores = {
+                "overall_score": top_score,
+                "overall": top_score,
+                "efficacy": top.get("efficacy_score", 0),
+                "safety": top.get("safety_score", 0),
+                "taste": top.get("taste_score", 0),
+                "cost": top.get("cost_score", 0),
+                "synergy": top.get("synergy_score", 0),
+                "stability": top.get("stability_score", 0),
+            }
 
             elapsed = (time.time() - start) * 1000
             logger.info(
-                "Formula generated: effects=%r product=%s latency=%dms",
-                target_effects, product_type, elapsed,
+                "Formula generated via unified GA: effects=%r product=%s latency=%dms generator=%s",
+                target_effects, product_type, elapsed, result.get("generator"),
             )
 
             return ToolResult(
                 tool_name=self.name,
                 success=True,
                 data={
-                    **formula_result,
-                    "knowledge_context": retrieval_result,
+                    "summary": f"基于遗传算法生成 {len(candidates)} 套候选配方",
+                    "details": f"生成引擎: {result.get('generator')}",
+                    "data": herbs,
+                    "scores": scores,
+                    "candidates": candidates,
+                    "generator": result.get("generator"),
                     "product_type": product_type,
                     "target_population": population,
                 },
@@ -222,6 +241,44 @@ class IngredientInfoTool(BaseAgentTool):
     async def execute(self, params: dict, context: dict) -> ToolResult:
         try:
             name = params["name"]
+            # P0：优先查询真实 tcm_herbs 数据库（TCMSP 数据源）
+            db = context.get("db")
+            if db is not None:
+                try:
+                    import json as _json
+                    from sqlalchemy import select
+                    from .....models.external_data import TCMHerb
+
+                    result = await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))
+                    herb = result.scalar_one_or_none()
+                    if herb is not None:
+                        info: dict[str, Any] = {
+                            "name": herb.name_cn,
+                            "name_latin": herb.name_latin,
+                            "pinyin": herb.name_pinyin,
+                            "effects": herb.effects,
+                            "compounds": herb.compounds or [],
+                            "diseases": herb.diseases or [],
+                            "is_food_homology": bool(herb.is_food_homology),
+                            "ob_percent": herb.ob_percent,
+                            "dl_value": herb.dl_value,
+                            "source": herb.source,
+                        }
+                        # extra_knowledge 是 JSON 字符串：dosage / meridian / contraindication
+                        if herb.extra_knowledge:
+                            try:
+                                ek = _json.loads(herb.extra_knowledge) if isinstance(herb.extra_knowledge, str) else herb.extra_knowledge
+                                if isinstance(ek, dict):
+                                    for k in ("dosage", "meridian", "contraindication", "pairing"):
+                                        if ek.get(k):
+                                            info[k] = ek[k]
+                            except Exception:
+                                pass
+                        return ToolResult(tool_name=self.name, success=True, data=info)
+                except Exception as e:
+                    logger.warning(f"[ingredient_info] 数据库查询失败，回退内置种子库: {e}")
+
+            # 回退：内置种子库（仅离线/异常环境）
             info = self._kb.get(name)
             if not info:
                 # 模糊匹配

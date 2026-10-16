@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { chatService } from '../services/chatService'
 import { storageService } from '../services/storageService'
 import { eventBus } from '../services/eventBus'
@@ -260,6 +260,8 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // 使用流式 SSE API 获取响应（失败时自动降级为非流式）
       let fullContent = ''
+      let streamModel = ''  // 回复来源（后端 meta 事件），用于展示来源徽标
+      let streamDialectics: ChatMessage['dialectics'] = undefined
       let accumulatedFormulas: any[] = []
       let hasError = false
       let errorMessage = ''
@@ -283,9 +285,21 @@ export function useChatMessages(): UseChatMessagesReturn {
             eventBus.emit('thinking:step', { step: chunk.step.step, content: chunk.step.content, status: chunk.step.status, timestamp: Date.now() })
           }
 
+          // 回复来源标识（后端通过 type=meta 事件发送，通常为首个事件）
+          if (chunk.model) {
+            streamModel = chunk.model
+          }
+
+          // 辨证分析（后端通过 type=dialectics 事件发送）
+          if (chunk.dialectics) {
+            streamDialectics = chunk.dialectics
+          }
+
           updateMessage(assistantMessageId, {
             content: fullContent,
             formulas: accumulatedFormulas.length > 0 ? [...accumulatedFormulas] : undefined,
+            model: streamModel || undefined,
+            dialectics: streamDialectics || undefined,
           })
         }
       } catch (streamError) {
@@ -311,6 +325,8 @@ export function useChatMessages(): UseChatMessagesReturn {
             content: fullContent,
             formulas: response.formulas || accumulatedFormulas.length > 0 ? [...accumulatedFormulas] : undefined,
             isLoading: false,
+            // 传递回复来源，供 MessageBubble 展示「大模型 / 规则引擎降级」徽标
+            model: response.model,
           })
         } catch (fallbackError) {
           // 流式和非流式均失败
