@@ -90,7 +90,7 @@ async def generate_analysis_report():
             "description": "多个API端点返回不同的generator值，前端类型定义不匹配",
             "affected_endpoints": [
                 {"path": "/ai/generate", "returns": "rule_engine"},
-                {"path": "/ai/generate/neural", "returns": "neural_engine (应为neural_network)"},
+                {"path": "/ai/generate/advanced", "returns": "ga_optimizer (统一 GA 服务)"},
                 {"path": "/ai/generate/v2", "returns": "unified_engine_v2"},
                 {"path": "/ai/generate/seven-step", "returns": "seven_step_engine"}
             ]

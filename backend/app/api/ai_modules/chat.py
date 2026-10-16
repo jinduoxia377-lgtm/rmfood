@@ -110,6 +110,11 @@ class ChatRequest(BaseModel):
         max_length=2000,
         description="用户画像摘要（健康目标/过敏原/饮食禁忌/体质）",
     )
+    # DS Bot 移植：指定后以该 Bot 身份对话（人设+记忆+模型覆盖）
+    bot_id: int | None = Field(
+        None,
+        description="Bot ID：以具名 Bot 身份对话，使用其 persona/记忆/模型",
+    )
 
 
 class ChatMessage(BaseModel):
@@ -184,6 +189,85 @@ def _build_system_prompt(scenario_mode: str, profile_raw: str | None) -> str:
     )
 
 
+async def _resolve_bot_chat_context(
+    db: AsyncSession,
+    bot_id: int | None,
+    user_id: int,
+    tenant_id: int,
+) -> tuple[str, str | None, float | None] | None:
+    """加载 Bot 对话上下文（DS Bot 移植）。
+
+    返回 (system_prompt, model_override, temperature_override)；
+    若 bot_id 为空返回 None（走普通 AI 对话）。
+
+    - system_prompt = persona_prompt + 跨会话记忆块（R7）
+    - model_override = bot.model_id（M1：每个 Bot 独立选模型）
+    - 可见性校验：仅创建者或 org 共享 Bot 可对话
+    """
+    if not bot_id:
+        return None
+    from ...services.ai.agent.bot_manager import BotManager
+    from ...domain.bots import BotVisibility
+
+    manager = BotManager(db)
+    bot = await manager.get_bot(bot_id, tenant_id)
+    if bot is None:
+        raise HTTPException(status_code=404, detail="Bot 不存在或已删除")
+    if bot.visibility != BotVisibility.ORG and bot.created_by != user_id:
+        raise HTTPException(status_code=403, detail="无权与该 Bot 对话")
+
+    system_prompt = await manager.build_bot_system_prompt(bot, user_id)
+    model_override, temperature_override = manager.resolve_model_override(bot)
+    return system_prompt, model_override, temperature_override
+
+
+async def _persist_chat_record(
+    db: AsyncSession,
+    user_id: int,
+    question: str,
+    answer: str,
+    bot_id: int | None = None,
+    title: str | None = None,
+) -> None:
+    """回写对话记录到数据库（会话 + 消息），按 bot_id 隔离持续会话。"""
+    try:
+        import datetime as _dt
+        from ...models.chat import ChatSession, ChatMessage
+        session_query = select(ChatSession).where(
+            ChatSession.user_id == user_id,
+            ChatSession.is_active == True,
+        )
+        if bot_id:
+            session_query = session_query.where(ChatSession.bot_id == bot_id)
+        session_result = await db.execute(
+            session_query.order_by(ChatSession.updated_at.desc()).limit(1)
+        )
+        chat_session = session_result.scalar_one_or_none()
+        if not chat_session:
+            chat_session = ChatSession(
+                user_id=user_id,
+                title=(title or question)[:50] + ('...' if len(title or question) > 50 else ''),
+                message_count=0,
+                is_active=True,
+                bot_id=bot_id,
+            )
+            db.add(chat_session)
+            await db.commit()
+            await db.refresh(chat_session)
+
+        db.add(ChatMessage(session_id=chat_session.id, role="user", content=question))
+        db.add(ChatMessage(session_id=chat_session.id, role="assistant", content=answer))
+        chat_session.message_count += 2
+        chat_session.updated_at = _dt.datetime.now(_dt.timezone.utc)
+        await db.commit()
+        # Phase 3：自动沉淀记忆（受 ENABLE_AUTO_MEMORY 开关控制，默认关闭）
+        if bot_id:
+            from ...services.ai.agent.memory_service import extract_and_store_memories
+            await extract_and_store_memories(db, bot_id, user_id, question, answer)
+    except Exception as e:
+        logger.warning(f"对话记录回写失败（非致命）: {e}")
+
+
 @router.post("/chat", summary="AI 智能对话（非流式）")
 async def chat(
     req: ChatRequest,
@@ -195,6 +279,18 @@ async def chat(
     与 RMFOOD AI 配方顾问进行智能对话。
     可讨论配方设计、药食同源知识、功效成分、安全法规等问题。
     """
+    # 未登录直接 401（get_current_user 为可选认证，current_user 可能为 None，
+    # 后续 current_user.id 会抛 AttributeError 变成 500）
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="请先登录后再使用 AI 对话")
+
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     import datetime as dt
 
     try:
@@ -210,11 +306,13 @@ async def chat(
 
         # 检查缓存（租户级 key 防止跨租户缓存泄漏；用户级密钥时缓存按用户隔离）
         # 缓存键加入 history 哈希，避免不同上下文中相同问题返回相同答案
+        # Bot 对话带 bot_id 进缓存键，避免不同 Bot 人设下命中他人答案
+        bot_cache_tag = f":bot:{req.bot_id}" if getattr(req, "bot_id", None) else ""
         history_hash = hash(tuple(str(h) for h in (req.history or [])[-3:])) if req.history else 0
         cache_key = (
-            f"user:{current_user.id}:q:{hash(req.question)}:ctx:{history_hash}"
+            f"user:{current_user.id}:q:{hash(req.question)}:ctx:{history_hash}{bot_cache_tag}"
             if user_llm is not None
-            else f"org:{tenant.org_id}:q:{hash(req.question)}:ctx:{history_hash}"
+            else f"org:{tenant.org_id}:q:{hash(req.question)}:ctx:{history_hash}{bot_cache_tag}"
         )
         cached = ai_cache.get(cache_key)
         if cached:
@@ -270,9 +368,19 @@ async def chat(
             )
 
         scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
-        system_prompt = _build_system_prompt(
-            scenario_mode, getattr(req, "user_profile_context", None)
+        # DS Bot 移植：若指定 bot_id，以 Bot 的人设+记忆替代默认场景 prompt，并应用模型覆盖
+        # 注：平台 JWT 可能不携带 org_id（global 模式），Bot 默认租户为 1
+        bot_ctx = await _resolve_bot_chat_context(
+            db, getattr(req, "bot_id", None), current_user.id, tenant.org_id or 1,
         )
+        if bot_ctx is not None:
+            system_prompt, model_override, temperature_override = bot_ctx
+        else:
+            system_prompt = _build_system_prompt(
+                scenario_mode, getattr(req, "user_profile_context", None)
+            )
+            model_override = None
+            temperature_override = None
 
         messages = [LLMMessage(role="system", content=system_prompt)]
         if req.history:
@@ -282,46 +390,17 @@ async def chat(
 
         # Use LLM streaming to collect the full response（使用按用户解析出的服务实例）
         answer = ""
-        async for chunk in llm.chat_stream(messages):
+        async for chunk in llm.chat_stream(
+            messages, model=model_override, temperature=temperature_override,
+        ):
             if chunk:
                 answer += chunk
 
-        # 回写对话记录到数据库
-        try:
-            from ...models.chat import ChatSession, ChatMessage
-            session_result = await db.execute(
-                select(ChatSession).where(
-                    ChatSession.user_id == current_user.id,
-                    ChatSession.is_active == True,
-                ).order_by(ChatSession.updated_at.desc()).limit(1)
-            )
-            chat_session = session_result.scalar_one_or_none()
-            if not chat_session:
-                chat_session = ChatSession(
-                    user_id=current_user.id,
-                    title=req.question[:50] + ('...' if len(req.question) > 50 else ''),
-                    message_count=0,
-                    is_active=True,
-                )
-                db.add(chat_session)
-                await db.commit()
-                await db.refresh(chat_session)
-
-            await db.add(ChatMessage(
-                session_id=chat_session.id,
-                role="user",
-                content=req.question,
-            ))
-            await db.add(ChatMessage(
-                session_id=chat_session.id,
-                role="assistant",
-                content=answer,
-            ))
-            chat_session.message_count += 2
-            chat_session.updated_at = datetime.datetime.now(datetime.timezone.utc)
-            await db.commit()
-        except Exception as db_err:
-            logger.warning(f"对话记录回写失败（非致命）: {db_err}")
+        # 回写对话记录到数据库（按 bot_id 隔离持续会话）
+        await _persist_chat_record(
+            db, current_user.id, req.question, answer,
+            bot_id=getattr(req, "bot_id", None), title=req.question[:50],
+        )
 
         # 构建返回结果（匹配前端 AIResponse 接口）
         result = {
@@ -404,6 +483,17 @@ async def chat_stream(
     流式智能对话（SSE）。
     前端通过 EventSource / fetch + ReadableStream 接收。
     """
+    # 未登录直接 401（get_current_user 为可选认证，current_user 可能为 None）
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="请先登录后再使用 AI 对话")
+
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     try:
         logger.info(f"[chat_stream] 收到流式对话请求, question={req.question[:50]}..., history_count={len(req.history) if req.history else 0}")
 
@@ -466,15 +556,28 @@ async def chat_stream(
             import json
             async def thinking_stream():
                 from ...services.thinking_engine import thinking_engine
+                # 明示降级来源：此前此处静默替换为规则引擎，用户完全无感知，
+                # 是流式模式的「冒充专家」缺口。现显式标注 model 供前端展示徽标。
+                yield _format_sse_event("meta", {"model": "rule-engine-fallback", "reason": "LLM 服务未配置或不可用"})
                 async for chunk in thinking_engine.generate_thinking_stream(req.question):
                     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
                 yield "data: [DONE]\n\n"
             return StreamingResponse(thinking_stream(), media_type="text/event-stream")
 
         scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
-        system_prompt = _build_system_prompt(
-            scenario_mode, getattr(req, "user_profile_context", None)
+        # DS Bot 移植：若指定 bot_id，以 Bot 的人设+记忆替代默认场景 prompt，并应用模型覆盖
+        # 注：平台 JWT 可能不携带 org_id（global 模式），Bot 默认租户为 1
+        bot_ctx = await _resolve_bot_chat_context(
+            db, getattr(req, "bot_id", None), current_user.id, tenant.org_id or 1,
         )
+        if bot_ctx is not None:
+            system_prompt, model_override, temperature_override = bot_ctx
+        else:
+            system_prompt = _build_system_prompt(
+                scenario_mode, getattr(req, "user_profile_context", None)
+            )
+            model_override = None
+            temperature_override = None
 
         messages = [LLMMessage(role="system", content=system_prompt)]
         if req.history:
@@ -482,15 +585,38 @@ async def chat_stream(
                 messages.append(LLMMessage(role=h["role"], content=h["content"]))
         messages.append(LLMMessage(role="user", content=req.question))
 
-        logger.info(f"[chat_stream] 消息列表构建完成, 共 {len(messages)} 条消息, system_prompt长度={len(system_prompt)}")
+        logger.info(f"[chat_stream] 消息列表构建完成, 共 {len(messages)} 条消息, system_prompt长度={len(system_prompt)}, bot_id={getattr(req, 'bot_id', None)}")
 
 
         async def event_stream():
+            full_answer = ""
             try:
-                async for chunk in llm.chat_stream(messages):
+                # 明示回复来源，供前端展示来源徽标（真实模型 vs 规则引擎降级）
+                yield _format_sse_event("meta", {
+                    "model": model_override or llm.config.model or llm.config.provider,
+                })
+                # 辨证引擎：急症判定 + 证据分级（LLM+RAG，规则降级）
+                try:
+                    from ...services.ai.dialectics_service import analyze_dialectics
+                    dialectics = await analyze_dialectics(req.question)
+                    yield _format_sse_event("dialectics", dialectics)
+                except Exception as d_exc:
+                    logger.warning(f"[chat_stream] 辨证分析失败（忽略，不影响主回复）: {d_exc}")
+                async for chunk in llm.chat_stream(
+                    messages, model=model_override, temperature=temperature_override,
+                ):
                     if chunk:
+                        full_answer += chunk
                         yield _format_sse_event("content", {"content": chunk})
                 yield "data: [DONE]\n\n"
+                # 流式对话写回会话历史（含 Bot 持续会话）
+                try:
+                    await _persist_chat_record(
+                        db, current_user.id, req.question, full_answer,
+                        bot_id=getattr(req, "bot_id", None), title=req.question[:50],
+                    )
+                except Exception as persist_err:
+                    logger.warning(f"流式对话记录回写失败（非致命）: {persist_err}")
             except RuntimeError as e:
                 error_msg = str(e)
                 logger.error(f"流式对话运行时错误: {error_msg}", exc_info=True)

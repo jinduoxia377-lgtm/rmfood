@@ -16,6 +16,7 @@ import { useEffect, lazy, Suspense, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
 import LandingPage from '@/pages/landing/LandingPage';
+import InvitationAcceptPage from '@/pages/invitations/InvitationAcceptPage';
 import { UserRole } from '@/types/index';
 import { ThemeProvider } from '@/stores/ThemeProvider';
 // T-R1 / D-41：原此处 import { RadixThemeProvider } from '@/theme/RadixThemeProvider'。
@@ -24,11 +25,13 @@ import { ThemeProvider } from '@/stores/ThemeProvider';
 // 已移除该依赖与 Provider（仅 2 个消费点，均为非必要包装），令牌体系统一由
 // styles/tokens/{base,dark}.css + .dark 类负责。
 import MainLayout from '@/components/layout/MainLayout';
+import BillingPage from '@/pages/billing/BillingPage';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ModuleErrorBoundary } from '@/components/ai/features';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { ShortcutHelpProvider } from '@/hooks/useKeyboardShortcuts.tsx';
+import { AiQuotaNotice } from '@/components/ai/AiQuotaNotice';
 
 // 🔒 P3-1: 可预加载懒加载（空闲时预加载）
 import { lazyWithPreload } from '@/components/LazyLoad.tsx';
@@ -78,6 +81,7 @@ const DocumentExtractPage = lazyWithPreload(() => import('@/pages/documents/Docu
 
 // 🔒 Phase 5: 合规检查 · 配料分析 · 标签生成
 const ComplianceCheckPage = lazyWithPreload(() => import('@/pages/compliance/ComplianceCheckPage'));
+const LabelCheckPage = lazyWithPreload(() => import('@/pages/label/LabelCheckPage'));
 const IngredientAnalysisPage = lazyWithPreload(() => import('@/pages/ingredient/IngredientAnalysisPage'));
 const LabelGeneratorPage = lazyWithPreload(() => import('@/pages/labels/LabelGeneratorPage'));
 
@@ -253,6 +257,11 @@ const router = createBrowserRouter([
     path: '/landing',
     element: <LandingPage />,
   },
+  // 公开路由 — 接受组织邀请
+  {
+    path: '/invitations/accept',
+    element: <InvitationAcceptPage />,
+  },
   // 公开路由 — 信息页面
   { path: '/docs',   element: <DocsPage /> },
   { path: '/api-docs', element: <ApiDocsPage /> },
@@ -276,6 +285,10 @@ const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: 'billing',
+        element: <BillingPage />,
       },
       {
         path: 'radix-demo',
@@ -494,6 +507,16 @@ const router = createBrowserRouter([
           <Suspense fallback={<LoadingComponent />}>
             <ModuleErrorBoundary moduleName="合规检查">
               <ComplianceCheckPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'label-check',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="配料表核查">
+              <LabelCheckPage />
             </ModuleErrorBoundary>
           </Suspense>
         ),
@@ -732,6 +755,7 @@ export default function App() {
             <ShortcutHelpProvider>
               <RouterProvider router={router} />
               <ToastContainer />
+              <AiQuotaNotice />
             </ShortcutHelpProvider>
           </ToastProvider>
         </QueryClientProvider>

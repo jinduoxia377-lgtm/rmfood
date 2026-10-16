@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
-import type { AICandidate, NeuralGenerateResponse } from '@/api/ai';
+import type { AICandidate, AdvancedGenerateResponse } from '@/api/ai';
 import { useGenerationProgress } from '@/hooks/useGenerationProgress';
 import { GenerationProgressPanel } from './GenerationProgressPanel';
 import { Card, Input, Button, Slider, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
-import { Brain, Sparkles, Sliders, Tag, Shield, Cherry, AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { Sparkles, Sliders, Tag, Shield, Cherry, AlertTriangle, CheckCircle, X } from 'lucide-react';
 
 const EFFECT_OPTIONS = ['降血压', '抗氧化', '降血糖', '补气养阴', '抗疲劳', '改善睡眠', '增强免疫'];
 
@@ -23,12 +23,12 @@ interface Constraints {
   safetyLevel?: string;
 }
 
-interface NeuralGeneratePanelProps {
+interface AdvancedGeneratePanelProps {
   onCandidatesGenerated?: (candidates: AICandidate[]) => void;
   className?: string;
 }
 
-export function NeuralGeneratePanel({ onCandidatesGenerated, className }: NeuralGeneratePanelProps) {
+export function AdvancedGeneratePanel({ onCandidatesGenerated, className }: AdvancedGeneratePanelProps) {
   const [inputMode, setInputMode] = useState<'direct' | 'tag'>('tag');
   const [directInput, setDirectInput] = useState('');
   const [selectedEffects, setSelectedEffects] = useState<string[]>([]);
@@ -39,7 +39,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
   const [excludedInput, setExcludedInput] = useState('');
   const [maxIngredients, setMaxIngredients] = useState(10);
   const [candidates, setCandidates] = useState<AICandidate[] | null>(null);
-  const [data, setData] = useState<NeuralGenerateResponse | null>(null);
+  const [data, setData] = useState<AdvancedGenerateResponse | null>(null);
   const [priorityValues, setPriorityValues] = useState<Record<string, number>>({
     synergy: 0.7,
     taste: 0.5,
@@ -72,9 +72,9 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         safetyLevel: selectedSafetyLevel || undefined,
       };
 
-      updateProgress('generating', 30, '神经网络正在生成配方方案...', 15);
+      updateProgress('generating', 30, '遗传算法正在生成配方方案...', 15);
 
-      const result = await aiApi.generateNeural(targetEffects, priorityValues, constraints, 5);
+      const result = await aiApi.generateAdvanced(targetEffects, priorityValues, constraints, 5);
 
       updateProgress('optimizing', 60, '正在优化配方参数...', 10);
 
@@ -178,18 +178,18 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
   return (
     <Card className={`p-6 ${className}`}>
       <span className="sr-only" id="neural-panel-description">
-        神经网络配方生成面板，基于深度学习模型智能生成配方方案
+        高级配方优化面板，基于遗传算法多目标优化智能生成配方方案
       </span>
       <div aria-live="polite" className="sr-only">
         {announcement}
       </div>
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-300/20 flex items-center justify-center">
-          <Brain className="w-5 h-5 text-primary-500" />
+          <Sparkles className="w-5 h-5 text-primary-500" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold">神经网络配方生成</h2>
-          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">基于深度学习模型智能生成配方方案</p>
+          <h2 className="text-lg font-semibold">高级配方优化生成</h2>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">基于遗传算法多目标优化生成配方方案</p>
         </div>
       </div>
 
@@ -455,7 +455,11 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
               生成 {candidates.length} 个候选方案
             </h3>
             <Badge variant="primary">
-              {data?.generator === 'rule_engine' ? '规则引擎生成' : '神经网络生成'}
+              {data?.generator === 'ga_optimizer'
+                ? '遗传算法优化'
+                : data?.generator === 'rule_engine_fallback'
+                  ? '规则引擎生成'
+                  : 'AI 优化生成'}
             </Badge>
           </div>
           <ul className="space-y-4" role="list" aria-label="配方候选方案列表">
@@ -522,4 +526,4 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
   );
 }
 
-export default NeuralGeneratePanel;
+export default AdvancedGeneratePanel;

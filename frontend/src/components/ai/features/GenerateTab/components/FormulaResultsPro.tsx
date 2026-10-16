@@ -94,6 +94,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
     switch (gen) {
       case 'llm': return 'AI 大模型'
       case 'neural_network': return '神经网络'
+      case 'ga': return '遗传算法优化'
       default: return '规则引擎'
     }
   }
@@ -102,6 +103,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
     switch (gen) {
       case 'llm': return 'primary'
       case 'neural_network': return 'danger'
+      case 'ga': return 'primary'
       default: return 'neutral'
     }
   }

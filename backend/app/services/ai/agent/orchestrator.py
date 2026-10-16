@@ -28,6 +28,7 @@ from app.services.ai.safety import (
 from app.services.ai.safety.instruction_hierarchy import InstructionHierarchy
 
 from .tools import BaseAgentTool, ToolResult, get_tool_registry
+from app.services.ai.dialectics_service import analyze_dialectics
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,20 @@ class AgentStep:
     error: Optional[str] = None
 
 
+# 模块级常量与辅助函数
+_TOOL_MARKER = "__TOOL_CALLS__:"
+
+
+def _estimate_tokens(texts: list[str]) -> int:
+    """Phase 3：粗略估算 token 数（CJK ~1.5 字符/token，ASCII ~3.5 字符/token）。"""
+    total = 0
+    for t in texts:
+        cjk = sum(1 for ch in t if "\u4e00" <= ch <= "\u9fff")
+        ascii_count = len(t) - cjk
+        total += int(cjk / 1.5 + ascii_count / 3.5)
+    return total
+
+
 @dataclass
 class AgentExecution:
     """Agent执行记录"""
@@ -64,6 +79,9 @@ class AgentExecution:
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     status: str = "running"
+    # Phase 3：LLM token 用量（估算）
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
 
     def to_dict(self) -> dict:
         return {
@@ -169,7 +187,7 @@ class AgentOrchestrator:
         execution.status = "completed"
         execution.completed_at = datetime.now(timezone.utc)
         execution.total_latency_ms = (time.time() - total_start) * 1000
-        execution.final_response = self._build_response(query, execution.steps)
+        execution.final_response = await self._build_response(query, execution.steps)
 
         logger.info(
             "Fast execution done: %d steps, %dms",
@@ -182,12 +200,23 @@ class AgentOrchestrator:
         query: str,
         max_steps: int = 10,
         context: Optional[dict] = None,
+        allowed_tools: Optional[List[str]] = None,
+        model_override: Optional[str] = None,
+        temperature_override: Optional[float] = None,
     ) -> AgentExecution:
         """
         智能模式：让 LLM 自主决定调用哪些工具
         通过 function calling 接口，LLM 动态选择工具。
 
         🔒 安全增强：用户输入经过 Prompt 注入检测，输出经过安全检查
+
+        Args:
+            query: 用户问题
+            max_steps: 最大工具调用步数
+            context: 执行上下文
+            allowed_tools: 工具白名单（DS Bot 移植：按 bot.capabilities 过滤工具 schema）
+            model_override: 按调用覆盖模型 ID（DS Bot 移植）
+            temperature_override: 按调用覆盖温度（可选）
         """
         execution = AgentExecution(
             execution_id=f"exec-smart-{int(time.time())}",
@@ -196,37 +225,65 @@ class AgentOrchestrator:
         )
         context = context or {}
 
-        # 🔒 安全检查：Prompt 注入检测
-        guard_result: PromptGuardResult = check_prompt(query)
-        if guard_result.is_blocked:
-            execution.status = "blocked"
-            execution.final_response = (
-                "您的输入包含疑似注入攻击，已被安全系统拦截。"
-                "请修改后重试。"
-            )
-            execution.completed_at = datetime.now(timezone.utc)
-            execution.total_latency_ms = 0.0
-            logger.warning(
-                "[AgentOrchestrator] 用户输入被拦截: score=%.2f",
-                guard_result.security_score,
-            )
-            return execution
+        # 🔒 安全检查：Prompt 注入检测（仅对最外层用户输入执行；
+        #    内部子任务（delegate 派发）已受控，通过 skip_prompt_guard 跳过，避免误报）
+        if not (context and context.get("skip_prompt_guard")):
+            guard_result: PromptGuardResult = check_prompt(query)
+            if guard_result.is_blocked:
+                execution.status = "blocked"
+                execution.final_response = (
+                    "您的输入包含疑似注入攻击，已被安全系统拦截。"
+                    "请修改后重试。"
+                )
+                execution.completed_at = datetime.now(timezone.utc)
+                execution.total_latency_ms = 0.0
+                logger.warning(
+                    "[AgentOrchestrator] 用户输入被拦截: score=%.2f",
+                    guard_result.security_score,
+                )
+                return execution
 
         messages: List[Dict[str, str]] = [
             {"role": "system", "content": self._system_prompt},
             {"role": "user", "content": query},
         ]
+        # v3.3：若允许的工具包含 mcp:<server>，先注册外部 MCP 工具，
+        # 确保本次执行的工具 schema 包含外部能力（M2）。
+        if allowed_tools and any(t.startswith("mcp:") for t in allowed_tools) and context:
+            try:
+                from .mcp_bridge import get_mcp_bridge
+                await get_mcp_bridge().ensure_registered(
+                    context.get("db"), int(context.get("tenant_id") or 1), allowed_tools,
+                )
+            except Exception as e:
+                logger.warning(f"[Orchestrator] MCP 工具注册失败（忽略）: {e}")
         tools_schema = self._registry.list_tools()
+        # DS Bot 移植：能力白名单过滤工具 schema
+        if allowed_tools:
+            allowed = set(allowed_tools)
+            tools_schema = [t for t in tools_schema if t.get("function", {}).get("name") in allowed]
 
         total_start = time.time()
+        last_tool_sig: Optional[str] = None
 
         for step_idx in range(max_steps):
             step_id = f"step-{step_idx + 1}"
-            llm_result = await self._call_llm(messages, tools_schema)
+            llm_result = await self._call_llm(
+                messages, tools_schema,
+                model_override=model_override,
+                temperature_override=temperature_override,
+            )
 
-            tool_calls = llm_result.get("tool_calls", [])
+            # Phase 3：估算 token 用量（近似，供统计与成本分析）
+            raw_answer = llm_result.get("content") or ""
+            execution.prompt_tokens += _estimate_tokens(
+                [m.get("content") or "" for m in messages]
+            )
+            execution.completion_tokens += _estimate_tokens([raw_answer])
+
+            tool_calls = llm_result.get("tool_calls", []) or []
             if not tool_calls:
-                raw_answer = llm_result.get("content", "")
+                raw_answer = llm_result.get("content") or ""
                 # 🔒 安全检查：输出侧过滤
                 output_result = check_output(raw_answer)
                 execution.final_response = (
@@ -239,6 +296,17 @@ class AgentOrchestrator:
             # 先把 assistant 的 tool_calls 回写进消息序列。
             # 部分 provider 要求 role=tool 的消息必须紧跟带 tool_calls 的
             # assistant 消息，否则会返回 400。
+            # 重复 tool_calls 检测：LLM 故障时可能反复返回相同的工具调用，
+            # 导致同一子任务被重复派单（成本/内容重复）。检测到则终止循环。
+            sig = json.dumps(tool_calls, ensure_ascii=False, sort_keys=True)
+            if sig == last_tool_sig:
+                logger.warning("[Orchestrator] 检测到重复 tool_calls，终止循环避免重复派单")
+                if not execution.final_response:
+                    execution.final_response = await self._build_response(query, execution.steps)
+                execution.status = "completed"
+                break
+            last_tool_sig = sig
+
             messages.append({
                 "role": "assistant",
                 "content": None,
@@ -314,7 +382,7 @@ class AgentOrchestrator:
         execution.total_latency_ms = (time.time() - total_start) * 1000
 
         if not execution.final_response:
-            execution.final_response = self._build_response(query, execution.steps)
+            execution.final_response = await self._build_response(query, execution.steps)
 
         # 🔒 最终输出安全检查
         final_output_check = check_output(execution.final_response)
@@ -336,6 +404,8 @@ class AgentOrchestrator:
         self,
         messages: List[Dict[str, str]],
         tools: List[dict],
+        model_override: Optional[str] = None,
+        temperature_override: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
         调用 LLM，支持 function calling。
@@ -343,20 +413,50 @@ class AgentOrchestrator:
         约定：provider 层检测到 tool_calls 时会以
         ``__TOOL_CALLS__:<json>`` 形式返回字符串（见 llm_provider.generate），
         此处负责解析回结构化的 tool_calls。
+
+        model_override / temperature_override: DS Bot 移植，按调用覆盖模型与温度。
         """
         _TOOL_MARKER = "__TOOL_CALLS__:"
 
         try:
             factory = self._provider_factory
-            kwargs: Dict[str, Any] = {"temperature": 0.3}
+            kwargs: Dict[str, Any] = {
+                "temperature": 0.3 if temperature_override is None else temperature_override,
+            }
+            if model_override:
+                kwargs["model"] = model_override
             # 仅在确有工具时下发 schema，避免个别 provider 报错
             if tools:
                 kwargs["tools"] = tools
                 kwargs["tool_choice"] = "auto"
 
-            result = await factory.call_with_fallback(
-                messages=messages, task_type=TaskType.CHAT, **kwargs
-            )
+            # 对瞬时故障（429/5xx/网络）重试，最多 4 次（指数退避），缓解限流导致任务失败
+            result = None
+            last_err: Optional[Exception] = None
+            for attempt in range(4):
+                try:
+                    result = await factory.call_with_fallback(
+                        messages=messages, task_type=TaskType.CHAT, **kwargs
+                    )
+                    break
+                except Exception as e:
+                    last_err = e
+                    err_text = str(e)
+                    retryable = (
+                        "429" in err_text or "rate limit" in err_text.lower()
+                        or "502" in err_text or "503" in err_text
+                        or "timeout" in err_text.lower() or "Connection" in err_text
+                    )
+                    if attempt < 3 and retryable:
+                        logger.warning(f"LLM 调用瞬时失败（第{attempt+1}次），{2 ** attempt}s 后重试: {err_text[:150]}")
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    break
+            if result is None:
+                if last_err is not None:
+                    raise last_err
+                raise RuntimeError("LLM 调用返回空结果")
+
             text = result if isinstance(result, str) else str(result)
 
             if text.startswith(_TOOL_MARKER):
@@ -391,7 +491,7 @@ class AgentOrchestrator:
             logger.warning("LLM call failed: %s", e)
             return {"content": f"[LLM调用失败] {e}", "tool_calls": []}
 
-    def _build_response(
+    async def _build_response(
         self,
         query: str,
         steps: List[AgentStep],
@@ -417,55 +517,42 @@ class AgentOrchestrator:
 
         product_type = (tool_outputs.get("generate_formula") or {}).get("product_type", "饮品")
 
-        # ── 辨证与目标 ──────────────────────────────────────
+        # ── 辨证与目标（真实辨证引擎：LLM+RAG，规则降级） ──
         parts = ["### 一、辨证与目标\n"]
-        rag_data = tool_outputs.get("rag_retrieve", {})
-        if isinstance(rag_data, dict) and rag_data.get("results"):
-            top = rag_data["results"][0]
-            if isinstance(top, dict):
-                parts.append(
-                    f"- **分析方向**：基于「{top.get('title', '药食同源配方')}」等知识，"
-                    f"针对{query}的调理需求进行分析。\n"
-                )
-        else:
-            query_lower = (query or "").lower()
-            if any(k in query_lower for k in ("高血糖", "血糖", "消渴")):
-                parts.append("**体质倾向**：高血糖人群在中医多属「气阴两虚、燥热内蕴」范畴，"
-                             "常见口干多饮、乏力、易饥、舌红少津等表现。\n\n")
-                parts.append("**调理目标**：\n")
-                parts.append("1. 辅助调节餐后血糖波动，抑制\u03b1-葡萄糖苷酶活性\n")
-                parts.append("2. 益气养阴、健脾固本，改善胰岛素敏感性\n")
-                parts.append("3. 兼顾抗氧化、保护胰岛\u03b2细胞功能\n")
-            elif any(k in query_lower for k in ("高血压", "血压")):
-                parts.append("**体质倾向**：高血压人群多属「肝肾阴虚、肝阳上亢」，"
-                             "常见头晕耳鸣、急躁易怒、腰膝酸软。\n\n")
-                parts.append("**调理目标**：\n")
-                parts.append("1. 平肝潜阳、滋养肝肾，辅助平稳血压\n")
-                parts.append("2. 改善血管内皮功能，增强一氧化氮释放\n")
-                parts.append("3. 利尿降压，减少血容量负荷\n")
-            elif any(k in query_lower for k in ("失眠", "睡眠", "助眠")):
-                parts.append("**体质倾向**：失眠人群多属「心脾两虚、阴虚火旺」，"
-                             "常见入睡困难、多梦易醒、心悸健忘。\n\n")
-                parts.append("**调理目标**：\n")
-                parts.append("1. 养心安神、滋阴清热，改善入睡困难\n")
-                parts.append("2. 调节GABA能神经传递，延长深睡眠时长\n")
-                parts.append("3. 改善日间精力与认知功能\n")
-            elif any(k in query_lower for k in ("尿酸", "痛风")):
-                parts.append("**体质倾向**：高尿酸/痛风人群多属「湿热内蕴、脾肾亏虚」，"
-                             "常见关节肿痛、口苦黏腻、尿黄。\n\n")
-                parts.append("**调理目标**：\n")
-                parts.append("1. 清热利湿、通络止痛，降低血尿酸水平\n")
-                parts.append("2. 抑制黄嘌呤氧化酶，减少尿酸生成\n")
-                parts.append("3. 促进尿酸排泄，保护关节功能\n")
-            elif any(k in query_lower for k in ("减肥", "肥胖")):
-                parts.append("**体质倾向**：肥胖人群多属「痰湿体质、脾虚湿盛」，"
-                             "常见体胖乏力、腹部肥满、口中黏腻。\n\n")
-                parts.append("**调理目标**：\n")
-                parts.append("1. 健脾利湿、化痰降浊，促进脂肪代谢\n")
-                parts.append("2. 调节肠道菌群，改善代谢性炎症\n")
-                parts.append("3. 增强饱腹感，减少食物摄入\n")
+        try:
+            dialectics = await analyze_dialectics(query)
+            if dialectics.get("urgent"):
+                parts.append(f"**⚠️ 就医提醒**：{dialectics.get('referral_message', '')}\n")
             else:
-                parts.append(f"**分析方向**：基于用户query「{query}」进行体质分析与调理方案设计。\n")
+                constitution = dialectics.get("constitution_tendency", "")
+                syndrome = dialectics.get("syndrome_points", "")
+                goals = dialectics.get("regulation_goals", [])
+                evidence = dialectics.get("evidence", [])
+                cautions = dialectics.get("cautions", [])
+                if constitution:
+                    parts.append(f"**体质倾向**：{constitution}\n")
+                if syndrome:
+                    parts.append(f"**辨证要点**：{syndrome}\n")
+                if goals:
+                    parts.append("**调理方向**：\n")
+                    for i, g in enumerate(goals, 1):
+                        parts.append(f"{i}. {g}\n")
+                if evidence:
+                    parts.append("**证据参考**：\n")
+                    for e in evidence[:4]:
+                        parts.append(
+                            f"- {e.get('claim', '')}（证据等级：{e.get('level', '')}；"
+                            f"来源：{e.get('source', '')}）\n"
+                        )
+                if cautions:
+                    parts.append("**注意事项**：\n")
+                    for c in cautions[:4]:
+                        parts.append(f"- {c}\n")
+                if dialectics.get("engine") == "rule_engine_fallback":
+                    parts.append("\n> 说明：当前为规则引擎降级输出（LLM 不可用）。\n")
+        except Exception as e:
+            logger.warning(f"[AgentOrchestrator] 辨证引擎失败，使用通用输出: {e}")
+            parts.append(f"**分析方向**：基于用户描述「{query}」进行体质分析与调理方案设计。\n")
         parts.append("\n")
 
         # ── 推荐配方 ────────────────────────────────────────

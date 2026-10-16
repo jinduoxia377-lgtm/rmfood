@@ -37,7 +37,7 @@ import { FormulaResultsEnhanced } from './GenerateTab/components/FormulaResultsE
 import { FormulaComparePanel } from './GenerateTab/components/FormulaComparePanel';
 
 // Lazy components
-const NeuralGeneratePanel = lazy(() => import('@/components/ai/NeuralGeneratePanel'));
+const AdvancedGeneratePanel = lazy(() => import('@/components/ai/AdvancedGeneratePanel'));
 
 interface ModelStatus {
   llm?: { provider: string; model: string; available: boolean };
@@ -324,7 +324,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
               </div>
             }
           >
-            <NeuralGeneratePanel
+            <AdvancedGeneratePanel
               onCandidatesGenerated={(candidates) =>
                 logger.info('Neural generation complete', { count: candidates.length })
               }

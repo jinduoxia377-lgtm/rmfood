@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas import (
     LoginRequest, Token, UserCreate, UserResponse, PasswordChange, UserUpdate,
-    ApiResponse, SuccessResponse
+    ApiResponse, SuccessResponse, DeleteAccountRequest
 )
 from ..services.auth import AuthService, get_current_user
 from ..models.user_model import User
@@ -34,7 +34,7 @@ REFRESH_TOKEN_COOKIE = "rmfood_refresh_token"
 router = APIRouter(prefix="/auth", tags=["认证"])
 
 
-@router.post("/login", response_model=Token, summary="用户登录")
+@router.post("/login", summary="用户登录")
 async def login(
     data: LoginRequest,
     response: Response,
@@ -43,13 +43,15 @@ async def login(
     """
     用户名密码登录
 
-    🔒 P0 安全修复:
-    - 返回 access_token 和 refresh_token（兼容旧客户端）
-    - 同时设置 HttpOnly Cookie（防止 XSS 攻击）
-    - Cookie 配置: Secure(生产) + HttpOnly + SameSite=Strict
+    - 若用户启用了两步验证，且未提供动态验证码，返回 {"requires_2fa": true}
+    - 提供正确验证码后返回 access_token / refresh_token 并设置 HttpOnly Cookie
     """
     service = AuthService(db)
-    token_data = await service.authenticate(data.username, data.password)
+    token_data = await service.authenticate(data.username, data.password, data.two_factor_code)
+
+    # 2FA 二次验证：不发放令牌，不设置 Cookie
+    if isinstance(token_data, dict) and token_data.get("requires_2fa"):
+        return token_data
 
     # 🔒 设置 HttpOnly Cookie（防止 XSS 窃取 JWT）
     # Access Token: 30分钟
@@ -109,6 +111,11 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db_session))
         password=data.password,
         full_name=data.full_name,
     )
+    # 🔒 修复：service.register 内仅 flush（使 session.new 清空），
+    # 依赖层的"session.dirty or session.new"条件提交会因此判定为假，
+    # 导致事务回滚、新用户实际未持久化。这里必须显式提交。
+    await db.commit()
+    await db.refresh(user)
     return user
 
 
@@ -279,3 +286,87 @@ async def upload_current_user_avatar(
     )
 
     return {"avatarUrl": avatar_url}
+
+
+@router.post("/me/avatar/generate-real", summary="生成真实 AI 人物头像")
+async def generate_real_avatar(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    生成一张真实 AI 人物头像（StyleGAN2 在线服务）。
+
+    设计说明：
+    - 代理请求 https://thispersondoesnotexist.com/random-person.jpeg，
+      每次返回一张 AI 生成的假人照片（JPEG）；
+    - 仅返回图片字节（不写库），前端拿到图片后复用现有上传链路，
+      由用户点击「保存修改」时通过 POST /auth/me/avatar 写入 avatar_url；
+    - 使用现有魔数校验确保返回内容确为图片，并限制 2MB 大小。
+    """
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+            resp = await client.get(
+                "https://thispersondoesnotexist.com/random-person.jpeg",
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/126.0 Safari/537.36"
+                    )
+                },
+            )
+            resp.raise_for_status()
+            file_content = resp.content
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI 头像生成服务暂时不可用，请稍后重试",
+        )
+
+    if len(file_content) > 2 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error_code": "FILE_TOO_LARGE", "message": "生成的头像文件过大"},
+        )
+
+    from ..utils.file_security import detect_mime_from_content
+    detected_mime = detect_mime_from_content(file_content)
+    if not detected_mime:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error_code": "INVALID_FILE_TYPE", "message": "生成的头像文件格式无效"},
+        )
+
+    return Response(content=file_content, media_type=detected_mime)
+
+
+@router.delete("/me", response_model=SuccessResponse, summary="注销当前用户账户")
+async def delete_me(
+    data: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    注销当前用户账户（GDPR/个保法「被遗忘权」闭环）
+
+    - 软删除 + 匿名化：is_active=False，用户名/邮箱改为 deleted_<id>
+    - 清除个人资料、头像、2FA 密钥与全部设备会话
+    - 管理员账户不允许自助注销（返回 403）
+    """
+    if data.confirm != "DELETE MY ACCOUNT":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="确认文本不正确",
+        )
+
+    if current_user.role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="管理员账户不允许自助注销，请联系其他管理员处理",
+        )
+
+    from ..services.user import UserService
+    service = UserService(db)
+    await service.deactivate_account(current_user.id)
+
+    return SuccessResponse(message="账户已注销，30 天内彻底清除数据")

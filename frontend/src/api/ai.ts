@@ -88,8 +88,8 @@ export type {
   NutritionObjectiveConfig,
 } from '@/types/ai.api';
 
-/** 神经网络生成响应（标准化 generator 值） */
-export interface NeuralGenerateResponse {
+/** 高级优化生成响应（标准化 generator 值） */
+export interface AdvancedGenerateResponse {
   candidates: AICandidate[];
   total: number;
   generator: string;
@@ -149,7 +149,8 @@ export const aiApi = {
     );
     return res.data;
   },
-  generateNeural: (
+  /** 高级优化配方生成（真实 GA 引擎） */
+  generateAdvanced: (
     targetEffects: string[],
     priorityValues?: Record<string, number>,
     constraints?: {
@@ -161,10 +162,10 @@ export const aiApi = {
     },
     maxCandidates = 5,
     signal?: AbortSignal,
-  ): Promise<NeuralGenerateResponse> =>
+  ): Promise<AdvancedGenerateResponse> =>
     api
-      .post<NeuralGenerateResponse>(
-        '/ai/generate/neural',
+      .post<AdvancedGenerateResponse>(
+        '/ai/generate/advanced',
         {
           target_effects: targetEffects,
           priority_values: priorityValues,
@@ -187,6 +188,11 @@ export const aiApi = {
       tournamentSize?: number;
       count?: number;
       constraints?: Record<string, unknown>;
+      /**
+       * 综合适应度权重，键：efficacy/safety/taste/cost(成本效率)/synergy/stability。
+       * 服务端会归一化；未列出的目标权重按 0 处理。不传则用后端内置默认。
+       */
+      objectiveWeights?: Record<string, number>;
     },
     signal?: AbortSignal,
   ) => {
@@ -202,6 +208,7 @@ export const aiApi = {
         tournament_size: params.tournamentSize ?? 5,
         count: params.count ?? 5,
         constraints: params.constraints ?? null,
+        objective_weights: params.objectiveWeights ?? null,
       },
       { signal, timeout: 120000 },
     );
@@ -265,6 +272,8 @@ export const aiApi = {
       constraints?: Record<string, unknown>;
       totalDosage?: number;
       warmStartEnabled?: boolean;
+      /** 同 generateGenetic：未列出的目标权重按 0 处理，服务端归一化。 */
+      objectiveWeights?: Record<string, number>;
     },
     signal?: AbortSignal,
   ) => {
@@ -283,6 +292,7 @@ export const aiApi = {
         total_dosage: params.totalDosage ?? 100.0,
         warm_start_enabled: params.warmStartEnabled ?? true,
         hybrid_mode: true,
+        objective_weights: params.objectiveWeights ?? null,
       },
       { signal, timeout: 180000 },
     );
@@ -361,9 +371,17 @@ export const aiApi = {
   tastePredict: (ingredients: { name: string }[]) =>
     api.post<TastePredictionResponse>('/ai/taste-predict', { ingredients }).then((r) => r.data),
 
-  /** 稳定性预测 */
-  stabilityPredict: (ingredients: { name: string }[]) =>
-    api.post<StabilityPredictionResponse>('/ai/stability-predict', { ingredients }).then((r) => r.data),
+  /**
+   * 稳定性预测
+   *
+   * 注意：后端路由是 `/ai/stability`（models_and_tools.py:145），历史上写成
+   * `/ai/stability-predict` 会稳定 404。这里保留第二个参数透传储存条件，
+   * 与后端 `StabilityPredictRequest(storage_temp)` 对齐。
+   */
+  stabilityPredict: (ingredients: { name: string }[], storageTemp = 25) =>
+    api
+      .post<StabilityPredictionResponse>('/ai/stability', { ingredients, storage_temp: storageTemp })
+      .then((r) => r.data),
 
   /** 模型状态 */
   modelStatus: () => api.get<Record<string, Record<string, string>>>('/ai/models/status').then((r) => r.data),

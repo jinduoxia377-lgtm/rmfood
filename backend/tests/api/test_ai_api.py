@@ -346,9 +346,9 @@ async def test_func(async_test_client, researcher_headers: dict):
 
 @pytest.mark.asyncio
 async def test_func(async_test_client, researcher_headers: dict):
-    """测试神经网络配方生成"""
+    """测试高级优化配方生成"""
     response = await async_test_client.post(
-        "/api/v1/ai/generate/neural",
+        "/api/v1/ai/generate/advanced",
         json={
             "target_effects": ["补气", "养血"],
             "priority_values": {"补气": 0.8, "养血": 0.6},

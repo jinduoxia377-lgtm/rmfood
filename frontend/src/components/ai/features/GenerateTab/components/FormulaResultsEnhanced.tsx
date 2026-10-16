@@ -136,6 +136,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
     switch (generator) {
       case 'llm': return 'primary';
       case 'neural_network': return 'danger';
+      case 'ga': return 'primary';
       default: return 'neutral';
     }
   }, [generator]);
@@ -144,6 +145,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
     switch (generator) {
       case 'llm': return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_AI_MODEL;
       case 'neural_network': return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_NEURAL_NETWORK;
+      case 'ga': return '遗传算法优化';
       default: return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_RULE_ENGINE;
     }
   }, [generator]);

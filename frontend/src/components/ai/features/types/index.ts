@@ -41,6 +41,30 @@ export interface ChatMessage {
   retryCount?: number;
   /** 消息内容类型 */
   messageType?: 'text' | 'link' | 'code' | 'image' | 'file';
+  /**
+   * 回复来源标识（仅 assistant 消息）。
+   *
+   * 来源：后端 chat_engine.py 的 result.model 字段。
+   *  - 真实模型名（如 "agnes-3.0-flash-max"）→ 大模型推理
+   *  - "rule-engine-fallback" → LLM 不可用，本地规则引擎降级
+   *  - "ultimate-fallback"    → 三级降级均失败，固定文案兜底
+   *  - "error"                → 生成失败
+   *
+   * 前端必须据此展示来源徽标，否则用户无法分辨「大模型推理」与
+   * 「规则引擎降级」——这是「配方设计专家」系统的能力真实性底线。
+   */
+  model?: string;
+  /** 辨证分析（SSE dialectics 事件）：急症判定 + 体质倾向 + 证据分级 */
+  dialectics?: {
+    engine?: string;
+    urgent?: boolean;
+    constitution_tendency?: string;
+    syndrome_points?: string;
+    regulation_goals?: string[];
+    evidence?: Array<{ claim: string; level: string; source: string }>;
+    cautions?: string[];
+    referral_message?: string;
+  };
 
   // ===== 扩展字段 (useExportManager) =====
   editedAt?: number;

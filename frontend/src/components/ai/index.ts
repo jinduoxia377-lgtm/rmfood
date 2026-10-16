@@ -12,8 +12,7 @@ export { ChatTab } from './features/ChatTab'
 
 // 配方生成
 export { GenerateTab } from './features/GenerateTab'
-export { AIGenerator } from './AIGenerator'
-export { NeuralGeneratePanel } from './NeuralGeneratePanel'
+export { AdvancedGeneratePanel } from './AdvancedGeneratePanel'
 export { NeuralResultCard } from './NeuralResultCard'
 export { GenerationProgressPanel } from './GenerationProgressPanel'
 export { FormulaWizard } from './features/FormulaWizard'

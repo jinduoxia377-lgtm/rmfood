@@ -24,7 +24,7 @@ interface GenerationPanelProps {
   canSelectMore: boolean
   selectionCount: number
   generateResult: AICandidate[] | null
-  generator: 'rule_engine' | 'llm' | 'neural_network'
+  generator: 'rule_engine' | 'ga' | 'llm' | 'neural_network'
   errorMessage: string | null
   setErrorMessage: (msg: string | null) => void
   mutation: any

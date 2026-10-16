@@ -9,16 +9,17 @@ import { logger } from '@/utils/safeLogger'
 import { AppError, ErrorFactory } from '@/utils/errorHandler'
 import { getUserMessage } from '@/constants/errorCodes'
 
-type GeneratorType = 'rule_engine' | 'llm' | 'neural_network'
+type GeneratorType = 'rule_engine' | 'ga' | 'llm' | 'neural_network'
 
 /** 后端返回的 generator 值 → 前端标准类型 的映射 */
 function normalizeGenerator(raw: string | undefined | null): GeneratorType {
   switch (raw) {
+    case 'ga_optimizer':
+      return 'ga'
     case 'rule_engine':
     case 'unified_engine_v2':
     case 'seven_step_engine':
-    case 'ga_optimizer':
-    case 'pepinvent_enhanced':
+    case 'rule_engine_fallback':
       return 'rule_engine'
     case 'neural_network':
     case 'neural_engine':

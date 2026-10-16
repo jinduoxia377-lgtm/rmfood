@@ -121,6 +121,24 @@ export interface StreamChunk {
   formula?: AIRecognizedFormula;
   /** 思考步骤（用于转发到 ChatSidebar） */
   step?: { step: string; content: string; status: string; detail?: string };
+  /**
+   * 回复来源（由后端 SSE `meta` 事件携带）。
+   *  - 真实模型名 → 大模型推理
+   *  - "rule-engine-fallback" → LLM 不可用，规则引擎降级
+   * 前端据此渲染来源徽标，避免规则引擎冒充大模型。
+   */
+  model?: string;
+  /** 辨证分析（由后端 SSE `dialectics` 事件携带）：急症判定 + 体质倾向 + 证据分级 */
+  dialectics?: {
+    engine?: string;
+    urgent?: boolean;
+    constitution_tendency?: string;
+    syndrome_points?: string;
+    regulation_goals?: string[];
+    evidence?: Array<{ claim: string; level: string; source: string }>;
+    cautions?: string[];
+    referral_message?: string;
+  };
 }
 
 export interface RateLimitInfo {
@@ -352,6 +370,31 @@ export class ChatService implements IChatService {
                 };
                 continue;
               }
+
+               // type=meta: 回复来源标识（model / reason），供 MessageBubble 展示来源徽标
+               if (eventType === 'meta') {
+                 yield { content: '', done: false, model: parsed.model };
+                 continue;
+               }
+
+               // type=dialectics: 辨证分析（急症判定 + 体质倾向 + 证据分级）
+               if (eventType === 'dialectics') {
+                 yield {
+                   content: '',
+                   done: false,
+                   dialectics: {
+                     engine: parsed.engine,
+                     urgent: parsed.urgent,
+                     constitution_tendency: parsed.constitution_tendency,
+                     syndrome_points: parsed.syndrome_points,
+                     regulation_goals: parsed.regulation_goals,
+                     evidence: parsed.evidence,
+                     cautions: parsed.cautions,
+                     referral_message: parsed.referral_message,
+                   },
+                 };
+                 continue;
+               }
 
               // type=content / 默认: 文本内容
               yield {
