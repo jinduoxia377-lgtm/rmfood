@@ -92,9 +92,11 @@ interface SemanticColors {
   
   // 品牌色
   brand: {
-    primary: string;        // Action Blue #0066cc (Light) / #2997ff (Dark)
-    secondary: string;      // Focus Blue #0071e3
-    tertiary: string;       // Sky Link Blue #2997ff
+    primary: string;        // 品牌主色 #047857 (Light) / #34d399 (Dark)
+                            // ⚠️ 2026-10-17 修订：以桌面 Web 实际落地 L0 令牌为准（base.css
+                            // --color-primary=#047857 / dark.css=#34d399），不再使用 Action Blue
+    secondary: string;      // 品牌强调 #10b981 (Light) / #6ee7b7 (Dark)
+    tertiary: string;       // 品牌浅色 #d1fae5 (Light) / #a7f3d0 (Dark)
   };
   
   // 功能色
