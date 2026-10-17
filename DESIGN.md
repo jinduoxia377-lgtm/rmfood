@@ -161,10 +161,10 @@ interface HighContrastColors {
   --color-fill-secondary: #e5e5ea;
   --color-fill-tertiary: #d1d1d6;
   
-  /* 品牌 */
-  --color-brand-primary: #0066cc;
-  --color-brand-secondary: #0071e3;
-  --color-brand-tertiary: #2997ff;
+  /* 品牌（对齐桌面实际落地 L0：base.css --color-primary=#047857） */
+  --color-brand-primary: #047857;
+  --color-brand-secondary: #059669;
+  --color-brand-tertiary: #10b981;
   
   /* 功能色 */
   --color-success-main: #34C759;
@@ -191,9 +191,9 @@ interface HighContrastColors {
   --color-fill-secondary: #3a3a3c;
   --color-fill-tertiary: #48484a;
   
-  --color-brand-primary: #2997ff;
-  --color-brand-secondary: #4d9fff;
-  --color-brand-tertiary: #6bb3ff;
+  --color-brand-primary: #34d399;
+  --color-brand-secondary: #6ee7b7;
+  --color-brand-tertiary: #a7f3d0;
   
   --color-success-main: #30d158;
   --color-warning-main: #ffd60a;
