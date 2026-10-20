@@ -1,0 +1,156 @@
+/**
+ * 中文「配方管理」模块翻译（列表页 + 通用）
+ */
+export default {
+  formula: {
+    // 列表页顶部
+    title: '配方管理',
+    listTitle: '配方列表',
+    totalCount: '{{total}} 条',
+    approvedCount: '{{count}} 已通过',
+    pendingReviewCount: '{{count}} 待审核',
+    firstFormulaCta: '创建您的第一个药食同源配方',
+    cardView: '卡片视图',
+    tableView: '表格视图',
+    favoritesOnly: '只看收藏',
+    showAll: '显示全部',
+    showAllFavorites: '显示全部配方',
+    operationLog: '操作日志',
+    log: '日志',
+    newFormula: '新建配方',
+
+    // 统计卡
+    totalFormulas: '总配方数',
+    monthlyNew: '本月新增 {{count}} 个配方',
+    monthly: '{{count}} 本月',
+    draft: '草稿',
+    draftSubtitle: '等待提交审核',
+    pendingReview: '待审核',
+    pendingReviewSubtitle: '需审批处理',
+    approved: '已通过',
+    approvedSubtitle: '可投入使用',
+
+    // 搜索与筛选
+    searchPlaceholder: '搜索配方名称或编号...',
+    searchAria: '搜索配方名称或编号',
+    nameSearch: '名称搜索',
+    openFilter: '打开筛选面板',
+    filterConditions: '筛选条件',
+    status: '状态',
+    createdDate: '创建日期',
+    dateStart: '创建日期（起）',
+    dateEnd: '创建日期（止）',
+    tags: '标签',
+    selectTagsPlaceholder: '选择标签...',
+    effectCategory: '功效分类',
+    allCategories: '全部分类',
+    formulaCategory: '配方分类',
+    selectCategoryPlaceholder: '选择分类...',
+    creator: '创建者',
+    allCreators: '全部创建者',
+    pageSize: '每页数量',
+    pageSizeOptions: '{{size}} 条/页',
+    currentFilterResults: '当前筛选结果',
+    total: '总数',
+    favorites: '收藏',
+    currentFilters: '当前筛选：',
+    removeFilter: '移除筛选: {{label}}',
+    clearAll: '清除全部',
+    clearAllFilters: '清除所有筛选',
+    applyFilters: '应用筛选',
+
+    // 批量操作
+    selectedCount: '已选择 {{count}} 个配方',
+    selectedCountPrefix: '已选择',
+    selectedCountSuffix: '个配方',
+    exportSelected: '导出选中',
+    batchDelete: '批量删除',
+    batchChangeStatus: '批量改状态',
+    cancelSelect: '取消选择',
+    loadFailed: '加载失败',
+    loadFailedDesc: '无法获取配方数据，请检查网络连接后重试',
+    retry: '重试',
+
+    // 空状态
+    noMatchingFormulas: '没有匹配的配方',
+    noFormulas: '暂无配方',
+    noMatchingDesc: '尝试调整搜索关键词或筛选条件，让数据重新显现',
+    noFormulasDesc: '创建您的第一个配方，开始智能配方设计之旅',
+    clearFilters: '清除筛选条件',
+
+    // 表格
+    tableName: '名称',
+    tableStatus: '状态',
+    tableIngredients: '成分数量',
+    tableCreator: '创建者',
+    tableExperiments: '关联实验',
+    tableCreatedAt: '创建日期',
+    tableUpdatedAt: '更新日期',
+    tableActions: '操作',
+    selectAll: '全选',
+    selectFormula: '选择配方 {{name}}',
+    favorite: '收藏',
+    unfavorite: '取消收藏',
+    experimentsCount: '{{count}} 个实验',
+    actionMenu: '{{name}} 的操作菜单',
+    viewDetail: '查看详情',
+    edit: '编辑',
+    duplicate: '复制',
+    exportSingle: '导出单个',
+    linkExperiment: '关联实验',
+    delete: '删除',
+
+    // 排序
+    primarySort: '主排序: {{dir}}',
+    secondarySort: '次排序: {{dir}}',
+    asc: '升序',
+    desc: '降序',
+
+    // 分页
+    prevPage: '上一页',
+    nextPage: '下一页',
+    pageJump: '跳至',
+    pageJumpAria: '跳转页码',
+    mobilePage: '第 {{page}}/{{totalPages}} 页',
+    showingRange: '显示第 {{from}}-{{to}} 条，共 {{total}} 条',
+
+    // 右侧面板
+    recentUpdates: '最近更新',
+    all: '全部',
+    noRecentFormulas: '暂无最近配方',
+    importExport: '导入导出',
+    importFormulas: '导入配方',
+    jsonCsvFormat: 'JSON / CSV 格式',
+    exportCSV: '导出 CSV',
+    selectedCountSmall: '已选 {{count}} 条',
+    allData: '全部数据',
+
+    // 删除确认
+    confirmDelete: '确认删除',
+    confirmDeleteDesc: '确定要删除该配方吗？此操作将永久删除该配方及其相关数据，删除后无法恢复。',
+    confirmDeleteBtn: '确认删除',
+    cancel: '取消',
+    confirmBatchDelete: '确定要删除选中的 {{count}} 个配方吗？5秒内可撤销。',
+    confirmBatchStatusChange: '确定要将选中的 {{count}} 个配方状态变更为"{{status}}"吗？',
+
+    // 快捷键
+    keyboardShortcuts: '键盘快捷键',
+    focusSearch: '聚焦搜索',
+    closeDialog: '关闭弹窗',
+    noPermissionTitle: '无权限访问',
+    noPermissionDesc: '您没有查看配方列表的权限，请联系管理员申请相关权限',
+
+    // CSV 导出
+    exportCsv: {
+      code: '编号',
+      name: '名称',
+      status: '状态',
+      version: '版本',
+      targetEffects: '目标功效',
+      description: '描述',
+      createdAt: '创建时间',
+      updatedAt: '更新时间',
+      fileName: '配方列表',
+    },
+  },
+}

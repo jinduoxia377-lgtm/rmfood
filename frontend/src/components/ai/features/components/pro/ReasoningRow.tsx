@@ -34,7 +34,6 @@ export default function ReasoningRow({ steps, isThinking, elapsedMs }: Reasoning
   const [expanded, setExpanded] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const completedCount = steps.filter(s => s.status === 'complete').length
-  const pendingCount = steps.filter(s => s.status === 'pending').length
 
   // 流式完成时自动收起
   useEffect(() => {

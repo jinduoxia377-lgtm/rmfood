@@ -23,9 +23,8 @@
  */
 
 import React, { useRef, useState, useCallback, useEffect, memo } from 'react'
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import { Tooltip } from '@/components/ui'
-import { logger } from '@/utils/safeLogger'
 
 // ===== 类型定义 =====
 

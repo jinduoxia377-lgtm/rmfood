@@ -164,6 +164,63 @@ class UserService:
         await self._audit_log(action="user.deactivate", entity_type="user", entity_id=user_id)
         return user
 
+    async def deactivate_account(self, user_id: int) -> User:
+        """
+        注销账户（GDPR/个保法「被遗忘权」）
+
+        软删除 + 匿名化：
+        - is_active=False，立即失去登录/访问能力（get_current_active_user 会拦截）
+        - 用户名/邮箱匿名化为 deleted_<id>，释放唯一索引占用
+        - 清空全部个人资料、头像、2FA 密钥与设备会话
+        - 在 preferences 中记录注销时间戳，供 30 天后的后台清理任务使用
+        """
+        user = await self.get_user(user_id)
+
+        from datetime import datetime, timezone
+
+        # 匿名化唯一标识与个人资料
+        user.username = f"deleted_{user.id}"
+        user.email = f"deleted_{user.id}@deleted.local"
+        user.full_name = None
+        user.phone = None
+        user.department = None
+        user.avatar_url = None
+        user.position = None
+        user.bio = None
+        user.website = None
+        user.github = None
+        user.linkedin = None
+
+        # 清除 2FA
+        user.two_factor_secret = None
+        user.two_factor_enabled = False
+
+        # 标记注销时间（不新增列，存于 preferences JSON）
+        prefs = dict(user.preferences or {})
+        prefs["account_deleted"] = True
+        prefs["deleted_at"] = datetime.now(timezone.utc).isoformat()
+        user.preferences = prefs
+
+        # 使所有设备会话失效
+        from ..models import UserDevice
+        result = await self.db.execute(
+            select(UserDevice).where(UserDevice.user_id == user_id)
+        )
+        for device in result.scalars().all():
+            device.is_active = False
+
+        user.is_active = False
+        await self.db.flush()
+
+        await self._audit_log(
+            action="user.delete",
+            entity_type="user",
+            entity_id=user_id,
+            details={"anonymized": True, "soft_delete": True},
+        )
+        logger.info(f"账户已注销并匿名化: user_id={user_id}")
+        return user
+
     async def _audit_log(
         self,
         action: str,

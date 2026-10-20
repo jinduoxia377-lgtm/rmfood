@@ -20,7 +20,7 @@ import { eventBus } from './eventBus'
 import { logger } from '@/utils/safeLogger'
 
 // 语言类型定义
-export type LanguageCode = 'zh-CN' | 'en-US'
+export type LanguageCode = 'zh-CN' | 'en-US' | 'de-DE'
 
 export interface LanguageDetectionResult {
   language: LanguageCode
@@ -90,6 +90,7 @@ class LanguageService implements ILanguageService {
 
     const chineseChars = this.countChineseCharacters(text)
     const englishChars = this.countEnglishCharacters(text)
+    const germanChars = this.countGermanCharacters(text)
     const totalChars = chineseChars + englishChars
 
     if (totalChars === 0) {
@@ -112,6 +113,10 @@ class LanguageService implements ILanguageService {
     if (chineseRatio > englishRatio) {
       detectedLanguage = 'zh-CN'
       confidence = chineseRatio
+    } else if (germanChars > 0 && germanChars / Math.max(englishChars, 1) >= 0.05) {
+      // 德语特有字符（ä ö ü ß 等）出现时判定为德语
+      detectedLanguage = 'de-DE'
+      confidence = Math.min(1, englishRatio + germanChars / totalChars)
     } else {
       detectedLanguage = 'en-US'
       confidence = englishRatio
@@ -148,7 +153,7 @@ class LanguageService implements ILanguageService {
 
   getCurrentLanguage(): LanguageCode {
     const lng = i18n.language
-    return (lng === 'zh-CN' || lng === 'en-US') ? lng : 'zh-CN'
+    return (lng === 'zh-CN' || lng === 'en-US' || lng === 'de-DE') ? lng : 'zh-CN'
   }
 
   getSuggestions(input: string, context: string[] = []): InputSuggestion[] {
@@ -161,6 +166,8 @@ class LanguageService implements ILanguageService {
 
     if (language === 'zh-CN') {
       suggestions.push(...this.generateChineseSuggestions(input, context))
+    } else if (language === 'de-DE') {
+      suggestions.push(...this.generateGermanSuggestions(input, context))
     } else {
       suggestions.push(...this.generateEnglishSuggestions(input, context))
     }
@@ -195,8 +202,13 @@ class LanguageService implements ILanguageService {
   }
 
   private countEnglishCharacters(text: string): number {
-    const englishRegex = /[a-zA-Z]/g
+    const englishRegex = /[a-zA-ZäöüÄÖÜß]/g
     return (text.match(englishRegex) || []).length
+  }
+
+  private countGermanCharacters(text: string): number {
+    const germanRegex = /[äöüÄÖÜß]/g
+    return (text.match(germanRegex) || []).length
   }
 
   private generateChineseSuggestions(input: string, context: string[]): InputSuggestion[] {
@@ -376,6 +388,99 @@ class LanguageService implements ILanguageService {
             text: ctx.length > 30 ? ctx.slice(0, 30) + '...' : ctx,
             type: 'statement',
             category: 'History',
+            confidence: 0.75 - idx * 0.05,
+          })
+        })
+      }
+    }
+
+    return suggestions
+  }
+
+  private generateGermanSuggestions(input: string, context: string[]): InputSuggestion[] {
+    const suggestions: InputSuggestion[] = []
+    const lowerInput = input.toLowerCase()
+
+    if (input.trim()) {
+      if (lowerInput.includes('formel') || lowerInput.includes('rezeptur') || lowerInput.includes('inhaltsstoff')) {
+        suggestions.push({
+          id: 'de-1',
+          text: 'Helfen Sie mir, eine feuchtigkeitsspendende Formel zu erstellen',
+          type: 'question',
+          category: 'Formelgenerierung',
+          confidence: 0.95,
+        })
+        suggestions.push({
+          id: 'de-2',
+          text: 'Analysieren Sie die Wirksamkeit dieses Inhaltsstoffs',
+          type: 'question',
+          category: 'Inhaltsstoffanalyse',
+          confidence: 0.9,
+        })
+      }
+
+      if (lowerInput.includes('sicherheit') || lowerInput.includes('risiko')) {
+        suggestions.push({
+          id: 'de-3',
+          text: 'Prüfen Sie die Sicherheit dieser Formel',
+          type: 'question',
+          category: 'Sicherheitsbewertung',
+          confidence: 0.92,
+        })
+      }
+
+      if (lowerInput.includes('vergleich') || lowerInput.includes('vergleichen')) {
+        suggestions.push({
+          id: 'de-4',
+          text: 'Vergleichen Sie diese beiden Formeln',
+          type: 'question',
+          category: 'Formelvergleich',
+          confidence: 0.88,
+        })
+      }
+
+      if (lowerInput.includes('optimieren') || lowerInput.includes('verbessern')) {
+        suggestions.push({
+          id: 'de-5',
+          text: 'Wie kann diese Formel optimiert werden?',
+          type: 'question',
+          category: 'Formeloptimierung',
+          confidence: 0.85,
+        })
+      }
+    } else {
+      suggestions.push(
+        {
+          id: 'de-empty-1',
+          text: 'Feuchtigkeitsspendende Formel erstellen',
+          type: 'command',
+          category: 'Schnellaktionen',
+          confidence: 0.9,
+        },
+        {
+          id: 'de-empty-2',
+          text: 'Inhaltsstoff-Wirksamkeit analysieren',
+          type: 'command',
+          category: 'Schnellaktionen',
+          confidence: 0.85,
+        },
+        {
+          id: 'de-empty-3',
+          text: 'Sicherheitsbewertung',
+          type: 'command',
+          category: 'Schnellaktionen',
+          confidence: 0.8,
+        },
+      )
+
+      if (context.length > 0) {
+        const recentContext = context.slice(-2)
+        recentContext.forEach((ctx, idx) => {
+          suggestions.push({
+            id: `de-context-${idx}`,
+            text: ctx.length > 30 ? ctx.slice(0, 30) + '...' : ctx,
+            type: 'statement',
+            category: 'Verlauf',
             confidence: 0.75 - idx * 0.05,
           })
         })

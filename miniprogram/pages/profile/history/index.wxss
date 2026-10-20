@@ -1,26 +1,26 @@
 /* pages/profile/history/index.wxss */
 .history-container {
   min-height: 100vh;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
   padding: 24rpx;
 }
 
 .empty-state {
   text-align: center;
   padding: 100rpx 0;
-  color: #8E8E93;
-  font-size: 28rpx;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-body);
 }
 
 .history-list {
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 16rpx;
   overflow: hidden;
 }
 
 .history-item {
   padding: 28rpx 24rpx;
-  border-bottom: 0.5rpx solid #F2F2F7;
-  font-size: 28rpx;
-  color: #1D1D1F;
+  border-bottom: 0.5rpx solid var(--color-border-light);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
 }

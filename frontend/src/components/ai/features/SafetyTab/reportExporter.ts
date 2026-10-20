@@ -11,22 +11,6 @@ interface ExportOptions {
   complianceRate: number;
 }
 
-function getRiskColor(level: string): [number, number, number] {
-  switch (level) {
-    case 'danger':
-    case 'critical':
-    case 'contraindicated':
-      return [220, 38, 38];
-    case 'warning':
-    case 'caution':
-      return [217, 119, 6];
-    case 'info':
-      return [37, 99, 235];
-    default:
-      return [34, 197, 94];
-  }
-}
-
 export function exportSafetyReport(options: ExportOptions): void {
   const { ingredients, result, complianceRate } = options;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -49,7 +33,7 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text('Safety Compliance Report', margin, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('RMFOOD Formula R\&D Platform', margin, 27);
+  doc.text('RMFOOD Formula R&D Platform', margin, 27);
   doc.text(new Date().toLocaleString('zh-CN'), margin, 33);
   y = 48;
 

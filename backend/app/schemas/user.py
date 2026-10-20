@@ -28,6 +28,14 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     department: Optional[str] = None
     avatar_url: Optional[str] = None
+
+    # 个人资料扩展字段（设置页「账户」模块）
+    position: Optional[str] = Field(None, max_length=100)
+    bio: Optional[str] = Field(None, max_length=2000)
+    website: Optional[str] = Field(None, max_length=500)
+    github: Optional[str] = Field(None, max_length=100)
+    linkedin: Optional[str] = Field(None, max_length=500)
+
     preferences: Optional[dict] = None
 
 
@@ -44,6 +52,11 @@ class UserResponse(UserBase):
     department: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    position: Optional[str] = None
+    bio: Optional[str] = None
+    website: Optional[str] = None
+    github: Optional[str] = None
+    linkedin: Optional[str] = None
     organization_id: Optional[int] = None
     organization_name: Optional[str] = None
     created_at: datetime
@@ -73,9 +86,15 @@ class LoginRequest(BaseModel):
     """登录请求"""
     username: str
     password: str
+    two_factor_code: str | None = Field(None, min_length=6, max_length=6, description="2FA 动态验证码（启用两步验证后必填）")
 
 
 class PasswordChange(BaseModel):
     """密码修改"""
     old_password: str
     new_password: str = Field(..., min_length=8, max_length=100)
+
+
+class DeleteAccountRequest(BaseModel):
+    """账户注销确认请求"""
+    confirm: str = Field(..., description="确认文本，必须为 DELETE MY ACCOUNT")

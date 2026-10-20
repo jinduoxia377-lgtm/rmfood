@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useChatHandlers - 聊天事件处理 Hook (v2.0)
  *
  * v2.0 变更：
@@ -42,13 +42,12 @@ interface UseChatHandlersOptions {
 
 export function useChatHandlers(opts: UseChatHandlersOptions) {
   const {
-    input, isStreaming, activeSessionId, chatError,
+    input, isStreaming, chatError,
     setChatError, clearError, retryLastMessage,
-    handleSendMessage, updateSessionMetadata, messages,
+    handleSendMessage, updateSessionMetadata,
     showReportModal, setShowReportModal,
     isDetailModalOpen, closeDetailTable,
     showFormulaList, setShowFormulaList,
-    setCurrentSessionId,
     checkCompaction,
   } = opts
 
@@ -91,12 +90,6 @@ export function useChatHandlers(opts: UseChatHandlersOptions) {
       if (slashResult.handled) {
         // 指令被消费，直接展示结果消息
         if (slashResult.message) {
-          const infoMsg: ChatMessage = {
-            id: `cmd-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-            role: 'assistant',
-            content: slashResult.message,
-            timestamp: Date.now(),
-          }
           eventBus.emit('message:received', {
             content: slashResult.message,
             senderId: 'system',

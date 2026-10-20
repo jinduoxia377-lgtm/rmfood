@@ -57,6 +57,13 @@ async def get_optimization_suggestions(
     2. 调用 ai_service 进行成分/功效/成本分析
     3. 基于分析结果生成针对性优化建议
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     try:
         formula_data = req.formula_data
         ingredients = formula_data.ingredients

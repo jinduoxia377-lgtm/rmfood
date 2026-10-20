@@ -1,6 +1,8 @@
 /**
  * RMFOOD 小程序 - 全局布局规范
- * 解决所有页面的排版和边距问题
+ * 对齐桌面规范 DESIGN.md §6/§9，解决页面排版和边距问题
+ * 注意：页面容器/列表/卡片基础类在 grid-system.wxss 定义，
+ * 本文件仅补充导航、滚动、安全区与组件布局适配，避免重复定义。
  */
 
 /* ============================================
@@ -15,33 +17,19 @@ page {
 }
 
 /* ============================================
-   2. 页面容器规范
-   ============================================ */
-
-/* 标准页面容器 - 适配所有页面 */
-.page-container {
-  min-height: 100vh;
-  min-height: 100dvh; /* 动态视口高度，适配移动端 */
-  background: var(--color-bg-page);
-  display: flex;
-  flex-direction: column;
-  /* 确保内容不被TabBar遮挡 */
-  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
-}
-
-/* ============================================
-   3. 滚动容器规范
+   2. 滚动容器规范
    ============================================ */
 
 /* 内容滚动区 - 自动计算高度 */
 .content-scroll {
   flex: 1;
-  /* 确保滚动区域不超出安全区域 */
   height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ============================================
-   4. 固定导航栏规范
+   3. 固定导航栏规范
    ============================================ */
 
 /* 固定顶部导航 - 自动适配状态栏 */
@@ -51,7 +39,6 @@ page {
   left: 0;
   right: 0;
   z-index: var(--z-index-fixed, 100);
-  /* 自动适配状态栏高度 */
   padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
 }
@@ -67,101 +54,64 @@ page {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5rpx solid var(--color-separator);
-  /* 适配状态栏 */
   padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
 }
 
 /* ============================================
-   5. 内容间距规范
+   4. 内容间距规范
    ============================================ */
 
 /* 页面内容区 - 自动偏移固定导航 */
 .page-content {
-  /* 根据实际导航高度调整 */
   padding-top: calc(env(safe-area-inset-top) + 120rpx);
-  padding-left: var(--space-md, 16rpx);
-  padding-right: var(--space-md, 16rpx);
+  padding-left: var(--space-md, 32rpx);
+  padding-right: var(--space-md, 32rpx);
   padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }
 
 /* ============================================
-   6. 底部安全区规范
+   5. 底部安全区规范
    ============================================ */
 
 /* 底部间距 - 适配TabBar和安全区域 */
 .bottom-spacing {
   height: calc(100rpx + env(safe-area-inset-bottom));
-  /* TabBar高度约100rpx + 安全区域 */
 }
 
 /* ============================================
-   7. 卡片容器规范
+   6. 内容卡片容器规范
    ============================================ */
 
 /* 内容卡片 - 统一圆角和阴影 */
 .content-card {
   background: var(--color-bg-card);
-  border-radius: var(--radius-card, 16rpx);
-  padding: var(--space-lg, 24rpx);
-  margin-bottom: var(--space-md, 16rpx);
+  border-radius: var(--radius-card, 24rpx);
+  padding: var(--space-lg, 48rpx);
+  margin-bottom: var(--space-md, 32rpx);
   box-shadow: var(--shadow-sm);
 }
 
 /* ============================================
-   8. 列表项规范
-   ============================================ */
-
-/* 列表容器 */
-.list-container {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-card, 16rpx);
-  overflow: hidden;
-  margin-bottom: var(--space-md, 16rpx);
-}
-
-/* 列表项 */
-.list-item {
-  display: flex;
-  align-items: center;
-  padding: var(--space-lg, 24rpx);
-  background: var(--color-bg-card);
-  /* 确保点击区域足够大 */
-  min-height: 88rpx;
-}
-
-/* 分割线 */
-.list-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: var(--space-lg, 24rpx);
-  right: 0;
-  height: 0.5rpx;
-  background: var(--color-separator);
-}
-
-/* ============================================
-   9. 网格布局规范
+   7. 网格布局规范
    ============================================ */
 
 /* 网格容器 */
 .grid-container {
   display: grid;
-  gap: var(--space-md, 16rpx);
-  /* 默认3列 */
+  gap: var(--space-md, 32rpx);
   grid-template-columns: repeat(3, 1fr);
 }
 
 /* ============================================
-   10. 响应式适配
+   8. 响应式适配
    ============================================ */
 
 /* 小屏幕设备适配 */
 @media screen and (max-width: 375px) {
   .page-content {
-    padding-left: var(--space-sm, 12rpx);
-    padding-right: var(--space-sm, 12rpx);
+    padding-left: var(--space-3, 24rpx);
+    padding-right: var(--space-3, 24rpx);
   }
 }
 
@@ -175,35 +125,7 @@ page {
 }
 
 /* ============================================
-   11. 组件适配
-   ============================================ */
-
-/* Apple NavBar 适配 */
-.apple-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-index-fixed, 100);
-  background: var(--blur-bg, rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5rpx solid var(--color-separator);
-  /* 适配状态栏 */
-  padding-top: env(safe-area-inset-top);
-  box-sizing: border-box;
-}
-
-.apple-navbar-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 44rpx;
-  padding: 0 var(--space-lg, 24rpx);
-}
-
-/* ============================================
-   12. 通用工具类
+   9. 通用工具类
    ============================================ */
 
 /* 安全区域padding */
@@ -214,17 +136,17 @@ page {
 
 /* 内容区padding */
 .p-content {
-  padding: var(--space-lg, 24rpx);
+  padding: var(--space-lg, 48rpx);
 }
 
 .p-x {
-  padding-left: var(--space-lg, 24rpx);
-  padding-right: var(--space-lg, 24rpx);
+  padding-left: var(--space-lg, 48rpx);
+  padding-right: var(--space-lg, 48rpx);
 }
 
 .p-y {
-  padding-top: var(--space-lg, 24rpx);
-  padding-bottom: var(--space-lg, 24rpx);
+  padding-top: var(--space-lg, 48rpx);
+  padding-bottom: var(--space-lg, 48rpx);
 }
 
 /* 文本截断 */

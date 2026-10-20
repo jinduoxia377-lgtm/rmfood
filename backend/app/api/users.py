@@ -5,6 +5,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
+from sqlalchemy import text, bindparam
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas.user import UserCreate, UserUpdate, UserResponse
@@ -34,8 +35,49 @@ async def list_users(
     )
     # A-24：原直接把 SQLAlchemy 实体塞进 dict，而 response_model=dict 无法序列化
     #       任意对象 —— /api/v1/users 恒定 500。改为按 UserResponse 显式序列化。
+    items = [UserResponse.model_validate(u).model_dump(mode="json") for u in users]
+
+    # 补充用户所属组织（organization_members 聚合），用于用户管理"所属组织"列
+    try:
+        user_ids = [u["id"] for u in items]
+        if user_ids:
+            # 动态占位符（user_ids 均为 DB 整数，安全）；避免 asyncpg IN 数组兼容问题
+            placeholders = ",".join([f":uid_{i}" for i in range(len(user_ids))])
+            params = {f"uid_{i}": uid for i, uid in enumerate(user_ids)}
+            rows = (await db.execute(
+                text(f"""
+                    SELECT om.user_id, o.id AS org_id, o.name AS org_name, om.role AS org_role
+                    FROM organization_members om
+                    JOIN organizations o ON om.organization_id = o.id
+                    WHERE om.user_id IN ({placeholders}) AND o.is_active = TRUE
+                    ORDER BY o.id ASC
+                """),
+                params,
+            )).fetchall()
+            org_map: dict[int, list[dict]] = {}
+            for r in rows:
+                org_map.setdefault(r.user_id, []).append({
+                    "id": r.org_id,
+                    "name": r.org_name,
+                    "role": r.org_role,
+                })
+            for item in items:
+                orgs = org_map.get(item["id"], [])
+                item["organizations"] = orgs
+                if not item.get("organization_name") and orgs:
+                    item["organization_name"] = orgs[0]["name"]
+                if not item.get("organization_id") and orgs:
+                    item["organization_id"] = orgs[0]["id"]
+        else:
+            for item in items:
+                item["organizations"] = []
+    except Exception:
+        # 聚合失败不应影响用户列表主流程
+        for item in items:
+            item.setdefault("organizations", [])
+
     return {
-        "items": [UserResponse.model_validate(u).model_dump(mode="json") for u in users],
+        "items": items,
         "total": total,
         "page": pagination.page,
         "page_size": pagination.page_size,

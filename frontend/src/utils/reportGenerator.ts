@@ -268,10 +268,10 @@ export function replaceVariables(template: string, variables: Record<string, any
 }
 
 function processSimpleVariables(template: string, variables: Record<string, any>): string {
-  const variablePattern = /\{\{([^#\/]\w+?)\}\}/g
+  const variablePattern = /\{\{([^#/]\w+?)\}\}/g
   return template.replace(variablePattern, (match, varName) => {
     const trimmedName = varName.trim()
-    if (variables.hasOwnProperty(trimmedName)) {
+    if (Object.prototype.hasOwnProperty.call(variables, trimmedName)) {
       const value = variables[trimmedName]
       return typeof value === 'object' ? JSON.stringify(value) : String(value)
     }
@@ -531,6 +531,7 @@ function renderCoverSection(section: ReportSection, data: ReportInputData, varia
 }
 
 function renderExecutiveSummary(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   const stats = calculateStatistics(data.formulaData)
 
   let summary = `本报告对配方"${data.formulaData.name}"进行了全面分析。该配方共包含${stats.totalIngredients}种成分，`
@@ -562,6 +563,7 @@ function renderExecutiveSummary(section: ReportSection, data: ReportInputData, _
 }
 
 function renderFormulaDetails(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   const detailLevel = section.detailLevel
 
   const ingredients = data.formulaData.ingredients
@@ -614,6 +616,7 @@ function renderFormulaDetails(section: ReportSection, data: ReportInputData, _va
 }
 
 function renderIngredientAnalysis(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   const analyses = data.formulaData.ingredients.map(ingredient => ({
     ingredient: ingredient.name,
     percentage: ingredient.percentage,
@@ -638,6 +641,7 @@ function renderIngredientAnalysis(section: ReportSection, data: ReportInputData,
 }
 
 function renderSynergyAssessment(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   if (!data.synergyAnalysis) {
     return {
       type: 'synergy-assessment',
@@ -667,6 +671,7 @@ function renderSynergyAssessment(section: ReportSection, data: ReportInputData, 
 }
 
 function renderRecommendations(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   const allRecommendations: string[] = []
 
   if (data.synergyAnalysis?.recommendations) {
@@ -697,6 +702,7 @@ function renderRecommendations(section: ReportSection, data: ReportInputData, _v
 }
 
 function renderAppendix(section: ReportSection, data: ReportInputData, _variables: Record<string, any>): any {
+  void _variables;
   const allText = collectAllText(data)
   const keywords = extractKeywords(allText)
 
@@ -862,6 +868,7 @@ function classifySynergyLevel(score: number): 'excellent' | 'good' | 'moderate' 
 }
 
 function generateFormulaRecommendations(stats: ReportStatistics, _data: ReportInputData): string[] {
+  void _data;
   const recommendations: string[] = []
 
   if (stats.totalIngredients === 0) {

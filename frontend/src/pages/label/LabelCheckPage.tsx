@@ -5,6 +5,7 @@
  * 输出成分分类、过敏原提示与注意事项（信息参考，不构成合规结论）。
  */
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ScanText,
   ShieldAlert,
@@ -19,13 +20,14 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Textarea } fro
 import { labelCheckApi, type LabelCheckResult } from '@/api/labelCheck';
 import { useToast } from '@/components/ui/Toast';
 
-const LEVEL_META: Record<string, { label: string; variant: string; icon: any }> = {
-  info: { label: '提示', variant: 'info', icon: Info },
-  note: { label: '注意', variant: 'warning', icon: AlertTriangle },
-  warning: { label: '警示', variant: 'danger', icon: ShieldAlert },
+const LEVEL_META: Record<string, { labelKey: string; variant: string; icon: any }> = {
+  info: { labelKey: 'pages.labelCheck.levelInfo', variant: 'info', icon: Info },
+  note: { labelKey: 'pages.labelCheck.levelNote', variant: 'warning', icon: AlertTriangle },
+  warning: { labelKey: 'pages.labelCheck.levelWarning', variant: 'danger', icon: ShieldAlert },
 };
 
 export default function LabelCheckPage() {
+  const { t } = useTranslation();
   const { addToast } = useToast();
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ export default function LabelCheckPage() {
   const handleCheck = async () => {
     const trimmed = text.trim();
     if (!trimmed) {
-      addToast({ type: 'warning', message: '请输入配料表内容' });
+      addToast({ type: 'warning', message: t('pages.labelCheck.toastInputRequired') });
       return;
     }
     setLoading(true);
@@ -45,9 +47,9 @@ export default function LabelCheckPage() {
       if (res.success) {
         setResult(res.data);
         setOcrText('');
-        addToast({ type: 'success', message: `已识别 ${res.data.ingredients.length} 项配料` });
+        addToast({ type: 'success', message: t('pages.labelCheck.toastRecognized', { count: res.data.ingredients.length }) });
       } else {
-        addToast({ type: 'error', message: '核查失败，请稍后重试' });
+        addToast({ type: 'error', message: t('pages.labelCheck.toastFailed') });
       }
     } catch (e: any) {
       addToast({ type: 'error', message: String(e?.message ?? e) });
@@ -65,9 +67,9 @@ export default function LabelCheckPage() {
       if (res.success && res.data) {
         setResult(res.data);
         setOcrText(res.ocr_text ?? '');
-        addToast({ type: 'success', message: `OCR 识别成功，共 ${res.data.ingredients.length} 项配料` });
+        addToast({ type: 'success', message: t('pages.labelCheck.toastOcrSuccess', { count: res.data.ingredients.length }) });
       } else {
-        addToast({ type: 'warning', message: res.message ?? 'OCR 识别不可用，请粘贴文本' });
+        addToast({ type: 'warning', message: res.message ?? t('pages.labelCheck.toastOcrUnavailable') });
       }
     } catch (err: any) {
       addToast({ type: 'error', message: String(err?.message ?? err) });
@@ -86,15 +88,15 @@ export default function LabelCheckPage() {
   return (
     <div className="space-y-4">
       {/* 欢迎横幅 */}
-      <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-accent-surface)] p-6 text-white shadow-md">
+      <div className="rounded-xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-accent-surface)] p-4 sm:p-6 text-white shadow-md">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center">
             <ScanText className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">配料表核查</h1>
+            <h1 className="text-xl font-bold">{t('pages.labelCheck.title')}</h1>
             <p className="text-sm text-white/80 mt-1">
-              粘贴或扫描配料表文本，基于药食同源目录 / GB 2760 / GB 14880 等公开标准做信息比对
+              {t('pages.labelCheck.subtitle')}
             </p>
           </div>
         </div>
@@ -104,39 +106,39 @@ export default function LabelCheckPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary-600" />
-            输入配料表
+            {t('pages.labelCheck.inputTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={'例如：\n配料：水、白砂糖、植脂末（葡萄糖浆、氢化植物油）、山梨酸钾、小麦粉'}
+            placeholder={t('pages.labelCheck.placeholder')}
             rows={5}
             className="w-full min-h-[120px]"
           />
           <div className="flex items-center gap-3 flex-wrap">
             <Button onClick={handleCheck} loading={loading} disabled={!text.trim()}>
-              开始核查
+              {t('pages.labelCheck.startCheck')}
             </Button>
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={loading}>
-              <Upload className="w-4 h-4 mr-1" /> 上传图片识别
+              <Upload className="w-4 h-4 mr-1" /> {t('pages.labelCheck.uploadImage')}
             </Button>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              aria-label="上传配料表图片"
+              aria-label={t('pages.labelCheck.uploadAria')}
               className="hidden"
               onChange={handleFile}
             />
             <Button variant="ghost" onClick={handleReset} disabled={loading}>
-              <RotateCcw className="w-4 h-4 mr-1" /> 清空
+              <RotateCcw className="w-4 h-4 mr-1" /> {t('pages.labelCheck.clear')}
             </Button>
           </div>
           {ocrText && (
             <p className="text-xs text-muted-foreground mt-2">
-              OCR 识别文本：{ocrText.length > 120 ? `${ocrText.slice(0, 120)}...` : ocrText}
+              {t('pages.labelCheck.ocrText')}{ocrText.length > 120 ? `${ocrText.slice(0, 120)}...` : ocrText}
             </p>
           )}
         </CardContent>
@@ -151,20 +153,20 @@ export default function LabelCheckPage() {
                 <div className="flex-1 min-w-[240px]">
                   <h3 className="font-semibold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success-500" />
-                    核查结果
+                    {t('pages.labelCheck.resultTitle')}
                   </h3>
                   <p className="text-sm mt-1">{result.summary}</p>
-                  <p className="text-xs mt-2 text-muted-foreground">报告编号：{result.report_id}</p>
+                  <p className="text-xs mt-2 text-muted-foreground">{t('pages.labelCheck.reportId', { id: result.report_id })}</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {Object.entries(result.category_counts).map(([key, count]) => (
                     <Badge key={key} variant="outline">
-                      {key === 'food_homology' ? '药食同源' :
-                        key === 'new_food_resource' ? '新食品原料' :
-                        key === 'food_additive' ? '添加剂' :
-                        key === 'ordinary_food' ? '常规原料' :
-                        key === 'nutrition_enricher' ? '营养强化' :
-                        key === 'prohibited' ? '禁用/风险' : '未收录'} {count}
+                      {key === 'food_homology' ? t('pages.labelCheck.categoryFoodHomology') :
+                        key === 'new_food_resource' ? t('pages.labelCheck.categoryNewFood') :
+                        key === 'food_additive' ? t('pages.labelCheck.categoryAdditive') :
+                        key === 'ordinary_food' ? t('pages.labelCheck.categoryOrdinary') :
+                        key === 'nutrition_enricher' ? t('pages.labelCheck.categoryEnricher') :
+                        key === 'prohibited' ? t('pages.labelCheck.categoryProhibited') : t('pages.labelCheck.categoryUnknown')} {count}
                     </Badge>
                   ))}
                 </div>
@@ -175,7 +177,7 @@ export default function LabelCheckPage() {
           {/* 成分明细 */}
           <Card>
             <CardHeader>
-              <CardTitle>成分明细</CardTitle>
+              <CardTitle>{t('pages.labelCheck.ingredientDetails')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {result.ingredients.map((ing, idx) => {
@@ -204,7 +206,7 @@ export default function LabelCheckPage() {
                         <span className="font-medium">{ing.name}</span>
                         <Badge variant={meta.variant as any}>{ing.category_label}</Badge>
                         {ing.allergen && (
-                          <Badge variant="warning">过敏原：{ing.allergen_group}</Badge>
+                          <Badge variant="warning">{t('pages.labelCheck.allergen', { group: ing.allergen_group })}</Badge>
                         )}
                       </div>
                       <p className="text-sm mt-1 text-muted-foreground">{ing.message}</p>

@@ -58,7 +58,7 @@ interface SearchResultItemProps {
   isSelected: boolean
 }
 
-const SearchResultItem = memo<SearchResultItemProps>(({ result, index: _index, onSelect, isSelected }) => {
+const SearchResultItem = memo<SearchResultItemProps>(({ result, onSelect, isSelected }) => {
   const handleClick = useCallback(() => {
     onSelect(result)
   }, [onSelect, result])

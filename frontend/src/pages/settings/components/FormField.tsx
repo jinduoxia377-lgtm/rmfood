@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '@/lib/utils';
 import { AlertCircle } from 'lucide-react';
 
@@ -36,7 +36,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     <div className={cn('space-y-1.5', className)}>
       <label
         id={labelId}
-        className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+        className="block text-sm font-medium text-[var(--text-primary)]"
       >
         {label}
         {required && <span className="text-danger-500 ml-1">*</span>}

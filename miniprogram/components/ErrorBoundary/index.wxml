@@ -3,7 +3,7 @@
   <view class="error-container">
     <!-- 错误图标 -->
     <view class="error-icon">
-      <icon name="alert-circle" size="xl" color="#EF4444" />
+      <icon name="alert-circle" size="xl" color="var(--color-danger-text)" />
     </view>
     
     <!-- 错误标题 -->
@@ -24,7 +24,7 @@
         <text>重试</text>
       </button>
       <button class="btn btn-primary" bindtap="handleReload">
-        <icon name="home" size="sm" color="#FFFFFF" />
+        <icon name="home" size="sm" color="var(--color-text-white)" />
         <text>返回首页</text>
       </button>
     </view>

@@ -3,10 +3,10 @@
  * 支持拖拽布局、Widget 添加/移除、保存/加载布局
  * 使用真实后端数据渲染 KPI / 图表 / 表格 / 动态流
  */
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   LayoutGrid, Plus, Save, Share2,
-  Eye, GripVertical, X, Check,
+  GripVertical, X, Check,
   BarChart3, PieChart as PieIcon, Activity, Users, TrendingUp, Zap,
   ArrowUp, ArrowDown, FileText,
 } from 'lucide-react'
@@ -20,7 +20,6 @@ import {
 } from '@/components/analytics/widgets'
 import { SankeyFunnelChart } from '@/components/analytics/charts/SankeyFunnelChart'
 import { IngredientNetworkChart } from '@/components/analytics/charts/IngredientNetworkChart'
-import { useAnalyticsData } from '@/hooks/useAnalyticsData'
 import type { DashboardResponse } from '@/hooks/useAnalyticsData'
 import { useToast } from '@/components/ui'
 
@@ -98,7 +97,7 @@ function renderWidgetContent(widget: DashboardWidget, data: CustomTabData): Reac
         </div>
       )
     default:
-      return <span className="text-text-muted text-xs">未知组件</span>
+      return <span className="text-[var(--text-muted)] text-xs">未知组件</span>
   }
 }
 
@@ -129,20 +128,20 @@ function getDefaultWidgets(): DashboardWidget[] {
   ]
 }
 
-export default function CustomTab({ filters, dashboard, refresh }: Props) {
+export default function CustomTab({ dashboard }: Props) {
   const toast = useToast()
   const [isEditMode, setIsEditMode] = useState(false)
   const [widgets, setWidgets] = useState<DashboardWidget[]>(() => {
     const saved = localStorage.getItem('analytics-custom-layout')
     if (saved) {
-      try { return JSON.parse(saved) } catch {}
+      try { return JSON.parse(saved) } catch { /* 忽略损坏的本地布局 */ }
     }
     return getDefaultWidgets()
   })
   const [savedLayouts, setSavedLayouts] = useState<SavedLayout[]>(() => {
     const saved = localStorage.getItem('analytics-saved-layouts')
     if (saved) {
-      try { return JSON.parse(saved) } catch {}
+      try { return JSON.parse(saved) } catch { /* 忽略损坏的本地布局 */ }
     }
     return []
   })
@@ -165,6 +164,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
 
   const handleAddWidget = (tpl: typeof AVAILABLE_WIDGETS[0]) => {
     const newWidget: DashboardWidget = {
+      // eslint-disable-next-line react-hooks/purity
       id: `${tpl.id}-${Date.now()}`,
       type: tpl.type,
       title: tpl.title,
@@ -218,30 +218,30 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
 
       {/* ── 操作工具栏 ── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-[var(--space-apple-sm)]">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           <input
             type="text"
             value={currentLayoutName}
             onChange={(e) => setCurrentLayoutName(e.target.value)}
             disabled={!isEditMode}
-            className={`px-3 py-1.5 text-base font-semibold bg-transparent border-b transition-colors ${
+            className={`px-[var(--space-apple-sm)] py-1.5 text-base font-semibold bg-transparent border-b transition-colors ${
               isEditMode
-                ? 'border-primary-500 text-primary-700 focus:outline-none'
-                : 'border-transparent text-text-primary'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary-text)] focus:outline-none'
+                : 'border-transparent text-[var(--text-primary)]'
             }`}
         aria-label="布局名称"
       />
 
           <button
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`px-[var(--space-apple-sm)] py-1.5 text-sm rounded-[var(--radius-Apple-sm)] transition-all flex items-center gap-1.5 ${
               isEditMode
-                ? 'bg-primary-container text-primary-main shadow-sm'
-                : 'bg-surface-hover text-text-primary hover:bg-surface-pressed'
+                ? 'bg-primary-container text-[var(--color-primary)] shadow-sm'
+                : 'bg-surface-hover text-[var(--text-primary)] hover:bg-surface-pressed'
             }`}
           >
             {isEditMode ? <Check className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
@@ -258,7 +258,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                 if (layout) handleLoadLayout(layout)
               }
             }}
-            className="px-3 py-1.5 text-sm input min-w-[150px]"
+            className="px-[var(--space-apple-sm)] py-1.5 text-sm input min-w-[150px]"
           >
             <option value="">已保存的布局…</option>
             {savedLayouts.map((layout) => (
@@ -269,7 +269,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && (
             <button
               onClick={() => setShowWidgetPicker(!showWidgetPicker)}
-              className="px-3 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-[var(--space-apple-sm)] py-1.5 bg-primary-container hover:bg-primary-container text-[var(--color-primary)] text-sm rounded-[var(--radius-Apple-sm)] transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               添加组件
@@ -279,7 +279,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && widgets.length > 0 && (
             <button
               onClick={() => { setNewLayoutName(currentLayoutName); setShowSaveDialog(true) }}
-              className="px-3 py-1.5 bg-secondary-container hover:bg-secondary-container text-secondary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-[var(--space-apple-sm)] py-1.5 bg-secondary-container hover:bg-secondary-container text-secondary-main text-sm rounded-[var(--radius-Apple-sm)] transition-colors flex items-center gap-1.5"
             >
               <Save className="w-4 h-4" />
               保存布局
@@ -289,7 +289,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {!isEditMode && widgets.length > 0 && (
             <button
               onClick={handleShare}
-              className="px-3 py-1.5 bg-surface-hover hover:bg-surface-pressed text-text-primary text-sm rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-[var(--space-apple-sm)] py-1.5 bg-surface-hover hover:bg-surface-pressed text-[var(--text-primary)] text-sm rounded-[var(--radius-Apple-sm)] transition-colors flex items-center gap-1.5"
             >
               <Share2 className="w-4 h-4" />
               分享
@@ -300,14 +300,14 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
 
       {/* ── 组件选择面板 ── */}
       {showWidgetPicker && (
-        <div className="p-4 rounded-lg bg-surface-hover border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-text-primary">选择组件</span>
-            <button onClick={() => setShowWidgetPicker(false)} className="text-text-muted hover:text-text-primary">
+        <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-surface-hover border border-border">
+          <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+            <span className="text-sm font-medium text-[var(--text-primary)]">选择组件</span>
+            <button onClick={() => setShowWidgetPicker(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {AVAILABLE_WIDGETS.map((widget) => {
               const alreadyAdded = widgets.some(w => w.type === widget.type && w.config.metricId === widget.defaultConfig.metricId)
               return (
@@ -315,11 +315,11 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                   key={widget.id}
                   onClick={() => !alreadyAdded && handleAddWidget(widget)}
                   disabled={alreadyAdded}
-                  className="p-3 rounded-lg bg-background border border-border hover:border-primary-400 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-background border border-border hover:border-[var(--color-primary)] transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <widget.icon className="w-5 h-5 text-primary-700 mb-2" />
-                  <p className="text-xs font-medium text-text-primary">{widget.title}</p>
-                  <p className="text-xs text-text-muted mt-0.5">{widget.size === 'large' ? '大块' : widget.size === 'medium' ? '中块' : '小块'}</p>
+                  <widget.icon className="w-5 h-5 text-[var(--color-primary-text)] mb-2" />
+                  <p className="text-xs font-medium text-[var(--text-primary)]">{widget.title}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{widget.size === 'large' ? '大块' : widget.size === 'medium' ? '中块' : '小块'}</p>
                 </button>
               )
             })}
@@ -329,26 +329,26 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
 
       {/* ── 保存布局对话框 ── */}
       {showSaveDialog && (
-        <div className="p-4 rounded-lg bg-surface-hover border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-text-primary">保存布局</span>
-            <button onClick={() => setShowSaveDialog(false)} className="text-text-muted hover:text-text-primary">
+        <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-surface-hover border border-border">
+          <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+            <span className="text-sm font-medium text-[var(--text-primary)]">保存布局</span>
+            <button onClick={() => setShowSaveDialog(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-[var(--space-apple-sm)]">
             <input
               type="text"
               value={newLayoutName}
               onChange={(e) => setNewLayoutName(e.target.value)}
               placeholder="输入布局名称…"
-              className="w-full px-3 py-2 text-sm input"
+              className="w-full px-[var(--space-apple-sm)] py-2 text-sm input"
               onKeyDown={(e) => e.key === 'Enter' && handleSaveLayout()}
             />
             <button
               onClick={handleSaveLayout}
               disabled={!newLayoutName.trim()}
-              className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 text-primary-main text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 text-[var(--color-primary)] text-sm rounded-[var(--radius-Apple-sm)] transition-colors flex items-center justify-center gap-2"
             >
               <Save className="w-4 h-4" />
               保存
@@ -371,7 +371,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                 <Card className="h-full">
                   <CardHeader className="flex flex-row items-center gap-1.5 pb-3">
                     {isEditMode && (
-                      <GripVertical className="w-4 h-4 text-text-muted cursor-grab flex-shrink-0 mt-0.5" />
+                      <GripVertical className="w-4 h-4 text-[var(--text-muted)] cursor-grab flex-shrink-0 mt-0.5" />
                     )}
                     <CardTitle className="text-sm font-semibold truncate flex-1">{widget.title}</CardTitle>
                     {isEditMode && (
@@ -379,7 +379,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                         <button
                           onClick={() => moveWidget(index, -1)}
                           disabled={!canMoveUp}
-                          className="p-1 text-text-muted hover:text-primary-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-[var(--text-muted)] hover:text-[var(--color-primary-text)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="上移"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -387,14 +387,14 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
                         <button
                           onClick={() => moveWidget(index, 1)}
                           disabled={!canMoveDown}
-                          className="p-1 text-text-muted hover:text-primary-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-1 text-[var(--text-muted)] hover:text-[var(--color-primary-text)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           title="下移"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleRemoveWidget(widget.id)}
-                          className="p-1 text-text-muted hover:text-error-500 transition-colors"
+                          className="p-1 text-[var(--text-muted)] hover:text-[var(--color-error-text)]0 transition-colors"
                           title="移除组件"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -416,7 +416,7 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           {isEditMode && (
             <button
               onClick={() => setShowWidgetPicker(true)}
-              className="p-4 rounded-lg border-2 border-dashed border-border hover:border-primary-400 transition-colors flex flex-col items-center gap-2 text-text-muted hover:text-primary-700 h-full min-h-[200px]"
+              className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border-2 border-dashed border-border hover:border-[var(--color-primary)] transition-colors flex flex-col items-center gap-2 text-[var(--text-muted)] hover:text-[var(--color-primary-text)] h-full min-h-[200px]"
             >
               <Plus className="w-8 h-8" />
               <span className="text-sm font-medium">添加组件</span>
@@ -424,10 +424,10 @@ export default function CustomTab({ filters, dashboard, refresh }: Props) {
           )}
         </div>
       ) : (
-        <div className="p-10 text-center rounded-lg bg-surface-hover">
-          <LayoutGrid className="w-10 h-10 text-text-muted mx-auto mb-3" />
-          <p className="text-text-muted text-sm">暂无组件</p>
-          <p className="text-xs text-text-muted mt-1">点击右上角「添加组件」开始搭建您的仪表盘</p>
+        <div className="p-10 text-center rounded-[var(--radius-Apple-sm)] bg-surface-hover">
+          <LayoutGrid className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-[var(--space-apple-sm)]" />
+          <p className="text-[var(--text-muted)] text-sm">暂无组件</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">点击右上角「添加组件」开始搭建您的仪表盘</p>
         </div>
       )}
     </div>

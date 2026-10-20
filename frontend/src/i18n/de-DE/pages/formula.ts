@@ -1,0 +1,156 @@
+/**
+ * Deutsche "Formelverwaltung"-Modulübersetzungen (Listenseite + geteilt)
+ */
+export default {
+  formula: {
+    // Kopfbereich der Listenseite
+    title: 'Formelverwaltung',
+    listTitle: 'Formelliste',
+    totalCount: '{{total}} Einträge',
+    approvedCount: '{{count}} genehmigt',
+    pendingReviewCount: '{{count}} in Prüfung',
+    firstFormulaCta: 'Erstellen Sie Ihre erste medizinische-Lebensmittel-Formel',
+    cardView: 'Kartenansicht',
+    tableView: 'Tabellenansicht',
+    favoritesOnly: 'Nur Favoriten',
+    showAll: 'Alle anzeigen',
+    showAllFavorites: 'Alle Formeln anzeigen',
+    operationLog: 'Operationsprotokoll',
+    log: 'Protokoll',
+    newFormula: 'Neue Formel',
+
+    // Statistik-Karten
+    totalFormulas: 'Formeln gesamt',
+    monthlyNew: '{{count}} neu diesen Monat',
+    monthly: '{{count}} diesen Monat',
+    draft: 'Entwurf',
+    draftSubtitle: 'Wartet auf Einreichung',
+    pendingReview: 'In Prüfung',
+    pendingReviewSubtitle: 'Erfordert Genehmigung',
+    approved: 'Genehmigt',
+    approvedSubtitle: 'Einsatzbereit',
+
+    // Suche & Filter
+    searchPlaceholder: 'Formelname oder -code suchen...',
+    searchAria: 'Formelname oder -code suchen',
+    nameSearch: 'Namenssuche',
+    openFilter: 'Filterpanel öffnen',
+    filterConditions: 'Filter',
+    status: 'Status',
+    createdDate: 'Erstellt am',
+    dateStart: 'Erstellt am (von)',
+    dateEnd: 'Erstellt am (bis)',
+    tags: 'Tags',
+    selectTagsPlaceholder: 'Tags auswählen...',
+    effectCategory: 'Wirksamkeitskategorie',
+    allCategories: 'Alle Kategorien',
+    formulaCategory: 'Formelkategorie',
+    selectCategoryPlaceholder: 'Kategorie auswählen...',
+    creator: 'Ersteller',
+    allCreators: 'Alle Ersteller',
+    pageSize: 'Seitengröße',
+    pageSizeOptions: '{{size}} / Seite',
+    currentFilterResults: 'Aktuelle Filterergebnisse',
+    total: 'Gesamt',
+    favorites: 'Favoriten',
+    currentFilters: 'Aktuelle Filter:',
+    removeFilter: 'Filter entfernen: {{label}}',
+    clearAll: 'Alle löschen',
+    clearAllFilters: 'Alle Filter löschen',
+    applyFilters: 'Filter anwenden',
+
+    // Batch-Aktionen
+    selectedCount: '{{count}} Formeln ausgewählt',
+    selectedCountPrefix: 'Ausgewählt',
+    selectedCountSuffix: 'Formeln',
+    exportSelected: 'Auswahl exportieren',
+    batchDelete: 'Batch löschen',
+    batchChangeStatus: 'Status ändern',
+    cancelSelect: 'Auswahl aufheben',
+    loadFailed: 'Laden fehlgeschlagen',
+    loadFailedDesc: 'Formeldaten konnten nicht geladen werden. Bitte Netzwerk prüfen und erneut versuchen.',
+    retry: 'Erneut versuchen',
+
+    // Leere Zustände
+    noMatchingFormulas: 'Keine passenden Formeln',
+    noFormulas: 'Noch keine Formeln',
+    noMatchingDesc: 'Passen Sie Suchbegriffe oder Filter an, um Daten sichtbar zu machen',
+    noFormulasDesc: 'Erstellen Sie Ihre erste Formel und starten Sie Ihre intelligente Formeldesign-Reise',
+    clearFilters: 'Filter löschen',
+
+    // Tabelle
+    tableName: 'Name',
+    tableStatus: 'Status',
+    tableIngredients: 'Inhaltsstoffe',
+    tableCreator: 'Ersteller',
+    tableExperiments: 'Experimente',
+    tableCreatedAt: 'Erstellt am',
+    tableUpdatedAt: 'Aktualisiert am',
+    tableActions: 'Aktionen',
+    selectAll: 'Alle auswählen',
+    selectFormula: 'Formel {{name}} auswählen',
+    favorite: 'Favorit',
+    unfavorite: 'Favorit entfernen',
+    experimentsCount: '{{count}} Experimente',
+    actionMenu: 'Aktionen für {{name}}',
+    viewDetail: 'Details anzeigen',
+    edit: 'Bearbeiten',
+    duplicate: 'Duplizieren',
+    exportSingle: 'Exportieren',
+    linkExperiment: 'Experiment verknüpfen',
+    delete: 'Löschen',
+
+    // Sortierung
+    primarySort: 'Primäre Sortierung: {{dir}}',
+    secondarySort: 'Sekundäre Sortierung: {{dir}}',
+    asc: 'aufsteigend',
+    desc: 'absteigend',
+
+    // Pagination
+    prevPage: 'Zurück',
+    nextPage: 'Weiter',
+    pageJump: 'Gehe zu',
+    pageJumpAria: 'Zu Seite springen',
+    mobilePage: 'Seite {{page}}/{{totalPages}}',
+    showingRange: 'Zeige {{from}}-{{to}} von {{total}}',
+
+    // Rechtes Panel
+    recentUpdates: 'Letzte Änderungen',
+    all: 'Alle',
+    noRecentFormulas: 'Keine letzten Formeln',
+    importExport: 'Import / Export',
+    importFormulas: 'Formeln importieren',
+    jsonCsvFormat: 'JSON / CSV-Format',
+    exportCSV: 'CSV exportieren',
+    selectedCountSmall: '{{count}} ausgewählt',
+    allData: 'Alle Daten',
+
+    // Löschbestätigung
+    confirmDelete: 'Löschen bestätigen',
+    confirmDeleteDesc: 'Möchten Sie diese Formel wirklich löschen? Die Formel und alle zugehörigen Daten werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',
+    confirmDeleteBtn: 'Löschen bestätigen',
+    cancel: 'Abbrechen',
+    confirmBatchDelete: 'Die {{count}} ausgewählten Formeln löschen? Rückgängig innerhalb von 5 Sekunden möglich.',
+    confirmBatchStatusChange: 'Status der {{count}} ausgewählten Formeln auf "{{status}}" ändern?',
+
+    // Tastenkürzel
+    keyboardShortcuts: 'Tastenkürzel',
+    focusSearch: 'Suche fokussieren',
+    closeDialog: 'Dialog schließen',
+    noPermissionTitle: 'Zugriff verweigert',
+    noPermissionDesc: 'Sie haben keine Berechtigung, die Formelliste anzuzeigen. Bitte kontaktieren Sie einen Administrator.',
+
+    // CSV-Export
+    exportCsv: {
+      code: 'Code',
+      name: 'Name',
+      status: 'Status',
+      version: 'Version',
+      targetEffects: 'Zielwirkungen',
+      description: 'Beschreibung',
+      createdAt: 'Erstellt am',
+      updatedAt: 'Aktualisiert am',
+      fileName: 'formel-liste',
+    },
+  },
+}

@@ -10,20 +10,6 @@
  */
 import React, { useMemo, useEffect, useRef, useState } from 'react'
 
-interface NodeData {
-  id: string
-  name: string
-  count: number
-  x: number
-  y: number
-}
-
-interface EdgeData {
-  source: string
-  target: string
-  weight: number
-}
-
 interface Props {
   nodes: Array<{ id: string; name: string; count: number }>
   edges: Array<{ source: string; target: string; weight: number }>
@@ -59,11 +45,13 @@ export const IngredientNetworkChart: React.FC<Props> = ({
   const layout = useMemo(() => {
     const W = dimensions.w || 600
     const H = dimensions.h || height
-    const nodeMap = new Map(inputNodes.map((n, i) => [
+    const nodeMap = new Map(inputNodes.map((n) => [
       n.id,
       {
         ...n,
+        // eslint-disable-next-line react-hooks/purity
         x: W / 2 + (Math.random() - 0.5) * W * 0.6,
+        // eslint-disable-next-line react-hooks/purity
         y: H / 2 + (Math.random() - 0.5) * H * 0.6,
       },
     ]))

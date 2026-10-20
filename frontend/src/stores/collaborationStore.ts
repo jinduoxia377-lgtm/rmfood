@@ -264,7 +264,7 @@ export const useCollaborationStore = create<CollaborationState>()(
         const { ws, reconnectTimer } = get();
         if (ws) {
           ws.close();
-          set({ ws: null, isConnected: false, session: null, participants: [] });
+          set({ ws: null, isConnected: false, session: null, participants: [], permissions: null });
         }
         if (reconnectTimer) {
           clearTimeout(reconnectTimer);
@@ -323,7 +323,8 @@ export const useCollaborationStore = create<CollaborationState>()(
       },
 
       undo: () => {
-        const { operations, operationIndex } = get();
+        const { operationIndex, permissions } = get();
+        if (!permissions?.canEdit) return;
         if (operationIndex < 0) return;
         set({
           operationIndex: operationIndex - 1,
@@ -332,7 +333,8 @@ export const useCollaborationStore = create<CollaborationState>()(
       },
 
       redo: () => {
-        const { operations, operationIndex } = get();
+        const { operations, operationIndex, permissions } = get();
+        if (!permissions?.canEdit) return;
         if (operationIndex >= operations.length - 1) return;
         set({
           operationIndex: operationIndex + 1,
@@ -370,7 +372,7 @@ export const useCollaborationStore = create<CollaborationState>()(
       },
 
       resolveConflict: (conflictId, resolution) => {
-        const { conflicts, operations } = get();
+        const { conflicts } = get();
         const conflict = conflicts.find(c => c.id === conflictId);
         if (!conflict) return;
 
@@ -380,7 +382,7 @@ export const useCollaborationStore = create<CollaborationState>()(
           'merge': 'merge',
           'manual': 'server_wins',
         };
-        const resolved = conflictResolver.resolveConflict(
+        conflictResolver.resolveConflict(
           { clientData: null, serverData: null, timestamp: Date.now(), entityType: 'document', entityId: conflict.id },
           strategyMap[resolution] || 'server_wins',
         );
@@ -400,7 +402,9 @@ export const useCollaborationStore = create<CollaborationState>()(
       },
 
       getActiveParticipants: (): CollaborationParticipant[] => {
-        return get().participants.filter(p => p.isOnline !== false);
+        const { participants, currentUser } = get();
+        // 活跃参与者：在线且非当前用户（与测试/语义约定一致）
+        return participants.filter(p => p.isOnline !== false && p.user.id !== currentUser.id);
       },
 
       getPendingConflicts: () => {

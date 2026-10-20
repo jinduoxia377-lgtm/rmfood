@@ -208,8 +208,9 @@ describe('DialogInput', () => {
 
   it('should apply focused styles when focused', () => {
     render(<DialogInput value="" onChange={mockOnChange} />)
-    const container = screen.getByRole('textbox').parentElement?.parentElement
-    
+    // 边框类作用在 textarea 的直接父容器（flex items-center 圆角边框层）
+    const container = screen.getByRole('textbox').parentElement
+
     fireEvent.focus(screen.getByRole('textbox'))
     
     expect(container).toHaveClass('border-primary-500')
@@ -223,21 +224,27 @@ describe('DialogInput', () => {
         validationRules={[{ type: 'required', message: '必填' }]}
       />
     )
-    const container = screen.getByRole('textbox').parentElement?.parentElement
-    
+    // 边框类作用在 textarea 的直接父容器（flex items-center 圆角边框层）
+    const container = screen.getByRole('textbox').parentElement
+
     expect(container).toHaveClass('border-error-500')
   })
 
   it('should auto resize height based on content', async () => {
+    // jsdom 不计算布局，scrollHeight 恒为 0；mock 一个高度以验证 autoResize 逻辑
+    Object.defineProperty(HTMLTextAreaElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get: () => 120,
+    })
+
     render(<DialogInput value="" onChange={mockOnChange} autoResize />)
     const textarea = screen.getByRole('textbox')
-    
-    const initialHeight = textarea.style.height
-    
+
     fireEvent.change(textarea, { target: { value: 'line1\nline2\nline3\nline4\nline5' } })
-    
+
     await waitFor(() => {
-      expect(textarea.style.height).not.toBe(initialHeight)
+      // scrollHeight 被 mock 为 120，autoResize 应将高度设为 120px（而非默认 44px）
+      expect(textarea.style.height).toBe('120px')
     })
   })
 

@@ -6,7 +6,6 @@ export interface GraphCompareResult {
 }
 
 export interface ComparisonPanelProps {
-  [key: string]: any;
   showCompareMode: boolean
   compareResult: GraphCompareResult | null
   filteredNodes: Array<{ id?: string; label: string }>
@@ -17,7 +16,7 @@ export default function ComparisonPanel({ showCompareMode, compareResult, filter
   if (!showCompareMode || !compareResult) return null
 
   return (
-    <div className="absolute bottom-16 right-3 z-45 w-[360px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
+    <div className="absolute bottom-16 right-3 z-45 w-[min(360px,calc(100vw-1.5rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2">
           <span>⚖️</span>
@@ -26,7 +25,7 @@ export default function ComparisonPanel({ showCompareMode, compareResult, filter
         <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>
       </div>
       <div className="p-3 space-y-2.5">
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
           <div className="rounded-lg bg-accent-50/80 dark:bg-accent-950/20 p-2">
             <div className="text-lg font-bold text-accent-600 dark:text-accent-700">{compareResult.similarityScore}%</div>
             <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相似度</div>

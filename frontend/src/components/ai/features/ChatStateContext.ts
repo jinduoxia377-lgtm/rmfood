@@ -12,7 +12,6 @@ import React, { createContext, useContext } from 'react'
 import type { HistorySession } from './components/pro'
 import type { ChatMessage } from './types'
 import type { ScenarioMode } from './services/scenarioSwitcher'
-import type { BackendThinkingStep } from './hooks/useThinkingProcessV3'
 
 export interface ChatState {
   // ===== 消息状态 =====
@@ -70,6 +69,8 @@ export interface ChatState {
 
   // ===== 报告状态 =====
   showReportModal: boolean
+  /** 关闭报告弹窗并清理报告数据（实现为 useReportGenerator.clearReport） */
+  setShowReportModal: (show: boolean) => void
   reportData: unknown
   isGeneratingReport: boolean
 
@@ -87,6 +88,8 @@ export interface ChatState {
   handleRemoveAttachment: (id: string) => void
   toggleHistory: () => void
   syncSessionsFromServer: () => Promise<void>
+  /** 生成配方报告（客户端生成，见 useReportGenerator）。formulaId 为空则汇总全部配方。 */
+  handleGenerateReport: (formulaId?: string) => Promise<void>
 }
 
 export const ChatStateContext = createContext<ChatState | null>(null)

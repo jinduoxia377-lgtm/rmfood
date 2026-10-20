@@ -31,7 +31,7 @@
 }
 
 .back-icon {
-  font-size: 52rpx;
+  font-size: var(--font-size-3xl);
   color: var(--color-bg-card);
   font-weight: 300;
   line-height: 1;
@@ -44,7 +44,7 @@
 
 .title-main {
   color: var(--color-bg-card);
-  font-size: 34rpx;
+  font-size: var(--font-size-title-3);
   font-weight: 500;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .action-icon {
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
 }
 
 /* 加载状态 */
@@ -93,7 +93,7 @@
 .loading-text {
   margin-top: 24rpx;
   color: var(--color-text-placeholder);
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }
 
 /* 内容区 */
@@ -125,7 +125,7 @@
 
 .herb-name {
   display: block;
-  font-size: 40rpx;
+  font-size: var(--font-size-title-1);
   font-weight: 600;
   color: var(--color-brand-500);
   margin-bottom: 8rpx;
@@ -133,7 +133,7 @@
 
 .herb-latin {
   display: block;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--color-text-placeholder);
   font-style: italic;
 }
@@ -148,7 +148,7 @@
 .badge {
   padding: 6rpx 18rpx;
   border-radius: 24rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   font-weight: 500;
 }
 
@@ -177,13 +177,13 @@
 }
 
 .meta-label {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-text-placeholder);
   margin-bottom: 8rpx;
 }
 
 .meta-value {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   font-weight: 500;
 }
@@ -215,18 +215,18 @@
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .section-more {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--color-brand-500);
 }
 
 .section-stats {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-text-placeholder);
 }
 
@@ -235,7 +235,7 @@
 }
 
 .content-text {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   line-height: 1.8;
   color: var(--color-text-tertiary);
 }
@@ -255,7 +255,7 @@
 
 .compound-name {
   display: block;
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-bottom: 8rpx;
@@ -264,7 +264,7 @@
 .compound-meta {
   display: flex;
   gap: 24rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-text-tertiary);
 }
 
@@ -286,7 +286,7 @@
   padding: 12rpx 20rpx;
   background: var(--color-bg-tertiary);
   border-radius: 16rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
 }
 
 .node-dot {
@@ -317,11 +317,11 @@
 }
 
 .warning-icon {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }
 
 .warning-text {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--color-text-tertiary);
 }
 
@@ -330,7 +330,7 @@
 }
 
 .safe-text {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--color-success-text);
 }
 
@@ -344,12 +344,12 @@
 }
 
 .empty-icon {
-  font-size: 96rpx;
+  font-size: var(--font-size-hero-xl);
   margin-bottom: 24rpx;
 }
 
 .empty-text {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--color-text-placeholder);
 }
 

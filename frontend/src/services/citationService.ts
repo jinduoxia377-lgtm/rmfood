@@ -142,7 +142,7 @@ export class CitationService {
  return aFirstAuthor.localeCompare(bFirstAuthor, 'en-US');
 });
 
-return sortedCitations.map((citation, _index) => {
+return sortedCitations.map((citation) => {
  const authors = citation.authors.join(', ');
  const year = citation.year;
 
@@ -182,7 +182,7 @@ return sortedCitations.map((citation, _index) => {
  return aFirstAuthor.localeCompare(bFirstAuthor, 'en-US');
  });
 
- return sortedCitations.map((citation, _index) => {
+ return sortedCitations.map((citation) => {
  const formatAuthor = (authors: string[]) => {
  if (authors.length === 1) return authors[0];
  if (authors.length <= 3) return `${authors.slice(0, -1).join(', ')} and ${authors[authors.length - 1]}`;
@@ -289,7 +289,7 @@ return sortedCitations.map((citation, index) => {
  return aFirstAuthor.localeCompare(bFirstAuthor, 'en-US');
  });
 
- return sortedCitations.map((citation, _index) => {
+ return sortedCitations.map((citation) => {
  const formatAuthor = (authors: string[]) => {
  if (authors.length === 1) return authors[0];
  if (authors.length <= 2) return authors.join(' & ');

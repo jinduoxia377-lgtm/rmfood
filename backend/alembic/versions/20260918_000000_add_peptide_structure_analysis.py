@@ -14,9 +14,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision: str = '20260918_000000_add_peptide_structure_analysis'
-down_revision: Union[str, None] = None
-branch_labels = None
-depends_on = '20260910_000000_add_cfam_tables'
+down_revision: Union[str, None] = '20260910_000000_add_cfam_tables'
 branch_labels = None
 depends_on = None
 

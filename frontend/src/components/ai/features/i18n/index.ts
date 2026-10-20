@@ -49,6 +49,14 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     dir: 'ltr',
     dateFormat: 'MM/DD/YYYY',
   },
+  {
+    code: 'de-DE',
+    name: 'German',
+    nativeName: 'Deutsch',
+    flag: '🇩🇪',
+    dir: 'ltr',
+    dateFormat: 'DD.MM.YYYY',
+  },
 ]
 
 // ===== 默认语言 =====
@@ -625,6 +633,284 @@ const enUS = {
   },
 }
 
+// ===== 德语语言包 =====
+
+const deDE = {
+  translation: {
+    common: {
+      loading: 'Wird geladen...',
+      error: 'Ein Fehler ist aufgetreten',
+      retry: 'Erneut versuchen',
+      cancel: 'Abbrechen',
+      confirm: 'Bestätigen',
+      save: 'Speichern',
+      delete: 'Löschen',
+      edit: 'Bearbeiten',
+      close: 'Schließen',
+      search: 'Suchen',
+      noData: 'Keine Daten vorhanden',
+      refresh: 'Aktualisieren',
+      more: 'Mehr',
+      back: 'Zurück',
+      next: 'Weiter',
+      previous: 'Zurück',
+      submit: 'Absenden',
+      success: 'Erfolgreich',
+      failed: 'Fehlgeschlagen',
+      warning: 'Warnung',
+      info: 'Information',
+    },
+
+    nav: {
+      home: 'Startseite',
+      aiChat: 'KI-Chat',
+      formulaGen: 'Formelgenerierung',
+      safetyCheck: 'Sicherheitsprüfung',
+      synergyAnalysis: 'Synergieanalyse',
+      tastePredict: 'Geschmacksprognose',
+      stabilityPredict: 'Stabilitätsprognose',
+      academicReport: 'Akademischer Bericht',
+      settings: 'Einstellungen',
+    },
+
+    chat: {
+      title: 'KI-Assistent',
+      placeholder: 'Beschreiben Sie Ihre Formelanforderungen, z. B. einen Süßstoffplan für ein zuckerarmes Getränk entwerfen...',
+      send: 'Senden',
+      stopGenerating: 'Generierung stoppen',
+      newSession: 'Neue Sitzung',
+      sessionHistory: 'Verlauf',
+      exportChat: 'Chat exportieren',
+      clearChat: 'Chat leeren',
+
+      commands: {
+        help: {
+          desc: 'Hilfeinformationen anzeigen',
+          usage: '/help',
+        },
+        clear: {
+          desc: 'Aktuellen Chat leeren',
+          usage: '/clear',
+        },
+        export: {
+          desc: 'Chatverlauf exportieren',
+          usage: '/export',
+        },
+        new: {
+          desc: 'Neue Sitzung erstellen',
+          usage: '/new',
+        },
+        settings: {
+          desc: 'Einstellungen öffnen',
+          usage: '/settings',
+        },
+      },
+
+      apiKey: {
+        title: 'API-Schlüssel-Konfiguration',
+        addProvider: 'Anbieter hinzufügen',
+        testConnection: 'Verbindung testen',
+        connectionSuccess: 'Verbindung erfolgreich',
+        connectionFailed: 'Verbindung fehlgeschlagen',
+        usageStats: 'Nutzungsstatistik',
+        monthlyCalls: 'Aufrufe in diesem Monat',
+        remainingQuota: 'Verbleibendes Kontingent',
+        encryptedStorage: 'Schlüssel wird verschlüsselt gespeichert',
+      },
+
+      streaming: {
+        typingSpeed: 'Tippgeschwindigkeit',
+        slow: 'Langsam',
+        medium: 'Mittel',
+        fast: 'Schnell',
+        instant: 'Sofort',
+        interrupt: 'Ausgabe unterbrechen',
+        resume: 'Ausgabe fortsetzen',
+      },
+
+      // ChatTab-Dialogfeld (v11.0)
+      chatTab: {
+        title: 'KI-Chat',
+        clear: 'Leeren',
+        chatError: 'Chat-Fehler',
+        retry: 'Erneut versuchen',
+        close: 'Schließen',
+        resume: 'Generierung fortsetzen',
+        pause: 'Generierung pausieren',
+        placeholder: 'Beschreiben Sie Ihre Formelanforderungen, z. B. einen Süßstoffplan für ein zuckerarmes Getränk entwerfen...',
+      },
+    },
+
+    formula: {
+      title: 'Intelligente Formelgenerierung',
+      wizard: {
+        step1: 'Zielwirkung',
+        step2: 'Einschränkungen',
+        step3: 'Erweiterte Optionen',
+        next: 'Weiter',
+        prev: 'Zurück',
+        complete: 'Konfiguration abschließen',
+        startGeneration: 'Generierung starten',
+      },
+      progress: {
+        preparing: 'Vorbereitung...',
+        generating: 'Kandidaten werden generiert...',
+        scoring: 'Bewertung läuft...',
+        optimizing: 'Optimierung läuft...',
+        sorting: 'Sortierung läuft...',
+        finalizing: 'Abschluss...',
+        completed: 'Generierung abgeschlossen',
+        failed: 'Generierung fehlgeschlagen',
+        cancelled: 'Abgebrochen',
+        paused: 'Pausiert',
+        estimatedTime: 'Voraussichtliche Restzeit',
+        viewLog: 'Protokoll anzeigen',
+        pause: 'Pausieren',
+        resume: 'Fortsetzen',
+        cancel: 'Abbrechen',
+      },
+      result: {
+        candidateComparison: 'Kandidatenvergleich',
+        sensitivityAnalysis: 'Sensitivitätsanalyse',
+        whatIf: 'Was-wäre-wenn-Analyse',
+        exportResult: 'Ergebnis exportieren',
+        paretoFrontier: 'Pareto-Front',
+      },
+    },
+
+    safety: {
+      title: 'Sicherheitsbewertung',
+      riskLevels: {
+        low: 'Geringes Risiko',
+        medium: 'Mittleres Risiko',
+        high: 'Hohes Risiko',
+      },
+      batchCheck: {
+        title: 'Stapelprüfung',
+        uploadFile: 'Datei hochladen',
+        supportedFormats: 'Unterstützt CSV- und Excel-Formate',
+        taskQueue: 'Aufgabenwarteschlange',
+        completed: 'Abgeschlossen',
+        processing: 'Wird verarbeitet',
+        queued: 'In Warteschlange',
+        failed: 'Fehlgeschlagen',
+        reviewRequired: 'Überprüfung erforderlich',
+      },
+      regulation: {
+        browser: 'Regulierungsbrowser',
+        filterByRegion: 'Nach Region filtern',
+        filterByType: 'Nach Typ filtern',
+        complianceStatus: 'Konformitätsstatus',
+        passed: 'Bestanden',
+        pending: 'Ausstehend',
+        nonCompliant: 'Nicht konform',
+        updateAvailable: 'Aktualisierung verfügbar',
+      },
+      report: {
+        generateReport: 'Bericht erstellen',
+        fdaTemplate: 'FDA-Format',
+        nmpaTemplate: 'NMPA-Format',
+        efsaTemplate: 'EFSA-Format',
+        preview: 'Vorschau',
+        downloadPDF: 'PDF herunterladen',
+      },
+    },
+
+    synergy: {
+      title: 'Synergieanalyse',
+      knowledgeGraph: 'Wissensgraph',
+      recommendationPanel: 'Empfehlungsparameter',
+      radarChart: 'Radar-Diagramm-Vergleich',
+      selectAlgorithm: 'Algorithmus auswählen',
+      adjustWeights: 'Gewichte anpassen',
+      aiRecommendation: 'KI-Empfehlung',
+      confidence: 'Konfidenz',
+      savePreset: 'Voreinstellung speichern',
+      loadPreset: 'Voreinstellung laden',
+      reset: 'Zurücksetzen',
+    },
+
+    taste: {
+      title: 'Geschmacksprognose',
+      flavorWheel: 'Aromenrad',
+      preferenceLearning: 'Präferenzlernen',
+      dimensions: {
+        sour: 'Säure',
+        sweet: 'Süße',
+        bitter: 'Bitterkeit',
+        spicy: 'Schärfe',
+        umami: 'Umami',
+        astringent: 'Adstringenz',
+      },
+      rating: {
+        veryLow: 'Sehr geringe Präferenz',
+        low: 'Geringe Präferenz',
+        medium: 'Mittlere Präferenz',
+        high: 'Hohe Präferenz',
+        veryHigh: 'Sehr hohe Präferenz',
+      },
+      recommendations: 'Empfohlene Produkte für Sie',
+      matchRate: 'Übereinstimmungsgrad',
+      exportPreference: 'Präferenzdaten exportieren',
+      resetRating: 'Bewertungen zurücksetzen',
+      savePreference: 'Präferenz speichern',
+    },
+
+    stability: {
+      title: 'Stabilitätsprognose',
+      timeSeries: 'Zeitreihenanalyse',
+      sensitivityTornado: 'Sensitivitätsanalyse',
+      inflectionPoints: 'Wendepunkte',
+      confidenceInterval: 'Konfidenzintervall',
+      optimalRegion: 'Optimaler Bereich',
+      exportChart: 'Diagramm exportieren',
+      sensitivityRanking: 'Sensitivitätsranking',
+      peak: 'Spitze',
+      valley: 'Tal',
+      inflection: 'Wendepunkt',
+    },
+
+    report: {
+      title: 'Akademische Berichterstellung',
+      templateEngine: 'Vorlagen-Engine',
+      versionHistory: 'Versionsverlauf',
+      templateMarket: 'Vorlagenmarktplatz',
+      academicReport: 'Akademische Berichtsvorlage',
+      safetyReport: 'Sicherheitsbewertungsvorlage',
+      customTemplate: 'Benutzerdefinierte Vorlage',
+      createBranch: 'Zweig erstellen',
+      compareMode: 'Vergleichsmodus',
+      diffView: 'Diff-Ansicht',
+      unifiedDiff: 'Unified Diff',
+      splitView: 'Geteilte Ansicht',
+      rollbackVersion: 'Zu dieser Version zurückkehren',
+      noVersions: 'Keine Versionsdatensätze',
+    },
+
+    settings: {
+      title: 'Einstellungen',
+      general: 'Allgemein',
+      appearance: 'Darstellung',
+      language: 'Sprache',
+      theme: 'Design',
+      darkMode: 'Dunkelmodus',
+      lightMode: 'Hellmodus',
+      systemDefault: 'Systemstandard',
+      about: 'Über',
+      version: 'Version',
+    },
+
+    a11y: {
+      skipToContent: 'Zum Hauptinhalt springen',
+      openMenu: 'Menü öffnen',
+      closeMenu: 'Menü schließen',
+      openSearch: 'Suche öffnen',
+      keyboardShortcuts: 'Tastenkürzel',
+      pressQuestionMark: 'Drücken Sie ? für Tastenkürzel',
+    },
+  },
+}
+
 // ===== 初始化 i18n =====
 
 // 全局 i18n 实例已在 src/i18n/index.ts 完成初始化（含 ai.* 命名空间）。
@@ -636,6 +922,7 @@ if (!i18n.isInitialized) {
     resources: {
       'zh-CN': zhCN,
       'en-US': enUS,
+      'de-DE': deDE,
     },
     lng: localStorage.getItem('rmfood-language') || DEFAULT_LANGUAGE,
     fallbackLng: DEFAULT_LANGUAGE,
@@ -649,6 +936,7 @@ if (!i18n.isInitialized) {
 } else {
   i18n.addResourceBundle('zh-CN', 'translation', zhCN.translation, true, false)
   i18n.addResourceBundle('en-US', 'translation', enUS.translation, true, false)
+  i18n.addResourceBundle('de-DE', 'translation', deDE.translation, true, false)
 }
 
 // 监听语言变更并持久化

@@ -512,7 +512,7 @@ export async function uploadLabValidationData(
         significance_level: 0.05,
       })
       validation = vr.data || {}
-    } catch (e) {
+    } catch {
       // 验证失败不阻断上传结果
     }
   }
@@ -550,6 +550,7 @@ export async function generateValidationReport(
   validationId: string,
   config?: ValidationReportConfig,
 ): Promise<any> {
+  void config;
   // 后端当前无独立报告导出端点；返回实验完整详情（含验证结论与对比数据）
   const response = await api.get(`${LAB_VALIDATION_BASE_URL}/experiments/${encodeURIComponent(validationId)}`)
   return response.data
@@ -1004,6 +1005,7 @@ export async function checkFormulaCompatibility(formulaId: number): Promise<Form
 }
 
 export async function predictFormulaEffect(formulaId: number, options?: any): Promise<any> {
+  void options;
   const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/effect/predict`)
   return response.data
 }
@@ -1222,6 +1224,7 @@ export async function toggleBookmark(id: string | number): Promise<{ bookmarked:
 }
 
 export async function reportCase(id: string | number, reason: string, reportType?: string) {
+  void reportType;
   const response = await api.post(`/formulas/cases/${id}/report`, { reason })
   return response.data
 }
@@ -1344,15 +1347,4 @@ export async function searchHerbs(
     params: { search: keyword, page, page_size: pageSize },
   })
   return response.data
-}
-
-export interface CaseComment {
-  id: string | number
-  content: string
-  author: string
-  user_name?: string
-  parent_id?: string | number
-  created_at: string
-  likes: number
-  replies?: CaseComment[]
 }

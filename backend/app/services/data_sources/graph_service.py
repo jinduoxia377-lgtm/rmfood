@@ -18,6 +18,44 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════
+# 肽序列编码规范化
+#
+# 根因：DFBP_PEPTIDE_DATABASE 用单字母缩写连字符序列（"Val-Pro-Pro"），
+# 而 PEPTIDE_TARGET_PATHS 用三字母代码（"VPP"）。两者描述的是同一批肽，
+# 却因命名空间不同而永远无法关联，导致肽节点全部孤立（peptide_edges=0）。
+# 修复：统一折算成三字母代码作为规范节点 ID。
+# ═══════════════════════════════════════════════════
+_AA_TO_CODE: dict[str, str] = {
+    "Ala": "A", "Arg": "R", "Asn": "N", "Asp": "D", "Cys": "C",
+    "Gln": "Q", "Glu": "E", "Gly": "G", "His": "H", "Ile": "I",
+    "Leu": "L", "Lys": "K", "Met": "M", "Phe": "F", "Pro": "P",
+    "Ser": "S", "Thr": "T", "Trp": "W", "Tyr": "Y", "Val": "V",
+    # 非标准/修饰残基
+    "Hyp": "H", "Ser(P)": "S", "Xaa": "X",
+}
+
+
+def peptide_canonical_code(seq: str) -> str | None:
+    """把肽序列折算为规范三字母代码；无法解析返回 None。
+
+    兼容两种上游编码：
+      - DFBP_PEPTIDE_DATABASE:  "Val-Pro-Pro"          → "VPP"
+      - PEPTIDE_TARGET_PATHS:   "VPP"（已是代码）      → "VPP"
+    """
+    if not seq:
+        return None
+    seq = seq.strip()
+    # 无连字符且全大写 → 已是三字母代码，原样返回
+    if "-" not in seq and seq.isalpha() and seq.isupper():
+        return seq
+    parts = [p.strip() for p in seq.split("-")]
+    code = "".join(_AA_TO_CODE.get(p, "") for p in parts)
+    if not code or len(code) != len(parts):
+        return None
+    return code
+
+
+# ═══════════════════════════════════════════════════
 # 药材-药材 已知协同/拮抗关系（50+ 条）
 # ═══════════════════════════════════════════════════
 HERB_INTERACTIONS: list[dict[str, Any]] = [
@@ -975,9 +1013,23 @@ class KnowledgeGraphService:
         from .tcmsp_client import TCMSP_HERB_DATABASE
         from .dfbp_client import DFBP_PEPTIDE_DATABASE
 
+        # ── 按 depth 的 LRU 缓存 ────────────────────────────────
+        # 实测：depth=1 首次构建 2.37s / 128KB 响应。构建过程纯 CPU 且输入
+        # 全是模块级静态常量（TCMSP_HERB_DATABASE 等），因此结果对同一 depth
+        # 可安全复用。缓存后重复请求从秒级降到亚毫秒级。
+        # 字典顺序即 LRU 顺序，上限 3 档（depth 1/2/3）恰好覆盖全部取值。
+        if not hasattr(self, "_full_graph_cache"):
+            self._full_graph_cache: dict[int, dict[str, Any]] = {}
+        _cache = self._full_graph_cache
+        if depth in _cache:
+            return _cache[depth]
+
         nodes: dict[str, dict] = {}
         edges: list[dict] = []
-        
+
+        # depth>=3 视为全量展开（不设 top-N 截断）
+        is_deep = depth >= 3
+
         # ── 1) 所有药材作为核心节点 ──
         for herb in TCMSP_HERB_DATABASE:
             name = herb["name_cn"]
@@ -992,8 +1044,14 @@ class KnowledgeGraphService:
                 },
             }
             
-            # 化合物关系（top-N 避免爆炸）
-            comp_limit = 5 if depth >= 2 else 3
+            # 化合物关系（按深度分层展开）
+            #
+            # 深度语义（旧实现 depth>=2 一刀切，导致 depth=3 与 depth=2 字节级相同，
+            # 前端「深度 3」按钮是个死控件）：
+            #   depth 1 → 仅 君药-化合物（每味药 top3）
+            #   depth 2 → + 直接靶点 / 疾病（各 top5 / top3）+ 跨层路径（top40）
+            #   depth≥3 → 全量展开（不设 top-N 截断）
+            comp_limit = 3 if depth < 2 else (5 if depth == 2 else len(herb.get("compounds", [])))
             for comp in herb.get("compounds", [])[:comp_limit]:
                 cid = comp["name"]
                 if cid not in nodes:
@@ -1003,17 +1061,19 @@ class KnowledgeGraphService:
                         "source_herb": name,
                     }
                 edges.append({"source": name, "target": cid, "type": "contains"})
-            
-            # 靶点关系（仅 depth >= 2 展开，且限制数量避免过载）
+
+            # 靶点关系（仅 depth >= 2 展开）
             if depth >= 2:
-                for target in herb.get("targets", [])[:5]:
+                target_limit = len(herb.get("targets", [])) if is_deep else 5
+                for target in herb.get("targets", [])[:target_limit]:
                     if target not in nodes:
                         nodes[target] = {"type": "target", "label": target}
                     edges.append({"source": name, "target": target, "type": "targets"})
-            
+
             # 疾病关系
             if depth >= 2:
-                for disease in herb.get("diseases", [])[:3]:
+                disease_limit = len(herb.get("diseases", [])) if is_deep else 3
+                for disease in herb.get("diseases", [])[:disease_limit]:
                     if disease not in nodes:
                         nodes[disease] = {"type": "disease", "label": disease}
                     edges.append({"source": name, "target": disease, "type": "treats"})
@@ -1032,7 +1092,9 @@ class KnowledgeGraphService:
 
         # ── 3) 化合物-靶点-疾病路径（补充跨层级连接）──
         if depth >= 2:
-            for path in COMPOUND_TARGET_PATHS[:40]:  # 限制路径数
+            # depth=2 截断到 top40；depth>=3 全量
+            path_limit = len(COMPOUND_TARGET_PATHS) if is_deep else 40
+            for path in COMPOUND_TARGET_PATHS[:path_limit]:
                 compound, target, disease = path["compound"], path["target"], path["disease"]
                 if compound not in nodes:
                     nodes[compound] = {"type": "compound", "label": compound, "properties": {"effect": path["effect"]}}
@@ -1043,50 +1105,94 @@ class KnowledgeGraphService:
                 edges.append({"source": compound, "target": target, "type": "targets", "label": path["effect"]})
                 edges.append({"source": target, "target": disease, "type": "treats", "label": path["effect"]})
 
-        # ── 4) 活性肽节点接入图谱（核心高活性肽）──
-        peptide_count = 0
-        max_peptides = 30  # 限制肽节点数量防止过载
+        # ── 4) 活性肽节点接入图谱 ──
+        #
+        # 旧实现两处致命缺陷：
+        #   a) 节点 ID 用 `peptide_<完整序列>`，边查找用 `peptide_<前20字符>`，
+        #      序列长度 >20 时永远失配；
+        #   b) 节点来自 DFBP_PEPTIDE_DATABASE（"Val-Pro-Pro"），边来自
+        #      PEPTIDE_TARGET_PATHS（"VPP"），两套编码无法关联。
+        # 结果：peptide 节点 30 个、peptide_edges = 0，全部为孤立点。
+        #
+        # 修复策略：
+        #   1. 用 peptide_canonical_code() 把两套编码统一折算为三字母代码；
+        #   2. 先算出「有靶点边的肽代码集合」，只为其中的肽建节点 —— 结构上
+        #      保证不产生孤立肽节点；
+        #   3. 移除 activity_value < 500 的跨单位阈值过滤（该字段单位混用
+        #      μM/mM/%DPPH/μg/mL MIC/IU/mg，跨单位数值比较无意义，且会把
+        #      全部真实文献肽误杀）。
+        peptide_edges_added = 0
+        peptide_nodes_added = 0
+        try:
+            from .dfbp_client import PEPTIDE_TARGET_PATHS
+        except (ImportError, AttributeError):
+            PEPTIDE_TARGET_PATHS = []
+
+        max_peptides = 40
+        # 肽代码 → 该肽的所有靶点边
+        peptide_targets: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for ptp in PEPTIDE_TARGET_PATHS:
+            code = peptide_canonical_code(ptp.get("peptide", ""))
+            if code:
+                peptide_targets[code].append(ptp)
+
         for pep in DFBP_PEPTIDE_DATABASE:
-            if peptide_count >= max_peptides:
+            if peptide_nodes_added >= max_peptides:
                 break
             seq = pep.get("sequence", "")
-            if not seq or seq in nodes:
+            code = peptide_canonical_code(seq)
+            if not code:
                 continue
-            # 只取高活性肽
-            activity_str = str(pep.get("activity_value", ""))
-            try:
-                activity_val = float(activity_str.replace(">", "").replace("<", ""))
-                if activity_val < 500:  # 过滤低活性
-                    continue
-            except (ValueError, TypeError):
-                pass
-            
-            pid = f"peptide_{seq}"
+            targets = peptide_targets.get(code)
+            if not targets:
+                continue  # 无靶点关联 → 跳过，避免孤立节点
+
+            # 关键：节点 key 必须等于 label。
+            # 其余类型（herb/compound/target/disease）都是 key == label，而边引用的是 key。
+            # 若这里用 `peptide_<code>` 做 key、`code` 做 label，前端按 label 匹配
+            # e.source 会全部失配，肽边会被过滤逻辑整批丢弃。
+            pid = code
+            if pid in nodes:
+                continue
+
+            # 先确认至少一条边的另一端存在，否则跳过 —— 结构上保证零孤立肽节点
+            linked = [
+                ptp for ptp in targets
+                if ptp.get("target", "") and ptp.get("target", "") in nodes
+            ]
+            if not linked:
+                continue
+
             nodes[pid] = {
                 "type": "peptide",
-                "label": seq[:20] + ("..." if len(seq) > 20 else ""),
+                "label": code,
                 "properties": {
                     "full_sequence": seq,
                     "activity_value": pep.get("activity_value"),
                     "activity_type": pep.get("activity_type"),
+                    "activity_unit": pep.get("activity_unit"),
                     "source_protein": pep.get("source_protein"),
                     "molecular_weight": pep.get("molecular_weight"),
                     "hydrolysis_enzyme": pep.get("hydrolysis_enzyme"),
                 },
             }
-            peptide_count += 1
-        
-        # 肽与靶点的关联（通过 PEPTIDE_TARGET_PATHS 如果存在）
-        try:
-            from .dfbp_client import PEPTIDE_TARGET_PATHS
-            for ptp in PEPTIDE_TARGET_PATHS[:20]:
-                pep_seq = ptp.get("peptide", "")
-                tgt = ptp.get("target", "")
-                pep_node_id = f"peptide_{pep_seq[:20]}"
-                if pep_node_id in nodes and tgt in nodes:
-                    edges.append({"source": pep_node_id, "target": tgt, "type": "targets", "label": ptp.get("effect", "")})
-        except (ImportError, AttributeError):
-            pass
+            peptide_nodes_added += 1
+
+            # 肽 → 靶点边（靶点节点在 depth>=2 分支中已建立）
+            for ptp in linked:
+                edges.append({
+                    "source": pid,
+                    "target": ptp["target"],
+                    "type": "targets",
+                    "label": ptp.get("effect", ""),
+                })
+                peptide_edges_added += 1
+
+        if peptide_nodes_added or peptide_edges_added:
+            logger.debug(
+                "肽子图接入: %d 节点 / %d 边（命名空间已统一为三字母代码）",
+                peptide_nodes_added, peptide_edges_added,
+            )
 
         total_nodes = len(nodes)
         total_edges = len(edges)
@@ -1096,7 +1202,7 @@ class KnowledgeGraphService:
         for n in nodes.values():
             type_counts[n.get("type", "unknown")] += 1
 
-        return {
+        result = {
             "center_node": "__full__",
             "mode": "full",
             "depth": depth,
@@ -1108,6 +1214,11 @@ class KnowledgeGraphService:
                 "type_breakdown": dict(type_counts),
             },
         }
+
+        if len(_cache) >= 3:
+            _cache.pop(next(iter(_cache)))  # 淘汰最旧一档
+        _cache[depth] = result
+        return result
 
     async def get_sample_graph(self) -> dict[str, Any]:
         """返回采样概览图——用于快速预览（约 30~50 个核心节点）"""
@@ -1384,6 +1495,19 @@ class KnowledgeGraphService:
 
         total_herbs = len(TCMSP_HERB_DATABASE)
 
+        # ── 图渲染口径 ─────────────────────────────────────────────
+        # 与 /relations?node_label=__full__ 返回的是同一份数据，所以这里直接
+        # 调用 get_full_graph 取计数，而不是在本函数里重算——重算必然再次漂移。
+        #
+        # 旧口径 total_nodes 把 7540 条肽 + 蛋白质 + 食物全部算作「节点」(9269)，
+        # 但前端图谱只渲染药材/化合物/靶点/疾病 + PEPTIDE_TARGET_PATHS 关联的
+        # 少量肽 (1215)。统计卡片"总节点数"因此显示 9269，旁边的图却只有 1215。
+        # 肽/蛋白质/食物是数据类目，不是全部物化为图节点的实体。
+        # get_full_graph 内部有按 depth 的 LRU 缓存，此处调用无额外开销。
+        rendered = await self.get_full_graph(depth=2)
+        graph_node_count = rendered["stats"]["nodes"]
+        graph_edge_count = rendered["stats"]["edges"]
+
         return {
             "total_herbs": total_herbs,
             "total_compounds": len(all_compounds),
@@ -1412,6 +1536,10 @@ class KnowledgeGraphService:
             },
             "total_nodes": (total_herbs + len(all_compounds) + len(all_targets)
                            + len(all_diseases) + total_peptides + len(proteins) + len(food_items)),
+            # 图谱渲染口径：前端统计卡片"总节点数"应使用此值，与 /relations 实际返回一致
+            "graph_node_count": graph_node_count,
+            "graph_edge_count": graph_edge_count,
+            "node_count_scope": "total_nodes=全部数据项计数(含肽/蛋白质/食物)；graph_node_count=图谱实际渲染节点数",
         }
 
 

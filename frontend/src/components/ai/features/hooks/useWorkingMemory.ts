@@ -212,7 +212,7 @@ class WorkingMemoryManager {
         if (content && content.length >= 1) {
           content = content
             .replace(/[\n\r\t]/g, ' ')
-            .replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s%\.\/\-]/g, '')
+            .replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s%./-]/g, '')
             .trim()
             .slice(0, 20)
           if (content.length === 0) continue
@@ -438,6 +438,7 @@ class WorkingMemoryManager {
   }
 
   private updateContextFromIntent(intent: IntentTrace): void {
+    void intent;
     this.context.recentIntents = this.intents.toArray()
 
     const intentCounts = new Map<string, number>()
@@ -463,6 +464,7 @@ class WorkingMemoryManager {
   }
 
   getContextSummary(maxTokens = 2000): string {
+    void maxTokens;
     const recentMessages = this.messages.getLatest(10)
     const activeEntities = this.context.activeEntities.slice(0, 5)
     const recentIntents = this.context.recentIntents.slice(-5)

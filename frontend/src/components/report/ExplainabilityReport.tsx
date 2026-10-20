@@ -67,7 +67,7 @@ export function ExplainabilityReport({ result, loading, error }: Props) {
             </div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">综合评分</div>
           </div>
-          <div className="flex-1 grid grid-cols-3 gap-3">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { label: '功效匹配', value: result.scores.efficacy, color: 'text-accent-600' },
               { label: '安全评分', value: result.scores.safety, color: 'text-success-600' },

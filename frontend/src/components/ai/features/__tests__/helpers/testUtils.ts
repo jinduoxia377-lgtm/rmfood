@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { ReactElement } from 'react'
 import { render, RenderOptions, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, jest } from '@jest/globals'
+import { expect, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
 export async function waitForLoadingToComplete(): Promise<void> {
@@ -62,7 +61,7 @@ export function simulateStreamResponse(
 export function advanceTimersByTime(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(() => {
-      jest.advanceTimersByTime(ms)
+      vi.advanceTimersByTime(ms)
       resolve()
     }, 0)
   })

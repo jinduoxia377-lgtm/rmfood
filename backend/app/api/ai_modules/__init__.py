@@ -43,6 +43,7 @@ from .versions import sub_router as versions_router
 from .experiment import sub_router as experiment_router
 from .genetic import sub_router as genetic_router
 from .demo import router as demo_router
+from .utility_endpoints import sub_router as utility_router
 
 
 router.include_router(generation_router)
@@ -54,3 +55,4 @@ router.include_router(versions_router)
 router.include_router(experiment_router)
 router.include_router(genetic_router)
 router.include_router(demo_router)
+router.include_router(utility_router)

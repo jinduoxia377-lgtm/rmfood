@@ -6,7 +6,11 @@ import type { Token, User, LoginRequest } from '@/types'
 
 export const authApi = {
   login: (data: LoginRequest) =>
-    api.post<Token>('/auth/login', data).then((r) => r.data),
+    api.post<Token | { requires_2fa: boolean; username: string }>('/auth/login', {
+      username: data.username,
+      password: data.password,
+      two_factor_code: data.twoFactorCode,
+    }).then((r) => r.data),
 
   register: (data: LoginRequest & { email: string; full_name?: string }) =>
     api.post<User>('/auth/register', data).then((r) => r.data),
@@ -14,13 +18,23 @@ export const authApi = {
   refresh: (refreshToken: string) =>
     api.post<Token>('/auth/refresh', { refresh_token: refreshToken }).then((r) => r.data),
 
-  getMe: () => api.get<User>('/auth/me').then((r) => r.data),
+  getMe: () => api.get<User>('/auth/me', { params: { _t: Date.now() } }).then((r) => r.data),
 
   // 🔒 P0 安全修复: 登出 API
   logout: () => api.post('/auth/logout'),
 
-  updateMe: (data: { email?: string; full_name?: string; phone?: string; department?: string; avatar_url?: string }) =>
-    api.put<User>('/auth/me', data).then((r) => r.data),
+  updateMe: (data: {
+    email?: string;
+    full_name?: string;
+    phone?: string;
+    department?: string;
+    position?: string;
+    bio?: string;
+    website?: string;
+    github?: string;
+    linkedin?: string;
+    avatar_url?: string | null;
+  }) => api.put<User>('/auth/me', data).then((r) => r.data),
 
   changePassword: (oldPassword: string, newPassword: string) =>
     api.put('/auth/password', { old_password: oldPassword, new_password: newPassword }),

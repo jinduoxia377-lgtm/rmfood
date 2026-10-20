@@ -1,7 +1,6 @@
 import { GraphStatistics } from './types'
 
 export interface StatisticsDashboardProps {
-  [key: string]: any;
   showStatsPanel: boolean
   graphStats: GraphStatistics | null
   onClose: () => void
@@ -11,7 +10,7 @@ export default function StatisticsDashboard({ showStatsPanel, graphStats, onClos
   if (!showStatsPanel || !graphStats) return null
 
   return (
-    <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[60] w-[520px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-success-200/60 dark:border-success-700/40 animate-fade-in max-h-[70vh] overflow-auto custom-scrollbar">
+    <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[60] w-[min(520px,calc(100vw-2rem))] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-success-200/60 dark:border-success-700/40 animate-fade-in max-h-[70vh] overflow-auto custom-scrollbar">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-success-50 to-success-50 dark:from-success-950/50 dark:to-success-950/50 border-b border-success-100/50 rounded-t-2xl sticky top-0">
         <div className="flex items-center gap-2">
           <span>📊</span>
@@ -20,7 +19,7 @@ export default function StatisticsDashboard({ showStatsPanel, graphStats, onClos
         <button onClick={onClose} className="w-6 h-6 rounded-full hover:bg-primary-100 dark:hover:bg-primary-800/30 flex items-center justify-center transition-colors" title="关闭">✕</button>
       </div>
       <div className="p-4 space-y-4">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { label: '节点数', value: graphStats.nodeCount, icon: '🔵' },
             { label: '边数', value: graphStats.edgeCount, icon: '🔗' },
@@ -34,7 +33,7 @@ export default function StatisticsDashboard({ showStatsPanel, graphStats, onClos
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { label: '平均度', value: graphStats.avgDegree.toFixed(1), icon: '📊' },
             { label: '最大度', value: graphStats.maxDegree, icon: '⭐' },

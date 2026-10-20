@@ -12,7 +12,7 @@ interface Props {
   activities?: Array<{ type: string; title: string; timestamp?: string | null; author?: string | null }>
 }
 
-const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; dotColor: string }> = {
+const TYPE_CONFIG: Record<string, { icon: React.ComponentType<any>; color: string; dotColor: string }> = {
   formula:    { icon: FileText,   color: 'text-primary-700',   dotColor: 'bg-primary-500' },
   experiment: { icon: FlaskConical, color: 'text-secondary-600', dotColor: 'bg-secondary-500' },
   ai_generation: { icon: Zap, color: 'text-warning-600', dotColor: 'bg-warning-500' },

@@ -59,7 +59,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
 
   // 加载历史记录和热门搜索
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchHistory(searchService.getSearchHistory());
+     
     setPopularSearches(searchService.getPopularSearches(5));
   }, []);
 
@@ -72,6 +74,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
       }, 300);
       return () => clearTimeout(timer);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSuggestions([]);
       return;
     }
@@ -145,13 +148,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, onSelectResult, 
       return { ...prev, types };
     });
   }, []);
-
-  // 添加标签
-  const addTag = useCallback((tag: string) => {
-    if (!(filters.tags ?? []).includes(tag)) {
-      setFilters((prev) => ({ ...prev, tags: [...(prev.tags ?? []), tag] }));
-    }
-  }, [filters.tags]);
 
   // 移除标签
   const removeTag = useCallback((tag: string) => {

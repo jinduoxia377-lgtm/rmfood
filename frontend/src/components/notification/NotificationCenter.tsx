@@ -1,37 +1,30 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-/* 修复: 移除未使用的图标导入 (Users) */
-import { Bell, Check, CheckCheck, Trash2, Settings, Filter, ExternalLink, Clock, AlertCircle, MessageSquare, Workflow, Shield, Sparkles, X, Mail, Globe, Smartphone } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  Settings,
+  ExternalLink,
+  Clock,
+  Filter,
+  MessageSquare,
+  Workflow,
+  Shield,
+  Sparkles,
+  X,
+  Mail,
+  Globe,
+  Smartphone,
+  Send,
+} from 'lucide-react'
 import api from '../../api/client'
 import { logger } from '@/utils/safeLogger';
-
-
-interface Notification {
-  id: string
-  subject: string
-  body: string
-  channel: string
-  is_read: boolean
-  created_at: string
-  metadata: {
-    template_id?: string
-    priority?: string
-    category?: string
-    reference_type?: string
-    reference_id?: number
-    [key: string]: any
-  }
-}
-
-interface NotificationResponse {
-  items: Notification[]
-  pagination: {
-    page: number
-    page_size: number
-    total: number
-    total_pages: number
-  }
-  unread_count: number
-}
+import { normalizeNotificationList, type NormalizedNotification as Notification } from '@/utils/notification'
+import { useToast } from '@/components/ui/Toast'
+import { subscribeToChannel, onWebSocketMessage } from '@/services/websocket'
+import { useAuthStore } from '@/stores/auth'
 
 /* 修复: UserPreference接口 - 导出以支持未来Settings Panel模块复用 */
 export interface UserPreference {
@@ -55,7 +48,6 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   collaboration: <MessageSquare className="w-4 h-4 text-secondary-500" />,
   workflow: <Workflow className="w-4 h-4 text-warning-500" />,
   security: <Shield className="w-4 h-4 text-error-500" />,
-  billing: <AlertCircle className="w-4 h-4 text-warning-500" />,
   ai_generation: <Sparkles className="w-4 h-4 text-accent-500" />,
   system: <Globe className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />,
 }
@@ -73,60 +65,61 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
   websocket: <Globe className="w-3 h-3" />,
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  system: '系统',
+  formula_review: '审核',
+  experiment_complete: '实验',
+  ai_task_done: 'AI',
+  data_sync: '数据',
+}
+
+interface NotificationPrefs {
+  enabled: boolean
+  email_enabled: boolean
+  push_enabled: boolean
+  quiet_hours_start: string
+  quiet_hours_end: string
+}
+
+const PREFS_STORAGE_KEY = 'rmfood_notification_prefs'
+const DEFAULT_PREFS: NotificationPrefs = {
+  enabled: true,
+  email_enabled: true,
+  push_enabled: true,
+  quiet_hours_start: '22:00',
+  quiet_hours_end: '08:00',
+}
+
 export function NotificationCenter() {
+  const navigate = useNavigate()
+  const { addToast } = useToast()
+  const user = useAuthStore((s) => s.user)
+
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
-  /* 保留: selectedCategory用于分类筛选功能（第93,113,114行） */
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-
-  const handleCategorySelect = useCallback((category: string | null) => {
-    setSelectedCategory(category)
-    setPage(1)
-  }, [])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showSettings, setShowSettings] = useState(false)
-  /* 修复: 移除未使用的状态变量 (preference - 预留的用户偏好功能尚未实现) */
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [sendingTest, setSendingTest] = useState(false)
+  // 偏好初始值：先从 localStorage 恢复（惰性初始化，避免 effect 中同步 setState）
+  const [prefs, setPrefs] = useState<NotificationPrefs>(() => {
+    try {
+      const saved = localStorage.getItem(PREFS_STORAGE_KEY)
+      if (saved) return { ...DEFAULT_PREFS, ...JSON.parse(saved) }
+    } catch { /* 忽略损坏数据 */ }
+    return DEFAULT_PREFS
+  })
 
   const panelRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Keyboard trap: Escape closes, Tab moves within panel
-  useEffect(() => {
-    if (!isOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false)
-        triggerRef.current?.focus()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen])
-
-  useEffect(() => {
-    fetchNotifications()
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [page, activeTab, selectedCategory])
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchNotifications()
-    }
-  }, [isOpen])
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setLoading(true)
     try {
       const params: Record<string, any> = {
@@ -134,20 +127,18 @@ export function NotificationCenter() {
         page_size: 10,
       }
 
+      // admin 路由支持 status 过滤（unread/read）
       if (activeTab === 'unread') {
-        params.unread_only = true
+        params.status = 'unread'
       }
 
-      if (selectedCategory) {
-        params.category = selectedCategory
-      }
-
-      const response = await api.get<NotificationResponse>('/notifications', { params })
+      const response = await api.get<any>('/notifications', { params })
 
       if (response.data) {
-        setNotifications(response.data.items || [])
-        setUnreadCount(response.data.unread_count || 0)
-        setTotalPages(response.data.pagination?.total_pages || 1)
+        const data = normalizeNotificationList(response.data)
+        setNotifications(data.items)
+        setUnreadCount(data.unread_count)
+        setTotalPages(data.total_pages)
       }
     } catch (error: any) {
       if (error?.response?.status === 401) {
@@ -169,46 +160,215 @@ export function NotificationCenter() {
     } finally {
       setLoading(false)
     }
+  }, [page, activeTab])
+
+  // Keyboard trap: Escape closes, Tab moves within panel
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
+
+  // 初始加载 + 切换页签/翻页时刷新 + 点击面板外部关闭
+  useEffect(() => {
+    // 数据加载需同步置 loading 状态（react-hooks/set-state-in-effect 对数据请求场景误报）
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchNotifications()
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [page, activeTab, fetchNotifications])
+
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotifications()
+    }
+  }, [isOpen, fetchNotifications])
+
+  // 未读角标轮询（60s 一次，关闭面板时静默刷新）
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!isOpen) {
+        api.get<any>('/notifications/unread-count')
+          .then((res) => {
+            const count = res.data?.unread_count
+            if (typeof count === 'number') setUnreadCount(count)
+          })
+          .catch(() => { /* 静默 */ })
+      }
+    }, 60000)
+    return () => clearInterval(timer)
+  }, [isOpen])
+
+  // 实时推送：WebSocket 收到 notification 事件时立即刷新未读角标/列表
+  useEffect(() => {
+    const refresh = () => {
+      if (isOpen) {
+        fetchNotifications()
+      } else {
+        api.get<any>('/notifications/unread-count')
+          .then((res) => {
+            const count = res.data?.unread_count
+            if (typeof count === 'number') setUnreadCount(count)
+          })
+          .catch(() => { /* 静默 */ })
+      }
+    }
+
+    const unsubChannel = subscribeToChannel('notification', refresh)
+    const offMessage = onWebSocketMessage((msg) => {
+      if (msg.type === 'notification') refresh()
+    })
+    return () => {
+      unsubChannel()
+      offMessage()
+    }
+  }, [isOpen, fetchNotifications])
+
+  // 从服务端同步通知偏好（尽力而为；本地已由 useState 惰性初始化恢复）
+  useEffect(() => {
+    api.get<any>('/notifications/preferences')
+      .then((res) => {
+        const p = res.data?.preferences
+        if (p) {
+          setPrefs((prev) => ({
+            ...prev,
+            email_enabled: p.email_enabled ?? prev.email_enabled,
+            push_enabled: p.push_enabled ?? prev.push_enabled,
+            quiet_hours_start: p.quiet_hours?.start ?? prev.quiet_hours_start,
+            quiet_hours_end: p.quiet_hours?.end ?? prev.quiet_hours_end,
+          }))
+        }
+      })
+      .catch(() => { /* 后端未实现持久化时静默，使用本地设置 */ })
+  }, [])
+
+  const savePrefs = (next: NotificationPrefs) => {
+    setPrefs(next)
+    try {
+      localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next))
+    } catch { /* 存储不可用时忽略 */ }
+    // 尽力与服务端同步（v1 当前不落库，仅返回）
+    api.put('/notifications/preferences', {
+      email_enabled: next.email_enabled,
+      push_enabled: next.push_enabled,
+      quiet_hours_start: next.quiet_hours_start,
+      quiet_hours_end: next.quiet_hours_end,
+    }).catch(() => { /* 静默 */ })
   }
 
-  const markAsRead = async (id: string) => {
+  // 标记单条已读 —— 对齐后端 v1 路由：PUT /notifications/{id}/read
+  const markAsRead = async (id: number) => {
     try {
-      await api.post('/notifications/read', { notification_ids: [id] })
+      await api.put(`/notifications/${id}/read`)
 
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true } : n),
+      setNotifications((prev) =>
+        activeTab === 'unread'
+          ? prev.filter((n) => n.id !== id)
+          : prev.map((n) => (n.id === id ? { ...n, is_read: true, isRead: true } : n)),
       )
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
       logger.error('❌ 标记已读失败:', error)
+      addToast({ type: 'error', message: '标记已读失败，请重试' })
     }
   }
 
   const markAllAsRead = async () => {
     try {
-      await api.post('/notifications/read-all')
+      await api.put('/notifications/read-all')
 
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, isRead: true })))
       setUnreadCount(0)
+      addToast({ type: 'success', message: '已全部标记为已读' })
     } catch (error) {
       logger.error('❌ 全部标记已读失败:', error)
+      addToast({ type: 'error', message: '全部标记已读失败，请重试' })
     }
   }
 
-  const deleteNotification = async (id: string) => {
+  const deleteNotification = async (id: number, wasUnread: boolean) => {
     try {
-      // 修复：api 客户端 baseURL 已含 /api/v1，路径不应再带 /api 前缀
-      // 否则拼成 /api/v1/api/notifications/:id → 404
       await api.delete(`/notifications/${id}`)
 
-      setNotifications(prev => prev.filter(n => n.id !== id))
+      setNotifications((prev) => prev.filter((n) => n.id !== id))
+      if (wasUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+      }
+      addToast({ type: 'success', message: '通知已删除' })
     } catch (error) {
       logger.error('❌ 删除通知失败:', error)
+      addToast({ type: 'error', message: '删除通知失败，请重试' })
     }
   }
+
+  // 点击通知主体：未读则标记已读，有链接则跳转
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.is_read) {
+      markAsRead(n.id)
+    }
+    if (n.link) {
+      setIsOpen(false)
+      navigate(n.link)
+    }
+  }
+
+  // 清空全部通知（设置面板内，需二次点击确认）
+  const clearAllNotifications = async () => {
+    try {
+      await api.delete('/notifications/clear-all')
+      setNotifications([])
+      setUnreadCount(0)
+      setTotalPages(1)
+      setConfirmClear(false)
+      addToast({ type: 'success', message: '已清空全部通知' })
+    } catch (error) {
+      logger.error('❌ 清空通知失败:', error)
+      addToast({ type: 'error', message: '清空通知失败，请重试' })
+    }
+  }
+
+  // 发送测试通知（仅管理员，用于验证实时推送链路）
+  const sendTestNotification = async () => {
+    setSendingTest(true)
+    try {
+      await api.post('/notifications/v2/send', { template_id: 'test' })
+      addToast({ type: 'success', message: '测试通知已发送' })
+    } catch (error) {
+      logger.error('❌ 发送测试通知失败:', error)
+      addToast({ type: 'error', message: '发送测试通知失败' })
+    } finally {
+      setSendingTest(false)
+    }
+  }
+
+  // 分类筛选：从当前已加载通知的 metadata.category 提取可筛选分类
+  const categories = [...new Set(
+    notifications
+      .map((n) => n.metadata?.category)
+      .filter((c): c is string => Boolean(c)),
+  )]
+
+  const visibleNotifications = categoryFilter
+    ? notifications.filter((n) => n.metadata?.category === categoryFilter)
+    : notifications
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) return ''
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
@@ -222,16 +382,15 @@ export function NotificationCenter() {
     return date.toLocaleDateString('zh-CN')
   }
 
-  const categories = [...new Set(notifications.map(n => n.metadata?.category).filter(Boolean))]
-
   return (
     <div className="relative" ref={panelRef}>
       {/* Trigger Button */}
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+        className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg hover:bg-[var(--color-primary-50)] dark:hover:bg-[var(--color-primary)]/15 transition-colors focus:outline-none"
         aria-label="通知中心"
+        title="通知"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -243,9 +402,11 @@ export function NotificationCenter() {
         )}
       </button>
 
-      {/* Notification Panel */}
+      {/* Notification Panel
+            桌面端：跟随铃铛按钮右下弹出（sm:absolute）
+            移动端：fixed 贴住视口右缘/顶栏下方，避免 420px 宽面板溢出屏幕 */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[420px] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-[100] overflow-hidden"
+        <div className="fixed right-4 top-[calc(var(--header-height,56px)+var(--safe-area-inset-top,0px)+8px)] w-[calc(100vw-32px)] max-w-[420px] sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-[420px] sm:max-w-none bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-[100] overflow-hidden"
              style={{ paddingBottom: 'var(--safe-area-inset-bottom, 0px)' }}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
@@ -262,69 +423,125 @@ export function NotificationCenter() {
               )}
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className={`p-1.5 rounded-lg transition-colors ${
+                className={`p-1.5 rounded-lg transition-colors focus:outline-none ${
                   showSettings ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800'
                 }`}
+                aria-label="通知设置"
+                title="通知设置"
               >
                 <Settings className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 focus:outline-none"
+                aria-label="关闭通知面板"
               >
                 <X className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               </button>
             </div>
           </div>
 
-          {/* Settings Panel */}
+          {/* Settings Panel（已接线：本地持久化 + 服务端同步） */}
           {showSettings && (
             <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
-              <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">通知设置</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">通知设置</h4>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">自动保存</span>
+              </div>
               <div className="space-y-2">
-                {/* A-36：这三个复选框原先的 aria-label 与可见文字【整体错位一格】
-                    （"通知设置"配"启用通知"、"启用通知"配"邮件通知"…）。
-                    按 HTML-AAM，aria-label 优先于祖先 <label>，所以屏幕阅读器念出来的
-                    全是错名字 —— 这种错比缺失更隐蔽。逐个对齐为可见文字。 */}
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input aria-label="启用通知" type="checkbox" defaultChecked className="rounded" />
+                  <input
+                    aria-label="启用通知"
+                    type="checkbox"
+                    checked={prefs.enabled}
+                    onChange={(e) => savePrefs({ ...prefs, enabled: e.target.checked })}
+                    className="rounded"
+                  />
                   <span>启用通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input aria-label="邮件通知" type="checkbox" defaultChecked className="rounded" />
+                  <input
+                    aria-label="邮件通知"
+                    type="checkbox"
+                    checked={prefs.enabled && prefs.email_enabled}
+                    disabled={!prefs.enabled}
+                    onChange={(e) => savePrefs({ ...prefs, email_enabled: e.target.checked })}
+                    className="rounded"
+                  />
                   <span>邮件通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input aria-label="实时推送" type="checkbox" defaultChecked className="rounded" />
+                  <input
+                    aria-label="实时推送"
+                    type="checkbox"
+                    checked={prefs.enabled && prefs.push_enabled}
+                    disabled={!prefs.enabled}
+                    onChange={(e) => savePrefs({ ...prefs, push_enabled: e.target.checked })}
+                    className="rounded"
+                  />
                   <span>实时推送</span>
                 </label>
                 <div className="flex items-center gap-2 pt-2">
                   <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   <input
                     type="time"
-                    defaultValue="22:00"
+                    value={prefs.quiet_hours_start}
+                    onChange={(e) => savePrefs({ ...prefs, quiet_hours_start: e.target.value })}
                     className="text-sm border rounded px-2 py-1 w-28"
-        aria-label="免打扰开始时间"
-      />
+                    aria-label="免打扰开始时间"
+                  />
                   <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">至</span>
                   <input
                     type="time"
-                    defaultValue="08:00"
+                    value={prefs.quiet_hours_end}
+                    onChange={(e) => savePrefs({ ...prefs, quiet_hours_end: e.target.value })}
                     className="text-sm border rounded px-2 py-1 w-28"
-        aria-label="免打扰结束时间"
-      />
+                    aria-label="免打扰结束时间"
+                  />
                   <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">免打扰时段</span>
+                </div>
+
+                {/* 管理操作 */}
+                <div className="flex items-center gap-2 pt-3 mt-3 border-t border-neutral-200 dark:border-neutral-700">
+                  {user?.role === 'admin' && (
+                    <button
+                      onClick={sendTestNotification}
+                      disabled={sendingTest}
+                      className="flex items-center gap-1 px-2 py-1 text-xs text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded transition-colors focus:outline-none disabled:opacity-50"
+                    >
+                      <Send className="w-3 h-3" />
+                      {sendingTest ? '发送中...' : '发送测试通知'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (!confirmClear) {
+                        setConfirmClear(true)
+                        setTimeout(() => setConfirmClear(false), 3000)
+                        return
+                      }
+                      clearAllNotifications()
+                    }}
+                    className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors focus:outline-none ${
+                      confirmClear
+                        ? 'bg-error-50 text-error-600 dark:bg-error-900/30 dark:text-error-400 font-medium'
+                        : 'text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-900/30'
+                    }`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {confirmClear ? '再次点击确认清空' : '清空全部通知'}
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tabs & Filters */}
+          {/* Tabs + 分类筛选 */}
           <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
             <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
               <button
-                onClick={() => setActiveTab('all')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                onClick={() => { setActiveTab('all'); setPage(1) }}
+                className={`px-3 py-1 text-sm rounded-md transition-colors focus:outline-none ${
                   activeTab === 'all'
                     ? 'bg-white dark:bg-neutral-700 shadow-sm font-medium'
                     : 'text-neutral-600 dark:text-neutral-400'
@@ -333,8 +550,8 @@ export function NotificationCenter() {
                 全部
               </button>
               <button
-                onClick={() => setActiveTab('unread')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors relative ${
+                onClick={() => { setActiveTab('unread'); setPage(1) }}
+                className={`px-3 py-1 text-sm rounded-md transition-colors relative focus:outline-none ${
                   activeTab === 'unread'
                     ? 'bg-white dark:bg-neutral-700 shadow-sm font-medium'
                     : 'text-neutral-600 dark:text-neutral-400'
@@ -349,12 +566,46 @@ export function NotificationCenter() {
               </button>
             </div>
 
+            {/* 分类筛选（有分类数据时显示） */}
             {categories.length > 0 && (
-              <div className="relative">
-                <button className="flex items-center gap-1 px-2 py-1 text-sm text-neutral-500 hover:text-neutral-700 rounded hover:bg-neutral-100 dark:bg-neutral-800">
+              <div className="relative ml-auto">
+                <button
+                  onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+                  className={`flex items-center gap-1 px-2 py-1 text-sm rounded-md transition-colors focus:outline-none ${
+                    categoryFilter
+                      ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200'
+                      : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                  aria-haspopup="menu"
+                  aria-expanded={showCategoryMenu}
+                >
                   <Filter className="w-3 h-3" />
-                  筛选
+                  {categoryFilter ?? '筛选'}
                 </button>
+                {showCategoryMenu && (
+                  <div
+                    className="absolute right-0 mt-1 w-40 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 py-1"
+                    role="menu"
+                  >
+                    <button
+                      role="menuitem"
+                      onClick={() => { setCategoryFilter(null); setShowCategoryMenu(false) }}
+                      className="block w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none"
+                    >
+                      全部类型
+                    </button>
+                    {categories.map((c) => (
+                      <button
+                        key={c}
+                        role="menuitem"
+                        onClick={() => { setCategoryFilter(c); setShowCategoryMenu(false) }}
+                        className="block w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none"
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -366,24 +617,36 @@ export function NotificationCenter() {
                 <div className="w-8 h-8 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</span>
               </div>
-            ) : notifications.length === 0 ? (
+            ) : visibleNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <Bell className="w-12 h-12 mb-3 opacity-50" />
-                <p className="text-sm">暂无{activeTab === 'unread' ? '未读' : ''}通知</p>
+                <p className="text-sm">
+                  {categoryFilter
+                    ? '该分类下暂无通知'
+                    : `暂无${activeTab === 'unread' ? '未读' : ''}通知`}
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {notifications.map((notification) => (
+                {visibleNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`group relative px-4 py-3 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
-                      notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-neutral-50/50 dark:bg-neutral-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-300/15'
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleNotificationClick(notification)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleNotificationClick(notification)
+                    }}
+                    className={`group relative px-4 py-3 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 transition-colors border-l-2 cursor-pointer focus:outline-none ${
+                      notification.is_read
+                        ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-neutral-50/50 dark:bg-neutral-800/30'
+                        : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-300/15'
                     }`}
                   >
                     <div className="flex gap-3">
-                      {/* Icon - 修复: 添加category的空值保护，防止undefined作为索引类型 */}
-                        <div className="mt-0.5 flex-shrink-0">
-                          {CATEGORY_ICONS[notification.metadata?.category ?? 'general'] || <Bell className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
+                      {/* Icon */}
+                      <div className="mt-0.5 flex-shrink-0">
+                        {CATEGORY_ICONS[notification.metadata?.category ?? 'general'] || <Bell className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                       </div>
 
                       {/* Content */}
@@ -396,9 +659,16 @@ export function NotificationCenter() {
                           }`}>
                             {notification.subject || '无标题'}
                           </h4>
-                          {!notification.is_read && (
-                            <span className="flex-shrink-0 w-2 h-2 bg-secondary-500 rounded-full mt-1.5" />
-                          )}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {notification.type && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                                {TYPE_LABELS[notification.type] || notification.type}
+                              </span>
+                            )}
+                            {!notification.is_read && (
+                              <span className="flex-shrink-0 w-2 h-2 bg-secondary-500 rounded-full mt-1.5" />
+                            )}
+                          </div>
                         </div>
 
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
@@ -412,9 +682,9 @@ export function NotificationCenter() {
                           </span>
 
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {CHANNEL_ICONS[notification.channel || 'in_app']}
-                                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{getChannelLabel(notification.channel || 'in_app')}</span>
-                              </div>
+                            {CHANNEL_ICONS[notification.channel || 'in_app']}
+                            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{getChannelLabel(notification.channel || 'in_app')}</span>
+                          </div>
                         </div>
 
                         {/* Actions on hover */}
@@ -425,16 +695,16 @@ export function NotificationCenter() {
                                 e.stopPropagation()
                                 markAsRead(notification.id)
                               }}
-                              className="flex items-center gap-1 px-2 py-1 text-xs text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-secondary-600 hover:bg-secondary-50 rounded transition-colors focus:outline-none"
                             >
                               <Check className="w-3 h-3" />
                               标记已读
                             </button>
                           )}
 
-                          {notification.metadata?.reference_type && notification.metadata.reference_id && (
+                          {notification.link && (
                             <a
-                              href={`/${notification.metadata.reference_type}/${notification.metadata.reference_id}`}
+                              href={notification.link}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 px-2 py-1 text-xs text-success-600 hover:bg-success-50 rounded transition-colors"
@@ -448,9 +718,9 @@ export function NotificationCenter() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              deleteNotification(notification.id)
+                              deleteNotification(notification.id, !notification.is_read)
                             }}
-                            className="flex items-center gap-1 px-2 py-1 text-xs text-error-600 hover:bg-error-50 rounded transition-colors ml-auto"
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-error-600 hover:bg-error-50 rounded transition-colors ml-auto focus:outline-none"
                           >
                             <Trash2 className="w-3 h-3" />
                             删除
@@ -472,16 +742,16 @@ export function NotificationCenter() {
               </span>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600 focus:outline-none"
                 >
                   上一页
                 </button>
                 <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-600 focus:outline-none"
                 >
                   下一页
                 </button>

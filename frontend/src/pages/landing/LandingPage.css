@@ -896,8 +896,7 @@ section[id] {
 .animate-slide-down,
 .animate-pulse-soft,
 .animate-spin-slow {
-  will-change: opacity, transform;
-  transform: translateZ(0);
+  will-change: opacity;
 }
 
 /* ═══════════════════════════════════════════════════════════════

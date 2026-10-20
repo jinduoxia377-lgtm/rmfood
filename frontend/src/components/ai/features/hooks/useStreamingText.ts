@@ -161,7 +161,6 @@ export function useStreamingText(options?: UseStreamingTextOptions): UseStreamin
     // v7.1 格式化选项
     formattingMode = 'markdown',
     enableCodeHighlight = true,
-    codeHighlightTheme = 'github',
     enableMathRendering = false,
     autoLinkify = true,
     escapeHtml = true,

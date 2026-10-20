@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方分享组件
  * 支持复制链接、二维码生成、社交媒体分享
  */
@@ -63,9 +63,9 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
               复制链接
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-[var(--space-apple-sm)]">
             <div className="flex items-center gap-2">
-              <div className="flex-1 px-3 py-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm text-neutral-600 dark:text-neutral-300 truncate">
+              <div className="flex-1 px-[var(--space-apple-sm)] py-2 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] text-sm text-[var(--text-secondary)] truncate">
                 {shareUrl}
               </div>
               <Button
@@ -94,7 +94,7 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
           </CardHeader>
           {showQR && (
             <CardContent className="flex justify-center">
-              <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200">
+              <div className="p-[var(--space-apple-md)] bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)]">
                 <div className="relative">
                   <img
                     src={qrCodeUrl}
@@ -128,35 +128,35 @@ export function ShareFormula({ formulaId, formulaName, open, onClose }: ShareFor
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
               <button
                 onClick={() => handleShare('mail')}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-error-50 dark:bg-error-500/10 flex items-center justify-center">
-                  <Mail size={20} className="text-error-500" />
+                <div className="w-10 h-10 rounded-[var(--radius-pill)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]0/10 flex items-center justify-center">
+                  <Mail size={20} className="text-[var(--color-error-text)]0" />
                 </div>
-                <span className="text-xs text-neutral-600 dark:text-neutral-400">邮件</span>
+                <span className="text-xs text-[var(--text-secondary)]">邮件</span>
               </button>
 
               <button
                 onClick={() => handleShare('message')}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-success-50 dark:bg-success-500/10 flex items-center justify-center">
-                  <MessageCircle size={20} className="text-success-500" />
+                <div className="w-10 h-10 rounded-[var(--radius-pill)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]0/10 flex items-center justify-center">
+                  <MessageCircle size={20} className="text-[var(--color-success-text)]0" />
                 </div>
-                <span className="text-xs text-neutral-600 dark:text-neutral-400">短信</span>
+                <span className="text-xs text-[var(--text-secondary)]">短信</span>
               </button>
 
               <button
                 onClick={handleCopyLink}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+                className="flex flex-col items-center gap-2 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-secondary-50 dark:bg-secondary-500/10 flex items-center justify-center">
-                  <Share2 size={20} className="text-secondary-500" />
+                <div className="w-10 h-10 rounded-[var(--radius-pill)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]0/10 flex items-center justify-center">
+                  <Share2 size={20} className="text-[var(--color-secondary-text)]0" />
                 </div>
-                <span className="text-xs text-neutral-600 dark:text-neutral-400">更多</span>
+                <span className="text-xs text-[var(--text-secondary)]">更多</span>
               </button>
             </div>
           </CardContent>

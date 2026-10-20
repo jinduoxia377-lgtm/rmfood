@@ -503,6 +503,101 @@ class KnowledgeGraphEngine:
 
         return nodes, edges
 
+    async def load_graph_from_memory(
+        self,
+        node_types: Optional[List[str]] = None,
+        edge_types: Optional[List[str]] = None,
+        limit: Optional[int] = None,
+        depth: int = 2,
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """从内存知识图谱（TCMSP/DFBP 静态库）加载为标准算法格式。
+
+        返回形状与 load_graph_from_db() 完全一致，但数据源换成
+        graph_service.get_full_graph()——即前端 /relations?node_label=__full__
+        实际渲染的那份图谱。
+
+        为什么需要它：分析端点原先只走 DB 图谱（约 301 节点），而页面展示的
+        内存图谱有 1215+ 节点，用户会看到「页面 1215 节点、中心性分析只覆盖
+        301 节点」的口径分裂。此方法把两者统一到同一份数据。
+
+        节点 id 用整数（与 DB 版一致，算法内部按整数 id 建邻接表），
+        label → id 映射在本方法内闭合，边端点无法映射时直接丢弃，
+        因此结构性保证不会产生悬挂边。
+        """
+        from ..data_sources.graph_service import graph_service
+
+        graph = await graph_service.get_full_graph(depth=depth)
+        raw_nodes = graph.get("nodes", [])
+        raw_edges = graph.get("edges", [])
+        if not raw_nodes:
+            return [], []
+
+        label_to_id: Dict[str, int] = {}
+        nodes: List[Dict[str, Any]] = []
+        for n in raw_nodes:
+            label = str(n.get("label") or n.get("name") or "")
+            if not label:
+                continue
+            ntype = n.get("type") or "unknown"
+            if node_types and ntype not in node_types:
+                continue
+            if label not in label_to_id:
+                label_to_id[label] = len(nodes) + 1
+            nodes.append({
+                "id": label_to_id[label],
+                "node_type": ntype,
+                "node_label": label,
+            })
+
+        edges: List[Dict[str, Any]] = []
+        for e in raw_edges:
+            s = label_to_id.get(str(e.get("source")))
+            t = label_to_id.get(str(e.get("target")))
+            if s is None or t is None:
+                continue
+            etype = e.get("type") or "relates_to"
+            if edge_types and etype not in edge_types:
+                continue
+            edges.append({
+                "source": s,
+                "target": t,
+                "type": etype,
+                "strength": float(e.get("strength", 1.0) or 1.0),
+            })
+
+        if limit and len(nodes) > limit:
+            keep = {n["id"] for n in nodes[:limit]}
+            nodes = [n for n in nodes if n["id"] in keep]
+            edges = [e for e in edges if e["source"] in keep and e["target"] in keep]
+
+        return nodes, edges
+
+    async def load_graph(
+        self,
+        db: AsyncSession,
+        source: str = "memory",
+        node_types: Optional[List[str]] = None,
+        edge_types: Optional[List[str]] = None,
+        limit: Optional[int] = None,
+        depth: int = 2,
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """统一图谱加载入口。
+
+        source:
+          - "memory": 内存知识图谱（默认）。与前端展示的数据同源，保证分析口径一致。
+          - "db":     数据库图谱（/build 构建的持久化结果）。
+          - "auto":   优先 DB，DB 为空时回退内存。
+        """
+        if source == "memory":
+            return await self.load_graph_from_memory(node_types, edge_types, limit, depth)
+        if source == "db":
+            return await self.load_graph_from_db(db, node_types, edge_types, limit)
+        # auto
+        nodes, edges = await self.load_graph_from_db(db, node_types, edge_types, limit)
+        if nodes:
+            return nodes, edges
+        return await self.load_graph_from_memory(node_types, edge_types, limit, depth)
+
     # ═══════════════════════════════════════════
     # PageRank 算法
     # ═══════════════════════════════════════════

@@ -12,6 +12,7 @@ export interface Member {
   status: 'active' | 'pending' | 'invited' | 'suspended'
   joinedAt: string
   lastActiveAt?: string
+  customRoles?: string[]
 }
 
 export type Role = 'owner' | 'admin' | 'member' | 'viewer'
@@ -25,9 +26,26 @@ function mapMemberResponse(raw: Record<string, any>): Member {
     displayName: raw.username ?? raw.display_name ?? raw.full_name ?? raw.email?.split('@')[0] ?? '',
     avatarUrl: raw.avatar_url ?? raw.avatarUrl,
     role: (raw.role || 'member') as Role,
-    status: (raw.status || 'active') as Member['status'],
+    status: (raw.status || (raw.is_active === false ? 'suspended' : 'active')) as Member['status'],
     joinedAt: raw.joined_at ?? raw.joinedAt ?? new Date().toISOString(),
     lastActiveAt: raw.last_active_at ?? raw.lastActiveAt,
+    customRoles: raw.custom_roles ?? raw.customRoles ?? [],
+  }
+}
+
+/** Map backend team record to frontend Team interface（后端无 slug/memberIds 时兜底，避免 undefined.includes 崩溃） */
+function mapTeamResponse(raw: Record<string, any>): Team {
+  return {
+    id: raw.id,
+    name: raw.name ?? '',
+    description: raw.description ?? '',
+    slug: raw.slug ?? '',
+    memberIds: Array.isArray(raw.memberIds)
+      ? raw.memberIds
+      : (Array.isArray(raw.member_ids) ? raw.member_ids : []),
+    leadId: raw.lead_id ?? raw.leadId,
+    createdAt: raw.created_at ?? raw.createdAt ?? new Date().toISOString(),
+    updatedAt: raw.updated_at ?? raw.updatedAt ?? raw.created_at ?? new Date().toISOString(),
   }
 }
 
@@ -215,9 +233,10 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
         }
 
         if (autoFetchTeams) {
+          const rawTeams = teamsResponse.data?.teams || teamsResponse.data || []
           dispatch({
             type: 'SET_TEAMS',
-            payload: teamsResponse.data?.teams || teamsResponse.data || [],
+            payload: rawTeams.map((t: Record<string, any>) => mapTeamResponse(t)),
           })
         }
       } catch (error: any) {
@@ -386,9 +405,10 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
       const response = await api.get(`/organizations/${state.organizationId}/teams`)
       if (mountedRef.current) {
         // Backend returns { teams: [...] }
+        const rawTeams = response.data?.teams || response.data || []
         dispatch({
           type: 'SET_TEAMS',
-          payload: response.data?.teams || response.data || [],
+          payload: rawTeams.map((t: Record<string, any>) => mapTeamResponse(t)),
         })
       }
     } catch (error: any) {

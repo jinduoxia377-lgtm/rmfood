@@ -7,14 +7,13 @@
 import React, { useCallback, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  Filter, Lightbulb, Share2, FileText, GitBranch, 
-  TrendingUp, Star, CheckCircle, AlertCircle,
-  ChevronDown, ChevronUp, Eye, Download
+  Filter, Lightbulb, Share2, 
+  CheckCircle,
+  ChevronDown, Download
 } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard';
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare';
-import { FormulaAcademicReport } from '@/components/ai/FormulaAcademicReport';
 import { ResultsViewSwitcher } from './ResultsViewSwitcher';
 import { DEFAULTS, FORMULA_CATEGORIES } from '@/config';
 import { type FormulaCategory } from '../config/generateTabConfig';
@@ -71,7 +70,6 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
   selectedCompareIndex,
   onExportFormula,
   effectLabels,
-  onCompareVersions,
   onSaveAll,
 }) => {
   const { t } = useTranslation();
@@ -154,7 +152,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
     <div className="space-y-6 animate-slide-up">
       {/* 统计信息面板 */}
       {stats && showStats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 rounded-xl border border-primary-100 dark:border-primary-800/30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 rounded-xl border border-primary-100 dark:border-primary-800/30">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">{stats.total}</div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">生成配方数</div>

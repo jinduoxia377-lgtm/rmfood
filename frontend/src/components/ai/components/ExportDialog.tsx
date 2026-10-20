@@ -38,8 +38,11 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       const timestamp = new Date().toISOString().slice(0, 10);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFileName(`数据导出_${timestamp}`);
+       
       setSelectedColumns(columns.filter(c => c.visible).map(c => c.key));
+       
       setResult(null);
     }
   }, [isOpen, columns]);
@@ -180,7 +183,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
             <label className="block text-sm font-medium text-neutral-700 mb-3">
               导出格式
             </label>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {Object.values(ExportFormat).map((fmt) => (
                 <button
                   key={fmt}
@@ -291,7 +294,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">
                 文件名

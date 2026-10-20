@@ -10,7 +10,7 @@
  *   { key: 'Escape', action: closeAll, scope: 'global' },
  * ])
  */
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 export interface GlobalShortcut {
   /** 按键（小写） */
@@ -44,7 +44,6 @@ function isFocusInInput(): boolean {
   )
 }
 
-let _registeredShortcuts: GlobalShortcut[] = []
 let _conflictLog: Array<{ keys: string; descriptions: string[] }> = []
 
 function keyDesc(s: GlobalShortcut): string {
@@ -78,12 +77,12 @@ export function useGlobalShortcuts(shortcuts: GlobalShortcut[], enabled = true) 
       .filter(([, descs]) => descs.length > 1)
       .map(([keys, descs]) => ({ keys, descriptions: descs }))
     if (_conflictLog.length > 0) {
+      // 冲突已记录到 _conflictLog
     }
   }, [shortcuts, enabled])
 
   useEffect(() => {
     if (!enabled) return
-    _registeredShortcuts = shortcuts
 
     const handler = (e: KeyboardEvent) => {
       const inInput = isFocusInInput()

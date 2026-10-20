@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { agentApi, type AgentTool, type AgentExecution } from '@/api/agent';
 import { workflowApi, type WorkflowExecution } from '@/api/deep_dev';
 import { logger } from '@/utils/safeLogger';
-import { getWaterfallEmitter, waterfallEvents } from '../utils/waterfall';
+import { getWaterfallEmitter } from '../utils/waterfall';
 import { scheduleToolCalls } from '../utils/parallelScheduler';
 import {
   EventSourcedSession,
@@ -15,11 +15,8 @@ import {
   createTurnEndEvent,
   createStepStartEvent,
   createStepEndEvent,
-  createToolCallEvent,
-  createToolResultEvent,
 } from '../utils/eventSourcing';
 import { tryAcquireCompactionLock, releaseCompactionLock } from '../utils/compactionLock';
-import { useRetryExecutor } from '../utils/retryPolicy';
 import type {
   AgentMessage,
   ToolCall,
@@ -138,7 +135,6 @@ const DEFAULT_WORKFLOW_TEMPLATES: import('@/api/deep_dev').WorkflowTemplate[] = 
 export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifiedAgentReturn {
   const {
     initialWorkflowType = 'formula_design',
-    autoExecute = false,
     onComplete,
     onError,
   } = options;
@@ -159,11 +155,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
   // ── 引用 ──────────────────────────────────────────────────
   const sessionRef = useRef<EventSourcedSession | null>(null);
   const emitterRef = useRef<ReturnType<typeof getWaterfallEmitter> | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
   const turnIdRef = useRef<string>('');
-
-  // ── Retry Executor ────────────────────────────────────────
-  const executeWithRetry = useRetryExecutor();
 
   // ── 初始化 ────────────────────────────────────────────────
   useEffect(() => {
@@ -176,7 +168,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
 
     // 注册 pre-step 监听器 (输入验证)
     const offPreStep = emitter.on('agent/pre-step', async (data, next) => {
-      const { input, turnId } = data as { input: string; turnId: string };
+      const { input } = data as { input: string; turnId: string };
 
       // 输入验证
       if (!input || input.trim().length === 0) {
@@ -399,12 +391,14 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
 
     const session = sessionRef.current;
     if (session) {
-      session.append('turn/start', createTurnStartEvent(turnId, input, wfType)).catch(logger.error);
+      session.append('turn/start', createTurnStartEvent(turnId, input, wfType))
+        .catch((err) => logger.error('[useUnifiedAgent] 持久化 turn/start 失败:', err));
     }
 
     const emitter = emitterRef.current;
     if (emitter) {
-      emitter.emit('agent/pre-step', { input, turnId }).catch(logger.error);
+      emitter.emit('agent/pre-step', { input, turnId })
+        .catch((err) => logger.error('[useUnifiedAgent] 发送 pre-step 事件失败:', err));
     }
 
     return turnId;
@@ -428,7 +422,8 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
 
     const session = sessionRef.current;
     if (session) {
-      session.append('step/start', createStepStartEvent(stepId, stepType, toolName)).catch(logger.error);
+      session.append('step/start', createStepStartEvent(stepId, stepType, toolName))
+        .catch((err) => logger.error('[useUnifiedAgent] 持久化 step/start 失败:', err));
     }
 
     return stepId;
@@ -453,7 +448,8 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
       const session = sessionRef.current;
       if (session) {
         const stepType = currentTurn?.steps.find((s) => s.stepId === stepId)?.type ?? 'llm_request';
-        session.append('step/end', createStepEndEvent(stepId, stepType, latencyMs, success, error)).catch(logger.error);
+        session.append('step/end', createStepEndEvent(stepId, stepType, latencyMs, success, error))
+          .catch((err) => logger.error('[useUnifiedAgent] 持久化 step/end 失败:', err));
       }
     },
     [currentTurn]
@@ -501,12 +497,14 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
 
       const session = sessionRef.current;
       if (session) {
-        session.append('turn/end', createTurnEndEvent(turnId, durationMs, reason)).catch(logger.error);
+        session.append('turn/end', createTurnEndEvent(turnId, durationMs, reason))
+          .catch((err) => logger.error('[useUnifiedAgent] 持久化 turn/end 失败:', err));
       }
 
       const emitter = emitterRef.current;
       if (emitter) {
-        emitter.emitSerial('agent/turn-stopping', { turnId, reason }).catch(logger.error);
+        emitter.emitSerial('agent/turn-stopping', { turnId, reason })
+          .catch((err) => logger.error('[useUnifiedAgent] 发送 turn-stopping 事件失败:', err));
       }
 
       if (currentTurn) {

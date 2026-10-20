@@ -1,0 +1,73 @@
+﻿✔ 真实内容已加载：元素 493 / Tab 9 个
+mode  tab            节点   去重  <4.5:1
+----- -------------- -----  ----  ------
+light  实时概览             194   174      0
+light  中药材              237   205      0
+light  活性肽              235   201      0
+light  知识图谱             161   157      4
+light  药食同源             323   235      0
+light  食品原料              87    83      0
+light  零售产品              90    86      0
+light  搜索分析             108   103      0
+light  数据管理              99    95      0
+dark   实时概览              90    86      0
+dark   中药材              237   205      0
+dark   活性肽              235   201      0
+dark   知识图谱             161   157      1
+dark   药食同源             323   235      0
+dark   食品原料              87    83      0
+dark   零售产品              90    86      0
+dark   搜索分析             108   103      0
+dark   数据管理              99    95      0
+
+============ LIGHT 全部违规明细 ============
+  [P1] 知识图谱  3.19:1  "163" <div fs=24>
+        fg rgb(217, 119, 6)
+        bg rgb(255,255,255)
+        cls text-2xl font-bold mt-1
+  [P1] 知识图谱  3.19:1  "95" <div fs=24>
+        fg rgb(217, 119, 6)
+        bg rgb(255,255,255)
+        cls text-2xl font-bold mt-1
+  [P1] 知识图谱  3.76:1  "131" <div fs=24>
+        fg rgb(239, 68, 68)
+        bg rgb(255,255,255)
+        cls text-2xl font-bold mt-1
+  [P1] 知识图谱  3.77:1  "289" <div fs=24>
+        fg rgb(5, 150, 105)
+        bg rgb(255,255,255)
+        cls text-2xl font-bold mt-1
+
+============ DARK 全部违规明细 ============
+  [P1] 知识图谱  3.45:1  "490" <div fs=24>
+        fg rgb(37, 99, 235)
+        bg rgb(15,23,42)
+        cls text-2xl font-bold mt-1
+
+-- pageerror / console error --
+[console] Failed to load resource: the server responded with a status of 401 (Unauthorized)
+[console] Failed to load resource: the server responded with a status of 404 (Not Found)
+[console] [2026-10-13T16:06:51.849Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4
+[console] [2026-10-13T16:06:52.180Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4
+[console] [2026-10-13T16:06:52.509Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4
+[console] [2026-10-13T16:06:52.841Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4
+[console] [2026-10-13T16:06:53.167Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4
+[console] [2026-10-13T16:06:53.493Z] [ERROR] [RetailProductSearch] 加载收藏失败: {
+  "name": "AxiosError",
+  "message": "Request failed with status code 404",
+  "stack": "AxiosError: Request failed with status code 4

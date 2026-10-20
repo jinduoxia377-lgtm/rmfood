@@ -49,11 +49,13 @@ describe('useChatCallbacks', () => {
     expect(options.clearShortTermMemory).toHaveBeenCalledOnce()
   })
 
-  it('handleDeleteSession should filter and save', () => {
+  it('handleDeleteSession should filter and save', async () => {
     const options = createMockOptions()
     const { result } = renderHook(() => useChatCallbacks(options))
 
-    act(() => result.current.handleDeleteSession('s1'))
+    await act(async () => {
+      await result.current.handleDeleteSession('s1')
+    })
 
     expect(options.setHistorySessions).toHaveBeenCalledWith(
       expect.arrayContaining([expect.objectContaining({ id: 's2' })])

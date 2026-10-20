@@ -9,7 +9,7 @@ import types
 
 import pytest
 
-from app.core.lazy_module import LazyModule, LazyServiceRegistry
+from app.core.api_framework.lazy_module import LazyModule, LazyServiceRegistry
 
 
 # ────────────────────────────────────────────
@@ -111,10 +111,10 @@ class TestLazyModuleFallback:
         mod = LazyModule("nonexistent_module_xyz_12345", fallback=fallback)
         assert mod.missing_attr is None
 
-    def test_no_fallback_and_missing_module_raises_attribute_error(self):
-        """When import fails and no fallback, AttributeError with descriptive message."""
+    def test_no_fallback_and_missing_module_raises_import_error(self):
+        """When import fails and no fallback, the underlying ImportError propagates."""
         mod = LazyModule("nonexistent_module_xyz_12345")
-        with pytest.raises(AttributeError, match="未加载"):
+        with pytest.raises((ImportError, ModuleNotFoundError)):
             _ = mod.anything
 
 

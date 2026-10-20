@@ -1,0 +1,97 @@
+/**
+ * 中文通用 UI 文案
+ * 键名与 features/i18n 扁平包保持一致，并扩展页面通用操作
+ */
+export default {
+  common: {
+    loading: '加载中...',
+    error: '出错了',
+    retry: '重试',
+    cancel: '取消',
+    confirm: '确认',
+    save: '保存',
+    delete: '删除',
+    edit: '编辑',
+    close: '关闭',
+    search: '搜索',
+    noData: '暂无数据',
+    refresh: '刷新',
+    more: '更多',
+    back: '返回',
+    next: '下一步',
+    previous: '上一步',
+    submit: '提交',
+    success: '操作成功',
+    failed: '操作失败',
+    warning: '警告',
+    info: '提示',
+
+    // 扩展通用操作
+    create: '创建',
+    export: '导出',
+    import: '导入',
+    download: '下载',
+    upload: '上传',
+    reset: '重置',
+    actions: '操作',
+    view: '查看',
+    detail: '详情',
+    name: '名称',
+    type: '类型',
+    status: '状态',
+    createdAt: '创建时间',
+    updatedAt: '更新时间',
+    description: '描述',
+    confirmAction: '确认执行',
+    cancelAction: '取消',
+
+    // 状态
+    statusSuccess: '成功',
+    statusError: '错误',
+    statusWarning: '警告',
+    statusInfo: '信息',
+    statusPending: '待处理',
+    statusProcessing: '处理中',
+    statusCompleted: '已完成',
+    statusFailed: '失败',
+    statusEnabled: '已启用',
+    statusDisabled: '已禁用',
+    statusActive: '活跃',
+    statusInactive: '未激活',
+
+    // 消息
+    msgSaved: '已保存',
+    msgDeleted: '已删除',
+    msgCreated: '已创建',
+    msgUpdated: '已更新',
+    msgConfirmDelete: '确定要删除吗？此操作无法撤销。',
+    msgNoResults: '未找到结果',
+    msgRequiredField: '此字段为必填',
+    msgOperationSuccess: '操作成功',
+    msgOperationFailed: '操作失败，请重试',
+
+    // 分页
+    paginationShowing: '显示 {{from}}-{{to}}，共 {{total}} 条',
+    paginationPage: '第 {{current}} 页',
+    paginationPerPage: '每页 {{size}} 条',
+    paginationFirst: '首页',
+    paginationLast: '末页',
+    paginationPrev: '上一页',
+    paginationNext: '下一页',
+
+    // 业务状态标签（全站通用，对应 STATUS_CONFIG.labels）
+    statusLabels: {
+      draft: '草稿',
+      pending_review: '待审核',
+      approved: '已通过',
+      rejected: '已驳回',
+      archived: '已归档',
+      planned: '计划中',
+      in_progress: '进行中',
+      completed: '已完成',
+      failed: '已失败',
+      cancelled: '已取消',
+      closed: '已关闭',
+    },
+  },
+}

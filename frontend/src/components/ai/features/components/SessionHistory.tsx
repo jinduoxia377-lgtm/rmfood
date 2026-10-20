@@ -213,6 +213,7 @@ export function SessionHistory({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadSessions();
   }, []);
 

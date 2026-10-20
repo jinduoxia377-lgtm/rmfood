@@ -4,11 +4,7 @@
  * 封装所有用户设置相关的后端 API 调用
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-})
+import api from '@/api/client'
 
 // ── 2FA ──
 
@@ -102,8 +98,12 @@ export function useUpdatePreferences() {
 
 export function useExportData() {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (params?: { format?: string; scope?: string }) => {
       const response = await api.get('/users/me/settings/export', {
+        params: {
+          format: params?.format || 'json',
+          scope: params?.scope || 'profile,formulas,experiments,preferences',
+        },
         responseType: 'blob',
       })
       return response.data

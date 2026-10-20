@@ -37,16 +37,12 @@ import {
   MessageCircle,
   Send,
   X,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
   FileText,
   Image,
   Twitter,
   Facebook,
   Linkedin,
   Mail,
-  MoreHorizontal,
   Shield,
   Clock,
   Eye,
@@ -219,7 +215,7 @@ const SocialPlatformButton: React.FC<{
   platform: SocialPlatform;
   shareData: ShareData;
   onClick: (platform: SocialPlatform) => void;
-}> = memo(({ platform, shareData, onClick }) => {
+}> = memo(({ platform, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -361,6 +357,7 @@ export function ChatSharePanel({
 
   useEffect(() => {
     if (isOpen && !generatedLink) {
+      // eslint-disable-next-line react-hooks/immutability
       generateShareLink();
     }
   }, [isOpen]);
@@ -554,13 +551,13 @@ export function ChatSharePanel({
         switch (format) {
           case 'markdown': {
             const markdown = `# ${shareData.title || 'RMFOOD AI 对话分享'}\n\n${shareData.text}\n\n---\n*由 RMFOOD 配方平台 AI 助手生成 · ${new Date().toLocaleDateString('zh-CN')}*\n`;
+            // eslint-disable-next-line react-hooks/immutability
             downloadFile(markdown, `rmfood-share-${Date.now()}.md`, 'text/markdown');
             break;
           }
 
           case 'png': {
             // 使用 html2canvas 将内容渲染为图片（需动态导入）
-            const html2canvas = (await import('html2canvas')).default;
             // 注意：实际使用时需要传入要截图的 DOM 元素引用
             logger.warn('[ChatSharePanel] PNG 导出需要 html2canvas 库支持');
             setError('PNG 导出功能开发中，敬请期待');
@@ -725,7 +722,7 @@ export function ChatSharePanel({
           {finalConfig.showSocialPlatforms && activeTab === 'social' && (
             <div className="space-y-4 animate-fade-in">
               {/* 平台网格 */}
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-cols-8 gap-2">
                 {visiblePlatforms.map((platform) => (
                   <SocialPlatformButton
                     key={platform.id}
@@ -917,7 +914,7 @@ export function ChatSharePanel({
           {finalConfig.showExport && activeTab === 'export' && (
             <div className="space-y-4 animate-fade-in">
               {/* 格式选择 */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   {
                     format: 'markdown' as ExportFormat,

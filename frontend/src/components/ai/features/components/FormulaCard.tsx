@@ -27,7 +27,6 @@ import {
   Pencil,
   Check,
   X,
-  Loader2,
 } from 'lucide-react';
 
 interface FormulaCardProps {
@@ -85,7 +84,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
       threshold: 30,
     });
 
-    const { isPressed: isLongPressed, handlers: longPressHandlers } = useLongPress(
+    const { handlers: longPressHandlers } = useLongPress(
       () => {
         if (onShowContextMenu) {
           onShowContextMenu(formula.id, { x: 0, y: 0 });
@@ -250,51 +249,6 @@ const FormulaCard = React.memo<FormulaCardProps>(
       );
     };
 
-    const renderMetaInfo = () => {
-      const parsedAt = formula.parsedAt;
-      const timeStr = parsedAt
-        ? parsedAt.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        : '未知时间';
-
-      return (
-        <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
-            {timeStr}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Hash className="w-3.5 h-3.5" />
-            {formula.ingredientCount || formula.ingredients?.length || 0}种成分
-          </span>
-          {isExpanded && (
-            <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer"
-               role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              已收起
-              <ChevronUp className="w-3.5 h-3.5" />
-            </span>
-          )}
-          {!isExpanded && (
-            <span
-              className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer"
-               role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
-            >
-              展开详情
-              <ChevronDown className="w-3.5 h-3.5" />
-            </span>
-          )}
-        </div>
-      );
-    };
-
     const renderExpandedContent = () => {
       if (!isExpanded) return null;
 
@@ -344,7 +298,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
               )}
 
               {qualityScore && (
-                <div className="grid grid-cols-4 gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
                   <div className="text-center">
                     <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
                     <div className="text-lg font-bold text-primary-700 dark:text-primary-700">

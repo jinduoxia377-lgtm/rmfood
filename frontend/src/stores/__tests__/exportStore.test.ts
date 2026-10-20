@@ -231,8 +231,7 @@ describe('exportStore', () => {
       await exportPromise;
 
       expect(mockClick).toHaveBeenCalled();
-      const anchorEl = mockClick.mock.context() || (document.createElement('a') as unknown as { download: string });
-      // The download attribute is set on the element; verify createObjectURL was called
+      // 验证 createObjectURL 被调用（生成 docx blob）
       expect(mockCreateObjectURL).toHaveBeenCalled();
     });
   });

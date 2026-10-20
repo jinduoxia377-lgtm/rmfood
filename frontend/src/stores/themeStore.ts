@@ -255,7 +255,7 @@ export const useThemeStore = create<ThemeStore>()(
           // resolvedThemeId 必为 systemThemeIdFor() 的两个合法返回值之一，
           // presetThemes 必然命中，故此处无需「无效 ID」回退分支 —— 该分支在旧实现里
           // 正是 R1 的触发点（查不到就回退亮色默认并丢覆盖），已随 composeTheme 移除。
-          let baseTheme = composeTheme(
+          const baseTheme = composeTheme(
             resolvedThemeId,
             state.runtimeOverrides,
             state.accessibilityMode,

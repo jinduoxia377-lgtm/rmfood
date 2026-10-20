@@ -3,12 +3,13 @@
  * 统计卡片 · 横幅 · 紧凑筛选 · 行列表（divide-y）
  */
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   FileText, Search, Filter, Plus, Edit, Trash2, Eye,
   Calendar, BookOpen, Link2, User, X, MoreVertical,
   ClipboardCopy, RefreshCw,
 } from 'lucide-react'
-import { Card, CardContent, Button, Input, Badge, StatCard } from '@/components/ui'
+import { Card, CardContent, Button, Input, StatCard } from '@/components/ui'
 import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/Common'
 import { useAcademicReportStore } from '@/stores/academicReportStore'
@@ -22,6 +23,7 @@ type SortField = 'createdAt' | 'updatedAt' | 'title' | 'status'
 type SortOrder = 'asc' | 'desc'
 
 export default function AcademicReportPage() {
+  const { t, i18n } = useTranslation()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
@@ -37,6 +39,7 @@ export default function AcademicReportPage() {
 
   let store
   try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     store = useAcademicReportStore()
   } catch (e) {
     console.error('[AcademicReport] store init error:', e)
@@ -51,6 +54,7 @@ export default function AcademicReportPage() {
   const { addToast } = useToastStore()
 
   const fetchRef = useRef(fetchReports)
+  // eslint-disable-next-line react-hooks/refs
   fetchRef.current = fetchReports
 
   useEffect(() => {
@@ -91,30 +95,26 @@ export default function AcademicReportPage() {
 
   const handleSelectReport = (id: string) => {
     const next = new Set(selectedIds)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) {
+      next.delete(id)
+    } else {
+      next.add(id)
+    }
     setSelectedIds(next)
     setShowBulkActions(next.size > 0)
     setShowMoreMenu(null)
   }
 
-  const handleSelectAll = () => {
-    if (selectedIds.size === filteredAndSortedReports.length) {
-      setSelectedIds(new Set()); setShowBulkActions(false)
-    } else {
-      setSelectedIds(new Set(filteredAndSortedReports.map(r => r.id)))
-      setShowBulkActions(true)
-    }
-  }
-
   const handleBulkDelete = () => {
     selectedIds.forEach(id => deleteReport(id))
-    addToast({ type: 'success', message: `已删除 ${selectedIds.size} 份报告` })
+    addToast({ type: 'success', message: t('pages.academic.deletedReports', { count: selectedIds.size }) })
     setSelectedIds(new Set()); setShowBulkActions(false); setShowDeleteConfirm(false)
   }
 
   const handleDuplicate = (report: ReportItem) => {
+    void report;
     createReport('research')
-    addToast({ type: 'success', message: '报告已复制' })
+    addToast({ type: 'success', message: t('pages.academic.reportDuplicated') })
     setShowMoreMenu(null)
   }
 
@@ -127,20 +127,20 @@ export default function AcademicReportPage() {
 
   const handleDelete = (id: string) => {
     deleteReport(id)
-    addToast({ type: 'success', message: '报告已删除' })
+    addToast({ type: 'success', message: t('pages.academic.reportDeleted') })
     setShowDeleteConfirm(false); setDeleteTargetId(null); setShowMoreMenu(null)
   }
 
   const confirmDelete = (id: string) => { setDeleteTargetId(id); setShowDeleteConfirm(true); setShowMoreMenu(null) }
 
   const formatDate = (date: Date) =>
-    new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    new Date(date).toLocaleDateString(i18n.language, { year: 'numeric', month: '2-digit', day: '2-digit' })
 
   const statusCls = (s: string) => ({
-    draft:      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-    in_review:  'bg-warning-50 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
-    published:  'bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
-  }[s] ?? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600')
+    draft:      'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]',
+    in_review:  'bg-[var(--color-warning-container)] text-[var(--color-warning-text)] dark:bg-[var(--color-warning-container)]/25 dark:text-[var(--color-warning-text)]',
+    published:  'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/25 dark:text-[var(--color-primary-text)]',
+  }[s] ?? 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]')
 
   const clearFilters = () => {
     setSearchQuery(''); setSelectedStatus('all'); setSortField('updatedAt'); setSortOrder('desc')
@@ -155,11 +155,11 @@ export default function AcademicReportPage() {
   // ── Store error fallback ──
   if (storeError) {
     return (
-      <div className="min-h-screen bg-grid flex items-center justify-center" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8">
-          <p className="text-error-600 dark:text-error-600 font-semibold mb-2">加载失败</p>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{storeError}</p>
-          <Button size="sm" onClick={() => window.location.reload()}>刷新页面</Button>
+          <p className="text-[var(--color-error-text)] dark:text-[var(--color-error-text)] font-semibold mb-2">{t('pages.academic.loadFailed')}</p>
+          <p className="text-sm text-[var(--text-muted)] mb-[var(--space-apple-md)]">{storeError}</p>
+          <Button size="sm" onClick={() => window.location.reload()}>{t('pages.academic.refreshPage')}</Button>
         </div>
       </div>
     )
@@ -168,24 +168,24 @@ export default function AcademicReportPage() {
   // ── Editor view ──
   if (viewMode === 'editor') {
     return (
-      <div className="h-screen flex flex-col bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-        <div className="sticky top-0 z-20 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 px-6 py-3 flex items-center gap-4 shadow-sm">
-          <Button variant="ghost" onClick={() => setViewMode('list')} className="gap-2 text-neutral-600 dark:text-neutral-400">
-            <span className="rotate-180 inline-block">›</span> 返回列表
+      <div className="h-screen flex flex-col" style={{ height: '100dvh' }}>
+        <div className="sticky top-0 z-20 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-6 py-[var(--space-apple-md)] flex items-center gap-4 shadow-sm">
+          <Button variant="ghost" onClick={() => setViewMode('list')} className="gap-2 text-[var(--text-secondary)]">
+            <span className="rotate-180 inline-block">›</span> {t('pages.academic.backToList')}
           </Button>
           {selectedReport && (
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 bg-primary-100 dark:bg-primary-300/25 rounded-xl flex items-center justify-center shrink-0">
-                <BookOpen size={16} className="text-primary-700 dark:text-primary-700" />
+            <div className="flex items-center gap-[var(--space-apple-sm)] flex-1 min-w-0">
+              <div className="w-9 h-9 bg-[var(--color-primary-container)] rounded-[var(--radius-Apple-md)] flex items-center justify-center shrink-0">
+                <BookOpen size={16} className="text-[var(--color-primary-text)]" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{selectedReport.title}</h2>
-                <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${statusCls(selectedReport.status)}`}>
-                    {selectedReport.status === 'draft' ? '草稿' : selectedReport.status === 'in_review' ? '审核中' : '已发布'}
+                <h2 className="text-sm font-semibold text-[var(--text-primary)] truncate">{selectedReport.title}</h2>
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                  <span className={`px-2 py-0.5 rounded-[var(--radius-pill)] font-medium ${statusCls(selectedReport.status)}`}>
+                    {selectedReport.status === 'draft' ? t('pages.academic.statusDraft') : selectedReport.status === 'in_review' ? t('pages.academic.statusInReview') : t('pages.academic.statusPublished')}
                   </span>
                   <span>·</span>
-                  <span>更新于 {formatDate(selectedReport.updatedAt)}</span>
+                  <span>{t('pages.academic.updatedOn', { date: formatDate(selectedReport.updatedAt) })}</span>
                 </div>
               </div>
             </div>
@@ -200,50 +200,50 @@ export default function AcademicReportPage() {
 
   // ── List view ──
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen">
+      <div className="max-w-[1600px] mx-auto space-y-[var(--space-apple-md)] px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)]">
 
       {/* ── 页面横幅 ── */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold leading-snug tracking-tight">学术报告管理</h1>
-            <p className="mt-1 text-white/80 text-sm">报告撰写 · 协作审核 · 成果归档</p>
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">{t('pages.academic.title')}</h1>
+            <p className="mt-1 text-white/80 text-sm">{t('pages.academic.subtitle')}</p>
           </div>
           <Button
             icon={<Plus size={16} />}
             size="md"
-            className="bg-white dark:bg-neutral-900 text-primary-700 hover:bg-neutral-100 dark:bg-neutral-800 shadow-sm"
+            className="bg-[var(--bg-secondary)] text-[var(--color-primary-text)] hover:bg-[var(--bg-tertiary)] shadow-sm"
             onClick={() => { setSelectedReport(null); setViewMode('editor') }}
           >
-            新建报告
+            {t('pages.academic.newReport')}
           </Button>
         </div>
       </div>
 
       {/* ── 统计概览 ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="总报告数" value={total} icon={FileText} variant="primary" />
-        <StatCard label="草稿" value={draft} icon={Edit} variant="secondary" />
-        <StatCard label="审核中" value={inReview} icon={Filter} variant="warning" />
-        <StatCard label="已发布" value={published} icon={BookOpen} variant="success" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
+        <StatCard label={t('pages.academic.totalReports')} value={total} icon={FileText} variant="primary" />
+        <StatCard label={t('pages.academic.draft')} value={draft} icon={Edit} variant="secondary" />
+        <StatCard label={t('pages.academic.inReview')} value={inReview} icon={Filter} variant="warning" />
+        <StatCard label={t('pages.academic.published')} value={published} icon={BookOpen} variant="success" />
       </div>
 
       {/* ── 搜索和筛选 ── */}
-      <Card className="overflow-hidden border-neutral-200 dark:border-neutral-700">
+      <Card className="overflow-hidden border-[var(--border-color)]">
         <div className="h-[3px] bg-gradient-to-r from-primary-500 to-success-400" />
-        <CardContent className="p-4 space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
+        <CardContent className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
+          <div className="flex flex-col sm:flex-row gap-[var(--space-apple-sm)]">
             <Input
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && setSearchQuery((e.target as HTMLInputElement).value)}
-              placeholder="搜索标题、作者、摘要或关联配方…"
+              placeholder={t('pages.academic.searchPlaceholder')}
               prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               className="flex-1 h-9 text-sm"
             />
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={clearFilters}>清除</Button>
+              <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={clearFilters}>{t('pages.academic.clear')}</Button>
             )}
           </div>
 
@@ -254,30 +254,30 @@ export default function AcademicReportPage() {
                 key={s}
                 onClick={() => setSelectedStatus(s)}
                 className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                  'px-2.5 py-1 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
                   selectedStatus === s
-                    ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
-                    : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800',
+                    ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/25 dark:text-[var(--color-primary-text)]'
+                    : 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]',
                 )}
               >
-                {s === 'all' ? '全部' : s === 'draft' ? '草稿' : s === 'in_review' ? '审核中' : '已发布'}
+                {s === 'all' ? t('pages.academic.all') : s === 'draft' ? t('pages.academic.statusDraft') : s === 'in_review' ? t('pages.academic.statusInReview') : t('pages.academic.statusPublished')}
               </button>
             ))}
             <div className="ml-auto flex items-center gap-1">
               {([
-                { key: 'updatedAt', label: '更新时间' },
-                { key: 'createdAt', label: '创建时间' },
-                { key: 'title', label: '标题' },
-                { key: 'status', label: '状态' },
+                { key: 'updatedAt', label: t('pages.academic.updatedAt') },
+                { key: 'createdAt', label: t('pages.academic.createdAt') },
+                { key: 'title', label: t('pages.academic.columnTitle') },
+                { key: 'status', label: t('pages.academic.status') },
               ] as const).map(opt => (
                 <button
                   key={opt.key}
                   onClick={() => handleSort(opt.key)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                    'px-2.5 py-1 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-colors min-h-[44px] inline-flex items-center',
                     sortField === opt.key
-                      ? 'bg-primary-container text-primary-main'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700',
+                      ? 'bg-primary-container text-[var(--color-primary)]'
+                      : 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]',
                   )}
                 >
                   {opt.label}
@@ -291,53 +291,53 @@ export default function AcademicReportPage() {
 
       {/* ── 批量操作条 ── */}
       {showBulkActions && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-300/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
-          <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
-            已选中 {selectedIds.size} 份报告
+        <div className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 bg-[var(--color-primary-container)] border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/40 rounded-[var(--radius-Apple-md)] animate-fade-in">
+          <span className="text-sm font-medium text-[var(--color-primary-text)]">
+            {t('pages.academic.selectedCount', { count: selectedIds.size })}
           </span>
           <Button variant="danger" size="sm" icon={<Trash2 size={13} />} onClick={() => setShowDeleteConfirm(true)}>
-            批量删除
+            {t('pages.academic.batchDelete')}
           </Button>
-          <button onClick={() => { setSelectedIds(new Set()); setShowBulkActions(false) }} className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 transition-colors">取消选择</button>
+          <button onClick={() => { setSelectedIds(new Set()); setShowBulkActions(false) }} className="ml-auto text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors">{t('pages.academic.cancelSelection')}</button>
         </div>
       )}
 
       {/* ── 列表 ── */}
       {isLoading ? (
-        <Card className="border-neutral-200 dark:border-neutral-700">
-          <CardContent className="p-16 text-center">
-            <div className="inline-block animate-spin w-8 h-8 border-4 border-primary-200 dark:border-primary-800 border-t-primary-600 dark:border-t-primary-400 rounded-full mb-4" />
-            <p className="text-neutral-500 dark:text-neutral-400 font-medium">加载中…</p>
+        <Card className="border-[var(--border-color)]">
+          <CardContent className="p-4 sm:p-16 text-center">
+            <div className="inline-block animate-spin w-8 h-8 border-4 border-[var(--color-primary-border)] dark:border-[var(--color-primary)] border-t-primary-600 dark:border-t-primary-400 rounded-[var(--radius-pill)] mb-[var(--space-apple-md)]" />
+            <p className="text-[var(--text-muted)] font-medium">{t('pages.academic.loading')}</p>
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className="border-error-200 dark:border-error-800 bg-error-50 dark:bg-error-300/20">
-          <CardContent className="p-8 text-center">
-            <p className="text-error-600 dark:text-error-600 text-sm mb-3">{error}</p>
-            <Button variant="outline" size="sm" icon={<RefreshCw size={14} />} onClick={fetchReports}>重试</Button>
+        <Card className="border-[var(--color-error-border)] dark:border-[var(--color-error)] bg-[var(--color-error-container)]">
+          <CardContent className="p-4 sm:p-8 text-center">
+            <p className="text-[var(--color-error-text)] dark:text-[var(--color-error-text)] text-sm mb-[var(--space-apple-sm)]">{error}</p>
+            <Button variant="outline" size="sm" icon={<RefreshCw size={14} />} onClick={fetchReports}>{t('pages.academic.retry')}</Button>
           </CardContent>
         </Card>
       ) : filteredAndSortedReports.length === 0 ? (
         <EmptyState
-          icon={<div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center"><FileText size={24} className="text-primary-500 dark:text-primary-700" /></div>}
-          title={hasActiveFilters ? '未找到匹配的报告' : '暂无学术报告'}
-          description={hasActiveFilters ? '尝试调整搜索条件或清除筛选' : '点击上方按钮创建您的第一份学术报告'}
+          icon={<div className="w-12 h-12 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center"><FileText size={24} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" /></div>}
+          title={hasActiveFilters ? t('pages.academic.noMatchingReports') : t('pages.academic.noReports')}
+          description={hasActiveFilters ? t('pages.academic.noMatchingDesc') : t('pages.academic.noReportsDesc')}
           action={
             hasActiveFilters
-              ? <Button variant="outline" size="sm" onClick={clearFilters}>清除筛选</Button>
-              : <Button icon={<Plus size={14} />} size="sm" className="bg-primary-600 hover:bg-primary-700" onClick={() => setViewMode('editor')}>新建报告</Button>
+              ? <Button variant="outline" size="sm" onClick={clearFilters}>{t('pages.academic.clearFilters')}</Button>
+              : <Button icon={<Plus size={14} />} size="sm" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]" onClick={() => setViewMode('editor')}>{t('pages.academic.newReport')}</Button>
           }
         />
       ) : (
-        <Card className="overflow-hidden border-neutral-200 dark:border-neutral-700">
+        <Card className="overflow-hidden border-[var(--border-color)]">
           {/* 表头 */}
-          <div className="hidden sm:grid sm:grid-cols-[auto_1fr_90px_80px_40px] gap-3 px-5 py-2.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+          <div className="hidden sm:grid sm:grid-cols-[auto_1fr_90px_80px_40px] gap-[var(--space-apple-sm)] px-5 py-2.5 text-xs font-medium text-[var(--text-muted)] border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-secondary)]/50">
             <div className="w-5" />
-            <button onClick={() => handleSort('title')} className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200 text-left">
-              标题 {sortField === 'title' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+            <button onClick={() => handleSort('title')} className="flex items-center gap-1 hover:text-[var(--text-primary)] dark:hover:text-neutral-200 text-left">
+              {t('pages.academic.title')} {sortField === 'title' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
             </button>
-            <div>状态</div>
-            <div>更新时间</div>
+            <div>{t('pages.academic.status')}</div>
+            <div>{t('pages.academic.updatedAt')}</div>
             <div />
           </div>
 
@@ -350,8 +350,8 @@ export default function AcademicReportPage() {
                 <div
                   key={report.id}
                   className={cn(
-                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/30 transition-colors',
-                    isSelected && 'bg-primary-50/50 dark:bg-primary-300/15',
+                    'group flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--bg-tertiary)]/60 dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors',
+                    isSelected && 'bg-[var(--color-primary-container)]/50 dark:bg-[var(--color-primary-container)]/15',
                   )}
                 >
                   {/* 勾选框 */}
@@ -360,8 +360,8 @@ export default function AcademicReportPage() {
                     className={cn(
                       'shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors mt-0.5',
                       isSelected
-                        ? 'bg-primary-container border-primary-500 text-primary-main'
-                        : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
+                        ? 'bg-primary-container border-[var(--color-primary)] text-[var(--color-primary)]'
+                        : 'border-[var(--border-color)] hover:border-[var(--color-primary)]',
                     )}
                   >
                     {isSelected && (
@@ -377,20 +377,20 @@ export default function AcademicReportPage() {
                     className="flex-1 min-w-0 text-left"
                   >
                     <div className="flex items-center gap-2 mb-0.5">
-                      <BookOpen size={13} className="text-primary-500 shrink-0" />
-                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                      <BookOpen size={13} className="text-[var(--color-primary-text)]0 shrink-0" />
+                      <span className="text-sm font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--color-primary-text)] dark:group-hover:text-[var(--color-primary-text)] transition-colors">
                         {report.title}
                       </span>
                     </div>
                     {report.abstract && (
-                      <p className="text-xs text-neutral-400 dark:text-neutral-400 line-clamp-1 mb-1">{report.abstract}</p>
+                      <p className="text-xs text-[var(--text-muted)] line-clamp-1 mb-1">{report.abstract}</p>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400 dark:text-neutral-400">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]">
                       {report.authors.length > 0 && (
                         <span className="flex items-center gap-1"><User size={11} />{report.authors.join('、')}</span>
                       )}
                       {report.formulaName && (
-                        <span className="flex items-center gap-1"><Link2 size={11} /><span className="font-medium text-neutral-500 dark:text-neutral-400">{report.formulaName}</span></span>
+                        <span className="flex items-center gap-1"><Link2 size={11} /><span className="font-medium text-[var(--text-muted)]">{report.formulaName}</span></span>
                       )}
                       <span className="flex items-center gap-1"><Calendar size={11} />{formatDate(report.updatedAt)}</span>
                     </div>
@@ -398,43 +398,43 @@ export default function AcademicReportPage() {
 
                   {/* 状态 */}
                   <div className="hidden sm:block shrink-0">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusCls(report.status)}`}>
-                      <span className={cn('w-1.5 h-1.5 rounded-full', report.status === 'published' ? 'bg-primary-500' : report.status === 'in_review' ? 'bg-warning-500' : 'bg-neutral-400')} />
-                      {report.status === 'draft' ? '草稿' : report.status === 'in_review' ? '审核中' : '已发布'}
+                    <span className={`inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-0.5 text-xs font-medium ${statusCls(report.status)}`}>
+                      <span className={cn('w-1.5 h-1.5 rounded-[var(--radius-pill)]', report.status === 'published' ? 'bg-[var(--color-primary-container)]0' : report.status === 'in_review' ? 'bg-[var(--color-warning-container)]0' : 'bg-neutral-400')} />
+                      {report.status === 'draft' ? t('pages.academic.statusDraft') : report.status === 'in_review' ? t('pages.academic.statusInReview') : t('pages.academic.statusPublished')}
                     </span>
                   </div>
 
                   {/* 操作 */}
                   <div className="shrink-0 flex items-center gap-1">
-                    <button type="button" onClick={() => handleView(report)} title="查看"
-                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                    <button type="button" onClick={() => handleView(report)} title={t('pages.academic.view')}
+                      className="p-1.5 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20 transition-colors">
                       <Eye size={14} />
                     </button>
-                    <button type="button" onClick={() => handleEdit(report)} title="编辑"
-                      className="p-1.5 rounded-lg text-neutral-300 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                    <button type="button" onClick={() => handleEdit(report)} title={t('pages.academic.edit')}
+                      className="p-1.5 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20 transition-colors">
                       <Edit size={14} />
                     </button>
                     <div className="relative">
-                      <button type="button" onClick={() => setShowMoreMenu(showMenu ? null : report.id)} title="更多"
-                        className="p-1.5 rounded-lg text-neutral-300 hover:text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors">
+                      <button type="button" onClick={() => setShowMoreMenu(showMenu ? null : report.id)} title={t('pages.academic.more')}
+                        className="p-1.5 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] transition-colors">
                         <MoreVertical size={14} />
                       </button>
                       {showMenu && (
                         <>
                           <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setShowMoreMenu(null)} />
-                          <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 z-20">
-                            <button onClick={() => handleView(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
-                              <Eye size={13} />查看
+                          <div className="absolute right-0 top-full mt-1 w-40 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-xl border border-[var(--border-color)] py-1.5 z-20">
+                            <button onClick={() => handleView(report)} className="w-full px-[var(--space-apple-sm)] py-2 text-left text-xs hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] flex items-center gap-2 text-[var(--text-primary)]">
+                              <Eye size={13} />{t('pages.academic.view')}
                             </button>
-                            <button onClick={() => handleEdit(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
-                              <Edit size={13} />编辑
+                            <button onClick={() => handleEdit(report)} className="w-full px-[var(--space-apple-sm)] py-2 text-left text-xs hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] flex items-center gap-2 text-[var(--text-primary)]">
+                              <Edit size={13} />{t('pages.academic.edit')}
                             </button>
-                            <button onClick={() => handleDuplicate(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
-                              <ClipboardCopy size={13} />复制
+                            <button onClick={() => handleDuplicate(report)} className="w-full px-[var(--space-apple-sm)] py-2 text-left text-xs hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] flex items-center gap-2 text-[var(--text-primary)]">
+                              <ClipboardCopy size={13} />{t('pages.academic.duplicate')}
                             </button>
-                            <div className="my-1 border-t border-neutral-100 dark:border-neutral-700" />
-                            <button onClick={() => confirmDelete(report.id)} className="w-full px-3 py-2 text-left text-xs hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-2 text-error-600 dark:text-error-600">
-                              <Trash2 size={13} />删除
+                            <div className="my-1 border-t border-[var(--border-color)] dark:border-neutral-700" />
+                            <button onClick={() => confirmDelete(report.id)} className="w-full px-[var(--space-apple-sm)] py-2 text-left text-xs hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 flex items-center gap-2 text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">
+                              <Trash2 size={13} />{t('pages.academic.delete')}
                             </button>
                           </div>
                         </>
@@ -452,14 +452,14 @@ export default function AcademicReportPage() {
       <Modal
         open={showDeleteConfirm}
         onClose={() => { setShowDeleteConfirm(false); setDeleteTargetId(null) }}
-        title="确认删除"
+        title={t('pages.academic.confirmDelete')}
         description={selectedIds.size > 1
-          ? `确定要删除选中的 ${selectedIds.size} 份报告吗？此操作无法撤销。`
-          : '此操作将永久删除该报告，无法撤销。确定要继续吗？'}
+          ? t('pages.academic.confirmDeleteMany', { count: selectedIds.size })
+          : t('pages.academic.confirmDeleteDesc')}
       >
-        <div className="flex gap-3 justify-end mt-6">
-          <Button variant="ghost" onClick={() => { setShowDeleteConfirm(false); setDeleteTargetId(null) }}>取消</Button>
-          <Button variant="danger" onClick={() => selectedIds.size > 1 ? handleBulkDelete() : deleteTargetId && handleDelete(deleteTargetId)}>确认删除</Button>
+        <div className="flex gap-[var(--space-apple-sm)] justify-end mt-6">
+          <Button variant="ghost" onClick={() => { setShowDeleteConfirm(false); setDeleteTargetId(null) }}>{t('pages.academic.cancel')}</Button>
+          <Button variant="danger" onClick={() => selectedIds.size > 1 ? handleBulkDelete() : deleteTargetId && handleDelete(deleteTargetId)}>{t('pages.academic.confirmDeleteBtn')}</Button>
         </div>
       </Modal>
       </div>

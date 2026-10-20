@@ -1,0 +1,11 @@
+PASS /dashboard: overflow=0px; clicked button[0] of 9; consoleErrors=0
+PASS /formulas: overflow=0px; clicked button[0] of 38; consoleErrors=32
+    ERR: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause chi
+    ERR: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause chi
+    ERR: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause chi
+PASS /ai: overflow=0px; click skipped; consoleErrors=0
+PASS /databases: overflow=0px; clicked button[0] of 22; consoleErrors=0
+PASS /settings: overflow=0px; clicked button[0] of 15; consoleErrors=0
+PASS /users: overflow=0px; clicked button[0] of 70; consoleErrors=0
+
+总控制台错误: 33

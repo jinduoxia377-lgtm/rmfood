@@ -5,7 +5,7 @@
  * @version 4.0.0 - UI/UX Optimized
  */
 import React from 'react'
-import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, Settings, History, ChevronDown, Info } from 'lucide-react'
+import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, History, Info } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { DEFAULTS } from '@/config'
 import type { GeneratorType } from '../config/generateTabConfig'

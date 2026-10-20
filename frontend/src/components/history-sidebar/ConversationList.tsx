@@ -8,7 +8,7 @@ import React, { useMemo, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   MessageSquare, FlaskConical, FileText, Search,
-  Pin, PinOff, Archive, Trash2, MoreVertical, Clock,
+  Pin, Archive, MoreVertical, Clock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Conversation } from './types'
@@ -35,9 +35,6 @@ function ConversationItem({
   conversation,
   isSelected,
   onSelect,
-  onDelete,
-  onArchive,
-  onPin,
   style,
 }: {
   conversation: Conversation

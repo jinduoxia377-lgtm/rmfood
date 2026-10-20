@@ -1,0 +1,72 @@
+{
+  "bad15": [
+    {
+      "name": "安息香",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "白药子",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "猴枣",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "华山参",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "青叶胆",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "三分三",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "千金子霜",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "血余炭",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "哈蟆油",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "胆南星",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "黄山药",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "三白草",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "乌敛莓",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "无患子皮",
+      "outcome": "多源重抓替换"
+    },
+    {
+      "name": "当药",
+      "outcome": "多源重抓替换"
+    }
+  ],
+  "governance": {
+    "deleted_2045": true,
+    "fk_rows": [
+      "('rmchm_herb_compounds', 'rmchm_id')",
+      "('rmchm_herb_targets', 'rmchm_id')",
+      "('rmchm_herb_diseases', 'rmchm_id')"
+    ]
+  }
+}

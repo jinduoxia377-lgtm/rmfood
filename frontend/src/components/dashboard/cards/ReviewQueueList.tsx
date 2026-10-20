@@ -3,6 +3,7 @@
  */
 import type { FC } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowRight, AlertTriangle } from 'lucide-react'
 import { Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export const ReviewQueueList: FC<Props> = ({ items, loading }) => {
+  const { t } = useTranslation()
   if (loading) {
     return (
       <Card className="overflow-hidden">
@@ -55,13 +57,13 @@ export const ReviewQueueList: FC<Props> = ({ items, loading }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AlertTriangle size={18} className="text-warning-500" />
-            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>待审核配方</CardTitle>
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t('pages.dashboard.cards.reviewQueue')}</CardTitle>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="neutral" size="sm">{items.length}</Badge>
             {/* C-05：统一「查看全部」入口 */}
             <Link to="/formulas?status=pending_review" className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold flex items-center gap-1 transition-colors min-h-[44px] px-2 -mx-2 -my-3.5">
-              全部 <ArrowRight size={14} />
+              {t('pages.dashboard.cards.all')} <ArrowRight size={14} />
             </Link>
           </div>
         </div>
@@ -69,7 +71,7 @@ export const ReviewQueueList: FC<Props> = ({ items, loading }) => {
       <CardContent className="p-0">
         <div className="divide-y divide-neutral-100 dark:divide-neutral-800/40">
           {items.length === 0 ? (
-            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">暂无待审核配方</div>
+            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">{t('pages.dashboard.cards.noReviewQueue')}</div>
           ) : (
             items.slice(0, 6).map((item) => (
               <Link

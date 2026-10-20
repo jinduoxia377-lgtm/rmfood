@@ -107,22 +107,23 @@ async function callToolApi(call: ToolCall): Promise<unknown> {
 
 /**
  * RAG 检索执行
+ *
+ * 后端目前没有任何 RAG 索引/检索端点（全库 grep 确认），此前这里指向
+ * /api/v1/ai/rag/search，调用必然 404。改为显式失败，让上层拿到可读错误
+ * 而不是一个 404 的 HTTP 状态码。
  */
 async function executeRagSearch(call: ToolCall): Promise<unknown> {
-  return fetchWithCsrf('/api/v1/ai/rag/search', {
-    method: 'POST',
-    body: JSON.stringify({
-      query: call.input?.query as string,
-      top_k: call.input?.top_k as number ?? 5,
-    }),
-  });
+  void call;
+  throw new Error('工具暂不可用：后端未提供 RAG 检索端点（/ai/rag/search 不存在）');
 }
 
 /**
  * 配方生成执行
+ *
+ * 后端端点是 /ai/generate（ai_modules/generation.py:77），不是 /ai/formula/generate。
  */
 async function executeFormulaGeneration(call: ToolCall): Promise<unknown> {
-  return fetchWithCsrf('/api/v1/ai/formula/generate', {
+  return fetchWithCsrf('/api/v1/ai/generate', {
     method: 'POST',
     body: JSON.stringify(call.input),
   });
@@ -130,44 +131,53 @@ async function executeFormulaGeneration(call: ToolCall): Promise<unknown> {
 
 /**
  * 合规检查执行
+ *
+ * 后端有 /compliance/check/realtime，但其入参是 current_ingredients: IngredientItem[]
+ * （结构化成分对象），与 LLM 工具调用传来的自由输入不一致，不能直接透传。
+ * 先显式失败，等入参映射明确后再接。
  */
 async function executeComplianceCheck(call: ToolCall): Promise<unknown> {
-  return fetchWithCsrf('/api/v1/ai/compliance/check', {
-    method: 'POST',
-    body: JSON.stringify(call.input),
-  });
+  void call;
+  throw new Error('工具暂不可用：合规检查入参映射未定义（后端 /compliance/check/realtime 需要结构化成分表）');
 }
 
 /**
  * 实验方案执行
+ *
+ * 后端只有 /ai/analyze/experiment（实验结果分析），没有"生成实验方案"端点。
  */
 async function executeExperimentPlan(call: ToolCall): Promise<unknown> {
-  return fetchWithCsrf('/api/v1/ai/experiment/plan', {
-    method: 'POST',
-    body: JSON.stringify(call.input),
-  });
+  void call;
+  throw new Error('工具暂不可用：后端未提供实验方案生成端点');
 }
 
 /**
  * 知识图谱推理执行
+ *
+ * 后端端点是 /kg/infer/all（InferAllRequest: herbs + reasoning_type，
+ * reasoning_type 取值 path|synergy|conflict|all）。此前用 /kg/infer，必然 404。
  */
 async function executeKGInference(call: ToolCall): Promise<unknown> {
   const herbs = (call.input?.herbs as string[] | undefined) ?? [];
   const reasoningType = (call.input?.reasoning_type as string | undefined) ?? 'all';
-  return fetchWithCsrf('/api/v1/kg/infer', {
+  if (!herbs.length) {
+    throw new Error('知识图谱推理失败：herbs 不能为空');
+  }
+  return fetchWithCsrf('/api/v1/kg/infer/all', {
     method: 'POST',
     body: JSON.stringify({ herbs, reasoning_type: reasoningType }),
   });
 }
 
 /**
- * 通用工具执行 (代理到 Agent API)
+ * 通用工具执行
+ *
+ * 后端没有 /agent/tools/execute。可用的代理入口是 /agent/execute，
+ * 但它按"任务"而非"单个工具调用"执行，语义不等价，先显式失败。
  */
 async function executeGenericTool(call: ToolCall): Promise<unknown> {
-  return fetchWithCsrf('/api/v1/agent/tools/execute', {
-    method: 'POST',
-    body: JSON.stringify({ tool: call.tool, arguments: call.input }),
-  });
+  void call;
+  throw new Error('工具暂不可用：后端未提供 /agent/tools/execute 端点');
 }
 
 // ── 主调度函数 ──────────────────────────────────────────────

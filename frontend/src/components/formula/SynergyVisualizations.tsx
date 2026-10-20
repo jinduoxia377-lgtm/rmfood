@@ -13,10 +13,6 @@ import {
   Thermometer,
   PieChart as PieIcon,
   ScatterChart,
-  Filter,
-  ZoomIn,
-  RotateCcw,
-  Maximize2,
   Download,
 } from 'lucide-react';
 import { Card, Button, Badge } from '@/components/ui';
@@ -64,7 +60,6 @@ interface SynergyHeatmapProps {
 
 export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'md' }: SynergyHeatmapProps) {
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null);
-  const [filterThreshold, setFilterThreshold] = useState(0);
 
   // 提取唯一成分列表
   const ingredients = useMemo(() => {
@@ -244,7 +239,7 @@ export function SynergyHeatmap({ data, onCellClick, showLabels = true, size = 'm
           <h4 className="font-semibold text-sm text-primary-900 dark:text-primary-100 mb-2">
             📊 {selectedCell.pair[0]} ↔ {selectedCell.pair[1]}
           </h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
               <span className="text-neutral-600">综合协同指数:</span>
               <span className="ml-2 font-mono font-bold text-primary-700">

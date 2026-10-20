@@ -4,7 +4,6 @@
  */
 import api from './client'
 import type { TCMHerb, SymMapHerb, BioactivePeptide, KnowledgeNode, PaginatedResponse } from '@/types'
-import { logger } from '@/utils/safeLogger'
 
 export const databaseApi = {
   /** TCMSP 中药材检索 */
@@ -246,6 +245,119 @@ export const databaseApi = {
   /** 从收藏中移除活性肽 */
   removeFromPantryPeptide: (peptide_id: number) =>
     api.delete(`/databases/pantry/peptides/${peptide_id}`).then((r) => r.data),
+
+  // ═══════════════════════════════════════════
+  // RMCHM / CFAM 数据检索中心扩展
+  // ═══════════════════════════════════════════
+
+  /** RMCHM 中药材检索 */
+  searchRmchmHerbs: (params: {
+    keyword?: string
+    category?: string
+    food_homology?: boolean
+    page?: number
+    page_size?: number
+  }) => api.get<PaginatedResponse<RMCHMHerb>>('/databases/rmchm/herbs', { params }).then((r) => r.data),
+
+  /** RMCHM 药材详情（含化合物/靶点/疾病） */
+  getRmchmHerb: (id: number) => api.get<{ success: boolean; data: RMCHMHerbDetail }>(`/databases/rmchm/herbs/${id}`).then((r) => r.data),
+
+  /** RMCHM 统计 */
+  getRmchmStats: () => api.get<RMCHMStats>('/databases/rmchm/stats').then((r) => r.data),
+
+  /** CFAM 官方药食同源目录检索 */
+  searchCfamHerbs: (params: {
+    keyword?: string
+    announcement_id?: string
+    page?: number
+    page_size?: number
+  }) => api.get<PaginatedResponse<CFAMHerb>>('/databases/cfam/herbs', { params }).then((r) => r.data),
+
+  /** CFAM 药材详情 */
+  getCfamHerb: (id: number) => api.get<{ success: boolean; data: CFAMHerb }>(`/databases/cfam/herbs/${id}`).then((r) => r.data),
+
+  /** CFAM 统计 */
+  getCfamStats: () => api.get<CFAMStats>('/databases/cfam/stats').then((r) => r.data),
+
+  /** 获取药材图片 URL（RMCHM/CFAM 统一） */
+  getHerbImageUrl: (name: string, source?: 'rmchm' | 'cfam') =>
+    api.get<{ name: string; source: string; image_url: string | null; found: boolean }>('/databases/herb-image', { params: { name, source: source ?? 'rmchm' } }).then((r) => r.data),
+}
+
+// ═══════════════════════════════════════════
+// RMCHM / CFAM 类型定义
+// ═══════════════════════════════════════════
+
+export interface RMCHMHerb {
+  id: number
+  rmchm_id: string
+  rmchm_code?: string
+  name_cn: string
+  name_pinyin?: string
+  name_latin?: string
+  name_eng?: string
+  nature_cn?: string
+  nature_eng?: string
+  meridians_cn?: string
+  meridians_eng?: string
+  category_cn?: string
+  category_eng?: string
+  use_part?: string
+  alias?: string
+  function_cn?: string
+  ob_percent?: number
+  dl_value?: number
+  is_food_homology: boolean
+  is_toxic: boolean
+  tcmsp_id?: string
+  symmap_id?: string
+  compounds_count: number
+  targets_count: number
+  diseases_count: number
+  image_path?: string
+  image_source?: string
+  image_url?: string | null
+  data_quality_score?: number
+  created_at?: string
+}
+
+export interface RMCHMHerbDetail extends RMCHMHerb {
+  compounds?: unknown[]
+  targets?: unknown[]
+  diseases?: unknown[]
+}
+
+export interface RMCHMStats {
+  total_herbs: number
+  food_homology_count: number
+  toxic_count: number
+  category_distribution: { category: string; count: number }[]
+  source: string
+}
+
+export interface CFAMHerb {
+  id: number
+  name_cn: string
+  name_latin?: string
+  name_en?: string
+  nature?: string
+  flavor?: string
+  category?: string
+  announcement_id?: string
+  announcement_source?: string
+  usage_restriction?: string
+  special_notice?: string
+  image_path?: string
+  image_url?: string | null
+  is_food_homology: boolean
+  pdf_page?: number
+  created_at?: string
+}
+
+export interface CFAMStats {
+  total_herbs: number
+  announcement_distribution: { announcement_id: string; count: number }[]
+  source: string
 }
 
 // ═══════════════════════════════════════════

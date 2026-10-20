@@ -1,36 +1,33 @@
 /**
  * RMFOOD 仪表盘 - 深度增强版
- * 新增：个性化配置、可拖拽布局、通知中心、AI智能洞察、KPI监控
+ * 新增：个性化配置、可拖拽布局、AI智能洞察、KPI监控
  */
 import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
-} from 'recharts'
+import { useTranslation } from 'react-i18next'
+
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
-  Sparkles, Download, Settings, AlertTriangle, Search, RefreshCw, ArrowRight,
+  Sparkles, Download, Settings, AlertTriangle, Search, RefreshCw, ArrowRight, Loader2,
 } from 'lucide-react'
 import { useDashboardStatistics, useDashboardTrends, useFormulas, useExperiments } from '@/hooks/useQueries'
-import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 import { useAuthStore } from '@/stores/auth'
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, StatCard } from '@/components/ui'
-import { StatusBadge, Skeleton, EmptyState } from '@/components/ui/Common'
-import { activityApi, type TimelineEvent, type TodoItem, type ReviewQueueItem } from '@/api/activity'
-import { notificationApi } from '@/api/notifications'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { STATUS_CONFIG, DASHBOARD_CONFIG } from '@/config'
+import { Card, CardContent, Button } from '@/components/ui'
+import { EmptyState } from '@/components/ui/Common'
+import { activityApi } from '@/api/activity'
 
-const STATUS_LABELS = STATUS_CONFIG.labels
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { DASHBOARD_CONFIG } from '@/config'
+import { cn } from '@/lib/utils'
+import { searchApi } from '@/api/search'
+import i18n from '@/i18n'
+
 import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, type CardConfig, type DashboardLayout } from '@/config/dashboard'
 import { DraggableCard, DashboardLayout as GridLayout, LayoutEditor, LayoutSwitcher } from '@/pages/formula/components/DashboardLayout'
-import { NotificationCenter, NotificationBadge } from '@/pages/formula/components/NotificationCenter'
+
 import { AIInsights, KPIDashboard } from '@/pages/formula/components/AIInsights'
-import { aiInsightsApi } from '@/api/aiInsights'
-import { subscribeToChannel } from '@/services/websocket'
 
 // 懒加载非首屏组件
 const RealTimeSync = lazy(() => import('@/components/dashboard/RealTimeSync').then(m => ({ default: m.RealTimeSync })))
@@ -59,7 +56,6 @@ import {
 } from '@/components/dashboard/cards'
 import { CardSkeleton as CardSkeletonComp } from '@/components/ui/SkeletonPresets'
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
-
 
 import { logger } from '@/utils/safeLogger';
 // Card component mapping — replaces the ~440-line switch statement
@@ -144,10 +140,7 @@ interface CardRenderProps {
   refetchAIInsights?: () => void
 }
 
-function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, refetchTrends, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline, refetchAIInsights }: CardRenderProps) {
-  // Lazy-access to currentLayout/setCurrentLayout for the components that need them
-  const lazyLayout = { currentLayout, setCurrentLayout }
-
+function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline }: CardRenderProps) {
   // Data preparation moved into individual card components
   const statIndexMap: Record<string, number> = {
     'stats-formulas': 0, 'stats-experiments': 1, 'stats-in-progress': 2, 'stats-completed': 3,
@@ -193,7 +186,7 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     const byStatus = data?.formulas?.by_status
     const entries = byStatus
       ? Object.entries(byStatus).filter(([, value]) => typeof value === 'number' && value > 0).map(([status, value]) => ({
-          name: (STATUS_LABELS as Record<string, string>)[status] ?? status, value, key: status,
+          name: i18n.exists(`common.statusLabels.${status}`) ? i18n.t(`common.statusLabels.${status}`) : status, value, key: status,
         }))
       : []
     props.data = entries
@@ -207,7 +200,7 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     const byStatus = data?.experiments?.by_status
     const entries = byStatus
       ? Object.entries(byStatus).filter(([, value]) => typeof value === 'number' && value > 0).map(([status, value]) => ({
-          name: (STATUS_LABELS as Record<string, string>)[status] ?? status, count: value, key: status,
+          name: i18n.exists(`common.statusLabels.${status}`) ? i18n.t(`common.statusLabels.${status}`) : status, count: value, key: status,
         }))
       : []
     props.data = entries
@@ -298,8 +291,8 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
   // Fallback for unknown card types
   return (
     <Card>
-      <CardContent className="p-6">
-        <EmptyState icon={<Sparkles size={48} />} title={card.title} description="此卡片功能即将上线" />
+      <CardContent className="p-[var(--space-apple-lg)]">
+        <EmptyState icon={<Sparkles size={48} />} title={card.title} description={i18n.t('pages.dashboard.comingSoon')} />
       </CardContent>
     </Card>
   )
@@ -307,10 +300,11 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
 
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const [trendPeriod, setTrendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStatistics()
-  const { data: trendsData, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends } = useDashboardTrends(trendPeriod)
+  const { data: trendsData, isLoading: trendsLoading, error: trendsError } = useDashboardTrends(trendPeriod)
   const { data: formulasData, isLoading: formulasLoading, error: formulasError, refetch: refetchFormulas } = useFormulas({ page: 1, page_size: 5 })
   const { data: experimentsData, isLoading: experimentsLoading, error: experimentsError, refetch: refetchExperiments } = useExperiments({ page: 1, page_size: 5 })
 
@@ -396,58 +390,51 @@ export default function DashboardPage() {
   })
   const [isEditMode, setIsEditMode] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const [notificationCount, setNotificationCount] = useState(0)
 
-  // 从后端 API 获取未读通知数（契约：GET /notifications/unread-count → { unread_count }）
-  useEffect(() => {
-    notificationApi.unreadCount()
-      .then((data) => setNotificationCount(data.unread_count ?? 0))
-      .catch(() => setNotificationCount(0))
-  }, [])
-
-  // WebSocket 推送更新通知计数
-  useEffect(() => {
-    const unsubscribe = subscribeToChannel('notifications', (msg) => {
-      if (msg.type === 'notification.created' || msg.type === 'notification.marked_read') {
-        notificationApi.unreadCount()
-          .then((data) => setNotificationCount(data.unread_count ?? 0))
-          .catch(() => {})
-      }
-    })
-    return unsubscribe
-  }, [])
   const [layoutColumns, setLayoutColumns] = useState(() => currentLayout.gridColumns ?? 4)
   const [layoutGap, setLayoutGap] = useState(() => currentLayout.gridGap ?? 16)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{ type: string; id: number; title: string; to: string }>>([])
   const [showSearch, setShowSearch] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [searching, setSearching] = useState(false)
 
-  // 搜索防抖
+  // 搜索防抖 — 调用后端 /search/global API
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let cancelled = false
+    const timer = setTimeout(async () => {
       if (searchQuery.trim().length < 2) {
         setSearchResults([])
+        setHasSearched(false)
         return
       }
-      const q = searchQuery.toLowerCase()
-      const results: Array<{ type: string; id: number; title: string; to: string }> = []
-      const formulaItems = (formulasData?.items ?? []) as { id?: number; name?: string; code?: string }[]
-      const experimentItems = (experimentsData?.items ?? []) as { id?: number; title?: string; code?: string }[]
-      formulaItems.forEach((f) => {
-        if (f.name?.toLowerCase().includes(q) || f.code?.toLowerCase().includes(q)) {
-          results.push({ type: '配方', id: f.id ?? 0, title: f.name ?? '', to: `/formulas/${f.id ?? 0}` })
+      setSearching(true)
+      try {
+        const response = await searchApi.global(searchQuery, 'formula,experiment', 10)
+        if (cancelled) return
+        const results: Array<{ type: string; id: number; title: string; to: string }> = []
+        // 后端返回结构: { types: { formula: { items: [...] }, experiment: { items: [...] } } }
+        response.types?.formula?.items?.forEach((f) => {
+          results.push({ type: 'formula', id: f.id, title: f.title, to: f.url || `/formulas/${f.id}` })
+        })
+        response.types?.experiment?.items?.forEach((e) => {
+          results.push({ type: 'experiment', id: e.id, title: e.title, to: e.url || `/experiments/${e.id}` })
+        })
+        setSearchResults(results.slice(0, 8))
+        setHasSearched(true)
+        setSelectedIndex(-1)
+      } catch {
+        if (!cancelled) {
+          setSearchResults([])
+          setHasSearched(true)
         }
-      })
-      experimentItems.forEach((e) => {
-        if (e.title?.toLowerCase().includes(q) || e.code?.toLowerCase().includes(q)) {
-          results.push({ type: '实验', id: e.id ?? 0, title: e.title ?? '', to: `/experiments/${e.id ?? 0}` })
-        }
-      })
-      setSearchResults(results.slice(0, 8))
+      } finally {
+        if (!cancelled) setSearching(false)
+      }
     }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery, formulasData, experimentsData])
+    return () => { cancelled = true; clearTimeout(timer) }
+  }, [searchQuery])
 
   // DnD sensors
   const sensors = useSensors(
@@ -563,6 +550,7 @@ export default function DashboardPage() {
 
   // 切换布局时恢复该布局的网格配置（刷新/切换后保持）
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 切换布局时同步网格配置到本地编辑状态
     setLayoutColumns(currentLayout.gridColumns ?? 4)
     setLayoutGap(currentLayout.gridGap ?? 16)
     // 仅随 currentLayout.id 变化触发（同布局内的卡片编辑不改网格）
@@ -583,20 +571,29 @@ export default function DashboardPage() {
       lastModifiedBy: uid,
       lastModifiedAt: new Date().toISOString(),
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 登录态下将布局 owner 升级为真实用户（一次性同步）
     setCurrentLayout(upgraded)
-    DashboardConfigManager.saveLayout(upgraded as any)
+    DashboardConfigManager.saveLayout(upgraded)
   }, [user, currentLayout, setCurrentLayout])
 
   const handleExportDashboard = () => {
-    const rows = [['类别', '名称', '数值']]
+    const statusLabel = (status: string) =>
+      i18n.exists(`common.statusLabels.${status}`) ? i18n.t(`common.statusLabels.${status}`) : status
+    const cat = i18n.t('pages.dashboard.export.category')
+    const nameCol = i18n.t('pages.dashboard.export.name')
+    const valueCol = i18n.t('pages.dashboard.export.value')
+    const totalLabel = i18n.t('pages.dashboard.export.total')
+    const formulaLabel = i18n.t('pages.dashboard.resultTypeFormula')
+    const experimentLabel = i18n.t('pages.dashboard.resultTypeExperiment')
+    const rows = [[cat, nameCol, valueCol]]
     if (stats?.formulas && stats.experiments) {
-      rows.push(['配方', '总数', String(stats.formulas.total ?? 0)])
+      rows.push([formulaLabel, totalLabel, String(stats.formulas.total ?? 0)])
       Object.entries(stats.formulas.by_status || {}).forEach(([k, v]) => {
-        if (v > 0) rows.push(['配方', (STATUS_LABELS as Record<string, string>)[k] ?? k, String(v)])
+        if (v > 0) rows.push([formulaLabel, statusLabel(k), String(v)])
       })
-      rows.push(['实验', '总数', String(stats.experiments.total ?? 0)])
+      rows.push([experimentLabel, totalLabel, String(stats.experiments.total ?? 0)])
       Object.entries(stats.experiments.by_status || {}).forEach(([k, v]) => {
-        if (v > 0) rows.push(['实验', (STATUS_LABELS as Record<string, string>)[k] ?? k, String(v)])
+        if (v > 0) rows.push([experimentLabel, statusLabel(k), String(v)])
       })
     }
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
@@ -635,51 +632,106 @@ export default function DashboardPage() {
   }, [currentLayout])
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* 欢迎横幅 + 内嵌布局控制 */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1">
+    <div className="min-h-screen">
+      <div className="space-y-4 max-w-[1600px] mx-auto px-2 sm:px-5 lg:px-[var(--space-apple-lg)] py-4 sm:py-[var(--space-apple-lg)]">
+      {/* 欢迎横幅 + 内嵌布局控制 — 移动端紧凑化（避免“大色块+大按钮”的粗放观感） */}
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-4 sm:p-[var(--space-apple-lg)] shadow-sm">
+        {/* 第一行：欢迎信息 + 趋势周期切换 */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
             {/* A-13：站品牌名已由 <h1> 降级为 <div>（见 MainLayout），
                 页面主标题顺位升级为 h1，保证「按标题导航」能直达页面主题。 */}
-            <h1 className="text-xl font-semibold leading-snug tracking-tight">
-              {DASHBOARD_CONFIG.messages.welcomeBack}, {user?.fullName ?? user?.username}
+            <h1 className="text-lg sm:text-xl font-semibold leading-snug tracking-tight truncate">
+              {t('pages.dashboard.welcomeBack')}, {user?.fullName ?? user?.username}
             </h1>
-            <p className="mt-1 text-white/80 text-sm">{DASHBOARD_CONFIG.messages.startWork}</p>
+            <p className="mt-0.5 text-white/80 text-xs sm:text-sm truncate">{t('pages.dashboard.startWork')}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-1.5 shrink-0" role="group" aria-label={t('pages.dashboard.trend')}>
+            <span className="hidden sm:inline text-xs font-medium uppercase tracking-wider">{t('pages.dashboard.trend')}</span>
+            <div className="flex items-center bg-black/15 dark:bg-[var(--bg-secondary)]/15 rounded-[var(--radius-pill)] overflow-hidden">
+              {DASHBOARD_CONFIG.periodOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setTrendPeriod(opt.key)}
+                  className={`px-3 sm:px-[var(--space-apple-md)] py-1.5 sm:py-2 min-h-[44px] text-xs font-medium transition-colors ${
+                    trendPeriod === opt.key
+                      ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-tertiary)] text-[var(--color-primary-text)] dark:text-neutral-50'
+                      : 'text-white/90 hover:text-white'
+                  }`}
+                  aria-label={t('pages.dashboard.switchPeriodAria', { label: t(`pages.dashboard.period.${opt.key}`) })}
+                  aria-pressed={trendPeriod === opt.key}
+                >
+                  {t(`pages.dashboard.period.${opt.key}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* 第二行：操作工具栏 */}
+        <div className="flex flex-wrap items-center gap-2 pt-3 mt-3 sm:pt-[var(--space-apple-sm)] sm:mt-[var(--space-apple-sm)] border-t border-white/10">
             {/* 全局搜索 */}
-            <div className="relative">
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-900/15 rounded-full px-4 py-2">
-                <Search size={14} className="text-white/70 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="搜索配方/实验…"
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true) }}
-                  onFocus={() => setShowSearch(true)}
-                  onBlur={() => setTimeout(() => setShowSearch(false), 200)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && searchResults[0]) navigate(searchResults[0].to) }}
-                  /* A-10：搜索框原 min-h-[24px]，实测渲染 208×28，远低于 44×44 */
-                  className="bg-transparent text-white placeholder-white/60 text-sm outline-none w-40 sm:w-52 py-2 min-h-[44px]"
-                  aria-label="搜索配方或实验"
-                />
-              </div>
-              {showSearch && searchResults.length > 0 && (
-                <div className="absolute top-full mt-2 right-0 w-72 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-2 z-50">
-                  {searchResults.map((r) => (
-                    <Link
-                      key={`${r.type}-${r.id}`}
-                      to={r.to}
-                      onClick={() => { setShowSearch(false); setSearchQuery('') }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.type === '配方' ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700' : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700'}`}>{r.type}</span>
-                      <span className="text-sm text-neutral-900 dark:text-white truncate">{r.title}</span>
-                      <ArrowRight size={12} className="text-neutral-600 ml-auto shrink-0" />
-                    </Link>
-                  ))}
+            <div className="relative flex items-center gap-2 bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)]/15 rounded-[var(--radius-pill)] px-[var(--space-apple-md)] py-1.5 focus-within:ring-0 focus-within:outline-none flex-1 min-w-[200px]">
+              <Search size={14} className="text-[var(--text-muted)] shrink-0" aria-hidden="true" />
+              <input
+                type="text"
+                placeholder={t('pages.dashboard.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true) }}
+                onFocus={() => setShowSearch(true)}
+                onBlur={() => setTimeout(() => setShowSearch(false), 150)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setShowSearch(false)
+                    setSearchQuery('')
+                    setSelectedIndex(-1)
+                    return
+                  }
+                  if (e.key === 'ArrowDown' && searchResults.length > 0) {
+                    e.preventDefault()
+                    setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0))
+                    return
+                  }
+                  if (e.key === 'ArrowUp' && searchResults.length > 0) {
+                    e.preventDefault()
+                    setSelectedIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1))
+                    return
+                  }
+                  if (e.key === 'Enter') {
+                    const target = searchResults[selectedIndex] || searchResults[0]
+                    if (target) {
+                      navigate(target.to)
+                      setShowSearch(false)
+                      setSearchQuery('')
+                      setSelectedIndex(-1)
+                    }
+                  }
+                }}
+                className="bg-transparent text-[var(--text-primary)] placeholder-neutral-400 dark:placeholder-white/60 text-sm outline-none focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none flex-1 min-w-0"
+                style={{ outline: 'none', boxShadow: 'none' }}
+                aria-label={t('pages.dashboard.searchAria')}
+              />
+              {searching && <Loader2 size={12} className="animate-spin text-[var(--text-muted)] shrink-0" role="status" aria-label={t('pages.dashboard.searching')} />}
+              {showSearch && hasSearched && (
+                <div className="absolute top-full mt-2 left-0 w-72 bg-[var(--card-bg)] rounded-[var(--radius-Apple-md)] shadow-lg border border-[var(--border-color)] py-2 z-50">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((r, idx) => (
+                      <Link
+                        key={`${r.type}-${r.id}`}
+                        to={r.to}
+                        onMouseDown={(e) => { e.preventDefault(); setShowSearch(false); setSearchQuery(''); navigate(r.to) }}
+                        className={cn(
+                          'flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 hover:bg-[var(--bg-secondary)] transition-colors',
+                          selectedIndex === idx && 'bg-[var(--bg-secondary)]'
+                        )}
+                      >
+                        <span className="text-xs px-1.5 py-0.5 rounded-[var(--radius-pill)] font-medium" style={r.type === 'formula' ? { backgroundColor: 'var(--color-primary-container)', color: 'var(--color-primary-text)' } : { backgroundColor: 'var(--color-secondary-container)', color: 'var(--color-secondary)' }}>{r.type === 'formula' ? t('pages.dashboard.resultTypeFormula') : t('pages.dashboard.resultTypeExperiment')}</span>
+                        <span className="text-sm text-[var(--text-primary)] truncate">{r.title}</span>
+                        <ArrowRight size={12} className="text-[var(--text-muted)] ml-auto shrink-0" aria-hidden="true" />
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="px-[var(--space-apple-md)] py-[var(--space-apple-sm)] text-sm text-[var(--text-muted)] text-center">{t('pages.dashboard.noResults')}</div>
+                  )}
                 </div>
               )}
             </div>
@@ -690,7 +742,7 @@ export default function DashboardPage() {
               icon={<Sparkles size={16} />}
               onClick={() => navigate('/ai')}
             >
-              {DASHBOARD_CONFIG.messages.aiReady}
+              <span className="hidden sm:inline">{t('pages.dashboard.aiReady')}</span>
             </Button>
 
             <LayoutSwitcher
@@ -722,20 +774,18 @@ export default function DashboardPage() {
               }}
             />
 
-            <NotificationBadge
-              count={notificationCount}
-              onClick={() => setShowNotifications(true)}
-            />
-
             <Button
-              variant={isEditMode ? 'primary' : 'secondary'}
+              variant="ghost"
               size="sm"
               icon={<Settings size={14} />}
               onClick={() => setIsEditMode(!isEditMode)}
-              className={isEditMode ? 'bg-white dark:bg-neutral-900 text-primary-700 hover:bg-neutral-100 dark:bg-neutral-800' : ''}
-              aria-label={isEditMode ? '退出编辑模式' : '进入编辑模式'}
+              className={isEditMode
+                ? 'bg-[var(--bg-secondary)]/95 text-[var(--color-primary-text)] hover:bg-[var(--bg-secondary)] shadow-sm'
+                : 'text-white/90 hover:text-white hover:bg-[var(--bg-secondary)]/10'
+              }
+              aria-label={isEditMode ? t('pages.dashboard.exitEditMode') : t('pages.dashboard.enterEditMode')}
             >
-              {isEditMode ? '完成编辑' : '编辑布局'}
+              <span className="hidden sm:inline">{isEditMode ? t('pages.dashboard.finishEdit') : t('pages.dashboard.editLayout')}</span>
             </Button>
 
             <Button
@@ -743,9 +793,9 @@ export default function DashboardPage() {
               size="sm"
               icon={<Download size={14} />}
               onClick={handleExportDashboard}
-              aria-label="导出仪表盘数据"
+              aria-label={t('pages.dashboard.exportDashboardAria')}
             >
-              {DASHBOARD_CONFIG.messages.exportData}
+              <span className="hidden sm:inline">{t('pages.dashboard.exportData')}</span>
             </Button>
 
             <Button
@@ -758,60 +808,28 @@ export default function DashboardPage() {
                 refetchExperiments()
                 refetchAIInsights()
               }}
-              title="刷新数据"
-              aria-label="刷新仪表盘数据"
+              title={t('pages.dashboard.refreshData')}
+              aria-label={t('pages.dashboard.refreshDashboardAria')}
             >
-              刷新
+              <span className="hidden sm:inline">{t('pages.dashboard.refresh')}</span>
             </Button>
-
-            {/* 趋势周期切换器（P3：trendPeriod 接 UI，消费 DASHBOARD_CONFIG.periodOptions） */}
-            <div className="flex items-center gap-1.5" role="group" aria-label="趋势周期">
-              <span className="text-xs text-white font-medium uppercase tracking-wider">趋势</span>
-              <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
-                {DASHBOARD_CONFIG.periodOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setTrendPeriod(opt.key)}
-                    /* A-10：周期胶囊原 px-3 py-1 → 实测 43×24，触控区不足 44×44。
-                       抬到 px-4 py-2 + min-h-[44px]；内层的「列/距」胶囊同理。 */
-                    className={`px-4 py-2 min-h-[44px] text-xs font-medium transition-colors ${
-                      trendPeriod === opt.key
-                        ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
-                        /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
-                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
-                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
-                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
-                        : 'text-white/90 hover:text-white'
-                    }`}
-                    aria-label={`切换趋势周期为${opt.label}`}
-                    aria-pressed={trendPeriod === opt.key}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* 编辑模式下的布局控制 — 内嵌于横幅右侧 */}
             {isEditMode && (
-              <div className="flex items-center gap-3 pl-4 border-l border-white/20 ml-1" role="group" aria-label="布局设置">
+              <div className="flex items-center gap-[var(--space-apple-sm)] pl-[var(--space-apple-md)] border-l border-white/20 ml-1" role="group" aria-label={t('pages.dashboard.layoutSettings')}>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">列</span>
-                  <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
-                    {[2, 3, 4].map((col) => (
+                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">{t('pages.dashboard.columns')}</span>
+                  <div className="flex items-center bg-black/15 dark:bg-[var(--bg-secondary)]/15 rounded-[var(--radius-pill)] overflow-hidden">
+                    {[2, 3, 4, 5, 6].map((col) => (
                       <button
                         key={col}
                         onClick={() => handleColumnsChange(col)}
-                        className={`px-3 py-2 min-h-[44px] text-xs font-medium transition-colors ${
+                        className={`px-[var(--space-apple-sm)] py-2 min-h-[44px] text-xs font-medium transition-colors ${
                           layoutColumns === col
-                            ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
-                            /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
-                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
-                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
-                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
-                        : 'text-white/90 hover:text-white'
+                            ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-tertiary)] text-[var(--color-primary-text)] dark:text-neutral-50'
+                            : 'text-white/90 hover:text-white'
                         }`}
-                        aria-label={`切换为${col}列布局`}
+                        aria-label={t('pages.dashboard.switchToColLayout', { col })}
                         aria-pressed={layoutColumns === col}
                       >
                         {col}
@@ -820,22 +838,18 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">距</span>
-                  <div className="flex items-center bg-black/15 dark:bg-neutral-900/15 rounded-full overflow-hidden">
+                  <span className="text-xs text-white/90 font-medium uppercase tracking-wider">{t('pages.dashboard.gap')}</span>
+                  <div className="flex items-center bg-black/15 dark:bg-[var(--bg-secondary)]/15 rounded-[var(--radius-pill)] overflow-hidden">
                     {[8, 16, 24].map((g) => (
                       <button
                         key={g}
                         onClick={() => handleGapChange(g)}
-                        className={`px-3 py-2 min-h-[44px] text-xs font-medium transition-colors ${
+                        className={`px-[var(--space-apple-sm)] py-2 min-h-[44px] text-xs font-medium transition-colors ${
                           layoutGap === g
-                            ? 'bg-white dark:bg-neutral-800 text-primary-700 dark:text-neutral-50'
-                            /* D-70：胶囊容器在亮色下是白底（此前写成 bg-white），
-                           而【未选中项】用 text-white/80 —— 白字压白底 1:1，完全不可见。
-                           容器改为 bg-black/15（压在品牌绿底上得到 rgb(3,96,70) 的深色药丸），
-                           未选中文字提到 /90 → 6.48:1；选中项保持白药丸 + 700 档品牌字。 */
-                        : 'text-white/90 hover:text-white'
+                            ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-tertiary)] text-[var(--color-primary-text)] dark:text-neutral-50'
+                            : 'text-white/90 hover:text-white'
                         }`}
-                        aria-label={`间距${g}px`}
+                        aria-label={t('pages.dashboard.gapAria', { g })}
                         aria-pressed={layoutGap === g}
                       >
                         {g}
@@ -847,25 +861,24 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </div>
 
       {/* 编辑模式提示 */}
       {isEditMode && (
-        <div className="p-4 rounded-lg bg-warning-50 dark:bg-warning-950/30 border border-warning-200 dark:border-warning-800">
+        <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border" style={{ backgroundColor: 'var(--color-warning-container)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertTriangle size={18} className="text-warning-600" />
-              <p className="text-sm text-warning-800 dark:text-warning-700">
-                编辑模式已开启 — 拖拽卡片调整位置，点击卡片右上角按钮进行配置
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
+              <AlertTriangle size={18} style={{ color: 'var(--color-warning)' }} />
+              <p className="text-sm" style={{ color: 'var(--color-warning-text)' }}>
+                {t('pages.dashboard.editModeEnabled')}
               </p>
             </div>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setShowEditor(true)}
-              aria-label="添加卡片"
+              aria-label={t('pages.dashboard.addCard')}
             >
-              添加卡片
+              {t('pages.dashboard.addCard')}
             </Button>
           </div>
         </div>
@@ -900,7 +913,7 @@ export default function DashboardPage() {
                 // L-05：编辑状态统一由页面 isEditMode 单源控制
                 isEditing={isEditMode}
                 onExitEdit={() => setIsEditMode(false)}
-                aria-label={`卡片: ${card.title}，拖拽调整位置`}
+                aria-label={t('pages.dashboard.cardAria', { title: card.title })}
               >
                 {renderCard({
                   card,
@@ -961,19 +974,8 @@ export default function DashboardPage() {
         onApplyPreset={applyPresetLayout}
       />
 
-      {/* 通知中心 */}
-      <NotificationCenter
-        isOpen={showNotifications}
-        onClose={() => {
-          setShowNotifications(false)
-          setNotificationCount(0)
-        }}
-      />
       </div>
     </div>
   )
 }
-
-
-
 

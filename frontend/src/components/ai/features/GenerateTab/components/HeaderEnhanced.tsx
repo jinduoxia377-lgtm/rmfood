@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, Settings, History, Download } from 'lucide-react'
+import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, History } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { DEFAULTS } from '@/config'
 

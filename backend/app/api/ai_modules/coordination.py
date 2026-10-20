@@ -47,6 +47,14 @@ async def coordination_analysis(
 
     四维分析：结构协调(君臣佐使) + 比例协调(法定区间) + 功效协调(覆盖度) + 时序协调(PK匹配)
     """
+    # 组织计划 AI 配额检查（超限 403）
+    if db is not None:
+        try:
+            from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+            await ensure_ai_quota(db, current_user.id)
+        except PermissionError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+
     try:
         from ...services.formula.coordination_engine import get_coordination_engine
 

@@ -515,7 +515,7 @@ async def chat_stream(
         # ── Step 2: SSE 连接数检查（租户级） ──
         import uuid
         conn_id = int(uuid.uuid4().hex[:8], 16)
-        connected = await limiter.register_sse_connection(tenant.org_id)
+        connected = await limiter.register_sse_connection(tenant.org_id, conn_id)
         if not connected:
             await limiter.unregister_sse_connection(tenant.org_id, conn_id)
             raise HTTPException(

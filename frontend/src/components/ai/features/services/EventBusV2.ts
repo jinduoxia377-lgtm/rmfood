@@ -10,7 +10,7 @@
  */
 
 import { logger } from '@/utils/safeLogger'
-import type { EventType, EventPayloadMap, EventHandler, UnsubscribeFn } from './eventBus'
+import type { EventPayloadMap, EventHandler, UnsubscribeFn } from './eventBus'
 
 export type PipeHandler<T> = (payload: T, next: () => Promise<void>) => Promise<void> | void
 

@@ -8,7 +8,6 @@
  */
 import React, { useMemo } from 'react'
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -166,7 +165,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
       </ResponsiveContainer>
 
       {/* 关键指标卡片 */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-300/15 p-3 text-center">
           <div className="text-2xl font-bold text-success-600 dark:text-success-600">
             {result.shelfLifeDays >= 365

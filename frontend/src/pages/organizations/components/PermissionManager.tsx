@@ -4,8 +4,8 @@
 import React, { memo, useState, useCallback } from 'react'
 import {
   Shield, ShieldCheck, ShieldOff, Plus, Edit2, Trash2,
-  Users, Check, X, ChevronDown, Crown, Eye, Pencil,
-  Key, Lock, Unlock, Loader2,
+  Users, X, Crown, Eye, Pencil, UserCheck, Settings,
+  Key, Loader2,
 } from 'lucide-react'
 import type { Role, PermissionAction } from '@/types/organization.types'
 
@@ -14,14 +14,14 @@ interface PermissionManagerProps {
   roles: any[]
   permissions: any[]
   onCreateRole: (data: any) => Promise<any>
-  onUpdateRole: (roleId: number, data: any) => Promise<void>
-  onDeleteRole: (roleId: number) => Promise<void>
+  onUpdateRole: (roleId: string | number, data: any) => Promise<void>
+  onDeleteRole: (roleId: string | number) => Promise<void>
 }
 
 const SYSTEM_ROLES = [
   { code: 'owner' as Role, name: 'Owner', description: '组织所有者，拥有全部权限', icon: Crown },
   { code: 'admin' as Role, name: 'Admin', description: '管理员，可管理大部分资源', icon: Shield },
-  { code: 'editor' as Role, name: 'Editor', description: '编辑者，可修改内容', icon: Pencil },
+  { code: 'member' as Role, name: '成员', description: '标准成员权限，可参与协作', icon: UserCheck },
   { code: 'viewer' as Role, name: 'Viewer', description: '查看者，只读权限', icon: Eye },
 ]
 
@@ -35,9 +35,7 @@ const RESOURCE_TYPES = [
 ]
 
 export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
-  organizationId,
   roles = [],
-  permissions = [],
   onCreateRole,
   onUpdateRole,
   onDeleteRole,
@@ -59,13 +57,13 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
   return (
     <div className="space-y-8">
       {/* Tab 导航 */}
-      <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1.5">
+      <div className="flex items-center gap-1.5 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-1.5">
         <button
           onClick={() => setActiveTab('matrix')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+          className={`px-[var(--space-apple-md)] py-2 text-sm font-medium rounded-[var(--radius-Apple-sm)] transition-all ${
             activeTab === 'matrix'
-              ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
-              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
+              ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
+              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Shield className="w-4 h-4 mr-1.5" />
@@ -73,10 +71,10 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
         </button>
         <button
           onClick={() => setActiveTab('roles')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+          className={`px-[var(--space-apple-md)] py-2 text-sm font-medium rounded-[var(--radius-Apple-sm)] transition-all ${
             activeTab === 'roles'
-              ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
-              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
+              ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
+              : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Users className="w-4 h-4 mr-1.5" />
@@ -86,24 +84,24 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
 
       {/* 权限矩阵 Tab */}
       {activeTab === 'matrix' && (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
-              <thead className="bg-neutral-50 dark:bg-neutral-800">
+              <thead className="bg-[var(--bg-tertiary)]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase w-32">角色</th>
+                  <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase w-32">角色</th>
                   {RESOURCE_TYPES.map(resource => (
-                    <th key={resource.key} colSpan={resource.actions.length} className="px-3 py-3 text-center text-xs font-semibold text-neutral-500 uppercase border-l border-neutral-200 dark:border-neutral-700">
+                    <th key={resource.key} colSpan={resource.actions.length} className="px-[var(--space-apple-sm)] py-[var(--space-apple-md)] text-center text-xs font-semibold text-[var(--text-muted)] uppercase border-l border-[var(--border-color)]">
                       {resource.label}
                     </th>
                   ))}
                 </tr>
-                <tr className="border-t border-neutral-200 dark:border-neutral-700">
-                  <th className="px-4 py-2"></th>
+                <tr className="border-t border-[var(--border-color)]">
+                  <th className="px-[var(--space-apple-md)] py-2"></th>
                   {RESOURCE_TYPES.flatMap(resource =>
                     resource.actions.map(action => (
-                      <th key={`${resource.key}-${action}`} className="px-2 py-2 text-center text-xs text-neutral-400 border-l border-neutral-200 dark:border-neutral-700 w-10">
-                        {action === 'create' ? '➕' : action === 'read' ? '👁' : action === 'update' ? '✏️' : action === 'delete' ? '🗑️' : '⚙️'}
+                      <th key={`${resource.key}-${action}`} className="px-2 py-2 text-center text-xs text-[var(--text-muted)] border-l border-[var(--border-color)] w-10">
+                        {action === 'create' ? <Plus className="w-3.5 h-3.5 inline" aria-label="创建" /> : action === 'read' ? <Eye className="w-3.5 h-3.5 inline" aria-label="查看" /> : action === 'update' ? <Pencil className="w-3.5 h-3.5 inline" aria-label="更新" /> : action === 'delete' ? <Trash2 className="w-3.5 h-3.5 inline" aria-label="删除" /> : <Settings className="w-3.5 h-3.5 inline" aria-label="管理" />}
                       </th>
                     )),
                   )}
@@ -111,24 +109,24 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {[...SYSTEM_ROLES, ...roles].map(role => (
-                  <tr key={role.code} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                    <td className="px-4 py-3">
+                  <tr key={role.code} className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <div className="flex items-center gap-2">
                         {role.icon && <role.icon className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
-                        <span className="font-medium text-neutral-900 dark:text-white">{role.name}</span>
+                        <span className="font-medium text-[var(--text-primary)]">{role.name}</span>
                       </div>
                     </td>
                     {RESOURCE_TYPES.flatMap(resource =>
                       resource.actions.map(action => {
                         const hasPermission = role.code === 'owner' ||
                           (role.code === 'admin' && !['delete'].includes(action)) ||
-                          (role.code === 'editor' && ['read', 'update', 'create'].includes(action)) ||
+                          (role.code === 'member' && ['read', 'update', 'create'].includes(action)) ||
                           (role.code === 'viewer' && action === 'read')
 
                         return (
-                          <td key={`${resource.key}-${action}`} className="px-2 py-3 text-center border-l border-neutral-100 dark:border-neutral-700">
+                          <td key={`${resource.key}-${action}`} className="px-2 py-[var(--space-apple-md)] text-center border-l border-[var(--border-color)] dark:border-neutral-700">
                             {hasPermission ? (
-                              <ShieldCheck className="w-4 h-4 mx-auto text-success-500" />
+                              <ShieldCheck className="w-4 h-4 mx-auto text-[var(--color-success-text)]0" />
                             ) : (
                               <ShieldOff className="w-4 h-4 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                             )}
@@ -143,9 +141,9 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           </div>
 
           {/* 图例 */}
-          <div className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center gap-6 text-xs text-neutral-500">
+          <div className="px-6 py-4 bg-[var(--bg-tertiary)]/50 border-t border-[var(--border-color)] flex items-center gap-6 text-xs text-[var(--text-muted)]">
             <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-success-500" /> 有权限
+              <ShieldCheck className="w-4 h-4 text-[var(--color-success-text)]0" /> 有权限
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 无权限
@@ -156,35 +154,35 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
 
       {/* 角色管理 Tab */}
       {activeTab === 'roles' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           {/* 系统角色 */}
           <div>
-            <h3 className="text-sm font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">系统预定义角色</h3>
+            <h3 className="text-sm font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-[var(--space-apple-sm)]">系统预定义角色</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {SYSTEM_ROLES.map(role => {
                 const Icon = role.icon
                 return (
                   <div
                     key={role.code}
-                    className="bg-white dark:bg-neutral-900 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+                    className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border border-[var(--border-color)] hover:shadow-md transition-shadow"
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-                      role.code === 'owner' ? 'bg-warning-100 dark:bg-warning-300/25' :
-                      role.code === 'admin' ? 'bg-secondary-100 dark:bg-secondary-300/25' :
-                      role.code === 'editor' ? 'bg-accent-100 dark:bg-accent-300/25' :
-                      'bg-neutral-100 dark:bg-neutral-800'
+                    <div className={`w-10 h-10 rounded-[var(--radius-Apple-sm)] flex items-center justify-center mb-[var(--space-apple-sm)] ${
+                      role.code === 'owner' ? 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25' :
+                      role.code === 'admin' ? 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25' :
+                      role.code === 'member' ? 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25' :
+                      'bg-[var(--bg-tertiary)]'
                     }`}>
                       <Icon className={`w-5 h-5 ${
-                        role.code === 'owner' ? 'text-warning-600' :
-                        role.code === 'admin' ? 'text-secondary-600' :
-                        role.code === 'editor' ? 'text-accent-600' :
-                        'text-neutral-600'
+                        role.code === 'owner' ? 'text-[var(--color-warning-text)]' :
+                        role.code === 'admin' ? 'text-[var(--color-secondary-text)]' :
+                        role.code === 'member' ? 'text-[var(--color-accent-text)]' :
+                        'text-[var(--text-secondary)]'
                       }`} />
                     </div>
-                    <h4 className="font-semibold text-neutral-900 dark:text-white mb-1">{role.name}</h4>
+                    <h4 className="font-semibold text-[var(--text-primary)] mb-1">{role.name}</h4>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] line-clamp-2">{role.description}</p>
-                    <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
-                      <span className="text-xs text-primary-700 font-medium cursor-pointer hover:underline">查看详情 →</span>
+                    <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)] dark:border-neutral-700">
+                      <span className="text-xs text-[var(--color-primary-text)] font-medium cursor-pointer hover:underline">查看详情 →</span>
                     </div>
                   </div>
                 )
@@ -194,11 +192,11 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
 
           {/* 自定义角色 */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
               <h3 className="text-sm font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">自定义角色</h3>
               <button
                 onClick={handleCreateRole}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container transition-colors"
+                className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-1.5 bg-primary-container text-[var(--color-primary)] text-sm font-medium rounded-[var(--radius-Apple-sm)] hover:bg-primary-container transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 创建角色
@@ -206,8 +204,8 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
             </div>
 
             {roles.length === 0 ? (
-              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-8 text-center">
-                <Key className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
+              <div className="bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-md)] p-8 text-center">
+                <Key className="w-12 h-12 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-[var(--space-apple-sm)]" />
                 <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">暂无自定义角色</p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">点击上方按钮创建符合业务需求的定制角色</p>
               </div>
@@ -216,39 +214,39 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
                 {roles.map(role => (
                   <div
                     key={role.id || role.code}
-                    className="bg-white dark:bg-neutral-900 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+                    className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border border-[var(--border-color)] hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-white text-sm font-bold">
                         {(role.name || role.code).charAt(0)}
                       </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleEditRole(role)}
-                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-container)] rounded transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => onDeleteRole(role.id || 0)}
-                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-600 hover:bg-error-50 rounded transition-colors"
+                          onClick={() => onDeleteRole(role.id ?? role.code)}
+                          className="p-1.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-container)] rounded transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
-                    <h4 className="font-medium text-neutral-900 dark:text-white truncate">{role.name}</h4>
+                    <h4 className="font-medium text-[var(--text-primary)] truncate">{role.name}</h4>
                     {role.description && (
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 line-clamp-2">{role.description}</p>
                     )}
-                    <div className="mt-3 flex flex-wrap gap-1">
+                    <div className="mt-[var(--space-apple-sm)] flex flex-wrap gap-1">
                       {(role.permissions || []).slice(0, 3).map((perm: string, i: number) => (
-                        <span key={i} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 rounded">
+                        <span key={i} className="px-2 py-0.5 bg-[var(--bg-tertiary)] text-xs text-[var(--text-secondary)] rounded">
                           {perm.split(':')[1] || perm}
                         </span>
                       ))}
                       {(role.permissions || []).length > 3 && (
-                        <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-600 rounded">
+                        <span className="px-2 py-0.5 bg-[var(--bg-tertiary)] text-xs text-[var(--text-secondary)] rounded">
                           +{(role.permissions.length - 3)}...
                         </span>
                       )}
@@ -268,7 +266,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
           onClose={() => setShowRoleEditor(false)}
           onSave={async (data) => {
             if (editingRole) {
-              await onUpdateRole(editingRole.id || 0, data)
+              await onUpdateRole(editingRole.id ?? editingRole.code, data)
             } else {
               await onCreateRole(data)
             }
@@ -309,22 +307,22 @@ const RoleEditorModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+      <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="px-6 py-4 border-b border-[var(--border-color)] flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
             {role ? '编辑角色' : '创建新角色'}
           </h3>
-          <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600">
+          <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-secondary)]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-6">
+        <form id="role-editor-form" onSubmit={handleSubmit} className="flex-1 overflow-auto p-[var(--space-apple-lg)] space-y-6">
           {/* 基本信息 */}
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                角色名称 <span className="text-error-500">*</span>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                角色名称 <span className="text-[var(--color-error-text)]0">*</span>
               </label>
               <input
                 type="text"
@@ -332,12 +330,12 @@ const RoleEditorModal: React.FC<{
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="如：内容审核员"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-[var(--space-apple-sm)] py-2 border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)] text-neutral-900 focus:ring-2 focus:ring-[var(--color-primary)]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                 描述
               </label>
               <textarea
@@ -345,34 +343,34 @@ const RoleEditorModal: React.FC<{
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="简要描述此角色的职责和权限范围..."
                 rows={3}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 resize-none"
+                className="w-full px-[var(--space-apple-sm)] py-2 border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)] text-neutral-900 resize-none"
               />
             </div>
           </div>
 
           {/* 权限配置 */}
           <fieldset>
-            <legend className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 pb-2 border-b border-neutral-200 dark:border-neutral-700">
+            <legend className="text-sm font-medium text-[var(--text-primary)] mb-[var(--space-apple-sm)] pb-2 border-b border-[var(--border-color)]">
               权限配置
             </legend>
 
-            <div className="space-y-4">
+            <div className="space-y-[var(--space-apple-md)]">
               {RESOURCE_TYPES.map(resource => (
-                <div key={resource.key} className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-                  <div className="bg-neutral-50 dark:bg-neutral-800 px-4 py-2 border-b border-neutral-200 dark:border-neutral-700">
-                    <h4 className="text-sm font-semibold text-neutral-900 dark:text-white capitalize">{resource.label}</h4>
+                <div key={resource.key} className="border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] overflow-hidden">
+                  <div className="bg-[var(--bg-tertiary)] px-[var(--space-apple-md)] py-2 border-b border-[var(--border-color)]">
+                    <h4 className="text-sm font-semibold text-[var(--text-primary)] capitalize">{resource.label}</h4>
                   </div>
-                  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  <div className="p-[var(--space-apple-md)] grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[var(--space-apple-sm)]">
                     {resource.actions.map(action => {
                       const permKey = `${resource.key}:${action}`
                       const isChecked = selectedPermissions.includes(permKey)
                       return (
                         <label
                           key={permKey}
-                          className={`flex items-center gap-2 cursor-pointer p-2 rounded-lg border transition-all ${
+                          className={`flex items-center gap-2 cursor-pointer p-2 rounded-[var(--radius-Apple-sm)] border transition-all ${
                             isChecked
-                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
-                              : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
+                              ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)]'
+                              : 'border-[var(--border-color)] hover:border-[var(--border-color)]'
                           }`}
                         >
                           <input
@@ -381,7 +379,7 @@ const RoleEditorModal: React.FC<{
                             onChange={() => togglePermission(permKey)}
                             className="rounded"
                           />
-                          <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 capitalize">
+                          <span className="text-xs font-medium text-[var(--text-primary)] capitalize">
                             {action === 'create' ? '创建' : action === 'read' ? '查看' : action === 'update' ? '编辑' : action === 'delete' ? '删除' : '管理'}
                           </span>
                         </label>
@@ -394,12 +392,12 @@ const RoleEditorModal: React.FC<{
           </fieldset>
         </form>
 
-        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-[var(--border-color)] flex items-center justify-end gap-[var(--space-apple-sm)]">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800"
+            className="px-[var(--space-apple-md)] py-2 text-sm text-[var(--text-secondary)] hover:text-neutral-800"
           >
             取消
           </button>
@@ -407,7 +405,7 @@ const RoleEditorModal: React.FC<{
             type="submit"
             form="role-editor-form"
             disabled={isSubmitting || !name.trim()}
-            className="px-4 py-2 bg-primary-container text-primary-main text-sm font-medium rounded-lg hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-[var(--space-apple-md)] py-2 bg-primary-container text-[var(--color-primary)] text-sm font-medium rounded-[var(--radius-Apple-sm)] hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {role ? '保存更改' : '创建角色'}

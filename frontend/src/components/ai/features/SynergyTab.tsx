@@ -135,6 +135,7 @@ export function SynergyTab() {
 
   // 加载历史
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHistory(loadHistory());
   }, []);
 

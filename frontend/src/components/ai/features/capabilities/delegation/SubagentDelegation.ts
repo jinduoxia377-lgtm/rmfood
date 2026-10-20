@@ -175,6 +175,7 @@ export class SubagentDelegationService {
    * 运行单个子任务
    */
   private async runTask(task: SubTask, signal: AbortSignal): Promise<string> {
+    void signal;
     const response = await chatService.sendMessage(task.prompt)
     return response.content || '（无输出）'
   }

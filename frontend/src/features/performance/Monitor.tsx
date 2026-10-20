@@ -103,7 +103,6 @@ export function PerformanceMonitor({
   const [bundleSize, setBundleSize] = useState<BundleInfo[]>([]);
 
   const frameCountRef = useRef(0);
-  const lastFrameTimeRef = useRef(performance.now());
   const fpsIntervalRef = useRef<number | null>(null);
   const memoryIntervalRef = useRef<number | null>(null);
   const metricsUpdateTimeoutRef = useRef<number | null>(null);
@@ -112,17 +111,21 @@ export function PerformanceMonitor({
     if (!isVisible) return;
 
     if (enableWebVitals) {
+      // eslint-disable-next-line react-hooks/immutability
       collectWebVitals();
     }
 
     if (enableMemoryMonitoring && (performance as unknown as { memory?: MemoryInfo }).memory) {
+      // eslint-disable-next-line react-hooks/immutability
       startMemoryMonitoring();
     }
 
     if (enableFPSMonitoring) {
+      // eslint-disable-next-line react-hooks/immutability
       startFPSMonitoring();
     }
 
+    // eslint-disable-next-line react-hooks/immutability
     analyzeBundleSize();
 
     return () => {

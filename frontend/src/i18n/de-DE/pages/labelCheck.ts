@@ -1,0 +1,35 @@
+/**
+ * Deutsche "Zutatenliste-Prüfung"-Modulübersetzungen
+ */
+export default {
+  labelCheck: {
+    title: 'Zutatenliste-Prüfung',
+    subtitle: 'Zutatenliste einfügen oder scannen und mit öffentlichen Standards wie Lebensmittel-Homologie-Katalog, GB 2760 und GB 14880 abgleichen',
+    inputTitle: 'Zutatenliste eingeben',
+    placeholder: 'Beispiel:\nZutaten: Wasser, Zucker, Kaffeeweißer (Glukosesirup, gehärtetes Pflanzenöl), Kaliumsorbat, Weizenmehl',
+    startCheck: 'Prüfung starten',
+    uploadImage: 'Bild hochladen & erkennen',
+    uploadAria: 'Zutatenlisten-Bild hochladen',
+    clear: 'Leeren',
+    ocrText: 'OCR-erkannten Text:',
+    resultTitle: 'Prüfergebnis',
+    reportId: 'Berichts-ID: {{id}}',
+    categoryFoodHomology: 'Lebensmittel-Homologie',
+    categoryNewFood: 'Neue Lebensmittelressource',
+    categoryAdditive: 'Zusatzstoff',
+    categoryOrdinary: 'Gewöhnlicher Inhaltsstoff',
+    categoryEnricher: 'Nährstoffanreicherung',
+    categoryProhibited: 'Verboten / Risiko',
+    categoryUnknown: 'Nicht gelistet',
+    ingredientDetails: 'Inhaltsstoffdetails',
+    allergen: 'Allergen: {{group}}',
+    levelInfo: 'Info',
+    levelNote: 'Hinweis',
+    levelWarning: 'Warnung',
+    toastInputRequired: 'Bitte Zutatenlisten-Inhalt eingeben',
+    toastRecognized: '{{count}} Inhaltsstoffe erkannt',
+    toastFailed: 'Prüfung fehlgeschlagen. Bitte später erneut versuchen.',
+    toastOcrSuccess: 'OCR erfolgreich, insgesamt {{count}} Inhaltsstoffe',
+    toastOcrUnavailable: 'OCR nicht verfügbar, bitte Text einfügen',
+  },
+}

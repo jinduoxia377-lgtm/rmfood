@@ -111,14 +111,31 @@ class ComplianceCheckTool(BaseAgentTool):
                 name = ing.get("name", "")
                 dosage = ing.get("dosage_mg", 0)
 
-                # 检查是否在药食同源目录
+                # P0：不在内置限制表时，用真实 tcm_herbs 数据库判定药食同源目录
                 if name not in FOOD_HERB_LIMITS:
-                    violations.append({
-                        "ingredient": name,
-                        "type": "not_in_directory",
-                        "message": f"'{name}' 不在药食同源目录（2023版）中",
-                    })
-                    compliance_score -= 20
+                    is_food_homology = False
+                    db = context.get("db")
+                    if db is not None:
+                        try:
+                            from sqlalchemy import select
+                            from .....models.external_data import TCMHerb
+
+                            result = await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))
+                            herb = result.scalar_one_or_none()
+                            if herb is not None:
+                                is_food_homology = bool(herb.is_food_homology)
+                        except Exception as e:
+                            logger.warning(f"[compliance_check] 数据库查询失败（按目录外处理）: {e}")
+
+                    if not is_food_homology:
+                        violations.append({
+                            "ingredient": name,
+                            "type": "not_in_directory",
+                            "message": f"'{name}' 不在药食同源目录（2023版）中",
+                        })
+                        compliance_score -= 20
+                        continue
+                    # 是药食同源但无内置剂量上限：跳过剂量判断（不误报）
                     continue
 
                 limits = FOOD_HERB_LIMITS[name]

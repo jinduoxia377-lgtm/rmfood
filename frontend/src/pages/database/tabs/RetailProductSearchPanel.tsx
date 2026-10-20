@@ -12,7 +12,7 @@
  */
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  Card, CardHeader, CardContent,
+  Card,
   Button, Input,
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
   Badge,
@@ -20,17 +20,13 @@ import {
   Tooltip,
   EmptyState,
   Alert,
-  Accordion, AccordionItem, AccordionTrigger, AccordionContent,
   Pagination,
-  StatCard,
   DataTable,
-  TableHeader, TableBody, TableRow, TableCell,
 } from '@/components/ui';
 import {
   Search, Filter, Zap, RefreshCw, Download,
   Grid, List, ArrowDownAZ, ArrowDownZA,
-  Check, Flame, Star, Eye, Clock,
-  BarChart3, LineChart, PieChart,
+  Check, Flame, Star,
 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -134,13 +130,13 @@ const ProductCard: React.FC<{
 
   return (
     <div
-      className="card card-hover mb-3 p-4 rounded-lg border border-border"
+      className="card card-hover mb-[var(--space-apple-sm)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border border-border"
     >
       {hasImage && (
         <img
           src={product.image_urls?.[0]}
           alt={product.product_name}
-          className="max-h-[120px] object-contain mb-3 rounded"
+          className="max-h-[120px] object-contain mb-[var(--space-apple-sm)] rounded"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
       )}
@@ -335,32 +331,13 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
         const resp = await getSearchSuggestions(value, 10);
         setSuggestions(resp.suggestions.filter((s) => s.type === 'retail_product'));
         setShowSuggestions(true);
-      } catch {}
+      } catch { /* 忽略建议请求错误 */ }
     } else {
       setShowSuggestions(false);
     }
   }, []);
 
-  // 分类选择
-  const handleCategoryChange = useCallback(async (value: string) => {
-    setSelectedCategory(value as string);
-    setCurrentPage(1);
-    setLoading(true);
-    try {
-      const m = await import('../../../api/searchNew');
-      const categoryResp = await m.getProductsByCategory(value as string, { page: 1, page_size: 20, realtime });
-      const transformed = (categoryResp.items as OFFRawProduct[]).map(mapOFFProduct);
-      setResults(transformed);
-      setDataSource(categoryResp.data_source || 'unknown');
-      setTotalResults(categoryResp.total ?? transformed.length);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '未知错误';
-      setError(msg);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [realtime]);
+  
 
   // 收藏切换（持久化到后端）
   const toggleFavorite = useCallback(async (id: number) => {
@@ -459,14 +436,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
     setSelectedProducts(new Set());
   }, []);
 
-  // 进入对比视图（简化版本：仅更新选择状态，实际可跳转到新页面）
-  const goToComparison = useCallback(() => {
-    if (selectedProducts.size === 0) {
-      toast.info('请先选择至少1个产品进行对比');
-      return;
-    }
-    toast.success(`已选择 ${selectedProducts.size} 个产品，查看详情弹窗`);
-  }, [selectedProducts, toast]);
+  
 
   // 表格列定义（DataTable / ColumnDef 格式）
   const tableColumns = useMemo<ColumnDef<RetailProductDetail, any>[]>(() => [
@@ -551,12 +521,10 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
     },
   ], [favorites, selectedProducts, toggleFavorite, toggleSelect]);
 
-  const totalPages = Math.ceil(totalResults / 20);
-
   return (
     <div className={className}>
       {/* 搜索控制区 */}
-      <Card className="mb-4">
+      <Card className="mb-[var(--space-apple-md)]">
         <div className="flex flex-col gap-4">
           {/* 搜索栏 */}
           <div className="relative">
@@ -580,11 +548,11 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               className="w-full"
             />
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50 max-h-48 overflow-auto">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-[var(--radius-Apple-sm)] shadow-md z-50 max-h-48 overflow-auto">
                 {suggestions.map((s) => (
                   <div
                     key={s.text}
-                    className="px-3 py-2 cursor-pointer text-sm hover:bg-accent"
+                    className="px-[var(--space-apple-sm)] py-2 cursor-pointer text-sm hover:bg-accent"
                     onMouseDown={() => { setQuery(s.text); setShowSuggestions(false); }}
                   >
                     {s.text}
@@ -773,7 +741,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
 
       {/* 结果工具栏（Phase 3+4） */}
       {results.length > 0 && (
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="flex items-center gap-2 mb-[var(--space-apple-sm)] flex-wrap">
           <span className="text-xs text-muted-foreground">
             找到 {totalResults} 款产品
             {realtime && <Badge variant="warning" className="ml-2">实时数据</Badge>}
@@ -833,7 +801,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           </Button>
 
           {/* 视图切换 */}
-          <div className="flex rounded-md overflow-hidden border border-border">
+          <div className="flex rounded-[var(--radius-Apple-sm)] overflow-hidden border border-border">
             <Button
               variant={viewMode === 'table' ? 'primary' : 'ghost'}
               size="sm"
@@ -893,7 +861,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               pageSize={20}
               total={totalResults}
               onPageChange={(page) => { setCurrentPage(page); handleSearch(page); }}
-              className="mt-4"
+              className="mt-[var(--space-apple-md)]"
             />
           )}
         </>

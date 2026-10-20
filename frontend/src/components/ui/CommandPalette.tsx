@@ -25,11 +25,6 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 /** 可选择项的通用接口 */
-interface SelectableItem {
-  id: string | number
-  type: string
-}
-
 function ResultItem({
   item,
   onSelect,
@@ -137,6 +132,7 @@ export default function CommandPalette() {
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedIndex(-1)
       itemRefs.current.clear()
 
@@ -208,6 +204,7 @@ export default function CommandPalette() {
 
   // 搜索时重置选中索引
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex(-1)
   }, [searchData, suggestData])
 
@@ -314,31 +311,31 @@ export default function CommandPalette() {
               <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">支持搜索配方、实验、中药材、活性肽</p>
 
               {/* 快捷入口 */}
-              <div className="mt-5 grid grid-cols-2 gap-2 max-w-xs mx-auto">
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xs mx-auto">
                 {/* D-68：四个快捷入口 chip 在暗色下用 *-900/20 浅色蒙版 + 600 档文字，
                     实测 accent #a78bfa 3.72:1、secondary #60a5fa 4.02:1 —— 均未达 AA。
                     暗色色阶是反转的（号大越亮），统一提到 700 档后为 5.49 / 5.67。 */}
                 <button
                   onClick={() => { navigate('/formulas/new'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-sm font-medium"
+                  className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-sm font-medium"
                 >
                   <Plus size={14} /> 新建配方
                 </button>
                 <button
                   onClick={() => { navigate('/experiments/new'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 hover:bg-accent-100 dark:hover:bg-accent-900/30 transition-colors text-sm font-medium"
+                  className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 hover:bg-accent-100 dark:hover:bg-accent-900/30 transition-colors text-sm font-medium"
                 >
                   <Plus size={14} /> 新建实验
                 </button>
                 <button
                   onClick={() => { navigate('/ai'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
+                  className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
                 >
                   <Sparkles size={14} /> AI 助手
                 </button>
                 <button
                   onClick={() => { navigate('/databases'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
+                  className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
                 >
                   <Dna size={14} /> 数据库
                 </button>

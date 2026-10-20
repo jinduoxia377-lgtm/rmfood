@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useMemo } from 'react'
+import React, { memo, useState, useCallback } from 'react'
 
 import { logger } from '@/utils/safeLogger';
 import {
@@ -148,7 +148,7 @@ const SuggestedQuestionCard: React.FC<{
   question: string
   onApply: (question: string) => void
   index: number
-}> = memo(({ question, onApply, index }) => (
+}> = memo(({ question, onApply }) => (
   <button
     onClick={() => onApply(question)}
     className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-gradient-to-r hover:from-secondary-50 hover:to-accent-50 dark:hover:from-secondary-900/20 dark:hover:to-accent-900/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-secondary-200 dark:hover:border-secondary-800"
@@ -175,7 +175,7 @@ const ShimmerSkeleton: React.FC = memo(() => (
         ))}
       </div>
     </div>
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {[1, 2, 3].map(i => (
         <div key={i} className="h-20 bg-neutral-200 dark:bg-neutral-700 rounded-lg"></div>
       ))}
@@ -216,6 +216,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
 
   React.useEffect(() => {
     if (analysis && !isAnalyzing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       addToHistory(analysis)
     }
   }, [analysis, isAnalyzing, addToHistory])
@@ -386,7 +387,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <IntentBadge intent={analysis.intent} />
               <SentimentIndicator sentiment={analysis.sentiment} />
               <ComplexityGauge complexity={analysis.complexity} />

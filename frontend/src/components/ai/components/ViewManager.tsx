@@ -13,7 +13,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import type {
   ViewManagerProps,
   ColumnConfig,
-  ColumnView,
 } from '@/types/columnView.types';
 import { useToast } from '@/components/ui'
 
@@ -103,10 +102,9 @@ export function ViewManager({
   onSaveView,
   onDeleteView,
   onSetAsDefault,
-  maxViews = 20,
   className = '',
 }: ViewManagerProps) {
-  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
+  const { error: toastError } = useToast();
   // 内部状态
   const [viewName, setViewName] = useState('');
   const [viewDesc, setViewDesc] = useState('');

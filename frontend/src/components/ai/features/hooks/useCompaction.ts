@@ -7,9 +7,9 @@
  * - 保留关键上下文
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { logger } from '@/utils/safeLogger';
-import { tokenEstimator, type CompactionTrigger, type EventSourcedSession } from '../utils/eventSourcing';
+import { tokenEstimator, type CompactionTrigger } from '../utils/eventSourcing';
 import type { AgentMessage } from '@/components/ai/shared/types';
 
 export interface CompactionOptions {
@@ -56,7 +56,7 @@ function shouldCompact(
   messages: AgentMessage[],
   options: Required<CompactionOptions>,
 ): CompactionTrigger | null {
-  const { used, ratio } = calculateTokenUsage(messages, options.maxTokens);
+  const { ratio } = calculateTokenUsage(messages, options.maxTokens);
 
   if (ratio >= options.overflowThreshold) {
     return 'context-overflow';
@@ -105,8 +105,6 @@ export function useCompaction(options: CompactionOptions = {}) {
     maxTokens = 128000,
     minMessagesToKeep = 10,
   } = { ...options };
-
-  const sessionRef = useRef<EventSourcedSession | null>(null);
 
   /**
    * 检查当前消息是否需要压缩

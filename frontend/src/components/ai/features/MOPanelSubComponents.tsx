@@ -373,7 +373,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
       {/* 展开详情 */}
       {expanded && (
         <div className="px-5 pb-5 border-t border-neutral-100 dark:border-neutral-800 pt-4 animate-in slide-in-from-top-2 duration-200">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
             {objectivesConfig.map((obj) => {
               const val = candidate.objective_scores[obj.key] ?? 0
               return (

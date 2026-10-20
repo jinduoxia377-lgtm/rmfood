@@ -435,7 +435,7 @@ export class AdvancedPdfExportService {
     this.doc.setFontSize(this.options.fontSize.small!);
     this.doc.setTextColor(...this.options.colors.secondary!);
 
-    references.forEach((ref, i) => {
+    references.forEach((ref) => {
       if (this.checkPageBreak(15)) this.addNewPage();
 
       const refText = [
@@ -467,8 +467,6 @@ export class AdvancedPdfExportService {
         let currentLevel1: any = null;
 
         this.bookmarks.forEach((bookmark) => {
-          const page = this.doc.internal.pages[bookmark.page];
-
           if (bookmark.level === 0) {
             currentLevel0 = {
               title: bookmark.title,

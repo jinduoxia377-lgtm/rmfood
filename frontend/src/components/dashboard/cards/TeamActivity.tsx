@@ -7,6 +7,7 @@
  */
 import type { FC } from 'react'
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Users, Activity as ActivityIcon, WifiOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardSkeleton, Badge } from '@/components/ui'
 import { wsService, isWebSocketEnabled } from '@/services/websocket'
@@ -17,6 +18,7 @@ interface TeamActivityProps {
 }
 
 export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading }) => {
+  const { t } = useTranslation()
   const [onlineUsers, setOnlineUsers] = useState<{ userId: string; userName: string; status: string }[]>([])
 
   // R-06 风格：WS 启用时订阅 user_status（载荷为扁平用户对象，与 TeamOnlineStatus 一致）；未启用时不伪造
@@ -49,12 +51,12 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users size={18} className="text-secondary-600 dark:text-secondary-700" />
-            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t('pages.dashboard.cards.teamActivity')}</CardTitle>
           </div>
           {isWebSocketEnabled ? (
-            <Badge variant="primary" size="sm">{onlineCount} 人在线</Badge>
+            <Badge variant="primary" size="sm">{t('pages.dashboard.cards.onlineCount', { count: onlineCount })}</Badge>
           ) : (
-            <Badge variant="secondary" size="sm">实时连接未启用</Badge>
+            <Badge variant="secondary" size="sm">{t('pages.dashboard.cards.realtimeNotEnabled')}</Badge>
           )}
         </div>
       </CardHeader>
@@ -64,17 +66,17 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
             {isWebSocketEnabled ? (
               <>
                 <Users size={28} className="text-neutral-600 dark:text-neutral-400" />
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无团队活动</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('pages.dashboard.cards.noTeamActivity')}</p>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                  当协作者加入仪表盘或产生新的动态时，将在此实时显示
+                  {t('pages.dashboard.cards.teamActivityDesc')}
                 </p>
               </>
             ) : (
               <>
                 <WifiOff size={28} className="text-neutral-600 dark:text-neutral-400" />
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">实时连接未启用</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('pages.dashboard.cards.realtimeNotEnabled')}</p>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                  仅展示最近动态（静态数据）。设置 VITE_WEBSOCKET_ENABLED=true 后可查看实时协作
+                  {t('pages.dashboard.cards.staticOnlyDesc')}
                 </p>
               </>
             )}
@@ -84,7 +86,7 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
             {/* 在线协作者 */}
             {onlineUsers.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">当前在线</h4>
+                <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">{t('pages.dashboard.cards.currentlyOnline')}</h4>
                 <div className="flex flex-wrap gap-2">
                   {onlineUsers.map(u => (
                     <div key={u.userId} className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-300/20 text-xs">
@@ -100,7 +102,7 @@ export const TeamActivity: FC<TeamActivityProps> = ({ timeline, timelineLoading 
             {timeline.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2 flex items-center gap-1">
-                  <ActivityIcon size={12} /> 最近动态
+                  <ActivityIcon size={12} /> {t('pages.dashboard.cards.recentActivityShort')}
                 </h4>
                 <div className="space-y-2">
                   {timeline.slice(0, 5).map(e => (

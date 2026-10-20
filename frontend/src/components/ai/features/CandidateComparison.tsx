@@ -22,14 +22,7 @@ import {
   Download,
   CheckCircle2,
   Star,
-  TrendingUp,
-  Shield,
-  DollarSign,
-  Sparkles,
-  BarChart3,
   Table2,
-  ArrowUpDown,
-  FileSpreadsheet,
   Filter,
   Radar as LucideRadar,
 } from 'lucide-react';
@@ -95,7 +88,7 @@ export function CandidateComparison({
   const [displayMode, setDisplayMode] = useState<DisplayMode>('absolute');
   const [hoveredCandidateId, setHoveredCandidateId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'score' | 'cost' | 'safety'>('score');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
   const sortedCandidates = useMemo(() => {
     return [...candidates].sort((a, b) => {
@@ -126,7 +119,7 @@ export function CandidateComparison({
 
     return candidates
       .filter((c) => selectedIds.includes(c.id))
-      .map((c, i) => ({
+      .map((c) => ({
         candidate: c.name,
         color: COLORS[candidates.indexOf(c) % COLORS.length],
         ...c.scores,

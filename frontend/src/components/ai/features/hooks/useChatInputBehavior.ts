@@ -65,10 +65,11 @@ export function useChatInputBehavior(
   const [showFormatError, setShowFormatError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  // 监听外部 initialValue 变化
+  // 监听外部 initialValue 变化（仅依赖 initialValue；若同时依赖 value，
+  // 用户每次输入后 value !== initialValue 都会被重置回初始值——真实缺陷）
   useEffect(() => {
-    if (initialValue !== value) setValue(initialValue)
-  }, [initialValue, value])
+    setValue(initialValue)
+  }, [initialValue])
 
   // 监听用户偏好
   useEffect(() => {

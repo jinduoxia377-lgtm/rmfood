@@ -1,15 +1,15 @@
-import { Skeleton } from '@/components/ui/Skeleton'
+﻿import { Skeleton } from '@/components/ui/Skeleton'
 
 export function FormulaListSkeleton() {
   return (
-    <div className="max-w-[1520px] mx-auto space-y-8 px-4 lg:px-6 animate-fade-in">
+    <div className="max-w-[1520px] mx-auto space-y-8 px-[var(--space-apple-md)] lg:px-6 animate-fade-in">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton width={200} height={32} animationType="pulse" />
           <Skeleton width={400} height={16} animationType="pulse" />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           <Skeleton width={100} height={36} radius={8} animationType="pulse" />
           <Skeleton width={120} height={36} radius={8} animationType="pulse" />
         </div>
@@ -19,7 +19,7 @@ export function FormulaListSkeleton() {
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         {/* Left Sidebar - Filter Panel */}
         <div className="space-y-6">
-          <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-5">
+          <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 space-y-5">
             <div className="flex items-center justify-between">
               <Skeleton width={80} height={20} animationType="pulse" />
               <Skeleton width={60} height={24} radius={12} animationType="pulse" />
@@ -75,8 +75,8 @@ export function FormulaListSkeleton() {
         {/* Right Content Area */}
         <div className="space-y-6">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)]">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
               <Skeleton width={140} height={36} radius={8} animationType="pulse" />
               <Skeleton width={100} height={36} radius={8} animationType="pulse" />
               <Skeleton width={100} height={36} radius={8} animationType="pulse" />
@@ -91,12 +91,12 @@ export function FormulaListSkeleton() {
           <StatisticsCardsSkeleton />
 
           {/* Table Skeleton */}
-          <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
+          <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-hidden">
             <table className="w-full">
-              <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+              <thead className="bg-[var(--bg-tertiary)] border-b border-[var(--border-color)]">
                 <tr>
                   {[40, 150, 100, 100, 100, 120, 140].map((w, i) => (
-                    <th key={i} className="px-4 py-3">
+                    <th key={i} className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Skeleton width={w} height={14} animationType="pulse" />
                     </th>
                   ))}
@@ -104,26 +104,26 @@ export function FormulaListSkeleton() {
               </thead>
               <tbody>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
-                    <td className="px-4 py-3">
+                  <tr key={i} className="border-b border-[var(--border-color)] last:border-0">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Skeleton width={20} height={14} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Skeleton width={120 + (i % 3) * 20} height={16} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Skeleton width={70} height={24} radius={12} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Skeleton width={50} height={14} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hidden md:table-cell">
                       <Skeleton width={60} height={14} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hidden lg:table-cell">
                       <Skeleton width={90} height={14} animationType="pulse" />
                     </td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hidden xl:table-cell">
                       <Skeleton width={110} height={14} animationType="pulse" />
                     </td>
                   </tr>
@@ -133,7 +133,7 @@ export function FormulaListSkeleton() {
           </div>
 
           {/* Pagination Skeleton */}
-          <div className="flex items-center justify-between pt-4">
+          <div className="flex items-center justify-between pt-[var(--space-apple-md)]">
             <Skeleton width={180} height={14} animationType="pulse" />
             <div className="flex items-center gap-2">
               {[32, 32, 32, 40, 32, 32].map((w, i) => (
@@ -149,11 +149,11 @@ export function FormulaListSkeleton() {
 
 function StatisticsCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3"
+          className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]"
         >
           <div className="flex items-center justify-between">
             <Skeleton width={24} height={24} radius={6} animationType="pulse" />

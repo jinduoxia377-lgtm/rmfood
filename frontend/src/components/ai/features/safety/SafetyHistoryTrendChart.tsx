@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { SafetyHistoryEntry } from '../SafetyTab'
@@ -9,7 +9,7 @@ interface SafetyHistoryTrendChartProps {
 }
 
 export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHistoryTrendChartProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [, setHoveredIndex] = useState<number | null>(null)
 
   const chartData = React.useMemo(() => {
     if (history.length === 0) return []

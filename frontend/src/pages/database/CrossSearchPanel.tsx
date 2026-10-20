@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMFOOD 交叉检索面板
  * ==================
  *
@@ -15,30 +15,30 @@ import React, { useState, useCallback, useEffect } from "react";
 import { databaseApi } from "@/api/database";
 
 const ACTIVITY_COLORS: Record<string, string> = {
-  "ACE抑制": "bg-secondary-100 text-secondary-700",
-  "抗菌": "bg-accent-100 text-accent-700",
-  "抗氧化": "bg-warning-100 text-warning-700",
+  "ACE抑制": "bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]",
+  "抗菌": "bg-[var(--color-accent-container)] text-[var(--color-accent-text)]",
+  "抗氧化": "bg-[var(--color-warning-container)] text-[var(--color-warning-text)]",
   "抗炎": "bg-danger-100 text-danger-700",
-  "降血糖": "bg-success-100 text-success-700",
-  "降血脂": "bg-accent-100 text-accent-700",
+  "降血糖": "bg-[var(--color-success-container)] text-[var(--color-success-text)]",
+  "降血脂": "bg-[var(--color-accent-container)] text-[var(--color-accent-text)]",
   "免疫调节": "bg-info-100 text-info-700",
-  "抗癌": "bg-error-100 text-error-700",
+  "抗癌": "bg-[var(--color-error-container)] text-[var(--color-error-text)]",
   "抗凝血": "bg-danger-100 text-danger-700",
-  "阿片样活性": "bg-accent-100 text-accent-700",
-  "金属离子螯合": "bg-warning-100 text-warning-700",
-  "DPP-IV抑制": "bg-success-100 text-success-700",
-  "α-葡萄糖苷酶抑制": "bg-primary-100 text-primary-700",
+  "阿片样活性": "bg-[var(--color-accent-container)] text-[var(--color-accent-text)]",
+  "金属离子螯合": "bg-[var(--color-warning-container)] text-[var(--color-warning-text)]",
+  "DPP-IV抑制": "bg-[var(--color-success-container)] text-[var(--color-success-text)]",
+  "α-葡萄糖苷酶抑制": "bg-[var(--color-primary-container)] text-[var(--color-primary-text)]",
   "血管紧张素转化酶抑制": "bg-info-100 text-info-700",
-  "ACE inhibitory": "bg-secondary-100 text-secondary-700",
-  "Antioxidant": "bg-warning-100 text-warning-700",
+  "ACE inhibitory": "bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]",
+  "Antioxidant": "bg-[var(--color-warning-container)] text-[var(--color-warning-text)]",
   "Anti-inflammatory": "bg-danger-100 text-danger-700",
-  "Antimicrobial": "bg-accent-100 text-accent-700",
+  "Antimicrobial": "bg-[var(--color-accent-container)] text-[var(--color-accent-text)]",
 };
 
 const RELEVANCE_BADGES: Record<string, { color: string; label: string }> = {
-  high: { color: "bg-success-100 text-success-700 border-success-300", label: "高相关" },
-  medium: { color: "bg-warning-100 text-warning-700 border-warning-300", label: "中相关" },
-  low: { color: "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 border-neutral-300", label: "弱相关" },
+  high: { color: "bg-[var(--color-success-container)] text-[var(--color-success-text)] border-[var(--color-success-border)]", label: "高相关" },
+  medium: { color: "bg-[var(--color-warning-container)] text-[var(--color-warning-text)] border-[var(--color-warning-border)]", label: "中相关" },
+  low: { color: "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)]", label: "弱相关" },
 };
 
 function getRelevanceTier(score: number): string {
@@ -192,40 +192,40 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
     if (!result) return null;
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-[var(--space-apple-md)]">
         {/* 结果摘要 */}
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-neutral-600">
+          <span className="text-[var(--text-secondary)]">
             "<strong>{result.herb.name_cn}</strong>" 共找到{" "}
-            <strong className="text-secondary-600">{result.match_summary.matched_peptides}</strong> 条关联活性肽
+            <strong className="text-[var(--color-secondary-text)]">{result.match_summary.matched_peptides}</strong> 条关联活性肽
           </span>
         </div>
 
         {/* 药材基本信息 */}
-        <div className="bg-gradient-to-r from-secondary-50 to-success-50 rounded-xl p-4 border border-secondary-100">
+        <div className="bg-gradient-to-r from-secondary-50 to-success-50 rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border border-[var(--color-secondary-border)]">
           <div className="flex items-start justify-between">
             <div>
               <h4 className="font-bold text-lg text-neutral-800">{result.herb.name_cn}</h4>
               {result.herb.name_latin && (
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic font-mono">{result.herb.name_latin}</p>
               )}
-              <p className="text-xs text-neutral-600 mt-1 line-clamp-2">{result.herb.effects}</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">{result.herb.effects}</p>
             </div>
-            <span className="text-xs px-2 py-1 bg-white dark:bg-neutral-800 rounded-full text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+            <span className="text-xs px-2 py-1 bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] text-[var(--text-secondary)] border border-[var(--border-color)]">
               {result.herb.category || "未分类"}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-secondary-100">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--color-secondary-border)]">
             <div className="text-center">
-              <div className="text-lg font-bold text-secondary-600">{result.match_summary.total_compounds}</div>
+              <div className="text-lg font-bold text-[var(--color-secondary-text)]">{result.match_summary.total_compounds}</div>
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">化合物</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-warning-600">{result.match_summary.matched_peptides}</div>
+              <div className="text-lg font-bold text-[var(--color-warning-text)]">{result.match_summary.matched_peptides}</div>
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">关联肽</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-primary-700">{result.match_summary.high_relevance_peptides}</div>
+              <div className="text-lg font-bold text-[var(--color-primary-text)]">{result.match_summary.high_relevance_peptides}</div>
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">高相关性</div>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
             {Array.from(new Set(result.related_peptides.map((p) => p.activity_type))).map((act) => (
               <span
                 key={act}
-                className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[act] || "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"}`}
+                className={`text-xs px-2 py-0.5 rounded-[var(--radius-pill)] ${ACTIVITY_COLORS[act] || "bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"}`}
               >
                 {act}
               </span>
@@ -247,18 +247,18 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         )}
 
         {/* 结果表格 */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-sm border border-[var(--border-color)] overflow-hidden">
           <div className="max-h-[480px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-neutral-50 dark:bg-neutral-800 z-10">
-                <tr className="text-left border-b border-neutral-200 dark:border-neutral-700">
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关性</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">序列</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">来源</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">活性</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">活性值</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">MW(Da)</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">水解酶</th>
+              <thead className="sticky top-0 bg-[var(--bg-tertiary)] z-10">
+                <tr className="text-left border-b border-[var(--border-color)]">
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关性</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">序列</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">来源</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">活性</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">活性值</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-right">MW(Da)</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">水解酶</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,35 +268,35 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                   return (
                     <tr
                       key={`${idx}-${item.sequence}`}
-                      className="border-b border-neutral-50 hover:bg-secondary-50/20 transition-colors"
+                      className="border-b border-neutral-50 hover:bg-[var(--color-secondary-container)]/20 transition-colors"
                     >
-                      <td className="px-4 py-2">
-                        <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full border ${badge.color}`}>
+                      <td className="px-[var(--space-apple-md)] py-2">
+                        <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-[var(--radius-pill)] border ${badge.color}`}>
                           {item.relevance_score} {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2 font-mono font-semibold text-neutral-800">
+                      <td className="px-[var(--space-apple-md)] py-2 font-mono font-semibold text-neutral-800">
                         {item.sequence}
                       </td>
-                      <td className="px-4 py-2">
-                        <div className="text-xs text-neutral-700">{item.source_protein}</div>
+                      <td className="px-[var(--space-apple-md)] py-2">
+                        <div className="text-xs text-[var(--text-primary)]">{item.source_protein}</div>
                         <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.source_organism}</div>
                       </td>
-                      <td className="px-4 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${ACTIVITY_COLORS[item.activity_type] || "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"}`}>
+                      <td className="px-[var(--space-apple-md)] py-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-[var(--radius-pill)] ${ACTIVITY_COLORS[item.activity_type] || "bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"}`}>
                           {item.activity_type}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-right font-mono text-sm">
-                        <span className={Number(item.activity_value) < 10 ? "text-success-600 font-semibold" :
-                          Number(item.activity_value) < 100 ? "text-warning-600" : "text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"}>
+                      <td className="px-[var(--space-apple-md)] py-2 text-right font-mono text-sm">
+                        <span className={Number(item.activity_value) < 10 ? "text-[var(--color-success-text)] font-semibold" :
+                          Number(item.activity_value) < 100 ? "text-[var(--color-warning-text)]" : "text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"}>
                           {item.activity_value}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-right font-mono text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                      <td className="px-[var(--space-apple-md)] py-2 text-right font-mono text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {item.molecular_weight?.toFixed(1) || "-"}
                       </td>
-                      <td className="px-4 py-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                      <td className="px-[var(--space-apple-md)] py-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                         {item.hydrolysis_enzyme}
                       </td>
                     </tr>
@@ -309,13 +309,13 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
 
         {/* 代表性化合物 */}
         {result.compounds.length > 0 && (
-          <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg px-4 py-3">
+          <div className="bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
             <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">代表性化合物:</p>
             <div className="flex gap-2 flex-wrap">
               {result.compounds.slice(0, 10).map((c, i) => (
                 <span
                   key={i}
-                  className="text-xs px-2.5 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md text-neutral-600 dark:text-neutral-300"
+                  className="text-xs px-2.5 py-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] text-[var(--text-secondary)]"
                 >
                   {c.name}
                 </span>
@@ -328,7 +328,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-[var(--space-apple-md)]">
       {/* 搜索输入框 */}
       <form onSubmit={handleSubmit} className="relative">
         <input
@@ -338,7 +338,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           placeholder="输入药材或食物名称，如：黄芪、牛奶、三文鱼..."
-          className="w-full px-4 py-3 pl-11 text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-300 focus:border-transparent shadow-sm"
+          className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] pl-11 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary-container)] focus:border-transparent shadow-sm"
         />
         {/* 搜索图标 */}
         <svg
@@ -355,30 +355,30 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-secondary-container text-secondary-main text-sm font-medium rounded-lg hover:bg-secondary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-[var(--space-apple-md)] py-1.5 bg-secondary-container text-secondary-main text-sm font-medium rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? "搜索中..." : "关联检索"}
         </button>
 
         {/* 下拉建议 */}
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-20 max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-md)] shadow-lg z-20 max-h-64 overflow-y-auto">
             {suggestions.map((item, i) => (
               <button
                 key={i}
                 type="button"
                 onMouseDown={() => handleSuggestionClick(item)}
-                className="w-full px-4 py-2.5 text-left hover:bg-secondary-50 flex items-center gap-3 text-sm border-b border-neutral-50 last:border-0"
+                className="w-full px-[var(--space-apple-md)] py-2.5 text-left hover:bg-[var(--color-secondary-container)] flex items-center gap-[var(--space-apple-sm)] text-sm border-b border-neutral-50 last:border-0"
               >
                 <span className={`w-16 text-xs font-medium px-1.5 py-0.5 rounded ${
-                  item.type === "source" ? "bg-secondary-50 text-secondary-600" :
-                  item.type === "sequence" ? "bg-accent-50 text-accent-600" :
-                  "bg-neutral-100 dark:bg-neutral-800 text-neutral-600"
+                  item.type === "source" ? "bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]" :
+                  item.type === "sequence" ? "bg-[var(--color-accent-container)] text-[var(--color-accent-text)]" :
+                  "bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"
                 }`}>
                   {item.type === "source" ? "来源" :
                    item.type === "sequence" ? "序列" : item.type}
                 </span>
-                <span className="text-neutral-700 font-medium">{item.label}</span>
+                <span className="text-[var(--text-primary)] font-medium">{item.label}</span>
                 {item.sublabel && (
                   <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">{item.sublabel}</span>
                 )}
@@ -390,7 +390,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
 
       {/* 错误提示 */}
       {error && (
-        <div className="px-4 py-3 bg-error-50 border border-error-200 rounded-lg text-sm text-error-600">
+        <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)]">
           {error}
         </div>
       )}
@@ -398,7 +398,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
       {/* 加载状态 */}
       {loading && !result && (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-3 border-secondary-200 border-t-blue-600 rounded-full mr-3" />
+          <div className="animate-spin w-8 h-8 border-3 border-[var(--color-secondary-border)] border-t-blue-600 rounded-[var(--radius-pill)] mr-3" />
           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-sm">正在执行交叉检索...</span>
         </div>
       )}
@@ -414,7 +414,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
                 setQuery(term);
                 doSearch(term);
               }}
-              className="text-xs px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 rounded-md hover:bg-neutral-200 transition-colors"
+              className="text-xs px-2.5 py-1 bg-[var(--bg-tertiary)] text-[var(--text-secondary)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--border-color)] transition-colors"
             >
               {term}
             </button>

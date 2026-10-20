@@ -90,12 +90,12 @@ class TestRBACSystem:
     
     def setup_method(self):
         """每个测试前的初始化"""
-        from app.core.rbac import RBACManager
+        from app.core.rbac.rbac import RBACManager
         self.rbac = RBACManager()
     
     def test_admin_has_all_permissions(self):
         """管理员应拥有所有权限"""
-        from app.core.rbac import Resource, Action
+        from app.core.rbac.rbac import Resource, Action
         
         for resource in Resource:
             for action in Action:
@@ -104,7 +104,7 @@ class TestRBACSystem:
     
     def test_guest_limited_permissions(self):
         """访客应该只有有限权限"""
-        from app.core.rbac import Resource, Action
+        from app.core.rbac.rbac import Resource, Action
         
         # 访客可以查看配方和数据库
         assert self.rbac.check_permission('GUEST', Resource.FORMULA, Action.READ) is True
@@ -117,7 +117,7 @@ class TestRBACSystem:
     
     def test_formulator_can_manage_formulas(self):
         """配方师应能管理配方但不能管理用户"""
-        from app.core.rbac import Resource, Action
+        from app.core.rbac.rbac import Resource, Action
         
         # 配方权限
         assert self.rbac.check_permission('FORMULATOR', Resource.FORMULA, Action.CREATE) is True
@@ -130,7 +130,7 @@ class TestRBACSystem:
     
     def test_reviewer_can_approve_but_not_create(self):
         """审核员可以审批但不能创建配方"""
-        from app.core.rbac import Resource, Action
+        from app.core.rbac.rbac import Resource, Action
         
         assert self.rbac.check_permission('REVIEWER', Resource.FORMULA, Action.APPROVE) is True
         assert self.rbac.check_permission('REVIEWER', Resource.FORMULA, Action.REJECT) is True
@@ -138,7 +138,7 @@ class TestRBACSystem:
     
     def test_grant_custom_permission(self):
         """测试授予自定义权限"""
-        from app.core.rbac import Resource, Permission
+        from app.core.rbac.rbac import Resource, Permission
         
         # 研究员默认不能导出配方
         assert self.rbac.check_permission('RESEARCHER', Resource.FORMULA, Action.EXPORT) is False
@@ -152,7 +152,7 @@ class TestRBACSystem:
     
     def test_revoke_permission(self):
         """测试撤销权限"""
-        from app.core.rbac import Resource, Permission
+        from app.core.rbac.rbac import Resource, Permission
         
         # 先授予权限
         delete_perm = Permission(Resource.FORMULA, Action.DELETE)
@@ -172,7 +172,7 @@ class TestAccountLockout:
     @pytest.fixture
     def lockout(self):
         """创建账号锁定器实例"""
-        from app.core.account_lockout import AccountLockout
+        from app.core.security.account_lockout import AccountLockout
         return AccountLockout(
             max_attempts=3,
             lockout_duration_minutes=5

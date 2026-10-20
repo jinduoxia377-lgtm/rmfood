@@ -11,7 +11,7 @@
  */
 
 import { FormulaDesignEngine, formulaDesignEngine } from './formulaDesignEngine'
-import type { FormulaCandidate, FormulaDesignRequest, ScoreDimension } from './formulaDesignEngine'
+import type { FormulaCandidate, FormulaDesignRequest } from './formulaDesignEngine'
 import { FormulaDialogueManager } from './dialogue/FormulaDialogueManager'
 import { knowledgeGraph } from './knowledge/FormulaKnowledgeGraph'
 import { logger } from '@/utils/safeLogger'
@@ -209,7 +209,7 @@ export class FormulaIntelligenceService {
       if (blocks.length > 0) {
         return { blocks, sessionState: session }
       }
-    } catch (_e) {
+    } catch {
       // fallback to v1 engine
     }
     const request = this.extractDesignRequest(query, session.sessionId)

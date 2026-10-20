@@ -18,16 +18,20 @@ import { UserRole } from '@/types'
 import { authApi } from '@/api/auth'
 import { connectWebSocket, disconnectWebSocket } from '@/services/websocket'
 import { logger } from '@/utils/safeLogger';
+import { normalizeUser } from '@/utils/userNormalizer';
 import api from '@/api/client'
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  requiresTwoFactor: boolean
+  twoFactorUsername: string | null
 
-  login: (username: string, password: string) => Promise<void>
+  login: (username: string, password: string, twoFactorCode?: string) => Promise<'ok' | '2fa'>
   logout: () => Promise<void>
   fetchUser: () => Promise<void>
   setUser: (user: User) => void
+  clearTwoFactor: () => void
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => {
@@ -41,7 +45,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       const response = await api.get('/auth/me', { params: { _silent: true } })
       const user = response.data
       if (user) {
-        set({ user, isAuthenticated: true })
+        set({ user: normalizeUser(user), isAuthenticated: true })
       } else {
         set({ user: null, isAuthenticated: false })
       }
@@ -57,11 +61,13 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     user: null,
     isAuthenticated: false,
     isLoading: true,
+    requiresTwoFactor: false,
+    twoFactorUsername: null,
 
     // ═══════════════════════════════════════════
     // 登录流程 — 必须先验证 Cookie 再标记已认证
     // ═══════════════════════════════════════════
-    login: async (username, password) => {
+    login: async (username, password, twoFactorCode) => {
       let userFetched = false
       let fallbackToken: string | null = null
 
@@ -69,9 +75,17 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         set({ isLoading: true })
 
         // 1. 调用登录 API — 后端同时设置 HttpOnly Cookie 并返回 token
-        const loginResult = await authApi.login({ username, password })
+        const loginResult = await authApi.login({ username, password, twoFactorCode })
+
+        // 1a. 2FA 二次验证：返回 requires_2fa 时不发放令牌，需要用户输入动态码
+        if (loginResult && 'requires_2fa' in loginResult && loginResult.requires_2fa) {
+          set({ requiresTwoFactor: true, twoFactorUsername: username, isLoading: false })
+          return '2fa'
+        }
+
         // 保存 token 作为 Cookie 失效时的降级方案
-        fallbackToken = loginResult?.accessToken || null
+        // 后端返回 snake_case access_token；同时兼容 camelCase accessToken
+        fallbackToken = (loginResult as any)?.access_token || (loginResult as any)?.accessToken || null
 
         // 2. 获取 CSRF token（必须在登录成功后、任何状态变更请求之前）
         // 说明: 后端并无 /auth/csrf 路由（只有 /agent/csrf-token）。
@@ -85,7 +99,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           const { data: user } = await api.get<User>('/auth/me', {
             _loginFlow: true,
           } as Record<string, unknown>)
-          set({ user, isAuthenticated: true })
+          set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
           userFetched = true
         } catch (error) {
           // Cookie 可能因域名不匹配（如局域网访问）未被浏览器接受
@@ -96,7 +110,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 _loginFlow: true,
                 headers: { Authorization: `Bearer ${fallbackToken}` },
               } as Record<string, unknown>)
-              set({ user, isAuthenticated: true })
+              set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
               userFetched = true
             } catch (fallbackError) {
               logger.error('Login fallback failed:', fallbackError)
@@ -120,6 +134,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }).catch((error) => {
           logger.error('WebSocket connection error after login:', error)
         })
+
+        return 'ok'
       } catch (error) {
         logger.error('Login error:', error)
         set({ isLoading: false })
@@ -131,6 +147,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       }
     },
+
+    clearTwoFactor: () => set({ requiresTwoFactor: false, twoFactorUsername: null }),
 
     logout: async () => {
       try {
@@ -154,7 +172,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     fetchUser: async () => {
       try {
         const user = await authApi.getMe()
-        set({ user, isAuthenticated: true, isLoading: false })
+        set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, isLoading: false })
 
         // 连接 WebSocket
         connectWebSocket().then((connected) => {
@@ -176,6 +194,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       }
     },
 
-    setUser: (user) => set({ user }),
+    setUser: (user) => set({ user: normalizeUser(user as unknown as Record<string, unknown>) }),
   }
 })

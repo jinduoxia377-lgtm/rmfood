@@ -18,17 +18,15 @@
  * @author RMFOOD Team
  */
 
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import type { SmartSuggestion } from './useChatInputSuggestions'
 export type { SmartSuggestion } from './useChatInputSuggestions'
-import type { EnhancedSuggestion } from './useChatInputSuggestions'
-export type { EnhancedSuggestion } from './useChatInputSuggestions'
 
 import { useChatInputBehavior, type UseChatInputBehaviorOptions, type UseChatInputBehaviorReturn } from './useChatInputBehavior'
 import { useChatInputSuggestions, type UseChatInputSuggestionsOptions, type UseChatInputSuggestionsReturn } from './useChatInputSuggestions'
 import { useChatInputAttachments, type UseChatInputAttachmentsReturn } from './useChatInputAttachments'
 import { useChatInputDeepThinking, type UseChatInputDeepThinkingReturn } from './useChatInputDeepThinking'
-import { useChatInputValidation, type UseChatInputValidationOptions, type UseChatInputValidationReturn } from './useChatInputValidation'
+import { useChatInputValidation, type UseChatInputValidationReturn } from './useChatInputValidation'
 import { useChatInputKeyboard } from './useChatInputKeyboard'
 
 // ===== 公共类型 =====
@@ -170,6 +168,12 @@ export function useChatInputState(
     attachments.clearAttachments()
   }, [behavior, suggestions, attachments])
 
+  // 触发深度思考：执行分析并打开面板
+  const triggerDeepThinking = useCallback((input: string) => {
+    deepThinking.triggerDeepThinking(input)
+    suggestions.setShowDeepThinkingPanel(true)
+  }, [deepThinking, suggestions])
+
   return {
     // 行为
     ...behavior,
@@ -178,7 +182,8 @@ export function useChatInputState(
     isOverLimit: validation.isOverLimit,
     isExceeded: validation.isExceeded,
     canSend: validation.canSend,
-    errorMessage: validation.errorMessage,
+    // errorMessage 使用 behavior 的真实错误消息（validation 的 errorMessage 恒为空）
+    errorMessage: behavior.errorMessage,
     // 建议
     ...suggestions,
     applySuggestion,
@@ -195,7 +200,7 @@ export function useChatInputState(
     isAnalyzing: deepThinking.isAnalyzing,
     toggleDeepThinking: suggestions.toggleDeepThinking,
     toggleSmartSearch: suggestions.toggleSmartSearch,
-    triggerDeepThinking: deepThinking.triggerDeepThinking,
+    triggerDeepThinking,
     triggerSearch: suggestions.triggerSearch,
     // 行为附加
     inputBehavior: behavior.inputBehavior,

@@ -227,7 +227,7 @@ export class FormulaGeneticOptimizer {
         if (d > 0) { db[i].add(j); dc[j]++ } else if (d < 0) { db[j].add(i); dc[i]++ }
       }
     }
-    let f1: number[] = []; for (let i = 0; i < n; i++) { if (dc[i] === 0) { f1.push(i); pop[i].rank = 1 } }
+    const f1: number[] = []; for (let i = 0; i < n; i++) { if (dc[i] === 0) { f1.push(i); pop[i].rank = 1 } }
     let cf = f1; let r = 1
     while (cf.length > 0) {
       r++; const nf: number[] = []

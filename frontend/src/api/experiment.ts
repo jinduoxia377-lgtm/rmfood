@@ -117,12 +117,45 @@ export const experimentApi = {
   getData: (id: number) =>
     api.get<ExperimentData[]>(`/experiments/${id}/data`).then((r) => r.data),
 
+  // ── 分享 ──
+  createShare: (id: number) =>
+    api.post<{ share_code: string; url: string; experiment_id: number; title: string }>(
+      `/experiments/${id}/share`,
+    ).then((r) => r.data),
+
+  getShared: (shareCode: string) =>
+    api.get<Experiment & { data_points?: ExperimentData[]; view_count?: number }>(
+      `/experiments/share/${shareCode}`,
+    ).then((r) => r.data),
+
+  // ── 回写配方 ──
+  writeback: (id: number, data: { safety_score?: number; synergy_score?: number; compliance_status?: Record<string, unknown> }) =>
+    api.post<{ success: boolean; formula_id: number; code: string; updated_fields: string[] }>(
+      `/experiments/${id}/writeback`, data,
+    ).then((r) => r.data),
+
   addData: (id: number, parameter: string, value?: number | string | null, unit?: string, notes?: string) =>
     api
       .post<ExperimentData>(`/experiments/${id}/data`, null, { params: { parameter, value, unit, notes } })
       .then((r) => r.data),
 
   deleteData: (dataPointId: number) => api.delete(`/experiments/data/${dataPointId}`),
+
+  // ── 数据点编辑 ──
+  updateData: (dataPointId: number, data: { parameter?: string; value?: number | string | null; unit?: string; notes?: string; measurement_time?: string }) =>
+    api.put<ExperimentData>(`/experiments/data/${dataPointId}`, data).then((r) => r.data),
+
+  // ── 实验数据文件解析（AnIML / JCAMP / CSV）──
+  parseDataFile: (file: File, formatType: 'auto' | 'animl' | 'jcamp' | 'csv' = 'auto') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api
+      .post<{ success: boolean; data: Record<string, unknown> }>('/experiment-data/parse', formData, {
+        params: { format_type: formatType, recognize_peaks: true },
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data)
+  },
 
   // 统计
   statistics: () => api.get<Record<string, number>>('/experiments/statistics').then((r) => r.data),

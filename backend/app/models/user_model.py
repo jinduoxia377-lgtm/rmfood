@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, Enum, BigInteger
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from .base import Base
 from .enums import UserRole
 from app.models.utils import now_utc_mapped
@@ -19,11 +19,23 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(Text, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(100))
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.RESEARCHER, nullable=False)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, native_enum=False),
+        default=UserRole.RESEARCHER,
+        nullable=False,
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     department: Mapped[str | None] = mapped_column(String(100))
     phone: Mapped[str | None] = mapped_column(String(20))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
+
+    # ── 个人资料扩展字段（设置页「账户」模块）──────────────────
+    position: Mapped[str | None] = mapped_column(String(100))
+    bio: Mapped[str | None] = mapped_column(Text)
+    website: Mapped[str | None] = mapped_column(String(255))
+    github: Mapped[str | None] = mapped_column(String(100))
+    linkedin: Mapped[str | None] = mapped_column(String(255))
+
     preferences: Mapped[dict | None] = mapped_column(JSON, default=dict)
 
     # ── 多租户隔离 ──────────────────────────────────────
@@ -33,6 +45,10 @@ class User(Base):
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 最后登录时间
     login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 登录失败次数
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 锁定截止时间
+
+    # ── 两步验证 (2FA/TOTP) ──
+    two_factor_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)  # TOTP 密钥（Base32）
+    two_factor_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)  # 是否已启用 2FA
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
@@ -87,6 +103,35 @@ class User(Base):
             UserRole.ADMIN: 4,
         }
         return level_map.get(self.role, 0)
+
+    # ── 防御层：users.role 列在库里是 varchar（实际存大写的枚举名，如
+    #    'ADMIN'/'GUEST'/'RESEARCHER'）。模型使用 Enum(UserRole, native_enum=False)
+    #    映射为 VARCHAR，并按枚举「名称」（大写）持久化/读取，与现有数据一致，
+    #    同时避免查询时引用不存在的 PG 原生枚举类型 userrole。
+    #    这里在赋值阶段把字符串统一归一化为 UserRole 枚举成员；对已经是
+    #    UserRole 成员的值保持原样（幂等、无副作用）。
+    @validates("role")
+    def _normalize_role_name(self, key, value):
+        if isinstance(value, UserRole):
+            return value
+        if isinstance(value, str):
+            # 兼容小写枚举值（'admin'）与大写枚举名（'ADMIN'）
+            try:
+                return UserRole(value.lower())
+            except ValueError:
+                pass
+            try:
+                return UserRole[value.upper()]
+            except (KeyError, ValueError):
+                pass
+            # 未知角色（脏数据）：不直接抛错，回落到 RESEARCHER，避免
+            # 单行脏数据把整张用户列表打挂；并打印告警便于后续修数。
+            logger.warning(
+                "User.role 归一化失败: 未知值 %r（id=%s），回落 RESEARCHER",
+                value, getattr(self, "id", None),
+            )
+            return UserRole.RESEARCHER
+        return value
 
     # ── 多设备登录支持 ──
 

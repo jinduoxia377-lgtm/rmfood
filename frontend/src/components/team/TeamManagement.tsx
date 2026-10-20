@@ -13,7 +13,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users,
   Plus,
@@ -29,25 +29,13 @@ import {
   UserCheck,
   UserX,
   Copy,
-  CheckCircle2,
-  AlertCircle,
-  ChevronRight,
   Search,
-  Filter,
-  MoreVertical,
-  Edit3,
-  Eye,
-  ExternalLink,
-  Clock,
   Activity,
-  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import api from '@/api/client';
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   Badge,
   Button,
@@ -151,11 +139,13 @@ export function TeamManagement({ className }: { className?: string }) {
   const toast = useToast();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchTeams();
   }, []);
 
   useEffect(() => {
     if (selectedTeamId) {
+      // eslint-disable-next-line react-hooks/immutability
       fetchTeamDetail(selectedTeamId);
     }
   }, [selectedTeamId]);
@@ -288,7 +278,7 @@ export function TeamManagement({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn('flex gap-6 h-[calc(100vh-8rem)]', className)}>
+    <div className={cn('flex gap-6 h-[calc(100vh-8rem)]', className)} style={{ height: 'calc(100dvh - 8rem)' }}>
       {/* 左侧：团队列表 */}
       <div className="w-80 flex-shrink-0 flex flex-col bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {/* 头部 */}
@@ -587,7 +577,7 @@ export function TeamManagement({ className }: { className?: string }) {
 
                   <div>
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">邀请方式</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Card
                         className="cursor-pointer hover:border-secondary-300 transition-colors"
                         onClick={() => setShowInviteModal(true)}
@@ -779,7 +769,7 @@ function InviteMemberModal({
     <Modal open={open} onClose={onClose} title="邀请成员">
       <div className="pt-4 space-y-4">
         {/* 邀请方式切换 */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {[
             { key: 'direct', label: '用户ID', icon: UserPlus },
             { key: 'email', label: '邮件邀请', icon: Mail },

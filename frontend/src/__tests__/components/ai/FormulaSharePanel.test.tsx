@@ -12,11 +12,11 @@ const mockFormula = {
 }
 
 describe('FormulaSharePanel', () => {
-  const mockOnShare = jest.fn()
-  const mockOnImport = jest.fn()
+  const mockOnShare = vi.fn()
+  const mockOnImport = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('renders share panel with title', () => {
@@ -117,11 +117,11 @@ describe('FormulaSharePanel', () => {
 })
 
 describe('ImportShareDialog', () => {
-  const mockOnClose = jest.fn()
-  const mockOnImport = jest.fn()
+  const mockOnClose = vi.fn()
+  const mockOnImport = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('renders import dialog when open', () => {

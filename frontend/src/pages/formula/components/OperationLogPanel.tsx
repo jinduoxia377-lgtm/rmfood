@@ -18,12 +18,11 @@ import {
   User,
   Activity,
   Eye,
-  CalendarDays,
   Search,
 } from 'lucide-react';
 import { formulaApi } from '@/api/formula';
-import type { OperationLog, OperationAction, OperationLogQueryParams } from '@/types/formula';
-import { Button, Modal, Select, Input, Badge, Card, CardContent, Tooltip } from '@/components/ui';
+import type { OperationAction, OperationLogQueryParams } from '@/types/formula';
+import { Button, Modal, Select, Input, Badge, Tooltip } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/safeLogger';
 
@@ -160,8 +159,11 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
 
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(1);
+       
       setSearchQuery('');
+       
       setSelectedLogId(null);
     }
   }, [open]);
@@ -251,19 +253,19 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="operation-log-title"
-        className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col"
+        className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-primary-700" />
-            <h2 id="operation-log-title" className="text-lg font-semibold text-neutral-900 dark:text-white">操作日志</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
+          <div className="flex items-center gap-[var(--space-apple-sm)]">
+            <FileText className="w-5 h-5 text-[var(--color-primary-text)]" />
+            <h2 id="operation-log-title" className="text-lg font-semibold text-[var(--text-primary)]">操作日志</h2>
             <Badge variant="neutral" size="sm">
               共 {total} 条
             </Badge>
@@ -281,7 +283,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
             </Button>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] transition-colors"
             >
               <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </button>
@@ -289,13 +291,13 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
         </div>
 
         {/* Filters */}
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 space-y-3">
-          <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="px-6 py-4 border-b border-[var(--border-color)] space-y-[var(--space-apple-sm)]">
+          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
             <Filter className="w-4 h-4" />
             <span className="font-medium">筛选条件</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-[var(--space-apple-sm)]">
             <Select
               value={timeRange}
               onChange={(v) => setTimeRange(v as TimeRange)}
@@ -363,7 +365,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                 value={searchQuery}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 placeholder="搜索目标名称、操作人..."
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-neutral-800"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--bg-secondary)]"
               />
             </div>
           </div>
@@ -373,21 +375,22 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
         <div className="flex-1 overflow-auto px-6 py-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-[var(--radius-pill)] h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-64 text-error-600">加载失败，请重试</div>
+            <div className="flex items-center justify-center h-64 text-[var(--color-error-text)]">加载失败，请重试</div>
           ) : filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              <FileText className="w-12 h-12 mb-3 opacity-50" />
+              <FileText className="w-12 h-12 mb-[var(--space-apple-sm)] opacity-50" />
               <p className="text-sm">暂无日志记录</p>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-neutral-50 dark:bg-neutral-800 sticky top-0">
+              <thead className="bg-[var(--bg-tertiary)] sticky top-0">
                 <tr>
                   <th
-                    className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]"
                     onClick={() => handleSort('created_at')}
                   >
                     <div className="flex items-center gap-1">
@@ -397,7 +400,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]"
                     onClick={() => handleSort('operator_name')}
                   >
                     <div className="flex items-center gap-1">
@@ -407,7 +410,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]"
                     onClick={() => handleSort('action')}
                   >
                     <div className="flex items-center gap-1">
@@ -416,9 +419,9 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                       <ArrowUpDown className="w-3 h-3" />
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">操作对象</th>
-                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">结果</th>
-                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">操作</th>
+                  <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)]">操作对象</th>
+                  <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)]">结果</th>
+                  <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-medium text-[var(--text-primary)]">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -426,12 +429,12 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                   <tr
                     key={log.id}
                     className={cn(
-                      'hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors',
-                      selectedLogId === log.id && 'bg-primary-50 dark:bg-primary-300/20',
+                      'hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] cursor-pointer transition-colors',
+                      selectedLogId === log.id && 'bg-[var(--color-primary-container)]',
                     )}
                     onClick={() => setSelectedLogId(log.id)}
                   >
-                    <td className="px-4 py-3 text-neutral-900 dark:text-white whitespace-nowrap">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-primary)] whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString('zh-CN', {
                         month: '2-digit',
                         day: '2-digit',
@@ -440,19 +443,19 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                         second: '2-digit',
                       })}
                     </td>
-                    <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300">{log.operatorName}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-primary)]">{log.operatorName}</td>
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Badge variant="neutral" size="sm">
                         {ACTION_LABELS[log.action] || log.action}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300 max-w-xs truncate">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-primary)] max-w-xs truncate">
                       {log.target_name}
                     </td>
-                    <td className="px-4 py-3">{renderResultBadge(log.result)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">{renderResultBadge(log.result)}</td>
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Tooltip content="查看详情">
-                        <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded">
+                        <button className="p-1 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] rounded">
                           <Eye className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                         </button>
                       </Tooltip>
@@ -461,13 +464,14 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-            <div className="text-sm text-neutral-600 dark:text-neutral-400">
+          <div className="px-6 py-4 border-t border-[var(--border-color)] flex items-center justify-between">
+            <div className="text-sm text-[var(--text-secondary)]">
               共 {total} 条 · 第 {page}/{totalPages} 页
             </div>
             <div className="flex items-center gap-2">
@@ -485,7 +489,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
               />
-              <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">{page}</span>
+              <span className="text-sm text-[var(--text-secondary)] px-2">{page}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -512,16 +516,16 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
               return (
                 <div className="space-y-6">
                   {/* Basic Info */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作时间</label>
-                      <div className="text-sm text-neutral-900 dark:text-white">
+                      <div className="text-sm text-[var(--text-primary)]">
                         {new Date(log.created_at).toLocaleString('zh-CN')}
                       </div>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作人</label>
-                      <div className="text-sm text-neutral-900 dark:text-white">
+                      <div className="text-sm text-[var(--text-primary)]">
                         {log.operatorName} ({log.operatorRole})
                       </div>
                     </div>
@@ -531,15 +535,15 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">IP 地址</label>
-                      <div className="text-sm text-neutral-900 dark:text-white">{log.ip_address || '-'}</div>
+                      <div className="text-sm text-[var(--text-primary)]">{log.ip_address || '-'}</div>
                     </div>
                   </div>
 
                   {/* Target Info */}
                   <div>
                     <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">操作对象</label>
-                    <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-white">{log.target_name}</p>
+                    <div className="bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{log.target_name}</p>
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
                         类型: {log.target_type} · ID: {log.target_id}
                       </p>
@@ -552,14 +556,14 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                       <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">变更详情</label>
                       <div className="space-y-2">
                         {Object.entries(log.details.changes).map(([key, change]) => (
-                          <div key={key} className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3">
-                            <div className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2">{key}</div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div key={key} className="bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
+                            <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">{key}</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="text-error-600 line-through mr-2">{JSON.stringify(change.from)}</span>
+                                <span className="text-[var(--color-error-text)] line-through mr-2">{JSON.stringify(change.from)}</span>
                               </div>
                               <div>
-                                <span className="text-success-600">→ {JSON.stringify(change.to)}</span>
+                                <span className="text-[var(--color-success-text)]">→ {JSON.stringify(change.to)}</span>
                               </div>
                             </div>
                           </div>
@@ -572,19 +576,19 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                   {log.details?.error_message && (
                     <div>
                       <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">错误信息</label>
-                      <div className="bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg p-3">
-                        <p className="text-sm text-error-700 dark:text-error-600">{log.details.error_message}</p>
+                      <div className="bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
+                        <p className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{log.details.error_message}</p>
                       </div>
                     </div>
                   )}
 
                   {/* Duration & Metadata */}
                   {(log.details?.duration_ms || log.details?.metadata) && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {log.details?.duration_ms && (
                         <div>
                           <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">执行耗时</label>
-                          <div className="text-sm text-neutral-900 dark:text-white">
+                          <div className="text-sm text-[var(--text-primary)]">
                             {(log.details.duration_ms / 1000).toFixed(2)} 秒
                           </div>
                         </div>
@@ -592,7 +596,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                       {log.details?.metadata && (
                         <div>
                           <label className="block text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">元数据</label>
-                          <pre className="text-xs bg-neutral-50 dark:bg-neutral-800 rounded p-2 overflow-auto max-h-32">
+                          <pre className="text-xs bg-[var(--bg-tertiary)] rounded p-2 overflow-auto max-h-32">
                             {JSON.stringify(log.details.metadata, null, 2)}
                           </pre>
                         </div>

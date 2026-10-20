@@ -140,7 +140,8 @@ async def upload_file(
     if not safe_filename:
         raise HTTPException(status_code=400, detail="文件名无效")
     # Simple sanitization (remove path and dangerous chars)
-    from pathlib import Path
+    # 注意：模块顶部已导入 pathlib.Path，这里不能再局部 import，
+    # 否则会把 Path 变成函数局部变量，导致前面使用 Path 时 UnboundLocalError。
     safe_filename = Path(safe_filename).name
     import re
     safe_filename = re.sub(r'[^\w\.-]', '_', safe_filename)
@@ -152,7 +153,9 @@ async def upload_file(
     temp_path.write_bytes(content)
 
     # 初始化任务记录
-    now_iso = datetime.now(timezone.utc).isoformat()
+    # 注意：created_at/updated_at 必须是 datetime 对象（asyncpg 绑定
+    # TIMESTAMPTZ 列时拒绝 ISO 字符串）。
+    now = datetime.now(timezone.utc)
     task_data = {
         "task_id": task_id,
         "_temp_path": str(temp_path),  # Temporary internal reference
@@ -169,8 +172,8 @@ async def upload_file(
         "file_name": safe_filename,
         "file_size_bytes": file_size,
         "mapping_config": {"delimiter": delimiter, "file_path": str(temp_path)},
-        "created_at": now_iso,
-        "updated_at": now_iso,
+        "created_at": now,
+        "updated_at": now,
     }
     await _save_task_to_db(db, task_data)
 

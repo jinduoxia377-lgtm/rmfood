@@ -143,10 +143,12 @@ export function PromptOptimizer({
 
   useEffect(() => {
     if (initialContent && !result) {
+      // eslint-disable-next-line react-hooks/immutability
       handleAnalyze()
     }
   }, [])
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleAnalyze = useCallback(async () => {
     if (!content.trim()) return
 
@@ -314,7 +316,7 @@ export function PromptOptimizer({
       {result && (
         <Card className="p-4">
           {/* 总览卡片 */}
-          <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-lg">
             <div className="text-center">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原始分数</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_before)}`}>
@@ -443,7 +445,7 @@ export function PromptOptimizer({
             {/* 结构分析 */}
             {activeTab === 'structure' && result.structure_report && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">结构类型</p>
                     <p className="text-lg font-semibold capitalize">
@@ -476,7 +478,7 @@ export function PromptOptimizer({
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs font-semibold text-success-700 mb-2">✅ 优势</p>
                     <ul className="space-y-1">
@@ -526,7 +528,7 @@ export function PromptOptimizer({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 p-3 bg-warning-50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-warning-50 rounded-lg">
                   <div>
                     <p className="text-xs font-semibold text-success-700 mb-1">✨ 优势特征</p>
                     <ul className="space-y-0.5">

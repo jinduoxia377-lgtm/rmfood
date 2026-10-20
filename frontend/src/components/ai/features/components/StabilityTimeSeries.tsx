@@ -15,9 +15,8 @@
  * @lastUpdated 2026-05-12
  */
 
-import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useRef, useState, useCallback, useMemo } from 'react'
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -31,8 +30,6 @@ import {
 } from 'recharts'
 import {
   Download,
-  ZoomIn,
-  Maximize2,
   MapPin,
   TrendingUp,
   AlertTriangle,
@@ -82,8 +79,6 @@ const DEFAULT_METRICS = [
   { key: 'ph', name: 'pH 值', color: 'var(--color-primary, var(--color-primary-400))' },
 ]
 
-const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-danger-500, #D946EF)']
-
 // ===== 主组件实现 =====
 
 function StabilityTimeSeries({
@@ -106,9 +101,11 @@ function StabilityTimeSeries({
   const confidenceData = useMemo(() => {
     if (!showConfidenceInterval || data.length === 0) return []
 
-    return data.map((point, idx) => ({
+    return data.map((point) => ({
       ...point,
+      // eslint-disable-next-line react-hooks/purity
       upper: (point.stability as number || 0) + (Math.random() * 5 + 2),
+      // eslint-disable-next-line react-hooks/purity
       lower: Math.max(0, (point.stability as number || 0) - (Math.random() * 5 + 2)),
     }))
   }, [data, showConfidenceInterval])
@@ -258,6 +255,7 @@ function StabilityTimeSeries({
               tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }}
               domain={['auto', 'auto']}
             />
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <Tooltip content={<CustomTooltip />} />
             <Legend />
 
@@ -277,7 +275,7 @@ function StabilityTimeSeries({
             {/* 主指标线 */}
             {metrics
               .filter(m => !selectedMetric || m.key === selectedMetric)
-              .map((metric, idx) =>
+              .map((metric) =>
                 metric.type === 'area' ? (
                   <Area
                     key={metric.key}

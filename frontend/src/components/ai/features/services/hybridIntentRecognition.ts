@@ -129,7 +129,7 @@ export class TFIDFVectorizer {
 
   private tokenize(text: string): string[] {
     return text.toLowerCase()
-      .split(/[\s,.!?;:，。！？；：、\(\)\[\]]+/)
+      .split(/[\s,.!?;:，。！？；：、()[\]]+/)
       .filter(token => token.length >= 2)
   }
 

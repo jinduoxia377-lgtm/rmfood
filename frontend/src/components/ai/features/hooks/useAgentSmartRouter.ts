@@ -8,7 +8,7 @@
  * 使用方式：
  * const { mode, setMode, isAutoMode } = useAgentSmartRouter();
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 export type AgentMode = 'workflow' | 'chat' | 'auto';
 

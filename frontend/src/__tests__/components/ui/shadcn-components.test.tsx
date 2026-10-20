@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
 // Test Button with all variants
@@ -158,7 +158,8 @@ describe('Checkbox accessibility', () => {
     )
     const checkbox = screen.getByRole('checkbox', { name: /accept terms/i })
     expect(checkbox).toBeInTheDocument()
-    expect(checkbox).toBeChecked()
+    // aria-checked 是 ARIA 属性，不设置 DOM checked 状态，因此断言 ARIA 属性而非 toBeChecked
+    expect(checkbox).toHaveAttribute('aria-checked', 'true')
   })
 })
 
@@ -186,7 +187,7 @@ describe('Skeleton', () => {
     render(
       <div className="animate-pulse rounded-md bg-muted w-full h-4" />
     )
-    expect(screen.getByRole('status')).not.toBeInTheDocument() // no explicit role
+    expect(screen.queryByRole('status')).not.toBeInTheDocument() // no explicit role
     const el = document.querySelector('.animate-pulse')
     expect(el).toBeInTheDocument()
     expect(el).toHaveClass('bg-muted')

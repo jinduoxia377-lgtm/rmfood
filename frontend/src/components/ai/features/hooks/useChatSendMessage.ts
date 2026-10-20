@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useChatSendMessage - 消息发送处理 Hook (v12.0 精简版)
  *
  * 精简说明 (2026-06-26):
@@ -88,9 +88,8 @@ export function useChatSendMessage(
           }
 
           // Step 2: 多轮对话处理（指代消解 + 话题追踪）
-          let multiTurnResult: MultiTurnProcessResult | null = null;
           try {
-            multiTurnResult = await multiTurnDialogue.processUserInput(
+            await multiTurnDialogue.processUserInput(
               trimmed,
               messages as Parameters<typeof multiTurnDialogue.processUserInput>[1],
               async (text: string) => {

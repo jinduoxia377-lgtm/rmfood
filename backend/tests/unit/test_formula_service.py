@@ -14,7 +14,7 @@ import os
 # 直接从文件导入 FormulaService（避免 formula 包/文件命名冲突）
 _spec = importlib.util.spec_from_file_location(
     "app.services.formula_module",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "app", "services", "formula.py"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "app", "services", "formula", "formula_module.py"),
 )
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)

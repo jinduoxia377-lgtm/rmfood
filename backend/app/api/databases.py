@@ -14,11 +14,13 @@
 # Import all submodules to register their endpoints
 from .db_modules import herbs  # noqa: F401
 from .db_modules import peptides  # noqa: F401
+from .db_modules import compounds  # noqa: F401
 from .db_modules import dashboard  # noqa: F401
 from .db_modules import search  # noqa: F401
 from .db_modules import food_materials  # noqa: F401
 from .db_modules import retail_products  # noqa: F401
 from .db_modules import openfoodfacts  # noqa: F401
+from .db_modules import database_extras  # noqa: F401  # RMCHM + CFAM 检索
 from . import search_analytics  # noqa: F401
 
 # Re-export the shared router for main.py to include

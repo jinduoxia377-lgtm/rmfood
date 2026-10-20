@@ -42,7 +42,7 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`
 }
 
-export default function ThinkingProcess({ steps, isThinking, onToggle, startTime }: ThinkingProcessProps) {
+export default function ThinkingProcess({ steps, isThinking, startTime }: ThinkingProcessProps) {
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [expandedStep, setExpandedStep] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)
@@ -51,6 +51,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
   // 逐步显示思考步骤
   useEffect((): (() => void) | void => {
     if (steps.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisibleSteps(0)
       return
     }
@@ -176,7 +177,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
                       {step.step}
                     </span>
                     {isComplete ? (
-                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">✓</span>
+                      <CheckCircle2 className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
                     ) : (
                       <span className="text-xs text-warning-500 animate-pulse">分析中...</span>
                     )}

@@ -11,9 +11,12 @@ SQL 安全工具模块
 4. 优先使用 ORM，仅在必要时使用 Raw SQL
 """
 
+import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 from sqlalchemy import text as sa_text
+
+logger = logging.getLogger(__name__)
 
 
 class SafeQueryBuilder:

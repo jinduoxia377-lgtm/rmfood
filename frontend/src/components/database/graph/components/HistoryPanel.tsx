@@ -9,7 +9,6 @@ export interface HistoryEntryItem {
 }
 
 export interface HistoryPanelProps {
-  [key: string]: any;
   showHistoryPanel: boolean
   historyEntries: HistoryEntryItem[]
   historyIndex: number
@@ -32,7 +31,7 @@ export default function HistoryPanel({
   const typeColors: Record<string, string> = { filter: 'blue', search: 'indigo', select: 'emerald', layout: 'violet', theme: 'pink', zoom: 'cyan', focus: 'orange', export: 'slate', annotate: 'pink', bookmark: 'amber', import: 'orange', share: 'violet' }
 
   return (
-    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-45 w-[420px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-warning-200/60 dark:border-warning-700/40 animate-fade-in">
+    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-45 w-[min(420px,calc(100vw-2rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-warning-200/60 dark:border-warning-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-950/50 dark:to-warning-950/50 border-b border-warning-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2"><span>⏱️</span><span className="text-sm font-bold text-warning-700 dark:text-warning-700">操作历史</span>
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">({historyEntries.length}条)</span>

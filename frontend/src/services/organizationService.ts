@@ -4,7 +4,6 @@
  */
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { errorHandler, ErrorCategory } from './errorHandler';
 import { ErrorFactory, parseError } from '@/utils/errorHandler';
 import type { AppError } from '@/utils/errorHandler';
 import { ERROR_CODES } from '@/constants/errorCodes';

@@ -6,7 +6,7 @@
  * - 查看导出历史
  */
 import { useState, useEffect } from 'react'
-import { Download, FileText, Table, FileJson, Image, Clock, CheckCircle2, AlertCircle, Trash2, Settings } from 'lucide-react'
+import { Download, FileText, Table, FileJson, Image, Clock, Trash2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Select, Input, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { exportService, type ExportFormat, type ExportOptions, type ExportTask } from '@/services/exportService'
 import { logger } from '@/utils/safeLogger';
@@ -177,7 +177,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="export" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-1 sm:grid-cols-2">
             <TabsTrigger value="export">导出配置</TabsTrigger>
             <TabsTrigger value="history">导出历史</TabsTrigger>
           </TabsList>

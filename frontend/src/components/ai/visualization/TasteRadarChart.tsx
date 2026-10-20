@@ -18,7 +18,6 @@ import {
 } from 'recharts'
 import {
   FIVE_TASTES_LABELS,
-  FIVE_TASTES_COLORS,
 } from '@/types/taste.types'
 import { FiveTastes } from '@/types/taste.types'
 import type {
@@ -70,7 +69,7 @@ export function TasteRadarChart({
   const chartData = useMemo<RadarDataPoint[]>(() => {
     const tasteKeys = Object.values(FiveTastes) as FiveTastes[]
 
-    return tasteKeys.map((taste, index) => {
+    return tasteKeys.map((taste) => {
       const point: RadarDataPoint = {
         taste,
         label: FIVE_TASTES_LABELS[taste],
@@ -185,6 +184,7 @@ export function TasteRadarChart({
             />
           )}
 
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <Tooltip content={<CustomTooltip />} />
 
           {(comparisonData.length > 0) && (

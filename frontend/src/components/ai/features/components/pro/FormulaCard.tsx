@@ -8,7 +8,7 @@
  * - 一键保存/导出/优化
  */
 import React, { useState } from 'react'
-import { Crown, Shield, Hand, Handshake, Download, Save, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Crown, Shield, Hand, Handshake, Download, Save, Plus, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 
 export interface FormulaIngredient {
   name: string
@@ -109,7 +109,9 @@ export default function FormulaCard({ data }: { data: FormulaData }) {
 
           {data.precautions && data.precautions.length > 0 && (
             <div className="text-xs text-warning-600 dark:text-warning-700 bg-warning-50 dark:bg-warning-300/20 rounded-lg p-2.5">
-              <span className="font-medium">⚠️ 注意事项</span>
+              <span className="font-medium inline-flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" /> 注意事项
+              </span>
               <ul className="mt-1 space-y-0.5">
                 {data.precautions.map((p, i) => <li key={i}>{p}</li>)}
               </ul>

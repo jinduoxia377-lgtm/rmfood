@@ -51,12 +51,12 @@ const LAYOUTS: Record<string, React.ReactNode> = {
 
   generate: (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <SkeletonComp width="100%" height="2rem" radius={8} />
         <SkeletonComp width="100%" height="2rem" radius={8} />
       </div>
       <SkeletonComp width="100%" height="8rem" radius={8} />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
           <SkeletonComp key={i} width="100%" height="10rem" radius={8} />
         ))}
@@ -67,7 +67,7 @@ const LAYOUTS: Record<string, React.ReactNode> = {
   safety: (
     <div className="space-y-4">
       <SkeletonComp width="100%" height="12rem" radius={8} />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
           <SkeletonComp key={i} width="100%" height="5rem" radius={8} />
         ))}
@@ -84,7 +84,7 @@ const LAYOUTS: Record<string, React.ReactNode> = {
   ),
 
   taste: (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div className="space-y-3">
         <SkeletonComp width="100%" height="2rem" radius={8} />
         <SkeletonComp width="100%" height="8rem" radius={8} />
@@ -95,7 +95,7 @@ const LAYOUTS: Record<string, React.ReactNode> = {
   ),
 
   stability: (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div className="space-y-3">
         <SkeletonComp width="100%" height="2rem" radius={8} />
         <SkeletonComp width="100%" height="6rem" radius={8} />
@@ -107,13 +107,13 @@ const LAYOUTS: Record<string, React.ReactNode> = {
 
   genetic: (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[1, 2, 3].map((i) => (
           <SkeletonComp key={i} width="100%" height="5rem" radius={8} />
         ))}
       </div>
       <SkeletonComp width="100%" height="14rem" radius={8} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[1, 2].map((i) => (
           <SkeletonComp key={i} width="100%" height="6rem" radius={8} />
         ))}
@@ -124,7 +124,7 @@ const LAYOUTS: Record<string, React.ReactNode> = {
   peptide: (
     <div className="space-y-4">
       <SkeletonComp width="100%" height="3rem" radius={8} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[1, 2, 3, 4].map((i) => (
           <SkeletonComp key={i} width="100%" height="8rem" radius={8} />
         ))}
@@ -159,7 +159,7 @@ const LAYOUTS: Record<string, React.ReactNode> = {
     <div className="space-y-4">
       <SkeletonComp width="100%" height="3rem" radius={8} />
       <SkeletonComp width="100%" height="12rem" radius={8} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[1, 2].map((i) => (
           <SkeletonComp key={i} width="100%" height="6rem" radius={8} />
         ))}

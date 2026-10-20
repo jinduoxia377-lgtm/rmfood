@@ -1,115 +1,198 @@
 /**
- * RMFOOD Mini Program - Typography System
- * WeChat Official Design Specification Compliant
+ * RMFOOD 小程序 - 排版系统 (Typography System)
+ * 对齐桌面端主题系统规范 DESIGN.md §3（Apple HIG 14 级排版刻度）
+ * 所有字号引用 design-tokens.wxss 设计令牌
  */
 
 /* ============================================
-   1. Body Text (14-16px / 28-32rpx)
+   1. Display / Hero（桌面 Display 56px 对应移动 28px）
    ============================================ */
 
-.text-body-sm {
-  font-size: 28rpx;
-  line-height: 20px;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-primary);
-}
-
-.text-body {
-  font-size: 30rpx;
-  line-height: 22px;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-primary);
-}
-
-.text-body-strong {
-  font-size: 30rpx;
-  line-height: 22px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-/* ============================================
-   2. Title Text (17-22px / 34-44rpx)
-   ============================================ */
-
-.text-title-xl {
-  font-size: 44rpx;
-  line-height: 52rpx;
+.text-hero-display {
+  font-size: var(--font-size-display);      /* 56rpx / 28px */
+  line-height: 1.15;
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  letter-spacing: -0.5rpx;
+  letter-spacing: -1rpx;
 }
-
-.text-title-lg {
-  font-size: 40rpx;
-  line-height: 48rpx;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-}
-
-.text-title-md {
-  font-size: 34rpx;
-  line-height: 42rpx;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.text-title-sm {
-  font-size: 30rpx;
-  line-height: 36rpx;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-/* ============================================
-   3. Caption Text (12-13px / 24-26rpx)
-   ============================================ */
-
-.text-caption {
-  font-size: 26rpx;
-  line-height: 32rpx;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-secondary);
-}
-
-.text-caption-strong {
-  font-size: 26rpx;
-  line-height: 32rpx;
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-}
-
-.text-caption-sm {
-  font-size: 24rpx;
-  line-height: 28rpx;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-tertiary);
-}
-
-/* ============================================
-   4. Display Text (28px+ / 56rpx+)
-   ============================================ */
 
 .text-display {
-  font-size: 56rpx;
-  line-height: 64rpx;
+  font-size: var(--font-size-display);
+  line-height: 1.15;
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   letter-spacing: -1rpx;
 }
 
 /* ============================================
-   5. Link Text
+   2. Large Title（页面大标题，桌面 40px 对应 24px）
+   ============================================ */
+
+.text-large-title {
+  font-size: var(--font-size-large-title);  /* 48rpx / 24px */
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.5rpx;
+}
+
+/* ============================================
+   3. Title 系列（桌面 34/28/22/17px 语义）
+   ============================================ */
+
+.text-title-1 {
+  font-size: var(--font-size-title-1);      /* 40rpx / 20px */
+  line-height: 1.25;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.text-title-2 {
+  font-size: var(--font-size-title-2);      /* 36rpx / 18px */
+  line-height: 1.3;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.text-title-3 {
+  font-size: var(--font-size-title-3);      /* 32rpx / 16px */
+  line-height: 1.35;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* 兼容旧类名（title-xl/lg/md/sm） */
+.text-title-xl {
+  font-size: var(--font-size-2xl);          /* 44rpx / 22px */
+  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.5rpx;
+}
+
+.text-title-lg {
+  font-size: var(--font-size-title-1);       /* 40rpx / 20px */
+  line-height: 1.25;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.text-title-md {
+  font-size: var(--font-size-title-2);      /* 36rpx / 18px */
+  line-height: 1.3;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.text-title-sm {
+  font-size: var(--font-size-title-3);      /* 32rpx / 16px */
+  line-height: 1.35;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   4. Subtitle（副标题，桌面 21px 对应 15px）
+   ============================================ */
+
+.text-subtitle {
+  font-size: var(--font-size-subtitle);     /* 30rpx / 15px */
+  line-height: 1.4;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   5. Body 正文（桌面 17px 对应移动 14px 微信标准）
+   ============================================ */
+
+.text-body {
+  font-size: var(--font-size-body);           /* 28rpx / 14px */
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+
+.text-body-strong {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.text-body-sm {
+  font-size: var(--font-size-callout);        /* 26rpx / 13px */
+  line-height: 1.5;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   6. Callout 注释（桌面 17px 语义 → 移动 13px）
+   ============================================ */
+
+.text-callout {
+  font-size: var(--font-size-callout);       /* 26rpx / 13px */
+  line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   7. Caption 说明（桌面 14/12px 语义 → 移动 12px）
+   ============================================ */
+
+.text-caption {
+  font-size: var(--font-size-caption);       /* 24rpx / 12px */
+  line-height: 1.4;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.text-caption-strong {
+  font-size: var(--font-size-caption-strong);
+  line-height: 1.4;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.text-caption-sm {
+  font-size: var(--font-size-fine-print);   /* 20rpx / 10px */
+  line-height: 1.4;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   8. Fine Print / Micro Legal（桌面 12/10px 语义）
+   ============================================ */
+
+.text-fine-print {
+  font-size: var(--font-size-fine-print);   /* 20rpx / 10px */
+  line-height: 1.3;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+}
+
+.text-micro-legal {
+  font-size: var(--font-size-micro-legal);  /* 16rpx / 8px */
+  line-height: 1.3;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-quaternary);
+}
+
+/* ============================================
+   9. Link 链接
    ============================================ */
 
 .text-link {
   font-size: var(--font-size-body);
-  color: var(--color-system-blue);
+  color: var(--color-brand-primary);
   text-decoration: none;
 }
 
 /* ============================================
-   6. Special Styles
+   10. 截断工具类
    ============================================ */
 
 .text-truncate {
@@ -133,11 +216,11 @@
 }
 
 /* ============================================
-   7. Container Styles
+   11. 容器排版
    ============================================ */
 
 .title-container {
-  margin-bottom: 24rpx;
+  margin-bottom: var(--space-3);   /* 24rpx */
 }
 
 .content-area {

@@ -15,6 +15,7 @@ import { logger } from '@/utils/safeLogger';
  */
 class DatabaseMockProvider implements IMockDataProvider {
   async getMockData(url: string, method: string, params?: any, _data?: any): Promise<any> {
+    void _data;
     const startTime = Date.now()
 
     try {
@@ -138,10 +139,12 @@ export function initializeApiSystem(): IApiAdapter {
  * 当主系统初始化失败时使用
  */
 function createFallbackAdapter(_initError: Error): IApiAdapter {
+  void _initError;
   logger.warn('[API System] 使用降级模式运行')
 
   return {
     async request(_options: any): Promise<any> {
+      void _options;
       logger.warn('[FallbackAdapter] 请求被拦截')
       throw new Error('API 系统未正确初始化')
     },
@@ -157,12 +160,16 @@ function createFallbackAdapter(_initError: Error): IApiAdapter {
     async delete(url: string, options?: any): Promise<any> {
       return this.request({ ...options, url, method: 'DELETE' })
     },
-    setAuthToken(_token: string): void {},
+    setAuthToken(_token: string): void {
+      void _token;
+    },
     clearAuthToken(): void {},
     getConfig(): any {
       return apiConfig
     },
-    updateConfig(_config: any): void {},
+    updateConfig(_config: any): void {
+      void _config;
+    },
   }
 }
 

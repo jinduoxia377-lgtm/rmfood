@@ -109,6 +109,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadKeys();
   }, []);
 
@@ -319,7 +320,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
           </h3>
 
           {/* 提供商选择 */}
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-5 gap-2">
             {PROVIDERS.map((provider) => (
               <button
                 key={provider.id}
@@ -521,7 +522,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                           </button>
                         ) : (
                           <div className="space-y-2">
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-400">
                               <div className="flex items-center gap-1">
                                 <Activity className="w-3 h-3" />
                                 调用: {usage.monthlyCalls}/{usage.limit}

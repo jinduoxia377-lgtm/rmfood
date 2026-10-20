@@ -56,6 +56,9 @@ export function renderMessageContent(
 	allMessages: ChatMessage[],
 	streaming: boolean,
 ): React.ReactNode {
+	void index;
+	void allMessages;
+	void streaming;
 	if (msg.role === 'assistant') {
 		const structured = detectStructuredContent(msg.content)
 		if (structured) {

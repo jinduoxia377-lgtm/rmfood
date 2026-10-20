@@ -51,7 +51,6 @@ const DEFAULT_CONFIG: SyncConfig = {
 const STORAGE_PREFIX = 'rmfood_chat_'
 const SESSIONS_KEY = `${STORAGE_PREFIX}sessions`
 const SYNC_META_KEY = `${STORAGE_PREFIX}sync_meta`
-const PENDING_KEY = `${STORAGE_PREFIX}pending_sync`
 
 // ===== 同步元数据 =====
 
@@ -151,7 +150,7 @@ class ChatSyncService {
       const data = Array.from(this.sessions.values())
       // 限制存储大小
       if (data.length > this.config.maxLocalSessions) {
-        const sorted = data.sort((a, b) => b.updatedAt - a.updatedAt)
+        data.sort((a, b) => b.updatedAt - a.updatedAt)
         data.splice(this.config.maxLocalSessions)
       }
       localStorage.setItem(SESSIONS_KEY, JSON.stringify(data))

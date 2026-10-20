@@ -148,7 +148,7 @@ export async function exportReportToPDF(
     currentY = addReportHeader(doc, reportData, currentY)
 
     currentY = addSectionWithTitle(doc, '一、执行摘要', currentY)
-    currentY = addTextBlock(doc, reportData.title || '专业分析报告', currentY)
+    addTextBlock(doc, reportData.title || '专业分析报告', currentY)
 
     addFooterInfo(doc, config)
 
@@ -203,6 +203,7 @@ function addTitleSection(doc: jsPDF, config: Required<PdfExportOptions>): void {
 }
 
 function getTableStartY(doc: jsPDF): number {
+  void doc;
   return 58
 }
 
@@ -255,6 +256,7 @@ function addStyledTable(
 }
 
 function addFooterInfo(doc: jsPDF, config: Required<PdfExportOptions>): void {
+  void config;
   const pageCount = doc.getNumberOfPages()
 
   for (let i = 1; i <= pageCount; i++) {

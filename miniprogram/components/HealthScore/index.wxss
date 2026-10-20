@@ -36,12 +36,12 @@
 }
 
 .score-value {
-  font-size: 32rpx;
+  font-size: var(--font-size-title-3);
   font-weight: 600;
 }
 
 .score-letter {
-  font-size: 20rpx;
+  font-size: var(--font-size-fine-print);
   margin-top: 4rpx;
 }
 
@@ -51,5 +51,5 @@
 }
 
 .score-label {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
 }

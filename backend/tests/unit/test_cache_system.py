@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.core.cache_system import (
+from app.core.performance.cache_system import (
     CacheConfig,
     CacheStats,
     MemoryCacheEntry,

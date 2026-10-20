@@ -83,12 +83,14 @@ export function ApiKeyConfigPanel({
 
   // 初始化：检查现有配置
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     checkExistingConfig()
   }, [])
 
   /**
    * 检查是否已有配置
    */
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const checkExistingConfig = useCallback(() => {
     try {
       const summary = secureApiKeyManager.getStatusSummary()

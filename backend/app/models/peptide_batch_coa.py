@@ -75,10 +75,6 @@ class PeptideBatchCOA(Base):
             "test_conclusion IN ('合格', '不合格', '待检')",
             name="ck_coa_conclusion_valid"
         ),
-        CheckConstraint(
-            "judgment IN ('符合', '不符合', '待判定')",
-            name="ck_coa_judgment_valid"
-        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)

@@ -8,26 +8,26 @@
     <view class="settings-list">
       <view class="setting-item" bindtap="editProfile">
         <view class="setting-left">
-          <icon name="person" size="md" color="#2D5A3D" />
+          <icon name="person" size="md" color="var(--color-primary)" />
           <text class="setting-title">个人资料</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
       
       <view class="setting-item" bindtap="changePassword">
         <view class="setting-left">
-          <icon name="shield" size="md" color="#2D5A3D" />
+          <icon name="shield" size="md" color="var(--color-primary)" />
           <text class="setting-title">修改密码</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
       
       <view class="setting-item" bindtap="privacySettings">
         <view class="setting-left">
-          <icon name="shield" size="md" color="#2D5A3D" />
+          <icon name="shield" size="md" color="var(--color-primary)" />
           <text class="setting-title">隐私设置</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
     </view>
   </view>
@@ -38,10 +38,10 @@
     <view class="settings-list">
       <view class="setting-item">
         <view class="setting-left">
-          <icon name="update" size="md" color="#1976D2" />
+          <icon name="update" size="md" color="var(--color-accent)" />
           <text class="setting-title">深色模式</text>
         </view>
-        <switch checked="{{isDarkMode}}" bindchange="toggleDarkMode" color="#2D5A3D" />
+        <switch checked="{{isDarkMode}}" bindchange="toggleDarkMode" color="#047857" />
       </view>
     </view>
   </view>
@@ -52,21 +52,21 @@
     <view class="settings-list">
       <view class="setting-item" bindtap="clearCache">
         <view class="setting-left">
-          <icon name="refresh" size="md" color="#666666" />
+          <icon name="refresh" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">清除缓存</text>
         </view>
         <view class="setting-right">
           <text class="cache-size">12.5MB</text>
-          <icon name="arrow-right" size="sm" color="#CCCCCC" />
+          <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
         </view>
       </view>
       
       <view class="setting-item" bindtap="exportData">
         <view class="setting-left">
-          <icon name="download" size="md" color="#666666" />
+          <icon name="download" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">导出我的数据</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
     </view>
   </view>
@@ -77,31 +77,31 @@
     <view class="settings-list">
       <view class="setting-item" bindtap="goToAbout">
         <view class="setting-left">
-          <icon name="info" size="md" color="#666666" />
+          <icon name="info" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">关于我们</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
       
       <view class="setting-item" bindtap="goToPrivacy">
         <view class="setting-left">
-          <icon name="shield" size="md" color="#666666" />
+          <icon name="shield" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">隐私政策</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
       
       <view class="setting-item" bindtap="goToAgreement">
         <view class="setting-left">
-          <icon name="standard" size="md" color="#666666" />
+          <icon name="standard" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">用户协议</text>
         </view>
-        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        <icon name="arrow-right" size="sm" color="var(--color-text-disabled)" />
       </view>
       
       <view class="setting-item">
         <view class="setting-left">
-          <icon name="score" size="md" color="#666666" />
+          <icon name="score" size="md" color="var(--color-text-tertiary)" />
           <text class="setting-title">版本</text>
         </view>
         <text class="setting-value">v1.0.0</text>

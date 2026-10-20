@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Navbar 组件 v4 — 专业学术风格导航栏
  *
  * 升级要点（v4）：
@@ -66,12 +66,12 @@ export default function Navbar() {
       role="navigation"
       aria-label="主导航"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
           {isImageLogo ? (
-            <div className="shrink-0 rounded-md overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
+            <div className="shrink-0 rounded-[var(--radius-Apple-sm)] overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
                 <img
                   src={logoPath}
                   alt="莱茵分子 logo"
@@ -81,7 +81,7 @@ export default function Navbar() {
             </div>
           ) : (
             <div
-              className="shrink-0 rounded-md flex items-center justify-center transition-transform duration-200 group-hover:rotate-[-5deg]"
+              className="shrink-0 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-transform duration-200 group-hover:rotate-[-5deg]"
               style={{ width: logoSize.image, height: logoSize.image, background: 'var(--color-primary-700, #047857)' }}
             >
               <Beaker size={logoSize.icon} color="white" strokeWidth={2.2} />
@@ -127,7 +127,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 text-[15px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
+                className="inline-flex items-center gap-1.5 text-[15px] font-semibold px-[var(--space-apple-md)] min-h-[44px] rounded-[var(--radius-Apple-sm)] text-white transition-all hover:opacity-90"
                 style={{
                   background: 'var(--color-neutral-900, #0f172a)',
                   boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))',
@@ -143,7 +143,7 @@ export default function Navbar() {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="md:hidden w-11 h-11 flex items-center justify-center rounded-md ml-1 transition-colors lp-nav-link"
+                className="md:hidden w-11 h-11 flex items-center justify-center rounded-[var(--radius-Apple-sm)] ml-1 transition-colors lp-nav-link"
                 aria-expanded={mobileOpen}
                 aria-label="菜单"
               >
@@ -152,24 +152,24 @@ export default function Navbar() {
             </CollapsibleTrigger>
             <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
               <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}>
-                <div className="px-4 py-3 space-y-0.5">
+                <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] space-y-0.5">
                   {navLinks.map((l) => (
                     <a
                       key={l.href}
                       href={l.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'block text-[15px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
-                        isActive(l.href) ? 'text-neutral-900 bg-neutral-50 dark:bg-neutral-800' : 'text-neutral-900 hover:text-neutral-900 hover:bg-neutral-50 dark:bg-neutral-800'
+                        'block text-[15px] font-medium py-2.5 px-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] transition-colors min-h-[44px] flex items-center',
+                        isActive(l.href) ? 'text-neutral-900 bg-[var(--bg-tertiary)]' : 'text-neutral-900 hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                       )}
                     >
                       {l.label}
                     </a>
                   ))}
-                  <div className="pt-2 mt-2 border-t border-neutral-100">
+                  <div className="pt-2 mt-2 border-t border-[var(--border-color)]">
                     <Link
                       to="/login"
-                      className="w-full text-center text-[15px] font-semibold py-3 rounded-md text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
+                      className="w-full text-center text-[15px] font-semibold py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
                       style={{ background: 'var(--color-neutral-900, #0f172a)' }}
                     >
                       {navbarCTA.trialLabel}

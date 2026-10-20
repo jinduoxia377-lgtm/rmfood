@@ -1,0 +1,976 @@
+[
+  {
+    "route": "/dashboard",
+    "vw": 390,
+    "contentWidth": 0,
+    "contentCls": "",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [
+      {
+        "cls": "grid grid-cols-1 lg:grid-cols-12 gap-6",
+        "cols": 12,
+        "colWidth": 28,
+        "width": 332,
+        "tag": "DIV"
+      },
+      {
+        "cls": "grid grid-cols-2 gap-2",
+        "cols": 3,
+        "colWidth": 0,
+        "width": 0,
+        "tag": "DIV"
+      },
+      {
+        "cls": "grid grid-cols-2 gap-2",
+        "cols": 3,
+        "colWidth": 0,
+        "width": 0,
+        "tag": "DIV"
+      }
+    ],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 300,
+        "pl": 8,
+        "pt": 8,
+        "cls": "flex flex-wrap items-center gap-2 w-full sm:w-auto bg-[var(--bg-secondary)]/95 r"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 3
+  },
+  {
+    "route": "/formulas/new",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "max-w-[1600px] mx-auto space-y-[var(--space-apple-md)] md:space-y-6 px-[var(--space-apple-md)] md:px-0",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/new",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 258,
+        "pl": 12,
+        "pt": 4,
+        "cls": "flex w-full rounded-md border border-input px-3 py-1 shadow-sm transition-colors"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/batches",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [
+      {
+        "cols": 7,
+        "width": 330,
+        "cls": "w-full text-sm"
+      }
+    ],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 334,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 159,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 159,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 159,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/doe",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/stability",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/documents",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 258,
+        "pl": 17,
+        "pt": 17,
+        "cls": "w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-sm rounded-[va"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/compliance",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/label-check",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-4",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 366,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/ingredient-analysis",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 258,
+        "pl": 17,
+        "pt": 17,
+        "cls": "w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-sm rounded-[va"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/labels",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/ai",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 268,
+        "pl": 12,
+        "pt": 10,
+        "cls": "w-full flex min-h-[44px] items-center gap-[var(--space-apple-sm)] px-[var(--spac"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/databases",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "flex items-center justify-center h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/regulations",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "flex items-center justify-center h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/terminology",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)]",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 158,
+        "pl": 0,
+        "pt": 0,
+        "cls": "h-20 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] animate-pulse"
+      },
+      {
+        "w": 158,
+        "pl": 0,
+        "pt": 0,
+        "cls": "h-20 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] animate-pulse"
+      },
+      {
+        "w": 158,
+        "pl": 0,
+        "pt": 0,
+        "cls": "h-20 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] animate-pulse"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/workflows",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 300,
+        "pl": 17,
+        "pt": 8,
+        "cls": "flex items-center gap-2 bg-[var(--bg-secondary)]/15 rounded-[var(--radius-pill)]"
+      },
+      {
+        "w": 160,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 160,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/agent",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "mx-auto flex h-full max-w-[1600px] flex-col space-y-4 px-[var(--space-apple-sm)] sm:px-5 lg:px-[var(--space-apple-lg)] p",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 342,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 310,
+        "pl": 0,
+        "pt": 0,
+        "cls": "flex items-center rounded-[var(--radius-pill)] bg-black/15 overflow-hidden dark:"
+      },
+      {
+        "w": 342,
+        "pl": 0,
+        "pt": 0,
+        "cls": "flex min-h-[440px] flex-1 flex-col overflow-hidden rounded-[var(--radius-Apple-m"
+      },
+      {
+        "w": 306,
+        "pl": 0,
+        "pt": 0,
+        "cls": "h-32 animate-pulse rounded-[var(--radius-Apple-md)] bg-muted/50"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/analytics",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-[var(--space-apple-md)] max-w-[1600px] mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-[var(--space-apple-lg)]",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 350,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-4 sm:p-5 shadow-sm"
+      },
+      {
+        "w": 169,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card px-5 py-4"
+      },
+      {
+        "w": 169,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card px-5 py-4"
+      },
+      {
+        "w": 169,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card px-5 py-4"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-8 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-ente",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 536,
+        "pl": 6,
+        "pt": 6,
+        "cls": "inline-flex items-center gap-1.5 bg-[var(--bg-tertiary)]/60 rounded-[var(--radiu"
+      },
+      {
+        "w": 154,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 d"
+      },
+      {
+        "w": 154,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 d"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/settings",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "flex items-center justify-center h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/users",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-ente",
+    "grids": [],
+    "tables": [
+      {
+        "cols": 9,
+        "width": 556,
+        "cls": "w-full text-sm min-w-0 md:min-w-[640px]"
+      },
+      {
+        "cols": 12,
+        "width": 960,
+        "cls": "w-full text-sm min-w-[960px]"
+      }
+    ],
+    "minWide": [
+      {
+        "minW": 960,
+        "cls": "w-full text-sm min-w-[960px]",
+        "tag": "TABLE"
+      }
+    ],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 332,
+        "pl": 20,
+        "pt": 14,
+        "cls": "w-full flex items-center gap-[var(--space-apple-sm)] rounded-[var(--radius-Apple"
+      },
+      {
+        "w": 156,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 156,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 3
+  },
+  {
+    "route": "/audit-logs",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "max-w-[1600px] mx-auto space-y-6 py-[var(--space-apple-lg)]",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 366,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 177,
+        "pl": 17,
+        "pt": 17,
+        "cls": "flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var"
+      },
+      {
+        "w": 177,
+        "pl": 17,
+        "pt": 17,
+        "cls": "flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var"
+      },
+      {
+        "w": 177,
+        "pl": 17,
+        "pt": 17,
+        "cls": "flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/billing",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 12,
+        "pt": 8,
+        "cls": "px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] border border-["
+      },
+      {
+        "w": 332,
+        "pl": 24,
+        "pt": 24,
+        "cls": "bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--b"
+      },
+      {
+        "w": 332,
+        "pl": 24,
+        "pt": 24,
+        "cls": "lg:col-span-2 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border b"
+      },
+      {
+        "w": 332,
+        "pl": 24,
+        "pt": 24,
+        "cls": "bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--b"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/notifications",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-ente",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 166,
+        "pl": 4,
+        "pt": 4,
+        "cls": "flex items-center gap-1 p-1 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertia"
+      },
+      {
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "cls": "bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)]/60 dark"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/academic-report",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 160,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 160,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      },
+      {
+        "w": 160,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card relative overflow-visible border-neutral-200 dark:border-neutral-700 bg-whi"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/peptide-structure",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card card-hover"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card card-hover"
+      },
+      {
+        "w": 158,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card card-hover"
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/integrations",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-ente",
+    "grids": [],
+    "tables": [],
+    "minWide": [],
+    "cards": [
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado"
+      },
+      {
+        "w": 380,
+        "pl": 4,
+        "pt": 4,
+        "cls": "inline-flex items-center gap-1 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-"
+      },
+      {
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "cls": "card"
+      },
+      {
+        "w": 258,
+        "pl": 20,
+        "pt": 20,
+        "cls": "p-5 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)]/60 bg-["
+      }
+    ],
+    "issueCount": 0
+  },
+  {
+    "route": "/tokens",
+    "vw": 390,
+    "contentWidth": 366,
+    "contentCls": "min-h-screen",
+    "grids": [
+      {
+        "cls": "grid grid-cols-5 sm:grid-cols-10 gap-2",
+        "cols": 5,
+        "colWidth": 60,
+        "width": 302,
+        "tag": "DIV"
+      },
+      {
+        "cls": "grid grid-cols-5 sm:grid-cols-10 gap-2",
+        "cols": 5,
+        "colWidth": 60,
+        "width": 302,
+        "tag": "DIV"
+      },
+      {
+        "cls": "grid grid-cols-5 sm:grid-cols-10 gap-2",
+        "cols": 5,
+        "colWidth": 60,
+        "width": 302,
+        "tag": "DIV"
+      }
+    ],
+    "tables": [],
+    "minWide": [],
+    "cards": [],
+    "issueCount": 3
+  }
+]

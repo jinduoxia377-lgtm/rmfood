@@ -1,0 +1,2498 @@
+[
+  {
+    "pid": "B00362",
+    "name_cn": "阿魏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tAwei",
+    "pinyin": "Awei",
+    "latin": "Ferulae Resina"
+  },
+  {
+    "pid": "B00238",
+    "name_cn": "巴豆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBadou",
+    "pinyin": "Badou",
+    "latin": "Crotonis Fructus"
+  },
+  {
+    "pid": "B00152",
+    "name_cn": "白扁豆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaibiandou",
+    "pinyin": "Baibiandou",
+    "latin": "Lablab Semen Album"
+  },
+  {
+    "pid": "B00022",
+    "name_cn": "百部\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaibu",
+    "pinyin": "Baibu",
+    "latin": "Stemonae Radix"
+  },
+  {
+    "pid": "B00399",
+    "name_cn": "白矾\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaifan",
+    "pinyin": "Baifan",
+    "latin": "Alumen"
+  },
+  {
+    "pid": "B00023",
+    "name_cn": "白附子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaifuzi",
+    "pinyin": "Baifuzi",
+    "latin": "Typhonii Rhizoma"
+  },
+  {
+    "pid": "B00153",
+    "name_cn": "白果\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaiguo",
+    "pinyin": "Baiguo",
+    "latin": "Ginkgo Semen"
+  },
+  {
+    "pid": "B00340",
+    "name_cn": "百合\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaihe",
+    "pinyin": "Baihe",
+    "latin": "Lilii Bulbus"
+  },
+  {
+    "pid": "B00259",
+    "name_cn": "白花蛇舌草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaihuasheshecao",
+    "pinyin": "Baihuasheshecao",
+    "latin": "Hedyotidis Herba"
+  },
+  {
+    "pid": "B00028",
+    "name_cn": "白及\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaiji",
+    "pinyin": "Baiji",
+    "latin": "Bletillae Rhizoma"
+  },
+  {
+    "pid": "B00029",
+    "name_cn": "白蔹\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBailian",
+    "pinyin": "Bailian",
+    "latin": "Ampelopsis Radix"
+  },
+  {
+    "pid": "B00024",
+    "name_cn": "白茅根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaimaogen",
+    "pinyin": "Baimaogen",
+    "latin": "Imperatae Rhizoma"
+  },
+  {
+    "pid": "B00025",
+    "name_cn": "白前\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaiqian",
+    "pinyin": "Baiqian",
+    "latin": "Cynanchi Stauntonii Rhizoma et Radix"
+  },
+  {
+    "pid": "B00026",
+    "name_cn": "白芍\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaishao",
+    "pinyin": "Baishao",
+    "latin": "Paeoniae Radix Alba"
+  },
+  {
+    "pid": "B00027",
+    "name_cn": "白头翁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaitouweng",
+    "pinyin": "Baitouweng",
+    "latin": "Pulsatillae Radix"
+  },
+  {
+    "pid": "B00030",
+    "name_cn": "白薇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaiwei",
+    "pinyin": "Baiwei",
+    "latin": "Cynanchi Atrati Radix et Rhizoma"
+  },
+  {
+    "pid": "B00341",
+    "name_cn": "白鲜皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaixianpi",
+    "pinyin": "Baixianpi",
+    "latin": "Dictamni Cortex"
+  },
+  {
+    "pid": "B00031",
+    "name_cn": "白芷\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaizhi",
+    "pinyin": "Baizhi",
+    "latin": "Angelicae Dahuricae Radix"
+  },
+  {
+    "pid": "B00032",
+    "name_cn": "白术\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaizhu",
+    "pinyin": "Baizhu",
+    "latin": "Atractylodis Macrocephalae Rhizoma"
+  },
+  {
+    "pid": "B00154",
+    "name_cn": "柏子仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaiziren",
+    "pinyin": "Baiziren",
+    "latin": "Platycladi Semen"
+  },
+  {
+    "pid": "B00155",
+    "name_cn": "八角茴香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBajiaohuixiang",
+    "pinyin": "Bajiaohuixiang",
+    "latin": "Anisi Stellati Fructus"
+  },
+  {
+    "pid": "B00033",
+    "name_cn": "巴戟天\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBajitian",
+    "pinyin": "Bajitian",
+    "latin": "Morindae Officinalis Radix"
+  },
+  {
+    "pid": "B00260",
+    "name_cn": "半边莲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBanbianlian",
+    "pinyin": "Banbianlian",
+    "latin": "Lobeliae Chinensis Herba"
+  },
+  {
+    "pid": "B00034",
+    "name_cn": "板蓝根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBanlangen",
+    "pinyin": "Banlangen",
+    "latin": "Isatidis Radix"
+  },
+  {
+    "pid": "B00367",
+    "name_cn": "斑蝥\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBanmao",
+    "pinyin": "Banmao",
+    "latin": "Mylabris"
+  },
+  {
+    "pid": "B00132",
+    "name_cn": "半夏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBanxia",
+    "pinyin": "Banxia",
+    "latin": "Pinelliae Rhizoma"
+  },
+  {
+    "pid": "B00035",
+    "name_cn": "菝葜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBaqia",
+    "pinyin": "Baqia",
+    "latin": "Smilacis Chinae Rhizoma"
+  },
+  {
+    "pid": "B00036",
+    "name_cn": "北豆根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBeidougen",
+    "pinyin": "Beidougen",
+    "latin": "Menispermi Rhizoma"
+  },
+  {
+    "pid": "B00004",
+    "name_cn": "北沙参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBeishashen",
+    "pinyin": "Beishashen",
+    "latin": "Glehniae Radix"
+  },
+  {
+    "pid": "B00156",
+    "name_cn": "荜茇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBibo",
+    "pinyin": "Bibo",
+    "latin": "Piperis Longi Fructus"
+  },
+  {
+    "pid": "B00368",
+    "name_cn": "鳖甲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBiejia",
+    "pinyin": "Biejia",
+    "latin": "Trionycis Carapax"
+  },
+  {
+    "pid": "B00157",
+    "name_cn": "蓖麻子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBimazi",
+    "pinyin": "Bimazi",
+    "latin": "Ricini Semen"
+  },
+  {
+    "pid": "B00158",
+    "name_cn": "槟榔\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBinglang",
+    "pinyin": "Binglang",
+    "latin": "Arecae Semen"
+  },
+  {
+    "pid": "B00415",
+    "name_cn": "冰片\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBingpian",
+    "pinyin": "Bingpian",
+    "latin": "Borneolum Syntheticum"
+  },
+  {
+    "pid": "B00261",
+    "name_cn": "薄荷\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBohe",
+    "pinyin": "Bohe",
+    "latin": "Menthae Haplocalycis Herba"
+  },
+  {
+    "pid": "B00159",
+    "name_cn": "补骨脂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tBuguzhi",
+    "pinyin": "Buguzhi",
+    "latin": "Psoraleae Fructus"
+  },
+  {
+    "pid": "B00241",
+    "name_cn": "苍耳子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCang'erzi",
+    "pinyin": "Cang'erzi",
+    "latin": "Xanthii Fructus"
+  },
+  {
+    "pid": "B00040",
+    "name_cn": "苍术\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCangzhu",
+    "pinyin": "Cangzhu",
+    "latin": "Atractylodis Rhizoma"
+  },
+  {
+    "pid": "B00160",
+    "name_cn": "草豆蔻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCaodoukou",
+    "pinyin": "Caodoukou",
+    "latin": "Alpiniae Katsumadai Semen"
+  },
+  {
+    "pid": "B00161",
+    "name_cn": "草果\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCaoguo",
+    "pinyin": "Caoguo",
+    "latin": "Tsaoko Fructus"
+  },
+  {
+    "pid": "B00037",
+    "name_cn": "草乌\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCaowu",
+    "pinyin": "Caowu",
+    "latin": "Aconiti Kusnezoffii Radix"
+  },
+  {
+    "pid": "B00323",
+    "name_cn": "侧柏叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCebaiye",
+    "pinyin": "Cebaiye",
+    "latin": "Platycladi Cacumen"
+  },
+  {
+    "pid": "B00038",
+    "name_cn": "柴胡\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChaihu",
+    "pinyin": "Chaihu",
+    "latin": "Bupleuri Radix"
+  },
+  {
+    "pid": "B00039",
+    "name_cn": "常山\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChangshan",
+    "pinyin": "Changshan",
+    "latin": "Dichroae Radix"
+  },
+  {
+    "pid": "B00369",
+    "name_cn": "蟾酥\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChansu",
+    "pinyin": "Chansu",
+    "latin": "Bufonis Venenum"
+  },
+  {
+    "pid": "B00370",
+    "name_cn": "蝉蜕\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChantui",
+    "pinyin": "Chantui",
+    "latin": "Cicadae Periostracum"
+  },
+  {
+    "pid": "B00162",
+    "name_cn": "陈皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChenpi",
+    "pinyin": "Chenpi",
+    "latin": "Citri Reticulatae Pericarpium"
+  },
+  {
+    "pid": "B00421",
+    "name_cn": "沉香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChenxiang",
+    "pinyin": "Chenxiang",
+    "latin": "Aquilariae Lignum Resinatum"
+  },
+  {
+    "pid": "B00262",
+    "name_cn": "车前草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCheqiancao",
+    "pinyin": "Cheqiancao",
+    "latin": "Plantaginis Herba"
+  },
+  {
+    "pid": "B00163",
+    "name_cn": "车前子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCheqianzi",
+    "pinyin": "Cheqianzi",
+    "latin": "Plantaginis Semen"
+  },
+  {
+    "pid": "B00041",
+    "name_cn": "赤芍\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChishao",
+    "pinyin": "Chishao",
+    "latin": "Paeoniae Radix Rubra"
+  },
+  {
+    "pid": "B00164",
+    "name_cn": "赤小豆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChixiaodou",
+    "pinyin": "Chixiaodou",
+    "latin": "Vignae Semen"
+  },
+  {
+    "pid": "B00371",
+    "name_cn": "虫白蜡\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChongbaila",
+    "pinyin": "Chongbaila",
+    "latin": "Cera Chinensis"
+  },
+  {
+    "pid": "B00042",
+    "name_cn": "重楼\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChonglou",
+    "pinyin": "Chonglou",
+    "latin": "Paridis Rhizoma"
+  },
+  {
+    "pid": "B00165",
+    "name_cn": "茺蔚子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChongweizi",
+    "pinyin": "Chongweizi",
+    "latin": "Leonuri Fructus"
+  },
+  {
+    "pid": "B00043",
+    "name_cn": "川贝母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanbeimu",
+    "pinyin": "Chuanbeimu",
+    "latin": "Fritillariae Cirrhosae Bulbus"
+  },
+  {
+    "pid": "B00242",
+    "name_cn": "川楝子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanlianzi",
+    "pinyin": "Chuanlianzi",
+    "latin": "Toosendan Fructus"
+  },
+  {
+    "pid": "B00136",
+    "name_cn": "川木通\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanmutong",
+    "pinyin": "Chuanmutong",
+    "latin": "Clematidis Armandii Caulis"
+  },
+  {
+    "pid": "B00044",
+    "name_cn": "川木香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanmuxiang",
+    "pinyin": "Chuanmuxiang",
+    "latin": "Vladimirae Radix"
+  },
+  {
+    "pid": "B00045",
+    "name_cn": "川牛膝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanniuxi",
+    "pinyin": "Chuanniuxi",
+    "latin": "Cyathulae Radix"
+  },
+  {
+    "pid": "B00046",
+    "name_cn": "川乌\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanwu",
+    "pinyin": "Chuanwu",
+    "latin": "Aconiti Radix"
+  },
+  {
+    "pid": "B00263",
+    "name_cn": "穿心莲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanxinlian",
+    "pinyin": "Chuanxinlian",
+    "latin": "Andrographitis Herba"
+  },
+  {
+    "pid": "B00047",
+    "name_cn": "川芎\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuanxiong",
+    "pinyin": "Chuanxiong",
+    "latin": "Chuanxiong Rhizoma"
+  },
+  {
+    "pid": "B00264",
+    "name_cn": "垂盆草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChuipencao",
+    "pinyin": "Chuipencao",
+    "latin": "Sedi Herba"
+  },
+  {
+    "pid": "B00342",
+    "name_cn": "椿皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChunpi",
+    "pinyin": "Chunpi",
+    "latin": "Ailanthi Cortex"
+  },
+  {
+    "pid": "B00166",
+    "name_cn": "楮实子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tChushizi",
+    "pinyin": "Chushizi",
+    "latin": "Broussonetiae Fructus"
+  },
+  {
+    "pid": "B00400",
+    "name_cn": "磁石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCishi",
+    "pinyin": "Cishi",
+    "latin": "Magnetitum"
+  },
+  {
+    "pid": "B00048",
+    "name_cn": "刺五加\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tCiwujia",
+    "pinyin": "Ciwujia",
+    "latin": "Acanthopanacis Senticosi Radix et Rhizoma Sue Caulis"
+  },
+  {
+    "pid": "B00167",
+    "name_cn": "大腹皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDafupi",
+    "pinyin": "Dafupi",
+    "latin": "Arecae Pericarpium"
+  },
+  {
+    "pid": "B00006",
+    "name_cn": "大黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDahuang",
+    "pinyin": "Dahuang",
+    "latin": "Rhei Radix et Rhizoma"
+  },
+  {
+    "pid": "B00265",
+    "name_cn": "大蓟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDaji",
+    "pinyin": "Daji",
+    "latin": "Cirsii Japonici Herba"
+  },
+  {
+    "pid": "B00168",
+    "name_cn": "淡豆豉\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDandouchi",
+    "pinyin": "Dandouchi",
+    "latin": "Sojae Semen Praeparatum"
+  },
+  {
+    "pid": "B00049",
+    "name_cn": "当归\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDanggui",
+    "pinyin": "Danggui",
+    "latin": "Angelicae Sinensis Radix"
+  },
+  {
+    "pid": "B00021",
+    "name_cn": "党参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDangshen",
+    "pinyin": "Dangshen",
+    "latin": "Codonopsis Radix"
+  },
+  {
+    "pid": "B00020",
+    "name_cn": "丹参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDanshen",
+    "pinyin": "Danshen",
+    "latin": "Salviae Miltiorrhizae Radix et Rhizoma"
+  },
+  {
+    "pid": "B00267",
+    "name_cn": "淡竹叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDanzhuye",
+    "pinyin": "Danzhuye",
+    "latin": "Lophatheri Herba"
+  },
+  {
+    "pid": "B00169",
+    "name_cn": "刀豆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDaodou",
+    "pinyin": "Daodou",
+    "latin": "Canavaliae Semen"
+  },
+  {
+    "pid": "B00170",
+    "name_cn": "稻芽\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDaoya",
+    "pinyin": "Daoya",
+    "latin": "Oryzae Fructus Germinatus"
+  },
+  {
+    "pid": "B00325",
+    "name_cn": "大青叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDaqingye",
+    "pinyin": "Daqingye",
+    "latin": "Isatidis Folium"
+  },
+  {
+    "pid": "B00135",
+    "name_cn": "大血藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDaxueteng",
+    "pinyin": "Daxueteng",
+    "latin": "Sargentodexae Caulis"
+  },
+  {
+    "pid": "B00171",
+    "name_cn": "大枣\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDazao",
+    "pinyin": "Dazao",
+    "latin": "Jujubae Fructus"
+  },
+  {
+    "pid": "B00268",
+    "name_cn": "灯心草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDengxincao",
+    "pinyin": "Dengxincao",
+    "latin": "Junci Medulla"
+  },
+  {
+    "pid": "B00172",
+    "name_cn": "地肤子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDifuzi",
+    "pinyin": "Difuzi",
+    "latin": "Kochiae Fructus"
+  },
+  {
+    "pid": "B00343",
+    "name_cn": "地骨皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDigupi",
+    "pinyin": "Digupi",
+    "latin": "Lycii Cortex"
+  },
+  {
+    "pid": "B00050",
+    "name_cn": "地黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDihuang",
+    "pinyin": "Dihuang",
+    "latin": "Rehmanniae Radix"
+  },
+  {
+    "pid": "B00372",
+    "name_cn": "地龙\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDilong",
+    "pinyin": "Dilong",
+    "latin": "Pheretima"
+  },
+  {
+    "pid": "B00299",
+    "name_cn": "丁香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDingxiang",
+    "pinyin": "Dingxiang",
+    "latin": "Caryophylli Flos"
+  },
+  {
+    "pid": "B00051",
+    "name_cn": "地榆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDiyu",
+    "pinyin": "Diyu",
+    "latin": "Sanguisorbae Radix"
+  },
+  {
+    "pid": "B00414",
+    "name_cn": "冬虫夏草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDongchongxiacao",
+    "pinyin": "Dongchongxiacao",
+    "latin": "Cordyceps"
+  },
+  {
+    "pid": "B00173",
+    "name_cn": "冬葵果\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDongkuiguo",
+    "pinyin": "Dongkuiguo",
+    "latin": "Malvae Fructus"
+  },
+  {
+    "pid": "B00174",
+    "name_cn": "豆蔻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDoukou",
+    "pinyin": "Doukou",
+    "latin": "Amomi Fructus Rotundus"
+  },
+  {
+    "pid": "B00052",
+    "name_cn": "独活\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDuhuo",
+    "pinyin": "Duhuo",
+    "latin": "Angelicae Pubescentis Radix"
+  },
+  {
+    "pid": "B00344",
+    "name_cn": "杜仲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDuzhong",
+    "pinyin": "Duzhong",
+    "latin": "Eucommiae Cortex"
+  },
+  {
+    "pid": "B00326",
+    "name_cn": "杜仲叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tDuzhongye",
+    "pinyin": "Duzhongye",
+    "latin": "Eucommiae Folium"
+  },
+  {
+    "pid": "B00373",
+    "name_cn": "阿胶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tEjiao",
+    "pinyin": "Ejiao",
+    "latin": "Asini Corii Colla"
+  },
+  {
+    "pid": "B00416",
+    "name_cn": "儿茶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tErcha",
+    "pinyin": "Ercha",
+    "latin": "Catechu"
+  },
+  {
+    "pid": "B00053",
+    "name_cn": "莪术\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tEzhu",
+    "pinyin": "Ezhu",
+    "latin": "Curcumae Rhizoma"
+  },
+  {
+    "pid": "B00054",
+    "name_cn": "防风\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFangfeng",
+    "pinyin": "Fangfeng",
+    "latin": "Saposhnikoviae Radix"
+  },
+  {
+    "pid": "B00055",
+    "name_cn": "防己\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFangji",
+    "pinyin": "Fangji",
+    "latin": "Stephaniae Tetrandrae Radix"
+  },
+  {
+    "pid": "B00327",
+    "name_cn": "番泻叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFanxieye",
+    "pinyin": "Fanxieye",
+    "latin": "Sennae Folium"
+  },
+  {
+    "pid": "B00175",
+    "name_cn": "榧子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFeizi",
+    "pinyin": "Feizi",
+    "latin": "Torreyae Semen"
+  },
+  {
+    "pid": "B00057",
+    "name_cn": "粉葛\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFenge",
+    "pinyin": "Fenge",
+    "latin": "Puerariae Thomsonii Radix"
+  },
+  {
+    "pid": "B00363",
+    "name_cn": "枫香脂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFengxiangzhi",
+    "pinyin": "Fengxiangzhi",
+    "latin": "Liquidambaris Resina"
+  },
+  {
+    "pid": "B00056",
+    "name_cn": "粉萆薢\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFenpixie",
+    "pinyin": "Fenpixie",
+    "latin": "Dioscoreae Hypoglaucae Rhizoma"
+  },
+  {
+    "pid": "B00176",
+    "name_cn": "佛手\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFoshou",
+    "pinyin": "Foshou",
+    "latin": "Citri Sarcodactylis Fructus"
+  },
+  {
+    "pid": "B00356",
+    "name_cn": "茯苓\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFuling",
+    "pinyin": "Fuling",
+    "latin": "Poria"
+  },
+  {
+    "pid": "B00243",
+    "name_cn": "覆盆子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFupenzi",
+    "pinyin": "Fupenzi",
+    "latin": "Rubi Fructus"
+  },
+  {
+    "pid": "B00058",
+    "name_cn": "附子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tFuzi",
+    "pinyin": "Fuzi",
+    "latin": "Aconiti Lateralis Radix Praeparata"
+  },
+  {
+    "pid": "B00129",
+    "name_cn": "甘草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGancao",
+    "pinyin": "Gancao",
+    "latin": "Glycyrrhizae Radix et Rhizoma"
+  },
+  {
+    "pid": "B00013",
+    "name_cn": "干姜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGanjiang",
+    "pinyin": "Ganjiang",
+    "latin": "Zingiberis Rhizoma"
+  },
+  {
+    "pid": "B00059",
+    "name_cn": "甘松\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGansong",
+    "pinyin": "Gansong",
+    "latin": "Nardostachyos Radix et Rhizoma"
+  },
+  {
+    "pid": "B00060",
+    "name_cn": "甘遂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGansui",
+    "pinyin": "Gansui",
+    "latin": "Kansui Radix"
+  },
+  {
+    "pid": "B00061",
+    "name_cn": "藁本\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGaoben",
+    "pinyin": "Gaoben",
+    "latin": "Ligustici Rhizoma et Radix"
+  },
+  {
+    "pid": "B00062",
+    "name_cn": "高良姜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGaoliangjiang",
+    "pinyin": "Gaoliangjiang",
+    "latin": "Alpiniae Officinarum Rhizoma"
+  },
+  {
+    "pid": "B00063",
+    "name_cn": "葛根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGegen",
+    "pinyin": "Gegen",
+    "latin": "Puerariae Lobatae Radix"
+  },
+  {
+    "pid": "B00374",
+    "name_cn": "蛤蚧\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGejie",
+    "pinyin": "Gejie",
+    "latin": "Gecko"
+  },
+  {
+    "pid": "B00375",
+    "name_cn": "蛤壳\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGeqiao",
+    "pinyin": "Geqiao",
+    "latin": "Meretricis Concha Cyclinae Concha"
+  },
+  {
+    "pid": "B00328",
+    "name_cn": "枸骨叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGouguye",
+    "pinyin": "Gouguye",
+    "latin": "Ilicis Cornutae Folium"
+  },
+  {
+    "pid": "B00064",
+    "name_cn": "狗脊\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGouji",
+    "pinyin": "Gouji",
+    "latin": "Cibotii Rhizoma"
+  },
+  {
+    "pid": "B00227",
+    "name_cn": "枸杞子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGouqizi",
+    "pinyin": "Gouqizi",
+    "latin": "Lycii Fructus"
+  },
+  {
+    "pid": "B00133",
+    "name_cn": "钩藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGouteng",
+    "pinyin": "Gouteng",
+    "latin": "Uncariae Ramulus cum Uncis"
+  },
+  {
+    "pid": "B00177",
+    "name_cn": "瓜蒌\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGualou",
+    "pinyin": "Gualou",
+    "latin": "Trichosanthis Fructus"
+  },
+  {
+    "pid": "B00269",
+    "name_cn": "广藿香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuanghuoxiang",
+    "pinyin": "Guanghuoxiang",
+    "latin": "Pogostemonis Herba"
+  },
+  {
+    "pid": "B00270",
+    "name_cn": "广金钱草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuangjinqiancao",
+    "pinyin": "Guangjinqiancao",
+    "latin": "Desmodii Stracifolii Herba"
+  },
+  {
+    "pid": "B00345",
+    "name_cn": "关黄柏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuanhuangbai",
+    "pinyin": "Guanhuangbai",
+    "latin": "Phellodendri Amurensis Cortex"
+  },
+  {
+    "pid": "B00376",
+    "name_cn": "龟甲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuijia",
+    "pinyin": "Guijia",
+    "latin": "Testudinis Carapax et Plastrum"
+  },
+  {
+    "pid": "B00138",
+    "name_cn": "桂枝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuizhi",
+    "pinyin": "Guizhi",
+    "latin": "Cinnamomi Ramulus"
+  },
+  {
+    "pid": "B00300",
+    "name_cn": "谷精草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGujingcao",
+    "pinyin": "Gujingcao",
+    "latin": "Eriocauli Flos"
+  },
+  {
+    "pid": "B00065",
+    "name_cn": "骨碎补\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGusuibu",
+    "pinyin": "Gusuibu",
+    "latin": "Drynariae Rhizoma"
+  },
+  {
+    "pid": "B00178",
+    "name_cn": "谷芽\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tGuya",
+    "pinyin": "Guya",
+    "latin": "Setariae Fructus Germinatus"
+  },
+  {
+    "pid": "B00357",
+    "name_cn": "海金沙\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHaijinsha",
+    "pinyin": "Haijinsha",
+    "latin": "Lygodii Spora"
+  },
+  {
+    "pid": "B00377",
+    "name_cn": "海马\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHaima",
+    "pinyin": "Haima",
+    "latin": "Hippocampus"
+  },
+  {
+    "pid": "B00378",
+    "name_cn": "海螵蛸\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHaipiaoxiao",
+    "pinyin": "Haipiaoxiao",
+    "latin": "Sepiae Endoconcha"
+  },
+  {
+    "pid": "B00358",
+    "name_cn": "海藻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHaizao",
+    "pinyin": "Haizao",
+    "latin": "Sargassum"
+  },
+  {
+    "pid": "B00301",
+    "name_cn": "合欢花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHehuanhua",
+    "pinyin": "Hehuanhua",
+    "latin": "Albiziae Flos"
+  },
+  {
+    "pid": "B00179",
+    "name_cn": "鹤虱\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHeshi",
+    "pinyin": "Heshi",
+    "latin": "Carpesii Fructus"
+  },
+  {
+    "pid": "B00130",
+    "name_cn": "何首乌\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHeshouwu",
+    "pinyin": "Heshouwu",
+    "latin": "Polygoni Multiflori Radix"
+  },
+  {
+    "pid": "B00228",
+    "name_cn": "核桃仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHetaoren",
+    "pinyin": "Hetaoren",
+    "latin": "Juglandis Semen"
+  },
+  {
+    "pid": "B00329",
+    "name_cn": "荷叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHeye",
+    "pinyin": "Heye",
+    "latin": "Nelumbinis Folium"
+  },
+  {
+    "pid": "B00180",
+    "name_cn": "诃子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHezi",
+    "pinyin": "Hezi",
+    "latin": "Chebulae Fructus"
+  },
+  {
+    "pid": "B00066",
+    "name_cn": "红大戟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHongdaji",
+    "pinyin": "Hongdaji",
+    "latin": "Knoxiae Radix"
+  },
+  {
+    "pid": "B00181",
+    "name_cn": "红豆蔻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHongdoukou",
+    "pinyin": "Hongdoukou",
+    "latin": "Galangae Fructus"
+  },
+  {
+    "pid": "B00319",
+    "name_cn": "红花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHonghua",
+    "pinyin": "Honghua",
+    "latin": "Carthami Flos"
+  },
+  {
+    "pid": "B00067",
+    "name_cn": "红景天\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHongjingtian",
+    "pinyin": "Hongjingtian",
+    "latin": "Rhodiolae Crenulatae Radix et Rhizoma"
+  },
+  {
+    "pid": "B00068",
+    "name_cn": "红芪\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHongqi",
+    "pinyin": "Hongqi",
+    "latin": "Hedysari Radix"
+  },
+  {
+    "pid": "B00069",
+    "name_cn": "红参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHongshen",
+    "pinyin": "Hongshen",
+    "latin": "Ginseng Radix et Rhizoma Rubra"
+  },
+  {
+    "pid": "B00347",
+    "name_cn": "厚朴\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHoupo",
+    "pinyin": "Houpo",
+    "latin": "Magnoliae Officinalis Cortex"
+  },
+  {
+    "pid": "B00302",
+    "name_cn": "槐花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuaihua",
+    "pinyin": "Huaihua",
+    "latin": "Sophorae Flos"
+  },
+  {
+    "pid": "B00229",
+    "name_cn": "槐角\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuaijiao",
+    "pinyin": "Huaijiao",
+    "latin": "Sophprae Fructus"
+  },
+  {
+    "pid": "B00182",
+    "name_cn": "花椒\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuajiao",
+    "pinyin": "Huajiao",
+    "latin": "Zanthoxyli Pericarpium"
+  },
+  {
+    "pid": "B00183",
+    "name_cn": "化橘红\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuajuhong",
+    "pinyin": "Huajuhong",
+    "latin": "Citri Grandis Exocarpium"
+  },
+  {
+    "pid": "B00346",
+    "name_cn": "黄柏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuangbai",
+    "pinyin": "Huangbai",
+    "latin": "Phellodendri Chinensis Cortex"
+  },
+  {
+    "pid": "B00075",
+    "name_cn": "黄精\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuangjing",
+    "pinyin": "Huangjing",
+    "latin": "Polygonati Rhizoma"
+  },
+  {
+    "pid": "B00070",
+    "name_cn": "黄连\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuanglian",
+    "pinyin": "Huanglian",
+    "latin": "Coptidis Rhizoma"
+  },
+  {
+    "pid": "B00071",
+    "name_cn": "黄芪\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuangqi",
+    "pinyin": "Huangqi",
+    "latin": "Astragali Radix"
+  },
+  {
+    "pid": "B00072",
+    "name_cn": "黄芩\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuangqin",
+    "pinyin": "Huangqin",
+    "latin": "Scutellariae Radix"
+  },
+  {
+    "pid": "B00401",
+    "name_cn": "滑石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuashi",
+    "pinyin": "Huashi",
+    "latin": "Talcum"
+  },
+  {
+    "pid": "B00073",
+    "name_cn": "胡黄连\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHuhuanglian",
+    "pinyin": "Huhuanglian",
+    "latin": "Picrorhizae Rhizoma"
+  },
+  {
+    "pid": "B00184",
+    "name_cn": "胡椒\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHujiao",
+    "pinyin": "Hujiao",
+    "latin": "Piperis Fructus"
+  },
+  {
+    "pid": "B00271",
+    "name_cn": "槲寄生\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tHujisheng",
+    "pinyin": "Hujisheng",
+    "latin": "Visci Herba"
+  },
+  {
+    "pid": "B00005",
+    "name_cn": "姜黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJianghuang",
+    "pinyin": "Jianghuang",
+    "latin": "Curcumae Longae Rhizoma"
+  },
+  {
+    "pid": "B00139",
+    "name_cn": "降香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiangxiang",
+    "pinyin": "Jiangxiang",
+    "latin": "Dalbergiae Odoriferae Lignum"
+  },
+  {
+    "pid": "B00272",
+    "name_cn": "绞股蓝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiaogulan",
+    "pinyin": "Jiaogulan",
+    "latin": "Gynostemmatis Pentaphylli Herba seu Radix"
+  },
+  {
+    "pid": "B00303",
+    "name_cn": "鸡蛋花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJidanhua",
+    "pinyin": "Jidanhua",
+    "latin": "Plumeriae Acutifoliae Flos"
+  },
+  {
+    "pid": "B00076",
+    "name_cn": "桔梗\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiegeng",
+    "pinyin": "Jiegeng",
+    "latin": "Platycodonis Radix"
+  },
+  {
+    "pid": "B00186",
+    "name_cn": "芥子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiezi",
+    "pinyin": "Jiezi",
+    "latin": "Sinapis Semen"
+  },
+  {
+    "pid": "B00304",
+    "name_cn": "鸡冠花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiguanhua",
+    "pinyin": "Jiguanhua",
+    "latin": "Celosiae Cristatae Flos"
+  },
+  {
+    "pid": "B00273",
+    "name_cn": "鸡骨草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJigucao",
+    "pinyin": "Jigucao",
+    "latin": "Abri Herba"
+  },
+  {
+    "pid": "B00230",
+    "name_cn": "蒺藜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJili",
+    "pinyin": "Jili",
+    "latin": "Tribuli Fructus"
+  },
+  {
+    "pid": "B00380",
+    "name_cn": "鸡内金\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJineijin",
+    "pinyin": "Jineijin",
+    "latin": "Galli Gigerii Endothelium Coreneum"
+  },
+  {
+    "pid": "B00077",
+    "name_cn": "京大戟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJingdaji",
+    "pinyin": "Jingdaji",
+    "latin": "Euphorbiae Pekinensis Radix"
+  },
+  {
+    "pid": "B00274",
+    "name_cn": "荆芥\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJingjie",
+    "pinyin": "Jingjie",
+    "latin": "Schizonepetae Herba"
+  },
+  {
+    "pid": "B00402",
+    "name_cn": "金礞石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinmengshi",
+    "pinyin": "Jinmengshi",
+    "latin": "Micae Lapis Aureus"
+  },
+  {
+    "pid": "B00398",
+    "name_cn": "金钱白花蛇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinqianbaihuashe",
+    "pinyin": "Jinqianbaihuashe",
+    "latin": "Bungarus Parvus"
+  },
+  {
+    "pid": "B00275",
+    "name_cn": "金钱草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinqiancao",
+    "pinyin": "Jinqiancao",
+    "latin": "Lysimachiae Herba"
+  },
+  {
+    "pid": "B00078",
+    "name_cn": "金荞麦\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinqiaomai",
+    "pinyin": "Jinqiaomai",
+    "latin": "Fagopyri Dibotrydis Rhizoma"
+  },
+  {
+    "pid": "B00236",
+    "name_cn": "金樱子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinyingzi",
+    "pinyin": "Jinyingzi",
+    "latin": "Rosae Laevigatae Fructus"
+  },
+  {
+    "pid": "B00305",
+    "name_cn": "金银花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJinyinhua",
+    "pinyin": "Jinyinhua",
+    "latin": "Lonicerae Japonicae Flos"
+  },
+  {
+    "pid": "B00140",
+    "name_cn": "鸡屎藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJishiteng",
+    "pinyin": "Jishiteng",
+    "latin": "Paederiae Scandentis Herba et Radix"
+  },
+  {
+    "pid": "B00187",
+    "name_cn": "韭菜子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiucaizi",
+    "pinyin": "Jiucaizi",
+    "latin": "Allii Tuberosi Semen"
+  },
+  {
+    "pid": "B00330",
+    "name_cn": "九里香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJiulixiang",
+    "pinyin": "Jiulixiang",
+    "latin": "Murrayae Folium et Cacumen"
+  },
+  {
+    "pid": "B00141",
+    "name_cn": "鸡血藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJixueteng",
+    "pinyin": "Jixueteng",
+    "latin": "Spatholobi Caulis"
+  },
+  {
+    "pid": "B00276",
+    "name_cn": "卷柏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJuanbai",
+    "pinyin": "Juanbai",
+    "latin": "Selaginellae Herba"
+  },
+  {
+    "pid": "B00188",
+    "name_cn": "决明子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJuemingzi",
+    "pinyin": "Juemingzi",
+    "latin": "Cassiae Semen"
+  },
+  {
+    "pid": "B00306",
+    "name_cn": "菊花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tJuhua",
+    "pinyin": "Juhua",
+    "latin": "Chrysanthemi Flos"
+  },
+  {
+    "pid": "B00307",
+    "name_cn": "款冬花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tKuandonghua",
+    "pinyin": "Kuandonghua",
+    "latin": "Farfarae Flos"
+  },
+  {
+    "pid": "B00348",
+    "name_cn": "苦楝皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tKulianpi",
+    "pinyin": "Kulianpi",
+    "latin": "Meliae Cortex"
+  },
+  {
+    "pid": "B00361",
+    "name_cn": "昆布\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tKunbu",
+    "pinyin": "Kunbu",
+    "latin": "Laminariae Thallus Eckloniae Thallus"
+  },
+  {
+    "pid": "B00018",
+    "name_cn": "苦参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tKushen",
+    "pinyin": "Kushen",
+    "latin": "Sophorae Flavescentis Radix"
+  },
+  {
+    "pid": "B00216",
+    "name_cn": "苦杏仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tKuxingren",
+    "pinyin": "Kuxingren",
+    "latin": "Armeniacae Semen Amarum"
+  },
+  {
+    "pid": "B00189",
+    "name_cn": "莱菔子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLaifuzi",
+    "pinyin": "Laifuzi",
+    "latin": "Raphani Semen"
+  },
+  {
+    "pid": "B00321",
+    "name_cn": "腊梅花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLameihua",
+    "pinyin": "Lameihua",
+    "latin": "Chimonathi Praecocis Flos"
+  },
+  {
+    "pid": "B00079",
+    "name_cn": "狼毒\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLangdu",
+    "pinyin": "Langdu",
+    "latin": "Euphoriae Ebracteolata Radix"
+  },
+  {
+    "pid": "B00258",
+    "name_cn": "老鹳草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLaoguancao",
+    "pinyin": "Laoguancao",
+    "latin": "Erodii Herba;Geranii Herba"
+  },
+  {
+    "pid": "B00080",
+    "name_cn": "两面针\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLiangmianzhen",
+    "pinyin": "Liangmianzhen",
+    "latin": "Zanthoxyl Radix"
+  },
+  {
+    "pid": "B00190",
+    "name_cn": "连翘\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLianqiao",
+    "pinyin": "Lianqiao",
+    "latin": "Forsythiae Fructus"
+  },
+  {
+    "pid": "B00245",
+    "name_cn": "莲子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLianzi",
+    "pinyin": "Lianzi",
+    "latin": "Nelumbinis Semen"
+  },
+  {
+    "pid": "B00246",
+    "name_cn": "莲子心\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLianzixin",
+    "pinyin": "Lianzixin",
+    "latin": "Nelumbinis Plumula"
+  },
+  {
+    "pid": "B00308",
+    "name_cn": "凌霄花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLingxiaohua",
+    "pinyin": "Lingxiaohua",
+    "latin": "Campsis Flos"
+  },
+  {
+    "pid": "B00381",
+    "name_cn": "羚羊角\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLingyangjiao",
+    "pinyin": "Lingyangjiao",
+    "latin": "Saigae Tataricae Cornu"
+  },
+  {
+    "pid": "B00359",
+    "name_cn": "灵芝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLingzhi",
+    "pinyin": "Lingzhi",
+    "latin": "Ganoderma"
+  },
+  {
+    "pid": "B00081",
+    "name_cn": "龙胆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLongdan",
+    "pinyin": "Longdan",
+    "latin": "Gentianae Radix et Rhizoma"
+  },
+  {
+    "pid": "B00191",
+    "name_cn": "龙眼肉\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLongyanrou",
+    "pinyin": "Longyanrou",
+    "latin": "Longan Arillus"
+  },
+  {
+    "pid": "B00082",
+    "name_cn": "漏芦\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLoulu",
+    "pinyin": "Loulu",
+    "latin": "Rhapontici Radix"
+  },
+  {
+    "pid": "B00403",
+    "name_cn": "炉甘石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuganshi",
+    "pinyin": "Luganshi",
+    "latin": "Calamina"
+  },
+  {
+    "pid": "B00083",
+    "name_cn": "芦根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLugen",
+    "pinyin": "Lugen",
+    "latin": "Phragmitis Rhizoma"
+  },
+  {
+    "pid": "B00417",
+    "name_cn": "芦荟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuhui",
+    "pinyin": "Luhui",
+    "latin": "Aloe"
+  },
+  {
+    "pid": "B00192",
+    "name_cn": "路路通\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLulutong",
+    "pinyin": "Lulutong",
+    "latin": "Liquidambaris Fructus"
+  },
+  {
+    "pid": "B00331",
+    "name_cn": "罗布麻叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuobumaye",
+    "pinyin": "Luobumaye",
+    "latin": "Apocyni Veneti Folium"
+  },
+  {
+    "pid": "B00231",
+    "name_cn": "罗汉果\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuohanguo",
+    "pinyin": "Luohanguo",
+    "latin": "Siraitiae Fructus"
+  },
+  {
+    "pid": "B00142",
+    "name_cn": "络石藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuoshiteng",
+    "pinyin": "Luoshiteng",
+    "latin": "Trachelospermi Caulis et Folium"
+  },
+  {
+    "pid": "B00382",
+    "name_cn": "鹿茸\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLurong",
+    "pinyin": "Lurong",
+    "latin": "Cervi Cornu Pantotrichum"
+  },
+  {
+    "pid": "B00277",
+    "name_cn": "鹿衔草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tLuxiancao",
+    "pinyin": "Luxiancao",
+    "latin": "Pyrolae Herba"
+  },
+  {
+    "pid": "B00001",
+    "name_cn": "马勃\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMabo",
+    "pinyin": "Mabo",
+    "latin": "Lasiosphaera Calvatia"
+  },
+  {
+    "pid": "B00247",
+    "name_cn": "马兜铃\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMadouling",
+    "pinyin": "Madouling",
+    "latin": "Aristolochiae Fructus"
+  },
+  {
+    "pid": "B00278",
+    "name_cn": "麻黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMahuang",
+    "pinyin": "Mahuang",
+    "latin": "Ephedrae Herba"
+  },
+  {
+    "pid": "B00084",
+    "name_cn": "麦冬\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMaidong",
+    "pinyin": "Maidong",
+    "latin": "Ophiopogonis Radix"
+  },
+  {
+    "pid": "B00193",
+    "name_cn": "麦芽\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMaiya",
+    "pinyin": "Maiya",
+    "latin": "Hordei Fructus Germinatus"
+  },
+  {
+    "pid": "B00404",
+    "name_cn": "芒硝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMangxiao",
+    "pinyin": "Mangxiao",
+    "latin": "Natrii Sulfas"
+  },
+  {
+    "pid": "B00194",
+    "name_cn": "蔓荆子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tManjingzi",
+    "pinyin": "Manjingzi",
+    "latin": "Viticis Fructus"
+  },
+  {
+    "pid": "B00248",
+    "name_cn": "马钱子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMaqianzi",
+    "pinyin": "Maqianzi",
+    "latin": "Strychni Semen"
+  },
+  {
+    "pid": "B00309",
+    "name_cn": "玫瑰花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMeiguihua",
+    "pinyin": "Meiguihua",
+    "latin": "Rosae Rugosae Flos"
+  },
+  {
+    "pid": "B00085",
+    "name_cn": "绵萆薢\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMianbixie",
+    "pinyin": "Mianbixie",
+    "latin": "Discoreae Septemlobae Rhizoma"
+  },
+  {
+    "pid": "B00086",
+    "name_cn": "绵马贯众\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMianmaguanzhong",
+    "pinyin": "Mianmaguanzhong",
+    "latin": "Dryopteridis Crassirhizomatis Rhizoma"
+  },
+  {
+    "pid": "B00087",
+    "name_cn": "明党参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMingdangshen",
+    "pinyin": "Mingdangshen",
+    "latin": "Changii Radix"
+  },
+  {
+    "pid": "B00364",
+    "name_cn": "没药\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMoyao",
+    "pinyin": "Moyao",
+    "latin": "Myrrha"
+  },
+  {
+    "pid": "B00249",
+    "name_cn": "木鳖子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMubiezi",
+    "pinyin": "Mubiezi",
+    "latin": "Momordicae Semen"
+  },
+  {
+    "pid": "B00349",
+    "name_cn": "牡丹皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMudanpi",
+    "pinyin": "Mudanpi",
+    "latin": "Moutan Cortex"
+  },
+  {
+    "pid": "B00195",
+    "name_cn": "木瓜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMugua",
+    "pinyin": "Mugua",
+    "latin": "Chaenomelis Fructus"
+  },
+  {
+    "pid": "B00250",
+    "name_cn": "木蝴蝶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMuhudie",
+    "pinyin": "Muhudie",
+    "latin": "Oroxyli Semen"
+  },
+  {
+    "pid": "B00332",
+    "name_cn": "牡荆叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMujingye",
+    "pinyin": "Mujingye",
+    "latin": "Viticis Negundo Folium"
+  },
+  {
+    "pid": "B00383",
+    "name_cn": "牡蛎\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMuli",
+    "pinyin": "Muli",
+    "latin": "Ostreae Concha"
+  },
+  {
+    "pid": "B00143",
+    "name_cn": "木通\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMutong",
+    "pinyin": "Mutong",
+    "latin": "Akebiae Caulis"
+  },
+  {
+    "pid": "B00088",
+    "name_cn": "木香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMuxiang",
+    "pinyin": "Muxiang",
+    "latin": "Aucklandiae Radix"
+  },
+  {
+    "pid": "B00279",
+    "name_cn": "木贼\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tMuzei",
+    "pinyin": "Muzei",
+    "latin": "Equiseti Hiemalis Herba"
+  },
+  {
+    "pid": "B00089",
+    "name_cn": "南板蓝根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNanbanlangen",
+    "pinyin": "Nanbanlangen",
+    "latin": "Baphicacanthis Cusiae Rhizoma et Radix"
+  },
+  {
+    "pid": "B00237",
+    "name_cn": "南鹤虱\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNanheshi",
+    "pinyin": "Nanheshi",
+    "latin": "Carotae Fructus"
+  },
+  {
+    "pid": "B00017",
+    "name_cn": "南沙参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNanshashen",
+    "pinyin": "Nanshashen",
+    "latin": "Adenophorae Radix"
+  },
+  {
+    "pid": "B00196",
+    "name_cn": "南五味子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNanwuweizi",
+    "pinyin": "Nanwuweizi",
+    "latin": "Schisandrae Sphenantherae Fructus"
+  },
+  {
+    "pid": "B00310",
+    "name_cn": "闹羊花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNaoyanghua",
+    "pinyin": "Naoyanghua",
+    "latin": "Rhododendri Mollis Flos"
+  },
+  {
+    "pid": "B00251",
+    "name_cn": "牛蒡子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNiubangzi",
+    "pinyin": "Niubangzi",
+    "latin": "Arctii Fructus"
+  },
+  {
+    "pid": "B00384",
+    "name_cn": "牛黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNiuhuang",
+    "pinyin": "Niuhuang",
+    "latin": "Bovis Calculus"
+  },
+  {
+    "pid": "B00016",
+    "name_cn": "牛膝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNiuxi",
+    "pinyin": "Niuxi",
+    "latin": "Achyranthis Bidentatae Radix"
+  },
+  {
+    "pid": "B00252",
+    "name_cn": "女贞子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tNvzhenzi",
+    "pinyin": "Nvzhenzi",
+    "latin": "Ligustri Lucidi Fructus"
+  },
+  {
+    "pid": "B00253",
+    "name_cn": "胖大海\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPangdahai",
+    "pinyin": "Pangdahai",
+    "latin": "Sterculiae Lychnophorae Semen"
+  },
+  {
+    "pid": "B00297",
+    "name_cn": "佩兰\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPeilan",
+    "pinyin": "Peilan",
+    "latin": "Eupatorii Herba"
+  },
+  {
+    "pid": "B00090",
+    "name_cn": "平贝母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPingbeimu",
+    "pinyin": "Pingbeimu",
+    "latin": "Fritillariae Ussuriensis Bulbus"
+  },
+  {
+    "pid": "B00333",
+    "name_cn": "枇杷叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPipaye",
+    "pinyin": "Pipaye",
+    "latin": "Eriobotryae Folium"
+  },
+  {
+    "pid": "B00280",
+    "name_cn": "蒲公英\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPugongying",
+    "pinyin": "Pugongying",
+    "latin": "Taraxaci Herba"
+  },
+  {
+    "pid": "B00311",
+    "name_cn": "蒲黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tPuhuang",
+    "pinyin": "Puhuang",
+    "latin": "Typhae Pollen"
+  },
+  {
+    "pid": "B00091",
+    "name_cn": "茜草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQiancao",
+    "pinyin": "Qiancao",
+    "latin": "Rubiae Radix et Rhizoma"
+  },
+  {
+    "pid": "B00092",
+    "name_cn": "羌活\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQianghuo",
+    "pinyin": "Qianghuo",
+    "latin": "Notopterygii Rhizoma et Radix"
+  },
+  {
+    "pid": "B00093",
+    "name_cn": "前胡\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQianhu",
+    "pinyin": "Qianhu",
+    "latin": "Peucedani Radix"
+  },
+  {
+    "pid": "B00197",
+    "name_cn": "千金子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQianjinzi",
+    "pinyin": "Qianjinzi",
+    "latin": "Euphorbiae Semen"
+  },
+  {
+    "pid": "B00094",
+    "name_cn": "千年健\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQiannianjian",
+    "pinyin": "Qiannianjian",
+    "latin": "Homalomenae Rhizoma"
+  },
+  {
+    "pid": "B00198",
+    "name_cn": "牵牛子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQianniuzi",
+    "pinyin": "Qianniuzi",
+    "latin": "Pharbitidis Semen"
+  },
+  {
+    "pid": "B00232",
+    "name_cn": "芡实\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQianshi",
+    "pinyin": "Qianshi",
+    "latin": "Euryales Semen"
+  },
+  {
+    "pid": "B00413",
+    "name_cn": "青黛\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingdai",
+    "pinyin": "Qingdai",
+    "latin": "Indigo Naturalis"
+  },
+  {
+    "pid": "B00134",
+    "name_cn": "青风藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingfengteng",
+    "pinyin": "Qingfengteng",
+    "latin": "Sinomenii Caulis"
+  },
+  {
+    "pid": "B00199",
+    "name_cn": "青果\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingguo",
+    "pinyin": "Qingguo",
+    "latin": "Canarii Fructus"
+  },
+  {
+    "pid": "B00281",
+    "name_cn": "青蒿\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQinghao",
+    "pinyin": "Qinghao",
+    "latin": "Artemisiae Annuae Herba"
+  },
+  {
+    "pid": "B00405",
+    "name_cn": "青礞石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingmengshi",
+    "pinyin": "Qingmengshi",
+    "latin": "Chloriti Lapis"
+  },
+  {
+    "pid": "B00200",
+    "name_cn": "青皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingpi",
+    "pinyin": "Qingpi",
+    "latin": "Citri Reticulatae Pericarpium Viride"
+  },
+  {
+    "pid": "B00233",
+    "name_cn": "青葙子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQingxiangzi",
+    "pinyin": "Qingxiangzi",
+    "latin": "Celosiae Semen"
+  },
+  {
+    "pid": "B00095",
+    "name_cn": "秦艽\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQinjiao",
+    "pinyin": "Qinjiao",
+    "latin": "Gentianae Macrophyllae Radix"
+  },
+  {
+    "pid": "B00350",
+    "name_cn": "秦皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQinpi",
+    "pinyin": "Qinpi",
+    "latin": "Fraxini Cortex"
+  },
+  {
+    "pid": "B00385",
+    "name_cn": "蕲蛇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQishe",
+    "pinyin": "Qishe",
+    "latin": "Agkistrodon"
+  },
+  {
+    "pid": "B00096",
+    "name_cn": "拳参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQuanshen",
+    "pinyin": "Quanshen",
+    "latin": "Bistortae Rhizoma"
+  },
+  {
+    "pid": "B00386",
+    "name_cn": "全蝎\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQuanxie",
+    "pinyin": "Quanxie",
+    "latin": "Scorpio"
+  },
+  {
+    "pid": "B00282",
+    "name_cn": "瞿麦\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tQumai",
+    "pinyin": "Qumai",
+    "latin": "Dianthi Herba"
+  },
+  {
+    "pid": "B00144",
+    "name_cn": "忍冬藤\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRendongteng",
+    "pinyin": "Rendongteng",
+    "latin": "Lonicerae Japonicae Caulis"
+  },
+  {
+    "pid": "B00002",
+    "name_cn": "人参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRenshen",
+    "pinyin": "Renshen",
+    "latin": "Ginseng Radix et Rhizoma"
+  },
+  {
+    "pid": "B00283",
+    "name_cn": "肉苁蓉\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRoucongrong",
+    "pinyin": "Roucongrong",
+    "latin": "Cistanches Herba"
+  },
+  {
+    "pid": "B00201",
+    "name_cn": "肉豆蔻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRoudoukou",
+    "pinyin": "Roudoukou",
+    "latin": "Myristicae Semen"
+  },
+  {
+    "pid": "B00351",
+    "name_cn": "肉桂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRougui",
+    "pinyin": "Rougui",
+    "latin": "Cinnamomi Cortex"
+  },
+  {
+    "pid": "B00365",
+    "name_cn": "乳香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tRuxiang",
+    "pinyin": "Ruxiang",
+    "latin": "Olibanum"
+  },
+  {
+    "pid": "B00352",
+    "name_cn": "桑白皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangbaipi",
+    "pinyin": "Sangbaipi",
+    "latin": "Mori Cortex"
+  },
+  {
+    "pid": "B00145",
+    "name_cn": "桑寄生\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangjisheng",
+    "pinyin": "Sangjisheng",
+    "latin": "Taxilli Herba"
+  },
+  {
+    "pid": "B00387",
+    "name_cn": "桑螵蛸\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangpiaoxiao",
+    "pinyin": "Sangpiaoxiao",
+    "latin": "Mantidis Ootheca"
+  },
+  {
+    "pid": "B00202",
+    "name_cn": "桑椹\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangshen",
+    "pinyin": "Sangshen",
+    "latin": "Mori Fructus"
+  },
+  {
+    "pid": "B00334",
+    "name_cn": "桑叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangye",
+    "pinyin": "Sangye",
+    "latin": "Mori Folium"
+  },
+  {
+    "pid": "B00146",
+    "name_cn": "桑枝\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSangzhi",
+    "pinyin": "Sangzhi",
+    "latin": "Mori Ramulus"
+  },
+  {
+    "pid": "B00011",
+    "name_cn": "三棱\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSanleng",
+    "pinyin": "Sanleng",
+    "latin": "Sparganii Rhizoma"
+  },
+  {
+    "pid": "B00010",
+    "name_cn": "三七\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSanqi",
+    "pinyin": "Sanqi",
+    "latin": "Notoginseng Radix et Rhizoma"
+  },
+  {
+    "pid": "B00009",
+    "name_cn": "山慈菇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShancigu",
+    "pinyin": "Shancigu",
+    "latin": "Cremastrae Pseudobulbus Pleiones Pseudobulbus"
+  },
+  {
+    "pid": "B00008",
+    "name_cn": "山豆根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShandougen",
+    "pinyin": "Shandougen",
+    "latin": "Sophorae Tonkinensis Radix et Rhizoma"
+  },
+  {
+    "pid": "B00097",
+    "name_cn": "商陆\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanglu",
+    "pinyin": "Shanglu",
+    "latin": "Phytolaccae Radix"
+  },
+  {
+    "pid": "B00098",
+    "name_cn": "山麦冬\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanmaidong",
+    "pinyin": "Shanmaidong",
+    "latin": "Liriopes Radix"
+  },
+  {
+    "pid": "B00099",
+    "name_cn": "山柰\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShannai",
+    "pinyin": "Shannai",
+    "latin": "Kaempferiae Rhizoma"
+  },
+  {
+    "pid": "B00007",
+    "name_cn": "山药\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanyao",
+    "pinyin": "Shanyao",
+    "latin": "Dioscoreae Rhizoma"
+  },
+  {
+    "pid": "B00312",
+    "name_cn": "山银花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanyinhua",
+    "pinyin": "Shanyinhua",
+    "latin": "Lonicerae Flos"
+  },
+  {
+    "pid": "B00203",
+    "name_cn": "山楂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanzha",
+    "pinyin": "Shanzha",
+    "latin": "Crataegi Fructus"
+  },
+  {
+    "pid": "B00335",
+    "name_cn": "山楂叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanzhaye",
+    "pinyin": "Shanzhaye",
+    "latin": "Crataegi Folium"
+  },
+  {
+    "pid": "B00234",
+    "name_cn": "山茱萸\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShanzhuyu",
+    "pinyin": "Shanzhuyu",
+    "latin": "Corni Fructus"
+  },
+  {
+    "pid": "B00254",
+    "name_cn": "砂仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSharen",
+    "pinyin": "Sharen",
+    "latin": "Amomi Fructus"
+  },
+  {
+    "pid": "B00204",
+    "name_cn": "蛇床子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShechuangzi",
+    "pinyin": "Shechuangzi",
+    "latin": "Cnidii Fructus"
+  },
+  {
+    "pid": "B00100",
+    "name_cn": "射干\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShegan",
+    "pinyin": "Shegan",
+    "latin": "Belamcandae Rhizoma"
+  },
+  {
+    "pid": "B00012",
+    "name_cn": "生姜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShengjiang",
+    "pinyin": "Shengjiang",
+    "latin": "Zingiberis Rhizoma Recens"
+  },
+  {
+    "pid": "B00101",
+    "name_cn": "升麻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShengma",
+    "pinyin": "Shengma",
+    "latin": "Cimicifugae Rhizoma"
+  },
+  {
+    "pid": "B00284",
+    "name_cn": "伸筋草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShenjincao",
+    "pinyin": "Shenjincao",
+    "latin": "Lycopodii Herba"
+  },
+  {
+    "pid": "B00388",
+    "name_cn": "蛇蜕\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShetui",
+    "pinyin": "Shetui",
+    "latin": "Serpentis Periostracum"
+  },
+  {
+    "pid": "B00389",
+    "name_cn": "麝香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShexiang",
+    "pinyin": "Shexiang",
+    "latin": "Moschus"
+  },
+  {
+    "pid": "B00102",
+    "name_cn": "石菖蒲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShichangpu",
+    "pinyin": "Shichangpu",
+    "latin": "Acori Tatarinowii Rhizoma"
+  },
+  {
+    "pid": "B00420",
+    "name_cn": "柿蒂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShidi",
+    "pinyin": "Shidi",
+    "latin": "Kaki Calyx"
+  },
+  {
+    "pid": "B00412",
+    "name_cn": "石膏\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShigao",
+    "pinyin": "Shigao",
+    "latin": "Gypsum Fibrosum"
+  },
+  {
+    "pid": "B00285",
+    "name_cn": "石斛\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShihu",
+    "pinyin": "Shihu",
+    "latin": "Dendrobii Caulis"
+  },
+  {
+    "pid": "B00390",
+    "name_cn": "石决明\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShijueming",
+    "pinyin": "Shijueming",
+    "latin": "Haliotidis Concha"
+  },
+  {
+    "pid": "B00255",
+    "name_cn": "使君子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShijunzi",
+    "pinyin": "Shijunzi",
+    "latin": "Quisqualis Fructus"
+  },
+  {
+    "pid": "B00336",
+    "name_cn": "石韦\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShiwei",
+    "pinyin": "Shiwei",
+    "latin": "Pyrrosiae Folium"
+  },
+  {
+    "pid": "B00256",
+    "name_cn": "水飞蓟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShuifeiji",
+    "pinyin": "Shuifeiji",
+    "latin": "Silybi Fructus"
+  },
+  {
+    "pid": "B00205",
+    "name_cn": "水红花子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShuihonghuazi",
+    "pinyin": "Shuihonghuazi",
+    "latin": "Polygni Orientalis Fructus"
+  },
+  {
+    "pid": "B00391",
+    "name_cn": "水牛角\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShuiniujiao",
+    "pinyin": "Shuiniujiao",
+    "latin": "Bubali Cornu"
+  },
+  {
+    "pid": "B00392",
+    "name_cn": "水蛭\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tShuizhi",
+    "pinyin": "Shuizhi",
+    "latin": "Hirudo"
+  },
+  {
+    "pid": "B00206",
+    "name_cn": "丝瓜络\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSigualuo",
+    "pinyin": "Sigualuo",
+    "latin": "Luffae Fructus Retinervus"
+  },
+  {
+    "pid": "B00235",
+    "name_cn": "酸枣仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSuanzaoren",
+    "pinyin": "Suanzaoren",
+    "latin": "Ziziphi Spinosae Semen"
+  },
+  {
+    "pid": "B00137",
+    "name_cn": "苏木\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSumu",
+    "pinyin": "Sumu",
+    "latin": "Sappan Lignum"
+  },
+  {
+    "pid": "B00286",
+    "name_cn": "锁阳\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tSuoyang",
+    "pinyin": "Suoyang",
+    "latin": "Cynomorii Herba"
+  },
+  {
+    "pid": "B00019",
+    "name_cn": "太子参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTaizishen",
+    "pinyin": "Taizishen",
+    "latin": "Pseudostellariae Radix"
+  },
+  {
+    "pid": "B00148",
+    "name_cn": "檀香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTanxiang",
+    "pinyin": "Tanxiang",
+    "latin": "Santali Albi Lignum"
+  },
+  {
+    "pid": "B00207",
+    "name_cn": "桃仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTaoren",
+    "pinyin": "Taoren",
+    "latin": "Persicae Semen"
+  },
+  {
+    "pid": "B00103",
+    "name_cn": "天冬\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTiandong",
+    "pinyin": "Tiandong",
+    "latin": "Asparagi Radix"
+  },
+  {
+    "pid": "B00104",
+    "name_cn": "天花粉\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTianhuafen",
+    "pinyin": "Tianhuafen",
+    "latin": "Trichosanthis Radix"
+  },
+  {
+    "pid": "B00105",
+    "name_cn": "天葵子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTiankuizi",
+    "pinyin": "Tiankuizi",
+    "latin": "Semiaquilegiae Radix"
+  },
+  {
+    "pid": "B00003",
+    "name_cn": "天麻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTianma",
+    "pinyin": "Tianma",
+    "latin": "Gastrodiae Rhizoma"
+  },
+  {
+    "pid": "B00106",
+    "name_cn": "天南星\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTiannanxing",
+    "pinyin": "Tiannanxing",
+    "latin": "Arisaematis Rhizoma"
+  },
+  {
+    "pid": "B00287",
+    "name_cn": "天山雪莲\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTianshanxuelian",
+    "pinyin": "Tianshanxuelian",
+    "latin": "Saussureae Involucratae Herba"
+  },
+  {
+    "pid": "B00257",
+    "name_cn": "天仙子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTianxianzi",
+    "pinyin": "Tianxianzi",
+    "latin": "Hyosyami Semen"
+  },
+  {
+    "pid": "B00418",
+    "name_cn": "天竺黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTianzhuhuang",
+    "pinyin": "Tianzhuhuang",
+    "latin": "Bambusae Concretio Silicea"
+  },
+  {
+    "pid": "B00208",
+    "name_cn": "葶苈子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTinglizi",
+    "pinyin": "Tinglizi",
+    "latin": "Descurainiea Semen;Lepidii Semen"
+  },
+  {
+    "pid": "B00147",
+    "name_cn": "通草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTongcao",
+    "pinyin": "Tongcao",
+    "latin": "Tetrapanacis Medulla"
+  },
+  {
+    "pid": "B00014",
+    "name_cn": "土贝母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTubeimu",
+    "pinyin": "Tubeimu",
+    "latin": "Bolbostemmatis Rhizoma"
+  },
+  {
+    "pid": "B00396",
+    "name_cn": "土鳖虫\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTubiechong",
+    "pinyin": "Tubiechong",
+    "latin": "Eupolyphaga Steleophaga"
+  },
+  {
+    "pid": "B00015",
+    "name_cn": "土茯苓\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTufulin",
+    "pinyin": "Tufulin",
+    "latin": "Smilacis Glabrae Rhizoma"
+  },
+  {
+    "pid": "B00353",
+    "name_cn": "土荆皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTujingpi",
+    "pinyin": "Tujingpi",
+    "latin": "Pseudolaricis Cortex"
+  },
+  {
+    "pid": "B00107",
+    "name_cn": "土木香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTumuxiang",
+    "pinyin": "Tumuxiang",
+    "latin": "Inulae Radix"
+  },
+  {
+    "pid": "B00209",
+    "name_cn": "菟丝子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tTusizi",
+    "pinyin": "Tusizi",
+    "latin": "Cuscutae Semen"
+  },
+  {
+    "pid": "B00393",
+    "name_cn": "瓦楞子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWalengzi",
+    "pinyin": "Walengzi",
+    "latin": "Arcae Concha"
+  },
+  {
+    "pid": "B00210",
+    "name_cn": "王不留行\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWangbuliuxing",
+    "pinyin": "Wangbuliuxing",
+    "latin": "Vaccariae Semen"
+  },
+  {
+    "pid": "B00288",
+    "name_cn": "委陵菜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWeilingcai",
+    "pinyin": "Weilingcai",
+    "latin": "Potentillae Chinensis Herba"
+  },
+  {
+    "pid": "B00131",
+    "name_cn": "威灵仙\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWeilingxian",
+    "pinyin": "Weilingxian",
+    "latin": "Clematidis Radix et Rhizoma"
+  },
+  {
+    "pid": "B00419",
+    "name_cn": "五倍子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWubeizi",
+    "pinyin": "Wubeizi",
+    "latin": "Galla Chinensis"
+  },
+  {
+    "pid": "B00394",
+    "name_cn": "蜈蚣\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWugong",
+    "pinyin": "Wugong",
+    "latin": "Scolopendra"
+  },
+  {
+    "pid": "B00354",
+    "name_cn": "五加皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWujiapi",
+    "pinyin": "Wujiapi",
+    "latin": "Acanthopanacis Cortex"
+  },
+  {
+    "pid": "B00240",
+    "name_cn": "乌梅\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWumei",
+    "pinyin": "Wumei",
+    "latin": "Mume Fructus"
+  },
+  {
+    "pid": "B00395",
+    "name_cn": "乌梢蛇\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWushaoshe",
+    "pinyin": "Wushaoshe",
+    "latin": "Zaocys"
+  },
+  {
+    "pid": "B00211",
+    "name_cn": "五味子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWuweizi",
+    "pinyin": "Wuweizi",
+    "latin": "Schisandrae Chinensis Fructus"
+  },
+  {
+    "pid": "B00108",
+    "name_cn": "乌药\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWuyao",
+    "pinyin": "Wuyao",
+    "latin": "Linderae Radix"
+  },
+  {
+    "pid": "B00212",
+    "name_cn": "吴茱萸\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tWuzhuyu",
+    "pinyin": "Wuzhuyu",
+    "latin": "Euodiae Fructus"
+  },
+  {
+    "pid": "B00313",
+    "name_cn": "夏枯草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiakucao",
+    "pinyin": "Xiakucao",
+    "latin": "Prunellae Spica"
+  },
+  {
+    "pid": "B00109",
+    "name_cn": "香附\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiangfu",
+    "pinyin": "Xiangfu",
+    "latin": "Cyperi Rhizoma"
+  },
+  {
+    "pid": "B00355",
+    "name_cn": "香加皮\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiangjiapi",
+    "pinyin": "Xiangjiapi",
+    "latin": "Periplocae Cortex"
+  },
+  {
+    "pid": "B00289",
+    "name_cn": "香薷\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiangru",
+    "pinyin": "Xiangru",
+    "latin": "Moslae Herba"
+  },
+  {
+    "pid": "B00213",
+    "name_cn": "相思子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiangsizi",
+    "pinyin": "Xiangsizi",
+    "latin": "Abri precatorii Semen"
+  },
+  {
+    "pid": "B00214",
+    "name_cn": "香橼\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiangyuan",
+    "pinyin": "Xiangyuan",
+    "latin": "Citri Fructus"
+  },
+  {
+    "pid": "B00290",
+    "name_cn": "仙鹤草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXianhecao",
+    "pinyin": "Xianhecao",
+    "latin": "Agrimoniae Herba"
+  },
+  {
+    "pid": "B00110",
+    "name_cn": "仙茅\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXianmao",
+    "pinyin": "Xianmao",
+    "latin": "Curculiginis Rhizoma"
+  },
+  {
+    "pid": "B00215",
+    "name_cn": "小茴香\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiaohuixiang",
+    "pinyin": "Xiaohuixiang",
+    "latin": "Foeniculi Fructus"
+  },
+  {
+    "pid": "B00266",
+    "name_cn": "小蓟\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiaoji",
+    "pinyin": "Xiaoji",
+    "latin": "Cirsii Herba"
+  },
+  {
+    "pid": "B00111",
+    "name_cn": "薤白\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiebai",
+    "pinyin": "Xiebai",
+    "latin": "Allii Macrostemonis Bulbus"
+  },
+  {
+    "pid": "B00320",
+    "name_cn": "西红花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXihonghua",
+    "pinyin": "Xihonghua",
+    "latin": "Croci Stigma"
+  },
+  {
+    "pid": "B00314",
+    "name_cn": "辛夷\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXinyi",
+    "pinyin": "Xinyi",
+    "latin": "Magnoliae Flos"
+  },
+  {
+    "pid": "B00406",
+    "name_cn": "雄黄\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXionghuang",
+    "pinyin": "Xionghuang",
+    "latin": "Realgar"
+  },
+  {
+    "pid": "B00291",
+    "name_cn": "豨莶草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXixiancao",
+    "pinyin": "Xixiancao",
+    "latin": "Siegesbeckiae Herba"
+  },
+  {
+    "pid": "B00112",
+    "name_cn": "细辛\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXixin",
+    "pinyin": "Xixin",
+    "latin": "Asari Radix et Rhizoma"
+  },
+  {
+    "pid": "B00113",
+    "name_cn": "西洋参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXiyangshen",
+    "pinyin": "Xiyangshen",
+    "latin": "Panacis Quinquefolii Radix"
+  },
+  {
+    "pid": "B00322",
+    "name_cn": "旋覆花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuanfuhua",
+    "pinyin": "Xuanfuhua",
+    "latin": "Inulae Flos"
+  },
+  {
+    "pid": "B00407",
+    "name_cn": "玄明粉\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuanmingfen",
+    "pinyin": "Xuanmingfen",
+    "latin": "Natrii Sulfas Exsiccatus"
+  },
+  {
+    "pid": "B00114",
+    "name_cn": "玄参\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuanshen",
+    "pinyin": "Xuanshen",
+    "latin": "Scrophulariae Radix"
+  },
+  {
+    "pid": "B00115",
+    "name_cn": "徐长卿\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuchangqing",
+    "pinyin": "Xuchangqing",
+    "latin": "Cynanchi Paniculati Radix et Rhizoma"
+  },
+  {
+    "pid": "B00116",
+    "name_cn": "续断\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuduan",
+    "pinyin": "Xuduan",
+    "latin": "Dipsaci Radix"
+  },
+  {
+    "pid": "B00366",
+    "name_cn": "血竭\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tXuejie",
+    "pinyin": "Xuejie",
+    "latin": "Draconis Sanguis"
+  },
+  {
+    "pid": "B00217",
+    "name_cn": "鸦胆子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYadanzi",
+    "pinyin": "Yadanzi",
+    "latin": "Bruceae Fructus"
+  },
+  {
+    "pid": "B00315",
+    "name_cn": "洋金花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYangjinhua",
+    "pinyin": "Yangjinhua",
+    "latin": "Daturae Flos"
+  },
+  {
+    "pid": "B00117",
+    "name_cn": "延胡索\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYanhusuo",
+    "pinyin": "Yanhusuo",
+    "latin": "Corydalis Rhizoma"
+  },
+  {
+    "pid": "B00316",
+    "name_cn": "野菊花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYejuhua",
+    "pinyin": "Yejuhua",
+    "latin": "Chrysanthemi Indici Flos"
+  },
+  {
+    "pid": "B00292",
+    "name_cn": "益母草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYimucao",
+    "pinyin": "Yimucao",
+    "latin": "Leonuri Herba"
+  },
+  {
+    "pid": "B00118",
+    "name_cn": "银柴胡\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYinchaihu",
+    "pinyin": "Yinchaihu",
+    "latin": "Stellariae Radix"
+  },
+  {
+    "pid": "B00293",
+    "name_cn": "茵陈\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYinchen",
+    "pinyin": "Yinchen",
+    "latin": "Artemisiae Scopariae Herba"
+  },
+  {
+    "pid": "B00218",
+    "name_cn": "罂粟壳\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYingsuqiao",
+    "pinyin": "Yingsuqiao",
+    "latin": "Papaveris Pericarpium"
+  },
+  {
+    "pid": "B00337",
+    "name_cn": "银杏叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYinxingye",
+    "pinyin": "Yinxingye",
+    "latin": "Ginkgo Folium"
+  },
+  {
+    "pid": "B00294",
+    "name_cn": "淫羊藿\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYinyanghuo",
+    "pinyin": "Yinyanghuo",
+    "latin": "Epimedii Folium"
+  },
+  {
+    "pid": "B00219",
+    "name_cn": "薏苡仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYiyiren",
+    "pinyin": "Yiyiren",
+    "latin": "Coicis Semen"
+  },
+  {
+    "pid": "B00239",
+    "name_cn": "益智\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYizhi",
+    "pinyin": "Yizhi",
+    "latin": "Alpiniae Oxyphyllae Fructus"
+  },
+  {
+    "pid": "B00317",
+    "name_cn": "芫花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuanhua",
+    "pinyin": "Yuanhua",
+    "latin": "Genkwa Flos"
+  },
+  {
+    "pid": "B00119",
+    "name_cn": "远志\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuanzhi",
+    "pinyin": "Yuanzhi",
+    "latin": "Polygalae Radix"
+  },
+  {
+    "pid": "B00318",
+    "name_cn": "月季花\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuejihua",
+    "pinyin": "Yuejihua",
+    "latin": "Rosae Chinensis Flos"
+  },
+  {
+    "pid": "B00220",
+    "name_cn": "余甘子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuganzi",
+    "pinyin": "Yuganzi",
+    "latin": "Phyllanthi Fructus"
+  },
+  {
+    "pid": "B00120",
+    "name_cn": "郁金\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYujin",
+    "pinyin": "Yujin",
+    "latin": "Curcumae Radix"
+  },
+  {
+    "pid": "B00221",
+    "name_cn": "郁李仁\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuliren",
+    "pinyin": "Yuliren",
+    "latin": "Pruni Semen"
+  },
+  {
+    "pid": "B00295",
+    "name_cn": "鱼腥草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuxingcao",
+    "pinyin": "Yuxingcao",
+    "latin": "Houttuyniae Herba"
+  },
+  {
+    "pid": "B00121",
+    "name_cn": "禹州漏芦\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuzhouloulu",
+    "pinyin": "Yuzhouloulu",
+    "latin": "Echinopsis Radix"
+  },
+  {
+    "pid": "B00122",
+    "name_cn": "玉竹\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tYuzhu",
+    "pinyin": "Yuzhu",
+    "latin": "Polygonati Odorati Rhizoma"
+  },
+  {
+    "pid": "B00151",
+    "name_cn": "皂角刺\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZaojiaoci",
+    "pinyin": "Zaojiaoci",
+    "latin": "Gleditsiae Spina"
+  },
+  {
+    "pid": "B00298",
+    "name_cn": "泽兰\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZelan",
+    "pinyin": "Zelan",
+    "latin": "Lycopi Herba"
+  },
+  {
+    "pid": "B00123",
+    "name_cn": "泽泻\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZexie",
+    "pinyin": "Zexie",
+    "latin": "Alismatis Rhizoma"
+  },
+  {
+    "pid": "B00124",
+    "name_cn": "浙贝母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhebeimu",
+    "pinyin": "Zhebeimu",
+    "latin": "Fritillariae Thunbergii Bulbus"
+  },
+  {
+    "pid": "B00397",
+    "name_cn": "珍珠母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhenzhumu",
+    "pinyin": "Zhenzhumu",
+    "latin": "Margaritifera Concha"
+  },
+  {
+    "pid": "B00408",
+    "name_cn": "赭石\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZheshi",
+    "pinyin": "Zheshi",
+    "latin": "Haematitum"
+  },
+  {
+    "pid": "B00125",
+    "name_cn": "知母\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhimu",
+    "pinyin": "Zhimu",
+    "latin": "Anemarrhenae Rhizoma"
+  },
+  {
+    "pid": "B00222",
+    "name_cn": "枳壳\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhiqiao",
+    "pinyin": "Zhiqiao",
+    "latin": "Aurantii Fructus"
+  },
+  {
+    "pid": "B00223",
+    "name_cn": "枳实\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhishi",
+    "pinyin": "Zhishi",
+    "latin": "Aurantii Fructus Immaturus"
+  },
+  {
+    "pid": "B00224",
+    "name_cn": "栀子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhizi",
+    "pinyin": "Zhizi",
+    "latin": "Gardeniae Fructus"
+  },
+  {
+    "pid": "B00296",
+    "name_cn": "肿节风\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhongjiefeng",
+    "pinyin": "Zhongjiefeng",
+    "latin": "Sarcandrae Herba"
+  },
+  {
+    "pid": "B00360",
+    "name_cn": "猪苓\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhuling",
+    "pinyin": "Zhuling",
+    "latin": "Polyporus"
+  },
+  {
+    "pid": "B00149",
+    "name_cn": "竹茹\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhuru",
+    "pinyin": "Zhuru",
+    "latin": "Bambusae Caulis in Taenias"
+  },
+  {
+    "pid": "B00409",
+    "name_cn": "朱砂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhusha",
+    "pinyin": "Zhusha",
+    "latin": "Cinnabaris"
+  },
+  {
+    "pid": "B00126",
+    "name_cn": "朱砂根\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhushagen",
+    "pinyin": "Zhushagen",
+    "latin": "Ardisiae Crenatae Radix"
+  },
+  {
+    "pid": "B00225",
+    "name_cn": "猪牙皂\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZhuyazao",
+    "pinyin": "Zhuyazao",
+    "latin": "Gleditsiae Fructus Abnormalis"
+  },
+  {
+    "pid": "B00127",
+    "name_cn": "紫草\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZicao",
+    "pinyin": "Zicao",
+    "latin": "Arnebiae Radix"
+  },
+  {
+    "pid": "B00410",
+    "name_cn": "自然铜\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZirantong",
+    "pinyin": "Zirantong",
+    "latin": "Pyritum"
+  },
+  {
+    "pid": "B00411",
+    "name_cn": "紫石英\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZishiying",
+    "pinyin": "Zishiying",
+    "latin": "Fluoritum"
+  },
+  {
+    "pid": "B00150",
+    "name_cn": "紫苏梗\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZisugeng",
+    "pinyin": "Zisugeng",
+    "latin": "Perillae Caulis"
+  },
+  {
+    "pid": "B00338",
+    "name_cn": "紫苏叶\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZisuye",
+    "pinyin": "Zisuye",
+    "latin": "Perillae Folium"
+  },
+  {
+    "pid": "B00226",
+    "name_cn": "紫苏子\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZisuzi",
+    "pinyin": "Zisuzi",
+    "latin": "Perillae Fructus"
+  },
+  {
+    "pid": "B00128",
+    "name_cn": "紫菀\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZiwan",
+    "pinyin": "Ziwan",
+    "latin": "Asteris Radix et Rhizoma"
+  },
+  {
+    "pid": "B00339",
+    "name_cn": "棕榈\t\t\t\t\t\t\t\t\t\t\t\t\t\t|\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tZonglu",
+    "pinyin": "Zonglu",
+    "latin": "Trachycarpi Petiolus"
+  }
+]

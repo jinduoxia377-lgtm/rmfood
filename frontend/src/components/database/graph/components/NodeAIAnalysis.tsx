@@ -1,5 +1,3 @@
-import { GraphNode } from '../types'
-
 export interface NodeAIAnalysisData {
   nodeId: string
   summary: string
@@ -10,17 +8,16 @@ export interface NodeAIAnalysisData {
 }
 
 export interface NodeAIAnalysisProps {
-  [key: string]: any;
   nodeAIAnalysis: NodeAIAnalysisData | null
   selectedNodeLabel?: string
   onClose: () => void
 }
 
-export default function NodeAIAnalysis({ nodeAIAnalysis, selectedNodeLabel, onClose }: NodeAIAnalysisProps) {
+export default function NodeAIAnalysis({ nodeAIAnalysis, onClose }: NodeAIAnalysisProps) {
   if (!nodeAIAnalysis) return null
 
   return (
-    <div className="absolute top-14 right-3 z-45 w-[320px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
+    <div className="absolute top-14 right-3 z-45 w-[min(320px,calc(100vw-1.5rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2">
           <span>🧠</span>
@@ -31,7 +28,7 @@ export default function NodeAIAnalysis({ nodeAIAnalysis, selectedNodeLabel, onCl
       <div className="p-3 space-y-2.5">
         <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{nodeAIAnalysis.summary}</p>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="rounded-lg bg-accent-50/80 dark:bg-accent-950/20 p-2 text-center">
             <div className="text-lg font-bold text-accent-600 dark:text-accent-700">{nodeAIAnalysis.synergyScore}</div>
             <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同评分</div>

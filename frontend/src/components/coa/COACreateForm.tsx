@@ -166,7 +166,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
           {/* Basic Info */}
           <div>
             <h3 className="text-sm font-semibold text-[var(--color-primary)] mb-3">基本信息</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="col-span-2">
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">产品名称（中文）*</label>
                 <Input
@@ -240,7 +240,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
           {/* Signatures */}
           <div>
             <h3 className="text-sm font-semibold text-[var(--color-primary)] mb-3">人员签名</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">检测人</label>
                 <Input value={form.tested_by} onChange={e => updateField('tested_by', e.target.value)} placeholder="张检验" />
@@ -274,7 +274,7 @@ export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProp
             <div className="space-y-2">
               {testItems.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-[var(--border-subtle)]">
-                  <div className="flex-1 grid grid-cols-2 gap-2">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <select
                       value={item.category}
                       onChange={e => updateTestItem(idx, 'category', e.target.value)}

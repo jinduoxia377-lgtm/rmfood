@@ -280,6 +280,8 @@ function renderFormulaDetailsPDF(
   _width: number,
   _height: number,
 ): number {
+  void _width;
+  void _height;
   const formulaData = section.content?.formulaData
 
   if (!formulaData) {
@@ -326,6 +328,8 @@ function renderIngredientAnalysisPDF(
   _width: number,
   _height: number,
 ): number {
+  void _width;
+  void _height;
   const ingredients = section.content?.ingredients
 
   if (!ingredients || ingredients.length === 0) {
@@ -360,6 +364,7 @@ function renderSynergyAssessmentPDF(
   y: number,
   _width: number,
 ): number {
+  void _width;
   const radarData = section.content?.radarData
 
   if (!radarData || radarData.length === 0) {
@@ -418,6 +423,7 @@ function renderAppendixPDF(
   y: number,
   _width: number,
 ): number {
+  void _width;
   if (section.content?.references) {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')

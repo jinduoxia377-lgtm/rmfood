@@ -1,5 +1,4 @@
 export interface SearchHistoryPanelProps {
-  [key: string]: any;
   searchHistory: string[]
   onSelectTerm: (term: string) => void
   onClearHistory: () => void

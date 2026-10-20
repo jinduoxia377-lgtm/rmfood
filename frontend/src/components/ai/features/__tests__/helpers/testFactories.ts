@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Enhanced Test Factories - AI Chat v7.0
  * 
@@ -19,13 +18,6 @@ import {
   ErrorType,
   RateLimitInfo 
 } from '../../types'
-
-// ===== 类型定义 =====
-
-interface FactoryOptions<T> {
-  overrides?: Partial<T>
-  count?: number
-}
 
 // ===== 核心数据工厂 =====
 

@@ -4,14 +4,13 @@
  * 升级要点（v10）：
  *   - 背景色从 var(--color-neutral-50, #f8fafc) 改为 #fff（与 DataSources 区分）
  *   - 去掉"应用场景 X"机械编号，改为场景关键词标签
- *   - 圆角 rounded-sm → rounded-md
+ *   - 圆角 rounded-sm → rounded-[var(--radius-Apple-sm)]
  *   - CTA 文案强化
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getIcon } from '../shared/iconFactory';
 import { Reveal } from '../shared/Reveal';
-import { cn } from '@/lib/utils';
 import {
   sectionLabel, sectionTitle, sectionDesc, useCases, scenarioConfig,
 } from '../data/useCases';
@@ -45,20 +44,21 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
         {/* 顶部色条（极简，无渐变） */}
         <div className="h-0.5 w-full" style={{ background: cfg.primary + '50' }} />
 
-        <div className="p-6">
+        <div className="p-[var(--space-apple-lg)]">
           {/* 场景标识 — 关键词标签替代"应用场景 X" */}
-          <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex items-center gap-2.5 mb-[var(--space-apple-md)]">
             <div
-              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0"
               style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
             >
+              {/* eslint-disable-next-line react-hooks/static-components */}
               <IconComp size={15} strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <h3 className="text-[15px] font-bold text-neutral-900 truncate">{item.title}</h3>
                 <span
-                  className="shrink-0 lp-label px-2 py-0.5 rounded-md"
+                  className="shrink-0 lp-label px-2 py-0.5 rounded-[var(--radius-Apple-sm)]"
                   style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
                 >
                   {SCENARIO_LABELS[item.scenario as Scenario]}
@@ -68,7 +68,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-[1.7] text-neutral-600 mb-5 min-h-[66px]">
+          <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-5 min-h-[66px]">
             {item.desc}
           </p>
 
@@ -77,11 +77,11 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <div className="lp-caption mb-2.5">
               工作流程
             </div>
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-apple-sm)]">
               {item.workflow.map((step, i) => (
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
-                    className="w-5 h-5 rounded-md flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
+                    className="w-5 h-5 rounded-[var(--radius-Apple-sm)] flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
                     style={{ background: hovered ? cfg.primaryLight : 'var(--color-neutral-100, #f1f5f9)', color: hovered ? cfg.primaryText : 'var(--color-neutral-600, #475569)', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
@@ -120,7 +120,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-md lp-label transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-[var(--space-apple-sm)] py-2.5 min-h-[44px] rounded-[var(--radius-Apple-sm)] lp-label transition-colors"
                 style={{
                   background: hovered ? cfg.primaryLight : '#fff',
                   color: cfg.primaryText,
@@ -154,15 +154,15 @@ export default function UseCases() {
 
   return (
     <section id="use-cases" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
         <Reveal>
           <div className="mb-10">
-            <span className="lp-section-tag block mb-3">
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">
               {sectionLabel}
             </span>
-            <h2 className="lp-h2 mb-3">
+            <h2 className="lp-h2 mb-[var(--space-apple-sm)]">
               {titleLines.map((line, i) => (
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}

@@ -23,7 +23,7 @@ class TestAIRateLimiter:
     @pytest.mark.asyncio
     async def test_per_user_rate_limit(self):
         """每个用户应有独立的 RPM 限制"""
-        from app.core.resilience import AIRateLimiter, AIRateLimitConfig
+        from app.core.performance.resilience import AIRateLimiter, AIRateLimitConfig
 
         config = AIRateLimitConfig(per_user_rpm=2, global_rpm=100, sse_max_connections=5)
         limiter = AIRateLimiter(config)
@@ -45,7 +45,7 @@ class TestAIRateLimiter:
     @pytest.mark.asyncio
     async def test_global_rate_limit(self):
         """全局应有总 RPM 限制"""
-        from app.core.resilience import AIRateLimiter, AIRateLimitConfig
+        from app.core.performance.resilience import AIRateLimiter, AIRateLimitConfig
 
         config = AIRateLimitConfig(per_user_rpm=100, global_rpm=2, sse_max_connections=5)
         limiter = AIRateLimiter(config)
@@ -64,7 +64,7 @@ class TestAIRateLimiter:
     @pytest.mark.asyncio
     async def test_sse_connection_limit(self):
         """SSE 连接数应有上限"""
-        from app.core.resilience import AIRateLimiter, AIRateLimitConfig
+        from app.core.performance.resilience import AIRateLimiter, AIRateLimitConfig
 
         config = AIRateLimitConfig(per_user_rpm=100, global_rpm=100, sse_max_connections=2)
         limiter = AIRateLimiter(config)
@@ -96,7 +96,7 @@ class TestAIResponseCache:
     @pytest.mark.asyncio
     async def test_cache_set_and_get(self):
         """Basic set/get functionality"""
-        from app.services.ai.response_cache import ai_cache
+        from app.services.ai.shared.response_cache import ai_cache
 
         # Clear cache first
         ai_cache.clear()
@@ -113,7 +113,7 @@ class TestAIResponseCache:
     @pytest.mark.asyncio
     async def test_cache_miss_returns_none(self):
         """Cache miss should return None"""
-        from app.services.ai.response_cache import ai_cache
+        from app.services.ai.shared.response_cache import ai_cache
 
         ai_cache.clear()
         result = ai_cache.get("nonexistent question")
@@ -122,7 +122,7 @@ class TestAIResponseCache:
     @pytest.mark.asyncio
     async def test_cache_invalidation(self):
         """invalidate should remove cached response"""
-        from app.services.ai.response_cache import ai_cache
+        from app.services.ai.shared.response_cache import ai_cache
 
         question = "test question"
         answer = "test answer"
@@ -136,7 +136,7 @@ class TestAIResponseCache:
     @pytest.mark.asyncio
     async def test_cache_key_generation_consistency(self):
         """Same question should always generate same cache key"""
-        from app.services.ai.response_cache import ai_cache
+        from app.services.ai.shared.response_cache import ai_cache
 
         ai_cache.clear()
         question = "consistent test question"
@@ -196,7 +196,7 @@ class TestAiEndpointErrorHandling:
     @pytest.mark.asyncio
     async def test_chat_stream_rate_limit_response_format(self):
         """Rate limit 响应应包含正确的格式"""
-        from app.core.resilience import get_ai_rate_limiter
+        from app.core.performance.resilience import get_ai_rate_limiter
 
         limiter = get_ai_rate_limiter()
         allowed, error_msg = await limiter.check_request(999)  # Fake user

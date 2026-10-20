@@ -396,7 +396,7 @@ export function FilterBuilder({
   maxHeight = 400,
   className = '',
 }: FilterBuilderProps) {
-  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
+  const { error: toastError } = useToast();
   const [filterName, setFilterName] = useState('');
   const [showSavedPanel, setShowSavedPanel] = useState(false);
 

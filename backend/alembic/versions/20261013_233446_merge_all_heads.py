@@ -1,0 +1,28 @@
+"""merge all heads
+
+Revision ID: 4dfbe6e25d76
+Revises: 20260502_001000, 20260503_000100, 20260515_000001_add_peptide_structure, 20260602_000000, 20260624_000000, 20260630_000000, 20260630_010000, 20260630_020000, 20260702_000000, 20260702_010000, 20260703_000000, 20260703_010000, 20260703_020000, 20260718_000000, 20260720_000000, 20260720_010000, 20260720_020000, 20260722_000000, 20261013_000000
+Create Date: 2026-10-13 23:34:46.039301
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision: str = '4dfbe6e25d76'
+down_revision: Union[str, None] = ('20260502_001000', '20260503_000100', '20260515_000001_add_peptide_structure', '20260602_000000', '20260624_000000', '20260630_000000', '20260630_010000', '20260630_020000', '20260702_000000', '20260702_010000', '20260703_000000', '20260703_010000', '20260703_020000', '20260718_000000', '20260720_000000', '20260720_010000', '20260720_020000', '20260722_000000', '20261013_000000')
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """升级数据库 Schema"""
+    pass
+
+
+def downgrade() -> None:
+    """回滚数据库 Schema"""
+    pass

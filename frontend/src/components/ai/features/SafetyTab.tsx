@@ -225,7 +225,7 @@ function useSafetyCheckMutation(
 
   const handleCheck = useCallback((
     ingredients: string[],
-    onSuccess?: () => void
+    onSuccess?: (result: SafetyCheckResult) => void
   ) => {
     if (ingredients.length === 0) {
       feedback.showWarning(
@@ -302,8 +302,16 @@ function useSafetyHistory() {
 // ===== 工具函数 =====
 
 function calculateComplianceRate(checks: Record<string, { passed?: boolean } | undefined>): number {
+  // 只统计后端明确返回 passed === true 的类别。
+  //
+  // 原实现是 `checks[category]?.passed !== false`：字段缺失（undefined）或后端
+  // 未返回该类别都会被算作"通过"。当 checks 为空对象时 6 个类别全部计为通过
+  // → 合规率恒 100%，即使输入剧毒原料也会显示绿色盾牌。
+  //
+  // 后端 safety_checker.py 对全部 6 个类别都返回显式 passed: bool，因此这里用
+  // 严格相等是安全的；任何缺失一律按"未通过"处理（最保守口径）。
   const passedChecks = SAFETY_CHECK_CATEGORIES.filter(category =>
-    checks[category]?.passed !== false,
+    checks[category]?.passed === true,
   ).length
 
   return Math.round((passedChecks / TOTAL_SAFETY_CHECKS) * 100)
@@ -481,7 +489,6 @@ export function SafetyTab({
 
   const {
     safetyResult,
-    mutation: _mutation,
     handleCheck,
     resetCheck,
     isChecking,
@@ -510,13 +517,16 @@ export function SafetyTab({
       ? allIngredients
       : parsedIngredients
 
-    handleCheck(ingredientsToCheck, () => {
+    handleCheck(ingredientsToCheck, (freshResult) => {
       // 保存成分列表供导出使用
       setLastCheckedIngredients([...ingredientsToCheck])
       // 添加到历史记录
-      if (safetyResult) {
-        addHistoryEntry(ingredientsToCheck, safetyResult, complianceRate)
-      }
+      // 用 onSuccess 回调传来的"新鲜"结果计算合规率，而不是闭包里捕获的
+      // safetyResult：setSafetyResult 的 setState 在回调执行时尚未触发 re-render，
+      // 闭包值是 null（首次检查）或上一条历史记录，导致下面那个
+      // `if (safetyResult)` 恒为 false → 趋势图与历史记录永远不写入。
+      const freshRate = calculateComplianceRate(freshResult.checks || {})
+      addHistoryEntry(ingredientsToCheck, freshResult, freshRate)
 
       // 将解析的成分添加到已选列表
       parsedIngredients.forEach(ingredient => {
@@ -527,8 +537,6 @@ export function SafetyTab({
     allIngredients,
     parsedIngredients,
     handleCheck,
-    safetyResult,
-    complianceRate,
     addHistoryEntry,
     addToSelected,
   ])
@@ -775,6 +783,9 @@ export function SafetyTab({
                 className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                  role="button" tabIndex={0} onClick={() => {
                   setSafetyResult(entry.result)
+                 // 同步导出报告所用的成分列表，否则点击历史条目后导出的
+                 // 仍是上一次实际检查的成分，报告内容与所看结果不符。
+                  setLastCheckedIngredients([...entry.ingredients])
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
               >

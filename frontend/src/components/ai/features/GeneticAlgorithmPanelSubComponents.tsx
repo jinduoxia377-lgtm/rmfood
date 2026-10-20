@@ -181,7 +181,7 @@ export function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: C
           className="px-5 pb-5 border-t border-neutral-100 dark:border-neutral-800 pt-4 animate-in slide-in-from-top-2 duration-200"
         >
           {/* 四维评分详情 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {scoreLabels.map(({ label, value, icon, color }) => (
               <div key={label} className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2">
                 <span className={color}>{icon}</span>

@@ -17,7 +17,7 @@ import uuid
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 
@@ -35,44 +35,43 @@ async def get_2fa_status(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """查询当前用户的 2FA 启用状态
-
-    修复: `User` 模型当前并无 two_factor_secret/two_factor_enabled 列
-    （users 表实际列见 information_schema），直接属性访问会抛 AttributeError
-    → 500。改用 getattr 安全读取：列尚未落库时返回 {enabled: false}，
-    而非让端点崩溃。一旦迁移补齐这两列，本端点自动开始如实反映真实状态。
-    """
-    secret = getattr(current_user, "two_factor_secret", None)
-    enabled = bool(getattr(current_user, "two_factor_enabled", secret))
+    """查询当前用户的 2FA 启用状态"""
     return {
-        "enabled": enabled,
+        "enabled": bool(current_user.two_factor_enabled),
     }
 
 
-@router.post("/2fa/enable", summary="启用 2FA")
+@router.post("/2fa/enable", summary="开启 2FA 绑定（生成密钥，未启用）")
 async def enable_2fa(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """启用两步验证，返回 QR code 数据和备用码"""
-    import secrets
+    """生成两步验证密钥与备用码。
+
+    注意：此端点只生成/保存密钥，**不会立即启用** 2FA（two_factor_enabled 保持 False）。
+    用户在前端完成验证码校验（POST /2fa/verify 通过）后才会真正启用，
+    避免"未完成绑定就锁死账户"的问题。
+    """
+    from ..core.security.totp import generate_secret, totp_uri
 
     # 生成密钥
-    secret = secrets.token_hex(20)
+    secret = generate_secret(20)
 
-    # 保存密钥（加密存储）
+    # 保存密钥（不启用）
     current_user.two_factor_secret = secret
-    current_user.two_factor_enabled = True
+    current_user.two_factor_enabled = False
     await db.commit()
 
     # 生成备用验证码（10 个一次性码）
-    backup_codes = [secrets.token_hex(3) for _ in range(10)]
+    import secrets as _secrets
+    backup_codes = [_secrets.token_hex(3) for _ in range(10)]
 
     return {
-        "enabled": True,
+        "enabled": False,
         "secret": secret,
+        "otpauth_url": totp_uri(secret, issuer="RMFOOD", account=current_user.email or current_user.username),
         "backup_codes": backup_codes,
-        "message": "请妥善保存备用验证码",
+        "message": "请输入身份验证器中的验证码完成绑定（绑定成功后才启用两步验证）",
     }
 
 
@@ -88,20 +87,28 @@ async def disable_2fa(
     return {"enabled": False, "message": "两步验证已禁用"}
 
 
-@router.post("/2fa/verify", summary="验证 2FA 验证码")
+@router.post("/2fa/verify", summary="验证 2FA 验证码（通过后启用）")
 async def verify_2fa(
     code: str = Query(..., min_length=6, max_length=6),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """验证 2FA 验证码是否正确"""
+    """验证 2FA 验证码是否正确。
+
+    若用户处于"待绑定"状态（two_factor_secret 存在但 two_factor_enabled=False），
+    验证通过后将其标记为已启用——即"确认绑定"步骤。
+    """
     if not current_user.two_factor_secret:
         raise HTTPException(status_code=400, detail="2FA 尚未启用")
 
-    from pyotp import TOTP
-    totp = TOTP(current_user.two_factor_secret)
-    if totp.verify(code):
-        return {"valid": True, "message": "验证码正确"}
+    from ..core.security.totp import verify_totp
+
+    if verify_totp(current_user.two_factor_secret, code):
+        # 确认绑定：验证通过后真正启用 2FA
+        if not current_user.two_factor_enabled:
+            current_user.two_factor_enabled = True
+            await db.commit()
+        return {"valid": True, "enabled": True, "message": "验证码正确，两步验证已启用"}
     raise HTTPException(status_code=400, detail="验证码错误")
 
 
@@ -134,6 +141,8 @@ async def list_devices(
                 "device_type": (d.device_type.value if d.device_type else "unknown"),
                 "last_active": d.last_sync_at.isoformat() if d.last_sync_at else None,
                 "is_active": bool(d.is_active),
+                # 单设备场景：该设备必然是当前使用的设备，标记为本机，避免误删
+                "is_current": len(devices) == 1,
             }
             for d in devices
         ],
@@ -203,93 +212,121 @@ async def update_preferences(
 
 @router.get("/export", summary="导出数据")
 async def export_user_data(
+    format: str = Query("json", pattern="^(json|csv|excel)$", description="导出格式：json/csv/excel"),
+    scope: str = Query("profile,formulas,experiments,preferences", description="逗号分隔的数据范围"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """导出用户的所有数据（配方、实验、聊天记录等）为 ZIP 文件"""
-    from ..models.formula import Formula
-    from ..models.experiment import Experiment
-    from ..models.chat import ChatSession, ChatMessage
+    """按指定范围与格式导出用户数据。
 
-    # 导出配方
-    result = await db.execute(
-        select(Formula).where(Formula.creator_id == current_user.id)
-    )
-    formulas = [
-        {
-            "id": f.id,
-            "name": f.name,
-            "description": f.description,
-            "status": f.status.value if hasattr(f.status, 'value') else f.status,
-            "created_at": f.created_at.isoformat() if f.created_at else None,
-            "updated_at": f.updated_at.isoformat() if f.updated_at else None,
-        }
-        for f in result.scalars().all()
-    ]
+    scope 支持：profile / formulas / experiments / preferences（逗号分隔）。
+    format：json 返回 ZIP（内含 JSON）；csv 返回 CSV 文本；excel 返回 .xlsx 工作簿。
+    """
+    import io as _io
+    import zipfile
+    from datetime import datetime, timezone
 
-    # 导出实验
-    result = await db.execute(
-        select(Experiment).where(Experiment.user_id == current_user.id)
-    )
-    experiments = [
-        {
-            "id": e.id,
-            "name": e.name,
-            "status": e.status.value if hasattr(e.status, 'value') else e.status,
-            "created_at": e.created_at.isoformat() if e.created_at else None,
-        }
-        for e in result.scalars().all()
-    ]
-
-    # 导出聊天记录
-    result = await db.execute(
-        select(ChatSession).where(ChatSession.user_id == current_user.id)
-    )
-    sessions = result.scalars().all()
-    chat_data = []
-    for session in sessions:
-        msgs_result = await db.execute(
-            select(ChatMessage).where(ChatMessage.session_id == session.id).order_by(ChatMessage.created_at)
-        )
-        messages = [
-            {
-                "role": m.role,
-                "content": m.content,
-                "created_at": m.created_at.isoformat() if m.created_at else None,
-            }
-            for m in msgs_result.scalars().all()
-        ]
-        chat_data.append({
-            "session_id": session.id,
-            "title": session.title,
-            "messages": messages,
-        })
-
-    # 打包为 JSON
-    data = {
+    scopes = {s.strip() for s in scope.split(",") if s.strip()}
+    data: dict = {
         "exported_at": datetime.now(timezone.utc).isoformat(),
         "user_id": current_user.id,
         "username": current_user.username,
-        "formulas": formulas,
-        "experiments": experiments,
-        "chat_sessions": chat_data,
     }
 
-    json_bytes = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+    formulas = []
+    experiments = []
 
-    # 创建 ZIP
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr(f"rmfood_export_{current_user.id}.json", json_bytes.decode("utf-8"))
+    # 个人资料
+    if "profile" in scopes:
+        data["profile"] = {
+            "username": current_user.username,
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "role": current_user.role,
+        }
 
-    zip_buffer.seek(0)
+    # 配方
+    if "formulas" in scopes:
+        from ..models.formula import Formula
+        result = await db.execute(select(Formula).where(Formula.creator_id == current_user.id))
+        formulas = [
+            {
+                "id": f.id,
+                "name": f.name,
+                "description": f.description,
+                "status": f.status.value if hasattr(f.status, "value") else f.status,
+                "created_at": f.created_at.isoformat() if f.created_at else None,
+                "updated_at": f.updated_at.isoformat() if f.updated_at else None,
+            }
+            for f in result.scalars().all()
+        ]
+        data["formulas"] = formulas
 
+    # 实验
+    if "experiments" in scopes:
+        from ..models.experiment import Experiment
+        result = await db.execute(select(Experiment).where(Experiment.user_id == current_user.id))
+        experiments = [
+            {
+                "id": e.id,
+                "name": e.name,
+                "status": e.status.value if hasattr(e.status, "value") else e.status,
+                "created_at": e.created_at.isoformat() if e.created_at else None,
+            }
+            for e in result.scalars().all()
+        ]
+        data["experiments"] = experiments
+
+    # 偏好设置
+    if "preferences" in scopes:
+        data["preferences"] = current_user.preferences or {}
+
+    if format == "json":
+        json_bytes = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+        zip_buffer = _io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr(f"rmfood_export_{current_user.id}.json", json_bytes.decode("utf-8"))
+        zip_buffer.seek(0)
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={"Content-Disposition": f'attachment; filename="rmfood_data_export_{current_user.id}.zip"'},
+        )
+
+    if format == "csv":
+        import csv as csv_module
+        csv_buffer = _io.StringIO()
+        writer = csv_module.writer(csv_buffer)
+        writer.writerow(["类型", "ID", "名称", "状态", "创建时间"])
+        for f in formulas:
+            writer.writerow(["配方", f["id"], f["name"], f["status"], f["created_at"]])
+        for e in experiments:
+            writer.writerow(["实验", e["id"], e["name"], e["status"], e["created_at"]])
+        return Response(
+            content=csv_buffer.getvalue(),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="rmfood_export_{current_user.id}.csv"'},
+        )
+
+    # excel
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws1 = wb.active
+    ws1.title = "配方"
+    ws1.append(["ID", "名称", "描述", "状态", "创建时间", "更新时间"])
+    for f in formulas:
+        ws1.append([f["id"], f["name"], f["description"], f["status"], f["created_at"], f["updated_at"]])
+    ws2 = wb.create_sheet("实验")
+    ws2.append(["ID", "名称", "状态", "创建时间"])
+    for e in experiments:
+        ws2.append([e["id"], e["name"], e["status"], e["created_at"]])
+    xlsx_buffer = _io.BytesIO()
+    wb.save(xlsx_buffer)
+    xlsx_buffer.seek(0)
     return StreamingResponse(
-        zip_buffer,
-        media_type="application/zip",
-        headers={
-            "Content-Disposition": f'attachment; filename="rmfood_data_export_{current_user.id}.zip"'
-        },
+        xlsx_buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="rmfood_export_{current_user.id}.xlsx"'},
     )
 
 

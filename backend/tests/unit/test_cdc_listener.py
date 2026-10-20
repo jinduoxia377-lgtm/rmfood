@@ -9,7 +9,7 @@ import pytest
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.core.cdc_listener import CDCListener, EXCLUDED_TABLES
+from app.core.compliance.cdc_listener import CDCListener, EXCLUDED_TABLES
 from app.models.change_event import ChangeEvent, ChangeAction
 from app.models.data_source_health import DataSourceHealth, DataSourceType, DataSourceStatus
 from app.models.base import SoftDeleteMixin
@@ -111,7 +111,7 @@ class TestSoftDelete:
 
     def test_soft_delete_timestamp(self):
         """测试软删除时间戳"""
-        from app.models.base import _now
+        from app.models.utils import now_utc_mapped as _now
 
         class TestModel(SoftDeleteMixin):
             def __init__(self):

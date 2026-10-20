@@ -157,7 +157,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
       };
 
     // ====== 更新单元格值 ======
-    case 'UPDATE_CELL_VALUE':
+    case 'UPDATE_CELL_VALUE': {
       if (!state.editingCell) return state;
 
       const isModified = state.editingCell.originalValue !== action.value;
@@ -170,6 +170,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
           isModified,
         },
       };
+    }
 
     // ====== 行选择操作 ======
     case 'SELECT_ROWS': {
@@ -261,7 +262,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
     }
 
     // ====== 保存所有变更 ======
-    case 'SAVE_CHANGES':
+    case 'SAVE_CHANGES': {
       // 标记所有变更为已保存
       const savedChanges = state.changes.map(c => ({ ...c, isSaved: true }));
 
@@ -271,6 +272,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
         undoStack: [],  // 保存后清空撤销栈（可选）
         redoStack: [],
       };
+    }
 
     // ====== 放弃所有变更 ======
     case 'DISCARD_CHANGES':
@@ -295,7 +297,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
       };
 
     // ====== 撤销 ======
-    case 'UNDO':
+    case 'UNDO': {
       if (state.undoStack.length === 0) return state;
 
       // 弹出当前状态的快照到重做栈
@@ -319,9 +321,10 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
         editingCell: null,
         selectedRows: new Set(),
       };
+    }
 
     // ====== 重做 ======
-    case 'REDO':
+    case 'REDO': {
       if (state.redoStack.length === 0) return state;
 
       // 弹出重做栈顶部的快照
@@ -345,6 +348,7 @@ function editingReducer(state: EditingState, action: EditingAction): EditingStat
         editingCell: null,
         selectedRows: new Set(),
       };
+    }
 
     // ====== 重置为原始数据 ======
     case 'RESET_DATA':

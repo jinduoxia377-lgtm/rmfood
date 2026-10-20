@@ -376,6 +376,7 @@ function applyStatusConditionalFormat(row: any, statusColIndex: number): void {
 }
 
 function autoFitColumnWidths(worksheet: any, _headers: HeaderDef[]): void {
+  void _headers;
   worksheet.columns.forEach((column: any) => {
     if (!column?.eachCell) return;
     let maxLength = 0;
@@ -1122,6 +1123,10 @@ async function exportAsExcelLegacy(
   _filename?: string,
   _onProgress?: (progress: number, message: string) => void,
 ): Promise<void> {
+  void _includeMetadata;
+  void _includeIngredients;
+  void _filename;
+  void _onProgress;
   const ExcelJS = await getExcelJS();
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('配方数据', {
@@ -1166,6 +1171,10 @@ async function exportAsPDFLegacy(
   title?: string,
   _onProgress?: (progress: number, message: string) => void,
 ): Promise<void> {
+  void _includeMetadata;
+  void _includeIngredients;
+  void _filename;
+  void _onProgress;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
   doc.setFontSize(16);

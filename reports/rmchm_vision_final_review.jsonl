@@ -1,0 +1,67 @@
+{"name_cn": "安息香", "id": 1341, "filename": "安息香.jpg", "match": "否", "reason": "新图确认: 图片为中药材列表文档，非实物照片。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "白毛藤", "id": 1354, "filename": "白毛藤.jpg", "match": "否", "reason": "新图确认: 图中为干燥茎枝药材，缺乏白毛藤特有花叶鉴别特征。", "verdict": "已替换仍存疑", "replaced": true}
+{"name_cn": "白屈菜", "id": 1357, "filename": "白屈菜.jpg", "match": "是", "reason": "图像为白屈菜（CChelidonium majus）植株，典型黄花四瓣、叶羽状分裂，特征吻合。", "verdict": "通过", "replaced": false}
+{"name_cn": "白药子", "id": 1363, "filename": "白药子.jpg", "match": "否", "reason": "新图确认: 图片为致歉声明文件，非中药材实物图。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "败酱草", "id": 1368, "filename": "败酱草.jpg", "match": "是", "reason": "茎方形，三出复叶具锯齿，符合败酱草特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "半枝莲", "id": 1373, "filename": "半枝莲.jpg", "match": "否", "reason": "新图确认: 图中植物茎秆呈方形四棱，叶片较小且互生，具有唇形科特征（如石荠苎），而非半枝莲。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "穿山龙", "id": 1415, "filename": "穿山龙.jpg", "match": "否", "reason": "新图确认: 图片显示不规则块状根茎切片，表面棕黄且粗糙，有须根痕，与穿山龙药材特征相符。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "玳玳花", "id": 1429, "filename": "玳玳花.jpg", "match": "是", "reason": "形态为干枯带花萼的管状花朵，符合玳玳花特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "断血流", "id": 1453, "filename": "断血流.jpg", "match": "否", "reason": "新图确认: 图片植物为唇形科风轮菜，即中药断血流的原植物。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "鹅不食草", "id": 1455, "filename": "鹅不食草.jpg", "match": "是", "reason": "植物具有鹅不食草特征：球状花头及叶片形态相符。", "verdict": "通过", "replaced": false}
+{"name_cn": "凤仙透骨草", "id": 1463, "filename": "凤仙透骨草.jpg", "match": "是", "reason": "图片上方文字标注为凤仙透骨草，与中药材名称一致。", "verdict": "通过", "replaced": false}
+{"name_cn": "凤眼草", "id": 1464, "filename": "凤眼草.jpg", "match": "否", "reason": "新图确认: 图片中黄绿色扁平带翅的干燥果实特征与青皮藤（凤眼草）相符。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "黑老虎", "id": 1502, "filename": "黑老虎.jpg", "match": "是", "reason": "图中果实呈球形聚合果，成熟时紫红色，叶片革质，符合黑老虎特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "猴枣", "id": 1507, "filename": "猴枣.jpg", "match": "否", "reason": "新图确认: 图片为中药饮片名单文字列表，非猴枣实物图。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "华山参", "id": 1517, "filename": "华山参.jpg", "match": "否", "reason": "新图确认: 图片标题为“人参”，且主要展示的是人参及生晒参，并非华山参。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "黄药子", "id": 1526, "filename": "黄药子.jpg", "match": "否", "reason": "新图确认: 标签标注品名为黄药子，实物符合根茎类药材特征。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "金沸草", "id": 1539, "filename": "金沸草.jpg", "match": "不确定", "reason": "图中有多种中药材，无法单独确认是否包含金沸草。", "verdict": "存疑", "replaced": false}
+{"name_cn": "金果榄", "id": 1540, "filename": "金果榄.jpg", "match": "否", "reason": "新图确认: 图中块茎具瘤状突起及灰色粉末，特征符合金果榄。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "荆芥穗", "id": 1549, "filename": "荆芥穗.jpg", "match": "是", "reason": "呈穗状花序，带黄绿色花蕾，密集成穗，符合荆芥穗形态。", "verdict": "通过", "replaced": false}
+{"name_cn": "苦地丁", "id": 1562, "filename": "苦地丁.jpg", "match": "是", "reason": "图片中的植物具有苦地丁典型的紫色花朵及基生叶特征，形态相符。", "verdict": "通过", "replaced": false}
+{"name_cn": "南蛇藤果", "id": 1633, "filename": "南蛇藤果.jpg", "match": "否", "reason": "新图确认: 图片标注名称，且药材形态符合南蛇藤果开壳露籽特征。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "茄根", "id": 1658, "filename": "茄根.jpg", "match": "是", "reason": "该药材外观呈类圆柱形或段状，表面灰褐色，断面黄白色，具有茄根的典型性状特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "青叶胆", "id": 1667, "filename": "青叶胆.jpg", "match": "否", "reason": "新图确认: 该图片为中药材名单列表，并非青叶胆的植物照片。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "三白草", "id": 1678, "filename": "三白草.jpg", "match": "否", "reason": "新图确认: 这是三白草中成药饮片包装，非药材原图。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "三分三", "id": 1679, "filename": "三分三.jpg", "match": "否", "reason": "新图确认: 这是一份检查表格文件，不是中药材图片。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "沙苑子", "id": 1689, "filename": "沙苑子.jpg", "match": "否", "reason": "新图确认: 图中颗粒形态、色泽及特征与沙苑子描述一致。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "松花粉", "id": 1717, "filename": "松花粉.jpg", "match": "是", "reason": "图中为淡黄色细粉末，形态颜色符合松花粉特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "娑罗子", "id": 1722, "filename": "娑罗子.jpg", "match": "是", "reason": "图示为去壳后的娑罗子（诃子）切片，断面特征符合。", "verdict": "通过", "replaced": false}
+{"name_cn": "乌敛莓", "id": 1746, "filename": "乌敛莓.jpg", "match": "否", "reason": "新图确认: 乌敛莓药材一般为切段的草质藤茎，断面较疏松；图中为较硬、木化明显、径粗较大的木质根或茎段，特征不符。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "无患子皮", "id": 1750, "filename": "无患子皮.jpg", "match": "否", "reason": "新图确认: 图片中显示为球形种子，并非无患子皮（果皮）。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "仙桃草", "id": 1763, "filename": "仙桃草.jpg", "match": "不确定", "reason": "图片为干草药碎末，缺乏仙桃草典型形态特征。", "verdict": "存疑", "replaced": false}
+{"name_cn": "亚麻子", "id": 1783, "filename": "亚麻子.jpg", "match": "是", "reason": "图中褐色扁平卵圆形种子符合亚麻子特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "一枝黄花", "id": 1787, "filename": "一枝黄花.jpg", "match": "是", "reason": "茎直生且具纵棱，全缘叶互生，总状花序顶生，符合一枝黄花特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "苎麻根", "id": 1825, "filename": "苎麻根.jpg", "match": "不确定", "reason": "图片为干燥根茎类药材，符合苎麻根特征，但缺乏特异性无法确诊。", "verdict": "存疑", "replaced": false}
+{"name_cn": "三颗针", "id": 1836, "filename": "三颗针.jpg", "match": "是", "reason": "根茎粗壮、表面黄白色且具纵皱纹，特征符合三颗针。", "verdict": "通过", "replaced": false}
+{"name_cn": "大豆黄卷", "id": 1842, "filename": "大豆黄卷.jpg", "match": "是", "reason": "图片显示为发芽后干燥的大豆，呈卷缩状，符合大豆黄卷特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "千金子霜", "id": 1850, "filename": "千金子霜.jpg", "match": "否", "reason": "新图确认: 图片为文字目录，并非药材实物。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "煅石膏", "id": 1876, "filename": "煅石膏.jpg", "match": "是", "reason": "图中为白色细腻粉末，与煅石膏药材性状相符。", "verdict": "通过", "replaced": false}
+{"name_cn": "炒瓜蒌子", "id": 1881, "filename": "炒瓜蒌子.jpg", "match": "是", "reason": "图片中药材呈扁卵圆形，棕褐色，符合炒瓜蒌子特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "瓜蒌皮", "id": 1882, "filename": "瓜蒌皮.jpg", "match": "是", "reason": "图片上方有“瓜蒌皮”水印，且药材呈现典型的瓜蒌皮片状特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "冬凌草", "id": 1883, "filename": "冬凌草.jpg", "match": "否", "reason": "新图确认: 图片下方显著标注「冬凌草」，中药材外观与描述相符。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "姜半夏", "id": 1886, "filename": "姜半夏.jpg", "match": "不确定", "reason": "图像为圆球状，而姜半夏多为切块或饮片形态。", "verdict": "存疑", "replaced": false}
+{"name_cn": "当药", "id": 1895, "filename": "当药.jpg", "match": "不确定", "reason": "图为多种中药材混合，无法确认是否包含「当药」。", "verdict": "存疑", "replaced": false}
+{"name_cn": "血余炭", "id": 1901, "filename": "血余炭.jpg", "match": "否", "reason": "新图确认: 图片中药材切面可见明显木质纹理，特征不符。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "苦玄参", "id": 1935, "filename": "苦玄参.jpg", "match": "否", "reason": "新图确认: 图中明确标注了「苦玄参」名称及其植物插图。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "岩白菜", "id": 1939, "filename": "岩白菜.jpg", "match": "是", "reason": "图片左侧清晰标注红色文字‘岩白菜’，直接说明其身份。", "verdict": "通过", "replaced": false}
+{"name_cn": "荆芥穗炭", "id": 1949, "filename": "荆芥穗炭.jpg", "match": "否", "reason": "新图确认: 图片中的药材呈穗状花序，带细茎，干燥后呈棕褐色，特征符合荆芥穗。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "制草乌", "id": 1950, "filename": "制草乌.jpg", "match": "是", "reason": "呈不规则块片状，表面灰黑粗糙，符合制草乌饮片特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "哈蟆油", "id": 1957, "filename": "哈蟆油.jpg", "match": "否", "reason": "新图确认: 该图片为中药饮片质量标准目录表格，并非药材实体图片", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "胆南星", "id": 1961, "filename": "胆南星.jpg", "match": "否", "reason": "新图确认: 图片为产品参数说明页，并非中药材实物图。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "洪连", "id": 1964, "filename": "洪连.jpg", "match": "是", "reason": "包装标注药品名为洪连，符合中药材特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "桃枝", "id": 1967, "filename": "桃枝.jpg", "match": "是", "reason": "图中展示了切段的植物根茎，形态符合中药材桃枝的特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "臭灵丹草", "id": 1969, "filename": "臭灵丹草.jpg", "match": "是", "reason": "左侧宽大的锯齿叶及右侧细长的花叶特征均符合臭灵丹草。", "verdict": "通过", "replaced": false}
+{"name_cn": "黄山药", "id": 1978, "filename": "黄山药.jpg", "match": "否", "reason": "新图确认: 图片是一张包含多种中药材的表格，并非黄山药的实物图片。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "黄藤", "id": 1981, "filename": "黄藤.jpg", "match": "否", "reason": "新图确认: 药材外形相似，仅凭切片图片难以确认为黄藤。", "verdict": "已替换仍存疑", "replaced": true}
+{"name_cn": "猪胆粉", "id": 1987, "filename": "猪胆粉.jpg", "match": "否", "reason": "新图确认: 图片上的药品名称明确标注为「猪胆粉」。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "硫黄", "id": 1996, "filename": "硫黄.jpg", "match": "否", "reason": "新图确认: 图中为淡黄色块状物及粉末，符合硫黄药材外观特征。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "紫萁贯众", "id": 2001, "filename": "紫萁贯众.jpg", "match": "否", "reason": "新图确认: 图片显示干燥根茎和叶柄残基，特征符合紫萁贯众形态。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "蜂胶", "id": 2015, "filename": "蜂胶.jpg", "match": "否", "reason": "新图确认: 图片中明确展示了酒制蜂胶药用产品及品牌名称，符合蜂胶特征。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "蜂蜡", "id": 2016, "filename": "蜂蜡.jpg", "match": "是", "reason": "图片展示的典型六边形块状淡黄色物体符合蜂蜡常见形态。", "verdict": "通过", "replaced": false}
+{"name_cn": "榼藤子", "id": 2021, "filename": "榼藤子.jpg", "match": "是", "reason": "图像展示了典型的榼藤子特征，颜色形态与药材描述一致。", "verdict": "通过", "replaced": false}
+{"name_cn": "暴马子皮", "id": 2027, "filename": "暴马子皮.jpg", "match": "否", "reason": "新图确认: 图像为深褐颗粒状干品，非树皮片，不符暴马子皮形态", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "颠茄草", "id": 2030, "filename": "颠茄草.jpg", "match": "否", "reason": "新图确认: 图中可见带尖刺的全草及带刺的干燥花序，符合颠茄草特征。", "verdict": "已替换并通过", "replaced": true}
+{"name_cn": "白毛夏枯草", "id": 2042, "filename": "白毛夏枯草.jpg", "match": "是", "reason": "图中植物茎叶多白色绵毛，花序呈轮伞状，形态符合白毛夏枯草特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "贯众", "id": 2044, "filename": "贯众.jpg", "match": "是", "reason": "横切面呈放射状纹理，外皮灰褐具纵沟，符合贯众特征。", "verdict": "通过", "replaced": false}
+{"name_cn": "金果揽", "id": 2045, "filename": "金果揽.jpg", "match": "否", "reason": "新图确认: 金果榄应为未加工根状茎，图中已磨成粉末。", "verdict": "已替换仍不匹配", "replaced": true}
+{"name_cn": "苦木", "id": 1934, "filename": "苦木.jpg", "match": "否", "reason": "新图确认: 切片横具同心环纹，红黄色，符合苦木干皮特征。", "verdict": "已替换并通过", "replaced": true}

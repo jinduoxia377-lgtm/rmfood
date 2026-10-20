@@ -5,8 +5,8 @@
  * - 支持按时间和用户筛选
  */
 import { useState, useEffect } from 'react'
-import { History, Clock, User, Edit, Plus, Trash2, Share2, Filter, Search } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Input, Select, Button } from '@/components/ui'
+import { History, User, Edit, Plus, Trash2, Share2 } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Input, Select } from '@/components/ui'
 
 interface ChangeEvent {
   id: string
@@ -111,6 +111,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
         },
       },
     ]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents(mockEvents)
   }, [dashboardId])
 

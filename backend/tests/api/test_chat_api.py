@@ -9,7 +9,6 @@
 
 import pytest
 import json
-import uuid
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
@@ -20,6 +19,7 @@ from app.models import User
 from app.models.enums import UserRole
 from app.api.deps import get_db_session
 from app.utils.auth import create_access_token
+from tests.conftest_clean_users import track_test_user, track_test_bot, make_test_user_id
 
 client = TestClient(app)
 # 手动注册延迟路由（TestClient 不启动 lifespan）
@@ -29,17 +29,18 @@ client.cookies.set("csrf_token", "test_csrf_token_for_unit_tests")
 client.headers["X-CSRF-Token"] = "test_csrf_token_for_unit_tests"
 
 # ===== 测试数据 =====
-# Use unique IDs to avoid conflicts with existing DB data
+# Use unique IDs in the 90M-99M isolation band; conftest_clean_users sweeps
+# registered users/bots after the pytest session ends.
 
 
 def make_unique_id() -> int:
-    """生成唯一用户ID，避免与数据库已有数据冲突"""
-    return abs(hash(uuid.uuid4().hex)) % (2**31 - 1) + 10000
+    """生成唯一用户ID（90M~99M 隔离区），避免与生产数据冲突，由 conftest 统一回收。"""
+    return make_test_user_id()
 
 # ===== 测试辅助函数 =====
 
 async def create_test_user(db: AsyncSession, user_id: int = None) -> User:
-    """创建测试用户"""
+    """创建测试用户，并登记到 conftest 会话结束清理器。"""
     if user_id is None:
         user_id = make_unique_id()
     user = User(
@@ -53,6 +54,7 @@ async def create_test_user(db: AsyncSession, user_id: int = None) -> User:
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    track_test_user(user.id)
     return user
 
 async def create_test_session(db: AsyncSession, user_id: int = None) -> ChatSession:
@@ -95,6 +97,21 @@ def get_auth_headers(user_id: int = None) -> dict:
     token = create_access_token(data={"sub": str(user_id)})
     return {"Authorization": f"Bearer {token}"}
 
+
+def _sync_csrf_header():
+    """同步 CSRF 头。
+
+    服务端 CSRF 中间件会在每个 GET 响应中刷新 csrf_token cookie，导致共享
+    TestClient 的 cookie jar 积累多个同名 cookie（httpx 读取时报 CookieConflict）。
+    这里直接清空 jar，并为状态变更请求设置一对全新的、一致的 csrf cookie + header，
+    确保双提交校验通过。
+    """
+    import secrets
+    token = secrets.token_hex(32)
+    client.cookies.clear()
+    client.cookies.set("csrf_token", token)
+    client.headers["X-CSRF-Token"] = token
+
 # ===== 测试用例 =====
 
 class TestChatAPI:
@@ -106,6 +123,7 @@ class TestChatAPI:
         async for db in get_db_session():
             user = await create_test_user(db)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
             response = client.post(
                 "/api/v1/chat/sessions",
@@ -151,6 +169,7 @@ class TestChatAPI:
             user = await create_test_user(db)
             session = await create_test_session(db, user.id)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
             response = client.put(f"/api/v1/chat/sessions/{session.id}", json={"title": "更新后的标题", "tags": ["updated"]}, headers=headers)
             assert response.status_code == 200, f"Response: {response.text}"
@@ -164,6 +183,7 @@ class TestChatAPI:
             user = await create_test_user(db)
             session = await create_test_session(db, user.id)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
             response = client.delete(f"/api/v1/chat/sessions/{session.id}", headers=headers)
             assert response.status_code == 200, f"Response: {response.text}"
@@ -177,6 +197,7 @@ class TestChatAPI:
             user = await create_test_user(db)
             session = await create_test_session(db, user.id)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
             response = client.post(f"/api/v1/chat/sessions/{session.id}/messages", json={"role": "user", "content": "测试消息"}, headers=headers)
             assert response.status_code == 200, f"Response: {response.text}"
@@ -192,6 +213,7 @@ class TestChatAPI:
             session = await create_test_session(db, user.id)
             message = await create_test_message(db, session.id)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
             response = client.delete(f"/api/v1/chat/sessions/{session.id}/messages/{message.id}", headers=headers)
             assert response.status_code == 200, f"Response: {response.text}"
@@ -207,8 +229,14 @@ class TestChatAPI:
             m1 = await create_test_message(db, session.id)
             m2 = await create_test_message(db, session.id)
             headers = get_auth_headers(user.id)
+            _sync_csrf_header()
 
-            response = client.delete(f"/api/v1/chat/sessions/{session.id}/messages/batch", json={"message_ids": [m1.id, m2.id]}, headers=headers)
+            response = client.request(
+                "DELETE",
+                f"/api/v1/chat/sessions/{session.id}/messages/batch",
+                json=[m1.id, m2.id],
+                headers=headers,
+            )
             assert response.status_code == 200, f"Response: {response.text}"
             data = response.json()
             assert data.get("success") == True

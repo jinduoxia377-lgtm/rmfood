@@ -89,7 +89,7 @@ export function sanitizeHtml(content: string): string {
 
   // 移除危险属性
   DANGEROUS_ATTRIBUTES.forEach(attr => {
-    const regex = new RegExp(`\\s${attr}=[\'"]?[^'">]*[\'"]?`, 'gi');
+    const regex = new RegExp(`\\s${attr}=["']?[^'">]*["']?`, 'gi');
     cleaned = cleaned.replace(regex, '');
   });
 
@@ -207,6 +207,7 @@ export function sanitizeFilename(filename: string): string {
   // 移除路径分隔符
   let sanitized = filename
     .replace(/[\\/]/g, '_')
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x1F]/g, '_')
     .replace(/[<>:"|?*]/g, '_');
 
@@ -230,6 +231,7 @@ export function isValidFilename(filename: string): boolean {
     /^\.\./,
     /^\./,
     /[\\/]/,
+    // eslint-disable-next-line no-control-regex
     /[\x00-\x1F]/,
     /[<>:"|?*]/,
   ];

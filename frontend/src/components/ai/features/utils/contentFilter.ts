@@ -94,7 +94,7 @@ const FILTER_RULES: FilterRule[] = [
   // API Key（sk-xxx, api_key=xxx 等）
   {
     type: 'api_key',
-    pattern: /\b(sk-[a-zA-Z0-9]{20,}|api[_-]?key\s*[=:]\s*['"]?[a-zA-Z0-9_\-]{16,}['"]?)\b/gi,
+    pattern: /\b(sk-[a-zA-Z0-9]{20,}|api[_-]?key\s*[=:]\s*['"]?[a-zA-Z0-9_-]{16,}['"]?)\b/gi,
     mask: (m) => m.substring(0, Math.min(8, m.indexOf('=') >= 0 ? m.indexOf('=') + 5 : 8)) + '****',
     severity: 'critical',
     rule: 'API 密钥',
@@ -112,8 +112,8 @@ const FILTER_RULES: FilterRule[] = [
   // Bearer Token
   {
     type: 'jwt_token',
-    pattern: /\b(Bearer\s+[a-zA-Z0-9_\-\.]{20,})\b/gi,
-    mask: (m) => 'Bearer ****',
+    pattern: /\b(Bearer\s+[a-zA-Z0-9_\-.]{20,})\b/gi,
+    mask: () => 'Bearer ****',
     severity: 'critical',
     rule: 'Bearer 令牌',
     blocking: true,

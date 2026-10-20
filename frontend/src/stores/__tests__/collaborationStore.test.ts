@@ -28,6 +28,12 @@ vi.mock('@/utils/conflictResolver', () => {
           listeners.delete(callback);
         };
       }),
+      resolveConflict: vi.fn(() => ({
+        id: 'conflict-1',
+        status: 'resolved',
+        resolution: 'keep-local',
+        resolvedAt: Date.now(),
+      })),
       resolveCollaborationConflict: vi.fn((conflictId: string, resolution: string, resolvedBy: string) => ({
         id: conflictId,
         status: 'resolved',
@@ -43,6 +49,30 @@ vi.mock('@/utils/conflictResolver', () => {
     },
   };
 });
+
+// jsdom 无原生 WebSocket：提供最小 mock，并模拟「connected」握手消息
+class MockWebSocket {
+  static instances: MockWebSocket[] = [];
+  onopen: (() => void) | null = null;
+  onmessage: ((event: { data: string }) => void) | null = null;
+  onclose: (() => void) | null = null;
+  onerror: ((event: unknown) => void) | null = null;
+  readyState = 0;
+  constructor(public url: string) {
+    MockWebSocket.instances.push(this);
+  }
+  send(): void {}
+  close(): void {
+    this.readyState = 3;
+    this.onclose?.();
+  }
+  /** 测试辅助：模拟服务端 connected 消息 */
+  emitConnected(participants: unknown[]): void {
+    this.readyState = 1;
+    this.onopen?.();
+    this.onmessage?.({ data: JSON.stringify({ type: 'connected', sessionId: 'session-1', participants }) });
+  }
+}
 
 vi.mock('@/utils/rbac', () => ({
   CollaborationRBAC: {
@@ -115,9 +145,30 @@ describe('collaborationStore', () => {
       },
       permissions: null,
     });
+    MockWebSocket.instances = [];
+    vi.stubGlobal('WebSocket', MockWebSocket as unknown as typeof WebSocket);
     vi.clearAllMocks();
+    // afterEach 的 restoreAllMocks 会清除 mockReturnValue，这里重新设置 toast mock
+    vi.mocked(useToastStore.getState).mockReturnValue({
+      addToast: vi.fn(),
+      removeToast: vi.fn(),
+      clearAll: vi.fn(),
+    });
     vi.useRealTimers();
   });
+
+  /** 连接并模拟服务端握手（connected 消息），返回已连接状态 */
+  async function connectStore(documentId = 'doc-123') {
+    const connectPromise = useCollaborationStore.getState().connect(documentId);
+    await vi.advanceTimersByTimeAsync(0);
+    const ws = MockWebSocket.instances[MockWebSocket.instances.length - 1];
+    // 当前用户的 participant id 必须与 currentUser.id 一致（store 内部按 id 匹配更新光标）
+    ws.emitConnected([
+      { id: 'user-test-123', user: { id: 'user-test-123', name: 'TestUser' }, role: 'owner', joinedAt: new Date() },
+      { id: 'p-editor', user: { id: 'user-2', name: 'Editor' }, role: 'editor', joinedAt: new Date() },
+    ]);
+    await connectPromise;
+  }
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -173,9 +224,7 @@ describe('collaborationStore', () => {
 
     it('should set session and participants after successful connection', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const state = useCollaborationStore.getState();
       expect(state.session).not.toBeNull();
@@ -187,9 +236,7 @@ describe('collaborationStore', () => {
 
     it('should set permissions to owner after connection', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const state = useCollaborationStore.getState();
       expect(state.permissions).not.toBeNull();
@@ -199,9 +246,7 @@ describe('collaborationStore', () => {
 
     it('should include current user as participant with owner role', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const state = useCollaborationStore.getState();
       const currentParticipant = state.participants.find((p) => p.user.id === state.currentUser.id);
@@ -211,9 +256,7 @@ describe('collaborationStore', () => {
 
     it('should show success toast after connection', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       expect(useToastStore.getState().addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
     });
@@ -222,9 +265,7 @@ describe('collaborationStore', () => {
   describe('disconnect', () => {
     it('should clear all session state', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       useCollaborationStore.getState().disconnect();
 
@@ -714,9 +755,7 @@ describe('collaborationStore', () => {
   describe('getActiveParticipants', () => {
     it('should return participants excluding current user', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const active = useCollaborationStore.getState().getActiveParticipants();
       const currentUserId = useCollaborationStore.getState().currentUser.id;
@@ -730,9 +769,7 @@ describe('collaborationStore', () => {
   describe('removeParticipant', () => {
     it('should remove a non-owner participant', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const stateBefore = useCollaborationStore.getState();
       const nonOwnerParticipant = stateBefore.participants.find((p) => p.role !== 'owner');
@@ -746,9 +783,7 @@ describe('collaborationStore', () => {
 
     it('should not remove the owner participant', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const ownerParticipant = useCollaborationStore.getState().participants.find((p) => p.role === 'owner');
       expect(ownerParticipant).toBeDefined();
@@ -762,9 +797,7 @@ describe('collaborationStore', () => {
 
     it('should show error toast when trying to remove owner', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       const ownerParticipant = useCollaborationStore.getState().participants.find((p) => p.role === 'owner');
       useCollaborationStore.getState().removeParticipant(ownerParticipant!.id);
@@ -789,13 +822,27 @@ describe('collaborationStore', () => {
   });
 
   describe('syncOperations', () => {
-    it('should set isSyncing to true then false after sync', () => {
+    it('should set isSyncing to true then false after sync', async () => {
       vi.useFakeTimers();
+      // 需要有操作才会触发同步流程
+      useCollaborationStore.setState({
+        operations: [
+          {
+            id: 'op-1',
+            userId: 'user-test-123',
+            type: 'insert',
+            target: { type: 'text', id: 't1' },
+            timestamp: new Date(),
+            version: 1,
+          },
+        ],
+        operationIndex: 0,
+      });
       useCollaborationStore.getState().syncOperations();
 
       expect(useCollaborationStore.getState().syncStatus.isSyncing).toBe(true);
 
-      vi.advanceTimersByTimeAsync(600);
+      await vi.advanceTimersByTimeAsync(600);
 
       expect(useCollaborationStore.getState().syncStatus.isSyncing).toBe(false);
       expect(useCollaborationStore.getState().syncStatus.pendingOperations).toBe(0);
@@ -805,9 +852,7 @@ describe('collaborationStore', () => {
   describe('setCursorPosition', () => {
     it('should update current user cursor position', async () => {
       vi.useFakeTimers();
-      const connectPromise = useCollaborationStore.getState().connect('doc-123');
-      await vi.advanceTimersByTimeAsync(1100);
-      await connectPromise;
+      await connectStore();
 
       useCollaborationStore.getState().setCursorPosition({ paragraphIndex: 5, offset: 20 });
 
@@ -821,15 +866,11 @@ describe('collaborationStore', () => {
   describe('edge cases', () => {
     it('should handle multiple rapid connect/disconnect cycles', async () => {
       vi.useFakeTimers();
-      const p1 = useCollaborationStore.getState().connect('doc-1');
-      await vi.advanceTimersByTimeAsync(1100);
-      await p1;
+      await connectStore('doc-1');
 
       useCollaborationStore.getState().disconnect();
 
-      const p2 = useCollaborationStore.getState().connect('doc-2');
-      await vi.advanceTimersByTimeAsync(1100);
-      await p2;
+      await connectStore('doc-2');
 
       expect(useCollaborationStore.getState().isConnected).toBe(true);
       expect(useCollaborationStore.getState().session?.documentId).toBe('doc-2');

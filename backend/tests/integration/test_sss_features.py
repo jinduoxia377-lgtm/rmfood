@@ -637,9 +637,9 @@ class TestExtensionFramework:
         shortcut_keys = [s.keys.lower() for s in global_shortcuts]
         assert 'ctrl+k' in shortcut_keys
     
-    def test_plugin_manager_discovery(self):
+    async def test_plugin_manager_discovery(self):
         """测试插件发现（需要plugins目录）"""
-        from app.core.extension_framework import PluginManager
+        from app.core.api_framework.extension_framework import PluginManager
         import os
         
         manager = PluginManager(plugins_dir='./plugins')

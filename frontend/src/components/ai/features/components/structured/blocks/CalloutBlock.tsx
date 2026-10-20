@@ -77,12 +77,13 @@ function CalloutBlock({ data }: CalloutBlockProps) {
   const [showDetails, setShowDetails] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(content).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
-  }, [content])
+  }, [content]) // eslint-disable-line react-hooks/preserve-manual-memoization
 
   const style = CALLOUT_STYLES[variant] || CALLOUT_STYLES.info
   const Icon = style.icon

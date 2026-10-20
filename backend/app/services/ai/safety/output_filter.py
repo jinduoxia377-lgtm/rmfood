@@ -223,4 +223,7 @@ def get_output_checker() -> OutputSafetyChecker:
 
 
 def check_output(text: str) -> OutputCheckResult:
+    # 防御：None/空文本直接返回安全结果，避免下游迭代 None
+    if not text:
+        return OutputCheckResult(is_safe=True, sanitized_text="")
     return get_output_checker().check(text)

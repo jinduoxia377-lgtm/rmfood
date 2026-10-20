@@ -320,11 +320,11 @@ describe('useChatSessions', () => {
     it('getStats 应正确统计置顶数量', () => {
       const { result } = renderHook(() => useChatSessions())
 
-      let id1: string, id2: string, id3: string
+      let id1: string, id3: string
 
       act(() => {
         id1 = result.current.createSession('会话1')
-        id2 = result.current.createSession('会话2')
+        result.current.createSession('会话2')
         id3 = result.current.createSession('会话3')
 
         result.current.pinSession(id1!)
@@ -367,12 +367,12 @@ describe('useChatSessions', () => {
     it('搜索结果应按置顶和时间排序', () => {
       const { result } = renderHook(() => useChatSessions())
 
-      let id1: string, id2: string, id3: string
+      let id1: string
 
       act(() => {
         id1 = result.current.createSession('Alpha')
-        id2 = result.current.createSession('Beta')
-        id3 = result.current.createSession('Alpha Beta')
+        result.current.createSession('Beta')
+        result.current.createSession('Alpha Beta')
 
         result.current.pinSession(id1!)
       })

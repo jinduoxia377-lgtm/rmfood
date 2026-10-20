@@ -21,8 +21,14 @@ export interface NormalizedImport {
   meta?: Record<string, string>;
 }
 
-/** 从 v2 导出快照中回收的选中态键 */
-export const IMPORT_META_KEYS = ['paletteKey', 'fontScale', 'radiusScale'] as const;
+/** 从 v2 导出快照中回收的选中态键（E3 新增次色 / 强调色） */
+export const IMPORT_META_KEYS = [
+  'paletteKey',
+  'secondaryPaletteKey',
+  'accentPaletteKey',
+  'fontScale',
+  'radiusScale',
+] as const;
 
 /** 十六进制颜色（3/4/6/8 位） */
 export const isHexColor = (v: unknown): v is string =>

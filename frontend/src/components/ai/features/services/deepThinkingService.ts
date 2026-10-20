@@ -371,7 +371,6 @@ class DeepThinkingServiceV2 {
     const dosageFormMatch = entities.find((e) => e.type === 'dosage_form');
     const regulationMatch = entities.find((e) => e.type === 'regulation');
     const processMatches = entities.filter((e) => e.type === 'process').map((e) => e.name);
-    const efficacyMatches = entities.filter((e) => e.category === '功效目标').map((e) => e.name);
     const safetyMatches = entities.filter((e) => e.category === '安全关注').map((e) => e.name);
 
     const targetEfficacy: string[] = [];
@@ -504,6 +503,7 @@ class DeepThinkingServiceV2 {
   }
 
   private generateAlternatives(_domain: DomainAnalysis): string[] {
+    void _domain;
     return ['从成本效益角度简化方案', '考虑替代性原料组合', '分阶段实施策略（MVP → 完整版）'];
   }
 

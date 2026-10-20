@@ -5,9 +5,10 @@
  *
  * eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/strict-boolean-expressions,@typescript-eslint/prefer-nullish-coalescing,react-hooks/set-state-in-effect
  */
-/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/strict-boolean-expressions,@typescript-eslint/prefer-nullish-coalescing,react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any,react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   PieChart,
   Pie,
@@ -22,7 +23,7 @@ import {
 } from 'recharts';
 import { databaseApi } from '@/api/database';
 import { complianceApi } from '@/api/compliance';
-import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Badge, Tabs, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import {
   Search,
   BarChart3,
@@ -49,10 +50,7 @@ import {
   Leaf,
   Dna,
   GitBranch,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-   LucideIcon,
+  LucideIcon,
 } from 'lucide-react';
 
 // ─── 模块化 Tab 组件 ───
@@ -64,6 +62,7 @@ import DataManagementTab from './tabs/DataManagementTab';
 import FoodMaterialSearchPanel from './tabs/FoodMaterialSearchPanel';
 import RetailProductSearchPanel from './tabs/RetailProductSearchPanel';
 import SearchAnalyticsDashboard from './tabs/SearchAnalyticsDashboard';
+import ExtDatabaseTab from './tabs/ExtDatabaseTab';
 
 // ─── Phase 4 实时仪表盘 ───
 import DashboardOverview from './DashboardOverview';
@@ -74,15 +73,15 @@ const HerbCategoryChart = lazy(() =>
     default: ({ data, loading, totalFoodHomology }: { data: { name: string; value: number; fill: string; foodHomology?: number }[]; loading?: boolean; totalFoodHomology?: number }) => {
       if (loading) {
         return (
-          <div className="card p-6 flex items-center justify-center h-[280px]">
+          <div className="card p-[var(--space-apple-lg)] flex items-center justify-center h-[280px]">
             <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal">加载中...</div>
           </div>
         );
       }
       if (!data || data.length === 0) {
         return (
-          <div className="card p-6 flex flex-col items-center justify-center h-[280px] text-center">
-            <BarChart3 className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
+          <div className="card p-[var(--space-apple-lg)] flex flex-col items-center justify-center h-[280px] text-center">
+            <BarChart3 aria-hidden="true" className="w-10 h-10 text-[var(--text-muted)] mb-[var(--space-apple-sm)]" />
             <p className="text-sm font-normal text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)]">暂无药材分类数据</p>
             <p className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] mt-1">请先同步数据库获取分类统计</p>
           </div>
@@ -91,9 +90,9 @@ const HerbCategoryChart = lazy(() =>
       const total = data.reduce((sum, d) => sum + d.value, 0);
       return (
         <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <Leaf size={18} className="text-neutral-400 dark:text-neutral-400" />
+          <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
+            <CardTitle as="h3" className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-[var(--space-apple-sm)]">
+              <Leaf aria-hidden="true" size={18} className="text-[var(--text-muted)]" />
               药材分类分布
             </CardTitle>
           </CardHeader>
@@ -102,7 +101,7 @@ const HerbCategoryChart = lazy(() =>
             {/* A-24：recharts 默认给饼图根 <g> 加 tabindex="0"，但它没有任何可访问名称
                 （WCAG 4.1.2）。这里用 rootTabIndex={-1} 把它移出 Tab 序列，
                 并由外层容器以 role="img" + aria-label 向屏幕阅读器整体描述图表。 */}
-            <div role="img" aria-label="药材分类分布饼图">
+            <div role="img" aria-label="药材分类分布饼图" className="w-full min-w-0 md:flex-1">
             <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
@@ -138,28 +137,28 @@ const HerbCategoryChart = lazy(() =>
               {data.slice(0, 6).map((item, i) => (
                 <div key={i} className="flex items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
+                    <div className="w-2.5 h-2.5 rounded-[var(--radius-pill)] shrink-0" style={{ backgroundColor: item.fill }} />
                     <span className="text-[var(--text-secondary,#334155)] dark:text-[var(--text-muted,#64748b)] truncate">{item.name}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{item.value}</span>
+                    <span className="font-semibold text-[var(--text-primary)] tabular-nums">{item.value}</span>
                     <span className="text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] tabular-nums">({((item.value / total) * 100).toFixed(0)}%)</span>
                   </div>
                 </div>
               ))}
               {data.length > 6 && (
-                <div className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700 mt-0.5">
+                <div className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-[var(--border-color)] mt-0.5">
                   +{data.length - 6} 其他分类
                 </div>
               )}
-              <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 space-y-1">
+              <div className="mt-2 pt-2 border-t border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-[var(--text-muted,#64748b)]">总计</span>
-                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{total} 种</span>
+                  <span className="text-xs font-semibold text-[var(--text-primary)] tabular-nums">{total} 种</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-[var(--text-muted,#64748b)] flex items-center gap-1">药食同源</span>
-                  <span className="text-xs font-semibold text-success-700 dark:text-success-600 tabular-nums">{totalFoodHomology ?? 0} 种</span>
+                  <span className="text-xs font-semibold text-[var(--color-success-text)] dark:text-[var(--color-success-text)] tabular-nums">{totalFoodHomology ?? 0} 种</span>
                 </div>
               </div>
             </div>
@@ -177,15 +176,15 @@ const PeptideActivityChart = lazy(() =>
     default: ({ data, loading }: { data: { name: string; count: number; fill: string }[]; loading?: boolean }) => {
       if (loading) {
         return (
-          <div className="card p-6 flex items-center justify-center h-[280px]">
+          <div className="card p-[var(--space-apple-lg)] flex items-center justify-center h-[280px]">
             <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal">加载中...</div>
           </div>
         );
       }
       if (!data || data.length === 0) {
         return (
-          <div className="card p-6 flex flex-col items-center justify-center h-[280px] text-center">
-            <Activity className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
+          <div className="card p-[var(--space-apple-lg)] flex flex-col items-center justify-center h-[280px] text-center">
+            <Activity aria-hidden="true" className="w-10 h-10 text-[var(--text-muted)] mb-[var(--space-apple-sm)]" />
             <p className="text-sm font-normal text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)]">暂无活性肽类型数据</p>
             <p className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] mt-1">请先同步数据库获取类型统计</p>
           </div>
@@ -193,9 +192,9 @@ const PeptideActivityChart = lazy(() =>
       }
       return (
         <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <Dna size={18} className="text-neutral-400 dark:text-neutral-400" />
+          <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
+            <CardTitle as="h3" className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-[var(--space-apple-sm)]">
+              <Dna size={18} className="text-[var(--text-muted)]" />
               活性肽类型分布
             </CardTitle>
           </CardHeader>
@@ -263,7 +262,7 @@ const NODE_TYPE_LABEL: Record<string, string> = {
 };
 
 // ─── 类型定义 ───
-type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync';
+type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync' | 'ext';
 type ViewMode = 'overview' | 'compact' | 'detailed';
 interface SearchHistoryItem { query: string; timestamp: number; }
 interface CategoryData { name: string; value: number; fill: string; foodHomology?: number; }
@@ -280,6 +279,7 @@ interface UnifiedSearchResults {
   total: number;
 }
 export default function DatabasePage() {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<DbTab>('dashboard');
   const [searchInput, setSearchInput] = useState('');
   const [pendingHerbName, setPendingHerbName] = useState<string | null>(null);
@@ -320,7 +320,7 @@ export default function DatabasePage() {
     try {
       const history = localStorage.getItem(STORAGE_KEY_SEARCH_HISTORY);
       if (history) setSearchHistory(JSON.parse(history));
-    } catch {}
+    } catch { /* 忽略本地存储读取错误 */ }
   }, []);
 
   // 保存搜索历史
@@ -334,7 +334,7 @@ export default function DatabasePage() {
 
       try {
         localStorage.setItem(STORAGE_KEY_SEARCH_HISTORY, JSON.stringify(updated));
-      } catch {}
+      } catch { /* 忽略本地存储写入错误 */ }
 
       return updated;
     });
@@ -350,7 +350,7 @@ export default function DatabasePage() {
             count: newCount,
           }),
         );
-      } catch {}
+      } catch { /* 忽略本地存储写入错误 */ }
       return newCount;
     });
   }, []);
@@ -360,7 +360,7 @@ export default function DatabasePage() {
     setViewMode(mode);
     try {
       localStorage.setItem(STORAGE_KEY_VIEW_MODE, mode);
-    } catch {}
+    } catch { /* 忽略本地存储写入错误 */ }
   }, []);
 
   const syncStatsQuery = useQuery({
@@ -368,11 +368,7 @@ export default function DatabasePage() {
     queryFn: () => databaseApi.getSyncStats(),
   });
 
-  const offSyncQuery = useQuery({
-    queryKey: ['off-sync-stats'],
-    queryFn: () => databaseApi.get('/databases/openfoodfacts/sync-status'),
-    staleTime: 5 * 60 * 1000,
-  });
+  
 
   useEffect(() => {
     if (syncStatsQuery.isSuccess) {
@@ -394,21 +390,7 @@ export default function DatabasePage() {
     }
   }, [syncStatsQuery.isSuccess, syncStatsQuery.isError, syncStatsQuery.error]);
 
-  const herbSyncMutation = useMutation({
-    mutationFn: () => databaseApi.syncHerbs(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['db-herbs'] });
-    },
-  });
-
-  const peptideSyncMutation = useMutation({
-    mutationFn: () => databaseApi.syncPeptides(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['db-peptides'] });
-    },
-  });
+  
 
   // ─── 数据派生变量\uff08必须在回调函数之前声明，避免 TDZ 错误\uff09────
   const stats = syncStatsQuery.data as Record<string, any> | undefined;
@@ -437,7 +419,6 @@ export default function DatabasePage() {
   });
 
   const homologyCount = homologyComplianceQuery.data?.data?.count ?? stats?.tcmsp?.food_homology_count ?? 0;
-  const retailProductCount = offSyncQuery.data?.total_products ?? null;
 
   // 药材分类数据\uff08饼图\uff09
   const categoryData = useMemo((): CategoryData[] => {
@@ -477,19 +458,12 @@ export default function DatabasePage() {
     return result;
   }, [activityQuery.data]);
 
-  // \u6d3b\u6027\u7c7b\u578b en\u2192cn \u6620\u5c04\uff08\u7528\u4e8e\u641c\u7d22\u7ed3\u679c badge\uff09
-  const activityTypeMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    activityQuery.data?.activity_types?.forEach((t) => {
-      map[t.type_en] = t.type_cn || t.type_en;
-    });
-    return map;
-  }, [activityQuery.data]);
+  
 
   // 全局搜索防抖 + 自动补全\uff08可配置化\uff09
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [suggestions, setSuggestions] = useState<{ label: string; sublabel?: string }[] | null>(null);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [, setSuggestionsLoading] = useState(false);
 
   const handleGlobalSearch = useCallback(
     (keyword: string) => {
@@ -679,7 +653,7 @@ export default function DatabasePage() {
   }, []);
 
   // 数据导出功能
-  const handleExportStats = useCallback(() => {
+  function handleExportStats() {
     try {
       const exportData = {
         exportTime: new Date().toISOString(),
@@ -718,23 +692,10 @@ export default function DatabasePage() {
       URL.revokeObjectURL(url);
 
       toast.success('统计数据已导出为 JSON 文件');
-    } catch (err) {
+    } catch {
       toast.error('导出失败，请稍后重试');
     }
-  }, [
-    dataSource,
-    herbCount,
-    peptideCount,
-    graphNodes,
-    homologyCount,
-    stats,
-    todayQueries,
-    categoryData,
-    activityData,
-    viewMode,
-    tab,
-    toast,
-  ]);
+  }
 
   // 刷新缓存
   const handleRefreshCache = useCallback(async () => {
@@ -743,7 +704,7 @@ export default function DatabasePage() {
       await queryClient.invalidateQueries({ queryKey: ['db-herbs'] });
       await queryClient.invalidateQueries({ queryKey: ['db-peptides'] });
       toast.success('所有缓存已刷新');
-    } catch (err) {
+    } catch {
       toast.error('缓存刷新失败');
     }
   }, [queryClient, toast]);
@@ -752,7 +713,7 @@ export default function DatabasePage() {
   const handleHealthCheck = useCallback(() => {
     const healthStatus = dataSource === 'database' ? 'healthy' : dataSource === 'fallback' ? 'degraded' : 'unhealthy';
 
-    toast.info(`数据库健康状态: ${healthStatus.toUpperCase()}`);
+    toast.info(`${t('pages.database.databaseHealthCheck')}: ${healthStatus.toUpperCase()}`);
   }, [dataSource, toast]);
 
   // 打印/分享报告
@@ -763,37 +724,36 @@ export default function DatabasePage() {
   // 统计卡片配置（6个卡片 + 趋势数据）
   const statCardsConfig = useMemo<{ label: string; value: number | string; icon: LucideIcon; variant: string; subtitle: string; trend: { direction: 'up' | 'down' | 'stable'; value: string }; tab: DbTab }[]>(
     () => [
-      { label: '中药材', value: herbCount, icon: Database, variant: 'primary', subtitle: 'TCMSP 中药材品种库', trend: { direction: 'up' as const, value: '+12.5%' }, tab: 'herbs' },
-      { label: '活性肽', value: peptideCount, icon: Activity, variant: 'secondary', subtitle: 'DFBP 活性肽序列库', trend: { direction: 'up' as const, value: '+8.3%' }, tab: 'peptides' },
-      { label: '图谱节点', value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets, icon: Layers, variant: 'info', subtitle: '药材 + 化合物 + 靶点', trend: { direction: 'up' as const, value: '+5.2%' }, tab: 'graph' },
-      { label: '药食同源', value: homologyCount, icon: Zap, variant: 'success', subtitle: '国家食药物质目录条目', trend: { direction: 'stable' as const, value: '0%' }, tab: 'homology' },
-      { label: '配伍关系', value: stats?.knowledge_graph?.herb_interactions ?? 0, icon: TrendingUp, variant: 'warning', subtitle: '已识别的配伍关联数', trend: { direction: 'up' as const, value: '+15.7%' }, tab: 'graph' },
-      { label: '今日查询', value: todayQueries, icon: Eye, variant: 'info', subtitle: '搜索 / 查询总次数', trend: { direction: 'up' as const, value: '+23.4%' }, tab: 'dashboard' },
+      { label: t('pages.database.statHerbs'), value: herbCount, icon: Database, variant: 'primary', subtitle: t('pages.database.statHerbsSubtitle'), trend: { direction: 'up' as const, value: '+12.5%' }, tab: 'herbs' },
+      { label: t('pages.database.statPeptides'), value: peptideCount, icon: Activity, variant: 'secondary', subtitle: t('pages.database.statPeptidesSubtitle'), trend: { direction: 'up' as const, value: '+8.3%' }, tab: 'peptides' },
+      { label: t('pages.database.statGraphNodes'), value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets, icon: Layers, variant: 'info', subtitle: t('pages.database.statGraphNodesSubtitle'), trend: { direction: 'up' as const, value: '+5.2%' }, tab: 'graph' },
+      { label: t('pages.database.statHomology'), value: homologyCount, icon: Zap, variant: 'success', subtitle: t('pages.database.statHomologySubtitle'), trend: { direction: 'stable' as const, value: '0%' }, tab: 'homology' },
+      { label: t('pages.database.statCompatibility'), value: stats?.knowledge_graph?.herb_interactions ?? 0, icon: TrendingUp, variant: 'warning', subtitle: t('pages.database.statCompatibilitySubtitle'), trend: { direction: 'up' as const, value: '+15.7%' }, tab: 'graph' },
+      { label: t('pages.database.statTodayQueries'), value: todayQueries, icon: Eye, variant: 'info', subtitle: t('pages.database.statTodayQueriesSubtitle'), trend: { direction: 'up' as const, value: '+23.4%' }, tab: 'dashboard' },
     ],
     [herbCount, peptideCount, graphNodes, homologyCount, stats, todayQueries],
   );
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-page-enter">
+    <div className="min-h-screen">
+      <div className="space-y-[var(--space-apple-md)] max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-enter">
       {/* 页面横幅 */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold leading-snug tracking-tight" style={{ letterSpacing: "-0.015em" }}>数据库检索中心</h1>
-            {/* A-24：「药材分类分布」卡片标题是 h3，若中间没有 h2 大纲会 1 → 3 跳级。
-                补一个屏幕阅读器可见的 h2 作为内容区标题。 */}
-            <h2 className="sr-only">数据库检索与概览</h2>
-            <p className="text-white/80 text-sm mt-1">TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录</p>
+            <h1 className="text-2xl font-semibold leading-snug tracking-tight" style={{ letterSpacing: "-0.015em" }}>{t('pages.database.title')}</h1>
+            {/* A-24：补一个屏幕阅读器可见的 h2 作为内容区标题。 */}
+            <h2 className="sr-only">{t('pages.database.srSubtitle')}</h2>
+            <p className="text-white/80 text-sm mt-1">{t('pages.database.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-neutral-900/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-neutral-900/20 hover:text-white" onClick={() => window.print()}>
+            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-[var(--bg-secondary)]/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-[var(--bg-secondary)]/20 hover:text-white" onClick={() => window.print()}>
               <Printer className="w-4 h-4 mr-1.5" />
-              打印报告
+              {t('pages.database.printReport')}
             </Button>
-            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-neutral-900/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-neutral-900/20 hover:text-white" onClick={handleExportStats}>
+            <Button variant="outline" size="sm" className="bg-black/15 dark:bg-[var(--bg-secondary)]/10 text-white border-white/30 hover:bg-black/25 dark:hover:bg-[var(--bg-secondary)]/20 hover:text-white" onClick={handleExportStats}>
               <Download className="w-4 h-4 mr-1.5" />
-              导出数据
+              {t('pages.database.exportData')}
             </Button>
           </div>
         </div>
@@ -802,39 +762,39 @@ export default function DatabasePage() {
       {/* 顶部工具栏 */}
       <div className="flex items-center justify-between gap-4">
         {/* 左侧：视图切换 */}
-        <div className="flex items-center gap-1.5 bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md p-1">
+        <div className="flex items-center gap-1.5 bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-1">
           <button
             onClick={() => handleViewModeChange('overview')}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 min-h-[44px] text-xs font-semibold rounded-[var(--radius-Apple-sm)] transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'overview'
-                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
+                ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
-            概览
+            {t('pages.database.viewOverview')}
           </button>
           <button
             onClick={() => handleViewModeChange('compact')}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 min-h-[44px] text-xs font-semibold rounded-[var(--radius-Apple-sm)] transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'compact'
-                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
+                ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
             <LayoutList className="w-4 h-4" />
-            紧凑
+            {t('pages.database.viewCompact')}
           </button>
           <button
             onClick={() => handleViewModeChange('detailed')}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 min-h-[44px] text-xs font-semibold rounded-[var(--radius-Apple-sm)] transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'detailed'
-                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
+                ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
                 : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
-            详细
+            {t('pages.database.viewDetailed')}
           </button>
         </div>
 
@@ -843,35 +803,35 @@ export default function DatabasePage() {
           {/* 快捷键帮助按钮 */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md hover:bg-[var(--color-neutral-muted,#e2e8f0)] dark:hover:bg-neutral-700 transition-colors leading-normal tracking-tight"
-            title="查看快捷键 (按 ? 键)"
+            className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 min-h-[44px] text-xs font-semibold text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--color-neutral-muted,#e2e8f0)] dark:hover:bg-[var(--bg-secondary)] transition-colors leading-normal tracking-tight"
+            title={t('pages.database.shortcutTitle')}
           >
             <Keyboard className="w-4 h-4" />
-            <span className="hidden sm:inline">快捷键</span>
+            <span className="hidden sm:inline">{t('pages.database.shortcuts')}</span>
           </button>
 
           {/* 快速操作下拉菜单 */}
           <div ref={quickActionsRef} className="relative">
             <button
               onClick={() => setShowQuickActions(!showQuickActions)}
-              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold text-primary-main bg-primary-container hover:bg-primary-container rounded-md transition-colors leading-normal tracking-tight"
+              className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 min-h-[44px] text-xs font-semibold text-[var(--color-primary)] bg-primary-container hover:bg-primary-container rounded-[var(--radius-Apple-sm)] transition-colors leading-normal tracking-tight"
             >
-              快速操作
+              {t('pages.database.quickActions')}
               <ChevronDown className={`w-4 h-4 transition-transform ${showQuickActions ? 'rotate-180' : ''}`} />
             </button>
 
             {showQuickActions && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 animate-micro-in overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-xl border border-[var(--border-color)] z-50 animate-micro-in overflow-hidden">
                 <div className="p-1.5 space-y-0.5">
                   <button
                     onClick={() => {
                       handleExportStats();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-[var(--color-primary-container)]/60 dark:hover:bg-[var(--color-primary-container)]/20 transition-colors rounded-[var(--radius-Apple-sm)] leading-normal"
                   >
-                    <Download className="w-4 h-4 text-secondary-600" />
-                    导出统计数据
+                    <Download className="w-4 h-4 text-[var(--color-secondary-text)]" />
+                    {t('pages.database.exportStatistics')}
                     <span className="ml-auto text-xs text-[var(--text-muted,#64748b)] font-normal tabular-nums">E</span>
                   </button>
 
@@ -880,10 +840,10 @@ export default function DatabasePage() {
                       handleRefreshCache();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-success-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-[var(--color-primary-container)]/60 dark:hover:bg-[var(--color-success-container)]/20 transition-colors rounded-[var(--radius-Apple-sm)] leading-normal"
                   >
-                    <RefreshCw className="w-4 h-4 text-primary-700" />
-                    刷新所有缓存
+                    <RefreshCw className="w-4 h-4 text-[var(--color-primary-text)]" />
+                    {t('pages.database.refreshAllCaches')}
                     <span className="ml-auto text-xs text-[var(--text-muted,#64748b)] font-normal tabular-nums">R</span>
                   </button>
 
@@ -892,22 +852,22 @@ export default function DatabasePage() {
                       handleHealthCheck();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-warning-50/60 dark:hover:bg-warning-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-[var(--color-warning-container)]/60 dark:hover:bg-[var(--color-warning-container)]/20 transition-colors rounded-[var(--radius-Apple-sm)] leading-normal"
                   >
-                    <ShieldCheck className="w-4 h-4 text-warning-600" />
-                    数据库健康检查
+                    <ShieldCheck className="w-4 h-4 text-[var(--color-warning-text)]" />
+                    {t('pages.database.databaseHealthCheck')}
                   </button>
 
-                  <div className="border-t border-neutral-100 dark:border-neutral-800 my-1.5" />
+                  <div className="border-t border-[var(--border-color)] my-1.5" />
 
                   <button
                     onClick={() => {
                       handlePrintReport();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-accent-50/60 dark:hover:bg-accent-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-[var(--color-accent-container)]/60 dark:hover:bg-[var(--color-accent-container)]/20 transition-colors rounded-[var(--radius-Apple-sm)] leading-normal"
                   >
-                    <Printer className="w-4 h-4 text-accent-600" />
+                    <Printer className="w-4 h-4 text-[var(--color-accent-text)]" />
                     打印报告
                   </button>
 
@@ -917,7 +877,7 @@ export default function DatabasePage() {
                       toast.success('链接已复制到剪贴板');
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-info-50/60 dark:hover:bg-info-950/20 transition-colors rounded-md leading-normal"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-info-50/60 dark:hover:bg-info-950/20 transition-colors rounded-[var(--radius-Apple-sm)] leading-normal"
                   >
                     <Share2 className="w-4 h-4 text-info-600" />
                     分享此页面
@@ -933,25 +893,25 @@ export default function DatabasePage() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-normal leading-normal leading-normal">
           {syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-secondary-50 dark:bg-secondary-950/30 text-secondary-700 dark:text-secondary-700 rounded-md border border-secondary-200 dark:border-secondary-800">
-              <div className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
-              <span className="text-xs font-normal leading-normal">正在连接数据库服务器...</span>
+            <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/30 text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] rounded-[var(--radius-Apple-sm)] border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)]">
+              <div className="w-2 h-2 bg-[var(--color-secondary-container)]0 rounded-[var(--radius-pill)] animate-pulse" />
+              <span className="text-xs font-normal leading-normal">{t('pages.database.connectingDb')}</span>
             </div>
           )}
           {dataSource === 'database' && !syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 dark:bg-success-950/30 text-primary-700 dark:text-primary-700 rounded-md border border-success-200 dark:border-success-800">
+            <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 bg-[var(--color-primary-container)] dark:bg-[var(--color-success-container)]/30 text-[var(--color-primary-text)] rounded-[var(--radius-Apple-sm)] border border-[var(--color-success-border)] dark:border-[var(--color-success)]">
               <Database className="w-4 h-4" />
-              <span className="text-xs font-normal leading-normal">已连接真实数据库</span>
+              <span className="text-xs font-normal leading-normal">{t('pages.database.connectedRealDb')}</span>
             </div>
           )}
           {dataSource === 'fallback' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-50 dark:bg-warning-950/30 text-warning-700 dark:text-warning-700 rounded-md border border-warning-200 dark:border-warning-800">
+            <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 text-[var(--color-warning-text)] rounded-[var(--radius-Apple-sm)] border border-[var(--color-warning-border)] dark:border-[var(--color-warning)]">
               <Zap className="w-4 h-4" />
-              <span className="text-xs font-normal leading-normal">使用内存数据库\uff08后端服务不可用\uff09</span>
+              <span className="text-xs font-normal leading-normal">{t('pages.database.usingMemoryDb')}</span>
             </div>
           )}
           {dataSource === 'error' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-error-50 dark:bg-error-950/30 text-error-700 dark:text-error-600 rounded-md border border-error-200 dark:border-error-800">
+            <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/30 text-[var(--color-error-text)] dark:text-[var(--color-error-text)] rounded-[var(--radius-Apple-sm)] border border-[var(--color-error-border)] dark:border-[var(--color-error)]">
               <span className="text-xs font-semibold leading-normal">⚠️ {errorMessage || '数据加载失败'}</span>
             </div>
           )}
@@ -960,7 +920,7 @@ export default function DatabasePage() {
         {dataSource === 'error' && (errorMessage?.includes('认证') || errorMessage?.includes('登录')) && (
           <button
             onClick={() => (window.location.href = '/login')}
-            className="text-xs text-primary-700 hover:text-primary-700 font-semibold leading-normal tracking-tight"
+            className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] font-semibold leading-normal tracking-tight"
           >
             前往登录 →
           </button>
@@ -986,20 +946,20 @@ export default function DatabasePage() {
               if (searchHistory.length > 0) setShowSearchHistory(true);
             }}
             onKeyDown={handleSearchKeyDown}
-            placeholder="搜索药材、活性肽、知识图谱... (Ctrl+K 或 /)"
-            className="w-full pl-12 pr-20 py-3 min-h-[44px] input text-base font-normal leading-normal"
+            placeholder={t('pages.database.searchPlaceholder')}
+            className="w-full pl-12 pr-20 py-[var(--space-apple-md)] min-h-[44px] input text-base font-normal leading-normal"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             {searchHistory.length > 0 && (
               <button
                 onClick={() => setShowSearchHistory(!showSearchHistory)}
-                className="p-1 text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-secondary,#334155)] dark:hover:text-neutral-300 transition-colors"
-                title="搜索历史"
+                className="p-1 text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-secondary,#334155)] dark:hover:text-[var(--text-primary)] transition-colors"
+                title={t('pages.database.searchHistory')}
               >
                 <History className="w-4 h-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
               Ctrl+K
             </kbd>
           </div>
@@ -1008,24 +968,24 @@ export default function DatabasePage() {
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-2 z-[60]">
-            <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 max-h-60 overflow-y-auto animate-micro-in">
-              <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
-                搜索历史
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl border border-[var(--border-color)] max-h-60 overflow-y-auto animate-micro-in">
+              <div className="px-[var(--space-apple-md)] py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-[var(--bg-tertiary)] flex items-center justify-between leading-normal sticky top-0 z-10">
+                {t('pages.database.searchHistory')}
                 <button
                   onClick={() => {
                     setSearchHistory([]);
                     localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY);
                     setShowSearchHistory(false);
                   }}
-                  className="text-error-600 hover:text-error-700 text-xs font-normal leading-normal"
+                  className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)] text-xs font-normal leading-normal"
                 >
-                  清空
+                  {t('pages.database.clearHistory')}
                 </button>
               </div>
               {searchHistory.map((item, i) => (
                 <button
                   key={i}
-                  className="w-full px-4 py-2 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
+                  className="w-full px-[var(--space-apple-md)] py-2 text-left hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/30 transition-colors flex items-center gap-[var(--space-apple-sm)] border-b border-[var(--border-color)] last:border-0"
                   onClick={() => {
                     setSearchInput(item.query);
                     handleGlobalSearch(item.query);
@@ -1050,17 +1010,17 @@ export default function DatabasePage() {
         {/* 搜索结果下拉 */}
         {showGlobalResults && globalResults && (
           <div className="absolute top-full left-0 right-0 mt-2 z-[60]">
-            <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 max-h-80 overflow-y-auto animate-micro-in">
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl border border-[var(--border-color)] max-h-80 overflow-y-auto animate-micro-in">
               {/* 自动补全建议 */}
               {suggestions && suggestions.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-primary-50 dark:bg-primary-950 leading-normal">
+                  <div className="px-[var(--space-apple-md)] py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)] leading-normal">
                     搜索建议
                   </div>
                   {suggestions.map((s: { label: string; sublabel?: string }, i: number) => (
                     <button
                       key={`sug-${i}`}
-                      className="w-full px-4 py-2 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800"
+                      className="w-full px-[var(--space-apple-md)] py-2 text-left hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/30 transition-colors flex items-center gap-[var(--space-apple-sm)] border-b border-[var(--border-color)]"
                       onClick={() => {
                         setSearchInput(s.label);
                         handleGlobalSearch(s.label);
@@ -1068,9 +1028,9 @@ export default function DatabasePage() {
                         setSuggestions(null);
                       }}
                     >
-                      <Leaf className="w-4 h-4 text-primary-700" />
+                      <Leaf className="w-4 h-4 text-[var(--color-primary-text)]" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-neutral-100 leading-normal">
+                        <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary)] leading-normal">
                           {s.label}
                         </div>
                         {s.sublabel && (
@@ -1085,7 +1045,7 @@ export default function DatabasePage() {
               )}
               {(globalResults.herbs ?? [])?.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                  <div className="px-[var(--space-apple-md)] py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-[var(--bg-tertiary)] flex items-center justify-between leading-normal sticky top-0 z-10">
                     <span>
                       中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
                     </span>
@@ -1095,7 +1055,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1106,7 +1066,7 @@ export default function DatabasePage() {
                     .map((h: { id: number; name_cn: string; name_latin: string | null; category: string | null }) => (
                       <button
                         key={h.id}
-                        className="w-full px-4 py-3 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
+                        className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/30 transition-colors flex items-center gap-[var(--space-apple-sm)] border-b border-[rgba(148,163,184,0.1)] last:border-0"
                         onClick={() => {
                           setPendingHerbName(h.name_cn);
                           setTab('herbs');
@@ -1114,7 +1074,7 @@ export default function DatabasePage() {
                           setSearchInput(h.name_cn);
                         }}
                       >
-                        <Leaf className="w-6 h-6 text-primary-700" />
+                        <Leaf className="w-6 h-6 text-[var(--color-primary-text)]" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                             {h.name_cn}
@@ -1132,7 +1092,7 @@ export default function DatabasePage() {
               )}
               {(globalResults.peptides ?? [])?.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                  <div className="px-[var(--space-apple-md)] py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-[var(--bg-tertiary)] flex items-center justify-between leading-normal sticky top-0 z-10">
                     <span>
                       活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
                     </span>
@@ -1142,7 +1102,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1159,7 +1119,7 @@ export default function DatabasePage() {
                       }) => (
                         <button
                           key={p.id}
-                          className="w-full px-4 py-3 text-left hover:bg-secondary-50 dark:hover:bg-secondary-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
+                          className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/30 transition-colors flex items-center gap-[var(--space-apple-sm)] border-b border-[rgba(148,163,184,0.1)] last:border-0"
                           onClick={() => {
                             setPendingPeptideSequence(p.sequence);
                             setTab('peptides');
@@ -1167,9 +1127,9 @@ export default function DatabasePage() {
                             setSearchInput(p.sequence);
                           }}
                         >
-                          <Dna className="w-6 h-6 text-secondary-600" />
+                          <Dna className="w-6 h-6 text-[var(--color-secondary-text)]" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-700 leading-normal tabular-nums">
+                            <div className="text-sm font-mono font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] leading-normal tabular-nums">
                               {p.sequence}
                             </div>
                             <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal">{p.source_protein}</div>
@@ -1184,7 +1144,7 @@ export default function DatabasePage() {
               )}
               {(globalResults.graph ?? [])?.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                  <div className="px-[var(--space-apple-md)] py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-[var(--bg-tertiary)] flex items-center justify-between leading-normal sticky top-0 z-10">
                     <span>
                       知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
                     </span>
@@ -1194,7 +1154,7 @@ export default function DatabasePage() {
                         setShowGlobalResults(false);
                         setSearchInput(searchInput);
                       }}
-                      className="text-xs text-primary-700 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                      className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] font-medium leading-normal flex items-center gap-1"
                     >
                       <Filter className="w-3 h-3" />
                       在此Tab筛选
@@ -1205,14 +1165,14 @@ export default function DatabasePage() {
                     .map((g: { node_label: string; node_type: string }, i: number) => (
                       <button
                         key={i}
-                        className="w-full px-4 py-3 text-left hover:bg-accent-50 dark:hover:bg-accent-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
+                        className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left hover:bg-[var(--color-accent-container)] dark:hover:bg-[var(--color-accent-container)]/30 transition-colors flex items-center gap-[var(--space-apple-sm)] border-b border-[rgba(148,163,184,0.1)] last:border-0"
                         onClick={() => {
                           setTab('graph');
                           setShowGlobalResults(false);
                           setSearchInput(g.node_label);
                         }}
                       >
-                        <GitBranch className="w-6 h-6 text-accent-600" />
+                        <GitBranch className="w-6 h-6 text-[var(--color-accent-text)]" />
                         <div className="flex-1 text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                           {g.node_label}
                         </div>
@@ -1251,10 +1211,10 @@ export default function DatabasePage() {
       >
         {syncStatsQuery.isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 animate-pulse">
-                <div className="w-8 h-8 rounded-md bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 mb-3" />
-                <div className="h-4 w-16 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 rounded mb-2" />
-                <div className="h-6 w-12 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 rounded" />
+              <div key={i} className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] animate-pulse">
+                <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-[var(--bg-secondary)] mb-[var(--space-apple-sm)]" />
+                <div className="h-4 w-16 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] mb-2" />
+                <div className="h-6 w-12 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)]" />
               </div>
             ))
           : statCardsConfig.map((config) => (
@@ -1266,7 +1226,7 @@ export default function DatabasePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         <Suspense
           fallback={
-            <div className="card p-6 flex items-center justify-center h-[280px]">
+            <div className="card p-[var(--space-apple-lg)] flex items-center justify-center h-[280px]">
               <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">加载图表中...</div>
             </div>
           }
@@ -1278,7 +1238,7 @@ export default function DatabasePage() {
 
         <Suspense
           fallback={
-            <div className="card p-6 flex items-center justify-center h-[280px]">
+            <div className="card p-[var(--space-apple-lg)] flex items-center justify-center h-[280px]">
               <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">加载图表中...</div>
             </div>
           }
@@ -1291,22 +1251,23 @@ export default function DatabasePage() {
 
       {/* 主 Tab 区域\uff08增强版\uff09 */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as DbTab)}>
-        <TabsList className="relative p-1 bg-[var(--color-neutral-subtle,#f1f5f9)]/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
+        <TabsList className="relative p-1 bg-[var(--color-neutral-subtle,#f1f5f9)]/90 dark:bg-[var(--bg-tertiary)]/90 rounded-2xl shadow-inner">
           {[
-            { value: 'dashboard' as DbTab, label: '实时概览', icon: LayoutDashboard },
-            { value: 'herbs' as DbTab, label: '中药材', icon: Database },
-            { value: 'peptides' as DbTab, label: '活性肽', icon: Activity },
-            { value: 'graph' as DbTab, label: '知识图谱', icon: Layers },
-            { value: 'homology' as DbTab, label: '药食同源', icon: Zap },
-            { value: 'food_materials' as DbTab, label: '食品原料', icon: Database },
-            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag },
-            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart3 },
-            { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw },
+            { value: 'dashboard' as DbTab, label: t('pages.database.tabDashboard'), icon: LayoutDashboard },
+            { value: 'herbs' as DbTab, label: t('pages.database.tabHerbs'), icon: Database },
+            { value: 'peptides' as DbTab, label: t('pages.database.tabPeptides'), icon: Activity },
+            { value: 'graph' as DbTab, label: t('pages.database.tabGraph'), icon: Layers },
+            { value: 'homology' as DbTab, label: t('pages.database.tabHomology'), icon: Zap },
+            { value: 'food_materials' as DbTab, label: t('pages.database.tabFoodMaterials'), icon: Database },
+            { value: 'retail_products' as DbTab, label: t('pages.database.tabRetailProducts'), icon: ShoppingBag },
+            { value: 'ext' as DbTab, label: t('pages.database.tabOfficialCatalog'), icon: Leaf },
+            { value: 'analytics' as DbTab, label: t('pages.database.tabSearchAnalytics'), icon: BarChart3 },
+            { value: 'sync' as DbTab, label: t('pages.database.tabDataManagement'), icon: RefreshCw },
           ].map(({ value, label, icon: Icon }) => (
             <TabsTrigger
               key={value}
               value={value}
-              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-white dark:bg-neutral-900 dark:data-[state=active]:bg-neutral-700 transition-all duration-200 px-4 py-2.5 rounded-xl gap-2"
+              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-[var(--bg-secondary)] dark:data-[state=active]:bg-neutral-700 transition-all duration-200 px-[var(--space-apple-md)] py-2.5 rounded-[var(--radius-Apple-md)] gap-2"
             >
               <Icon className="w-[18px] h-[18px] shrink-0" />
               <span className="text-[13.5px] font-semibold leading-none tracking-tight">{label}</span>
@@ -1355,6 +1316,9 @@ export default function DatabasePage() {
         <TabsContent value="retail_products" className="animate-fade-in">
           <RetailProductSearchPanel />
         </TabsContent>
+        <TabsContent value="ext" className="animate-fade-in">
+          <ExtDatabaseTab />
+        </TabsContent>
         <TabsContent value="analytics" className="animate-fade-in">
           <SearchAnalyticsDashboard />
         </TabsContent>
@@ -1369,21 +1333,21 @@ export default function DatabasePage() {
           ref={shortcutsRef}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
         >
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700 w-full max-w-lg mx-4 overflow-hidden">
+          <div className="bg-[var(--bg-secondary)] rounded-2xl shadow-2xl border border-[var(--border-color)] w-full max-w-lg mx-4 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-secondary-surface-deep)] text-white">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-[var(--space-apple-sm)]">
                 <Keyboard className="w-6 h-6" />
-                <h1 className="text-xl font-semibold tracking-tight leading-tight">键盘快捷键</h1>
+                <h1 className="text-xl font-semibold tracking-tight leading-tight">{t('pages.database.keyboardShortcuts')}</h1>
               </div>
               <button
                 onClick={() => setShowShortcuts(false)}
-                className="p-2 hover:bg-white dark:bg-neutral-900/20 rounded-md transition-colors"
+                className="p-2 hover:bg-[var(--bg-secondary)]/20 rounded-[var(--radius-Apple-sm)] transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+            <div className="p-[var(--space-apple-lg)] space-y-[var(--space-apple-md)] max-h-[60vh] overflow-y-auto">
               <div className="grid grid-cols-1 gap-2">
                 {[
                   { keys: ['Ctrl', 'K'], description: '聚焦搜索框', icon: Search },
@@ -1404,10 +1368,10 @@ export default function DatabasePage() {
                 ].map(({ keys, description, icon: Icon }, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 rounded-md hover:bg-[var(--bg-canvas,#f8fafc)] dark:hover:bg-neutral-800/50 transition-colors group"
+                    className="flex items-center justify-between p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-canvas,#f8fafc)] dark:hover:bg-[var(--bg-tertiary)]/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-6 h-6 text-[var(--text-disabled,#94a3b8)] group-hover:text-primary-700 transition-colors" />
+                    <div className="flex items-center gap-[var(--space-apple-sm)]">
+                      <Icon className="w-6 h-6 text-[var(--text-disabled,#94a3b8)] group-hover:text-[var(--color-primary-text)] transition-colors" />
                       <span className="text-sm font-normal leading-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                         {description}
                       </span>
@@ -1416,7 +1380,7 @@ export default function DatabasePage() {
                       {keys.map((key, j) => (
                         <kbd
                           key={j}
-                          className="px-2.5 py-1 text-xs font-mono font-semibold bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded border border-neutral-300 dark:border-neutral-600 shadow-sm tabular-nums leading-normal"
+                          className="px-2.5 py-1 text-xs font-mono font-semibold bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] shadow-sm tabular-nums leading-normal"
                         >
                           {key}
                         </kbd>
@@ -1426,9 +1390,9 @@ export default function DatabasePage() {
                 ))}
               </div>
 
-              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-muted,#64748b)] text-center font-normal leading-normal">
-                  提示：在输入框中按快捷键不会触发全局操作
+                  {t('pages.database.shortcutHint')}
                 </p>
               </div>
             </div>

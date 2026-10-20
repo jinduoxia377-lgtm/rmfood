@@ -22,12 +22,17 @@ export interface ParseResultDisplayProps {
 }
 
 export const experimentDataApi = {
-  parse: async (_file: File, _options?: ParseOptions): Promise<ParseResult> => ({
-    success: false,
-    data: undefined,
-  }),
+  parse: async (_file: File, _options?: ParseOptions): Promise<ParseResult> => {
+    void _file;
+    void _options;
+    return {
+      success: false,
+      data: undefined,
+    };
+  },
 }
 
 export function ParseResultDisplay(_props: ParseResultDisplayProps): React.ReactElement {
+  void _props;
   return React.createElement('div', null, 'Parse Result')
 }

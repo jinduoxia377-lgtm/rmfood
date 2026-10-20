@@ -8,9 +8,11 @@
  *   - 通知卡片间距宽松（py-4 px-6，未读加左侧色条）
  *   - 全页面 padding 统一（space-y-6、py-8、gap-5）
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { subscribeToChannel, onWebSocketMessage } from '@/services/websocket'
 import {
   Bell,
   Check,
@@ -31,39 +33,40 @@ import { Button, EmptyState, Skeleton, Pagination } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 
 // ─── 类型配置 ────────────────────────────────────────────────
-const TYPE_CONFIG: Record<string, { label: string; color: string; icon: typeof Bell }> = {
-  system: { label: '系统', color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300', icon: Zap },
+const TYPE_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof Bell }> = {
+  system: { labelKey: 'pages.notification.typeSystem', color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]', icon: Zap },
   formula_review: {
-    label: '审核',
-    color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    labelKey: 'pages.notification.typeReview',
+    color: 'bg-[var(--color-warning-container)] text-[var(--color-warning-text)] dark:bg-[var(--color-warning-container)]/25 dark:text-[var(--color-warning-text)]',
     icon: Check,
   },
   experiment_complete: {
-    label: '实验',
+    labelKey: 'pages.notification.typeExperiment',
     color: 'bg-info-100 text-info-700 dark:bg-info-300/25 dark:text-info-700',
     icon: Inbox,
   },
   ai_task_done: {
-    label: 'AI',
-    color: 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700',
+    labelKey: 'pages.notification.typeAi',
+    color: 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/25 dark:text-[var(--color-primary-text)]',
     icon: Zap,
   },
   data_sync: {
-    label: '数据',
-    color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
+    labelKey: 'pages.notification.typeData',
+    color: 'bg-[var(--color-accent-container)] text-[var(--color-accent-text)] dark:bg-[var(--color-accent-container)]/25 dark:text-[var(--color-accent-text)]',
     icon: Clock,
   },
 }
 
 // ─── 状态筛选 ────────────────────────────────────────────────
 const STATUS_FILTERS = [
-  { key: '', label: '全部' },
-  { key: 'unread', label: '未读' },
-  { key: 'read', label: '已读' },
+  { key: '', labelKey: 'pages.notification.all' },
+  { key: 'unread', labelKey: 'pages.notification.unread' },
+  { key: 'read', labelKey: 'pages.notification.read' },
 ]
 
 // ─── 主组件 ──────────────────────────────────────────────────
 export default function NotificationPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { addToast } = useToast()
@@ -71,6 +74,21 @@ export default function NotificationPage() {
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+
+  // 实时推送：收到新通知时自动刷新列表与未读计数
+  useEffect(() => {
+    const refresh = () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] })
+    }
+    const unsubChannel = subscribeToChannel('notification', refresh)
+    const offMessage = onWebSocketMessage((msg) => {
+      if (msg.type === 'notification') refresh()
+    })
+    return () => {
+      unsubChannel()
+      offMessage()
+    }
+  }, [qc])
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications', page, 20, statusFilter],
@@ -92,7 +110,7 @@ export default function NotificationPage() {
     mutationFn: () => notificationApi.markAllRead(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notifications'] })
-      addToast({ type: 'success', message: '已全部标记为已读' })
+      addToast({ type: 'success', message: t('pages.notification.allReadToast') })
     },
   })
 
@@ -124,14 +142,14 @@ export default function NotificationPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
+    <div className="space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-enter">
 
       {/* ── 顶部横幅 ── */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl font-bold leading-snug">通知中心</h1>
-            <p className="mt-1 text-white/90 text-sm">查看系统通知、审核反馈和任务完成提醒</p>
+            <h1 className="text-xl font-bold leading-snug">{t('pages.notification.title')}</h1>
+            <p className="mt-1 text-white/90 text-sm">{t('pages.notification.subtitle')}</p>
           </div>
           {unreadCount > 0 && (
             <Button
@@ -141,7 +159,7 @@ export default function NotificationPage() {
               loading={markAllReadMutation.isPending}
               onClick={() => markAllReadMutation.mutate()}
             >
-              全部已读
+              {t('pages.notification.markAllRead')}
             </Button>
           )}
         </div>
@@ -150,29 +168,29 @@ export default function NotificationPage() {
       {/* ── 未读统计 + 筛选药丸 ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* 未读数 */}
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-primary-100 dark:border-primary-800/40">
-          <Bell size={15} className="text-primary-700 dark:text-primary-700" />
-          <span className="text-sm font-semibold text-primary-700 dark:text-primary-700">
-            {unreadCount} 条未读
+        <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/40">
+          <Bell size={15} className="text-[var(--color-primary-text)]" />
+          <span className="text-sm font-semibold text-[var(--color-primary-text)]">
+            {t('pages.notification.unreadCount', { count: unreadCount })}
           </span>
         </div>
 
         {/* 筛选栏 */}
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-[var(--space-apple-sm)] w-full sm:w-auto">
           {/* 状态筛选 — 药丸 */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800">
+          <div className="flex items-center gap-1 p-1 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)]">
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.key}
                 onClick={() => handleStatusChange(f.key)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                  'px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all min-h-[44px] inline-flex items-center',
                   statusFilter === f.key
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300',
+                    ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
                 )}
               >
-                {f.label}
+                {t(f.labelKey)}
               </button>
             ))}
           </div>
@@ -186,13 +204,13 @@ export default function NotificationPage() {
                   key={key}
                   onClick={() => handleTypeChange(key)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-all',
+                    'px-2.5 py-1 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all min-h-[44px] inline-flex items-center',
                     typeFilter === key
                       ? cn(cfg.color, 'ring-1 ring-current/30')
-                      : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+                      : 'bg-[var(--bg-tertiary)]/50 text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)]',
                   )}
                 >
-                  {cfg.label}
+                  {t(cfg.labelKey)}
                 </button>
               ))}
             </div>
@@ -201,19 +219,19 @@ export default function NotificationPage() {
       </div>
 
       {/* ── 通知列表 ── */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800/40">
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)]/60 dark:border-neutral-800/60 overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800/40">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="px-6 py-5">
-              <Skeleton className="h-4 w-3/4 mb-3" />
+              <Skeleton className="h-4 w-3/4 mb-[var(--space-apple-sm)]" />
               <Skeleton className="h-3 w-1/2" />
             </div>
           ))
         ) : filteredNotifications.length === 0 ? (
           <EmptyState
-            icon={<BellOff className="w-10 h-10 text-neutral-300 dark:text-neutral-400" />}
-            title="暂无通知"
-            description={statusFilter ? '该筛选条件下没有通知' : '当前没有新通知'}
+            icon={<BellOff className="w-10 h-10 text-[var(--text-muted)] dark:text-[var(--text-muted)]" />}
+            title={t('pages.notification.noNotifications')}
+            description={statusFilter ? t('pages.notification.noNotificationsFiltered') : t('pages.notification.noNotificationsCurrent')}
           />
         ) : (
           filteredNotifications.map((notif) => {
@@ -225,20 +243,20 @@ export default function NotificationPage() {
                 onClick={() => handleNotifClick(notif)}
                 className={cn(
                   'w-full text-left px-6 py-4 transition-colors',
-                  'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                  !notif.isRead && 'bg-primary-50/30 dark:bg-primary-300/15',
+                  'hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/40',
+                  !notif.isRead && 'bg-[var(--color-primary-container)]/30 dark:bg-[var(--color-primary-container)]/15',
                 )}
               >
                 <div className="flex items-start gap-4">
                   {/* 未读左侧色条 */}
                   {!notif.isRead && (
-                    <div className="shrink-0 w-1 h-10 rounded-full bg-primary-500 mt-0.5" />
+                    <div className="shrink-0 w-1 h-10 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 mt-0.5" />
                   )}
 
                   {/* 类型图标 */}
                   <div
                     className={cn(
-                      'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
+                      'shrink-0 w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center',
                       typeCfg.color,
                     )}
                   >
@@ -251,8 +269,8 @@ export default function NotificationPage() {
                         className={cn(
                           'text-sm truncate',
                           !notif.isRead
-                            ? 'font-semibold text-neutral-900 dark:text-white'
-                            : 'text-neutral-600 dark:text-neutral-300',
+                            ? 'font-semibold text-[var(--text-primary)]'
+                            : 'text-[var(--text-secondary)]',
                         )}
                       >
                         {notif.title}
@@ -261,21 +279,21 @@ export default function NotificationPage() {
                         <ExternalLink size={12} className="shrink-0 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                       )}
                       {!notif.isRead && (
-                        <span className="shrink-0 w-2 h-2 rounded-full bg-primary-500" />
+                        <span className="shrink-0 w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0" />
                       )}
                     </div>
                     {notif.message && (
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-2">
                         {notif.message}
                       </p>
                     )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span
-                        className={cn('px-2 py-0.5 rounded-md text-xs font-medium', typeCfg.color)}
+                        className={cn('px-2 py-0.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium', typeCfg.color)}
                       >
-                        {typeCfg.label}
+                        {t(typeCfg.labelKey)}
                       </span>
-                      <span className="text-xs text-neutral-400 dark:text-neutral-400">
+                      <span className="text-xs text-[var(--text-muted)]">
                         {notif.createdAt &&
                           format(new Date(notif.createdAt), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
                       </span>
@@ -289,9 +307,9 @@ export default function NotificationPage() {
                         e.stopPropagation()
                         markReadMutation.mutate(notif.id)
                       }}
-                      className="shrink-0 p-2 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                      title="标记已读"
-                      aria-label="标记已读"
+                      className="shrink-0 p-2 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--color-primary-text)]0 hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20 transition-colors"
+                      title={t('pages.notification.markRead')}
+                      aria-label={t('pages.notification.markRead')}
                     >
                       <Check size={14} />
                     </button>

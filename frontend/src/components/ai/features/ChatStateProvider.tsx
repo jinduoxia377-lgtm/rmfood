@@ -19,25 +19,18 @@ import { useChatTabOrchestrator } from './hooks/useChatTabOrchestrator'
 import { useChatSendMessage } from './hooks/useChatSendMessage'
 import { useChatCallbacks } from './hooks/useChatCallbacks'
 import { useRAGContext } from '@/hooks/useRAGContext'
-import { useSafeTranslation } from './hooks/useSafeTranslation'
 import { useFormulaActions } from './hooks/useFormulaActions'
 import { useMessageEditing } from './hooks/useMessageEditing'
 import { useChatHandlers } from './hooks/useChatHandlers'
 import { useChatMessages } from './hooks/useChatMessages'
 import { useFormulaManager } from './hooks/useFormulaManager'
 import { useReportGenerator } from './hooks/useReportGenerator'
-import { useExportManager } from './hooks/useExportManager'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
-import { useChatTheme } from './hooks/useChatTheme'
-import { useChatHistoryManager } from './hooks/useChatHistoryManager'
 
 // ===== Services =====
-import { scenarioSwitcher } from './services/scenarioSwitcher'
 import { sessionCapability } from './capabilities/session/SessionCapability'
-import type { ScenarioMode } from './services/scenarioSwitcher'
 import type { HistorySession } from './components/pro'
 import type { BackendThinkingStep } from './hooks/useThinkingProcessV3'
-import type { ChatMessage } from './types'
 
 // ===== Context =====
 import { ChatStateContext } from './ChatStateContext'
@@ -53,9 +46,6 @@ interface ChatStateProviderProps {
 }
 
 export function ChatStateProvider({ children, ...props }: ChatStateProviderProps) {
-  // ===== 1. 安全翻译 =====
-  const safeT = useSafeTranslation()
-
   // ===== 2. 核心消息状态 =====
   const chatMessages = useChatMessages()
   const {
@@ -99,8 +89,10 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   const firstMsgTime = messages.length > 0 ? messages[0].timestamp : 0
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   useEffect(() => {
-    if (messages.length === 0) { setElapsedSeconds(0); return }
-    const base = Math.floor((Date.now() - firstMsgTime) / 1000)
+    if (messages.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setElapsedSeconds(0); return
+    }
     const timer = setInterval(() => setElapsedSeconds(Math.floor((Date.now() - firstMsgTime) / 1000)), 1000)
     return () => clearInterval(timer)
   }, [firstMsgTime, messages.length])
@@ -117,13 +109,12 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   })
 
   // ===== 9. 导出管理 =====
-  const { exportMessages } = useExportManager()
 
   // ===== 10. 配方管理 =====
   const {
     formulas, formulaIndex, formulaCount, expandedIds, selectedIds,
     selectedForDetail, isDetailModalOpen, toggleExpand, selectFormula,
-    selectAll, batchDelete, batchExport, batchTag, showDetailTable,
+    selectAll, showDetailTable,
     closeDetailTable, importFormulas, exportFormulas: handleExportFormulas,
     clearAllFormulas,
   } = useFormulaManager()
@@ -131,22 +122,10 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   // ===== 11. 报告生成 =====
   const {
     handleGenerateReport, reportData, isGeneratingReport,
-    showReportModal, setShowModal: setShowReportModal, clearReport,
+    showReportModal, setShowModal: setShowReportModal,
   } = useReportGenerator(formulaIndex)
 
-  // ===== 12. 主题 =====
-  const { scheme, cycleScheme, schemeInfo } = useChatTheme()
-
-  // ===== 13. 场景切换 =====
-  const handleScenarioSwitch = useCallback((mode: ScenarioMode) => {
-    const result = scenarioSwitcher.switchTo(mode, 'user_selected')
-    if (result) {
-      useScenarioStore.getState().setMode(result.newMode)
-      logger.info(`[ChatStateProvider] 场景切换: ${result.previousMode} → ${result.newMode}`)
-    }
-  }, [])
-
-  // ===== 14. 会话管理 =====
+  // ===== 12. 会话管理 =====
   const [historySessions, setHistorySessions] = useState<HistorySession[]>([])
   const [activeSessionId, setActiveSessionIdState] = useState<string | null>(null)
   const [historyVisible, setHistoryVisible] = useState(false)
@@ -201,9 +180,9 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   }, [])
 
   // ===== 16. Details 面板 =====
-  const [detailsCall, setDetailsCall] = useState<{ id: string; name: string; args: Record<string, unknown>; result?: string; status: 'running' | 'completed' | 'error'; durationMs?: number } | null>(null)
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const [showKBPanel, setShowKBPanel] = useState(false)
+  const [detailsCall] = useState<{ id: string; name: string; args: Record<string, unknown>; result?: string; status: 'running' | 'completed' | 'error'; durationMs?: number } | null>(null)
+  const [detailsOpen] = useState(false)
+  const [showKBPanel] = useState(false)
 
   // ===== 17. 回调管理 =====
   const callbacks = useChatCallbacks({
@@ -233,8 +212,8 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
 
   // ===== 20. UI 状态 =====
   const [showFormulaList, setShowFormulaList] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  const [searchQuery] = useState('')
+  const [highlightedMessageId] = useState<string | null>(null)
 
   // ===== 21. 聊天处理器 =====
   const chatHandlers = useChatHandlers({
@@ -290,7 +269,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     formulaCount, expandedIds, selectedIds, formulas,
 
     // 报告
-    showReportModal, reportData, isGeneratingReport,
+    showReportModal, setShowReportModal, reportData, isGeneratingReport,
 
     // 方法
     handleSendMessage: chatHook.handleSendMessage,
@@ -305,12 +284,14 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     handleAddAttachment, handleRemoveAttachment,
     toggleHistory: callbacks.toggleHistory,
     syncSessionsFromServer: callbacks.syncSessionsFromServer,
+    handleGenerateReport,
   }), [
     messages, input, isStreaming, chatError, assistantCount, elapsedSeconds,
     historySessions, activeSessionId, historyVisible,
     llmAvailable, llmModel, scenarioMode,
     formulaCount, expandedIds, selectedIds, formulas,
-    showReportModal, reportData, isGeneratingReport,
+    showReportModal, setShowReportModal, reportData, isGeneratingReport,
+    handleGenerateReport,
     showFormulaList, searchQuery, highlightedMessageId,
     attachments, detailsCall, detailsOpen, showKBPanel, isDetailModalOpen, selectedForDetail,
     chatHook, callbacks, chatHandlers, messageEditing, formulaActions,

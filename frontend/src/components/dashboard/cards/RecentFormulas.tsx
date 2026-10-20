@@ -3,6 +3,7 @@
  */
 import type { FC } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowRight } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@/components/ui'
 import { StatusBadge } from '@/components/ui/Common'
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export const RecentFormulas: FC<Props> = ({ items, loading }) => {
+  const { t } = useTranslation()
   // C-06: 骨架行数自适应实际条数（加载态未知时默认 3）
   const skeletonRows = items?.length ? Math.min(5, Math.max(2, items.length)) : 3
 
@@ -28,8 +30,8 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
       <Card className="overflow-hidden">
         <CardHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle as="h2" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近配方</CardTitle>
-            <span className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold">查看全部</span>
+            <CardTitle as="h2" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{t('pages.dashboard.cards.recentFormulas')}</CardTitle>
+            <span className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold">{t('pages.dashboard.cards.viewAll')}</span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -47,16 +49,16 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
     <Card className="overflow-hidden">
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
+          <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t('pages.dashboard.cards.recentFormulas')}</CardTitle>
           <Link to="/formulas" className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold flex items-center gap-1 transition-colors min-h-[44px] px-2 -mx-2 -my-3.5">
-            查看全部 <ArrowRight size={14} />
+            {t('pages.dashboard.cards.viewAll')} <ArrowRight size={14} />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y divide-neutral-100 dark:divide-neutral-800/40">
           {list.length === 0 ? (
-            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">暂无配方数据</div>
+            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">{t('pages.dashboard.cards.noFormulaData')}</div>
           ) : (
             list.map((f) => (
               <Link key={f.id} to={`/formulas/${f.id}`} className="block px-6 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors duration-200 cursor-pointer">

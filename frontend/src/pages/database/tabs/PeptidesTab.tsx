@@ -35,7 +35,7 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
+      <mark className="bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)] rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
       {text.slice(idx + keyword.length)}
     </>
   );
@@ -44,15 +44,15 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
 // ─── 骨架屏 ───
 function TableSkeleton() {
   return (
-    <div className="space-y-3 p-4">
+    <div className="space-y-[var(--space-apple-sm)] p-[var(--space-apple-md)]">
       {[...Array(8)].map((_, i) => (
         <div key={i} className="flex gap-4 animate-pulse">
-          <div className="h-5 w-24 bg-neutral-200 dark:bg-neutral-700 rounded" />
-          <div className="h-5 w-32 bg-neutral-200 dark:bg-neutral-700 rounded" />
-          <div className="h-5 w-20 bg-neutral-200 dark:bg-neutral-700 rounded" />
-          <div className="h-5 w-24 bg-neutral-200 dark:bg-neutral-700 rounded" />
-          <div className="h-5 w-16 bg-neutral-200 dark:bg-neutral-700 rounded" />
-          <div className="h-5 w-20 bg-neutral-200 dark:bg-neutral-700 rounded" />
+          <div className="h-5 w-24 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+          <div className="h-5 w-32 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+          <div className="h-5 w-20 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+          <div className="h-5 w-24 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+          <div className="h-5 w-16 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+          <div className="h-5 w-20 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
         </div>
       ))}
     </div>
@@ -194,9 +194,9 @@ export default function PeptidesTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* 搜索 + 筛选栏 */}
-      <div className="flex flex-wrap gap-3 items-end">
+      <div className="flex flex-wrap gap-[var(--space-apple-sm)] items-end">
         <div className="flex-1 min-w-[200px]">
           <Input
             value={keyword}
@@ -274,10 +274,10 @@ export default function PeptidesTab({
               setActivityType(activityType === t.type_en ? null : t.type_en);
               setPage(1);
             }}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
+            className={`px-2.5 py-1 min-h-[44px] inline-flex items-center rounded-[var(--radius-pill)] text-xs font-medium transition-all border ${
               activityType === t.type_en
-                ? 'bg-secondary-container text-secondary-main border-secondary-500'
-                : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-secondary-300 dark:hover:border-secondary-700'
+                ? 'bg-secondary-container text-secondary-main border-[var(--color-secondary)]'
+                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-[var(--color-secondary-border)] dark:hover:border-[var(--color-secondary)]'
             }`}
           >
             {t.type_cn} <span className="opacity-60">{t.count}</span>
@@ -292,7 +292,7 @@ export default function PeptidesTab({
       <Card className="overflow-hidden">
         {peptideQuery.isError ? (
           <div className="p-16 text-center">
-            <div className="text-error-500 text-sm">❌ 数据加载失败，请刷新页面重试</div>
+            <div className="text-[var(--color-error-text)]0 text-sm">❌ 数据加载失败，请刷新页面重试</div>
           </div>
         ) : peptideQuery.isLoading ? (
           <TableSkeleton />
@@ -311,7 +311,7 @@ export default function PeptidesTab({
                   ].map(({ label, field }) => (
                     <th
                       key={label}
-                      className={`px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider ${field ? 'cursor-pointer hover:text-[var(--text-primary,#1D1D1F)] dark:hover:text-white select-none' : ''}`}
+                      className={`px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider ${field ? 'cursor-pointer hover:text-[var(--text-primary,#1D1D1F)] dark:hover:text-white select-none' : ''}`}
                       onClick={() => field && toggleSort(field)}
                     >
                       <span className="flex items-center gap-1">
@@ -327,32 +327,32 @@ export default function PeptidesTab({
                   <tr
                     key={item.id}
                     onClick={() => setSelectedPeptide(item)}
-                    className="cursor-pointer hover:bg-secondary-50/60 dark:hover:bg-secondary-950/20 transition-colors duration-150 group"
+                    className="cursor-pointer hover:bg-[var(--color-secondary-container)]/60 dark:hover:bg-[var(--color-secondary-container)]/20 transition-colors duration-150 group"
                   >
-                    <td className="px-4 py-3">
-                      <span className="font-mono font-medium text-secondary-600 dark:text-secondary-700 group-hover:text-secondary-700 transition-colors">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
+                      <span className="font-mono font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] group-hover:text-[var(--color-secondary-text)] transition-colors">
                         <Highlight text={item.sequence} keyword={keyword} />
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                       <Highlight text={item.source_protein || '-'} keyword={keyword} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Badge variant={ACTIVITY_COLORS[item.activity_type || ''] || 'neutral'} size="sm">
                         {activityTypeMap[item.activity_type || ''] || item.activity_type || '-'}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center">
                       <span className="font-mono text-xs">
                         {item.activity_value != null ? `${item.activity_value} ${item.activity_unit || ''}` : '-'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center">
                       <span className="font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
                         {item.molecular_weight?.toFixed(1) || '-'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center">
                       <span className="font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
                         {item.sequence?.length ?? '-'}
                       </span>
@@ -366,7 +366,7 @@ export default function PeptidesTab({
 
         {items.length === 0 && !peptideQuery.isLoading && (
           <div className="p-16 text-center">
-            <Dna className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <Dna className="w-10 h-10 mx-auto mb-[var(--space-apple-sm)] opacity-30" />
             <div className="text-[var(--text-muted,#9A9A9F)] text-sm">
               {keyword || activityType || lenMin || lenMax ? '未找到匹配结果' : '请输入关键词搜索活性肽数据'}
             </div>

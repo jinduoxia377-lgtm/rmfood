@@ -1,4 +1,4 @@
-/** Radio 閸楁洟鈧绮嶆禒鑸电壉瀵?*/
+/** Radio 单选组件 */
 .radio {
   display: inline-flex;
   align-items: center;

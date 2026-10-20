@@ -204,12 +204,38 @@ export interface TastePredictionResponse {
 
 // ===== 稳定性预测 =====
 
+/**
+ * 稳定性风险因子 —— 对齐后端 stability_model.py 的 `risk_factors`。
+ * severity 是 0-1 数值（如 0.3 / 0.2 / 0.15），不是字符串。
+ */
+export interface StabilityRiskFactor {
+  type: string;
+  severity: number;
+  description?: string;
+}
+
+/** 月度降解曲线点 —— 后端字段是 `remaining_pct`（0-1），不是 `stability`。 */
+export interface StabilityMonthlyPoint {
+  month: number;
+  remaining_pct: number;
+}
+
+export interface StabilityShelfLifeDetails {
+  months_to_90: number | null;
+  months_to_80: number | null;
+  predicted_months: number | null;
+  confidence: number;
+}
+
 export interface StabilityPredictionResponse {
+  /** 综合稳定性评分 [0, 1] */
   stability_score: number;
   estimated_shelf_life_months: number;
-  risk_factors: string[];
-  monthly_curve: Array<{ month: number; stability: number }>;
-  storage_advice: string;
+  risk_factors: StabilityRiskFactor[];
+  monthly_curve: StabilityMonthlyPoint[];
+  /** 后端返回 string[]，不是单个 string */
+  storage_advice: string[];
+  shelf_life_details?: StabilityShelfLifeDetails | null;
 }
 
 // ===== 肽序列分析 =====

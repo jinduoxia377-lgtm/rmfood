@@ -327,6 +327,7 @@ export class IntelligentSuggestionGenerator {
   }
 
   private interpolateTemplate(title: string, entities: ExtractedEntity[], _keywords: string[]): string {
+    void _keywords;
     let result = title
 
     // 用实体替换占位符
@@ -471,6 +472,7 @@ export class IntelligentSuggestionGenerator {
   }
 
   private generateFallbackSuggestions(_input: string): IntelligentSuggestion[] {
+    void _input;
     return [
       {
         id: 'fallback-1',

@@ -1,4 +1,4 @@
-// @ts-nocheck
+ 
 /**
  * MemoizedChatMessage - 单条消息渲染组件 (v9.0 流式渲染引擎终极升级版)
  *
@@ -48,7 +48,7 @@
  * @phase Phase 6.0 - 流式渲染引擎终极升级
  */
 
-import React, { memo, useEffect, useCallback, useRef, useState, useMemo, useLayoutEffect } from 'react';
+import React, { memo, useEffect, useCallback, useRef, useState, useMemo } from 'react';
 import {
   Copy,
   FileText,
@@ -56,20 +56,18 @@ import {
   CheckCircle,
   Square,
   Play,
-  Settings,
   Gauge,
   Zap,
   AlertCircle,
   ChevronDown,
-  ChevronUp,
   Keyboard,
   Monitor,
   Cpu,
 } from 'lucide-react';
 import { useStreamingText } from '../hooks/useStreamingText';
 import { logger } from '@/utils/safeLogger';
-import 'katex/dist/katex.min.css';
-// Note: react-markdown packages not installed; using built-in MarkdownRenderer fallback
+import MarkdownRenderer from './pro/MarkdownRenderer';
+// Note: react-markdown 等包未安装，统一使用内置零依赖 MarkdownRenderer 渲染
 
 
 
@@ -187,35 +185,7 @@ const CHUNK_BATCH_WINDOW_MS = 16; // 约 1 帧
 /** 最大单次渲染字符数（防止长文本阻塞） */
 const MAX_RENDER_CHUNK_SIZE = 500;
 
-/** 虚拟化阈值（超过此字符数启用虚拟滚动） */
-const VIRTUALIZATION_THRESHOLD = 10000;
-
 // ===== 工具函数 =====
-
-/**
- * 防抖函数
- */
-function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | undefined;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-/**
- * 节流函数
- */
-function throttle<T extends (...args: any[]) => any>(func: T, limit: number): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
 
 /**
  * 格式化文件大小
@@ -644,7 +614,7 @@ const PerformanceMonitorPanel: React.FC<{
 
       <div className="space-y-2">
         {/* FPS 指标 */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2">
             <div className="text-xs text-neutral-500 dark:text-neutral-400">当前 FPS</div>
             <div className={`text-lg font-bold ${getHealthColor(metrics.healthScore)}`}>{metrics.currentFps}</div>
@@ -680,7 +650,7 @@ const PerformanceMonitorPanel: React.FC<{
         </div>
 
         {/* 详细指标 */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <div className="flex justify-between">
             <span className="text-neutral-500 dark:text-neutral-400">帧时间:</span>
             <span className="font-mono text-neutral-700 dark:text-neutral-300">{metrics.frameTimeMs.toFixed(1)}ms</span>
@@ -753,8 +723,6 @@ const MemoizedChatMessage = memo(
     showReportButton = false,
     allowSpeedControl = true,
     showPerformancePanel = false,
-    codeTheme = 'github',
-    enableMathRendering = true,
     className = '',
     enableKeyboardShortcuts = true,
   }: MemoizedChatMessageProps) => {
@@ -775,7 +743,7 @@ const MemoizedChatMessage = memo(
             return parsed;
           }
         }
-      } catch (e) {
+      } catch {
         logger.warn('[MemoizedChatMessage] 读取速度设置失败，使用默认值');
       }
       return DEFAULT_SPEED_INDEX;
@@ -827,7 +795,7 @@ const MemoizedChatMessage = memo(
       try {
         localStorage.setItem(TYPING_SPEED_STORAGE_KEY, index.toString());
         logger.info(`[MemoizedChatMessage] 打字机速度已调整为: ${TYPING_SPEEDS[index].label}`);
-      } catch (e) {
+      } catch {
         logger.warn('[MemoizedChatMessage] 保存速度设置失败');
       }
     }, []);
@@ -1082,134 +1050,6 @@ const MemoizedChatMessage = memo(
      * - 图片懒加载
      * - 链接安全处理
      */
-    const markdownComponents = useMemo(
-      () => ({
-        // 代码块（```）
-        code({ node, inline, className, children, ...props }: any) {
-          const match = /language-(\w+)/.exec(className || '');
-          const language = match ? match[1] : undefined;
-
-          if (!inline && match) {
-            return (
-              <CodeBlockRenderer language={language} theme={codeTheme}>
-                {children}
-              </CodeBlockRenderer>
-            );
-          }
-
-          // 行内代码
-          return (
-            <code
-              className={`${className || ''} px-1.5 py-0.5 rounded text-sm font-mono ${
-                codeTheme === 'github'
-                  ? 'bg-neutral-100 dark:bg-neutral-800 text-error-600 dark:text-error-600'
-                  : 'bg-neutral-700 text-success-400'
-              }`}
-              {...props}
-            >
-              {children}
-            </code>
-          );
-        },
-
-        // 表格
-        table({ children }: any) {
-          return (
-            <div className="overflow-x-auto my-3 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
-              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">{children}</table>
-            </div>
-          );
-        },
-
-        // 表头单元格
-        th({ children }: any) {
-          return (
-            <th className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider border-b border-neutral-200 dark:border-neutral-700">
-              {children}
-            </th>
-          );
-        },
-
-        // 表格数据单元格
-        td({ children }: any) {
-          return (
-            <td className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100 border-t border-neutral-200 dark:border-neutral-700">
-              {children}
-            </td>
-          );
-        },
-
-        // 引用块
-        blockquote({ children }: any) {
-          return (
-            <blockquote className="border-l-4 border-secondary-500 dark:border-secondary-400 pl-4 py-2 my-3 bg-secondary-50 dark:bg-secondary-300/15 rounded-r-lg italic text-neutral-700 dark:text-neutral-300">
-              {children}
-            </blockquote>
-          );
-        },
-
-        // 列表项
-        li({ children }: any) {
-          return <li className="my-1 text-neutral-700 dark:text-neutral-300">{children}</li>;
-        },
-
-        // 有序列表
-        ol({ children }: any) {
-          return <ol className="list-decimal list-inside my-3 space-y-1 ml-4">{children}</ol>;
-        },
-
-        // 无序列表
-        ul({ children }: any) {
-          return <ul className="list-disc list-inside my-3 space-y-1 ml-4">{children}</ul>;
-        },
-
-        // 链接
-        a({ href, children, ...props }: any) {
-          const isExternal = href?.startsWith('http') || href?.startsWith('//');
-          return (
-            <a
-              href={href}
-              target={isExternal ? '_blank' : undefined}
-              rel={isExternal ? 'noopener noreferrer' : undefined}
-              className="text-secondary-600 dark:text-secondary-700 hover:text-secondary-800 dark:hover:text-secondary-300 underline decoration-1 underline-offset-2 transition-colors"
-              {...props}
-            >
-              {children}
-            </a>
-          );
-        },
-
-        // 图片（添加懒加载）
-        img({ src, alt, ...props }: any) {
-          return (
-            <img
-              src={src}
-              alt={alt || ''}
-              loading="lazy"
-              className="max-w-full h-auto rounded-lg my-3 shadow-sm"
-              {...props}
-            />
-          );
-        },
-
-        // 强调文字（粗体）
-        strong({ children }: any) {
-          return <strong className="font-bold text-neutral-900 dark:text-neutral-100">{children}</strong>;
-        },
-
-        // 斜体
-        em({ children }: any) {
-          return <em className="italic text-neutral-800 dark:text-neutral-200">{children}</em>;
-        },
-
-        // 删除线
-        del({ children }: any) {
-          return <del className="line-through text-neutral-500 dark:text-neutral-400">{children}</del>;
-        },
-      }),
-      [codeTheme],
-    );
-
     // ===== 渲染输出 =====
 
     return (
@@ -1269,16 +1109,8 @@ const MemoizedChatMessage = memo(
             ) : (
               /* 消息内容 */
               <div className="text-sm sm:text-base leading-relaxed relative prose prose-sm dark:prose-invert max-w-none">
-                {/* v9.0: 使用 react-markdown + GFM + KaTeX 完整渲染 */}
-                /* @ts-ignore */
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, ...(enableMathRendering ? [remarkMath] : [])]}
-                  rehypePlugins={[...(enableMathRendering ? [rehypeKatex] : [])]}
-                  components={markdownComponents}
-                >
-                  {displayContent || ''}
-                {/* @ts-ignore */}
-                </ReactMarkdown>
+                {/* v9.0: 使用内置零依赖 MarkdownRenderer 完整渲染（react-markdown 未安装） */}
+                <MarkdownRenderer content={displayContent || ''} />
 
                 {/* 流式输出控制栏 */}
                 {shouldUseStreamingEffect && (

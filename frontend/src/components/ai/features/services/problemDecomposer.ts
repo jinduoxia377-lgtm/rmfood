@@ -14,7 +14,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:设计|开发|研制|研发|创建).{0,10}(?:配方|产品|制剂|饮料|片剂|胶囊|粉末|口服液)/,
     dimension: 'domain',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: (match) => ({
       title: '核心配方体系构建',
       description: `分析"${match[0]}"的功能定位、目标人群、核心成分框架`,
       priority: 'critical',
@@ -26,7 +26,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:降|调节|改善|控制|辅助).{0,6}(?:血压|血糖|血脂|三高|胆固醇|尿酸|体重)/,
     dimension: 'efficacy',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: (match) => ({
       title: `功效机制分析：${match[0]}`,
       description: `解析${match[0]}的生理作用路径、活性成分筛选、剂量效应关系`,
       priority: 'critical',
@@ -38,7 +38,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:多肽|蛋白(?:质)?|氨基酸|酶|益生菌|益生元|膳食纤维|多糖|黄酮|皂苷|生物碱|萜类)/,
     dimension: 'technical',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: (match) => ({
       title: `活性成分技术分析：${match[0]}`,
       description: `${match[0]}的提取/制备工艺、稳定性参数、生物利用度优化`,
       priority: 'high',
@@ -50,7 +50,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:固体饮料|片剂|胶囊|软糖|粉剂|口服液|冲剂|丸剂|膏方)/,
     dimension: 'process',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: (match) => ({
       title: `剂型工艺路线：${match[0]}`,
       description: `${match[0]}的生产工艺流程关键控制点、设备选型、质量标准`,
       priority: 'high',
@@ -62,7 +62,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:合规|法规|GB|标准|备案|申报|注册|SC|保健食品|特医食品|新资源食品)/,
     dimension: 'regulatory',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: () => ({
       title: '法规合规性评估',
       description: `产品属性判定（普食/保健/特医）、原料合规性审查、标签声称合规检查`,
       priority: 'critical',
@@ -74,7 +74,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:安全|毒性|副作用|禁忌|不良反应|相互作用|过敏)/,
     dimension: 'safety',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: () => ({
       title: '安全性综合评估',
       description: `原料安全性文献综述、潜在风险识别、特殊人群使用注意事项、配伍禁忌分析`,
       priority: 'high',
@@ -86,7 +86,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:成本|价格|性价比|预算|经济|商业化|市场|竞品|差异化)/,
     dimension: 'market',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: () => ({
       title: '市场与成本分析',
       description: `目标市场规模评估、竞品分析、成本结构优化建议、差异化定位策略`,
       priority: 'medium',
@@ -98,7 +98,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:工艺|制备|提取|纯化|干燥|造粒|压片|包衣|灭菌|稳定性)/,
     dimension: 'process',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: (match) => ({
       title: `关键技术工艺：${match[0]}`,
       description: `${match[0]}的关键工艺参数优化、质量控制点设定、中试放大考量`,
       priority: 'high',
@@ -110,7 +110,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:临床|实验|验证|检测|指标|评价|证据|文献|研究)/,
     dimension: 'efficacy',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: () => ({
       title: '功效验证方案设计',
       description: `功效评价指标选择、实验设计方案（体外/动物/人体）、文献证据等级评估`,
       priority: 'high',
@@ -122,7 +122,7 @@ const DECOMPOSITION_RULES: DecompositionRule[] = [
   {
     pattern: /(?:如何|怎么|方法|方案|步骤|流程|路线图)/,
     dimension: 'semantic',
-    subProblemTemplate: (match, question) => ({
+    subProblemTemplate: () => ({
       title: '实施路径规划',
       description: `将问题拆解为可执行的阶段步骤，明确各阶段的输入输出和里程碑`,
       priority: 'high',

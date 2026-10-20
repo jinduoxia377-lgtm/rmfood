@@ -1,8 +1,6 @@
-import { GraphNode, TYPE_CONFIG } from '../types'
 import type { CommunityResult, KCoreResult, SubGraphResult } from './types'
 
 export interface SubGraphBrowserProps {
-  [key: string]: any;
   showSubGraphPanel: boolean
   communityResult: CommunityResult | null
   kcoreResult: KCoreResult | null
@@ -19,7 +17,6 @@ export default function SubGraphBrowser({
   communityResult,
   kcoreResult,
   savedSubGraphs,
-  activeSubGraph,
   onComputeKCore,
   onSetSavedSubGraphs,
   onSetActiveSubGraph,
@@ -28,7 +25,7 @@ export default function SubGraphBrowser({
   if (!showSubGraphPanel || !(communityResult || kcoreResult || savedSubGraphs.length > 0)) return null
 
   return (
-    <div className="absolute bottom-16 right-3 z-[60] w-[380px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in max-h-[55vh] overflow-auto custom-scrollbar">
+    <div className="absolute bottom-16 right-3 z-[60] w-[min(380px,calc(100vw-1.5rem))] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in max-h-[55vh] overflow-auto custom-scrollbar">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-accent-50 to-danger-50 dark:from-accent-950/50 dark:to-danger-950/50 border-b border-accent-100/50 rounded-t-2xl sticky top-0">
         <div className="flex items-center gap-2">
           <span>🧩</span>

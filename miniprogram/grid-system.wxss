@@ -1,6 +1,6 @@
 /**
  * RMFOOD 小程序 - 栅格系统 (Grid System)
- * 基于 16px (32rpx) 基准网格，符合微信官方设计规范
+ * 基于 8pt 网格（16rpx 基准单位），对齐桌面规范 DESIGN.md §6
  */
 
 /* ============================================
@@ -27,7 +27,7 @@
 
 /* 页面内边距 - 统一 16px (32rpx) */
 .page-padding {
-  padding: 0 32rpx;
+  padding: 0 var(--space-md);
 }
 
 /* ============================================
@@ -37,7 +37,7 @@
 /* 12列栅格 - 基准单位 16px (32rpx) */
 .grid {
   display: grid;
-  gap: 32rpx;
+  gap: var(--space-md);
 }
 
 /* 2列 */
@@ -62,10 +62,10 @@
 /* 标准卡片 - 圆角 16rpx，阴影 */
 .card {
   background: var(--color-bg-card);
-  border-radius: var(--radius-lg);
-  padding: 32rpx;
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
   box-shadow: var(--shadow-sm);
-  margin-bottom: 32rpx;
+  margin-bottom: var(--space-md);
 }
 
 /* 卡片标题 */
@@ -73,7 +73,7 @@
   font-size: var(--font-size-title-3);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin-bottom: 16rpx;
+  margin-bottom: var(--space-xs);
 }
 
 /* 卡片内容 */
@@ -90,8 +90,8 @@
 /* Apple 风格分组列表 */
 .list-group {
   background: var(--color-bg-card);
-  margin: 16rpx 32rpx;
-  border-radius: var(--radius-card);
+  margin: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-list);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
@@ -100,9 +100,10 @@
 .list-item {
   display: flex;
   align-items: center;
-  padding: 28rpx 32rpx;
+  padding: var(--space-sm) var(--space-md);
   min-height: 88rpx;
   position: relative;
+  background: var(--color-bg-card);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -125,7 +126,7 @@
   width: 40rpx;
   height: 40rpx;
   border-radius: var(--radius-sm);
-  margin-right: 20rpx;
+  margin-right: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,7 +154,7 @@
 /* 列表项附属 */
 .list-item-accessory {
   color: var(--color-text-tertiary);
-  margin-left: 16rpx;
+  margin-left: var(--space-xs);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -165,14 +166,14 @@
 
 /* section 间距 */
 .section {
-  padding: 32rpx 32rpx 24rpx;
+  padding: var(--space-md) var(--space-md) var(--space-3);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24rpx;
+  margin-bottom: var(--space-3);
 }
 
 .section-title {
@@ -192,7 +193,7 @@
 
 .more-text {
   font-size: var(--font-size-callout);
-  color: var(--color-system-blue);
+  color: var(--color-brand-primary);
 }
 
 /* ============================================
@@ -215,7 +216,7 @@
 
 /* 输入框容器 */
 .form-item {
-  padding: 24rpx 32rpx;
+  padding: var(--space-3) var(--space-md);
   background: var(--color-bg-card);
 }
 
@@ -226,7 +227,7 @@
 .form-label {
   font-size: var(--font-size-callout);
   color: var(--color-text-tertiary);
-  margin-bottom: 12rpx;
+  margin-bottom: var(--space-1);
   display: block;
 }
 
@@ -250,19 +251,19 @@
 /* 小屏设备 (iPhone SE) */
 @media (max-width: 375px) {
   .page-padding {
-    padding: 0 24rpx;
+    padding: 0 var(--space-3);
   }
   .list-group {
-    margin: 16rpx 24rpx;
+    margin: var(--space-xs) var(--space-3);
   }
   .list-item {
-    padding: 24rpx 24rpx;
+    padding: var(--space-3) var(--space-3);
   }
 }
 
 /* 大屏设备 (iPhone Plus) */
 @media (min-width: 414px) {
   .page-padding {
-    padding: 0 40rpx;
+    padding: 0 var(--space-5);
   }
 }

@@ -6,7 +6,7 @@ P1-2: 账号安全管理（防暴力破解）
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, update, distinct, cast, String
+from sqlalchemy import select, func, update, distinct, cast, String, text, bindparam
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_active_user, require_role
@@ -94,6 +94,7 @@ async def mark_notification_read(
         raise HTTPException(404, detail="通知不存在")
     
     notification.status = NotificationStatus.READ
+    notification.is_read = True
     notification.read_at = func.datetime('now')
     await db.commit()
     return {"detail": "已标记为已读"}
@@ -111,7 +112,7 @@ async def mark_all_read(
             Notification.user_id == current_user.id,
             Notification.status == NotificationStatus.UNREAD,
         )
-        .values(status=NotificationStatus.READ)
+        .values(status=NotificationStatus.READ, is_read=True, read_at=func.datetime('now'))
     )
     await db.commit()
     return {"detail": "已全部标记为已读"}
@@ -193,7 +194,6 @@ async def list_users(
     org_ids = {u.organization_id for u in items if u.organization_id is not None}
     org_names: dict[int, str] = {}
     if org_ids:
-        from sqlalchemy import text, bindparam
         stmt = text("SELECT id, name FROM organizations WHERE id IN :ids").bindparams(
             bindparam("ids", expanding=True)
         )
@@ -207,11 +207,71 @@ async def list_users(
             d["organization_name"] = org_names.get(u.organization_id) or f"组织 {u.organization_id}"
         user_dicts.append(d)
 
+    # 补充用户所属组织（organization_members 聚合），与 /users 保持一致
+    try:
+        user_ids = [d["id"] for d in user_dicts]
+        if user_ids:
+            placeholders = ",".join([f":uid_{i}" for i in range(len(user_ids))])
+            member_params = {f"uid_{i}": uid for i, uid in enumerate(user_ids)}
+            member_rows = (await db.execute(
+                text(f"""
+                    SELECT om.user_id, o.id AS org_id, o.name AS org_name, om.role AS org_role
+                    FROM organization_members om
+                    JOIN organizations o ON om.organization_id = o.id
+                    WHERE om.user_id IN ({placeholders}) AND o.is_active = TRUE
+                    ORDER BY o.id ASC
+                """),
+                member_params,
+            )).all()
+            member_map: dict[int, list[dict]] = {}
+            for mr in member_rows:
+                member_map.setdefault(mr.user_id, []).append({
+                    "id": mr.org_id,
+                    "name": mr.org_name,
+                    "role": mr.org_role,
+                })
+            for d in user_dicts:
+                orgs = member_map.get(d["id"], [])
+                d["organizations"] = orgs
+                if not d.get("organization_name") and orgs:
+                    d["organization_name"] = orgs[0]["name"]
+                if not d.get("organization_id") and orgs:
+                    d["organization_id"] = orgs[0]["id"]
+        else:
+            for d in user_dicts:
+                d["organizations"] = []
+    except Exception as exc:  # pragma: no cover - 调试辅助
+        import logging
+        logging.getLogger("admin").exception("用户组织聚合失败: %s", exc)
+        for d in user_dicts:
+            d.setdefault("organizations", [])
+
+    # 全量统计（不随分页/筛选变化，供统计卡片/角色分布使用）
+    stats_query = select(
+        func.count(User.id).label("total_users"),
+        func.count(User.id).filter(User.is_active == True).label("active_users"),
+        func.count(User.id).filter(User.is_active == False).label("inactive_users"),
+    )
+    stats_row = (await db.execute(stats_query)).one()
+    role_rows = (await db.execute(
+        select(cast(User.role, String).label("role"), func.count(User.id).label("cnt"))
+        .group_by(cast(User.role, String))
+    )).all()
+    role_counts: dict[str, int] = {}
+    for rr in role_rows:
+        role_counts[rr.role] = int(rr.cnt)
+
     return {
         "items": user_dicts,
         "total": total,
         "page": page,
         "page_size": page_size,
+        "stats": {
+            "total_users": int(stats_row.total_users or 0),
+            "active_users": int(stats_row.active_users or 0),
+            "inactive_users": int(stats_row.inactive_users or 0),
+            "role_counts": role_counts,
+        },
     }
 
 
@@ -245,20 +305,24 @@ async def update_user_role(
 @router.put("/admin/users/{user_id}/status", summary="启用/禁用用户（管理员）")
 async def toggle_user_status(
     user_id: int,
+    enable: bool | None = Query(None, description="可选指定目标状态；不传则切换当前状态"),
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
-    """管理员启用或禁用用户"""
+    """管理员启用或禁用用户。enable=true 强制启用，enable=false 强制禁用，缺省时切换状态。"""
     perm_checker = PermissionChecker(current_user)
     perm_checker.require_permission(Permission.USER_UPDATE)
     if user_id == current_user.id:
-        raise HTTPException(400, detail="不能禁用自己")
-    
+        raise HTTPException(400, detail="不能修改自己的账户状态")
+
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not user:
         raise HTTPException(404, detail="用户不存在")
-    
-    user.is_active = not user.is_active
+
+    if enable is None:
+        user.is_active = not user.is_active
+    else:
+        user.is_active = enable
     await db.commit()
     action = "启用" if user.is_active else "禁用"
     return {"detail": f"用户 {user.username} 已{action}"}
@@ -428,6 +492,117 @@ async def reset_user_password(
         "username": target_user.username,
         "temp_password": temp_password,
     }
+
+
+# ═══════════════════════════════════════
+# 管理员管理用户 2FA（TOTP）
+# ═══════════════════════════════════════
+
+class TwoFactorEnableResponse(BaseModel):
+    enabled: bool
+    secret: str
+    otpauth_url: str
+    username: str
+
+
+@router.get("/admin/users/{user_id}/2fa-status", summary="查询用户 2FA 状态（管理员）")
+async def get_user_2fa_status(
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """查询指定用户的 2FA 启用状态"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_READ)
+    target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(404, detail="用户不存在")
+    return {
+        "user_id": target_user.id,
+        "username": target_user.username,
+        "enabled": bool(target_user.two_factor_enabled),
+    }
+
+
+@router.post("/admin/users/{user_id}/2fa/enable", response_model=TwoFactorEnableResponse, summary="为指定用户启用 2FA（管理员）")
+async def enable_user_2fa(
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """管理员为指定用户启用 TOTP 两步验证，返回密钥与 otpauth URI。"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_UPDATE)
+    if user_id == current_user.id:
+        raise HTTPException(400, detail="不能在此管理自己的 2FA，请使用个人设置")
+
+    target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(404, detail="用户不存在")
+
+    from ..core.security.totp import generate_secret, totp_uri
+
+    secret = generate_secret(20)
+    target_user.two_factor_secret = secret
+    target_user.two_factor_enabled = True
+    await db.commit()
+
+    # 审计
+    try:
+        from ..models.system import AuditLog
+        db.add(AuditLog(
+            action="user.2fa_enable",
+            resource_type="user",
+            resource_id=target_user.id,
+            user_id=current_user.id,
+            details={"operator": current_user.username, "username": target_user.username},
+        ))
+        await db.commit()
+    except Exception:
+        pass
+
+    return TwoFactorEnableResponse(
+        enabled=True,
+        secret=secret,
+        otpauth_url=totp_uri(secret, issuer="RMFOOD", account=target_user.email or target_user.username),
+        username=target_user.username,
+    )
+
+
+@router.post("/admin/users/{user_id}/2fa/disable", summary="禁用用户 2FA（管理员）")
+async def disable_user_2fa(
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """管理员禁用指定用户的 TOTP 两步验证。"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_UPDATE)
+    if user_id == current_user.id:
+        raise HTTPException(400, detail="不能在此管理自己的 2FA，请使用个人设置")
+
+    target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(404, detail="用户不存在")
+
+    target_user.two_factor_secret = None
+    target_user.two_factor_enabled = False
+    await db.commit()
+
+    try:
+        from ..models.system import AuditLog
+        db.add(AuditLog(
+            action="user.2fa_disable",
+            resource_type="user",
+            resource_id=target_user.id,
+            user_id=current_user.id,
+            details={"operator": current_user.username, "username": target_user.username},
+        ))
+        await db.commit()
+    except Exception:
+        pass
+
+    return {"user_id": target_user.id, "username": target_user.username, "enabled": False}
 
 
 # ═══════════════════════════════════════

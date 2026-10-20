@@ -36,7 +36,7 @@ export const SankeyFunnelChart: React.FC<Props> = ({
   height = 200,
   showRates = true,
 }) => {
-  const { nodes, links, svgWidth, nodeWidth, gap } = useMemo(() => {
+  const { nodes, links, svgWidth } = useMemo(() => {
     const W = 600
     const H = height
     const n = stages.length

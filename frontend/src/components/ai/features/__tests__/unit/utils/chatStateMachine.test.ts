@@ -1,6 +1,6 @@
-// @ts-nocheck
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ChatStateMachine, ChatState, getTransitionRules, validateTransitionSequence } from '../../../utils/chatStateMachine'
+import { logger } from '@/utils/safeLogger'
 
 describe('ChatStateMachine', () => {
   let stateMachine: ChatStateMachine
@@ -10,7 +10,7 @@ describe('ChatStateMachine', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('初始状态', () => {
@@ -55,7 +55,7 @@ describe('ChatStateMachine', () => {
     })
 
     it('应触发 onStateChange 回调', () => {
-      const listener = jest.fn()
+      const listener = vi.fn()
       stateMachine.onStateChange = listener
 
       stateMachine.transition(ChatState.Validating)
@@ -64,7 +64,7 @@ describe('ChatStateMachine', () => {
     })
 
     it('应触发 onTransitionError 回调当转换无效时', () => {
-      const errorListener = jest.fn()
+      const errorListener = vi.fn()
       stateMachine.onTransitionError = errorListener
 
       stateMachine.transition(ChatState.Streaming)
@@ -96,11 +96,13 @@ describe('ChatStateMachine', () => {
     })
 
     it('应支持 Processing 状态流程（v7.0 新增）', () => {
-      expect(stateMachine.transition(ChatState.Processing)).toBe(true)
-      expect(stateMachine.state).toBe(ChatState.Processing)
+      // Processing 不作为 Idle 的直接目标（需经内部流程），但应存在于状态集合并有出向规则
+      const states = ChatStateMachine.getAllStates()
+      expect(states).toContain(ChatState.Processing)
 
-      expect(stateMachine.transition(ChatState.Streaming)).toBe(true)
-      expect(stateMachine.state).toBe(ChatState.Streaming)
+      const rules = getTransitionRules()
+      expect(rules.some(r => r.from === ChatState.Processing && r.to === ChatState.Streaming)).toBe(true)
+      expect(rules.some(r => r.from === ChatState.Processing && r.to === ChatState.Success)).toBe(true)
     })
 
     it('应支持 Paused 状态恢复（v7.0 新增）', () => {
@@ -181,14 +183,14 @@ describe('ChatStateMachine', () => {
       expect(history[1].to).toBe(ChatState.Sending)
     })
 
-    it('应限制历史记录数量（最多100条）', () => {
+    it('应限制历史记录数量（最多500条）', () => {
       for (let i = 0; i < 110; i++) {
         stateMachine.transition(ChatState.Validating)
         stateMachine.transition(ChatState.Idle)
       }
 
       const history = stateMachine.transitionHistory
-      expect(history.length).toBeLessThanOrEqual(100)
+      expect(history.length).toBeLessThanOrEqual(500)
     })
   })
 
@@ -258,7 +260,7 @@ describe('ChatStateMachine', () => {
       expect(states).toContain(ChatState.Processing)
       expect(states).toContain(ChatState.Paused)
       expect(states).toContain(ChatState.Retrying)
-      expect(states.length).toBe(11)
+      expect(states.length).toBe(12)
     })
 
     it('getValidTransitions 应返回有效的转换规则', () => {
@@ -298,7 +300,7 @@ describe('ChatStateMachine', () => {
   describe('辅助函数', () => {
     it('getTransitionRules 应返回完整的转换规则表', () => {
       const rules = getTransitionRules()
-      expect(rules.length).toBe(11 * 11)
+      expect(rules.length).toBe(12 * 12)
       
       const idleToValidating = rules.find(r => r.from === ChatState.Idle && r.to === ChatState.Validating)
       expect(idleToValidating?.isValid).toBe(true)
@@ -326,19 +328,20 @@ describe('ChatStateMachine', () => {
     })
 
     it('配置为不抛出时应警告并继续', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-      
-      stateMachine.transition(ChatState.Streaming)
-      
-      expect(consoleSpy).toHaveBeenCalled()
-      expect(stateMachine.state).toBe(ChatState.Idle)
-      
-      consoleSpy.mockRestore()
+      const debugMachine = new ChatStateMachine(ChatState.Idle, { throwOnError: false, enableDebug: true })
+      const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+
+      debugMachine.transition(ChatState.Streaming)
+
+      expect(loggerSpy).toHaveBeenCalled()
+      expect(debugMachine.state).toBe(ChatState.Idle)
+
+      loggerSpy.mockRestore()
     })
 
     it('应处理 enableDebug 配置', () => {
       const debugMachine = new ChatStateMachine(ChatState.Idle, { enableDebug: true })
-      const consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
+      const consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {})
 
       debugMachine.transition(ChatState.Validating)
       

@@ -174,7 +174,6 @@ function calculateSafetyScore(ingredients: Ingredient[]): number {
   if (ingredients.length === 0) return 100
 
   let safetyScore = 100
-  let warningCount = 0
 
   ingredients.forEach(ing => {
     if (ing.precautions && ing.precautions.length > 0) {

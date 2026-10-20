@@ -10,7 +10,7 @@
  * @version 1.0.0
  */
 import React, { useState } from 'react'
-import { ChevronRight, ChevronDown, Code, Wrench, FileText, ExternalLink, X } from 'lucide-react'
+import { ChevronRight, Code, Wrench, FileText, ExternalLink, X } from 'lucide-react'
 
 export interface ToolCall {
   id: string

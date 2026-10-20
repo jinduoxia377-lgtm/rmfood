@@ -6,7 +6,6 @@
  *   - 国标卡片增加法规原文链接
  *   - 卡片底部展示可点击的标准链接
  */
-import { useState } from 'react';
 import { Reveal } from '../shared/Reveal';
 import { cn } from '@/lib/utils';
 import {
@@ -15,7 +14,6 @@ import {
 import { Database, Network, Shield, Scale, FlaskConical, RefreshCw, Globe, ExternalLink } from 'lucide-react';
 
 // ── 聚合统计 ──────────────────────────────────────────────────────
-const TOTAL_ENTITIES = '38,074';
 const SYNC_STATUS   = '实时同步';
 
 // ── 状态指示点 ──────────────────────────────────────────────────────
@@ -39,8 +37,6 @@ function StatusDot({ status }: { status: DataSource['status'] }) {
 
 // ── 单张卡片 ────────────────────────────────────────────────────────
 function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
-  const [hovered, setHovered] = useState(false);
-
   const iconMap: Record<string, React.ReactNode> = {
     'flask-conical': <FlaskConical size={14} />,
     'dna':           <Database size={14} />,
@@ -60,8 +56,6 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
           '--card-accent-color': data.color,
           '--card-hover-border': data.colorBorder,
         } as React.CSSProperties}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
         {/* 左侧彩色竖条 */}
         <div className="lp-data-card-accent" style={{ background: data.color }} />
@@ -146,7 +140,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
 export default function DataSources() {
   return (
     <section id="data-sources" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
         <Reveal>

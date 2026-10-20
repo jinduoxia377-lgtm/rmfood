@@ -1,5 +1,4 @@
-// @ts-nocheck
-export type TaggedValue<T = unknown> = T & { _tags?: string; _value?: T; _tags?: string[] }
+export type TaggedValue<T = unknown> = { _value: T; _tags?: string[] }
 /**
  * SmartCache - 智能缓存管理器 (v7.1)
  *
@@ -12,7 +11,7 @@ export type TaggedValue<T = unknown> = T & { _tags?: string; _value?: T; _tags?:
 import { logger } from '@/utils/safeLogger';
 
 interface CacheItem<T> {
-  value: T;
+  value: T | TaggedValue<T>;
   timestamp: number;
   expiresAt?: number;
   accessCount: number;
@@ -119,14 +118,20 @@ class SmartCache<T = unknown> {
     item.accessCount++;
     item.lastAccessTime = Date.now();
 
+    const rawValue = item.value;
+    // 标签化缓存值解包为原始 T
+    const result = (rawValue && typeof rawValue === 'object' && '_value' in rawValue)
+      ? (rawValue as TaggedValue<T>)._value
+      : rawValue;
+
     this.stats.hits++;
     this.updateHitRate();
     this.config.onHit?.(key);
 
-    return item.value;
+    return result;
   }
 
-  set(key: string, value: T, ttl?: number): void {
+  set(key: string, value: T | TaggedValue<T>, ttl?: number): void {
     // 如果已存在，先删除旧值
     if (this.cache.has(key)) {
       this.delete(key);
@@ -184,7 +189,12 @@ class SmartCache<T = unknown> {
   }
 
   values(): T[] {
-    return Array.from(this.cache.values()).map((item) => item.value);
+    return Array.from(this.cache.values()).map((item) => {
+      const raw = item.value;
+      return (raw && typeof raw === 'object' && '_value' in raw)
+        ? (raw as TaggedValue<T>)._value
+        : raw;
+    });
   }
 
   getStats(): Readonly<CacheStats> {
@@ -267,7 +277,9 @@ class SmartCache<T = unknown> {
   setWithTags(key: string, value: T, tags: string[], ttl?: number): void {
     // 使用特殊的内部结构存储标签信息
     const taggedValue: TaggedValue<T> = { _value: value, _tags: tags };
-    this.set(key, taggedValue, ttl);
+    // TaggedValue 是缓存内部的有意存储格式（getByTag 会将其还原为 _value），
+    // 此处通过断言绕过泛型约束，保持与 set 共用同一存储。
+    this.set(key, taggedValue as unknown as T, ttl);
   }
 
   getByTag(tag: string): T[] {
@@ -312,10 +324,11 @@ class SmartCache<T = unknown> {
           return a[1].accessCount - b[1].accessCount;
         case 'fifo':
           return a[1].timestamp - b[1].timestamp;
-        case 'hybrid': // LRU + LFU 加权
+        case 'hybrid': { // LRU + LFU 加权
           const aScore = a[1].lastAccessTime * 0.6 + a[1].accessCount * 1000 * 0.4;
           const bScore = b[1].lastAccessTime * 0.6 + b[1].accessCount * 1000 * 0.4;
           return aScore - bScore;
+        }
         default:
           return 0;
       }
@@ -353,7 +366,7 @@ class SmartCache<T = unknown> {
     this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
   }
 
-  private estimateSize(value: T): number {
+  private estimateSize(value: unknown): number {
     try {
       return JSON.stringify(value).length * 2; // UTF-16 编码
     } catch {

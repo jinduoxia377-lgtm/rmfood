@@ -162,6 +162,7 @@ class WorkflowEngine:
         workflow_type: str,
         user_query: str,
         max_steps: int = 10,
+        context: Optional[Dict[str, Any]] = None,
     ) -> WorkflowExecution:
         """
         执行工作流
@@ -170,6 +171,7 @@ class WorkflowEngine:
             workflow_type: 工作流模板名称
             user_query: 用户问题
             max_steps: 最大工具调用次数（smart模式）
+            context: 附加执行上下文（R3：注入 user_id/tenant_id/db，供工具读取身份）
 
         Returns:
             WorkflowExecution: 执行记录
@@ -185,6 +187,8 @@ class WorkflowEngine:
             started_at=datetime.now(timezone.utc),
             status=WorkflowStatus.RUNNING,
         )
+        if context:
+            execution.shared_context.update(context)
         self._executions[execution_id] = execution
 
         # 安全检查：Prompt 注入检测
@@ -259,6 +263,7 @@ class WorkflowEngine:
         workflow_type: str,
         user_query: str,
         max_steps: int = 10,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[dict]:
         """
         流式执行工作流，逐步推送中间结果
@@ -272,7 +277,7 @@ class WorkflowEngine:
         - {"type": "error", "message": str}
         """
         try:
-            execution = await self.execute(workflow_type, user_query, max_steps)
+            execution = await self.execute(workflow_type, user_query, max_steps, context=context)
 
             yield {"type": "start", "execution_id": execution.execution_id}
 

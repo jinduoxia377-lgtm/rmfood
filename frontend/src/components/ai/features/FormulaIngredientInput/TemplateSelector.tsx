@@ -4,7 +4,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { EmptyState } from '@/components/ui';
 import { Tooltip } from '@/components/ui';
-import { LayoutTemplate, Save, Delete, Check } from 'lucide-react';
+import { Save, Delete, Check } from 'lucide-react';
 import type { FormulaTemplate } from './types';
 import { PRESET_TEMPLATES } from './types';
 import { loadTemplates, saveTemplate, deleteTemplate } from './utils';
@@ -31,6 +31,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/immutability
       loadCustomTemplates();
     }
   }, [isOpen]);

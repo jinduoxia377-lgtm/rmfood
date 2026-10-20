@@ -1,0 +1,428 @@
+/**
+ * 白名单申请流程页样式
+ *
+ * 对齐主题系统规范:
+ * - 根容器 bg-grid 点阵背景 + var(--bg-canvas)
+ * - 卡片使用 .card（统一卡片令牌）+ 顶部 accent bar
+ * - 所有颜色/圆角/阴影走全局语义令牌（--color-* / --bg-* / --text-* / --radius-* / --shadow-*）
+ */
+.whitelist-page-root {
+  min-height: 100vh;
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(circle, rgba(120, 120, 140, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.whitelist-container {
+  width: 100%;
+  max-width: 72rem; /* max-w-7xl */
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Hero 区：标题 + 窗口截止倒计时 ── */
+.whitelist-hero {
+  text-align: center;
+  padding: 24px 0 8px;
+}
+
+.whitelist-hero h1 {
+  font-size: var(--text-3xl, 28px);
+  font-weight: 700;
+  color: var(--text-strong, #0f172a);
+  margin: 0 0 8px;
+}
+
+.whitelist-hero p {
+  font-size: var(--text-sm, 14px);
+  color: var(--text-muted, #64748b);
+  margin: 0 0 16px;
+}
+
+.whitelist-window-countdown {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.whitelist-window-label {
+  font-size: var(--text-xs, 12px);
+  color: var(--text-muted, #64748b);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.whitelist-countdown-ring {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 14px 24px;
+  border-radius: var(--radius-xl, 16px);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  font-variant-numeric: tabular-nums;
+}
+
+.whitelist-countdown-days {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-600, #0f766e);
+}
+
+.whitelist-countdown-days small {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+  margin-left: 2px;
+}
+
+.whitelist-countdown-clock {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-strong, #0f172a);
+  letter-spacing: 2px;
+}
+
+/* ── 步骤条 ── */
+.whitelist-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.whitelist-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+}
+
+.whitelist-step-active {
+  color: var(--color-primary-600, #0f766e);
+  font-weight: 600;
+}
+
+.whitelist-step-done {
+  color: var(--color-primary-600, #0f766e);
+}
+
+.whitelist-step-sep {
+  width: 24px;
+  height: 1px;
+  background: var(--border, #e2e8f0);
+}
+
+/* ── 卡片 ── */
+.whitelist-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl, 16px);
+}
+
+.whitelist-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary-600, #0f766e), var(--color-primary-400, #14b8a6));
+}
+
+.whitelist-card-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── 表单 ── */
+.whitelist-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.whitelist-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-strong, #0f172a);
+}
+
+.whitelist-label-opt {
+  color: var(--text-muted, #64748b);
+  font-weight: 400;
+}
+
+.whitelist-input {
+  min-height: 44px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg-input, #ffffff);
+  color: var(--text-strong, #0f172a);
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.whitelist-input:focus {
+  border-color: var(--color-primary-500, #0d9488);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.whitelist-input.error {
+  border-color: var(--color-danger, #dc2626);
+}
+
+.whitelist-input:disabled {
+  opacity: 0.6;
+}
+
+.whitelist-error-text {
+  color: var(--color-danger, #dc2626);
+  font-size: 12px;
+  min-height: 16px;
+}
+
+.whitelist-consent {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+  line-height: 1.6;
+}
+
+.whitelist-consent input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary-600, #0f766e);
+}
+
+.whitelist-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.whitelist-captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.whitelist-captcha-img {
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.whitelist-btn-primary {
+  min-height: 44px;
+  padding: 10px 24px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-primary-600, #0f766e);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.whitelist-btn-primary:hover {
+  background: var(--color-primary-700, #115e59);
+}
+
+.whitelist-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.whitelist-btn-outline {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-full, 999px);
+  background: transparent;
+  color: var(--text-strong, #0f172a);
+  font-size: 14px;
+  border: 1px solid var(--border, #e2e8f0);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.whitelist-btn-outline:hover {
+  background: var(--bg-muted, #f1f5f9);
+}
+
+.whitelist-btn-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── 提示 ── */
+.whitelist-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 10px);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.whitelist-alert-error {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  color: #b91c1c;
+}
+
+.whitelist-alert-success {
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  color: #047857;
+}
+
+/* ── 成功/结果态 ── */
+.whitelist-result-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 12px;
+}
+
+.whitelist-result-ok {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+
+.whitelist-result-info {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0d9488;
+}
+
+.whitelist-result-error {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
+.whitelist-result-title {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-strong, #0f172a);
+  margin: 0 0 6px;
+}
+
+.whitelist-result-desc {
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-muted, #64748b);
+  margin: 0 0 16px;
+}
+
+.whitelist-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border, #f1f5f9);
+  color: var(--text-muted, #64748b);
+}
+
+.whitelist-meta-row strong {
+  color: var(--text-strong, #0f172a);
+  font-weight: 600;
+}
+
+/* ── 状态查询折叠区 ── */
+.whitelist-lookup {
+  border-top: 1px solid var(--border, #e2e8f0);
+  padding-top: 16px;
+}
+
+.whitelist-lookup-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted, #64748b);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.whitelist-lookup-toggle:hover {
+  color: var(--color-primary-600, #0f766e);
+}
+
+.whitelist-lookup-body {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ── 登录页入口按钮（复用登录页卡片内样式） ── */
+.whitelist-login-entry {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.whitelist-login-entry .rhine-preregister-toggle {
+  justify-content: center;
+}
+
+/* 无障碍：屏幕阅读器专用 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+  .whitelist-container {
+    padding: 24px 12px 48px;
+  }
+  .whitelist-countdown-ring {
+    padding: 10px 16px;
+  }
+  .whitelist-countdown-days {
+    font-size: 22px;
+  }
+  .whitelist-countdown-clock {
+    font-size: 18px;
+  }
+  .whitelist-lookup-body {
+    flex-direction: column;
+  }
+}

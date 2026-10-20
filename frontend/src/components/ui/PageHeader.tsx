@@ -20,7 +20,7 @@ export function PageHeader({ title, titleClassName, description, descriptionClas
  <div>
  <h1 className={cn('h1', titleClassName)}>{title}</h1>
  {description && (
- <p className={cn('mt-1 text-sm text-text-muted', descriptionClassName)}>{description}</p>
+ <p className={cn('mt-1 text-sm text-[var(--text-muted)]', descriptionClassName)}>{description}</p>
  )}
  </div>
  {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}

@@ -1,36 +1,34 @@
-import { jest } from '@jest/globals'
+import { vi, Mock } from 'vitest'
 import { IEventBus, IChatService, IStorageService, IExportService } from '../../types'
 import {
   createMockAIResponse,
-  createMockFormula,
-  createMockMessage,
   TEST_CONSTANTS
 } from './testFactories'
 
-export function createMockEventBus(): jest.Mocked<IEventBus> {
+export function createMockEventBus(): vi.Mocked<IEventBus> {
   return {
-    emit: jest.fn<IEventBus['emit']>(),
-    subscribe: jest.fn<IEventBus['subscribe']>(() => jest.fn()),
-    once: jest.fn<IEventBus['once']>(() => jest.fn()),
-    clear: jest.fn<IEventBus['clear']>(),
-    clearEvent: jest.fn<IEventBus['clearEvent']>(),
-    getSubscriberCount: jest.fn<IEventBus['getSubscriberCount']>(() => 0),
-    hasSubscribers: jest.fn<IEventBus['hasSubscribers']>(() => false)
+    emit: vi.fn<IEventBus['emit']>(),
+    subscribe: vi.fn<IEventBus['subscribe']>(() => vi.fn()),
+    once: vi.fn<IEventBus['once']>(() => vi.fn()),
+    clear: vi.fn<IEventBus['clear']>(),
+    clearEvent: vi.fn<IEventBus['clearEvent']>(),
+    getSubscriberCount: vi.fn<IEventBus['getSubscriberCount']>(() => 0),
+    hasSubscribers: vi.fn<IEventBus['hasSubscribers']>(() => false)
   }
 }
 
-export function createMockChatService(overrides: Partial<jest.Mocked<IChatService>> = {}): jest.Mocked<IChatService> {
+export function createMockChatService(overrides: Partial<vi.Mocked<IChatService>> = {}): vi.Mocked<IChatService> {
   const defaultService = {
-    sendMessage: jest.fn<IChatService['sendMessage']>().mockResolvedValue(createMockAIResponse() as Awaited<ReturnType<IChatService['sendMessage']>>),
-    sendMessageStream: jest.fn<IChatService['sendMessageStream']>(),
-    setAuthToken: jest.fn<IChatService['setAuthToken']>(),
-    clearAuthToken: jest.fn<IChatService['clearAuthToken']>(),
-    retryLastMessage: jest.fn<IChatService['retryLastMessage']>().mockResolvedValue(createMockAIResponse({
+    sendMessage: vi.fn<IChatService['sendMessage']>().mockResolvedValue(createMockAIResponse() as Awaited<ReturnType<IChatService['sendMessage']>>),
+    sendMessageStream: vi.fn<IChatService['sendMessageStream']>(),
+    setAuthToken: vi.fn<IChatService['setAuthToken']>(),
+    clearAuthToken: vi.fn<IChatService['clearAuthToken']>(),
+    retryLastMessage: vi.fn<IChatService['retryLastMessage']>().mockResolvedValue(createMockAIResponse({
       content: '重试成功的响应'
     }) as Awaited<ReturnType<IChatService['retryLastMessage']>>),
-    getLastError: jest.fn<IChatService['getLastError']>(() => null),
-    getClassifiedError: jest.fn<IChatService['getClassifiedError']>(() => null),
-    getRateLimitStatus: jest.fn<IChatService['getRateLimitStatus']>(() => ({
+    getLastError: vi.fn<IChatService['getLastError']>(() => null),
+    getClassifiedError: vi.fn<IChatService['getClassifiedError']>(() => null),
+    getRateLimitStatus: vi.fn<IChatService['getRateLimitStatus']>(() => ({
       remaining: 100,
       resetAt: null,
       limit: 1000
@@ -40,16 +38,16 @@ export function createMockChatService(overrides: Partial<jest.Mocked<IChatServic
   return { ...defaultService, ...overrides }
 }
 
-export function createMockStorageService(overrides: Partial<jest.Mocked<IStorageService>> = {}): jest.Mocked<IStorageService> {
+export function createMockStorageService(overrides: Partial<vi.Mocked<IStorageService>> = {}): vi.Mocked<IStorageService> {
   return {
-    saveMessages: jest.fn<IStorageService['saveMessages']>().mockResolvedValue(undefined),
-    loadMessages: jest.fn<IStorageService['loadMessages']>().mockResolvedValue([]),
-    saveSession: jest.fn<IStorageService['saveSession']>().mockResolvedValue(undefined),
-    loadSession: jest.fn<IStorageService['loadSession']>().mockResolvedValue(null),
-    deleteSession: jest.fn<IStorageService['deleteSession']>().mockResolvedValue(undefined),
-    listSessions: jest.fn<IStorageService['listSessions']>().mockResolvedValue([]),
-    clearAll: jest.fn<IStorageService['clearAll']>().mockResolvedValue(undefined),
-    getUsageStats: jest.fn<IStorageService['getUsageStats']>().mockResolvedValue({
+    saveMessages: vi.fn<IStorageService['saveMessages']>().mockResolvedValue(undefined),
+    loadMessages: vi.fn<IStorageService['loadMessages']>().mockResolvedValue([]),
+    saveSession: vi.fn<IStorageService['saveSession']>().mockResolvedValue(undefined),
+    loadSession: vi.fn<IStorageService['loadSession']>().mockResolvedValue(null),
+    deleteSession: vi.fn<IStorageService['deleteSession']>().mockResolvedValue(undefined),
+    listSessions: vi.fn<IStorageService['listSessions']>().mockResolvedValue([]),
+    clearAll: vi.fn<IStorageService['clearAll']>().mockResolvedValue(undefined),
+    getUsageStats: vi.fn<IStorageService['getUsageStats']>().mockResolvedValue({
       totalMessages: 0,
       totalSessions: 0,
       storageUsed: 0,
@@ -59,15 +57,15 @@ export function createMockStorageService(overrides: Partial<jest.Mocked<IStorage
   }
 }
 
-export function createMockExportService(overrides: Partial<jest.Mocked<IExportService>> = {}): jest.Mocked<IExportService> {
+export function createMockExportService(overrides: Partial<vi.Mocked<IExportService>> = {}): vi.Mocked<IExportService> {
   return {
-    exportToPDF: jest.fn<IExportService['exportToPDF']>().mockResolvedValue(new Blob()),
-    exportToWord: jest.fn<IExportService['exportToWord']>().mockResolvedValue(new Blob()),
-    exportToExcel: jest.fn<IExportService['exportToExcel']>().mockResolvedValue(new Blob()),
-    exportToMarkdown: jest.fn<IExportService['exportToMarkdown']>().mockResolvedValue('# 测试报告'),
-    exportToJSON: jest.fn<IExportService['exportToJSON']>().mockResolvedValue('{}'),
-    cancelExport: jest.fn<IExportService['cancelExport']>(),
-    getExportProgress: jest.fn<IExportService['getExportProgress']>(() => ({
+    exportToPDF: vi.fn<IExportService['exportToPDF']>().mockResolvedValue(new Blob()),
+    exportToWord: vi.fn<IExportService['exportToWord']>().mockResolvedValue(new Blob()),
+    exportToExcel: vi.fn<IExportService['exportToExcel']>().mockResolvedValue(new Blob()),
+    exportToMarkdown: vi.fn<IExportService['exportToMarkdown']>().mockResolvedValue('# 测试报告'),
+    exportToJSON: vi.fn<IExportService['exportToJSON']>().mockResolvedValue('{}'),
+    cancelExport: vi.fn<IExportService['cancelExport']>(),
+    getExportProgress: vi.fn<IExportService['getExportProgress']>(() => ({
       isExporting: false,
       progress: 0,
       format: null
@@ -77,21 +75,21 @@ export function createMockExportService(overrides: Partial<jest.Mocked<IExportSe
 }
 
 export function setupMockServiceWithError<T extends keyof IChatService>(
-  service: jest.Mocked<IChatService>,
+  service: vi.Mocked<IChatService>,
   method: T,
   error: Error
 ): void {
-  const mockFn = service[method] as unknown as jest.Mock
+  const mockFn = service[method] as unknown as Mock
   mockFn.mockRejectedValueOnce(error)
 }
 
 export function setupMockServiceWithDelay<T extends keyof IChatService>(
-  service: jest.Mocked<IChatService>,
+  service: vi.Mocked<IChatService>,
   method: T,
   delay: number,
   result?: any
 ): void {
-  (service[method] as unknown as jest.Mock).mockImplementationOnce(
+  (service[method] as unknown as Mock).mockImplementationOnce(
     () => new Promise(resolve => setTimeout(() => resolve(result), delay))
   )
 }

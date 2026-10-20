@@ -1,6 +1,23 @@
 /**
  * Session Manager 单元测试
  */
+import { vi } from 'vitest';
+
+// jsdom 无 IndexedDB，mock EventSourcedSession 避免真实数据库依赖
+vi.mock('../eventSourcing', () => {
+  class MockEventSourcedSession {
+    lastRequestHeader: unknown = null;
+    private msgs: unknown[] = [];
+    constructor(public id: string) {}
+    async open(): Promise<void> {}
+    async close(): Promise<void> {}
+    deriveMessages(): unknown[] {
+      return this.msgs;
+    }
+  }
+  return { EventSourcedSession: MockEventSourcedSession };
+});
+
 import { SessionManager } from '../sessionManager';
 
 describe('SessionManager', () => {
@@ -34,7 +51,7 @@ describe('SessionManager', () => {
 
   describe('switchSession', () => {
     test('应切换到指定会话', async () => {
-      const id1 = await manager.createSession('会话1');
+      await manager.createSession('会话1');
       const id2 = await manager.createSession('会话2');
       
       const result = await manager.switchSession(id2);

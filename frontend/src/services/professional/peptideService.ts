@@ -994,13 +994,13 @@ export class PeptideService extends ProfessionalBaseService {
       },
       {
         type: 'opioid',
-        conditions: (_a) => ['Y', 'F', 'W'].some((aa) => analysis.aminoAcidComposition[aa] > 0),
+        conditions: () => ['Y', 'F', 'W'].some((aa) => analysis.aminoAcidComposition[aa] > 0),
         mechanism: 'Aromatic residues at N-terminus enable opioid receptor binding',
         evidence: 'Typical opioid peptide motif with aromatic residue',
       },
       {
         type: 'collagen synthesis',
-        conditions: (a) =>
+        conditions: () =>
           (analysis.aminoAcidComposition.P || 0) + (analysis.aminoAcidComposition.P || 0) > 2 &&
           (analysis.aminoAcidComposition.G || 0) > 1,
         mechanism: 'Proline-hydroxyproline sequence stimulates collagen synthesis',
@@ -1105,7 +1105,7 @@ export class PeptideService extends ProfessionalBaseService {
       }
     }
 
-    const surfaceAccessibility = sequence.split('').map((_char, _index) => {
+    const surfaceAccessibility = sequence.split('').map(() => {
       const nearbyHydrophobic = ['A', 'V', 'I', 'L', 'M', 'F', 'W'].filter((aa) => sequence.includes(aa)).length;
       return Math.min(1, nearbyHydrophobic / sequence.length);
     });

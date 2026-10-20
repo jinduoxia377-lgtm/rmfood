@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Sparkles, Wand2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
@@ -37,24 +37,18 @@ interface GenerationPanelProps {
 
 export function GenerationPanel({
   selectedEffects,
-  setSelectedEffects,
   toggleEffect,
-  clearEffects,
   effectLabels,
   canSelectMore,
   selectionCount,
   generateResult,
-  generator,
-  errorMessage,
-  setErrorMessage,
   mutation,
   progress,
   handleCancelGeneration,
-  handleReset,
   isGenerating,
   llmAvailable,
 }: GenerationPanelProps) {
-  const [useLlm, setUseLlm] = usePersistentState<boolean>(
+  const [useLlm] = usePersistentState<boolean>(
     'generate_use_llm',
     false,
   )

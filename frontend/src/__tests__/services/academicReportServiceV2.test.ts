@@ -3,22 +3,22 @@ import { ReportModuleType } from '@/types/academicReportModules'
 import type { AICandidate } from '@/types'
 
 // Mock the feedback and error handler services
-jest.mock('@/services/feedbackService', () => ({
+vi.mock('@/services/feedbackService', () => ({
   feedbackService: {
-    startOperation: jest.fn(),
-    showProgress: jest.fn(),
-    updateProgress: jest.fn(),
-    completeProgress: jest.fn(),
-    showSuccess: jest.fn(),
-    showError: jest.fn(),
-    completeOperation: jest.fn(),
+    startOperation: vi.fn(),
+    showProgress: vi.fn(),
+    updateProgress: vi.fn(),
+    completeProgress: vi.fn(),
+    showSuccess: vi.fn(),
+    showError: vi.fn(),
+    completeOperation: vi.fn(),
   },
 }))
 
-jest.mock('@/services/errorHandler', () => ({
+vi.mock('@/services/errorHandler', () => ({
   errorHandler: {
-    validationError: jest.fn(),
-    handleError: jest.fn(),
+    validationError: vi.fn(),
+    handleError: vi.fn(),
   },
   ErrorCategory: {
     RUNTIME: 'RUNTIME',
@@ -26,22 +26,22 @@ jest.mock('@/services/errorHandler', () => ({
 }))
 
 // Mock jsPDF
-jest.mock('jspdf', () => ({
-  jsPDF: jest.fn().mockImplementation(() => ({
-    setFont: jest.fn(),
-    setFontSize: jest.fn(),
-    splitTextToSize: jest.fn((text: string) => [text]),
-    text: jest.fn(),
-    addPage: jest.fn(),
-    save: jest.fn(),
+vi.mock('jspdf', () => ({
+  jsPDF: vi.fn().mockImplementation(() => ({
+    setFont: vi.fn(),
+    setFontSize: vi.fn(),
+    splitTextToSize: vi.fn((text: string) => [text]),
+    text: vi.fn(),
+    addPage: vi.fn(),
+    save: vi.fn(),
     internal: {
       pageSize: {
-        getWidth: jest.fn(() => 210),
-        getHeight: jest.fn(() => 297),
+        getWidth: vi.fn(() => 210),
+        getHeight: vi.fn(() => 297),
       },
     },
-    setFillColor: jest.fn(),
-    rect: jest.fn(),
+    setFillColor: vi.fn(),
+    rect: vi.fn(),
   })),
 }))
 
@@ -61,7 +61,7 @@ describe('AcademicReportV2', () => {
   const mockEffects = ['增强免疫', '抗氧化', '抗疲劳']
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Initialization', () => {
@@ -209,7 +209,7 @@ describe('AcademicReportV2', () => {
   describe('State Management', () => {
     it('should add state listener and notify', () => {
       const report = new AcademicReportV2(mockCandidate, mockEffects)
-      const listener = jest.fn()
+      const listener = vi.fn()
       
       const unsubscribe = report.addStateListener(listener)
       

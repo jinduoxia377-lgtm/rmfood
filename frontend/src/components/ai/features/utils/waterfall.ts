@@ -81,7 +81,6 @@ export class WaterfallEmitter {
     this.listenersCount++;
 
     return () => {
-      const current = this.serialListeners.get(event) ?? [];
       this.serialListeners.set(
         event,
         list.filter((h) => h !== handler),
@@ -104,7 +103,7 @@ export class WaterfallEmitter {
     const list = this.waterfallListeners.get(event) ?? [];
     if (list.length === 0) return data;
 
-    let currentData = data;
+    const currentData = data;
 
     for (const handler of list) {
       let nextCalled = false;

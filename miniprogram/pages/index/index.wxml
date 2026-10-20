@@ -14,7 +14,7 @@
       </view>
       <view class="header-actions">
         <view class="action-btn" bindtap="goToSearch">
-          <icon name="search" size="md" color="#007AFF" />
+          <icon name="search" size="md" color="var(--color-system-blue)" />
         </view>
         <view class="action-btn" bindtap="goToProfile">
           <avatar src="{{userInfo && userInfo.avatar_url || ''}}" size="sm" />
@@ -24,7 +24,7 @@
     
     <!-- 搜索框 -->
     <view class="search-bar" bindtap="goToSearch">
-      <icon name="search" size="sm" color="#8E8E93" />
+      <icon name="search" size="sm" color="var(--color-text-muted)" />
       <text class="search-placeholder">搜索食材、配方、健康知识...</text>
     </view>
   </view>
@@ -57,7 +57,7 @@
           <!-- AI顾问 -->
           <view class="quick-item" bindtap="startAiChat">
             <view class="quick-icon blue">
-              <icon name="ai" size="lg" color="#FFFFFF" />
+              <icon name="ai" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">AI顾问</text>
             <text class="quick-desc">智能配方设计</text>
@@ -66,7 +66,7 @@
           <!-- 配料分析 -->
           <view class="quick-item" bindtap="startIngredientAnalysis">
             <view class="quick-icon green">
-              <icon name="ingredient" size="lg" color="#FFFFFF" />
+              <icon name="ingredient" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">配料分析</text>
             <text class="quick-desc">拍照识别成分</text>
@@ -75,7 +75,7 @@
           <!-- 配方库 -->
           <view class="quick-item" bindtap="goToFormulas">
             <view class="quick-icon orange">
-              <icon name="formula" size="lg" color="#FFFFFF" />
+              <icon name="formula" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">配方库</text>
             <text class="quick-desc">精选药膳配方</text>
@@ -84,7 +84,7 @@
           <!-- 历史记录 -->
           <view class="quick-item" bindtap="goToHistory">
             <view class="quick-icon purple">
-              <icon name="history" size="lg" color="#FFFFFF" />
+              <icon name="history" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">历史记录</text>
           </view>
@@ -92,7 +92,7 @@
           <!-- 数据库 -->
           <view class="quick-item" bindtap="goToDatabase">
             <view class="quick-icon teal">
-              <icon name="database" size="lg" color="#FFFFFF" />
+              <icon name="database" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">数据库</text>
             <text class="quick-desc">药材肽类检索</text>
@@ -101,7 +101,7 @@
           <!-- 合规标准 -->
           <view class="quick-item" bindtap="goToCompliance">
             <view class="quick-icon red">
-              <icon name="compliance" size="lg" color="#FFFFFF" />
+              <icon name="compliance" size="lg" color="var(--color-text-white)" />
             </view>
             <text class="quick-name">合规标准</text>
             <text class="quick-desc">食药物质查询</text>
@@ -115,7 +115,7 @@
           <text class="section-title">今日推荐</text>
           <view class="more" bindtap="goToFormulas">
             <text>查看全部</text>
-            <icon name="arrow-right" size="xs" color="#007AFF" />
+            <icon name="arrow-right" size="xs" color="var(--color-system-blue)" />
           </view>
         </view>
         
@@ -159,7 +159,7 @@
           <text class="section-title">最近配方</text>
           <view class="more" bindtap="goToFormulas">
             <text>全部</text>
-            <icon name="arrow-right" size="xs" color="#007AFF" />
+            <icon name="arrow-right" size="xs" color="var(--color-system-blue)" />
           </view>
         </view>
         
@@ -180,7 +180,7 @@
                 <text>{{item.difficulty || '简易'}}</text>
               </view>
             </view>
-            <icon name="arrow-right" size="sm" color="#8E8E93" />
+            <icon name="arrow-right" size="sm" color="var(--color-text-muted)" />
           </view>
         </view>
       </view>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { X, BookOpen, ShieldCheck, AlertCircle } from 'lucide-react'
+import React from 'react'
+import { BookOpen, ShieldCheck, AlertCircle } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { AICandidate } from '@/api/ai'

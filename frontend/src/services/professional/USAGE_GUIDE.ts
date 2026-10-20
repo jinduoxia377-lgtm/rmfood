@@ -13,14 +13,14 @@ import { logger } from '@/utils/safeLogger';
 
 async function searchHerbs() {
   // Basic search
-  const result = await tcmService.searchHerbs({
+  await tcmService.searchHerbs({
     keyword: '人参',
     page: 1,
     pageSize: 10,
   });
 
   // Advanced search with filters
-  const filtered = await tcmService.searchHerbs({
+  await tcmService.searchHerbs({
     keyword: '人参',
     page: 1,
     pageSize: 20,
@@ -92,20 +92,5 @@ async function compareHerbs() {
 // ============================================
 // 8. Data Types
 // ============================================
-
-interface HerbDetail {
-  id: string;
-  name: string;
-  latinName: string;
-  category: string;
-  efficacy: string[];
-  description: string;
-}
-
-interface ChemicalComponent {
-  name: string;
-  content: number;
-  molecularFormula: string;
-}
 
 export { searchHerbs, getHerbDetails, analyzeChemicalComposition, analyzeNetworks, compareHerbs };

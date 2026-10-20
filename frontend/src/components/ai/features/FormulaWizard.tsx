@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { logger } from '@/utils/safeLogger';
@@ -12,7 +12,6 @@ import {
   Save,
   FolderOpen,
   Trash2,
-  RotateCcw,
   Droplets,
   Thermometer,
   Gauge,
@@ -405,7 +404,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                   </AnimatePresence>
 
                   {/* 功效选择网格 */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {EFFICACY_TYPES.map((type) => {
                       const selected = efficacies.find((e) => e.id === type.id);
                       return (
@@ -537,7 +536,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       <Gauge className="w-4 h-4" />
                       粘度类型
                     </label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {(['watery', 'lotion', 'cream', 'solid'] as const).map((visc) => (
                         <button
                           key={visc}
@@ -1007,6 +1006,7 @@ function PresetManager({
             }
           }}
           disabled={!newPresetName.trim()}
+          aria-label="保存预设"
           className="px-3 py-1.5 bg-primary-container text-primary-main text-sm rounded-lg hover:bg-primary-container disabled:opacity-50"
         >
           <Save className="w-4 h-4" />

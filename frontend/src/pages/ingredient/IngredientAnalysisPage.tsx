@@ -3,19 +3,20 @@
  * 雷达图可视化 + 添加剂替代建议 + 药食同源检索
  * 主题系统：对齐设计令牌规范（violet→accent, emerald→success, amber/yellow→warning, red→danger, blue→secondary）
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  Beaker, Search, FlaskConical, AlertTriangle, CheckCircle2,
+  Beaker, FlaskConical, AlertTriangle,
   Activity, ShieldAlert, BookOpen, Lightbulb, XCircle,
 } from 'lucide-react'
 import {
   RadarChart as RechartsRadarChart, Radar, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
+  PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip,
 } from 'recharts'
 import { ingredientApi, type AnalysisResult, type AdditiveInfo } from '@/api/ingredient'
 import { complianceApi } from '@/api/compliance'
 import { useToast } from '@/components/ui/Toast'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui'
 
 // ─── 本地存储 ────────────────────────────────────────────────
 const STORAGE_KEY = 'rmfood_ingredient_history'
@@ -33,13 +34,14 @@ const CHART_COLORS = {
 
 // ─── 风险分级 ────────────────────────────────────────────────
 const riskColor = (risk: string) =>
-  risk === 'high' ? 'text-danger-500 dark:text-danger-600' : risk === 'medium' ? 'text-warning-500 dark:text-warning-700' : 'text-success-500 dark:text-success-600'
+  risk === 'high' ? 'text-danger-500 dark:text-danger-600' : risk === 'medium' ? 'text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]' : 'text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]'
 const riskBg = (risk: string) =>
   risk === 'high' ? 'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900' :
-  risk === 'medium' ? 'bg-warning-50 dark:bg-warning-950/20 border-warning-200 dark:border-warning-900' :
-  'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900'
+  risk === 'medium' ? 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/20 border-[var(--color-warning-border)] dark:border-warning-900' :
+  'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/20 border-[var(--color-success-border)] dark:border-success-900'
 
 export default function IngredientAnalysisPage() {
+  const { t, i18n } = useTranslation()
   const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState<'analyze' | 'additives' | 'homology'>('analyze')
   const [ingredientText, setIngredientText] = useState('')
@@ -53,7 +55,7 @@ export default function IngredientAnalysisPage() {
   const [showHistory, setShowHistory] = useState(false)
 
   const handleAnalyze = async () => {
-    if (!ingredientText.trim()) { addToast({ type: 'warning', message: '请输入配料列表文本' }); return }
+    if (!ingredientText.trim()) { addToast({ type: 'warning', message: t('pages.ingredient.toastInputRequired') }); return }
     setLoading(true)
     try {
       const res: any = await ingredientApi.analyze({ ingredient_text: ingredientText })
@@ -66,12 +68,12 @@ export default function IngredientAnalysisPage() {
         text: ingredientText.substring(0, 50) + (ingredientText.length > 50 ? '...' : ''),
         score: data?.overallScore ?? 0,
         grade: data?.riskLevel ?? '?',
-        date: new Date().toLocaleDateString('zh-CN'),
+        date: new Date().toLocaleDateString(i18n.language),
       }
       const newHistory = [histItem, ...history].slice(0, 20)
       setHistory(newHistory)
       saveHistory(newHistory)
-      addToast({ type: 'success', message: `综合评分：${(data?.overallScore ?? 0)}/100` })
+      addToast({ type: 'success', message: t('pages.ingredient.toastScore', { score: data?.overallScore ?? 0 }) })
     } catch (e: any) {
       addToast({ type: 'error', message: String(e) })
     } finally { setLoading(false) }
@@ -106,12 +108,12 @@ export default function IngredientAnalysisPage() {
 
   // Build radar chart data from analysis result
   const radarData = result ? [
-    { dimension: '营养评分', value: result.nutriScore, fullMark: 100 },
-    { dimension: 'NOVA等级', value: Math.max(0, 100 - ((result.novaResult?.group as number ?? 1)) * 25), fullMark: 100 },
-    { dimension: '安全性', value: result.overallScore >= 70 ? 80 : result.overallScore >= 40 ? 50 : 20, fullMark: 100 },
-    { dimension: '过敏风险', value: Math.max(0, 100 - (result.allergens?.length ?? 0) * 20), fullMark: 100 },
-    { dimension: '中草药合规', value: ((result.herbalIngredients?.length ?? 0) > 0) ? 70 : 90, fullMark: 100 },
-    { dimension: '添加剂风险', value: Math.max(0, 100 - result.additives.length * 15), fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.nutrition'), value: result.nutriScore, fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.nova'), value: Math.max(0, 100 - ((result.novaResult?.group as number ?? 1)) * 25), fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.safety'), value: result.overallScore >= 70 ? 80 : result.overallScore >= 40 ? 50 : 20, fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.allergenRisk'), value: Math.max(0, 100 - (result.allergens?.length ?? 0) * 20), fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.herbalCompliance'), value: ((result.herbalIngredients?.length ?? 0) > 0) ? 70 : 90, fullMark: 100 },
+    { dimension: t('pages.ingredient.radarDimensions.additiveRisk'), value: Math.max(0, 100 - result.additives.length * 15), fullMark: 100 },
   ] : []
 
   // Get substitution suggestions for high-risk additives
@@ -123,49 +125,49 @@ export default function IngredientAnalysisPage() {
       '亮蓝': ['螺旋藻提取物', '姜黄素', '甜菜红'],
       '柠檬黄': ['姜黄素', '枸杞提取物', '红曲红'],
     }
-    return subs[additive.name] ?? ['建议咨询专业人士寻找替代方案']
+    return subs[additive.name] ?? [t('pages.ingredient.consultProfessional')]
   }
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+    <div className="min-h-screen">
       {/* 品牌横幅 — 对齐设计系统 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)]">
+        <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900/15 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/15 flex items-center justify-center">
                 <Beaker className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold">配料六维分析</h1>
-                <p className="text-white/80 text-sm">Nutri-Score · NOVA分类 · 添加剂库 · 过敏原 · 中草药识别 · 药食同源</p>
+                <h1 className="text-xl font-semibold">{t('pages.ingredient.title')}</h1>
+                <p className="text-white/80 text-sm">{t('pages.ingredient.subtitle')}</p>
               </div>
             </div>
             {history.length > 0 && (
               <button onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white dark:bg-neutral-900/15 hover:bg-white dark:bg-neutral-900/25 text-primary-700 dark:text-white rounded-full transition-colors">
-                <BookOpen size={12} />历史 ({history.length})
+                className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-1.5 min-h-[44px] text-xs font-medium bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)]/25 text-[var(--color-primary-text)] dark:text-white rounded-[var(--radius-pill)] transition-colors">
+                <BookOpen size={12} />{t('pages.ingredient.history', { count: history.length })}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+      <div className="max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
         {/* 历史面板 */}
         {showHistory && history.length > 0 && (
           <Card>
-            <CardContent className="p-4">
-              <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2 uppercase tracking-wide">最近分析历史</div>
+            <CardContent className="p-[var(--space-apple-md)]">
+              <div className="text-xs font-semibold text-[var(--text-muted)] mb-2 uppercase tracking-wide">{t('pages.ingredient.recentAnalysis')}</div>
               <div className="flex gap-2 flex-wrap">
                 {history.map(h => (
-                  <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg text-xs">
-                    <span className="font-mono text-accent-600 dark:text-accent-700">{h.score}/100</span>
-                    <span className={`font-medium ${h.grade === 'low' ? 'text-success-500 dark:text-success-600' : h.grade === 'medium' ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'}`}>
-                      {h.grade === 'low' ? '低风险' : h.grade === 'medium' ? '中风险' : '高风险'}
+                  <div key={h.id} className="flex items-center gap-2 px-[var(--space-apple-sm)] py-1.5 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-sm)] text-xs">
+                    <span className="font-mono text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">{h.score}/100</span>
+                    <span className={`font-medium ${h.grade === 'low' ? 'text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]' : h.grade === 'medium' ? 'text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]' : 'text-danger-500 dark:text-danger-600'}`}>
+                      {h.grade === 'low' ? t('pages.ingredient.riskLow') : h.grade === 'medium' ? t('pages.ingredient.riskMedium') : t('pages.ingredient.riskHigh')}
                     </span>
                     <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate max-w-[120px]">{h.text}</span>
-                    <span className="text-neutral-300 dark:text-neutral-400">{h.date}</span>
+                    <span className="text-[var(--text-muted)] dark:text-[var(--text-muted)]">{h.date}</span>
                   </div>
                 ))}
               </div>
@@ -176,9 +178,9 @@ export default function IngredientAnalysisPage() {
         {/* Tabs — 对齐 Apple Segmented Control 规范 */}
         <div className="tabs-list w-fit">
           {[
-            { key: 'analyze' as const, label: '六维分析', icon: Activity },
-            { key: 'additives' as const, label: '添加剂库', icon: ShieldAlert },
-            { key: 'homology' as const, label: '药食同源', icon: BookOpen },
+            { key: 'analyze' as const, label: t('pages.ingredient.tabAnalyze'), icon: Activity },
+            { key: 'additives' as const, label: t('pages.ingredient.tabAdditives'), icon: ShieldAlert },
+            { key: 'homology' as const, label: t('pages.ingredient.tabHomology'), icon: BookOpen },
           ].map(tab => (
             <button key={tab.key} onClick={() => { setActiveTab(tab.key); if (tab.key === 'additives' && additives.length === 0) handleLoadAdditives(); if (tab.key === 'homology' && homologyList.length === 0) handleLoadHomology() }}
               className={`tabs-trigger ${activeTab === tab.key ? 'tabs-trigger-active' : ''}`}>
@@ -190,25 +192,25 @@ export default function IngredientAnalysisPage() {
 
         {/* ═══ 六维分析 Tab ═══ */}
         {activeTab === 'analyze' && (
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                  <FlaskConical size={14} className="text-accent-500 dark:text-accent-700" />配料列表（逗号或换行分隔）
+                  <FlaskConical size={14} className="text-[var(--color-accent-text)]0 dark:text-[var(--color-accent-text)]" />{t('pages.ingredient.ingredientList')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0">
                 <textarea
                   value={ingredientText}
                   onChange={e => setIngredientText(e.target.value)}
-                  placeholder={"水、蔗糖、抗坏血酸（VC）、柠檬酸、苯甲酸钠、丙二醇、天然香草香料、花粉提取物、人参提取物..."}
+                  placeholder={t('pages.ingredient.textareaPlaceholder')}
                   rows={5}
-                  className="w-full px-4 py-3 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-100 resize-none focus:outline-none focus:ring-2 focus:ring-accent-500"
+                  className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-sm rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-tertiary)] dark:text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                 />
-                <div className="mt-3">
+                <div className="mt-[var(--space-apple-sm)]">
                   <Button onClick={handleAnalyze} disabled={loading}>
                     {loading ? <Activity size={14} className="animate-spin" /> : <Activity size={14} />}
-                    {loading ? '分析中...' : '执行六维分析'}
+                    {loading ? t('pages.ingredient.analyzing') : t('pages.ingredient.runAnalyze')}
                   </Button>
                 </div>
               </CardContent>
@@ -220,7 +222,7 @@ export default function IngredientAnalysisPage() {
                 <Card>
                   <CardHeader className="px-5 pt-5 pb-3">
                     <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <Activity size={14} className="text-accent-500 dark:text-accent-700" />六维雷达图
+                      <Activity size={14} className="text-[var(--color-accent-text)]0 dark:text-[var(--color-accent-text)]" />{t('pages.ingredient.radarTitle')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-5 pb-5 pt-0">
@@ -232,48 +234,48 @@ export default function IngredientAnalysisPage() {
                             <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
                             <RechartsTooltip
-                              formatter={(value: number) => [`${value}分`, '评分']}
+                              formatter={(value: number) => [`${value}${t('pages.ingredient.scoreUnit')}`, t('pages.ingredient.overallScoreName')]}
                               contentStyle={{ backgroundColor: 'var(--card-bg-solid)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px' }}
                             />
-                            <Radar name="综合评分" dataKey="value" stroke={CHART_COLORS.accent} fill={CHART_COLORS.accent} fillOpacity={0.2} strokeWidth={2} />
+                            <Radar name={t('pages.ingredient.overallScoreName')} dataKey="value" stroke={CHART_COLORS.accent} fill={CHART_COLORS.accent} fillOpacity={0.2} strokeWidth={2} />
                           </RechartsRadarChart>
                         </ResponsiveContainer>
                       </div>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="rounded-xl p-3 bg-success-50 dark:bg-success-950/20 border border-success-200 dark:border-success-900">
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Nutri-Score</div>
-                            <div className="text-xl font-bold text-success-500 dark:text-success-600">{result.nutriScore}/100</div>
-                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{String(result.nutriGrade?.grade ?? '?')} 等级</div>
+                      <div className="space-y-[var(--space-apple-sm)]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)]">
+                          <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-sm)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/20 border border-[var(--color-success-border)] dark:border-success-900">
+                            <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.ingredient.nutriScore')}</div>
+                            <div className="text-xl font-bold text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]">{result.nutriScore}/100</div>
+                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{t('pages.ingredient.grade', { grade: String(result.nutriGrade?.grade ?? '?') })}</div>
                           </div>
-                          <div className="rounded-xl p-3 bg-secondary-50 dark:bg-secondary-950/20 border border-secondary-200 dark:border-secondary-900">
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">NOVA 分组</div>
-                            <div className="text-xl font-bold text-secondary-500 dark:text-secondary-700">{String(result.novaResult?.group ?? "?")}</div>
+                          <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-sm)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-border)] dark:border-secondary-900">
+                            <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.ingredient.novaGroup')}</div>
+                            <div className="text-xl font-bold text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]">{String(result.novaResult?.group ?? "?")}</div>
                             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{String(result.novaResult?.label ?? "")}</div>
                           </div>
-                          <div className="rounded-xl p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
-                            <div className={`text-xl font-bold ${result.overallScore >= 70 ? 'text-success-500 dark:text-success-600' : result.overallScore >= 40 ? 'text-warning-500 dark:text-warning-700' : 'text-danger-500 dark:text-danger-600'}`}>
+                          <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
+                            <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.ingredient.overallScore')}</div>
+                            <div className={`text-xl font-bold ${result.overallScore >= 70 ? 'text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]' : result.overallScore >= 40 ? 'text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]' : 'text-danger-500 dark:text-danger-600'}`}>
                               {result.overallScore}
                             </div>
                             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
-                              {result.riskLevel === 'high' ? '高风险' : result.riskLevel === 'medium' ? '中风险' : '低风险'}
+                              {result.riskLevel === 'high' ? t('pages.ingredient.riskHigh') : result.riskLevel === 'medium' ? t('pages.ingredient.riskMedium') : t('pages.ingredient.riskLow')}
                             </div>
                           </div>
-                          <div className="rounded-xl p-3 bg-warning-50 dark:bg-warning-950/20 border border-warning-200 dark:border-warning-900">
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">过敏原</div>
-                            <div className="text-xl font-bold text-warning-500 dark:text-warning-700">{result.allergens?.length ?? 0}</div>
-                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">个已识别</div>
+                          <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-sm)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/20 border border-[var(--color-warning-border)] dark:border-warning-900">
+                            <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.ingredient.allergens')}</div>
+                            <div className="text-xl font-bold text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]">{result.allergens?.length ?? 0}</div>
+                            <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{t('pages.ingredient.allergensCount')}</div>
                           </div>
                         </div>
 
                         {/* 过敏原列表 */}
                         {result.allergens.length > 0 && (
                           <div>
-                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">已识别过敏原</div>
+                            <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t('pages.ingredient.identifiedAllergens')}</div>
                             <div className="flex flex-wrap gap-1">
                               {result.allergens.map((a, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700 text-xs rounded-md font-medium">
+                                <span key={i} className="px-2 py-0.5 bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25 text-[var(--color-warning-text)] text-xs rounded-[var(--radius-Apple-sm)] font-medium">
                                   {a.name} ({a.level})
                                 </span>
                               ))}
@@ -284,10 +286,10 @@ export default function IngredientAnalysisPage() {
                         {/* 中草药识别 */}
                         {result.herbalIngredients.length > 0 && (
                           <div>
-                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">中草药成分</div>
+                            <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t('pages.ingredient.herbalIngredients')}</div>
                             <div className="flex flex-wrap gap-1">
                               {result.herbalIngredients.map((h, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700 text-xs rounded-md font-medium">
+                                <span key={i} className="px-2 py-0.5 bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)] text-xs rounded-[var(--radius-Apple-sm)] font-medium">
                                   {h.name}
                                 </span>
                               ))}
@@ -304,30 +306,30 @@ export default function IngredientAnalysisPage() {
                   <Card>
                     <CardHeader className="px-5 pt-5 pb-3">
                       <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                        <ShieldAlert size={14} className="text-warning-500 dark:text-warning-700" />已识别添加剂及替代建议
+                        <ShieldAlert size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />{t('pages.ingredient.additivesSuggestions')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-5 pb-5 pt-0">
                       <div className="space-y-2">
                         {result.additives.map((a, i) => (
-                          <div key={i} className={`rounded-lg border p-3 ${riskBg(a.risk)}`}>
+                          <div key={i} className={`rounded-[var(--radius-Apple-sm)] border p-[var(--space-apple-sm)] ${riskBg(a.risk)}`}>
                             <div className="flex items-center gap-4">
-                              <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-16">{a.eCode}</span>
-                              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{a.name}</span>
-                              <span className="text-xs text-neutral-500 dark:text-neutral-400">{a.function}</span>
-                              <span className={`text-xs font-bold ${riskColor(a.risk)}`}>{a.risk === 'high' ? '高风险' : a.risk === 'medium' ? '中风险' : '低风险'}</span>
-                              {a.carcinogen && <span className="text-xs bg-danger-100 dark:bg-danger-300/25 text-danger-600 dark:text-danger-600 px-1.5 py-0.5 rounded">致癌</span>}
-                              {a.allergen && <span className="text-xs bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700 px-1.5 py-0.5 rounded">过敏</span>}
-                              {a.maxUsage && <span className="ml-auto text-xs text-neutral-400 dark:text-neutral-400">最大用量: {a.maxUsage}</span>}
+                              <span className="text-xs font-mono text-[var(--text-muted)] w-16">{a.eCode}</span>
+                              <span className="text-sm font-medium text-[var(--text-primary)]">{a.name}</span>
+                              <span className="text-xs text-[var(--text-muted)]">{a.function}</span>
+                              <span className={`text-xs font-bold ${riskColor(a.risk)}`}>{a.risk === 'high' ? t('pages.ingredient.riskHigh') : a.risk === 'medium' ? t('pages.ingredient.riskMedium') : t('pages.ingredient.riskLow')}</span>
+                              {a.carcinogen && <span className="text-xs bg-danger-100 dark:bg-danger-300/25 text-danger-600 dark:text-danger-600 px-1.5 py-0.5 rounded">{t('pages.ingredient.carcinogen')}</span>}
+                              {a.allergen && <span className="text-xs bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] px-1.5 py-0.5 rounded">{t('pages.ingredient.allergen')}</span>}
+                              {a.maxUsage && <span className="ml-auto text-xs text-[var(--text-muted)]">{t('pages.ingredient.maxUsage', { value: a.maxUsage })}</span>}
                             </div>
                             {a.risk === 'high' && (
                               <div className="mt-2 pt-2 border-t border-inherit">
-                                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1 flex items-center gap-1">
-                                  <Lightbulb size={12} className="text-warning-500 dark:text-warning-700" />替代建议
+                                <div className="text-xs font-semibold text-[var(--text-muted)] mb-1 flex items-center gap-1">
+                                  <Lightbulb size={12} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />{t('pages.ingredient.substitution')}
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {getSubstitutions(a).map((sub, j) => (
-                                    <span key={j} className="px-2 py-0.5 bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600 text-xs rounded-md">
+                                    <span key={j} className="px-2 py-0.5 bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25 text-[var(--color-success-text)] dark:text-[var(--color-success-text)] text-xs rounded-[var(--radius-Apple-sm)]">
                                       → {sub}
                                     </span>
                                   ))}
@@ -343,13 +345,13 @@ export default function IngredientAnalysisPage() {
 
                 {/* 风险消息 */}
                 {result.riskMessages.length > 0 && (
-                  <div className="rounded-xl bg-danger-50 dark:bg-danger-950/20 border border-danger-200 dark:border-danger-900 p-5">
-                    <h2 className="text-sm font-semibold text-danger-600 dark:text-danger-600 mb-3 flex items-center gap-2">
-                      <AlertTriangle size={14} />风险提示
+                  <div className="rounded-[var(--radius-Apple-md)] bg-danger-50 dark:bg-danger-950/20 border border-danger-200 dark:border-danger-900 p-5">
+                    <h2 className="text-sm font-semibold text-danger-600 dark:text-danger-600 mb-[var(--space-apple-sm)] flex items-center gap-2">
+                      <AlertTriangle size={14} />{t('pages.ingredient.riskMessages')}
                     </h2>
                     <div className="space-y-1">
                       {result.riskMessages.map((m, i) => (
-                        <div key={i} className="flex items-start gap-2 px-3 py-1.5 text-sm text-neutral-700 dark:text-neutral-300">
+                        <div key={i} className="flex items-start gap-2 px-[var(--space-apple-sm)] py-1.5 text-sm text-[var(--text-primary)]">
                           <XCircle size={12} className="text-danger-400 mt-0.5 shrink-0" />{m}
                         </div>
                       ))}
@@ -359,14 +361,14 @@ export default function IngredientAnalysisPage() {
 
                 {/* 优化建议 */}
                 {result.suggestions.length > 0 && (
-                  <div className="rounded-xl bg-secondary-50 dark:bg-secondary-950/20 border border-secondary-200 dark:border-secondary-900 p-5">
-                    <h2 className="text-sm font-semibold text-secondary-600 dark:text-secondary-700 mb-3 flex items-center gap-2">
-                      <Lightbulb size={14} />优化建议
+                  <div className="rounded-[var(--radius-Apple-md)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-border)] dark:border-secondary-900 p-5">
+                    <h2 className="text-sm font-semibold text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] mb-[var(--space-apple-sm)] flex items-center gap-2">
+                      <Lightbulb size={14} />{t('pages.ingredient.suggestions')}
                     </h2>
                     <div className="space-y-1">
                       {result.suggestions.map((s, i) => (
-                        <div key={i} className="flex items-start gap-2 px-3 py-1.5 text-sm text-neutral-700 dark:text-neutral-300">
-                          <span className="text-secondary-400">→</span>{typeof s === 'string' ? s : (s as any).text || (s as any).message || (s as any).type || JSON.stringify(s)}
+                        <div key={i} className="flex items-start gap-2 px-[var(--space-apple-sm)] py-1.5 text-sm text-[var(--text-primary)]">
+                          <span className="text-[var(--color-secondary-text)]">→</span>{typeof s === 'string' ? s : (s as any).text || (s as any).message || (s as any).type || JSON.stringify(s)}
                         </div>
                       ))}
                     </div>
@@ -382,28 +384,28 @@ export default function IngredientAnalysisPage() {
           <Card>
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                <ShieldAlert size={14} className="text-warning-500 dark:text-warning-700" />食品添加剂数据库
+                <ShieldAlert size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />{t('pages.ingredient.additivesDb')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5 pt-0">
-              <div className="mb-4">
+              <div className="mb-[var(--space-apple-md)]">
                 <Input value={searchTerm} onChange={e => handleSearchAdditive(e.target.value)}
-                  placeholder="搜索添加剂名称或E编码..." className="h-9 text-sm" />
+                  placeholder={t('pages.ingredient.searchAdditive')} className="h-9 text-sm" />
               </div>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {filteredAdditives.length === 0 ? (
-                  <p className="text-sm text-neutral-400 dark:text-neutral-400 text-center py-8">
-                    {additives.length === 0 ? '加载中...' : '无匹配结果'}
+                  <p className="text-sm text-[var(--text-muted)] text-center py-8">
+                    {additives.length === 0 ? t('pages.ingredient.loading') : t('pages.ingredient.noMatch')}
                   </p>
                 ) : filteredAdditives.map((a, i) => (
-                  <div key={i} className={`flex items-center gap-4 px-3 py-2.5 rounded-lg border ${riskBg(a.risk)}`}>
-                    <span className="text-xs font-mono text-neutral-400 dark:text-neutral-400 w-16">{a.eCode}</span>
-                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{a.name}</span>
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">{a.function}</span>
-                    <span className={`text-xs font-bold ${riskColor(a.risk)}`}>{a.risk === 'high' ? '高' : a.risk === 'medium' ? '中' : '低'}</span>
-                    {a.carcinogen && <span className="text-xs bg-danger-100 dark:bg-danger-300/25 text-danger-600 dark:text-danger-600 px-1.5 py-0.5 rounded">致癌</span>}
-                    {a.allergen && <span className="text-xs bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700 px-1.5 py-0.5 rounded">过敏</span>}
-                    {a.maxUsage && <span className="ml-auto text-xs text-neutral-400 dark:text-neutral-400">{a.maxUsage}</span>}
+                  <div key={i} className={`flex items-center gap-4 px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] border ${riskBg(a.risk)}`}>
+                    <span className="text-xs font-mono text-[var(--text-muted)] w-16">{a.eCode}</span>
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{a.name}</span>
+                    <span className="text-xs text-[var(--text-muted)]">{a.function}</span>
+                    <span className={`text-xs font-bold ${riskColor(a.risk)}`}>{a.risk === 'high' ? t('pages.ingredient.riskHighShort') : a.risk === 'medium' ? t('pages.ingredient.riskMediumShort') : t('pages.ingredient.riskLowShort')}</span>
+                    {a.carcinogen && <span className="text-xs bg-danger-100 dark:bg-danger-300/25 text-danger-600 dark:text-danger-600 px-1.5 py-0.5 rounded">{t('pages.ingredient.carcinogen')}</span>}
+                    {a.allergen && <span className="text-xs bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] px-1.5 py-0.5 rounded">{t('pages.ingredient.allergen')}</span>}
+                    {a.maxUsage && <span className="ml-auto text-xs text-[var(--text-muted)]">{a.maxUsage}</span>}
                   </div>
                 ))}
               </div>
@@ -416,19 +418,19 @@ export default function IngredientAnalysisPage() {
           <Card>
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                <BookOpen size={14} className="text-accent-500 dark:text-accent-700" />药食同源目录（2025版）
+                <BookOpen size={14} className="text-[var(--color-accent-text)]0 dark:text-[var(--color-accent-text)]" />{t('pages.ingredient.homologyCatalog')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5 pt-0">
               {homologyList.length === 0 ? (
-                <p className="text-sm text-neutral-400 dark:text-neutral-400 text-center py-8">加载中...</p>
+                <p className="text-sm text-[var(--text-muted)] text-center py-8">{t('pages.ingredient.loading')}</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                   {homologyList.map((item: any, i: number) => (
-                    <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-lg">
-                      <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{item.name}</span>
-                      <span className="text-xs text-neutral-400 dark:text-neutral-400">{item.category}</span>
-                      <span className="text-xs font-mono text-accent-600 dark:text-accent-700 ml-auto">最大 {item.max_dosage}</span>
+                    <div key={i} className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-sm)]">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{item.name}</span>
+                      <span className="text-xs text-[var(--text-muted)]">{item.category}</span>
+                      <span className="text-xs font-mono text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)] ml-auto">{t('pages.ingredient.maxDosage', { value: item.max_dosage })}</span>
                     </div>
                   ))}
                 </div>

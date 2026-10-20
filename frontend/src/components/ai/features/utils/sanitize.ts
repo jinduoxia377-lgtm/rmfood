@@ -60,6 +60,7 @@ const SANITIZE_CONFIG = {
   RETURN_TRUSTED_TYPE: false,
 };
 
+// eslint-disable-next-line no-control-regex
 const FILE_NAME_PATTERN = /[<>:"/\\|?*\x00-\x1F]/g;
 const FILE_NAME_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
 
@@ -237,15 +238,12 @@ export function sanitizeHtml(html: string): string {
 }
 
 function sanitizeHtmlSync(html: string): string {
-  const startTime = performance.now();
-
   const sanitized = DOMPurify.sanitize(html, {
     ...SANITIZE_CONFIG,
     ALLOWED_URI_REGEXP:
       /^(?:(?:https?|ftp|mailto|tel|data:image\/(png|jpeg|gif|svg\+xml|webp);base64,[a-zA-Z0-9+/=]+)|#[^ ]*|(?:\/|\.\.\/)[^ ]*)$/,
   });
 
-  const duration = performance.now() - startTime;
   if (sanitizeCache.size >= MAX_CACHE_SIZE) {
     const firstKey = sanitizeCache.keys().next().value;
     if (firstKey !== undefined) sanitizeCache.delete(firstKey);
@@ -298,7 +296,7 @@ export function sanitizeFileName(name: string): string {
   sanitized = sanitized.replace(/^[.]+/, '_').replace(/[.]+$/, '_');
   sanitized = sanitized.substring(0, 255);
 
-  if (sanitized === '' || sanitized === '_' || '.') {
+  if (sanitized === '' || sanitized === '_' || sanitized === '.') {
     sanitized = `unnamed_${Date.now()}`;
   }
 

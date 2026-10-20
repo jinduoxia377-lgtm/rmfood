@@ -9,7 +9,7 @@
  */
 
 // @ts-expect-error - test environment module path resolution
-import { getNLPConfigService, resetNLPConfigService } from '../../../../config/nlp/nlpConfigService'
+import { resetNLPConfigService } from '../../../../config/nlp/nlpConfigService'
 // @ts-expect-error - test environment module path resolution
 import { initializeNLPConfigs } from '../../../../config/nlp/index'
 import { TextCleaner } from '../nlpProcessor'

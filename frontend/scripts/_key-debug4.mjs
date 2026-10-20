@@ -1,0 +1,26 @@
+﻿import { chromium, devices } from '@playwright/test';
+const BASE = 'http://localhost:3000';
+const iPhone13 = devices['iPhone 13'];
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ ...iPhone13 });
+const page = await context.newPage();
+let n = 0;
+page.on('console', async (msg) => {
+  if (msg.type() !== 'error') return;
+  const t = msg.text();
+  if (!t.includes('same key')) return;
+  n++;
+  if (n > 4) return;
+  const loc = msg.location();
+  console.log('KEY_LOC>', JSON.stringify(loc));
+});
+await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.fill('#rhine-username', 'admin');
+await page.fill('#rhine-password', 'admin123');
+await page.click('button[type="submit"]');
+await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 20000 });
+await page.waitForTimeout(1000);
+await page.goto(BASE + '/formulas', { waitUntil: 'domcontentloaded', timeout: 45000 });
+await page.waitForTimeout(3000);
+console.log('TOTAL_KEY>', n);
+await browser.close();

@@ -1,24 +1,15 @@
 import { GraphNode } from '../types'
+import type { ExternalData } from '../hooks/useGraphState'
 
-export interface ExternalDataItem {
-  description: string
-  molecularFormula?: string
-  molecularWeight?: number
-  properties?: Record<string, unknown>
-  targets?: string[]
-  pathways?: string[]
-  diseases?: string[]
-  source: string
-  literatureCount?: number
-  lastUpdated: string
-}
+// 兼容旧引用：外部数据条目即 useGraphState 的 ExternalData
+export type ExternalDataItem = ExternalData
 
 export interface ExternalDataPanelProps {
   showExternalPanel: boolean
   selectedNode: GraphNode | null
   syncStatus: 'connected' | 'syncing' | 'disconnected'
   externalLoadingId: string | null
-  externalData: ExternalDataItem | null
+  externalData: ExternalData | null
   onQueryExternalData: () => void
   onTriggerAutoSync: () => void
   onClose: () => void
@@ -48,7 +39,7 @@ export default function ExternalDataPanel({
   }
 
   return (
-    <div className="absolute top-14 left-3 z-45 w-[340px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-info-200/60 dark:border-info-700/40 animate-fade-in">
+    <div className="absolute top-14 left-3 z-45 w-[min(340px,calc(100vw-1.5rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-info-200/60 dark:border-info-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-info-50 to-success-50 dark:from-info-950/50 dark:to-success-950/50 border-b border-info-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2">
           <span>🔬</span>
@@ -84,12 +75,12 @@ export default function ExternalDataPanel({
   )
 }
 
-function ExternalDataContent({ data }: { data: ExternalDataItem }) {
+function ExternalDataContent({ data }: { data: ExternalData }) {
   return (
     <div className="space-y-2.5">
-      <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">{data.description}</p>
+      <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">{data.description || '暂无描述'}</p>
       {data.molecularFormula && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="rounded-lg bg-info-50/80 dark:bg-info-950/20 p-2">
             <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子式</div>
             <div className="text-xs font-mono font-bold text-info-700 dark:text-info-700">{data.molecularFormula}</div>
@@ -103,7 +94,7 @@ function ExternalDataContent({ data }: { data: ExternalDataItem }) {
       {data.properties && Object.keys(data.properties).length > 0 && (
         <div className="bg-neutral-50/80 dark:bg-neutral-800/30 rounded-lg p-2">
           <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1 block">属性</span>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {Object.entries(data.properties).slice(0, 8).map(([k, v]) => (
               <div key={k} className="flex justify-between text-xs">
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate max-w-[70px]" title={k}>{k}</span>
@@ -145,7 +136,7 @@ function ExternalDataContent({ data }: { data: ExternalDataItem }) {
       )}
       <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/30">
         <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
-        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新: {data.lastUpdated}</span>
+        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新: {data.lastUpdated || '未知'}</span>
       </div>
     </div>
   )

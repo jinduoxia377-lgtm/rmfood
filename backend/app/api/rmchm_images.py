@@ -14,6 +14,7 @@ router = APIRouter(prefix="/rmchm", tags=["RMCHM"])
 # 图片目录
 IMAGE_DIRS = [
     r'D:\RMFOODFP\data\106FAM',
+    r'D:\RMFOODFP\data\RMCHM_IMAGES',
 ]
 
 # 映射文件
@@ -28,6 +29,13 @@ def load_mapping() -> dict:
     return {}
 
 
+def norm_herb_filename(fn: str) -> str:
+    """去掉扩展名和括号注解（如 姜（生姜、干姜）.jpg → 姜）。"""
+    base = os.path.splitext(fn)[0]
+    base = re.sub(r"[（(].*?[）)]", "", base)
+    return base.strip()
+
+
 def find_image(herb_name: str) -> Optional[str]:
     """根据药材名查找图片"""
     mapping = load_mapping()
@@ -36,18 +44,31 @@ def find_image(herb_name: str) -> Optional[str]:
     if herb_name in mapping:
         return mapping[herb_name]
 
-    # 模糊匹配
+    # 模糊匹配（映射键包含药材名）
     for key, url in mapping.items():
         if herb_name in key or key in herb_name:
             return url
 
-    # 遍历目录
+    # 遍历目录：去注解后名称完全一致 > 前缀 > 包含
     for img_dir in IMAGE_DIRS:
         if not os.path.exists(img_dir):
             continue
+        best_prefix = None
+        best_contains = None
         for filename in os.listdir(img_dir):
-            if filename.endswith('.jpg') and herb_name in filename:
+            if not filename.endswith(('.jpg', '.jpeg', '.png')):
+                continue
+            norm = norm_herb_filename(filename)
+            if norm == herb_name:
                 return f"/api/v1/rmchm/images/{filename}"
+            if best_prefix is None and norm.startswith(herb_name):
+                best_prefix = filename
+            if best_contains is None and herb_name in norm:
+                best_contains = filename
+        if best_prefix:
+            return f"/api/v1/rmchm/images/{best_prefix}"
+        if best_contains:
+            return f"/api/v1/rmchm/images/{best_contains}"
 
     return None
 

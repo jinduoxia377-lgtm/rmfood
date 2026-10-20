@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UserManagementPage helpers, constants, interfaces, and mock data
  */
 import React, { useState, useEffect } from 'react'
@@ -20,42 +20,42 @@ export const ROLE_CONFIG: Record<
 > = {
   [UserRole.ADMIN]: {
     label: '系统管理员',
-    color: 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-600',
+    color: 'bg-[var(--color-error-container)] text-[var(--color-error-text)] dark:bg-[var(--color-error-container)]/25 dark:text-[var(--color-error-text)]',
     icon: Shield,
     description: '拥有所有权限',
-    bgColor: 'bg-error-50 dark:bg-error-950/30',
+    bgColor: 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/30',
     chartColor: 'var(--color-error, #FF3B30)',
   },
   [UserRole.REVIEWER]: {
     label: '审核员',
-    color: 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700',
+    color: 'bg-[var(--color-warning-container)] text-[var(--color-warning-text)] dark:bg-[var(--color-warning-container)]/25 dark:text-[var(--color-warning-text)]',
     icon: ShieldCheck,
     description: '管理用户和内容审核',
-    bgColor: 'bg-warning-50 dark:bg-warning-950/30',
+    bgColor: 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30',
     chartColor: 'var(--color-warning-500, #EA580C)',
   },
   [UserRole.RESEARCHER]: {
     label: '研究员',
-    color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700',
+    color: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)] dark:bg-[var(--color-secondary-container)]/25 dark:text-[var(--color-secondary-text)]',
     icon: Users,
     description: '配方研发人员',
-    bgColor: 'bg-secondary-50 dark:bg-secondary-950/30',
+    bgColor: 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/30',
     chartColor: 'var(--color-secondary, #0A84FF)',
   },
   [UserRole.FORMULATOR]: {
     label: '配方师',
-    color: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700',
+    color: 'bg-[var(--color-accent-container)] text-[var(--color-accent-text)] dark:bg-[var(--color-accent-container)]/25 dark:text-[var(--color-accent-text)]',
     icon: Filter,
     description: '配方设计与开发',
-    bgColor: 'bg-accent-50 dark:bg-accent-950/30',
+    bgColor: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/30',
     chartColor: 'var(--color-accent-500, #A855F7)',
   },
   [UserRole.GUEST]: {
     label: '访客',
-    color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+    color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]',
     icon: Eye,
     description: '只读访问权限',
-    bgColor: 'bg-neutral-50 dark:bg-neutral-900/30',
+    bgColor: 'bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/30',
     chartColor: 'var(--text-muted, #9A9A9F)',
   },
 };
@@ -69,8 +69,8 @@ export const STATUS_OPTIONS = [
 ];
 
 export const STATUS_CONFIG = {
-  active: { label: '正常', variant: 'success' as const, icon: ShieldCheck, dotColor: 'bg-primary-500' },
-  inactive: { label: '已禁用', variant: 'danger' as const, icon: ShieldAlert, dotColor: 'bg-error-500' },
+  active: { label: '正常', variant: 'success' as const, icon: ShieldCheck, dotColor: 'bg-[var(--color-primary-container)]0' },
+  inactive: { label: '已禁用', variant: 'danger' as const, icon: ShieldAlert, dotColor: 'bg-[var(--color-error-container)]0' },
 };
 
 export const PAGE_SIZE_OPTIONS = [
@@ -112,6 +112,7 @@ export interface UserDetail {
   locked_until?: string | null;
   organization_id?: number | null;
   organization_name?: string | null;
+  organizations?: Array<{ id: number; name: string; role: string }>;
 }
 
 export interface ConfirmAction {
@@ -120,6 +121,7 @@ export interface ConfirmAction {
   userIds?: number[];
   currentValue?: string;
   newValue?: string;
+  enable?: boolean;
   label: string;
   description: string;
   confirmLabel: string;

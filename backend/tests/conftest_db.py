@@ -7,7 +7,7 @@ import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.session import get_db
+from app.core.database.session import get_db
 
 
 @pytest.fixture(scope="session")

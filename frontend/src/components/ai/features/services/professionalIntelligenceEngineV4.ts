@@ -16,7 +16,6 @@ import {
   type SemanticAnalysisResult,
   type RecognizedDomainTerm,
   type ExpertSuggestionV2,
-  type IntentType,
 } from './professionalIntelligenceEngine'
 
 import { ENHANCED_DOMAIN_KNOWLEDGE_GRAPH_V2, type EnhancedDomainTerm } from './enhancedKnowledgeGraphV2'
@@ -541,6 +540,7 @@ export class ProfessionalIntelligenceEngineV4 {
     analysis: SemanticAnalysisResult,
     _maxCount: number,
   ): Promise<ExpertSuggestionV2[]> {
+    void _maxCount;
     // 这里应该调用实际的模板匹配和实例化逻辑
     // 为演示目的，返回基于分析结果的模拟建议
 

@@ -1561,3 +1561,25 @@
     max-width: 420px;
   }
 }
+
+/* ── 白名单申请入口（v6.0 替换原邮箱预登记折叠表单） ── */
+.whitelist-login-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.whitelist-login-entry a.rhine-preregister-toggle {
+  justify-content: center;
+  text-decoration: none;
+}
+
+.whitelist-login-entry-sub {
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-tertiary, #94a3b8);
+}
+
+.dark .whitelist-login-entry-sub {
+  color: var(--text-muted, #64748b);
+}

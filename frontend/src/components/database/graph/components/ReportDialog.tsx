@@ -1,7 +1,6 @@
 import { ReportConfig } from './types'
 
 export interface ReportDialogProps {
-  [key: string]: any;
   showReportDialog: boolean
   reportConfig: ReportConfig
   reportGenerating: boolean
@@ -28,14 +27,14 @@ export default function ReportDialog({
   ]
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[480px] overflow-hidden animate-fade-in">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"  role="button" tabIndex={0} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-full max-w-[480px] overflow-hidden animate-fade-in">
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50">
           <div className="flex items-center gap-2"><span>📄</span><span className="text-sm font-bold text-accent-700 dark:text-accent-700">生成分析报告</span></div>
           <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>
         </div>
         <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] block mb-1">报告标题</label>
 <input aria-label="报告标题" value={reportConfig.title} onChange={e => onSetReportConfig({ title: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-xs bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-accent-300" />            </div>

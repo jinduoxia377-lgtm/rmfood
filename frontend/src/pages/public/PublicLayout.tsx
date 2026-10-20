@@ -8,22 +8,22 @@ import { BRAND_CONFIG, RHINE_BRAND_CONFIG } from '@/config';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#fafafa', color: '#0f172a' }}>
+    <div className="min-h-screen flex flex-col bg-grid" style={{ backgroundColor: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
       {/* 导航栏 */}
-      <nav style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', height: 56, display: 'flex', alignItems: 'center' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex items-center justify-between">
+      <nav style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', height: 56, display: 'flex', alignItems: 'center' }}>
+        <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 w-full flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: '#059669' }}>
+            <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0" style={{ background: '#059669' }}>
               <Beaker size={14} color="white" strokeWidth={2.2} />
             </div>
-            <span className="font-bold text-[15px] tracking-tight" style={{ color: '#0f172a' }}>{BRAND_CONFIG.name}</span>
+            <span className="font-bold text-[15px] tracking-tight" style={{ color: 'var(--text-primary)' }}>{BRAND_CONFIG.name}</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/landing" className="text-sm font-medium" style={{ color: '#475569' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#0f172a'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569'; }}
+            <Link to="/landing" className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-muted)'; }}
             >首页</Link>
-            <Link to="/login" className="text-sm font-semibold px-4 py-2 rounded-md text-white" style={{ background: '#0f172a' }}>
+            <Link to="/login" className="text-sm font-semibold px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] text-white" style={{ background: 'var(--text-primary)' }}>
               免费试用
             </Link>
           </div>
@@ -37,11 +37,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       {/* 页脚 */}
       <footer style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: '#059669' }}>
+              <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
+                <div className="w-6 h-6 rounded-[var(--radius-Apple-sm)] flex items-center justify-center" style={{ background: '#059669' }}>
                   <Beaker size={12} color="white" strokeWidth={2.2} />
                 </div>
                 <span className="font-bold text-sm" style={{ color: '#0f172a' }}>{BRAND_CONFIG.name}</span>
@@ -49,7 +49,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{RHINE_BRAND_CONFIG.description}</p>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>资源</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-[var(--space-apple-sm)]" style={{ color: '#0f172a' }}>资源</h4>
               <ul className="space-y-2">
                 {[
                   { label: '使用文档', href: '/docs' },
@@ -63,7 +63,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>公司</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-[var(--space-apple-sm)]" style={{ color: '#0f172a' }}>公司</h4>
               <ul className="space-y-2">
                 {[
                   { label: '关于莱茵分子', href: '/about' },
@@ -78,7 +78,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>联系</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-[var(--space-apple-sm)]" style={{ color: '#0f172a' }}>联系</h4>
               <ul className="space-y-2">
                 <li><span className="text-[12px]" style={{ color: '#64748b' }}>contact@rmfood.cn</span></li>
                 <li><span className="text-[12px]" style={{ color: '#64748b' }}>厦门 · 中国</span></li>

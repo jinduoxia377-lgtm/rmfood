@@ -118,19 +118,17 @@ describe('useFormulaAnalysis', () => {
     it('should set isLoading to true immediately on start', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
-      let isLoadingDuringAnalysis = false;
-
+      // 启动分析但不等待完成；act 结束时 React 会 flush 同步 setState
       await act(async () => {
-        const analysisPromise = result.current.analyzeFormula('test content');
-
-        // Check loading state before advancing timers
-        isLoadingDuringAnalysis = result.current.result.isLoading;
-
-        await vi.advanceTimersByTimeAsync(2000);
-        await analysisPromise;
+        result.current.analyzeFormula('test content');
       });
 
-      expect(isLoadingDuringAnalysis).toBe(true);
+      // 分析尚未完成（内部仍在等待 fake timers），isLoading 应为 true
+      expect(result.current.result.isLoading).toBe(true);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
     });
   });
 
@@ -153,14 +151,21 @@ describe('useFormulaAnalysis', () => {
       const progressStages: string[] = [];
       const { result } = renderHook(() => useFormulaAnalysis());
 
+      // 启动分析（act 结束 flush → parsing 阶段）
       await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        // Advance past parsing (300ms) into safety stage
-        await vi.advanceTimersByTimeAsync(350);
-        progressStages.push(result.current.progress.stage);
+        result.current.analyzeFormula('test content');
+      });
+      progressStages.push(result.current.progress.stage);
 
+      // 推进 300ms：parsing 定时器触发 → safety 阶段（act 结束 flush）
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
+      progressStages.push(result.current.progress.stage);
+
+      // 推进剩余时间完成分析
+      await act(async () => {
         await vi.advanceTimersByTimeAsync(2000);
-        await p;
       });
 
       expect(progressStages).toContain('safety');
@@ -187,8 +192,10 @@ describe('useFormulaAnalysis', () => {
 
       let candidate: unknown = null;
       await act(async () => {
-        candidate = await result.current.analyzeFormula('test content');
+        // 先启动分析，再推进 fake timers，最后 await 完成（避免死等）
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        candidate = await p;
       });
 
       expect(candidate).not.toBeNull();
@@ -305,8 +312,9 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const candidate = await result.current.analyzeFormula('test content');
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        const candidate = await p;
         // Should still complete with fallback values
         expect(candidate).not.toBeNull();
       });
@@ -320,8 +328,9 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const candidate = await result.current.analyzeFormula('test content');
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        const candidate = await p;
         expect(candidate).not.toBeNull();
       });
 
@@ -333,8 +342,9 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const candidate = await result.current.analyzeFormula('test content');
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        const candidate = await p;
         expect(candidate).not.toBeNull();
       });
 
@@ -346,8 +356,9 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const candidate = await result.current.analyzeFormula('test content');
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        const candidate = await p;
         expect(candidate).not.toBeNull();
       });
 
@@ -363,8 +374,9 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const candidate = await result.current.analyzeFormula('test content');
+        const p = result.current.analyzeFormula('test content');
         await vi.advanceTimersByTimeAsync(3000);
+        const candidate = await p;
         // Should still produce a result with all fallback values
         expect(candidate).not.toBeNull();
       });
@@ -489,6 +501,7 @@ describe('useFormulaAnalysis', () => {
       });
 
       const firstCandidate = result.current.result.candidate;
+      expect(firstCandidate).not.toBeNull();
 
       await act(async () => {
         const p2 = result.current.analyzeFormula('formula 2');

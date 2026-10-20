@@ -41,6 +41,13 @@ async def analyze_experiment(
     2. 调用 ai_service 进行结果分析
     3. 生成分析报告和改进建议
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     try:
         experiment_data = req.experiment_data
 

@@ -17,13 +17,14 @@ from app.infrastructure.database_router import DatabaseRouter
 def mock_settings():
     """模拟数据库配置"""
     with patch("app.infrastructure.database_router.settings") as mock:
-        mock.database_url = "sqlite+aiosqlite:///test.db"
+        # 生产代码通过 settings.database.* 访问嵌套配置。
+        # 使用 postgresql+asyncpg URL（create_async_engine 仅创建引擎，不会实际连接）
+        mock.database.url = "postgresql+asyncpg://user:pass@localhost/testdb"
+        mock.database.pool_size = 5
+        mock.database.max_overflow = 2
+        mock.database.pool_timeout = 10
+        mock.database.pool_recycle = 1800
         mock.database_read_replica_url = None
-        mock.database_pool_size = 5
-        mock.database_max_overflow = 2
-        mock.database_pool_timeout = 10
-        mock.database_pool_recycle = 1800
-        mock.database_pool_pre_ping = True
         mock.debug = False
         yield mock
 
@@ -44,7 +45,7 @@ class TestDatabaseRouter:
 
     def test_read_replica_initialization(self, mock_settings):
         """有只读副本时，同时初始化主库和从库"""
-        mock_settings.database_read_replica_url = "sqlite+aiosqlite:///replica.db"
+        mock_settings.database_read_replica_url = "postgresql+asyncpg://user:pass@localhost/replica"
 
         router = DatabaseRouter()
         router.initialize()
@@ -76,7 +77,7 @@ class TestDatabaseRouter:
     @pytest.mark.asyncio
     async def test_transaction_uses_primary(self, mock_settings):
         """事务应始终使用主库"""
-        mock_settings.database_read_replica_url = "sqlite+aiosqlite:///replica.db"
+        mock_settings.database_read_replica_url = "postgresql+asyncpg://user:pass@localhost/replica"
 
         router = DatabaseRouter()
         router.initialize()
@@ -97,7 +98,7 @@ class TestDatabaseRouter:
     @pytest.mark.asyncio
     async def test_close_all(self, mock_settings):
         """关闭所有连接应释放引擎"""
-        mock_settings.database_read_replica_url = "sqlite+aiosqlite:///replica.db"
+        mock_settings.database_read_replica_url = "postgresql+asyncpg://user:pass@localhost/replica"
 
         router = DatabaseRouter()
         router.initialize()

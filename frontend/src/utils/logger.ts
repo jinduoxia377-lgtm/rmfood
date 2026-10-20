@@ -80,7 +80,7 @@ class Logger {
     try {
       const timestamp = new Date().toISOString()
       return '[' + timestamp + '] [' + level.toUpperCase() + '] ' + message
-    } catch (e) {
+    } catch {
       // 降级处理：如果格式化失败，返回简单格式
       return '[LOGGER] [' + level.toUpperCase() + '] ' + String(message)
     }
@@ -138,11 +138,11 @@ class Logger {
         default:
           console.log(formattedMessage, ...data)
       }
-    } catch (e) {
+    } catch {
       // 最终降级：如果所有方法都失败，使用最基本的输出
       try {
         console.log('[FALLBACK] ' + formattedMessage)
-      } catch (finalError) {
+      } catch {
         // 完全无法输出，静默处理
       }
     } finally {
@@ -193,7 +193,7 @@ class Logger {
     if (isDevelopment) {
       try {
         console.group(label)
-      } catch (e) {
+      } catch {
         // 静默处理
       }
     }
@@ -203,7 +203,7 @@ class Logger {
     if (isDevelopment) {
       try {
         console.groupEnd()
-      } catch (e) {
+      } catch {
         // 静默处理
       }
     }
@@ -213,7 +213,7 @@ class Logger {
     if (isDevelopment) {
       try {
         console.time(label)
-      } catch (e) {
+      } catch {
         // 静默处理
       }
     }
@@ -223,7 +223,7 @@ class Logger {
     if (isDevelopment) {
       try {
         console.timeEnd(label)
-      } catch (e) {
+      } catch {
         // 静默处理
       }
     }
@@ -255,7 +255,7 @@ class Logger {
       if (this.logs.length > this.maxLogs) {
         this.logs.shift()
       }
-    } catch (e) {
+    } catch {
       // 存储失败不影响主要功能
     }
   }
@@ -271,7 +271,7 @@ class Logger {
   exportLogs(): string {
     try {
       return JSON.stringify(this.logs, null, 2)
-    } catch (e) {
+    } catch {
       return '[]'
     }
   }

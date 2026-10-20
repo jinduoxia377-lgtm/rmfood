@@ -9,7 +9,7 @@
  * 统一的卡片容器 + 标题栏
  */
 import React from 'react'
-import { BarChart3, Loader2 } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 import { RadarChart } from '@/components/ai/charts/RadarChart'
 import { BarChart } from '@/components/ai/charts/BarChart'
 import { ScoreCards } from '@/components/ai/charts/ScoreCards'
@@ -36,7 +36,7 @@ function ChartBlock({ data }: ChartBlockProps) {
         // BarChart 接受 IngredientContribution[]
         return <BarChart data={chartData as unknown as Array<{ name: string; contribution: number; category: 'synergy' | 'safety' | 'taste' | 'stability' }>} />
 
-      case 'score-cards':
+      case 'score-cards': {
         // ScoreCards 接受 { synergyScore, tasteScore, stabilityScore, overallScore }
         const sc = chartData as unknown as Record<string, number | null | undefined>
         return (
@@ -47,6 +47,7 @@ function ChartBlock({ data }: ChartBlockProps) {
             overallScore={sc.overallScore ?? null}
           />
         )
+      }
 
       default:
         return (

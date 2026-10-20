@@ -12,7 +12,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
-import { Input, Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { logger } from '@/utils/safeLogger';
+import { Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import {
   BarChart3,
   Thermometer,
@@ -27,17 +28,7 @@ import {
   Info,
 } from 'lucide-react';
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { StabilityDegradationChart, FactorImpactBar } from './components/StabilityDegradationChart';
+import { StabilityDegradationChart } from './components/StabilityDegradationChart';
 
 import { stabilityPredictor } from '@/services/stabilityPredictor';
 import type { StabilityAssessment, StorageCondition } from '@/types/stability.types';
@@ -45,30 +36,58 @@ import type { StabilityAssessment, StorageCondition } from '@/types/stability.ty
 export function StabilityPredictTab() {
   const [stabilityInput, setStabilityInput] = useState('');
   const [stabilityResult, setStabilityResult] = useState<StabilityAssessment | null>(null);
+  const [stabilityError, setStabilityError] = useState<string | null>(null);
 
   const [temperature, setTemperature] = useState<number>(25);
   const [humidity, setHumidity] = useState<number>(60);
   const [lightExposure, setLightExposure] = useState<'dark' | 'ambient' | 'bright'>('ambient');
   const [packaging, setPackaging] = useState<'sealed' | 'semi-permeable' | 'open'>('sealed');
 
+  /** 后端 risk_factors.type → 可读降解机理名 */
+  const DEGRADATION_TYPE_LABELS: Record<string, string> = {
+    oxidation: '氧化降解',
+    hydrolysis: '水解',
+    light_sensitivity: '光敏降解',
+    ph_sensitivity: 'pH 敏感',
+    high_humidity: '高湿水解',
+    unknown_ingredient: '成分参数缺失',
+    thermal: '热敏降解',
+    microbial: '微生物风险',
+  };
+
   const mutation = useMutation({
     mutationFn: async (names: string[]) => {
-      return await aiApi.stabilityPredict(names.map((name) => ({ name })));
+      return await aiApi.stabilityPredict(names.map((name) => ({ name })), temperature);
     },
     onSuccess: (data) => {
+      const risks = data.risk_factors ?? [];
+
+      // 降解途径：按机理去重（与"关键影响因素"刻意区分）
+      const pathways = Array.from(new Set(risks.map((r) => DEGRADATION_TYPE_LABELS[r.type] ?? r.type)));
+
+      // 关键影响因素：按严重度降序取前 5 条完整描述
+      const critical = [...risks]
+        .sort((a, b) => (b.severity ?? 0) - (a.severity ?? 0))
+        .slice(0, 5)
+        .map((r) => r.description ?? `${DEGRADATION_TYPE_LABELS[r.type] ?? r.type}（严重度 ${(r.severity ?? 0).toFixed(2)}）`);
+
       const mapped: StabilityAssessment = {
         score: data.stability_score,
         shelfLifeDays: data.estimated_shelf_life_months * 30,
-        degradationPathway: data.risk_factors,
-        criticalFactors: data.risk_factors,
-        storageRecommendations: [data.storage_advice],
-        timeSeriesData: data.monthly_curve.map((c) => ({
-          time: c.month,
-          timeUnit: 'month',
-          potency: c.stability,
-          // 根据稳定性得分推算杂质含量 (100 - potency) * 0.8
-          impurities: Math.min(100, (100 - c.stability) * 80),
-        })),
+        degradationPathway: pathways,
+        criticalFactors: critical,
+        storageRecommendations: data.storage_advice ?? [],
+        timeSeriesData: (data.monthly_curve ?? []).map((c) => {
+          // 后端 remaining_pct 是 0-1；图表期望 0-100 刻度
+          const potency = Math.max(0, Math.min(100, (c.remaining_pct ?? 0) * 100));
+          return {
+            time: c.month,
+            timeUnit: 'month' as const,
+            potency,
+            // 杂质含量与效力保留互补，不再乘无依据的 ×80 系数
+            impurities: Math.max(0, 100 - potency),
+          };
+        }),
         // 用本地预测器补全 factorContributions
         ...(() => {
           const condition: StorageCondition = { temperature, humidity, lightExposure, packaging };
@@ -83,6 +102,13 @@ export function StabilityPredictTab() {
         })(),
       };
       setStabilityResult(mapped);
+      setStabilityError(null);
+    },
+    onError: (err) => {
+      // 原先无 onError 分支，后端 500/404 静默吞掉，用户只看到"没有反应"
+      const msg = err instanceof Error ? err.message : '稳定性预测请求失败';
+      setStabilityError(msg);
+      logger.error('[StabilityPredictTab] predict failed:', err);
     },
   });
 
@@ -194,7 +220,7 @@ export function StabilityPredictTab() {
                 </h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     温度 (°C)
@@ -217,7 +243,7 @@ export function StabilityPredictTab() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
                     光照条件
@@ -319,6 +345,22 @@ export function StabilityPredictTab() {
 
       {/* 右侧：可视化结果展示 */}
       <div className="col-span-8">
+        {stabilityError && (
+          <Card className="mb-4 border-destructive/40 bg-destructive/5 dark:bg-destructive/10">
+            <div className="flex items-start gap-3 p-4">
+              <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-destructive">AI 稳定性预测不可用</p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 break-all">
+                  {stabilityError}
+                </p>
+                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
+                  可先使用"本地计算"获得启发式结果，或检查后端稳定性服务是否正常运行。
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
         {!stabilityResult ? (
           <Card
             className="h-full flex items-center justify-center bg-gradient-to-br
@@ -353,7 +395,7 @@ export function StabilityPredictTab() {
             {/* 总览视图 */}
             <TabsContent value="overview" className="mt-0">
               <Card className="p-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* 稳定性评分 */}
                   <div className="space-y-3">
                     <h3 className="font-semibold text-lg">稳定性评分</h3>
@@ -477,7 +519,7 @@ export function StabilityPredictTab() {
 
                 <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                   <h4 className="font-semibold text-sm mb-2">降解途径说明</h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {stabilityResult.degradationPathway.map((pathway, idx) => (
                       <div key={idx} className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded">
                         • {pathway}

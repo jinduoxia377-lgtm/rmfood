@@ -43,8 +43,8 @@ const DEFAULT_FIELDS: ExportField[] = [
   { key: 'teamCount', label: '团队数量', visible: true },
   { key: 'storageUsed', label: '已用存储 (GB)', visible: true, formatter: (v) => (v / (1024 ** 3)).toFixed(2) },
   { key: 'storageLimit', label: '存储上限 (GB)', visible: false, formatter: (v) => (v / (1024 ** 3)).toFixed(2) },
-  { key: 'apiCalls', label: 'API调用次数', visible: false },
-  { key: 'status', label: '状态', visible: true },
+  { key: 'apiUsage', label: 'API调用次数', visible: false },
+  { key: 'isActive', label: '状态', visible: true },
   { key: 'createdAt', label: '创建时间', visible: true },
   { key: 'updatedAt', label: '更新时间', visible: false },
 ]
@@ -201,20 +201,20 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
          role="button" tabIndex={0} onClick={onClose}
       />
 
-      <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-100 dark:bg-primary-300/25 rounded-lg">
-              <Download className="w-5 h-5 text-primary-700" />
+      <div className="relative bg-[var(--bg-secondary)] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)]">
+          <div className="flex items-center gap-[var(--space-apple-sm)]">
+            <div className="p-2 bg-[var(--color-primary-container)] rounded-[var(--radius-Apple-sm)]">
+              <Download className="w-5 h-5 text-[var(--color-primary-text)]" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">数据导出</h2>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">数据导出</h2>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 导出 {filteredOrganizations.length} 个组织的数据
               </p>
@@ -222,18 +222,18 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-8 py-[var(--space-apple-lg)] space-y-6">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-[var(--space-apple-sm)]">
               选择导出格式
             </label>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               {FORMAT_OPTIONS.map((config) => {
                 const Icon = config.icon
                 const isSelected = selectedFormat === config.value
@@ -243,19 +243,19 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                     key={config.value}
                     onClick={() => setSelectedFormat(config.value)}
                     disabled={isExporting}
-                    className={`relative p-4 rounded-xl border-2 transition-all ${
+                    className={`relative p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border-2 transition-all ${
                       isSelected
-                        ? 'border-success-500 bg-success-50 dark:bg-success-300/20'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+                        ? 'border-[var(--color-success)] bg-[var(--color-success-container)]'
+                        : 'border-[var(--border-color)] hover:border-[var(--border-color)] dark:hover:border-neutral-600'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-success-500 rounded-full flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-[var(--color-success-container)]0 rounded-[var(--radius-pill)] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
-                    <Icon className={`w-8 h-8 mx-auto mb-2 ${isSelected ? 'text-success-600' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
-                    <div className={`font-medium text-sm ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                    <Icon className={`w-8 h-8 mx-auto mb-2 ${isSelected ? 'text-[var(--color-success-text)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
+                    <div className={`font-medium text-sm ${isSelected ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                       {config.label}
                     </div>
                     <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{config.description}</div>
@@ -266,44 +266,44 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+              <label className="text-sm font-medium text-[var(--text-primary)]">
                 导出字段 ({visibleFields.length}/{fields.length})
               </label>
               <div className="flex gap-2">
                 <button
                   onClick={selectAllFields}
-                  className="text-xs text-primary-700 hover:text-primary-700"
+                  className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)]"
                 >
                   全选
                 </button>
                 <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">|</span>
                 <button
                   onClick={deselectAllFields}
-                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   取消全选
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {fields.map(field => (
                 <label
                   key={field.key}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-center gap-2 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] border cursor-pointer transition-all ${
                     field.visible
-                      ? 'border-primary-300 bg-primary-50 dark:bg-primary-300/20'
-                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
+                      ? 'border-[var(--color-primary-border)] bg-[var(--color-primary-container)]'
+                      : 'border-[var(--border-color)] hover:border-[var(--border-color)]'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={field.visible}
                     onChange={() => toggleField(field.key)}
-                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
+                    className="w-4 h-4 rounded border-[var(--border-color)] dark:border-neutral-700 text-[var(--color-primary-text)] focus:ring-[var(--color-primary)]"
                   />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">{field.label}</span>
+                  <span className="text-sm text-[var(--text-primary)]">{field.label}</span>
                 </label>
               ))}
             </div>
@@ -312,7 +312,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           <div>
             <button
               onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-              className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white"
             >
               <Settings className="w-4 h-4" />
               高级选项
@@ -320,15 +320,15 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
             </button>
 
             {showAdvancedOptions && (
-              <div className="mt-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+              <div className="mt-[var(--space-apple-sm)] p-[var(--space-apple-md)] bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)]">
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                     文件名
                   </label>
                   <input
                     type="text"
                     defaultValue={fileName}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-[var(--space-apple-sm)] py-2 border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)] text-sm focus:ring-2 focus:ring-[var(--color-primary)]"
         aria-label="文件名"
       />
                 </div>
@@ -338,24 +338,24 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
 
           {showPreview && previewData.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                <label className="text-sm font-medium text-[var(--text-primary)]">
                   数据预览 (前5条)
                 </label>
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-700"
+                  className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   隐藏预览
                 </button>
               </div>
 
-              <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-700 rounded-lg">
+              <div className="overflow-x-auto border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)]">
                 <table className="w-full text-xs">
-                  <thead className="bg-neutral-50 dark:bg-neutral-800">
+                  <thead className="bg-[var(--bg-tertiary)]">
                     <tr>
                       {visibleFields.map(field => (
-                        <th key={field.key} className="px-3 py-2 text-left font-medium text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+                        <th key={field.key} className="px-[var(--space-apple-sm)] py-2 text-left font-medium text-[var(--text-secondary)] whitespace-nowrap">
                           {field.label}
                         </th>
                       ))}
@@ -363,9 +363,9 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                     {previewData.map((row, i) => (
-                      <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                      <tr key={i} className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50">
                         {visibleFields.map(field => (
-                          <td key={field.key} className="px-3 py-2 text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]">
+                          <td key={field.key} className="px-[var(--space-apple-sm)] py-2 text-[var(--text-primary)] truncate max-w-[200px]">
                             {row[field.label]}
                           </td>
                         ))}
@@ -380,7 +380,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           {!showPreview && (
             <button
               onClick={() => setShowPreview(true)}
-              className="flex items-center gap-2 text-sm text-primary-700 hover:text-primary-700"
+              className="flex items-center gap-2 text-sm text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)]"
             >
               <Eye className="w-4 h-4" />
               显示数据预览
@@ -388,15 +388,15 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           )}
 
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-error-700 dark:text-error-600">{error}</div>
+            <div className="flex items-start gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
+              <AlertCircle className="w-5 h-5 text-[var(--color-error-text)]0 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</div>
             </div>
           )}
 
-          <div className="flex items-start gap-2 p-3 bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800 rounded-lg">
-            <Info className="w-5 h-5 text-secondary-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-secondary-700 dark:text-secondary-700 space-y-1">
+          <div className="flex items-start gap-2 p-[var(--space-apple-sm)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)] rounded-[var(--radius-Apple-sm)]">
+            <Info className="w-5 h-5 text-[var(--color-secondary-text)]0 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] space-y-1">
               <p>• CSV格式可在Excel、Google Sheets等软件中直接打开</p>
               <p>• 支持UTF-8编码，完美显示中文内容</p>
               <p>• 导出的数据包含BOM头，确保Excel正确识别编码</p>
@@ -404,7 +404,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+        <div className="px-6 py-4 border-t border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {isExporting ? (
@@ -417,11 +417,11 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
               <button
                 onClick={onClose}
                 disabled={isExporting}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                className="px-[var(--space-apple-md)] py-2 text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] transition-colors disabled:opacity-50"
               >
                 取消
               </button>
@@ -429,7 +429,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
               <button
                 onClick={handleExport}
                 disabled={isExporting || visibleFields.length === 0}
-                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-primary-main bg-primary-container rounded-lg hover:bg-primary-container transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-[var(--color-primary)] bg-primary-container rounded-[var(--radius-Apple-sm)] hover:bg-primary-container transition-colors disabled:opacity-50"
               >
                 {isExporting ? (
                   <>

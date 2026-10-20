@@ -89,7 +89,7 @@ describe('useFormulaTemplates', () => {
     const updated = result.current.getTemplateById(templateId)
     expect(updated?.name).toBe('更新后的名称')
     expect(updated?.description).toBe('更新后的描述')
-    expect(updated?.updatedAt).toBeGreaterThan(updated?.createdAt!)
+    expect(updated?.updatedAt).toBeGreaterThan(updated?.createdAt ?? 0)
   })
 
   it('should delete a template', () => {

@@ -593,6 +593,8 @@ class AIRateLimiter:
         self._global_windows: dict[int, int] = defaultdict(int)
         # user_id -> set of active SSE connection IDs
         self._sse_connections: dict[int, set] = defaultdict(set)
+        # 单调递增的连接 ID 计数器（register 未显式传入 conn_id 时使用）
+        self._next_sse_conn_id = 1
 
     async def check_request(self, user_id: int | None) -> tuple[bool, str]:
         """
@@ -625,13 +627,23 @@ class AIRateLimiter:
 
             return True, ""
 
-    async def register_sse_connection(self, user_id: int) -> bool:
-        """注册一个 SSE 连接，返回是否允许"""
+    async def register_sse_connection(self, user_id: int, conn_id: int | None = None) -> bool:
+        """注册一个 SSE 连接，返回是否允许
+
+        Args:
+            user_id: 用户/组织 ID
+            conn_id: 连接唯一 ID；未传入时使用内部单调递增计数器生成，
+                     避免以 set 对象自身 id 作为连接 ID（同一 set 的 id 恒定，
+                     会导致连接计数恒为 1，永远达不到上限）。
+        """
         async with self._lock:
             conns = self._sse_connections[user_id]
             if len(conns) >= self.config.sse_max_connections:
                 return False
-            conns.add(id(conns))
+            if conn_id is None:
+                conn_id = self._next_sse_conn_id
+                self._next_sse_conn_id += 1
+            conns.add(conn_id)
             return True
 
     async def unregister_sse_connection(self, user_id: int, conn_id: int):

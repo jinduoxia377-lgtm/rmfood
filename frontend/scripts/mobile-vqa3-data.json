@@ -1,0 +1,284 @@
+[
+  {
+    "route": "/dashboard",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/new",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/templates",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/compare",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/cases",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/test",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/1",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/cases/1",
+    "issues": [
+      {
+        "type": "tall-brand-banner",
+        "cls": "relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 p-4 sm:p-[var(--space-apple-lg)",
+        "height": 286
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/experiments",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/new",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/calendar",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/1",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/batches",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/batches/1",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/trace/production",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/doe",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/stability",
+    "issues": [
+      {
+        "type": "non-fullwidth-input",
+        "cls": "flex-1 h-9 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[va",
+        "ratio": 52
+      },
+      {
+        "type": "non-fullwidth-input",
+        "cls": "flex-1 accent-[var(--color-primary)]",
+        "ratio": 51
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/documents",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/compliance",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/label-check",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/ingredient-analysis",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/labels",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/ai",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/academic-report",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/databases",
+    "issues": [
+      {
+        "type": "oversized-padding",
+        "cls": "p-10 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/peptide-structure",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/regulations",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/terminology",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/workflows",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/agent",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/analytics",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations/1",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/integrations",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/notifications",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/settings",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/users",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/audit-logs",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/billing",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/tokens",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/radix-demo",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/404",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/login",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/landing",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/docs",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/api-docs",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/faqs",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/about",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/careers",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/privacy",
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/terms",
+    "issues": [],
+    "issueCount": 0
+  }
+]

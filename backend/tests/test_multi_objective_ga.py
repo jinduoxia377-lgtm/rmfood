@@ -18,7 +18,7 @@ import math
 # 确保项目根目录在路径中
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.services.ai.multi_objective_optimizer import (
+from app.services.ai.algorithms.multi_objective_optimizer import (
     NSGAIIOptimizer, OptimizationConfig, OptimizationObjective,
     MOGAResult, FormulaEvaluator, MultiObjectiveIndividual,
     PRESET_SCENARIOS, get_preset_scenario, get_nsga2_optimizer
@@ -180,7 +180,7 @@ class TestNSGAIICore:
         c1, c2 = optimizer._sbx_crossover(p1, p2, candidates=["dcx", "gq"])
 
         # 子代药材用量应在合理范围内 (不严格检查因为SBX可能超出边界但会被clip)
-        from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS as HERBS
+        from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS as HERBS
         for child in [c1, c2]:
             for hid, dosage in child.genes.items():
                 if hid in HERBS:
@@ -261,7 +261,7 @@ class TestCase1_CostMinimization:
             target_effects=["免疫调节"],
             constraints=self.config.constraints
         )
-        from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS as HERBS
+        from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS as HERBS
 
         for i, cand in enumerate(result.candidates[:self.config.candidate_count]):
             total_cost = sum(

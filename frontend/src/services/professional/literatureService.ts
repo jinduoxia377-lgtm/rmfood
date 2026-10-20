@@ -460,7 +460,7 @@ class LiteratureService extends ProfessionalBaseService {
       const article = await this.get<LiteratureArticle>(`/api/literature/article/${articleId}`);
       this.setCache(cacheKey, article);
       return article;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -512,7 +512,7 @@ class LiteratureService extends ProfessionalBaseService {
       const journal = await this.get<JournalInfo>(`/api/literature/journal/${encodeURIComponent(journalName)}`);
       this.setCache(cacheKey, journal);
       return journal;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

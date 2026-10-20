@@ -1,4 +1,3 @@
-import { GraphNode, TYPE_CONFIG } from '../types'
 import type { LegendItem, TypeCounts } from './types'
 
 export interface LegendPanelProps {

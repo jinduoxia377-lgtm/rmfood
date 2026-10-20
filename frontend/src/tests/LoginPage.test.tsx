@@ -26,10 +26,15 @@ describe('LoginPage', () => {
 
   beforeEach(() => {
     mockLogin = vi.fn();
-    // useAuthStore(selector) — 组件使用 useAuthStore((s) => s.login)，
-    // mock 实现为 "调用 selector，传入 state 对象"
+    // useAuthStore(selector) — 组件使用 useAuthStore((s) => s.login) 等选择器，
+    // mock 实现为 "调用 selector，传入完整 state 对象"
     (useAuthStore as unknown as { mockImplementation: (fn: unknown) => void }).mockImplementation(
-      (selector: (s: { login: () => void }) => unknown) => selector({ login: mockLogin })
+      (selector: (s: Record<string, unknown>) => unknown) => selector({
+        login: mockLogin,
+        requiresTwoFactor: false,
+        twoFactorUsername: null,
+        clearTwoFactor: vi.fn(),
+      })
     );
   });
 
@@ -108,9 +113,8 @@ describe('LoginPage', () => {
 
   test('submits login form successfully', async () => {
     const originalTimeout = setTimeout
-    let navTimer: ReturnType<typeof setTimeout> | undefined
     ;(globalThis as { setTimeout: unknown }).setTimeout = ((fn: () => void, ms: number) => {
-      if (ms === 1200) navTimer = originalTimeout(fn, 0)
+      if (ms === 1200) return originalTimeout(fn, 0)
       return originalTimeout(fn, ms) as unknown as ReturnType<typeof setTimeout>
     }) as typeof setTimeout
 
@@ -136,7 +140,8 @@ describe('LoginPage', () => {
     fireEvent.click(loginButton);
 
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith('admin', 'admin123');
+      // 组件调用 login(username, password, twoFactorCode?) —— 无 2FA 时第三参为 undefined
+      expect(mockLogin).toHaveBeenCalledWith('admin', 'admin123', undefined);
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     }, 5000);
 

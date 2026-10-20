@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
 import axe from 'axe-core';
 import { Button } from '../../components/ui/Button';
 

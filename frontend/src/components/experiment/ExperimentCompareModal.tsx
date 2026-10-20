@@ -2,12 +2,10 @@
  * 实验数据对比弹窗
  */
 import { useState } from 'react'
-import { X, FlaskConical, BarChart3, TrendingUp } from 'lucide-react'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { X, BarChart3 } from 'lucide-react'
+import { Button, CardContent } from '@/components/ui'
 import { StatusBadge } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
 import type { Experiment } from '@/types'
 
 interface Props {
@@ -123,7 +121,7 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
               <td className="py-3 px-4 font-medium text-neutral-700 dark:text-neutral-300">
                 {paramLabels[param] || param}
               </td>
-              {experiments.map((exp, i) => {
+              {experiments.map((exp) => {
                 const params = exp.parameters || {}
                 const value = (params as Record<string, unknown>)[param] as string | number | undefined
                 return (

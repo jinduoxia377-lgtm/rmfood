@@ -113,7 +113,21 @@ class FormulaService:
             )
 
             logger.info(f"创建配方: {code} - {formula.name}")
-            return formula
+
+            # 重新加载关联关系（成分/肽段/创建者/审核者），避免响应序列化
+            # FormulaResponse 时访问懒加载关系（ingredients/peptides/creator）
+            # 在 async greenlet 上下文外触发 MissingGreenlet。
+            result = await self.db.execute(
+                select(Formula)
+                .options(
+                    selectinload(Formula.ingredients),
+                    selectinload(Formula.peptides),
+                    selectinload(Formula.creator),
+                    selectinload(Formula.reviewer),
+                )
+                .where(Formula.id == formula.id)
+            )
+            return result.scalar_one()
         except Exception as e:
             await self.db.rollback()
             logger.warning("创建配方失败: %s", e)
@@ -656,8 +670,17 @@ class FormulaService:
         try:
             from ..formula.nutrition_service import FormulaNutritionService
 
+            # 显式查询配方成分（避免访问懒加载关系 formula.ingredients 在
+            # async greenlet 上下文外触发 MissingGreenlet，导致营养摘要静默失败）
+            result = await self.db.execute(
+                select(Ingredient)
+                .join(formula_ingredients, formula_ingredients.c.ingredient_id == Ingredient.id)
+                .where(formula_ingredients.c.formula_id == formula.id)
+            )
+            ingredients = result.scalars().all()
+
             ingredients_data = []
-            for ing in formula.ingredients:
+            for ing in ingredients:
                 weight_g = ing.properties.get("weight_g", 0) if ing.properties else 0
                 ingredients_data.append({
                     "ingredient_id": ing.id,
@@ -673,10 +696,11 @@ class FormulaService:
             service = FormulaNutritionService()
             nutrition = service.calculate(ingredients_data, total_weight)
 
-            # 存储营养摘要到配方对象的 properties 中
-            if not formula.properties:
-                formula.properties = {}
-            formula.properties["nutrition_summary"] = {
+            # 存储营养摘要到配方的 metadata_json（原实现使用不存在的
+            # formula.properties 属性，导致营养计算一直静默失败）
+            if not formula.metadata_json:
+                formula.metadata_json = {}
+            formula.metadata_json["nutrition_summary"] = {
                 "total_weight_g": round(total_weight, 2),
                 "per_100g": nutrition.get("per_100g", {}),
                 "allergens": nutrition.get("allergens", []),

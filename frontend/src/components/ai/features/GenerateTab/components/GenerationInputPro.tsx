@@ -8,8 +8,8 @@ import React, { useState, useCallback, useRef, useEffect } from 'react'
 import {
   Target, FileText, MessageSquare, Sparkles, Send,
   X, ChevronDown, ChevronUp, Zap, Loader2,
-  History, Star, Lightbulb, Settings, CheckCircle,
-  TrendingUp, Filter, Shield,
+  Lightbulb, Settings, CheckCircle,
+  Shield,
 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
@@ -219,7 +219,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-6 gap-2">
                 {QUICK_TEMPLATES.map((template) => (
                   <button
                     key={template.id}
@@ -338,7 +338,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                 <button onClick={onClearEffects} className="text-caption text-muted-foreground hover:text-error">清空</button>
               )}
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
               {filteredEffects.map((effect) => {
                 const isSelected = selectedEffects.some(e => e.id === effect.id)
                 return (

@@ -131,6 +131,10 @@ COPY backend/alembic/      ./alembic/
 COPY backend/alembic.ini   ./alembic.ini
 COPY backend/conf/         ./conf/
 COPY backend/config/       ./config/
+# 复制运行数据（ML 权重 / 药材图片 / 协同系数 / RAG 向量库）
+COPY backend/ml_artifacts/ ./ml_artifacts/
+COPY backend/static/       ./static/
+COPY backend/data/         ./data/
 
 # 复制健康检查脚本
 COPY backend/scripts/docker-healthcheck.py /usr/local/bin/healthcheck.py
@@ -140,7 +144,7 @@ COPY deploy/scripts/start.sh /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/healthcheck.py && \
     chmod +x /usr/local/bin/start.sh && \
-    mkdir -p /app/temp_files /app/uploads /app/logs /app/data/chromadb && \
+    mkdir -p /app/temp_files /app/uploads/avatars /app/logs /app/data/chromadb && \
     chown -R appuser:appgroup /app
 
 USER appuser

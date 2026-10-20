@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DocsPage — 使用文档
  */
 import PublicLayout from './PublicLayout';
@@ -48,28 +48,28 @@ export default function DocsPage() {
   return (
     <PublicLayout>
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">使用文档</span>
-          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-4">帮助文档</h1>
-          <p className="text-[14px] text-neutral-600 leading-relaxed max-w-xl">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">使用文档</span>
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-[var(--space-apple-md)]">帮助文档</h1>
+          <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed max-w-xl">
             从快速入门到高级功能，覆盖 AI 配方对话、知识图谱、合规检测、团队协作等核心模块的使用方法。
           </p>
         </div>
       </section>
 
       <section style={{ background: '#fafafa' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
           {sections.map((sec, si) => (
             <div key={si} className="mb-10 last:mb-0">
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{sec.title}</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider mb-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{sec.title}</h2>
               <Accordion type="multiple" defaultValue={[`${si}-0`]} className="space-y-1.5">
                 {sec.items.map((item, ii) => (
                   <AccordionItem key={ii} value={`${si}-${ii}`} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <AccordionTrigger className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hover:no-underline">
                       <span className="text-sm font-normal text-left text-neutral-800">{item.q}</span>
                     </AccordionTrigger>
                     <AccordionContent className="pb-3">
-                      <p className="text-sm leading-[1.7] text-neutral-600">{item.a}</p>
+                      <p className="text-sm leading-[1.7] text-[var(--text-secondary)]">{item.a}</p>
                     </AccordionContent>
                   </AccordionItem>
                 ))}

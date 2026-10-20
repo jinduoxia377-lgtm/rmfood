@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿ 
 /**
  * COA 管理页面 Tab
  */
@@ -29,11 +29,11 @@ function CoaStatsView() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-4 gap-3 mb-6 animate-pulse">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 animate-pulse">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl border p-4 h-20" />
+          <div key={i} className="bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] rounded-xl border p-4 h-20" />
         ))}
-        <div className="col-span-4 bg-white dark:bg-neutral-900 rounded-xl border p-4 h-16" />
+        <div className="col-span-4 bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] rounded-xl border p-4 h-16" />
       </div>
     );
   }

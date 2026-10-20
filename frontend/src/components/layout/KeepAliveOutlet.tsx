@@ -13,7 +13,7 @@
  * - 不修改任何页面组件代码（零侵入）
  * - 仅在主布局层添加
  */
-import { useState, useRef, useCallback, useEffect, createContext, useContext } from 'react';
+import { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { logger } from '@/utils/safeLogger';
 
@@ -72,6 +72,7 @@ export function usePageState<T extends Record<string, unknown>>(
     if (!hasRestored.current) {
       const saved = keepAlive.restoreState<T>(pageKey);
       if (saved) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setRestoredState(saved);
         logger.debug(`[KeepAlive] 恢复页面状态: ${pageKey}`);
       }
@@ -190,8 +191,11 @@ export function KeepAliveOutlet({
     }
   }, [location.pathname, saveScrollPosition]);
 
+  // eslint-disable-next-line react-hooks/refs
+  const ctx = ctxRef.current;
+
   return (
-    <KeepAliveContext.Provider value={ctxRef.current}>
+    <KeepAliveContext.Provider value={ctx}>
       {/* 占位节点，实际内容仍由 <Outlet /> 渲染 */}
       <div style={{ display: 'none' }} aria-hidden="true" data-keep-alive-root />
     </KeepAliveContext.Provider>

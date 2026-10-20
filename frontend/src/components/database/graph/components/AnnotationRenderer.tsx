@@ -1,5 +1,3 @@
-import { GraphNode, TYPE_CONFIG } from '../types'
-
 export interface AnnotationItem {
   id: string
   x: number
@@ -10,7 +8,6 @@ export interface AnnotationItem {
 }
 
 export interface AnnotationRendererProps {
-  [key: string]: any;
   annotations: AnnotationItem[]
   onRemoveAnnotation: (id: string) => void
 }

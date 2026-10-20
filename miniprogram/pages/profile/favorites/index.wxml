@@ -27,7 +27,7 @@
           </view>
         </view>
         <view class="unfavorite-btn" bindtap="cancelFavorite" data-id="{{item.id}}">
-          <icon name="favorite" color="#FF3B30" />
+          <icon name="favorite" color="var(--color-system-red)" />
         </view>
       </view>
     </view>

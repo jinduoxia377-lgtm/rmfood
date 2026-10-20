@@ -95,7 +95,7 @@ export function useInfiniteScroll(
     if (messages.length === 0) {
       setTotalLoaded(0)
     }
-  }, [messages.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages.length])
 
   // IntersectionObserver：检测哨兵元素进入视口时触发加载
   useEffect(() => {

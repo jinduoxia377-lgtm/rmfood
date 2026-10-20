@@ -8,7 +8,6 @@ interface StorageData<T> {
 }
 
 const CURRENT_VERSION = 8;
-const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export class QuotaExceededError extends Error {
   constructor(message: string) {
@@ -35,7 +34,8 @@ export class StorageService {
       if (!raw) return null;
 
       if (!raw.startsWith('{')) {
-        return raw as unknown as T;
+        // 非 JSON 信封内容视为脏数据/未通过本服务写入的数据（本服务 set 始终写 JSON 信封）
+        return null;
       }
 
       const parsed: StorageData<T> = JSON.parse(raw);

@@ -15,20 +15,17 @@ import type { ChatMessage } from '../../hooks/useChatMessages'
 import { detectMessageType, parseChartData } from './utils.tsx'
 import MarkdownRenderer from './MarkdownRenderer'
 import TypewriterText from './TypewriterText'
-import ThinkingProcess from './ThinkingProcess'
 import ReasoningRow, { type ReasoningStep } from './ReasoningRow'
 import StructuredMessageRenderer from '../structured/StructuredMessageRenderer'
 import { detectStructuredContent } from '../structured/utils'
 import EnhancedContentRenderer from './EnhancedContentRenderer'
 import {
-	Leaf, Copy, Check, RefreshCw, Trash2,
-	ThumbsUp, ThumbsDown, Pencil, Undo2, X,
+	Leaf, Copy, Check, RefreshCw,
+	Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
 	FileText, AlertTriangle, MoreHorizontal,
 	GitBranch, Share2, Cpu,
 } from 'lucide-react'
-import { userProfileManager } from '../../services/userProfileService'
-import { logger } from '@/utils/safeLogger'
 
 type Reaction = 'like' | 'dislike' | null
 
@@ -48,7 +45,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 	if (model === 'ultimate-fallback') {
 		return (
 			<div
-				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-[11px] leading-tight text-warning-700 dark:text-warning-400"
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-400"
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
@@ -60,7 +57,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 	if (model === 'rule-engine-fallback') {
 		return (
 			<div
-				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-[11px] leading-tight text-warning-700 dark:text-warning-400"
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-400"
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
@@ -72,7 +69,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 	if (model === 'error') {
 		return (
 			<div
-				className="mb-2 flex items-center gap-1.5 rounded-md border border-error-200 dark:border-error-500/40 bg-error-50 dark:bg-error-500/15 px-2 py-1 text-[11px] leading-tight text-error-700 dark:text-error-400"
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-error-200 dark:border-error-500/40 bg-error-50 dark:bg-error-500/15 px-2 py-1 text-xs leading-tight text-error-700 dark:text-error-400"
 				role="alert"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
@@ -82,7 +79,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 	}
 	// 真实大模型推理：低调呈现模型名，作为能力凭据
 	return (
-		<div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] leading-tight text-neutral-600 dark:bg-neutral-700/60 dark:text-neutral-300">
+		<div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs leading-tight text-neutral-600 dark:bg-neutral-700/60 dark:text-neutral-300">
 			<Cpu className="h-3 w-3 shrink-0" />
 			<span>{model}</span>
 		</div>
@@ -246,7 +243,6 @@ function ImageMessageCard({ src }: { src: string }) {
 					<span className="text-xs">图片加载失败</span>
 				</div>
 			)}
-			{/* eslint-disable-next-line @next/next/no-img-element */}
 			<img
 				src={src}
 				alt="message image"
@@ -306,7 +302,6 @@ function isLikelyStructured(content: string): boolean {
 	if (trimmed[0] !== '{') return false
 	// 包含 blocks 关键字，且括号平衡（至少闭合一次）
 	const hasBlocks = trimmed.includes('"blocks"')
-	const hasClosingBrace = trimmed.lastIndexOf('}') >= 0
 	const braceDiff = (trimmed.match(/{/g) || []).length - (trimmed.match(/}/g) || []).length
 	// 未闭合但有 blocks 关键字 → 结构化内容在流式生成中
 	return hasBlocks && (braceDiff >= 0 && braceDiff <= 3)
@@ -360,7 +355,7 @@ function renderMessageContent(
 								<h4 className="text-sm font-semibold text-neutral-700 mb-3">
 									{parsed.chartJson.title || '评分概览'}
 								</h4>
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+								<div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-3">
 									{parsed.chartJson.items.map((item: any, i: number) => (
 										<div key={i} className="surface-card rounded-lg p-3 text-center border border-neutral-100 shadow-sm">
 											<div className="text-2xl font-bold text-primary-700 dark:text-primary-700">
@@ -381,6 +376,7 @@ function renderMessageContent(
 				}
 			}
 
+			// eslint-disable-next-line no-case-declarations
 			const isLastAndNotStreaming = index === allMessages.length - 1 && !streaming
 			if (isLastAndNotStreaming) {
 				return (
@@ -457,18 +453,14 @@ export function MessageBubble({
 	index,
 	allMessages,
 	isStreaming,
-	reaction,
-	searchQuery,
 	editingId,
 	editContent,
 	setEditContent,
 	onCopy,
-	onReaction,
 	copiedId,
 	onEdit,
 	onRetract,
 	onDelete,
-	onReference,
 	onRegenerate,
 	onForkMessage,
 	onDetails,
@@ -488,21 +480,6 @@ export function MessageBubble({
 	}, [editingId, onEdit, msg.content, msg.id])
 
 	const handleCopy = useCallback(() => onCopy(msg.id, msg.content), [msg.id, msg.content, onCopy])
-	const handleReaction = useCallback(
-		(type: 'like' | 'dislike') => {
-			onReaction(msg.id, type)
-			try {
-				userProfileManager.recordBehavior({
-					type: type === 'like' ? 'response_liked' : 'response_disliked',
-					timestamp: Date.now(),
-					metadata: { messageId: msg.id },
-				})
-			} catch (e) {
-				logger.warn('[MessageBubble] Behavior recording failed:', e)
-			}
-		},
-		[msg.id, onReaction],
-	)
 
 	const showDateSep = index > 0 && isNewDay(allMessages[index - 1]?.timestamp, msg.timestamp)
 

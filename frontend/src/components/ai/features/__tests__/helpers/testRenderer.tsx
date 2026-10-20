@@ -1,10 +1,5 @@
-import React from 'react';
 import { renderHook, RenderHookOptions, RenderHookResult, act as reactAct } from '@testing-library/react';
 import { waitFor, waitForOptions } from '@testing-library/react';
-
-interface HookResult<T> {
-  current: T;
-}
 
 interface AsyncRenderHookResult<T> extends RenderHookResult<T, unknown> {
   waitForValue: <K extends keyof T>(

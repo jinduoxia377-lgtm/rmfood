@@ -1,0 +1,51 @@
+/**
+ * 中文「集成与 API」模块翻译
+ */
+export default {
+  integrations: {
+    title: '集成与 API',
+    subtitle: '管理 API 密钥、Webhook 和第三方服务集成',
+    refreshKeys: '刷新密钥列表',
+    newApiKey: '新建 API 密钥',
+    tabApiKeys: 'API 密钥',
+    tabWebhooks: 'Webhook',
+    tabThirdParty: '第三方集成',
+    apiKeysTitle: 'API 密钥',
+    apiKeysDesc: '管理用于程序化访问系统的凭证',
+    createNewKey: '创建新密钥',
+    active: '活跃',
+    copyKey: '复制密钥',
+    keyCopied: '密钥已复制到剪贴板',
+    deleteKey: '删除密钥',
+    keyDeleted: 'API 密钥已删除',
+    scopes: '权限: {{scopes}}',
+    created: '创建: {{date}}',
+    lastUsed: '最后使用: {{time}}',
+    keySecurityHint: '密钥仅在创建时完整展示一次，请妥善保存。建议定期轮换密钥以提升安全性。',
+    webhookConfig: 'Webhook 配置',
+    webhookDesc: '接收系统事件推送的回调地址管理',
+    createWebhook: '创建 Webhook',
+    success: '成功 {{count}}',
+    failed: '失败 {{count}}',
+    thirdPartyTitle: '第三方服务集成',
+    thirdPartyDesc: '连接常用协作工具与通讯平台',
+    connected: '已连接',
+    connectService: '连接服务',
+    webhookNames: {
+      formulaPublished: '配方发布通知',
+      experimentCompleted: '实验完成回调',
+    },
+    thirdPartyNames: {
+      slack: 'Slack',
+      dingtalk: '钉钉',
+      feishu: '飞书',
+      wecom: '企业微信',
+    },
+    thirdPartyDescs: {
+      slack: '消息通知与团队协作',
+      dingtalk: '阿里工作通知推送',
+      feishu: '文档与通讯集成',
+      wecom: '企业通讯工具',
+    },
+  },
+}

@@ -357,7 +357,7 @@ export class SentimentEngine {
     const repeatedWords = this.countRepeatedWords(text)
     const exclamationBoost = Math.min(30, exclamationCount * 5 + questionCount * 2 + repeatedWords * 3)
 
-    let intensity = baseScore * densityMultiplier + exclamationBoost
+    const intensity = baseScore * densityMultiplier + exclamationBoost
     return Math.round(Math.min(100, Math.max(0, intensity)))
   }
 

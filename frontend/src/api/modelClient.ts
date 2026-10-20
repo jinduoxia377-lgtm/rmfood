@@ -172,6 +172,7 @@ export class ModelConfigManager {
   }
 
   private static getDefaultConfig(_modelType: ModelType): ModelConfig {
+    void _modelType;
     return {
       apiKey: '',
       baseUrl: 'https://api.deepseek.com/v1',
@@ -576,6 +577,7 @@ export class ModelClient {
     input: SynergyNetInput,
     _options?: GenerationOptions,
   ): Promise<SynergyResult> {
+    void _options;
     return RequestQueue.enqueue('synergy_net', async () => {
       const response = await api.post<SynergyResult>(
         '/ai/synergy-analysis',
@@ -595,6 +597,7 @@ export class ModelClient {
     input: SafetyCheckerInput,
     _options?: GenerationOptions,
   ): Promise<SafetyCheckResult> {
+    void _options;
     return RequestQueue.enqueue('safety_checker', async () => {
       const response = await api.post<SafetyCheckResult>(
         '/ai/safety-check',
@@ -614,6 +617,7 @@ export class ModelClient {
     input: TastePredictorInput,
     _options?: GenerationOptions,
   ): Promise<unknown> {
+    void _options;
     return RequestQueue.enqueue('taste_predictor', async () => {
       const response = await api.post('/ai/taste-predict', {
         ingredients: input.ingredients,
@@ -629,6 +633,7 @@ export class ModelClient {
     input: StabilityModelInput,
     _options?: GenerationOptions,
   ): Promise<unknown> {
+    void _options;
     return RequestQueue.enqueue('stability_model', async () => {
       const response = await api.post('/ai/stability', {
         ingredients: input.ingredients,
@@ -645,6 +650,7 @@ export class ModelClient {
     input: PeptideScorerInput,
     _options?: GenerationOptions,
   ): Promise<unknown> {
+    void _options;
     return RequestQueue.enqueue('peptide_scorer', async () => {
       const response = await api.post('/ai/peptide-score', {
         sequences: input.sequences,

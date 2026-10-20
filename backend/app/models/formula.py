@@ -105,6 +105,9 @@ class Formula(ClassifiedMixin, Base):
     ai_recommendations: Mapped[dict | None] = mapped_column(JSON, default=dict)
     synergy_analysis: Mapped[dict | None] = mapped_column(JSON, default=dict)
 
+    # 通用元数据（对应数据库已有列 metadata_json，用于营养摘要等附加信息）
+    metadata_json: Mapped[dict | None] = mapped_column("metadata_json", JSON, default=dict)
+
     # ── 分享功能 ──────────────────────────────────────────────
     share_code: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
     share_password_hash: Mapped[str | None] = mapped_column(String(256))

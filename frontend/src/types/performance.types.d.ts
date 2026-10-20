@@ -8,23 +8,12 @@ interface PerformanceMemory {
   jsHeapSizeLimit: number;
 }
 
-// CLS entry extension
-interface PerformanceLayoutShiftEntry extends PerformanceEntry {
-  hadRecentInput: boolean;
-  value: number;
-  sources: Array<{ node?: Node; hadRecentInput: boolean }>;
-}
-
-// FID entry extension
-interface PerformanceInputDelayEntry extends PerformanceEntry {
-  processingStart: number;
-}
-
 interface PerformanceExtensions {
   memory?: PerformanceMemory;
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface Performance extends PerformanceExtensions {}
   interface NetworkInformation {
     effectiveType: 'slow-2g' | '2g' | '3g' | '4g';

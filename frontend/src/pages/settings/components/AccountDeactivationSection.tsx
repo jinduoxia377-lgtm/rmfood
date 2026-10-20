@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from '@/components/ui';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
@@ -66,8 +66,8 @@ export const AccountDeactivationSection: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-danger-50 dark:bg-danger-500/10 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
+          <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-danger-50 dark:bg-danger-500/10 flex items-center justify-center shrink-0">
             <ShieldAlert className="w-5 h-5 text-danger-600 dark:text-danger-700" />
           </div>
           <div>
@@ -76,8 +76,8 @@ export const AccountDeactivationSection: React.FC = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <ul className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1.5 list-disc list-inside">
+      <CardContent className="space-y-[var(--space-apple-sm)]">
+        <ul className="text-xs text-[var(--text-muted)] space-y-1.5 list-disc list-inside">
           <li>注销后立即失去访问权限，所有配方/实验/聊天记录在 30 天内从生产库与备份中清除</li>
           <li>法律要求保留的数据（合规审计日志）将按相关法规继续保留</li>
           <li>如仅想停止使用而非清除数据，建议先在"数据"Tab 导出您的数据</li>
@@ -106,8 +106,8 @@ export const AccountDeactivationSection: React.FC = () => {
             onChange={e => setConfirmText(e.target.value)}
             placeholder="输入 DELETE MY ACCOUNT 确认"
             className={cn(
-              'w-full h-9 px-3 text-sm rounded-md border font-mono',
-              'border-neutral-300 dark:border-neutral-600 bg-transparent',
+              'w-full h-9 px-[var(--space-apple-sm)] text-sm rounded-[var(--radius-Apple-sm)] border font-mono',
+              'border-[var(--border-color)] bg-transparent',
               'focus:outline-none focus:ring-2 focus:ring-danger-500/40 focus:border-danger-500',
             )}
           />

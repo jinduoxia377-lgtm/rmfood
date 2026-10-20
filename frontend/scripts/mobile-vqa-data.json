@@ -1,0 +1,316 @@
+[
+  {
+    "route": "/dashboard",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm",
+        "height": 230
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/formulas/new",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 344
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/experiments",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card overflow-hidden border-[var(--border-color)]",
+        "height": 277
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/experiments/new",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/batches",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 227
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/doe",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60",
+        "height": 310
+      },
+      {
+        "type": "non-fullwidth-input",
+        "cls": "flex rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border",
+        "ratio": 50
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/stability",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 278
+      },
+      {
+        "type": "non-fullwidth-input",
+        "cls": "flex-1 h-9 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[va",
+        "ratio": 52
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/documents",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/compliance",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 276
+      },
+      {
+        "type": "non-fullwidth-input",
+        "cls": "flex-1 min-w-0 h-9 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent ",
+        "ratio": 64
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/label-check",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 348
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/ingredient-analysis",
+    "error": "Error: page.evaluate: Execution context was destroyed, most likely because of a ",
+    "issueCount": 0
+  },
+  {
+    "route": "/labels",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 292
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/ai",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/databases",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/regulations",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "flex items-center justify-center h-screen",
+        "height": 664
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/terminology",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 492
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/workflows",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm",
+        "height": 228
+      },
+      {
+        "type": "non-fullwidth-input",
+        "cls": "bg-transparent text-white placeholder-white/60 text-sm outline-none w-full sm:w-52",
+        "ratio": 61
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/agent",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm",
+        "height": 249
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/analytics",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/settings",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/users",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "fixed-wide",
+        "cls": "w-full text-sm min-w-0 md:min-w-[640px]"
+      },
+      {
+        "type": "fixed-wide",
+        "cls": "w-full text-sm min-w-[960px]"
+      }
+    ],
+    "issueCount": 2
+  },
+  {
+    "route": "/audit-logs",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)]/60 dark:border-neutral-800/60 overflow-hidden",
+        "height": 3883
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/billing",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "oversized-padding",
+        "cls": "p-6 sm:p-10 text-center text-sm text-[var(--text-muted)]"
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/notifications",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/academic-report",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card overflow-hidden border-[var(--border-color)]",
+        "height": 223
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/peptide-structure",
+    "vw": 390,
+    "issues": [],
+    "issueCount": 0
+  },
+  {
+    "route": "/integrations",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "tall-banner",
+        "cls": "card",
+        "height": 637
+      }
+    ],
+    "issueCount": 1
+  },
+  {
+    "route": "/tokens",
+    "vw": 390,
+    "issues": [
+      {
+        "type": "oversized-padding",
+        "cls": "p-4 sm:p-8 space-y-6 sm:space-y-12 max-w-7xl mx-auto"
+      }
+    ],
+    "issueCount": 1
+  }
+]

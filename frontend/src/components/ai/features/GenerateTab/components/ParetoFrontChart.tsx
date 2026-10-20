@@ -12,7 +12,6 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import type { AICandidate } from '@/api/ai'
-import { cn } from '@/lib/utils'
 
 // ─── 类型定义 ───
 
@@ -211,7 +210,7 @@ export function ParetoFrontChart({
 
         {/* 目标说明 */}
         <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
-          {objectives.map((obj, i) => (
+          {objectives.map((obj) => (
             <div key={obj.key} className="flex items-center gap-1.5 text-xs">
               <div
                 className="w-2.5 h-2.5 rounded-full"

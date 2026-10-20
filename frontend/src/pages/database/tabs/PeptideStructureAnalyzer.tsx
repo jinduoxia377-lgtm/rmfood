@@ -6,14 +6,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { peptideStructureService } from '@/services/professional/peptideStructureService';
-import { Button, Input, Card, Badge, Tabs, Pagination } from '@/components/ui';
-import { databaseApi } from '@/api/database';
+import { Button, Input, Card, Badge, Pagination } from '@/components/ui';
 import { MoleculeViewer3D } from '@/components/molecule';
 import {
   Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity, FlaskConical,
   AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
-  Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy,
-  Layers, Zap, Target, TestTube, Bot, ZoomIn, Expand, Leaf,
+  Search, TrendingUp, Download, Trash2, Plus, X, Copy,
+  Layers, Zap, Target, Bot, ZoomIn, Expand, Leaf,
 } from 'lucide-react';
 
 // 使用全局echarts对象（从CDN加载）
@@ -27,12 +26,14 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<any>(null);
   const optionRef = useRef<any>(option);
+  // eslint-disable-next-line react-hooks/refs
   optionRef.current = option;
   const [echartsReady, setEchartsReady] = useState(true);
 
   useEffect(() => {
     const echarts = window.echarts;
     if (!echarts) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEchartsReady(false);
       return;
     }
@@ -50,12 +51,12 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
         chartInstance.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   if (!echartsReady) {
     return (
-      <div style={style} className="w-full h-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div style={style} className="w-full h-full flex items-center justify-center bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
         <span className="text-xs text-[var(--text-muted,#9A9A9F)]">图表加载失败，请检查网络连接</span>
       </div>
     );
@@ -65,12 +66,6 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
 };
 
 // ─── 类型定义 ───
-interface SequenceToSmilesRequest {
-  sequence: string;
-  n_terminal?: string;
-  c_terminal?: string;
-}
-
 interface PeptideAnalysisResult {
   sequence: string;
   smiles?: string;
@@ -211,9 +206,9 @@ type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'bat
 
 // ─── 工具函数 ───
 function getScoreColor(score: number): string {
-  if (score >= 0.8) return 'text-success-600 dark:text-success-700';
-  if (score >= 0.5) return 'text-warning-600 dark:text-warning-700';
-  return 'text-error-600 dark:text-error-700';
+  if (score >= 0.8) return 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]';
+  if (score >= 0.5) return 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]';
+  return 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]';
 }
 
 function getActivityBadge(level: string): 'success' | 'warning' | 'danger' | 'neutral' {
@@ -233,9 +228,9 @@ function ScoreProgress({ label, score }: { label: string; score: number }) {
         <span className="text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">{label}</span>
         <span className={`font-medium ${getScoreColor(score)}`}>{(score * 100).toFixed(1)}%</span>
       </div>
-      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+      <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
         <div
-          className="h-2 rounded-full transition-all duration-500"
+          className="h-2 rounded-[var(--radius-pill)] transition-all duration-500"
           style={{
             width: `${score * 100}%`,
             backgroundColor: score >= 0.8 ? 'var(--color-primary-500)' : score >= 0.5 ? '#eab308' : '#ef4444',
@@ -517,7 +512,7 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex gap-2">
         <Button onClick={handleCompare} disabled={loading} className="flex-1">
           {loading ? '分析中...' : '开始对比'}
@@ -525,9 +520,9 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
       </div>
 
       {results.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           {/* 活性热力图 */}
-          <Card className="p-4">
+          <Card className="p-[var(--space-apple-md)]">
             <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
               活性热力图
@@ -538,42 +533,42 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">分子量</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食品评分</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">ACE抑制</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗氧化</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗菌</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">过敏</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">毒性</th>
+                <tr className="border-b border-[var(--border-color)]">
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">分子量</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食品评分</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">ACE抑制</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗氧化</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗菌</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">过敏</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">毒性</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, i) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
-                    <td className="px-3 py-2 font-mono font-medium">{r.sequence}</td>
-                    <td className="px-3 py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
-                    <td className="px-3 py-2 text-right">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
+                    <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{r.sequence}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right">
                       <span className={`font-bold ${getScoreColor(r.safety.food_score / 100)}`}>
                         {r.safety.food_score.toFixed(0)}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right">{(r.ace_inhibition.score * 100).toFixed(1)}%</td>
-                    <td className="px-3 py-2 text-right">{(r.antioxidant.score * 100).toFixed(1)}%</td>
-                    <td className="px-3 py-2 text-right">{(r.antimicrobial.score * 100).toFixed(1)}%</td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.ace_inhibition.score * 100).toFixed(1)}%</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antioxidant.score * 100).toFixed(1)}%</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antimicrobial.score * 100).toFixed(1)}%</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-center">
                       {r.safety.is_allergen ? (
-                        <span className="text-error-500">是</span>
+                        <span className="text-[var(--color-error-text)]0">是</span>
                       ) : (
-                        <span className="text-success-500">否</span>
+                        <span className="text-[var(--color-success-text)]0">否</span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-[var(--space-apple-sm)] py-2 text-center">
                       {r.safety.is_toxic ? (
-                        <span className="text-error-500">是</span>
+                        <span className="text-[var(--color-error-text)]0">是</span>
                       ) : (
-                        <span className="text-success-500">否</span>
+                        <span className="text-[var(--color-success-text)]0">否</span>
                       )}
                     </td>
                   </tr>
@@ -583,8 +578,8 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
           </div>
 
           {/* 综合评分对比图 */}
-          <div className="pt-4">
-            <h4 className="text-sm font-medium mb-3">活性对比</h4>
+          <div className="pt-[var(--space-apple-md)]">
+            <h4 className="text-sm font-medium mb-[var(--space-apple-sm)]">活性对比</h4>
             <ReactECharts
               option={{
                 radar: {
@@ -628,7 +623,7 @@ function DatabaseView({ onAnalyzeSequence, initialQuery }: { onAnalyzeSequence?:
   const [results, setResults] = useState<DatabasePeptide[]>([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<any>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [, setShowAll] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number>(0); // 保存搜索结果总数
   // 外部数据源检索状态
@@ -691,6 +686,7 @@ setLoading(true);
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     handleLoadStats();
     // 有预填序列（来自分析 Tab 反向跳转）则按序列搜索，否则显示前20条
     doSearch(initialQuery || '', 1);
@@ -703,7 +699,7 @@ setLoading(true);
   }, [query, doSearch]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* 搜索框 */}
       <div className="flex gap-2">
         <Input
@@ -724,14 +720,14 @@ setLoading(true);
 
         <Button
           variant="ghost"
-          className="border border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300"
+          className="border border-[var(--color-primary-border)] dark:border-[var(--color-primary)] text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]"
           onClick={() => doExternalSearch(query)}
           disabled={extLoading || !query}
         >
-          {extLoading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>检索中...</> : <><Database className="w-4 h-4 mr-1" />外部检索</>}
+          {extLoading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>检索中...</> : <><Database className="w-4 h-4 mr-1" />外部检索</>}
         </Button>
         <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted,#9A9A9F)] cursor-pointer select-none">
-          <input type="checkbox" checked={useOnline} onChange={e => setUseOnline(e.target.checked)} className="accent-primary-500" />
+          <input type="checkbox" checked={useOnline} onChange={e => setUseOnline(e.target.checked)} className="accent-[var(--color-primary)]" />
           BioPeptideDB 在线
         </label>
       </div>
@@ -739,33 +735,33 @@ setLoading(true);
       {/* 外部检索结果（并入表格，标注来源库） */}
       {extMeta && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between p-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg text-xs">
-            <span className="text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+          <div className="flex items-center justify-between p-2.5 bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 border border-[var(--color-primary-border)] dark:border-[var(--color-primary)] rounded-[var(--radius-Apple-sm)] text-xs">
+            <span className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] flex items-center gap-1.5">
               <Database className="w-3.5 h-3.5" />
               外部数据源：{extMeta.dbs.length > 0 ? extMeta.dbs.join(' + ') : '未配置在线源（仅查 DFBP 本地库）'}，命中 {extResults.length} 条
             </span>
-            <button onClick={() => { setExtResults([]); setExtMeta(null); }} className="text-[var(--text-muted,#9A9A9F)] hover:text-neutral-700">清除</button>
+            <button onClick={() => { setExtResults([]); setExtMeta(null); }} className="text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-primary)]">清除</button>
           </div>
           {extResults.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <tr className="border-b border-[var(--border-color)]">
                     {['序列', '来源库', '来源蛋白', '活性类型', '活性值', '食物来源', '操作'].map((h, i) => (
-                      <th key={i} className={i < 6 ? 'px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]' : 'px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]'}>{h}</th>
+                      <th key={i} className={i < 6 ? 'px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]' : 'px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]'}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {extResults.map((p, i) => (
-                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
-                      <td className="px-3 py-2 font-mono font-medium">{p.sequence}</td>
-                      <td className="px-3 py-2"><Badge variant="outline" size="sm">{p.source_database}</Badge></td>
-                      <td className="px-3 py-2 text-xs">{p.source_protein || '-'}</td>
-                      <td className="px-3 py-2 text-xs">{p.activity_type || '-'}</td>
-                      <td className="px-3 py-2 text-xs">{p.activity_value != null ? `${p.activity_value} ${p.activity_unit || ''}` : '-'}</td>
-                      <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
-                      <td className="px-3 py-2 text-center">
+                    <tr key={i} className="border-b border-[var(--border-color)]">
+                      <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{p.sequence}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2"><Badge variant="outline" size="sm">{p.source_database}</Badge></td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.source_protein || '-'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.activity_type || '-'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.activity_value != null ? `${p.activity_value} ${p.activity_unit || ''}` : '-'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.food_source || '-'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-center">
                         {onAnalyzeSequence && (
                           <Button size="sm" variant="ghost" className="h-7 text-xs text-primary" onClick={() => onAnalyzeSequence(p.sequence)}>
                             <Beaker className="w-3.5 h-3.5 mr-1" />分析
@@ -789,16 +785,16 @@ setLoading(true);
 
       {/* 统计信息 */}
       {stats && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
             <div className="text-2xl font-bold text-primary">{stats.total_peptides}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">总肽数</div>
           </div>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
             <div className="text-2xl font-bold text-primary">{Object.keys(stats.activities).length}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">活性类型</div>
           </div>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
             <div className="text-2xl font-bold text-primary">{Object.keys(stats.food_sources).length}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">食物来源</div>
           </div>
@@ -812,27 +808,27 @@ setLoading(true);
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">来源蛋白</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">数据来源</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
+                <tr className="border-b border-[var(--border-color)]">
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">来源蛋白</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">数据来源</th>
+                  <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((p, i) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
-                    <td className="px-3 py-2 font-mono font-medium">{p.sequence}</td>
-                    <td className="px-3 py-2 text-xs">{p.source_protein || '-'}</td>
-                    <td className="px-3 py-2 text-xs">{p.activity_type || '-'}</td>
-                    <td className="px-3 py-2 text-right text-xs">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
+                    <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{p.sequence}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.source_protein || '-'}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.activity_type || '-'}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2 text-right text-xs">
                       {p.activity_value ? `${p.activity_value} ${p.activity_unit}` : '-'}
                     </td>
-                    <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.food_source || '-'}</td>
+                    <td className="px-[var(--space-apple-sm)] py-2">
                       {p.is_synthetic ? (
                         <Badge variant="warning" size="sm" title="程序合成（generate_peptides random 生成），非真实 DFBP 文献">合成</Badge>
                       ) : (
@@ -841,12 +837,12 @@ setLoading(true);
                         </Badge>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-[var(--space-apple-sm)] py-2 text-center">
                       {onAnalyzeSequence && (
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 text-xs text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                          className="h-7 text-xs text-primary hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20"
                           onClick={() => onAnalyzeSequence(p.sequence)}
                         >
                           <Beaker className="w-3.5 h-3.5 mr-1" />分析
@@ -882,7 +878,7 @@ function HistoryView() {
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
@@ -901,6 +897,7 @@ function HistoryView() {
   }, [page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHistory();
   }, [loadHistory]);
 
@@ -914,26 +911,26 @@ function HistoryView() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* 统计概览 */}
       {stats && (
-        <div className="grid grid-cols-4 gap-3">
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)]">
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
             <div className="text-xl font-bold text-primary">{stats.total_analyses}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">总分析数</div>
           </div>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
             <div className="text-xl font-bold text-primary">{stats.avg_food_score.toFixed(1)}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">平均评分</div>
           </div>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
-            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-error-500' : 'text-success-500'}`}>
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
+            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
               {stats.allergen_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
           </div>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
-            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-error-500' : 'text-success-500'}`}>
+          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
+            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
               {stats.toxic_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
@@ -974,56 +971,56 @@ function HistoryView() {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-neutral-200 dark:border-neutral-700">
-              <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">分子量</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">评分</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">ACE</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗氧化</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗菌</th>
-              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">过敏</th>
-              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">毒性</th>
-              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">消化性</th>
-              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">时间</th>
-              <th className="px-3 py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
+            <tr className="border-b border-[var(--border-color)]">
+              <th className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">分子量</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">评分</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">ACE</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗氧化</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">抗菌</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">过敏</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">毒性</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">消化性</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">时间</th>
+              <th className="px-[var(--space-apple-sm)] py-2 text-center text-xs font-medium text-[var(--text-muted,#9A9A9F)]">操作</th>
             </tr>
           </thead>
           <tbody>
             {records.map((r) => (
-              <tr key={r.id} className="border-b border-neutral-100 dark:border-neutral-800">
-                <td className="px-3 py-2 font-mono font-medium">{r.sequence}</td>
-                <td className="px-3 py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
-                <td className="px-3 py-2 text-right">
+              <tr key={r.id} className="border-b border-[var(--border-color)]">
+                <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{r.sequence}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-right">
                   <span className={`font-bold ${getScoreColor(r.food_safety_score / 100)}`}>
                     {r.food_safety_score.toFixed(0)}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-right">{(r.ace_inhibition_score * 100).toFixed(1)}%</td>
-                <td className="px-3 py-2 text-right">{(r.antioxidant_score * 100).toFixed(1)}%</td>
-                <td className="px-3 py-2 text-right">{((r.antimicrobial_score ?? 0) * 100).toFixed(1)}%</td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.ace_inhibition_score * 100).toFixed(1)}%</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antioxidant_score * 100).toFixed(1)}%</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-right">{((r.antimicrobial_score ?? 0) * 100).toFixed(1)}%</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-center">
                   {r.is_allergen ? (
-                    <span className="text-error-500">是</span>
+                    <span className="text-[var(--color-error-text)]0">是</span>
                   ) : (
-                    <span className="text-success-500">否</span>
+                    <span className="text-[var(--color-success-text)]0">否</span>
                   )}
                 </td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-[var(--space-apple-sm)] py-2 text-center">
                   {r.is_toxic ? (
-                    <span className="text-error-500">是</span>
+                    <span className="text-[var(--color-error-text)]0">是</span>
                   ) : (
-                    <span className="text-success-500">否</span>
+                    <span className="text-[var(--color-success-text)]0">否</span>
                   )}
                 </td>
-                <td className="px-3 py-2 text-center capitalize">{r.digestibility || '未知'}</td>
-                <td className="px-3 py-2 text-xs text-[var(--text-muted,#9A9A9F)]">
+                <td className="px-[var(--space-apple-sm)] py-2 text-center capitalize">{r.digestibility || '未知'}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-xs text-[var(--text-muted,#9A9A9F)]">
                   {new Date(r.created_at).toLocaleDateString()}
                 </td>
-                <td className="px-3 py-2 text-center">
+                <td className="px-[var(--space-apple-sm)] py-2 text-center">
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 w-6 p-0 text-error-500 hover:text-error-600"
+                    className="h-6 w-6 p-0 text-[var(--color-error-text)]0 hover:text-[var(--color-error-text)]"
                     onClick={() => handleDelete(r.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1074,18 +1071,21 @@ function BatchAnalysisView() {
           }));
           setResults(rows);
           setLoading(false);
+          // eslint-disable-next-line react-hooks/immutability
           stopPolling();
         } else if (st.status === 'failed') {
           setError(st.error || '批量任务失败');
           setLoading(false);
+           
           stopPolling();
         }
-      } catch (e) {
+      } catch {
         // 轮询瞬时失败不中断
       }
     }, 2000);
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const stopPolling = useCallback(() => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
   }, []);
@@ -1128,31 +1128,31 @@ function BatchAnalysisView() {
   }, [input, startPolling]);
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-md)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <label className="text-xs text-[var(--text-secondary)] block">输入序列（每行一条，最多50条）</label>
         <textarea
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={"ACDEFG\nVLGYT\nLLPGTFVDNQKF"}
-          className="w-full h-32 font-mono text-xs p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 resize-none"
+          className="w-full h-32 font-mono text-xs p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] resize-none"
         />
         <div className="flex gap-2">
           <Button onClick={handleBatch} disabled={loading || !input.trim()} className="flex-1">
-            {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><FlaskConical className="w-4 h-4 mr-1"/>批量分析</>}
+            {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>分析中...</> : <><FlaskConical className="w-4 h-4 mr-1"/>批量分析</>}
           </Button>
         </div>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {/* 异步批量任务进度（>10 条序列走 /analyze/batch → 轮询 /tasks/{id}） */}
       {task && task.status === 'processing' && (
-        <Card className="p-4 space-y-2">
+        <Card className="p-[var(--space-apple-md)] space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">批量任务执行中</span>
             <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{task.completed}/{task.total} · {task.progress}%</span>
           </div>
-          <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-            <div className="bg-primary-500 h-2 rounded-full transition-all duration-500" style={{ width: `${task.progress}%` }} />
+          <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
+            <div className="bg-[var(--color-primary-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${task.progress}%` }} />
           </div>
           <p className="text-xs text-[var(--text-muted,#9A9A9F)]">
             任务 {task.taskId.slice(0, 8)}… 已后台并发处理，完成后自动刷新结果表。
@@ -1162,28 +1162,28 @@ function BatchAnalysisView() {
       {results.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+            <thead><tr className="border-b border-[var(--border-color)]">
               {['序列', '成功', '分子量', '食品评分', 'ACE抑制', '抗氧化', '抗菌', '过敏', '毒性'].map(h => (
-                <th key={h} className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted)]">{h}</th>
+                <th key={h} className="px-[var(--space-apple-sm)] py-2 text-left text-xs font-medium text-[var(--text-muted)]">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {results.map((r, i) => (
-                <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
-                  <td className="px-3 py-2 font-mono text-xs">{r.sequence}</td>
-                  <td className="px-3 py-2"><span className={`px-1.5 py-0.5 rounded text-xs ${r.success ? 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700' : 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-700'}`}>{r.success ? '成功' : '失败'}</span></td>
+                <tr key={i} className="border-b border-[var(--border-color)]">
+                  <td className="px-[var(--space-apple-sm)] py-2 font-mono text-xs">{r.sequence}</td>
+                  <td className="px-[var(--space-apple-sm)] py-2"><span className={`px-1.5 py-0.5 rounded text-xs ${r.success ? 'bg-[var(--color-success-container)] text-[var(--color-success-text)] dark:bg-[var(--color-success-container)]/25 dark:text-[var(--color-success-text)]' : 'bg-[var(--color-error-container)] text-[var(--color-error-text)] dark:bg-[var(--color-error-container)]/25 dark:text-[var(--color-error-text)]'}`}>{r.success ? '成功' : '失败'}</span></td>
                   {r.success && r.result ? (
                     <>
-                      <td className="px-3 py-2 font-mono text-xs">{r.result.molecular_weight?.toFixed(1) ?? '-'}</td>
-                      <td className="px-3 py-2"><span className={`font-bold ${getScoreColor((r.result.safety?.food_score ?? 0) / 100)}`}>{(r.result.safety?.food_score ?? 0).toFixed(0)}</span></td>
-                      <td className="px-3 py-2 text-xs">{((r.result.ace_inhibition?.score ?? 0) * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-xs">{((r.result.antioxidant?.score ?? 0) * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-xs">{((r.result.antimicrobial?.score ?? 0) * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-center text-xs">{r.result.safety?.is_allergen ? '是' : '否'}</td>
-                      <td className="px-3 py-2 text-center text-xs">{r.result.safety?.is_toxic ? '是' : '否'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 font-mono text-xs">{r.result.molecular_weight?.toFixed(1) ?? '-'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2"><span className={`font-bold ${getScoreColor((r.result.safety?.food_score ?? 0) / 100)}`}>{(r.result.safety?.food_score ?? 0).toFixed(0)}</span></td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.ace_inhibition?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.antioxidant?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.antimicrobial?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-center text-xs">{r.result.safety?.is_allergen ? '是' : '否'}</td>
+                      <td className="px-[var(--space-apple-sm)] py-2 text-center text-xs">{r.result.safety?.is_toxic ? '是' : '否'}</td>
                     </>
                   ) : (
-                    <td colSpan={7} className="px-3 py-2 text-xs text-error-500">{r.error ?? '-'}</td>
+                    <td colSpan={7} className="px-[var(--space-apple-sm)] py-2 text-xs text-[var(--color-error-text)]0">{r.error ?? '-'}</td>
                   )}
                 </tr>
               ))}
@@ -1216,15 +1216,15 @@ function DeepAnalysisView() {
   }, [sequence]);
 
   if (!result) return (
-    <div className="space-y-4">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-md)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <label className="text-xs text-[var(--text-secondary)] block">氨基酸序列</label>
         <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={50} />
         <Button onClick={handleDeepAnalyze} disabled={loading || !sequence} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Bot className="w-4 h-4 mr-1"/>深度分析</>}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>分析中...</> : <><Bot className="w-4 h-4 mr-1"/>深度分析</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
     </div>
   );
 
@@ -1237,10 +1237,10 @@ function DeepAnalysisView() {
   const os = result.overall_scores || {};
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4">
-        <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+    <div className="space-y-[var(--space-apple-md)]">
+      <Card className="p-[var(--space-apple-md)]">
+        <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)] text-xs">
           {[
             ['分子量 (Da)', bpProps.molecular_weight?.toFixed(2)],
             ['LogP', bpProps.logp?.toFixed(3)],
@@ -1251,7 +1251,7 @@ function DeepAnalysisView() {
             ['等电点', pp.isoelectric_point?.toFixed(2)],
             ['净电荷(pH7)', pp.net_charge_at_ph7?.toFixed(1)],
           ].map(([label, val]) => (
-            <div key={label} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div key={label} className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-[var(--text-muted)]">{label}</div>
               <div className="font-mono font-medium mt-0.5">{val ?? '-'}</div>
             </div>
@@ -1259,10 +1259,10 @@ function DeepAnalysisView() {
         </div>
       </Card>
 
-      <Card className="p-4">
-        <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Layers className="w-4 h-4 text-primary"/>二级结构预测 (Chou-Fasman)</h3>
-        <div className="flex items-center justify-between mb-3 text-xs">
-          <span className="text-[var(--text-muted)]">主导结构： <span className="font-medium text-neutral-700 dark:text-neutral-300">{(() => {
+      <Card className="p-[var(--space-apple-md)]">
+        <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><Layers className="w-4 h-4 text-primary"/>二级结构预测 (Chou-Fasman)</h3>
+        <div className="flex items-center justify-between mb-[var(--space-apple-sm)] text-xs">
+          <span className="text-[var(--text-muted)]">主导结构： <span className="font-medium text-[var(--text-primary)]">{(() => {
             const a = ss?.alpha_helix ?? 0, b = ss?.beta_sheet ?? 0, c = ss?.random_coil ?? 0;
             if (a >= b && a >= c) return 'α-螺旋';
             if (b >= a && b >= c) return 'β-折叠';
@@ -1270,33 +1270,33 @@ function DeepAnalysisView() {
           })()}</span></span>
           <span className="text-[var(--text-muted)]">聚集倾向： <span className="font-medium">{ss?.aggregation_potential ?? 'N/A'}</span></span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
           {[
             ['α-螺旋 (%)', ss?.alpha_helix ?? 0, '#3b82f6'],
             ['β-折叠 (%)', ss?.beta_sheet ?? 0, 'var(--color-primary-500)'],
             ['无规卷曲 (%)', ss?.random_coil ?? 0, '#f59e0b'],
           ].map(([label, val, color]: any) => (
-            <div key={label} className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div key={label} className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-2xl font-bold" style={{ color }}>{(val).toFixed(1)}%</div>
               <div className="text-xs text-[var(--text-muted)] mt-1">{label}</div>
-              <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 mt-2">
-                <div className="h-1.5 rounded-full transition-all" style={{ width: `${Math.min(val, 100)}%`, backgroundColor: color }}/>
+              <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-1.5 mt-2">
+                <div className="h-1.5 rounded-[var(--radius-pill)] transition-all" style={{ width: `${Math.min(val, 100)}%`, backgroundColor: color }}/>
               </div>
             </div>
           ))}
         </div>
         {ss?.predicted_sequence && (
-          <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+          <div className="mt-[var(--space-apple-sm)] p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
             <div className="text-xs text-[var(--text-muted)] mb-1">结构序列 (H=螺旋 E=折叠 C=卷曲)</div>
             <div className="font-mono text-xs break-all">{ss.predicted_sequence}</div>
           </div>
         )}
         {ss?.residue_probabilities && ss.residue_probabilities.length > 0 && (
-          <div className="mt-3">
+          <div className="mt-[var(--space-apple-sm)]">
             <div className="text-xs text-[var(--text-muted)] mb-1">逐残基结构概率</div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
-                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <thead><tr className="border-b border-[var(--border-color)]">
                   <th className="px-2 py-1 text-left">位置</th>
                   <th className="px-2 py-1 text-left">氨基酸</th>
                   <th className="px-2 py-1 text-right">螺旋</th>
@@ -1305,7 +1305,7 @@ function DeepAnalysisView() {
                 </tr></thead>
                 <tbody>
                   {ss.residue_probabilities.map((rp: any) => (
-                    <tr key={rp.position} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <tr key={rp.position} className="border-b border-[var(--border-color)]">
                       <td className="px-2 py-1 font-mono">{rp.position}</td>
                       <td className="px-2 py-1 font-mono font-medium">{rp.amino_acid}</td>
                       <td className="px-2 py-1 text-right font-mono">{(rp.helix * 100).toFixed(0)}%</td>
@@ -1321,8 +1321,8 @@ function DeepAnalysisView() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-4">
-          <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Activity className="w-4 h-4 text-primary"/>生物活性预测</h3>
+        <Card className="p-[var(--space-apple-md)]">
+          <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><Activity className="w-4 h-4 text-primary"/>生物活性预测</h3>
           <div className="space-y-2">
             {Object.entries(bp).map(([key, val]: any) => (
               <div key={key} className="flex justify-between items-center text-xs">
@@ -1343,16 +1343,16 @@ function DeepAnalysisView() {
             ))}
           </div>
           {bp.ACE_inhibitory?.ml_provenance && (
-            <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+            <div className="mt-2 text-xs text-[var(--text-muted)]">
               ACE 抑制目标分来源：{bp.ACE_inhibitory.ml_provenance}
             </div>
           )}
-          <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+          <div className="mt-2 text-xs text-[var(--text-muted)]">
             注：生物活性分为 <strong>QSAR 规则法预测</strong>（基于文献构效关系 SAR 规则 + motif 匹配，非实验实测量）；ACE 抑制目标分已并入真实 ML 模型分对照。
           </div>
         </Card>
-        <Card className="p-4">
-          <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
+        <Card className="p-[var(--space-apple-md)]">
+          <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
           <div className="space-y-2 text-xs">
             {[
               ['综合得分', (os.composite ?? 0).toFixed(2)],
@@ -1369,7 +1369,7 @@ function DeepAnalysisView() {
               </div>
             ))}
             {sa?.protease_cleavage_sites?.length > 0 && (
-              <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="mt-[var(--space-apple-sm)] p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-xs text-[var(--text-muted)] mb-1">蛋白酶切割位点</div>
                 <div className="flex flex-wrap gap-1">
                   {sa.protease_cleavage_sites.map((site: any, i: number) => (
@@ -1381,7 +1381,7 @@ function DeepAnalysisView() {
               </div>
             )}
             {sa?.recommended_storage_conditions && (
-              <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+              <div className="mt-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-xs">
                 <span className="text-[var(--text-muted)]">推荐储存： </span>
                 <span className="font-medium">{Array.isArray(sa.recommended_storage_conditions) ? sa.recommended_storage_conditions.join(', ') : String(sa.recommended_storage_conditions)}</span>
               </div>
@@ -1425,13 +1425,13 @@ function OptimizeView() {
   }, [sequences, objectives, weightsStr]);
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-md)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">候选序列（每行一条）</label>
-          <textarea value={sequences} onChange={e => setSequences(e.target.value)} placeholder={"VLGYT\nRPYPIP\nLLPGTFVDNQKF"} className="w-full h-20 font-mono text-xs p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 resize-none" />
+          <textarea value={sequences} onChange={e => setSequences(e.target.value)} placeholder={"VLGYT\nRPYPIP\nLLPGTFVDNQKF"} className="w-full h-20 font-mono text-xs p-2 bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] resize-none" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)]">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">优化目标（逗号分隔）</label>
             <Input value={objectives} onChange={e => setObjectives(e.target.value)} placeholder="ACE_inhibitory,antioxidant" className="text-xs" />
@@ -1442,12 +1442,12 @@ function OptimizeView() {
           </div>
         </div>
         <Button onClick={handleOptimize} disabled={loading} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>计算中...</> : <><Target className="w-4 h-4 mr-1"/>计算 Pareto 前沿</>}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>计算中...</> : <><Target className="w-4 h-4 mr-1"/>计算 Pareto 前沿</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {result && (
-        <Card className="p-4 space-y-3">
+        <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary"/>Pareto 最优前沿</h3>
             <span className="text-xs text-[var(--text-muted)]">前沿点数: {result.pareto_frontier_size} / 处理: {result.total_processed}</span>
@@ -1457,14 +1457,14 @@ function OptimizeView() {
           )}
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+              <thead><tr className="border-b border-[var(--border-color)]">
                 <th className="px-2 py-1.5 text-left">序列</th>
                 <th className="px-2 py-1.5 text-right">等级</th>
                 {objectives.split(',').map(o => <th key={o} className="px-2 py-1.5 text-right capitalize">{o.replace(/_/g, ' ')}</th>)}
               </tr></thead>
               <tbody>
                 {(result.pareto_points || []).slice(0, 10).map((p: any, i: number) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
                     <td className="px-2 py-1.5 font-mono font-medium">{p.sequence}</td>
                     <td className="px-2 py-1.5 text-center"><Badge variant={i < 3 ? 'success' : 'neutral'} size="sm">{p.rank}</Badge></td>
                     {objectives.split(',').map((o: string) => (
@@ -1476,9 +1476,9 @@ function OptimizeView() {
             </table>
           </div>
           {result.diversity_metrics && (
-            <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               {Object.entries(result.diversity_metrics).map(([k, v]: any) => (
-                <div key={k} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div key={k} className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                   <div className="text-[var(--text-muted)]">{k}</div>
                   <div className="font-mono font-medium">{typeof v === 'number' ? v.toFixed(4) : v}</div>
                 </div>
@@ -1487,7 +1487,7 @@ function OptimizeView() {
           )}
           {/* 真实 ML 模型溯源（多目标寻优中 ACE 抑制目标分来源） */}
           {result.ml_model_provenance && (
-            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+            <div className="mt-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-xs">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-3 h-3 text-primary" />
                 <span className="font-medium">ACE 抑制目标分溯源</span>
@@ -1529,8 +1529,8 @@ function SynergyView() {
   }, [peptideSeq, herbInput]);
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-md)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
           <Input value={peptideSeq} onChange={e => setPeptideSeq(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" />
@@ -1542,25 +1542,25 @@ function SynergyView() {
         <div className="flex flex-wrap gap-1.5">
           {['黄芪', '人参', '枸杞子', '山楂', '菊花', '葛根', '酸枣仁', '灵芝'].map(h => (
             <button key={h} onClick={() => setHerbInput(prev => prev.includes(h) ? prev.replace(h, '').replace(/,,?/, '').replace(/,$/, '') : (prev ? prev + ',' + h : h))}
-              className="px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+              className="px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors">
               {h}
             </button>
           ))}
         </div>
         <Button onClick={handleSynergy} disabled={loading || !peptideSeq.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Zap className="w-4 h-4 mr-1"/>协同效应分析</>}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>分析中...</> : <><Zap className="w-4 h-4 mr-1"/>协同效应分析</>}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
       {result && (
-        <Card className="p-4 space-y-3">
+        <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />协同效应结果</h3>
             <span className="text-xs text-[var(--text-muted)]">分析: {result.peptides_analyzed ?? 0} 肽 × {result.herbs_analyzed ?? 0} 药材，综合协同 {(result.overall_synergy_score ?? 0).toFixed(3)}</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+              <thead><tr className="border-b border-[var(--border-color)]">
                 <th className="px-2 py-1.5 text-left">肽序列</th>
                 <th className="px-2 py-1.5 text-left">药材</th>
                 <th className="px-2 py-1.5 text-right">协同评分</th>
@@ -1569,7 +1569,7 @@ function SynergyView() {
               </tr></thead>
               <tbody>
                 {(result.synergy_matrix || []).flat().map((s: any, i: number) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
                     <td className="px-2 py-1.5 font-mono">{s.peptide}</td>
                     <td className="px-2 py-1.5">{s.herb}</td>
                     <td className="px-2 py-1.5 text-right font-bold">{(s.synergy_score ?? 0).toFixed(3)}</td>
@@ -1585,7 +1585,7 @@ function SynergyView() {
               <h4 className="text-xs font-medium text-[var(--text-muted)] mb-2">最优组合</h4>
               <div className="space-y-1.5">
                 {result.top_combinations.slice(0, 5).map((c: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between text-xs p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                  <div key={i} className="flex items-center justify-between text-xs p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                     <span className="font-mono font-medium">{c.peptide} + {c.herb}</span>
                     <span className="font-mono text-primary">{(c.synergy_score ?? 0).toFixed(3)}</span>
                   </div>
@@ -1595,7 +1595,7 @@ function SynergyView() {
           )}
           {/* 真实 ML 模型溯源（协同功效匹配中 ACE 抑制分来源） */}
           {result.ml_model_provenance && (
-            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+            <div className="mt-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-xs">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-3 h-3 text-primary" />
                 <span className="font-medium">功效匹配 ACE 抑制分溯源</span>
@@ -1610,7 +1610,7 @@ function SynergyView() {
           )}
           {/* 药材知识库来源（TCMSP 真实 319 种 / 回退 8 味 / 未收录） */}
           {result.herb_knowledge_source && (
-            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+            <div className="mt-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-xs">
               <div className="flex items-center gap-2 mb-1">
                 <Leaf className="w-3 h-3 text-primary" />
                 <span className="font-medium">药材功效知识来源</span>
@@ -1633,7 +1633,7 @@ function SynergyView() {
           )}
           {/* 药-药配伍关系（HERB_INTERACTIONS 真实配伍库，150+ 条） */}
           {result.herb_interactions && result.herb_interactions.available && (
-            <div className="mt-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-xs">
+            <div className="mt-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-xs">
               <div className="flex items-center gap-2 mb-1">
                 <FlaskConical className="w-3 h-3 text-primary" />
                 <span className="font-medium">药-药配伍关系（HERB_INTERACTIONS）</span>
@@ -1679,14 +1679,14 @@ function AdvancedToolsView() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
+    <div className="space-y-[var(--space-apple-md)]">
+      <div className="flex flex-wrap gap-1 bg-[var(--bg-tertiary)] p-1 rounded-[var(--radius-Apple-sm)]">
         {tools.map(t => (
           <button
             key={t.key}
             onClick={() => setTool(t.key)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              tool === t.key ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+            className={`px-[var(--space-apple-sm)] py-1.5 text-xs font-medium rounded-[var(--radius-Apple-sm)] transition-colors ${
+              tool === t.key ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             {t.label}
@@ -1727,8 +1727,8 @@ function HydrolysisSimulator() {
   }, [sequence, enzymes]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
           <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
@@ -1738,16 +1738,16 @@ function HydrolysisSimulator() {
           <Input value={enzymes} onChange={e => setEnzymes(e.target.value)} placeholder="Pepsin,Trypsin" />
         </div>
         <Button onClick={handleSimulate} disabled={loading || !sequence.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>模拟中...</> : '模拟水解'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>模拟中...</> : '模拟水解'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <Card className="p-4">
+        <Card className="p-[var(--space-apple-md)]">
           <h3 className="text-sm font-medium mb-2">水解位点</h3>
           {result.length === 0 ? <p className="text-xs text-[var(--text-muted)]">无显著水解位点</p> : (
             <table className="w-full text-xs">
-              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+              <thead><tr className="border-b border-[var(--border-color)]">
                 <th className="px-2 py-1.5 text-left">位置</th>
                 <th className="px-2 py-1.5 text-left">酶</th>
                 <th className="px-2 py-1.5 text-left">键类型</th>
@@ -1755,7 +1755,7 @@ function HydrolysisSimulator() {
               </tr></thead>
               <tbody>
                 {result.map((r, i) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
                     <td className="px-2 py-1.5 font-mono">{r.position}</td>
                     <td className="px-2 py-1.5">{r.enzyme}</td>
                     <td className="px-2 py-1.5 font-mono">{r.bond_type}</td>
@@ -1793,8 +1793,8 @@ function SequenceAligner() {
   }, [seq1, seq2]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">序列 A</label>
           <Input value={seq1} onChange={e => setSeq1(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
@@ -1804,35 +1804,35 @@ function SequenceAligner() {
           <Input value={seq2} onChange={e => setSeq2(e.target.value.toUpperCase())} placeholder="例如: RPYPIP" className="font-mono" maxLength={100} />
         </div>
         <Button onClick={handleAlign} disabled={loading || !seq1.trim() || !seq2.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>比对中...</> : 'Needleman-Wunsch 比对'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>比对中...</> : 'Needleman-Wunsch 比对'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <Card className="p-4 space-y-3">
-          <div className="grid grid-cols-4 gap-2 text-xs">
-            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+        <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-[var(--text-muted)]">相似度</div>
               <div className="font-mono font-medium">{(result.identity * 100).toFixed(1)}%</div>
             </div>
-            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-[var(--text-muted)]">比对得分</div>
               <div className="font-mono font-medium">{result.score}</div>
             </div>
-            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-[var(--text-muted)]">缺失数</div>
               <div className="font-mono font-medium">{result.gaps}</div>
             </div>
-            <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
               <div className="text-[var(--text-muted)]">相似性</div>
               <div className="font-mono font-medium">{(result.similarity * 100).toFixed(1)}%</div>
             </div>
           </div>
-          <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+          <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
             <div className="text-xs text-[var(--text-muted)] mb-1">比对结果（| = 匹配，- = 缺失）</div>
             <div className="font-mono text-xs space-y-0.5">
               <div>{result.query_sequence}</div>
-              <div className="text-success-600">{result.match_line}</div>
+              <div className="text-[var(--color-success-text)]">{result.match_line}</div>
               <div>{result.subject_sequence}</div>
             </div>
           </div>
@@ -1866,13 +1866,13 @@ function SolubilityPredictorView() {
   }, [sequence, phMin, phMax, temp]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
           <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">pH 下限</label>
             <Input type="number" value={phMin} onChange={e => setPhMin(Number(e.target.value))} className="text-xs" min={0} max={14} />
@@ -1887,33 +1887,33 @@ function SolubilityPredictorView() {
           </div>
         </div>
         <Button onClick={handlePredict} disabled={loading || !sequence.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>预测中...</> : '预测溶解度曲线'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>预测中...</> : '预测溶解度曲线'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <div className="space-y-3">
-          <Card className="p-4">
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+        <div className="space-y-[var(--space-apple-sm)]">
+          <Card className="p-[var(--space-apple-md)]">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">基础溶解度</div>
                 <div className="font-mono font-medium">{result.base_solubility?.toFixed(3)}</div>
               </div>
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">最适 pH</div>
                 <div className="font-mono font-medium">{result.optimal_ph?.ph ?? '-'} (max {result.optimal_ph?.max_solubility?.toFixed(3)})</div>
               </div>
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">等电点</div>
                 <div className="font-mono font-medium">{result.isoelectric_point ?? '-'}</div>
               </div>
             </div>
           </Card>
           {result.ph_profiles && result.ph_profiles.length > 0 && (
-            <Card className="p-4">
+            <Card className="p-[var(--space-apple-md)]">
               <h3 className="text-sm font-medium mb-2">pH 溶解度曲线</h3>
               <table className="w-full text-xs">
-                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <thead><tr className="border-b border-[var(--border-color)]">
                   <th className="px-2 py-1.5 text-left">pH</th>
                   <th className="px-2 py-1.5 text-right">mg/mL</th>
                   <th className="px-2 py-1.5 text-left">电荷态</th>
@@ -1921,7 +1921,7 @@ function SolubilityPredictorView() {
                 </tr></thead>
                 <tbody>
                   {result.ph_profiles.map((p: any, i: number) => (
-                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <tr key={i} className="border-b border-[var(--border-color)]">
                       <td className="px-2 py-1.5 font-mono">{p.ph?.toFixed(1)}</td>
                       <td className="px-2 py-1.5 text-right font-mono">{p.solubility_mg_ml?.toFixed(3)}</td>
                       <td className="px-2 py-1.5">{p.charge_state || '-'}</td>
@@ -1962,17 +1962,17 @@ function VariantGeneratorView() {
   }, [template, variantType, numVariants]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">模板序列</label>
           <Input value={template} onChange={e => setTemplate(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">变体类型</label>
             <select value={variantType} onChange={e => setVariantType(e.target.value)}
-              className="w-full text-xs p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              className="w-full text-xs p-2 bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
               <option value="point">点突变（替换）</option>
               <option value="insertion">插入</option>
               <option value="deletion">删除</option>
@@ -1984,19 +1984,19 @@ function VariantGeneratorView() {
           </div>
         </div>
         <Button onClick={handleGenerate} disabled={loading || !template.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>生成中...</> : '生成结构变体库'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>生成中...</> : '生成结构变体库'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <Card className="p-4">
+        <Card className="p-[var(--space-apple-md)]">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium">变体列表</h3>
             <span className="text-xs text-[var(--text-muted)]">共 {result.total_generated} 个变体</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+              <thead><tr className="border-b border-[var(--border-color)]">
                 <th className="px-2 py-1.5 text-left">序列</th>
                 <th className="px-2 py-1.5 text-left">突变类型</th>
                 <th className="px-2 py-1.5 text-right">编辑距离</th>
@@ -2005,7 +2005,7 @@ function VariantGeneratorView() {
               </tr></thead>
               <tbody>
                 {(result.variants || []).slice(0, 20).map((v: any, i: number) => (
-                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                  <tr key={i} className="border-b border-[var(--border-color)]">
                     <td className="px-2 py-1.5 font-mono font-medium">{v.sequence}</td>
                     <td className="px-2 py-1.5">{v.mutation_type || result.variant_type}</td>
                     <td className="px-2 py-1.5 text-right font-mono">{v.edit_distance}</td>
@@ -2050,13 +2050,13 @@ function CustomOptimizerView() {
   }, [seed, aceWeight, aoxWeight, iterations, population]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">种子序列</label>
           <Input value={seed} onChange={e => setSeed(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={50} />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">ACE 抑制权重 ({aceWeight})</label>
             <input type="range" min={0} max={1} step={0.1} value={aceWeight}
@@ -2068,7 +2068,7 @@ function CustomOptimizerView() {
               onChange={e => setAoxWeight(Number(e.target.value))} className="w-full" aria-label="抗氧化权重" />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">迭代次数（1-100）</label>
             <Input type="number" value={iterations} onChange={e => setIterations(Number(e.target.value))} className="text-xs" min={1} max={100} />
@@ -2079,41 +2079,41 @@ function CustomOptimizerView() {
           </div>
         </div>
         <Button onClick={handleOptimize} disabled={loading || !seed.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>优化中...</> : '遗传算法优化'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>优化中...</> : '遗传算法优化'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <div className="space-y-3">
-          <Card className="p-4">
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+        <div className="space-y-[var(--space-apple-sm)]">
+          <Card className="p-[var(--space-apple-md)]">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">优化序列</div>
                 <div className="font-mono font-medium text-primary">{result.optimized_sequence}</div>
               </div>
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">最优得分</div>
                 <div className="font-mono font-medium">{result.best_score?.toFixed(3)}</div>
               </div>
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">提升幅度</div>
-                <div className="font-mono font-medium text-success-600">+{(result.improvement * 100).toFixed(1)}%</div>
+                <div className="font-mono font-medium text-[var(--color-success-text)]">+{(result.improvement * 100).toFixed(1)}%</div>
               </div>
             </div>
           </Card>
           {result.optimization_history && result.optimization_history.length > 0 && (
-            <Card className="p-4">
+            <Card className="p-[var(--space-apple-md)]">
               <h3 className="text-sm font-medium mb-2">优化轨迹</h3>
               <div className="max-h-48 overflow-y-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <thead><tr className="border-b border-[var(--border-color)]">
                     <th className="px-2 py-1.5 text-left">迭代</th>
                     <th className="px-2 py-1.5 text-left">序列</th>
                     <th className="px-2 py-1.5 text-right">得分</th>
                   </tr></thead>
                   <tbody>
                     {result.optimization_history.map((h: any, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                      <tr key={i} className="border-b border-[var(--border-color)]">
                         <td className="px-2 py-1.5">{h.iteration}</td>
                         <td className="px-2 py-1.5 font-mono">{h.sequence}</td>
                         <td className="px-2 py-1.5 text-right font-mono">{h.score?.toFixed(4)}</td>
@@ -2151,20 +2151,20 @@ function QuantitativePredictorView() {
   }, [sequence]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
           <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
         </div>
         <Button onClick={handlePredict} disabled={loading || !sequence.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>预测中...</> : 'QSAR 定量预测'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>预测中...</> : 'QSAR 定量预测'}
         </Button>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Card className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-apple-sm)]">
+          <Card className="p-[var(--space-apple-md)]">
             <h3 className="text-sm font-medium mb-2">ACE 抑制 IC50</h3>
             <div className="text-2xl font-bold font-mono">
               {result.ace_inhibition.predicted_ic50.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.ace_inhibition.ic50_unit}</span>
@@ -2174,7 +2174,7 @@ function QuantitativePredictorView() {
             </div>
             {/* Step D 真实回归标识：方法 + R² + 诚实说明 */}
             {result.ace_inhibition.method && result.ace_inhibition.method !== 'QSAR-rule-fallback' ? (
-              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 space-y-0.5">
+              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-tertiary)]/50 rounded p-1.5 space-y-0.5">
                 <div className="font-medium">方法：真实数据回归（{result.ace_inhibition.method}）</div>
                 <div>
                   由 DFBP 真实 {result.ace_inhibition.n_train ?? '-'} 条 ACE 抑制肽 IC50 拟合，
@@ -2185,13 +2185,13 @@ function QuantitativePredictorView() {
                 )}
               </div>
             ) : (
-              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5">
+              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-tertiary)]/50 rounded p-1.5">
                 方法：QSAR 规则估计（真实回归系数缺失时的诚实回退）
                 {result.ace_inhibition.honest_note ? ` — ${result.ace_inhibition.honest_note}` : ''}
               </div>
             )}
           </Card>
-          <Card className="p-4">
+          <Card className="p-[var(--space-apple-md)]">
             <h3 className="text-sm font-medium mb-2">抗氧化活性</h3>
             <div className="text-2xl font-bold font-mono">
               {result.antioxidant.predicted_activity.toFixed(4)} <span className="text-sm text-[var(--text-muted)]">{result.antioxidant.activity_unit}</span>
@@ -2201,7 +2201,7 @@ function QuantitativePredictorView() {
                 ? `CI: [${(result.antioxidant.confidence_interval.lower ?? 0).toFixed(3)}, ${(result.antioxidant.confidence_interval.upper ?? 0).toFixed(3)}]`
                 : '（规则估计，无数据回归置信区间）'}
             </div>
-            <div className="mt-2 text-xs text-[var(--text-secondary)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 opacity-80">
+            <div className="mt-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-tertiary)]/50 rounded p-1.5 opacity-80">
               方法：QSAR 规则估计（DFBP 抗氧化定量值量纲混杂，暂未做真实回归，诚实标注）
             </div>
           </Card>
@@ -2244,11 +2244,14 @@ function RealSourceStatusPanel() {
     }
   }, []);
 
-  useEffect(() => { loadStatus(); }, [loadStatus]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadStatus();
+  }, [loadStatus]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-2">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Database className="w-4 h-4 text-primary" />
@@ -2262,13 +2265,13 @@ function RealSourceStatusPanel() {
           <div className="space-y-1">
             {status.sources.map((s: any, i: number) => (
               <div key={i} className="flex items-center gap-2 text-xs">
-                <span className={`w-2 h-2 rounded-full ${s.reachable ? 'bg-success-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
+                <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${s.reachable ? 'bg-[var(--color-success-container)]0' : 'bg-neutral-300 dark:bg-[var(--border-color)]'}`} />
                 <span className="font-medium w-32">{s.name}</span>
                 <Badge variant={s.reachable ? 'success' : 'neutral'} size="sm">{s.reachable ? '可达' : '不可达'}</Badge>
                 <span className="text-[var(--text-muted,#9A9A9F)] flex-1 truncate">{s.note || s.url}</span>
               </div>
             ))}
-            <div className="pt-2 mt-2 border-t border-neutral-200 dark:border-neutral-700 text-xs text-[var(--text-muted,#9A9A9F)]">
+            <div className="pt-2 mt-2 border-t border-[var(--border-color)] text-xs text-[var(--text-muted,#9A9A9F)]">
               在线可达 {status.online_source_count} 个 · 离线 {status.offline_source_count} 个 · {status.note}
             </div>
           </div>
@@ -2277,7 +2280,7 @@ function RealSourceStatusPanel() {
         )}
       </Card>
 
-      <Card className="p-4 space-y-2">
+      <Card className="p-[var(--space-apple-md)] space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
@@ -2295,7 +2298,7 @@ function RealSourceStatusPanel() {
               <p className="text-xs text-[var(--text-muted,#9A9A9F)]">在线可达但无匹配文献。</p>
             ) : (
               refs.references.map((r: any, i: number) => (
-                <div key={i} className="text-xs p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                <div key={i} className="text-xs p-2 bg-[var(--bg-tertiary)]/50 rounded">
                   <div className="font-medium">{r.title || '(无标题)'}</div>
                   <div className="text-[var(--text-muted,#9A9A9F)] mt-0.5">
                     PMID {r.pmid} · {r.journal || '-'} · {r.pubdate || ''} · 作者: {(r.authors || []).join(', ') || '-'}
@@ -2333,8 +2336,8 @@ function ExternalSourceView() {
   }, [sequence, useOnline]);
 
   return (
-    <div className="space-y-3">
-      <Card className="p-4 space-y-3">
+    <div className="space-y-[var(--space-apple-sm)]">
+      <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <div>
           <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
           <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
@@ -2344,13 +2347,13 @@ function ExternalSourceView() {
           同时查询 BioPeptideDB 在线 API（默认关闭，离线可用）
         </label>
         <Button onClick={handleLookup} disabled={loading || !sequence.trim()} className="w-full">
-          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>检索中...</> : '外部数据源检索'}
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] inline-block mr-1"/>检索中...</> : '外部数据源检索'}
         </Button>
         <div className="text-xs text-[var(--text-muted)]">DFBP 本地库 7540 条 + BioPeptideDB 在线（可选）</div>
       </Card>
-      {error && <div className="p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-sm text-error-700 dark:text-error-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
+      {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <Card className="p-4">
+        <Card className="p-[var(--space-apple-md)]">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium">检索结果</h3>
             <span className="text-xs text-[var(--text-muted)]">
@@ -2362,7 +2365,7 @@ function ExternalSourceView() {
           ) : (
             <div className="overflow-x-auto max-h-72">
               <table className="w-full text-xs">
-                <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <thead><tr className="border-b border-[var(--border-color)]">
                   <th className="px-2 py-1.5 text-left">来源库</th>
                   <th className="px-2 py-1.5 text-left">食物来源</th>
                   <th className="px-2 py-1.5 text-left">活性类型</th>
@@ -2372,13 +2375,13 @@ function ExternalSourceView() {
                 </tr></thead>
                 <tbody>
                   {result.records.map((r: any, i: number) => (
-                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <tr key={i} className="border-b border-[var(--border-color)]">
                       <td className="px-2 py-1.5"><Badge variant="outline" size="sm">{r.source_database}</Badge></td>
                       <td className="px-2 py-1.5">{r.food_source || '-'}</td>
                       <td className="px-2 py-1.5">{r.activity_type || '-'}</td>
                       <td className="px-2 py-1.5 font-mono">{r.activity_value != null ? `${r.activity_value} ${r.activity_unit || ''}` : '-'}</td>
                       <td className="px-2 py-1.5">{r.source_protein || '-'}</td>
-                      <td className="px-2 py-1.5 font-mono text-[10px]">{r.literature_doi || '-'}</td>
+                      <td className="px-2 py-1.5 font-mono text-xs">{r.literature_doi || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -2484,7 +2487,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     }
     return initialTab;
   });
-  const [initialized, setInitialized] = useState(false);
+  const [, setInitialized] = useState(false);
 
   // 3D分子数据状态
   const [molecule3D, setMolecule3D] = useState<Molecule3DData | null>(null);
@@ -2510,6 +2513,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   useEffect(() => {
     const urlTab = searchParams.get('tab') as TabType | null;
     if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy', 'advanced'].includes(urlTab)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(urlTab);
     }
   }, [searchParams]);
@@ -2713,9 +2717,9 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* Tab 导航 */}
-      <div className="flex gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
+      <div className="flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-[var(--radius-Apple-sm)]">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
@@ -2724,7 +2728,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               size="sm"
               variant={activeTab === tab.key ? 'default' : 'ghost'}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 justify-center ${activeTab === tab.key ? 'bg-white dark:bg-neutral-700 shadow-sm' : ''}`}
+              className={`flex-1 justify-center ${activeTab === tab.key ? 'bg-[var(--bg-secondary)] shadow-sm' : ''}`}
             >
               <Icon className="w-3.5 h-3.5 mr-1" />
               {tab.label}
@@ -2735,8 +2739,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
       {/* 完整分析 */}
       {activeTab === 'analyze' && (
-        <div className="space-y-4">
-          <Card className="p-4 space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
+          <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-md)]">
             <div className="space-y-2">
               <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                 氨基酸序列
@@ -2754,7 +2758,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <button
                     key={seq}
                     onClick={() => setSequence(seq)}
-                    className="px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                    className="px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors"
                   >
                     {seq}
                   </button>
@@ -2762,7 +2766,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                   N端修饰
@@ -2795,7 +2799,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full" />
+                    <span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-[var(--radius-pill)]" />
                     分析中...
                   </span>
                 ) : (
@@ -2812,17 +2816,17 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
           </Card>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-error-500 flex-shrink-0" />
-              <span className="text-sm text-error-700 dark:text-error-700">{error}</span>
+            <div className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
+              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)]0 flex-shrink-0" />
+              <span className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</span>
             </div>
           )}
 
           {result && (
-            <div className="space-y-4">
+            <div className="space-y-[var(--space-apple-md)]">
               {/* 报告导出工具条 */}
-              <div className="flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
-                <div className="text-xs text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+              <div className="flex items-center justify-between p-[var(--space-apple-sm)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 border border-[var(--color-primary-border)] dark:border-[var(--color-primary)] rounded-[var(--radius-Apple-sm)]">
+                <div className="text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4" />
                   分析完成，可导出研发报告（含 pI、活性、安全、来源证据链）
                 </div>
@@ -2831,12 +2835,12 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 </Button>
               </div>
               {/* 基本信息 */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <Card className="p-[var(--space-apple-md)]">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                   <Dna className="w-4 h-4 text-primary" />
                   基本信息
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">序列</div>
                     <div className="font-mono text-sm font-medium">{result.sequence}</div>
@@ -2855,8 +2859,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   </div>
                 </div>
                 {result.smiles && (
-                  <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                    <div className="flex items-center justify-between mb-3">
+                  <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)]">
+                    <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
                       <div className="text-xs text-[var(--text-muted,#9A9A9F)] flex items-center gap-1">
                         <Dna className="w-3 h-3" />
                         分子结构可视化
@@ -2864,7 +2868,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigator.clipboard.writeText(result.smiles!)}
-                          className="flex items-center gap-1 px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+                          className="flex items-center gap-1 px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] rounded transition-colors"
                           title="复制SMILES"
                         >
                           <Copy className="w-3 h-3" />
@@ -2875,7 +2879,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                           <select
                             value={renderingMode}
                             onChange={(e) => setRenderingMode(e.target.value as any)}
-                            className="text-xs bg-neutral-100 dark:bg-neutral-800 border-none rounded px-2 py-0.5 text-[var(--text-secondary)]"
+                            className="text-xs bg-[var(--bg-tertiary)] border-none rounded px-2 py-0.5 text-[var(--text-secondary)]"
                           >
                             <option value="ball-stick">球棍模型</option>
                             <option value="space-filling">空间填充</option>
@@ -2889,15 +2893,15 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     {result && (
                       <>
                         {/* 2D化学结构图 */}
-                        <div className="mb-3">
+                        <div className="mb-[var(--space-apple-sm)]">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary-500"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-secondary-text)]0"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
                               2D 化学结构
                             </span>
                             <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{result.smiles?.length || 0} chars</span>
                           </div>
-                          <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center min-h-[200px]">
+                          <div className="p-[var(--space-apple-sm)] bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex items-center justify-center min-h-[200px]">
                             <img
                               src={`/api/v1/peptide-structure/smiles-to-image?smiles=${encodeURIComponent(result.smiles)}`}
                               alt="分子2D结构"
@@ -2916,16 +2920,16 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
                         {/* 3D分子查看器 */}
                         {molecule3D ? (
-                          <div className="mb-3">
+                          <div className="mb-[var(--space-apple-sm)]">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-success-500"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-success-text)]0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                                 3D 分子结构
                               </span>
                               <select
                                 value={renderingMode}
                                 onChange={(e) => setRenderingMode(e.target.value as any)}
-                                className="text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded px-2 py-1 text-[var(--text-secondary)]"
+                                className="text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded px-2 py-1 text-[var(--text-secondary)]"
                               >
                                 <option value="ball-stick">球棍模型</option>
                                 <option value="space-filling">空间填充</option>
@@ -2937,22 +2941,22 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                               bonds={molecule3D.bonds}
                               renderingMode={renderingMode}
                             />
-                            <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted,#9A9A9F)]">
+                            <div className="mt-2 flex items-center gap-[var(--space-apple-sm)] text-xs text-[var(--text-muted,#9A9A9F)]">
                               <span className="flex items-center gap-1"><Dna className="w-3 h-3" />拖拽旋转</span>
                               <span className="flex items-center gap-1"><ZoomIn className="w-3 h-3" />滚轮缩放</span>
                               <span className="flex items-center gap-1"><Expand className="w-3 h-3" />右键平移</span>
-                              <span className="ml-auto font-mono text-success-700 dark:text-success-600">{molecule3D.atom_count} atoms · {molecule3D.bond_count} bonds · MW {molecule3D.molecular_weight}</span>
+                              <span className="ml-auto font-mono text-[var(--color-success-text)] dark:text-[var(--color-success-text)]">{molecule3D.atom_count} atoms · {molecule3D.bond_count} bonds · MW {molecule3D.molecular_weight}</span>
                             </div>
                           </div>
                         ) : loading3D ? (
-                          <div className="mb-3 p-8 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                          <div className="mb-[var(--space-apple-sm)] p-8 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex items-center justify-center">
                             <div className="text-center text-[var(--text-muted,#9A9A9F)]">
-                              <div className="animate-spin w-5 h-5 border-2 border-success-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                              <div className="animate-spin w-5 h-5 border-2 border-[var(--color-success)] border-t-transparent rounded-[var(--radius-pill)] mx-auto mb-2"></div>
                               <p className="text-xs">生成3D结构...</p>
                             </div>
                           </div>
                         ) : molecule3DError ? (
-                          <div className="mb-3 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg text-xs text-error-600 dark:text-error-700">
+                          <div className="mb-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-xs text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">
                             ⚠ 3D结构生成失败：{molecule3DError}
                           </div>
                         ) : null}
@@ -2960,7 +2964,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     )}
 
                     {/* SMILES文本 */}
-                    <div className="p-3 bg-gradient-to-r from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                    <div className="p-[var(--space-apple-sm)] bg-gradient-to-r from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
                       <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SMILES字符串</div>
                       <div className="font-mono text-xs break-all text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)] leading-relaxed">
                         {result.smiles}
@@ -2977,15 +2981,15 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
               {/* 可视化图表 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4">
-                  <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Card className="p-[var(--space-apple-md)]">
+                  <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
                     活性雷达图
                   </h3>
                   <RadarChart data={result} />
                 </Card>
-                <Card className="p-4">
-                  <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Card className="p-[var(--space-apple-md)]">
+                  <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-primary" />
                     活性柱状图
                   </h3>
@@ -2994,18 +2998,18 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </div>
 
               {/* 活性预测 */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <Card className="p-[var(--space-apple-md)]">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" />
                   活性预测
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-[var(--space-apple-sm)]">
                   <ScoreProgress label="ACE抑制活性" score={result.ace_inhibition.score} />
                   <ScoreProgress label="抗氧化活性" score={result.antioxidant.score} />
                   <ScoreProgress label="抗菌活性" score={result.antimicrobial.score} />
                   <ScoreProgress label="DPP-IV抑制活性" score={result.dpp4_inhibition?.score ?? 0} />
                 </div>
-                <div className="mt-3 flex gap-2 flex-wrap">
+                <div className="mt-[var(--space-apple-sm)] flex gap-2 flex-wrap">
                   <Badge variant={getActivityBadge(result.ace_inhibition.level)}>ACE抑制: {result.ace_inhibition.level}</Badge>
                   <Badge variant={getActivityBadge(result.antioxidant.level)}>抗氧化: {result.antioxidant.level}</Badge>
                   <Badge variant={getActivityBadge(result.antimicrobial.level)}>抗菌: {result.antimicrobial.level}</Badge>
@@ -3016,8 +3020,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </Card>
 
               {/* 真实 ML 模型（与 QSAR 规则分并列） */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <Card className="p-[var(--space-apple-md)]">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                   <Zap className="w-4 h-4 text-primary" />
                   真实 ML 模型（PeptideRanker-Mini）
                   <span className="text-xs font-normal text-[var(--text-muted,#9A9A9F)]">并列于 QSAR 规则分</span>
@@ -3026,7 +3030,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <div className="space-y-2">
                     {/* 可信度门禁：模型无判别力时必须显式降级提示，避免误导 */}
                     {result.ml_model.is_trustworthy === false && (
-                      <div className="flex items-start gap-2 p-2 rounded bg-error-50 dark:bg-error-950/30 text-error-700 dark:text-error-600 text-xs">
+                      <div className="flex items-start gap-2 p-2 rounded bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/30 text-[var(--color-error-text)] dark:text-[var(--color-error-text)] text-xs">
                         <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                         <div>
                           <strong>模型未达可信标准</strong>：{result.ml_model.trust_note || '平衡准确率接近随机水平，ML 分数不可作为功效依据。'}
@@ -3063,32 +3067,32 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         )}
                       </div>
                     )}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
+                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
                         <div className="text-lg font-bold text-primary">
                           {result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">本条序列 ML 分</div>
                       </div>
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
                         <div className="text-lg font-bold text-primary">
                           {result.ace_inhibition ? (result.ace_inhibition.score * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">QSAR 规则 ACE 分</div>
                       </div>
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
                         <div className="text-lg font-bold text-primary">
                           {result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型验证 F1（推荐）</div>
                       </div>
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
                         <div className="text-lg font-bold">
                           {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型平衡准确率</div>
                       </div>
-                      <div className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded">
+                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
                         <div className="text-lg font-bold text-[var(--text-muted,#9A9A9F)]">
                           {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
                         </div>
@@ -3097,7 +3101,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         </div>
                       </div>
                     </div>
-                    <div className="text-[11px] text-[var(--text-muted,#9A9A9F)] bg-neutral-50 dark:bg-neutral-800/50 rounded p-1.5 leading-relaxed">
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] bg-[var(--bg-tertiary)]/50 rounded p-1.5 leading-relaxed">
                       <strong>模型级指标</strong>（验证 F1 / 平衡准确率 / 准确率）：描述<strong>整个模型</strong>在训练时留出验证集上的整体表现，<strong>对所有序列恒定不变</strong>；逐条序列的判定结果请以<strong>上方「本条序列 ML 分」</strong>为准。
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
@@ -3120,38 +3124,38 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                               {' / '}合成 {synth}（{Math.round(synth / total * 100)}%）
                             </span>
                           </div>
-                          <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-700 rounded overflow-hidden flex">
+                          <div className="h-1.5 w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded overflow-hidden flex">
                             <div className="h-full bg-primary" style={{ width: `${Math.round(realLit / total * 100)}%` }} />
-                            <div className="h-full bg-success-500" style={{ width: `${Math.round(pubmed / total * 100)}%` }} />
-                            <div className="h-full bg-warning-400" style={{ width: `${Math.round(synth / total * 100)}%` }} />
+                            <div className="h-full bg-[var(--color-success-container)]0" style={{ width: `${Math.round(pubmed / total * 100)}%` }} />
+                            <div className="h-full bg-[var(--color-warning)]" style={{ width: `${Math.round(synth / total * 100)}%` }} />
                           </div>
-                          <div className="text-[10px] text-[var(--text-muted,#9A9A9F)]">
+                          <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
                             <span className="text-primary">■</span> 真实文献{' '}
-                            <span className="text-success-500">■</span> PubMed 审计正类（带可溯源 pmid，不参与合成训练）{' '}
-                            <span className="text-warning-400">■</span> 程序合成（仅库规模展示，不参与训练）
+                            <span className="text-[var(--color-success-text)]0">■</span> PubMed 审计正类（带可溯源 pmid，不参与合成训练）{' '}
+                            <span className="text-[var(--color-warning-text)]">■</span> 程序合成（仅库规模展示，不参与训练）
                           </div>
                         </div>
                       );
                     })()}
                     {/* 诚实指标说明：不平衡数据集下 accuracy 具欺骗性 */}
                     {result.ml_model.validation_f1 != null && (
-                      <div className="text-[11px] text-[var(--text-muted,#9A9A9F)] leading-relaxed">
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)] leading-relaxed">
                         <strong>指标解读</strong>：标签不平衡（正类占比低），
                         验证准确率 {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
                         接近全预测负类的多数类基线（{result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(1) + '%' : '-'}），
                         本身不具判别力；模型对 ACE 抑制正类的召回仅 {result.ml_model.validation_recall != null ? (result.ml_model.validation_recall * 100).toFixed(1) + '%' : '-'}，
                         请以 <strong className="text-primary">F1={result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}</strong>（推荐）
                         与平衡准确率 {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'} 为准。
-                        {result.ml_model.metrics_note ? <div className="mt-1 text-[10px] opacity-80">{result.ml_model.metrics_note}</div> : null}
+                        {result.ml_model.metrics_note ? <div className="mt-1 text-xs opacity-80">{result.ml_model.metrics_note}</div> : null}
                       </div>
                     )}
                     {/* 动态运行状态：按当前 method 显示，避免静态枚举说明误导 */}
                     <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${
                       result.ml_model.method === 'ml'
-                        ? 'bg-success-50 dark:bg-success-950/30 text-success-700 dark:text-success-600'
-                        : 'bg-warning-50 dark:bg-warning-950/30 text-warning-700 dark:text-warning-600'
+                        ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/30 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'
+                        : 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'
                     }`}>
-                      <span className={`w-2 h-2 rounded-full ${result.ml_model.method === 'ml' ? 'bg-success-500' : 'bg-warning-500'}`} />
+                      <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${result.ml_model.method === 'ml' ? 'bg-[var(--color-success-container)]0' : 'bg-[var(--color-warning-container)]0'}`} />
                       {result.ml_model.method === 'ml'
                         ? '方法：真实 ML 权重（method=ml）— 权重已加载，正在正常运行'
                         : result.ml_model.method === 'fallback_rule'
@@ -3165,29 +3169,29 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </Card>
 
               {/* 安全性评估 */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <Card className="p-[var(--space-apple-md)]">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-primary" />
                   安全性评估
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                     <div className="text-2xl font-bold text-primary">{result.safety.food_score.toFixed(0)}</div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">食品安全评分</div>
                   </div>
-                  <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
-                    <div className={`text-2xl font-bold ${result.safety.is_allergen ? 'text-error-500' : 'text-success-500'}`}>
+                  <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
+                    <div className={`text-2xl font-bold ${result.safety.is_allergen ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
                       {result.safety.is_allergen ? '是' : '否'}
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
                   </div>
-                  <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
-                    <div className={`text-2xl font-bold ${result.safety.is_toxic ? 'text-error-500' : 'text-success-500'}`}>
+                  <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
+                    <div className={`text-2xl font-bold ${result.safety.is_toxic ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
                       {result.safety.is_toxic ? '是' : '否'}
                     </div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
                   </div>
-                  <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                  <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                     <div className="text-2xl font-bold text-primary capitalize">{result.safety.digestibility}</div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">消化性</div>
                   </div>
@@ -3195,17 +3199,17 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </Card>
 
               {/* 风味预测 */}
-              <Card className="p-4">
-                <h3 className="text-sm font-medium mb-3">风味预测</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <Card className="p-[var(--space-apple-md)]">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)]">风味预测</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">苦味</span>
                       <span className="font-medium">{(result.taste.bitterness * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+                    <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
                       <div
-                        className="bg-warning-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-[var(--color-warning-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500"
                         style={{ width: `${result.taste.bitterness * 100}%` }}
                       />
                     </div>
@@ -3215,9 +3219,9 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       <span className="text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">鲜味</span>
                       <span className="font-medium">{(result.taste.umami * 100).toFixed(1)}%</span>
                     </div>
-                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
+                    <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
                       <div
-                        className="bg-error-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-[var(--color-error-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500"
                         style={{ width: `${result.taste.umami * 100}%` }}
                       />
                     </div>
@@ -3227,8 +3231,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
               {/* 来源与证据 */}
               {(result.source?.food || result.source?.database || (result.source?.references?.length ?? 0) > 0 || (result.safety?.warnings?.length ?? 0) > 0) && (
-                <Card className="p-4">
-                  <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Card className="p-[var(--space-apple-md)]">
+                  <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                     <Database className="w-4 h-4 text-primary" />
                     来源与证据
                   </h3>
@@ -3253,7 +3257,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                             const isOnline = ref.includes('PubMed') || ref.includes('PMID');
                             const pmidMatch = ref.match(/PMID:(\d+)/);
                             return (
-                              <li key={i} className={`text-xs ${isOnline ? 'text-success-600 dark:text-success-500' : 'text-[var(--text-secondary,#6B7280)]'}`}>
+                              <li key={i} className={`text-xs ${isOnline ? 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]0' : 'text-[var(--text-secondary,#6B7280)]'}`}>
                                 {isOnline && pmidMatch ? (
                                   <a href={`https://www.ncbi.nlm.nih.gov/pubmed/${pmidMatch[1]}/`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
                                     {ref}
@@ -3269,7 +3273,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     )}
                     {result.safety?.warnings && result.safety.warnings.length > 0 && (
                       <div>
-                        <div className="text-warning-600 dark:text-warning-500 mb-1 flex items-center gap-1">
+                        <div className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]0 mb-1 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />安全警告
                         </div>
                         <ul className="list-disc list-inside space-y-0.5">
@@ -3280,7 +3284,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                     )}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                  <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
                     <span className="text-xs text-[var(--text-muted,#9A9A9F)]">
                       数据来源：{result.source?.database || 'DFBP'} · 序列 {result.sequence}
                     </span>
@@ -3299,7 +3303,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
           {!result && !error && (
             <div className="text-center py-12 text-[var(--text-muted,#9A9A9F)]">
-              <Dna className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <Dna className="w-12 h-12 mx-auto mb-[var(--space-apple-sm)] opacity-30" />
               <p className="text-sm">输入肽序列进行结构分析与活性预测</p>
               <p className="text-xs mt-1">支持 420 种非天然氨基酸和 296 种末端修饰</p>
             </div>
@@ -3321,8 +3325,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
       {/* 结构转换 */}
       {activeTab === 'convert' && (
-        <div className="space-y-4">
-          <Card className="p-4 space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
+          <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-md)]">
             <div className="space-y-2">
               <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                 氨基酸序列
@@ -3335,7 +3339,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 maxLength={100}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                   N端修饰
@@ -3367,23 +3371,23 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
             </div>
           </Card>
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-error-500" />
-              <span className="text-sm text-error-700 dark:text-error-700">{error}</span>
+            <div className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
+              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)]0" />
+              <span className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</span>
             </div>
           )}
           {result?.smiles && (
-            <Card className="p-4">
-              <h3 className="text-sm font-medium mb-3">转换结果</h3>
+            <Card className="p-[var(--space-apple-md)]">
+              <h3 className="text-sm font-medium mb-[var(--space-apple-sm)]">转换结果</h3>
               <div className="space-y-2">
                 <div>
                   <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SMILES</div>
-                  <div className="font-mono text-xs break-all bg-neutral-50 dark:bg-neutral-800 p-2 rounded">{result.smiles}</div>
+                  <div className="font-mono text-xs break-all bg-[var(--bg-tertiary)] p-2 rounded">{result.smiles}</div>
                 </div>
                 {result.selfies && (
                   <div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SELFIES</div>
-                    <div className="font-mono text-xs break-all bg-neutral-50 dark:bg-neutral-800 p-2 rounded">{result.selfies}</div>
+                    <div className="font-mono text-xs break-all bg-[var(--bg-tertiary)] p-2 rounded">{result.selfies}</div>
                   </div>
                 )}
               </div>
@@ -3397,10 +3401,10 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
       {/* 对比分析 */}
       {activeTab === 'compare' && (
-        <div className="space-y-4">
-          <Card className="p-4">
-            <h3 className="text-sm font-medium mb-3">添加对比序列</h3>
-            <div className="flex gap-2 mb-3">
+        <div className="space-y-[var(--space-apple-md)]">
+          <Card className="p-[var(--space-apple-md)]">
+            <h3 className="text-sm font-medium mb-[var(--space-apple-sm)]">添加对比序列</h3>
+            <div className="flex gap-2 mb-[var(--space-apple-sm)]">
               <Input
                 value={compareInput}
                 onChange={(e) => setCompareInput(e.target.value.toUpperCase())}
@@ -3413,11 +3417,11 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </Button>
             </div>
             {compareSequences.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-[var(--space-apple-sm)]">
                 {compareSequences.map((seq, i) => (
-                  <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded text-sm font-mono">
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--bg-tertiary)] rounded text-sm font-mono">
                     {seq}
-                    <button onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))} className="text-[var(--text-muted)] hover:text-error-500">
+                    <button onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))} className="text-[var(--text-muted)] hover:text-[var(--color-error-text)]0">
                       <X className="w-3 h-3" />
                     </button>
                   </span>

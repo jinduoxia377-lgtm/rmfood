@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * GraphPanelLayout — comprehensive JSX delegation layer.
  *
@@ -8,54 +7,19 @@
  * Total panel count: 41 components in graph/components/
  */
 
+import { useEffect } from 'react'
 import * as d3 from 'd3'
 import { cn } from '@/lib/utils'
+import { GraphEngine } from '../engine/forceSimulation'
 import type {
-  GraphNode, GraphEdge, LayoutType, ThemeConfig,
+  GraphNode, GraphEdge, LayoutType, ThemeConfig, LODLevel, AnimationPreset,
 } from '../types'
-import { TYPE_CONFIG, EDGE_COLORS } from '../types'
-import type { ZoomToolbarProps } from './ZoomToolbar'
-import type { SearchBarProps } from './SearchBar'
-import type { TooltipProps } from './Tooltip'
-import type { PerformancePanelProps } from './PerformancePanel'
-import type { ContextMenuProps } from './ContextMenu'
-import type { SelectionBarProps } from './SelectionBar'
-import type { CommunityLegendProps } from './CommunityLegend'
-import type { CentralityPanelProps, SortByOption } from './CentralityPanel'
-import type { DetailPanelProps, ConnectionInfo } from './DetailPanel'
-import type { BatchOperationBarProps } from './BatchOperationBar'
-import type { PinnedNodesPanelProps } from './PinnedNodesPanel'
-import type { AnnotationRendererProps } from './AnnotationRenderer'
-import type { ExternalDataPanelProps } from './ExternalDataPanel'
-import type { ImportDialogProps } from './ImportDialog'
-import type { ComparisonPanelProps } from './ComparisonPanel'
-import type { SharePanelProps } from './SharePanel'
-import type { AnnotationPanelProps } from './AnnotationPanel'
-import type { HistoryPanelProps } from './HistoryPanel'
-import type { BookmarkPanelProps } from './BookmarkPanel'
-import type { ReportDialogProps } from './ReportDialog'
-import type { StatisticsDashboardProps } from './StatisticsDashboard'
-import type { SubGraphBrowserProps } from './SubGraphBrowser'
-import type { AIPanelProps } from './AIPanel'
-import type { NodeAIAnalysisProps } from './NodeAIAnalysis'
-import type { AIInsightsPanelProps } from './AIInsightsPanel'
-import type { SPathToolbarProps } from './SPathToolbar'
-import type { GraphSnapshotsProps } from './GraphSnapshots'
-import type { FilterEmptyStateProps } from './FilterEmptyState'
-import type { DataEmptyStateProps } from './DataEmptyState'
-import type { GraphSkeletonProps } from './GraphSkeleton'
-import type { MinimapCanvasProps } from './MinimapCanvas'
-import type { LegendPanelProps } from './LegendPanel'
-import type { LayoutIndicatorProps } from './LayoutIndicator'
-import type { ThemePanelProps } from './ThemePanel'
-import type { AnimationPresetsControlsProps } from './AnimationPresetsControls'
-import type { ExportStatusBarProps } from './ExportStatusBar'
-import type { ExportMenuProps } from './ExportMenu'
-import type { SearchOverlayProps } from './SearchOverlay'
-import type { SearchHistoryPanelProps } from './SearchHistoryPanel'
+import type { SortByOption } from './CentralityPanel'
+import type { ExternalDataItem } from './ExternalDataPanel'
+import type { GraphCompareResult } from './ComparisonPanel'
 import type {
   GraphBookmark, ReportConfig as ReportConfigT, CommunityResult as CommunityResultT,
-  KCoreResult as KCoreResultT, AIInsight as AIInsightT, LegendItem,
+  KCoreResult as KCoreResultT, AIInsight as AIInsightT,
   SmartPathResultV80, NodeAIAnalysisData, GraphStatistics, SubGraphResult, HistoryEntry,
   CentralityMode,
 } from './types'
@@ -100,23 +64,13 @@ import ExportMenu from './ExportMenu'
 import SearchOverlay from './SearchOverlay'
 import SearchHistoryPanel from './SearchHistoryPanel'
 import AnnotationControls from './AnnotationControls'
-import { THEME_PRESETS } from '../types'
-// ── Lightweight ad-hoc types for missing component props ──
-interface GraphSnapshotT { time: string; nodes: number; edges: number }
-interface ExternalDataItem { name: string; source: string }
-interface ImportState { progress: number; status: 'idle'|'loading'|'success'|'error'; message?: string }
-interface ShareLink { url: string; shortcode: string; views: number }
-interface NodeAnnotation { id: string; x: number; y: number; text: string; type: string }
-interface ComparisonResult { similarity: number; added: string[]; removed: string[] }
-type ExportFormat = 'json' | 'svg' | 'gexf'
+// 真实类型从 useGraphState 导入。此前这里有一批「ad-hoc 桩类型」用来糊住编译器，
+// 其中 ShareLink 桩被写成 { url, shortcode, views }，与真实 { url, shortCode, viewCount }
+// 字段名都不符，导致 <SharePanel shareLink> 长期类型不匹配（且语义上是错的）。
+import type { ShareLink, ImportState, GraphSnapshot, NodeAnnotation, ExternalData } from '../hooks/useGraphState'
 
-// ── Internal graph types for callbacks ──
-interface SimNode extends GraphNode {
-  x?: number; y?: number; fx?: number | null; fy?: number | null; degree?: number
-}
-interface SimEdge {
-  source: string | SimNode; target: string | SimNode; type: string; strength?: number; label?: string; basis?: string
-}
+// ── 无对应真实类型的局部定义 ──
+type ExportFormat = 'json' | 'svg' | 'gexf'
 
 export interface GraphPanelLayoutProps {
   // Core props from KnowledgeGraph
@@ -133,7 +87,7 @@ export interface GraphPanelLayoutProps {
 
   // Derived data
   filteredData: { filteredNodes: GraphNode[]; filteredEdges: GraphEdge[] }
-  lodLevel: string
+  lodLevel: LODLevel
   dataChanged: boolean
   detectedCommunities: Map<string, number>
   generatedCommunityColors: Record<number, string>
@@ -161,8 +115,8 @@ export interface GraphPanelLayoutProps {
   toggleGroupCollapse: (type: string) => void
   togglePinNode: (nodeId: string) => void
   clearAllPins: () => void
-  batchOperationOnSelected: (action: string) => void
-  addAnnotation: (x: number, y: number, text: string, type: string, targetId?: string) => void
+  batchOperationOnSelected: (action: 'hide' | 'highlight' | 'focus' | 'export') => void
+  addAnnotation: (x: number, y: number, text: string, type?: 'note' | 'arrow', targetId?: string) => void
   removeAnnotation: (id: string) => void
   clearAllAnnotations: () => void
   applyTheme: (theme: ThemeConfig) => void
@@ -170,10 +124,10 @@ export interface GraphPanelLayoutProps {
   switchAnimationPreset: (preset: string) => void
   generateAIInsights: () => void
   takeSnapshot: () => void
-  runSmartPathSearch: () => void
+  runSmartPathSearch: (sourceId: string, targetId: string) => void
   queryExternalData: (label: string) => void
   handleFileImport: (file: File) => void
-  runGraphComparison: () => void
+  runGraphComparison: (nodes: GraphNode[], edges: GraphEdge[]) => void
   triggerAutoSync: () => void
   handleDragOver: (e: React.DragEvent) => void
   handleDragLeave: (e: React.DragEvent) => void
@@ -181,7 +135,7 @@ export interface GraphPanelLayoutProps {
   generateShareLink: () => void
   copyShareLink: () => void
   addNodeAnnotation: (text: string) => void
-  addHistoryEntry: (type: string, description: string, detail?: Record<string, unknown>) => void
+  addHistoryEntry: (type: HistoryEntry['type'], description: string, detail?: Record<string, unknown>) => void
   undoHistory: () => void
   redoHistory: () => void
   addBookmark: (name: string, icon?: string) => void
@@ -193,7 +147,7 @@ export interface GraphPanelLayoutProps {
   computeKCore: () => void
   extractEgoNetwork: (centerNodeId: string, hops?: number) => void
   handleAIQuestion: () => void
-  startPathAnimation: (node: GraphNode) => void
+  startPathAnimation: (sourceLabel: string, targetLabel: string) => void
   handleZoomIn: () => void
   handleZoomOut: () => void
   handleFitToCanvas: () => void
@@ -232,11 +186,11 @@ export interface GraphPanelLayoutProps {
   setShowPinnedPanel: (v: boolean) => void
   setIsAddingAnnotation: (v: boolean) => void
   setIsGeneratingInsight: (v: boolean) => void
-  setCentralityMode: (m: string) => void
+  setCentralityMode: (m: CentralityMode) => void
   setAiAnswering: (v: boolean) => void
   setAiQuestion: (q: string) => void
   setNewAnnotationText: (t: string) => void
-  setReportConfig: (r: Partial<ReportConfigT>) => void
+  setReportConfig: (c: Partial<ReportConfigT>) => void
   setSortBy: (s: SortByOption) => void
   setFocusedNodeIndex: (v: number) => void
   setIsSelecting: (v: boolean) => void
@@ -246,12 +200,12 @@ export interface GraphPanelLayoutProps {
   setNodeAIAnalysis: (v: any) => void
   setPathSourceId: (v: string) => void
   setPathTargetId: (v: string) => void
-  setDetailTab: (v: string) => void
+  setDetailTab: (v: 'info' | 'connections' | 'properties') => void
   isLoading?: boolean
 
   // State values (required by graph engine for rendering)
   activeFilter: string | null
-  detailTab: string
+  detailTab: 'info' | 'properties' | 'connections'
   selectedNode: GraphNode | null
   searchQuery: string
   focusedNodeIndex: number
@@ -270,16 +224,16 @@ export interface GraphPanelLayoutProps {
   pathAnimation: { source: string; target: string; pathNodes: string[]; pathEdges: [string, string][] } | null
   collapsedGroups: Set<string>
   showCentralityPanel: boolean
-  sortBy: string
+  sortBy: SortByOption
   pinnedNodes: Set<string>
   showPinnedPanel: boolean
   annotations: Array<{ id: string; x: number; y: number; text: string; type: 'note' | 'arrow'; targetId?: string }>
   isAddingAnnotation: boolean
   activeTheme: ThemeConfig
   showThemePanel: boolean
-  animationPreset: string
+  animationPreset: AnimationPreset
   showLayoutMenu: boolean
-  localLayout: string
+  localLayout: LayoutType
   aiInsights: AIInsightT[]
   showAIPanel: boolean
   smartPathResult: SmartPathResultV80 | null
@@ -287,17 +241,17 @@ export interface GraphPanelLayoutProps {
   pathSourceId: string
   pathTargetId: string
   nodeAIAnalysis: NodeAIAnalysisData | null
-  graphSnapshots: GraphSnapshotT[]
+  graphSnapshots: Array<{ id: string; timestamp: number; label: string; nodeCount: number }>
   isGeneratingInsight: boolean
-  externalDataCache: Record<string, ExternalDataItem>
+  externalDataCache: Map<string, ExternalData>
   showExternalPanel: boolean
   externalLoadingId: string | null
   importState: ImportState
   showImportDialog: boolean
   showCompareMode: boolean
-  compareResult: ComparisonResult | null
-  syncStatus: string
-  lastSyncTime: string | null
+  compareResult: GraphCompareResult | null
+  syncStatus: 'connected' | 'disconnected' | 'syncing' | 'error'
+  lastSyncTime: Date
   dragOver: boolean
   shareLink: ShareLink | null
   showSharePanel: boolean
@@ -318,8 +272,9 @@ export interface GraphPanelLayoutProps {
   kcoreResult: KCoreResultT | null
   centralityMetrics: any
   centralityMode: CentralityMode
+  runCentralityAnalysis: () => void
   savedSubGraphs: SubGraphResult[]
-  activeSubGraph: string | null
+  activeSubGraph: SubGraphResult | null
   showSubGraphPanel: boolean
   aiQAHistory: Array<{ question: string; answer: string }>
   aiQuestion: string
@@ -328,34 +283,34 @@ export interface GraphPanelLayoutProps {
 
 /** Main composition component — renders all panels from extracted graph/components/ */
 export default function GraphPanelLayout({
-  nodes, edges, width, height, className, onNodeClick,
+  nodes, width, height, className, onNodeClick,
   state, dispatch,
   filteredData, lodLevel, dataChanged, detectedCommunities, generatedCommunityColors,
-  centralityData, sortedNodeList, degreeStats, allTypes, typeCounts, nodeConnections, searchMatches, maxDegree,
+  centralityData, nodeConnections, searchMatches,
   svgRef, containerRef, zoomBehaviorRef, engineRef,
   // Handlers
   handleSearchChange, handleSearchSelect, clearSearch,
-  toggleGroupCollapse, togglePinNode, clearAllPins, batchOperationOnSelected,
+  togglePinNode, clearAllPins, batchOperationOnSelected,
   addAnnotation, removeAnnotation, clearAllAnnotations,
   applyTheme, switchLayoutMode, switchAnimationPreset,
-  generateAIInsights, takeSnapshot, runSmartPathSearch,
-  queryExternalData, handleFileImport, runGraphComparison, triggerAutoSync,
+  generateAIInsights, runSmartPathSearch, runCentralityAnalysis,
+  queryExternalData, handleFileImport, triggerAutoSync,
   handleDragOver, handleDragLeave, handleDrop,
-  generateShareLink, copyShareLink, addNodeAnnotation,
-  addHistoryEntry, undoHistory, redoHistory,
+  copyShareLink, addNodeAnnotation,
+  undoHistory, redoHistory,
   addBookmark, loadBookmark, removeBookmark,
-  generateReport, computeGraphStatistics, detectCommunitiesLouvain, computeKCore, extractEgoNetwork, handleAIQuestion,
-  startPathAnimation, handleZoomIn, handleZoomOut, handleFitToCanvas, handleResetView,
+  generateReport, detectCommunitiesLouvain, computeKCore, handleAIQuestion,
+  handleZoomIn, handleZoomOut, handleFitToCanvas, handleResetView,
   handleSelectionComplete, handleContextAction, exportSubgraphJSON,
   // Setters
   setTooltip, setSelectedNode, setZoomTransform, setActiveFilter, setSelectedNodes,
-  setShowExportMenu, setExportStatus,
+  setShowExportMenu,
   setShowPerfPanel, setShowMinimap, setShowImportDialog, setShowCompareMode, setShowSharePanel,
   setShowAnnotationPanel, setShowHistoryPanel, setShowBookmarkPanel, setShowReportDialog,
   setShowStatsPanel, setShowCentralityPanel, setShowSubGraphPanel, setShowPathPanel,
   setShowExternalPanel, setShowAIPanel, setShowThemePanel, setShowLayoutMenu,
-  setShowPinnedPanel, setIsAddingAnnotation, setIsGeneratingInsight,
-  setCentralityMode, setAiAnswering, setAiQuestion, setNewAnnotationText, setReportConfig,
+  setShowPinnedPanel, setIsAddingAnnotation,
+  setCentralityMode, setAiQuestion, setNewAnnotationText, setReportConfig,
   setSortBy,
   // Missing setters
   setFocusedNodeIndex, setIsSelecting, setSelectionBox, setContextMenu,
@@ -364,14 +319,14 @@ export default function GraphPanelLayout({
   // State values
   activeFilter, selectedNode, searchQuery, focusedNodeIndex, searchHistory,
   showPerfPanel, perfStats, isSelecting, selectionBox, selectedNodes, contextMenu,
-  communities, communityColors, showExportMenu, exportStatus,
-  showMinimap, pathAnimation, collapsedGroups, showCentralityPanel, sortBy,
+  communities, showExportMenu, exportStatus,
+  showMinimap, pathAnimation, showCentralityPanel, sortBy,
   pinnedNodes, showPinnedPanel, annotations, isAddingAnnotation,
   activeTheme, showThemePanel, animationPreset, showLayoutMenu, localLayout,
   aiInsights, showAIPanel, smartPathResult, showPathPanel, pathSourceId, pathTargetId,
   nodeAIAnalysis, graphSnapshots, isGeneratingInsight,
   externalDataCache, showExternalPanel, externalLoadingId, importState, showImportDialog,
-  showCompareMode, compareResult, syncStatus, lastSyncTime, dragOver,
+  showCompareMode, compareResult, syncStatus, dragOver,
   shareLink, showSharePanel,
   nodeAnnotations, showAnnotationPanel, newAnnotationText,
   historyEntries, historyIndex, showHistoryPanel,
@@ -382,10 +337,94 @@ export default function GraphPanelLayout({
   aiQAHistory, aiQuestion, aiAnswering,
   // Derived
 }: GraphPanelLayoutProps) {
-  const { tooltip, zoomTransform } = state
+  const { zoomTransform } = state
+
+  // ═══════════════════════════════════════════════════════════
+  // 引擎实例化 —— 恢复自 4d9b782^（重构时曾丢失，导致整条渲染管线为死代码）
+  //
+  // 生命周期：
+  //   1. 首次挂载 → new GraphEngine + init()（建 defs / zoom / container）
+  //   2. 依赖变化 → updateInput() 原地替换输入 + update() 重绘
+  //   3. 卸载     → destroy()（停模拟、取消 RAF、摘事件）
+  // ═══════════════════════════════════════════════════════════
+  useEffect(() => {
+    const svgEl = svgRef.current
+    const containerEl = containerRef.current
+    if (!svgEl || !containerEl) return
+
+    if (!engineRef.current) {
+      engineRef.current = new GraphEngine({
+        containerRef, svgRef, width, height,
+        nodes: filteredData.filteredNodes,
+        edges: filteredData.filteredEdges.map((e) => ({ ...e, source: e.source as any, target: e.target as any })),
+        theme: activeTheme,
+        layout: localLayout,
+        lodLevel,
+        highlightPath: pathAnimation ? pathAnimation.pathNodes : undefined,
+        selectedNodes,
+        communities: detectedCommunities,
+        generatedCommunityColors,
+        pinnedNodes,
+        focusedNodeIndex,
+        animationPreset,
+        dataChanged,
+        onNodeClick: (n: any) => {
+          setSelectedNode(n)
+          onNodeClick?.(n)
+        },
+        onSetZoomTransform: setZoomTransform,
+        onSetTooltip: setTooltip,
+        onSetSelectedNode: setSelectedNode,
+        onTogglePinNode: togglePinNode,
+      } as any)
+      engineRef.current.init()
+      zoomBehaviorRef.current = engineRef.current.getZoomBehavior?.() ?? null
+    } else {
+      engineRef.current.updateInput({
+        width, height,
+        nodes: filteredData.filteredNodes,
+        edges: filteredData.filteredEdges.map((e) => ({ ...e, source: e.source as any, target: e.target as any })),
+        theme: activeTheme,
+        layout: localLayout,
+        lodLevel,
+        highlightPath: pathAnimation ? pathAnimation.pathNodes : undefined,
+        selectedNodes,
+        communities: detectedCommunities,
+        generatedCommunityColors,
+        pinnedNodes,
+        focusedNodeIndex,
+        animationPreset,
+        dataChanged,
+      } as any)
+    }
+
+    engineRef.current.update()
+  }, [
+    filteredData, width, height, activeTheme, localLayout, lodLevel,
+    selectedNodes, detectedCommunities, generatedCommunityColors, pinnedNodes,
+    focusedNodeIndex, dataChanged, pathAnimation,
+  ])
+
+  // 卸载时销毁引擎
+  useEffect(() => {
+    return () => {
+      try { engineRef.current?.destroy?.() } catch { /* ignore */ }
+      engineRef.current = null
+    }
+  }, [])
+
+  // 中心性面板打开时立即计算指标。
+  // centralityMetrics 首次为 null，CentralityMetricsPanel 的守卫
+  // `if (!showCentralityPanel || !centralityMetrics) return null` 会让整个面板
+  // 静默不渲染——用户点开关也看不到任何东西。此处打开即算，并随筛选变化刷新。
+  useEffect(() => {
+    if (showCentralityPanel && !centralityMetrics && filteredData.filteredNodes.length) {
+      runCentralityAnalysis()
+    }
+  }, [showCentralityPanel, centralityMetrics, filteredData.filteredNodes.length, runCentralityAnalysis])
 
   return (
-    <div className={cn('relative select-none', className)}
+    <div ref={containerRef} className={cn('relative select-none', className)}
       onKeyDown={(e) => {
         if (searchQuery) return
         const visibleNodes = filteredData.filteredNodes
@@ -419,7 +458,7 @@ export default function GraphPanelLayout({
           setSelectionBox((prev: any) => prev ? { ...prev, x2: e.clientX - rect.left, y2: e.clientY - rect.top } : null)
         }
       }}
-      onMouseUp={(e) => {
+      onMouseUp={() => {
         if (isSelecting && selectionBox) { handleSelectionComplete(selectionBox) }
       }}
       onContextMenu={(e) => {
@@ -493,11 +532,13 @@ export default function GraphPanelLayout({
 
       {/* v7.4: Context Menu */}
       {contextMenu && (
-        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
+        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }}
+          onClearCommunities={() => dispatch({ type: 'SET_COMMUNITIES', payload: new Map<string, number>() })}
+          onDetectCommunities={detectCommunitiesLouvain} onResetView={handleResetView} />
       )}
 
       {/* v7.5: Performance Monitoring Panel */}
-      {showPerfPanel && <PerformancePanel stats={perfStats} showPerfPanel={showPerfPanel} lodLevel={lodLevel} dataChanged={dataChanged} filteredNodeCount={filteredData.filteredNodes.length} filteredEdgeCount={filteredData.filteredEdges.length} onToggle={() => setShowPerfPanel(!showPerfPanel)} />}
+      {showPerfPanel && <PerformancePanel perfStats={perfStats} showPerfPanel={showPerfPanel} lodLevel={lodLevel} dataChanged={dataChanged} filteredNodeCount={filteredData.filteredNodes.length} filteredEdgeCount={filteredData.filteredEdges.length} onToggle={() => setShowPerfPanel(!showPerfPanel)} />}
 
       {/* v7.6: Export Status Toast */}
       {exportStatus && <ExportStatusBar exportStatus={exportStatus} />}
@@ -541,143 +582,172 @@ export default function GraphPanelLayout({
         </div>
       )}
       {showCentralityPanel && centralityData.stats && (
-        <CentralityPanel sortBy={sortBy} onSetSortBy={setSortBy} stats={centralityData.stats} topNodes={centralityData.topByDegree}
-          onNodeClick={(n) => { setSelectedNode(n); onNodeClick?.(n) }} />
+        <CentralityPanel showCentralityPanel={showCentralityPanel} centralityData={centralityData}
+          sortBy={sortBy} onSetSortBy={(s) => setSortBy(s)}
+          onNodeClick={(n) => { setSelectedNode(n); onNodeClick?.(n) }}
+          onClose={() => setShowCentralityPanel(false)} />
       )}
 
       {/* v7.8: Batch Operation Bar */}
       {selectedNodes.size > 0 && (
-        <BatchOperationBar count={selectedNodes.size} onFocus={() => batchOperationOnSelected('focus')} onHighlight={() => batchOperationOnSelected('highlight')}
+        <BatchOperationBar selectedNodesCount={selectedNodes.size} onFocus={() => batchOperationOnSelected('focus')} onHighlight={() => batchOperationOnSelected('highlight')}
           onHide={() => batchOperationOnSelected('hide')} onExport={() => batchOperationOnSelected('export')}
           onClear={() => setSelectedNodes(new Set())} />
       )}
 
       {/* v7.8: Pinned Nodes Panel */}
       {pinnedNodes.size > 0 && showPinnedPanel && (
-        <PinnedNodesPanel nodes={pinnedNodes} filteredNodes={filteredData.filteredNodes} onNodeClick={onNodeClick}
-          onTogglePin={togglePinNode} onClearAll={clearAllPins} onClose={() => setShowPinnedPanel(false)} />
+        <PinnedNodesPanel pinnedNodes={pinnedNodes} showPinnedPanel={showPinnedPanel} filteredNodes={filteredData.filteredNodes}
+          onNodeClick={onNodeClick} onTogglePin={togglePinNode} onClearAllPins={clearAllPins} onClose={() => setShowPinnedPanel(false)} />
       )}
 
-      {/* v7.8: Annotations */}
-      {annotations.map(a => (
-        <AnnotationRenderer key={a.id} annotation={a} onRemove={() => removeAnnotation(a.id)} />
-      ))}
+      {/* v7.8: Annotations —— AnnotationRenderer 内部自行 map，此处只渲染一次 */}
+      {annotations.length > 0 && (
+        <AnnotationRenderer annotations={annotations} onRemoveAnnotation={removeAnnotation} />
+      )}
 
       {/* v7.8: Annotation Controls */}
       {isAddingAnnotation
-        ? <AnnotationControls isAdding={true} annotations={annotations} onClearAll={clearAllAnnotations} />
-        : <AnnotationControls isAdding={false} annotations={annotations} onClearAll={clearAllAnnotations} onToggleAdd={() => setIsAddingAnnotation(true)} />
+        ? <AnnotationControls isAddingAnnotation={true} annotationsCount={annotations?.length ?? 0} onClearAllAnnotations={clearAllAnnotations} onToggleAddAnnotation={() => setIsAddingAnnotation(false)} />
+        : <AnnotationControls isAddingAnnotation={false} annotationsCount={annotations?.length ?? 0} onClearAllAnnotations={clearAllAnnotations} onToggleAddAnnotation={() => setIsAddingAnnotation(true)} />
       }
 
       {/* v7.8: Selected Nodes Selection Bar */}
       {selectedNodes.size > 0 && !showPinnedPanel && (
-        <SelectionBar count={selectedNodes.size} onClear={() => setSelectedNodes(new Set())} />
+        <SelectionBar selectedNodesCount={selectedNodes.size} onClear={() => setSelectedNodes(new Set())} />
       )}
 
       {/* v7.9: Community Legend */}
       {communities.size > 0 && (
-        <CommunityLegend communities={communities} colors={generatedCommunityColors} maxShow={10} />
+        <CommunityLegend communities={communities} generatedCommunityColors={generatedCommunityColors} />
       )}
 
       {/* v7.9: Theme Panel */}
       {showThemePanel && (
-        <ThemePanel themes={[activeTheme, ...THEME_PRESETS.filter(t => t.id !== activeTheme.id)]}
-          onSelect={applyTheme} onClose={() => setShowThemePanel(false)} />
+        <ThemePanel showThemePanel={showThemePanel} activeTheme={activeTheme} onApplyTheme={applyTheme}
+          onClose={() => setShowThemePanel(false)} />
       )}
 
       {/* v7.9: Layout Indicator */}
-      <LayoutIndicator current={localLayout} />
+      <LayoutIndicator localLayout={localLayout} showLayoutMenu={showLayoutMenu}
+        onToggleLayoutMenu={() => setShowLayoutMenu(!showLayoutMenu)} onSwitchLayout={switchLayoutMode} />
 
       {/* v7.9: Animation Presets Controls */}
-      <AnimationPresetsControls preset={animationPreset} onChange={switchAnimationPreset} />
+      <AnimationPresetsControls animationPreset={animationPreset} onSwitchAnimationPreset={switchAnimationPreset} />
 
       {/* v8.0: AI Panel + AI Insights */}
       {showAIPanel && (
-        <AIPanel qaHistory={aiQAHistory} question={aiQuestion} setQuestion={setAiQuestion} answering={aiAnswering} onSend={handleAIQuestion} onClose={() => setShowAIPanel(false)} />
+        <AIPanel showAIPanel={showAIPanel} aiQAHistory={aiQAHistory.map((e, i) => ({ id: String(i), ...e }))} aiQuestion={aiQuestion}
+          aiAnswering={aiAnswering} onSetAiQuestion={setAiQuestion} onSendQuestion={handleAIQuestion}
+          onClose={() => setShowAIPanel(false)} />
       )}
       {aiInsights.length > 0 && (
-        <AIInsightsPanel insights={aiInsights} generating={isGeneratingInsight} onGenerate={generateAIInsights} onClose={() => setShowAIPanel(false)} />
+        <AIInsightsPanel showAIPanel={showAIPanel} aiInsights={aiInsights} isGeneratingInsight={isGeneratingInsight}
+          onRegenerateInsights={generateAIInsights}
+          onNodeClick={(n) => { setSelectedNode(n); onNodeClick?.(n) }}
+          onSetSelectedNode={setSelectedNode} onSetNodeAIAnalysis={setNodeAIAnalysis}
+          onClose={() => setShowAIPanel(false)} />
       )}
 
       {/* v8.0: Node AI Analysis Panel */}
       {nodeAIAnalysis && (
-        <NodeAIAnalysis analysis={nodeAIAnalysis} onClose={() => setNodeAIAnalysis(null)} />
+        <NodeAIAnalysis nodeAIAnalysis={nodeAIAnalysis} selectedNodeLabel={selectedNode?.label}
+          onClose={() => setNodeAIAnalysis(null)} />
       )}
 
       {/* v8.0: Smart Path Toolbar */}
-      <SPathToolbar sourceId={pathSourceId} targetId={pathTargetId}
-        onSourceChange={setPathSourceId} onTargetChange={setPathTargetId} nodes={filteredData.filteredNodes.slice(0, 30)}
-        onSearch={runSmartPathSearch} disabled={!pathSourceId || !pathTargetId} />
+      <SPathToolbar showPathPanel={showPathPanel} smartPathResult={smartPathResult}
+        filteredNodes={filteredData.filteredNodes.slice(0, 30)}
+        pathSourceId={pathSourceId} pathTargetId={pathTargetId}
+        onSetPathSourceId={setPathSourceId} onSetPathTargetId={setPathTargetId}
+        onRunSearch={runSmartPathSearch} onClose={() => setShowPathPanel(false)} />
 
       {/* v8.0: Graph Snapshots Sidebar */}
       {graphSnapshots.length > 0 && (
-        <GraphSnapshots snapshots={graphSnapshots} count={graphSnapshots.length} />
+        <GraphSnapshots graphSnapshots={graphSnapshots} />
       )}
 
       {/* v8.1: External Data Panel */}
       {showExternalPanel && selectedNode && (
-        <ExternalDataPanel loadingId={externalLoadingId} cache={externalDataCache} nodeLabel={selectedNode.label}
-          syncStatus={syncStatus} onRefresh={() => queryExternalData(selectedNode.label)} onAutoSync={triggerAutoSync}
+        <ExternalDataPanel showExternalPanel={showExternalPanel} selectedNode={selectedNode}
+          /* ExternalDataPanel 未实现 'error' 态，归一为 disconnected 展示 */
+          syncStatus={syncStatus === 'error' ? 'disconnected' : syncStatus}
+          externalLoadingId={externalLoadingId}
+          externalData={externalDataCache.get(selectedNode.label) ?? null}
+          onQueryExternalData={() => queryExternalData(selectedNode.label)} onTriggerAutoSync={triggerAutoSync}
           onClose={() => setShowExternalPanel(false)} />
       )}
 
       {/* v8.1: Import Dialog */}
       {showImportDialog && (
-        <ImportDialog state={importState} onAccept={() => setShowImportDialog(false)} onClose={() => setShowImportDialog(false)}
-          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} />
+        <ImportDialog showImportDialog={showImportDialog} importState={importState} dragOver={dragOver}
+          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+          onFileSelect={handleFileImport} onClose={() => setShowImportDialog(false)} />
       )}
 
       {/* v8.1: Comparison Panel */}
       {showCompareMode && compareResult && (
-        <ComparisonPanel result={compareResult} filteredNodes={filteredData.filteredNodes} onClose={() => setShowCompareMode(false)} />
+        <ComparisonPanel showCompareMode={showCompareMode} compareResult={compareResult}
+          filteredNodes={filteredData.filteredNodes} onClose={() => setShowCompareMode(false)} />
       )}
 
       {/* v8.2: Share Panel */}
       {showSharePanel && shareLink && (
-        <SharePanel link={shareLink} onCopy={copyShareLink} onClose={() => setShowSharePanel(false)} />
+        <SharePanel showSharePanel={showSharePanel} shareLink={shareLink} onCopyLink={copyShareLink}
+          onClose={() => setShowSharePanel(false)} />
       )}
 
       {/* v8.2: Annotation Panel */}
       {showAnnotationPanel && selectedNode && (
-        <AnnotationPanel node={selectedNode} annotations={nodeAnnotations.get(selectedNode.label || '') || []}
-          newText={newAnnotationText} onTextChange={setNewAnnotationText} onSend={addNodeAnnotation}
+        <AnnotationPanel showAnnotationPanel={showAnnotationPanel} selectedNodeLabel={selectedNode?.label}
+          nodeAnnotations={nodeAnnotations.get(selectedNode?.label || '') || []}
+          newAnnotationText={newAnnotationText} onSetNewAnnotationText={setNewAnnotationText} onAddAnnotation={() => addNodeAnnotation(newAnnotationText)}
           onClose={() => setShowAnnotationPanel(false)} />
       )}
 
       {/* v8.2: History Panel */}
       {showHistoryPanel && (
-        <HistoryPanel entries={historyEntries} index={historyIndex} onUndo={undoHistory} onRedo={redoHistory}
-          canUndo={historyIndex >= 0} canRedo={historyIndex < historyEntries.length - 1}
-          onClose={() => setShowHistoryPanel(false)} />
+        <HistoryPanel showHistoryPanel={showHistoryPanel} historyEntries={historyEntries} historyIndex={historyIndex}
+          onUndo={undoHistory} onRedo={redoHistory} onClose={() => setShowHistoryPanel(false)} />
       )}
 
       {/* v8.2: Bookmark Panel */}
       {showBookmarkPanel && (
-        <BookmarkPanel bookmarks={bookmarks} onAdd={(name) => addBookmark(name)} onLoad={loadBookmark}
-          onRemove={removeBookmark} onClose={() => setShowBookmarkPanel(false)} />
+        <BookmarkPanel showBookmarkPanel={showBookmarkPanel} bookmarks={bookmarks}
+          onSaveCurrentView={(name: string) => addBookmark(name)}
+          onLoadBookmark={loadBookmark}
+          onRemoveBookmark={removeBookmark} onClose={() => setShowBookmarkPanel(false)} />
       )}
 
       {/* v8.2: Report Dialog */}
       {showReportDialog && (
-        <ReportDialog config={reportConfig} generating={reportGenerating} onConfigChange={setReportConfig}
-          onGenerate={generateReport} onClose={() => setShowReportDialog(false)} />
+        <ReportDialog showReportDialog={showReportDialog} reportConfig={reportConfig} reportGenerating={reportGenerating}
+          onSetReportConfig={setReportConfig} onGenerateReport={generateReport} onClose={() => setShowReportDialog(false)} />
       )}
 
       {/* v8.3: Statistics Dashboard */}
       {showStatsPanel && graphStats && (
-        <StatisticsDashboard stats={graphStats} onClose={() => setShowStatsPanel(false)} />
+        <StatisticsDashboard showStatsPanel={showStatsPanel} graphStats={graphStats}
+          onClose={() => setShowStatsPanel(false)} />
       )}
 
       {/* v8.3: Centrality Metrics Panel */}
       {showCentralityPanel && centralityMetrics && (
-        <CentralityMetricsPanel metrics={centralityMetrics} mode={centralityMode} onSetMode={setCentralityMode}
-          onClose={() => setShowCentralityPanel(false)} filteredNodes={filteredData.filteredNodes} />
+        <CentralityMetricsPanel showCentralityPanel={showCentralityPanel} centralityMetrics={centralityMetrics}
+          centralityMode={centralityMode} filteredNodes={filteredData.filteredNodes}
+          onSetCentralityMode={(m) => setCentralityMode(m)}
+          onRunCentralityAnalysis={() => runCentralityAnalysis()}
+          onNodeClick={(n) => { setSelectedNode(n); onNodeClick?.(n) }} setSelectedNode={setSelectedNode}
+          onClose={() => setShowCentralityPanel(false)} />
       )}
 
       {/* v8.3: SubGraph Browser */}
       {showSubGraphPanel && (communityResult || kcoreResult || savedSubGraphs.length > 0) && (
-        <SubGraphBrowser communities={communityResult} kcore={kcoreResult} saved={savedSubGraphs}
-          onApply={(sg) => { /* TODO: apply subgraph */ }}
+        <SubGraphBrowser showSubGraphPanel={showSubGraphPanel} communityResult={communityResult} kcoreResult={kcoreResult}
+          savedSubGraphs={savedSubGraphs} activeSubGraph={activeSubGraph}
+          onComputeKCore={computeKCore}
+          onSetSavedSubGraphs={(g) => dispatch({ type: 'APPEND_SAVED_SUBGRAPH', payload: g })}
+          onSetActiveSubGraph={(s) => dispatch({ type: 'SET_ACTIVE_SUBGRAPH', payload: s })}
           onClose={() => setShowSubGraphPanel(false)} />
       )}
 
@@ -689,27 +759,31 @@ export default function GraphPanelLayout({
 
       {/* v7.3: Search Results Dropdown & History */}
       {searchQuery && searchMatches.length > 0 && (
-        <SearchOverlay matches={searchMatches.map(m => ({ node: m.node, score: m.score }))}
-          focusedIndex={focusedNodeIndex} onSelect={handleSearchSelect} onFocus={setFocusedNodeIndex} />
+        <SearchOverlay searchMatches={searchMatches.map(m => ({ node: m.node, score: m.score, matchFields: [] as string[] }))}
+          focusedNodeIndex={focusedNodeIndex} onSelectMatch={handleSearchSelect} onFocusChange={setFocusedNodeIndex}
+          totalMatches={searchMatches.length} />
       )}
       {!searchQuery && searchHistory.length > 0 && (
-        <SearchHistoryPanel history={searchHistory} onClear={() => setSearchHistory([])} onPick={(t) => { handleSearchChange(t); setFocusedNodeIndex(0) }} />
+        <SearchHistoryPanel searchHistory={searchHistory} onClearHistory={() => setSearchHistory([])}
+          onSelectTerm={(t) => { handleSearchChange(t); setFocusedNodeIndex(0) }} />
       )}
 
-      {/* v7.4: Empty States */}
-      {filteredData.filteredNodes.length === 0 && nodes.length > 0 && (
-        <FilterEmptyState activeFilter={activeFilter} onClear={() => setActiveFilter(null)} />
+      {/* v7.4: Empty States —— 仅在非加载态展示，避免数据到达前闪现误导性「无匹配节点」 */}
+      {!isLoading && filteredData.filteredNodes.length === 0 && nodes.length > 0 && (
+        <FilterEmptyState activeFilter={activeFilter} onClearFilter={() => setActiveFilter(null)} />
       )}
-      {nodes.length === 0 && (!isLoading || false) && (
-        <DataEmptyState isLoading={!isLoading || false} />
+      {!isLoading && nodes.length === 0 && (
+        <DataEmptyState isLoading={false} />
       )}
 
       {/* Loading Skeleton */}
-      {isLoading && <GraphSkeleton height={height} />}
+      {isLoading && <GraphSkeleton isLoading />}
 
       {/* v7.4: Right Click Menu (rendered inline since it uses complex event handling) */}
       {contextMenu && (
-        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
+        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }}
+          onClearCommunities={() => dispatch({ type: 'SET_COMMUNITIES', payload: new Map<string, number>() })}
+          onDetectCommunities={detectCommunitiesLouvain} onResetView={handleResetView} />
       )}
 
       {/* v7.8: Pin trigger button */}

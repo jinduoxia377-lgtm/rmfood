@@ -31,7 +31,7 @@ from .experiment import Experiment, ExperimentData
 from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 from .notification import Notification, NotificationPreference
 from .system import AuditLog, Attachment, DataSnapshot, SystemConfig
-from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
+from .external_data import TCMHerb, MMIDHerb, SymMapHerb, HFEHerb, BioactivePeptide, KnowledgeGraphNode
 from .peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus
 
 # 云端同步模块
@@ -46,9 +46,19 @@ from .team_member import TeamMember
 from .prompt_template import PromptTemplate
 from .prompt_version import PromptVersion
 from .ai_suggestion import AiSuggestion
+from .ai_model_config import AIModelConfig
 
 # 对话记录模块
 from .chat import ChatSession, ChatMessage
+
+# 多智能体协作平台模块（DS Bot 移植 v1.2）
+from .bot import AIBot, BotMemory, BotGroupSession, BotGroupMember, BotGroupMessage
+
+# v3.3：任务驱动自动建群 + MCP 服务器注册表
+from .task_group import TaskGroup
+from .mcp_server import McpServerConfig
+# Phase 3：AI 用量统计
+from .usage import AiBotUsage
 
 # 术语模块
 from .terminology import Term, TermCategory, TermVariant, TermValidation, TermNormalizationRule, TermStatistics
@@ -80,6 +90,9 @@ from .knowledge_graph import KGNode, KGEdge
 # TCMSP 规范化模块
 from .tcm_schema import TCMCompound, TCMTarget, TCMDisease, tcm_herb_compounds, tcm_compound_targets, tcm_target_diseases
 
+# 数据检索中心扩展：RMCHM 中药材库 + CFAM 官方药食同源目录
+from .database_extras import RMCHMHerb, CFAMHerb
+
 # DFBP 规范化模块
 from .dfbp_schema import PeptideActivity, PeptideSourceProtein, PeptideEnzyme, peptide_enzyme_links
 
@@ -106,6 +119,7 @@ from .pre_register import PreRegisterRequest, PreRegisterStatus
 from .herb_pharmaco_params import TCMHerbPK, TCMHerbPD, StabilityData
 # 协同系数表（已存在，补充导入）
 from .seed_data import SynergyInteraction
+from .document_extraction import DocumentExtraction
 
 __all__ = [
     # 枚举
@@ -149,6 +163,7 @@ __all__ = [
     "TCMHerb",
     "MMIDHerb",
     "SymMapHerb",
+    "HFEHerb",
     "BioactivePeptide",
     "KnowledgeGraphNode",
     "PeptideDesign",
@@ -164,9 +179,19 @@ __all__ = [
     "PromptTemplate",
     "PromptVersion",
     "AiSuggestion",
+    "AIModelConfig",
     # 对话记录模块
     "ChatSession",
     "ChatMessage",
+    # 多智能体协作平台模块
+    "AIBot",
+    "BotMemory",
+    "BotGroupSession",
+    "BotGroupMember",
+    "BotGroupMessage",
+    "TaskGroup",
+    "McpServerConfig",
+    "AiBotUsage",
     # 术语模块
     "Term",
     "TermCategory",
@@ -234,4 +259,5 @@ __all__ = [
     "TCMHerbPD",
     "StabilityData",
     "SynergyInteraction",
+    "DocumentExtraction",
 ]

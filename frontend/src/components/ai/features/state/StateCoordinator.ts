@@ -73,7 +73,6 @@ class StateCoordinator {
     this.isBatching = false;
 
     for (const update of this.batchQueue) {
-      const oldValue = this.state[update.key];
       this.setState(update.key, update.value);
     }
 
@@ -88,7 +87,6 @@ class StateCoordinator {
     const listeners = this.listeners[key]!;
     listeners.add(listener);
 
-    const subscriptionId = `${key}-${Date.now()}-${Math.random()}`;
     const currentCount = this.listenerCounts.get(key) || 0;
     this.listenerCounts.set(key, currentCount + 1);
 

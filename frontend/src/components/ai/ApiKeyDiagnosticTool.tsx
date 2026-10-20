@@ -61,6 +61,7 @@ export default function ApiKeyDiagnosticTool() {
   } | null>(null)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     runDiagnostic()
   }, [])
 
@@ -205,6 +206,7 @@ export default function ApiKeyDiagnosticTool() {
     let cleaned = key.trim()
     cleaned = cleaned.replace(/[\s\r\n\t\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, '')
     cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '')
+    // eslint-disable-next-line no-control-regex
     cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, '')
 
     return cleaned
@@ -324,7 +326,7 @@ export default function ApiKeyDiagnosticTool() {
       {/* 状态概览 */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">存储来源</p>
               <Badge variant={diagnostic.source === 'none' ? 'danger' : 'neutral'}>

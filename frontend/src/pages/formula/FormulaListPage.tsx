@@ -13,6 +13,7 @@
  * 7. 空状态更有引导性
  */
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
@@ -27,7 +28,6 @@ import {
   List,
   Download,
   Star,
-  Eye,
   ChevronUp,
   ChevronDown,
   ChevronLeft,
@@ -39,23 +39,19 @@ import {
   Edit3,
   Copy,
   Trash2,
-  TrendingUp,
-  TrendingDown,
   RefreshCw,
   AlertTriangle,
   Clock,
   Keyboard,
   ShieldOff,
   TestTubes,
-  Brain,
-  Database,
   ArrowRight,
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { formulaApi } from '@/api/formula';
-import type { FormulaListQueryParams, FormulaStatistics, FormulaStatus, Formula } from '@/types/formula';
-import type { SortField, SortDir, ViewMode } from './types';
+import type { FormulaListQueryParams, FormulaStatus, Formula } from '@/types/formula';
+import type { ViewMode } from './types';
 import { StatusBadge, EmptyState, Pagination, Skeleton } from '@/components/ui/Common';
 import {
   Button,
@@ -78,9 +74,9 @@ import { CategoryTree } from '@/components/formula/CategoryTree';
 import { TagMultiSelect } from '@/components/formula/TagMultiSelect';
 import { cn } from '@/lib/utils';
 import { useBreakpoint } from '@/hooks/useMobile';
-import { useAuthStore } from '@/stores/auth';
 import { logger } from '@/utils/safeLogger';
-import { usePermission, PermissionGate, FormulaPermission } from '@/utils/permissions';
+import i18n from '@/i18n';
+import { usePermission, FormulaPermission } from '@/utils/permissions';
 import { FormulaQuickView } from './components/FormulaQuickView';
 import { FormulaCard } from './components/FormulaCard';
 import { FormulaListSkeleton } from './components/FormulaListSkeleton';
@@ -95,12 +91,12 @@ type TableSortDir = 'asc' | 'desc';
 
 // ── 常量配置 ──
 const STATUS_OPTIONS = [
-  { value: 'draft', label: '草稿', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700' },
-  { value: 'pending_review', label: '待审核', color: 'bg-warning-100 text-warning-700' },
-  { value: 'approved', label: '已通过', color: 'bg-primary-100 text-primary-700' },
-  { value: 'rejected', label: '已驳回', color: 'bg-error-100 text-error-700' },
-  { value: 'archived', label: '已归档', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600' },
-  { value: 'cancelled', label: '已取消', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600' },
+  { value: 'draft', label: '草稿', color: 'bg-[var(--bg-secondary)]/50 text-[var(--text-primary)]' },
+  { value: 'pending_review', label: '待审核', color: 'bg-[var(--color-warning-container)] text-[var(--color-warning-text)]' },
+  { value: 'approved', label: '已通过', color: 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]' },
+  { value: 'rejected', label: '已驳回', color: 'bg-[var(--color-error-container)] text-[var(--color-error-text)]' },
+  { value: 'archived', label: '已归档', color: 'bg-[var(--bg-secondary)]/50 text-[var(--text-primary)]' },
+  { value: 'cancelled', label: '已取消', color: 'bg-[var(--bg-secondary)]/50 text-[var(--text-primary)]' },
 ];
 
 const PAGE_SIZE_OPTIONS = [
@@ -118,48 +114,6 @@ const EFFECT_CATEGORIES = [
   '疏肝理气',
   '活血化瘀',
   '安神助眠',
-];
-
-// ── 快捷操作定义 ──
-const QUICK_ACTIONS = [
-  {
-    to: '/formulas/new',
-    icon: Plus,
-    title: '新建配方',
-    bgLight: 'bg-primary-50 dark:bg-primary-300/20',
-    textColor: 'text-primary-700 dark:text-primary-700',
-  },
-  {
-    to: '/formulas?status=pending_review',
-    icon: Clock,
-    title: '待审核',
-    bgLight: 'bg-warning-50 dark:bg-warning-300/20',
-    /* A-35：原 text-warning-600(#d97706) 压在 bg-warning-50(#fffbeb) 上仅 3.07:1。
-       且因为写了 dark:text-*，语义层的「600→700」兜底被 :not([class*="dark:text-"]) 跳过。
-       直接把亮色档提到 700(#b45309)，实测 4.84:1 ✅。 */
-    textColor: 'text-warning-700 dark:text-warning-700',
-  },
-  {
-    to: '/experiments',
-    icon: TestTubes,
-    title: '实验管理',
-    bgLight: 'bg-secondary-50 dark:bg-secondary-300/20',
-    textColor: 'text-secondary-600 dark:text-secondary-700',
-  },
-  {
-    to: '/ai',
-    icon: Brain,
-    title: 'AI 助手',
-    bgLight: 'bg-accent-50 dark:bg-accent-300/20',
-    textColor: 'text-accent-600 dark:text-accent-700',
-  },
-  {
-    to: '/databases',
-    icon: Database,
-    title: '数据库',
-    bgLight: 'bg-secondary-50 dark:bg-secondary-300/20',
-    textColor: 'text-secondary-700 dark:text-secondary-700',
-  },
 ];
 
 // ── 工具函数 ──
@@ -184,7 +138,16 @@ function toggleFavorite(id: number): boolean {
 
 function exportFormulasCSV(formulas: Formula[]) {
   const BOM = '\uFEFF';
-  const headers = ['编号', '名称', '状态', '版本', '目标功效', '描述', '创建时间', '更新时间'];
+  const headers = [
+    i18n.t('pages.formula.exportCsv.code'),
+    i18n.t('pages.formula.exportCsv.name'),
+    i18n.t('pages.formula.exportCsv.status'),
+    i18n.t('pages.formula.exportCsv.version'),
+    i18n.t('pages.formula.exportCsv.targetEffects'),
+    i18n.t('pages.formula.exportCsv.description'),
+    i18n.t('pages.formula.exportCsv.createdAt'),
+    i18n.t('pages.formula.exportCsv.updatedAt'),
+  ];
   const rows = formulas.map((f) => [
     f.code,
     f.name,
@@ -192,8 +155,8 @@ function exportFormulasCSV(formulas: Formula[]) {
     `v${f.version}`,
     f.targetEffects?.join('; ') || '',
     f.description || '',
-    new Date(f.createdAt).toLocaleDateString('zh-CN'),
-    new Date(f.updatedAt).toLocaleDateString('zh-CN'),
+    new Date(f.createdAt).toLocaleDateString(i18n.language),
+    new Date(f.updatedAt).toLocaleDateString(i18n.language),
   ]);
   const csv =
     BOM +
@@ -202,22 +165,14 @@ function exportFormulasCSV(formulas: Formula[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `配方列表_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `${i18n.t('pages.formula.exportCsv.fileName')}_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function getStatusLabel(status: FormulaStatus): string {
-  const map: Record<string, string> = {
-    draft: '草稿',
-    pending_review: '待审核',
-    in_review: '审核中',
-    approved: '已通过',
-    rejected: '已驳回',
-    archived: '已归档',
-    deprecated: '已弃用',
-  };
-  return map[status as string] || (status as string);
+  const key = status as string;
+  return i18n.exists(`common.statusLabels.${key}`) ? i18n.t(`common.statusLabels.${key}`) : key;
 }
 
 function formatDate(dateStr: string): string {
@@ -260,8 +215,8 @@ function SortIcon({
     <span className="inline-flex items-center gap-[2px] ml-1">
       {isPrimary && (
         <span
-          className="text-primary-700 dark:text-primary-700"
-          title={`主排序: ${primaryDir === 'asc' ? '升序' : '降序'}`}
+          className="text-[var(--color-primary-text)]"
+          title={i18n.t('pages.formula.primarySort', { dir: primaryDir === 'asc' ? i18n.t('pages.formula.asc') : i18n.t('pages.formula.desc') })}
         >
           {primaryDir === 'asc' ? (
             <ChevronUp size={12} strokeWidth={2.5} />
@@ -272,8 +227,8 @@ function SortIcon({
       )}
       {isSecondary && (
         <span
-          className="text-neutral-400 dark:text-neutral-400"
-          title={`次排序: ${secondaryDir === 'asc' ? '升序' : '降序'}`}
+          className="text-[var(--text-muted)]"
+          title={i18n.t('pages.formula.secondarySort', { dir: secondaryDir === 'asc' ? i18n.t('pages.formula.asc') : i18n.t('pages.formula.desc') })}
         >
           {secondaryDir === 'asc' ? (
             <ChevronUp size={11} strokeWidth={1.5} />
@@ -287,12 +242,12 @@ function SortIcon({
 }
 
 export default function FormulaListPage() {
+  const { t } = useTranslation();
   const { isMobile } = useBreakpoint();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const qc = useQueryClient();
-  const user = useAuthStore((s) => s.user);
-  const { has, hasAny } = usePermission();
+  const { has } = usePermission();
   const { log } = useOperationLogger();
   const { addToast } = useToastStore();
   const [showLogPanel, setShowLogPanel] = useState(false);
@@ -386,7 +341,6 @@ export default function FormulaListPage() {
   const {
     data: listData,
     isLoading,
-    isFetching,
     error,
   } = useQuery({
     queryKey: ['formulas-list', queryParams],
@@ -407,8 +361,15 @@ export default function FormulaListPage() {
   });
   const recentFormulas = recentData?.items ?? [];
 
-  // ── 数据提取 ──
-  const items = listData?.items ?? [];
+  // ── 数据提取（去重：避免重复/undefined id 导致 React key 冲突） ──
+  const items = useMemo(() => {
+    const seen = new Set<number>();
+    return (listData?.items ?? []).filter((item) => {
+      if (!item || item.id == null || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [listData]);
   const total = listData?.total ?? 0;
   const totalPages = listData?.total_pages ?? 0;
 
@@ -416,8 +377,13 @@ export default function FormulaListPage() {
   const creatorOptions = useMemo(() => {
     const map = new Map<string, number>();
     items.forEach((f) => {
-      const name = f.creator_name || `ID:${f.creatorId}`;
-      map.set(name, f.creatorId as number);
+      // 兼容后端 snake_case（creator_id）与前端 camelCase（creatorId）字段
+      const rawId = (f as unknown as Record<string, unknown>).creator_id ?? f.creatorId;
+      if (rawId == null) return;
+      const id = Number(rawId);
+      if (Number.isNaN(id)) return;
+      const name = f.creator_name || `ID:${id}`;
+      map.set(name, id);
     });
     return Array.from(map.entries()).map(([label, value]) => ({ label, value: String(value) }));
   }, [items]);
@@ -608,32 +574,6 @@ export default function FormulaListPage() {
     });
   }, []);
 
-  const handleUndoDelete = useCallback(
-    (id: number) => {
-      const deleted = deletedItemsRef.current.get(id);
-      if (!deleted) return;
-      clearTimeout(deleted.timer);
-      deletedItemsRef.current.delete(id);
-      qc.setQueryData(
-        ['formulas-list', queryParams],
-        (old: { items: Formula[]; total: number; total_pages?: number } | undefined) => {
-          if (!old) return old;
-          return { ...old, items: [deleted.data, ...old.items], total: old.total + 1 };
-        },
-      );
-      qc.invalidateQueries({ queryKey: ['formula-statistics'] });
-      addToast({ type: 'info', title: '已撤销删除', message: `${deleted.data.name} 已恢复到列表`, duration: 3000 });
-      log({
-        action: 'undo_delete',
-        target_type: 'formula',
-        target_id: String(id),
-        target_name: deleted.data.name,
-        result: 'success',
-      });
-    },
-    [qc, queryParams, addToast, log],
-  );
-
   const handleDelete = useCallback(
     (id: number) => {
       const formula = items.find((f) => f.id === id);
@@ -673,7 +613,7 @@ export default function FormulaListPage() {
   );
 
   const handleBatchDelete = useCallback(() => {
-    if (!window.confirm(`确定要删除选中的 ${selectedIds.size} 个配方吗？5秒内可撤销。`)) return;
+    if (!window.confirm(i18n.t('pages.formula.confirmBatchDelete', { count: selectedIds.size }))) return;
     const idsToDelete = Array.from(selectedIds);
     const formulasToDelete = items.filter((f) => selectedIds.has(f.id));
     const timer = setTimeout(async () => {
@@ -716,7 +656,7 @@ export default function FormulaListPage() {
   // ── 批量状态变更 ──
   const handleBatchStatusChange = useCallback(
     (targetStatus: FormulaStatus) => {
-      if (!window.confirm(`确定要将选中的 ${selectedIds.size} 个配方状态变更为"${getStatusLabel(targetStatus)}"吗？`)) return;
+      if (!window.confirm(i18n.t('pages.formula.confirmBatchStatusChange', { count: selectedIds.size, status: getStatusLabel(targetStatus) }))) return;
       const ids = Array.from(selectedIds);
 
       formulaApi.batchUpdateStatus(ids, targetStatus).then(() => {
@@ -807,7 +747,7 @@ export default function FormulaListPage() {
       });
     }
     if (effectCategory) tags.push({ label: `功效: ${effectCategory}`, onRemove: () => setEffectCategory('') });
-    if (favoritesOnly) tags.push({ label: '只看收藏', onRemove: () => setFavoritesOnly(false) });
+    if (favoritesOnly) tags.push({ label: i18n.t('pages.formula.favoritesOnly'), onRemove: () => setFavoritesOnly(false) });
     return tags;
   }, [debouncedSearch, selectedStatuses, createdStart, createdEnd, effectCategory, favoritesOnly]);
 
@@ -878,12 +818,12 @@ export default function FormulaListPage() {
 
   if (!has(FormulaPermission.VIEW)) {
     return (
-      <div className="max-w-7xl mx-auto space-y-8 px-4 lg:px-6">
+      <div className="max-w-[1600px] mx-auto space-y-8 px-[var(--space-apple-md)] lg:px-[var(--space-apple-lg)]">
         <div className="py-24">
           <EmptyState
             icon={<ShieldOff size={48} />}
-            title="无权限访问"
-            description="您没有查看配方列表的权限，请联系管理员申请相关权限"
+            title={t('pages.formula.noPermissionTitle')}
+            description={t('pages.formula.noPermissionDesc')}
           />
         </div>
       </div>
@@ -896,59 +836,59 @@ export default function FormulaListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="max-w-7xl mx-auto space-y-6 px-4 lg:px-6 py-6">
+    <div className="min-h-screen">
+      <div className="max-w-[1600px] mx-auto space-y-[var(--space-apple-lg)] px-[var(--space-apple-md)] lg:px-[var(--space-apple-lg)] py-[var(--space-apple-lg)]">
 
       {/* 顶部横幅 — 与 Dashboard 风格一致 */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-xl font-semibold leading-snug tracking-tight">配方管理</h1>
+            <div className="flex items-center gap-4 mb-1">
+              <h1 className="text-xl font-semibold leading-snug tracking-tight">{t('pages.formula.title')}</h1>
               {/* A-23：页面此前只有 h1 + h3，「最近更新」卡片标题直接从 1 跳到 3。
                   补一个屏幕阅读器可见的 h2 承接正文区，大纲恢复 h1 → h2 → h3。 */}
-              <h2 className="sr-only">配方列表</h2>
-              <span className="text-xs font-medium bg-white dark:bg-neutral-900/15 text-neutral-700 dark:text-white/75 px-2.5 py-0.5 rounded-full tabular-nums">
-                {total} 条
+              <h2 className="sr-only">{t('pages.formula.listTitle')}</h2>
+              <span className="text-xs font-medium bg-[var(--bg-secondary)]/90 text-[var(--text-primary)] px-2.5 py-0.5 rounded-[var(--radius-pill)] tabular-nums">
+                {t('pages.formula.totalCount', { total })}
               </span>
             </div>
-            <p className="text-white/80 text-sm">
+            <p className="text-white/80 text-sm hidden sm:block">
               {statsData.approved > 0 && (
                 <span>
-                  <span className="font-medium">{statsData.approved}</span> 已通过
+                  <span className="font-medium">{statsData.approved}</span> {t('pages.formula.approved')}
                   {statsData.pendingReview > 0 && (
                     <span className="ml-4">
-                      <span className="font-medium">{statsData.pendingReview}</span> 待审核
+                      <span className="font-medium">{statsData.pendingReview}</span> {t('pages.formula.pendingReview')}
                     </span>
                   )}
                 </span>
               )}
-              {!statsData.approved && !statsData.pendingReview && <span>创建您的第一个药食同源配方</span>}
+              {!statsData.approved && !statsData.pendingReview && <span>{t('pages.formula.firstFormulaCta')}</span>}
             </p>
           </div>
           {/* D-60：该工具栏位于 .surface-primary（品牌实底绿色横幅）内部，
-              但内部控件全部使用浅色卡片配色（text-neutral-600 / border-neutral-200 dark:border-neutral-700 /
-              bg-primary-50 …），直接压在绿底上最低仅 1.38:1。
+              但内部控件全部使用浅色卡片配色（text-[var(--text-secondary)] / border-[var(--border-color)] dark:border-neutral-700 /
+              bg-[var(--color-primary-container)] …），直接压在绿底上最低仅 1.38:1。
               给工具栏独立浅色容器，使控件回到其设计底色上，一举修复整组控件。 */}
           {/* D-69：暗色下 /40 的 neutral-900 蒙版压在品牌实底横幅上只得到
-              rgb(10,66,59)，工具条内的 dark:text-neutral-400 (#94a3b8) 为 4.41:1，
+              rgb(10,66,59)，工具条内的 dark:text-[var(--text-muted)] (#94a3b8) 为 4.41:1，
               差一点不达 AA。把暗色蒙版提到 /80（得到 rgb(13,37,48) 的深色容器）
               后同一文字为 6.16:1；亮色 /95 原本就达标，保持不变。 */}
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto bg-white/95 dark:bg-neutral-900/80 rounded-xl p-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto bg-[var(--bg-secondary)]/95 rounded-[var(--radius-Apple-md)] p-2">
           {/* 视图切换 */}
-          <div className="flex items-center border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] overflow-hidden">
             <button
               onClick={() => setViewMode('card')}
               className={cn(
-                'px-3 py-2 min-w-[44px] min-h-[44px] transition-colors flex items-center justify-center',
+                'px-[var(--space-apple-sm)] py-2 min-w-[44px] min-h-[44px] transition-colors flex items-center justify-center',
                 viewMode === 'card'
-                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
-                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+                  ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
               )}
-              title="卡片视图"
-              aria-label="卡片视图"
+              title={t('pages.formula.cardView')}
+              aria-label={t('pages.formula.cardView')}
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={16} aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -956,13 +896,13 @@ export default function FormulaListPage() {
                 /* A-20：与卡片视图按钮对称，补 44×44 触控区（原 32×32）。 */
                 'p-2 min-w-[44px] min-h-[44px] transition-colors flex items-center justify-center',
                 viewMode === 'table'
-                  ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
-                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+                  ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
               )}
-              title="表格视图"
-              aria-label="表格视图"
+              title={t('pages.formula.tableView')}
+              aria-label={t('pages.formula.tableView')}
             >
-              <List size={16} />
+              <List size={16} aria-hidden="true" />
             </button>
           </div>
 
@@ -970,30 +910,30 @@ export default function FormulaListPage() {
           <button
             onClick={() => setFavoritesOnly(!favoritesOnly)}
             className={cn(
-              'p-2 rounded-lg border transition-all min-h-[44px] min-w-[44px]',
+              'p-2 rounded-[var(--radius-Apple-sm)] border transition-all min-h-[44px] min-w-[44px]',
               favoritesOnly
-                ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-200 dark:border-warning-800 text-warning-600 dark:text-warning-700'
-                : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+                ? 'bg-[var(--color-warning-container)] border-[var(--color-warning-border)] text-[var(--color-warning-text)]'
+                : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)]',
             )}
-            title={favoritesOnly ? '显示全部' : '只看收藏'}
-            aria-label={favoritesOnly ? '显示全部配方' : '只看收藏'}
+            title={favoritesOnly ? t('pages.formula.showAll') : t('pages.formula.favoritesOnly')}
+            aria-label={favoritesOnly ? t('pages.formula.showAllFavorites') : t('pages.formula.favoritesOnly')}
           >
-            <Star size={16} className={favoritesOnly ? 'fill-warning-400 text-warning-400' : ''} />
+            <Star size={16} aria-hidden="true" className={favoritesOnly ? 'fill-[var(--color-warning-text)] text-[var(--color-warning-text)]' : ''} />
           </button>
 
           {/* 操作日志 */}
           <button
             onClick={() => setShowLogPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] min-w-[44px] rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-sm"
-            aria-label="操作日志"
+            className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 min-h-[44px] min-w-[44px] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all text-sm"
+            aria-label={t('pages.formula.operationLog')}
           >
             <FileText size={14} />
-            <span className="hidden sm:inline">日志</span>
+            <span className="hidden sm:inline">{t('pages.formula.log')}</span>
           </button>
 
           <Link to="/formulas/new">
             <Button icon={<Plus size={16} />} size="md">
-              新建配方
+              {t('pages.formula.newFormula')}
             </Button>
           </Link>
         </div>
@@ -1001,36 +941,36 @@ export default function FormulaListPage() {
       </div>
 
       {/* 统计概览 — 主卡 + 3 辅卡 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          label="总配方数"
+          label={t('pages.formula.totalFormulas')}
           value={statsData.total}
           icon={FlaskConical}
           variant="primary"
           size="large"
-          subtitle={`本月新增 ${statsData.monthlyNew} 个配方`}
-          trend={statsData.trend !== 'stable' ? { direction: statsData.trend as 'up' | 'down' | 'stable', value: `${statsData.monthlyNew} 本月` } : undefined}
+          subtitle={t('pages.formula.monthlyNew', { count: statsData.monthlyNew })}
+          trend={statsData.trend !== 'stable' ? { direction: statsData.trend as 'up' | 'down' | 'stable', value: t('pages.formula.monthly', { count: statsData.monthlyNew }) } : undefined}
         />
         <StatCard
-          label="草稿"
+          label={t('pages.formula.draft')}
           value={statsData.draft}
           icon={FileText}
           variant="secondary"
-          subtitle="等待提交审核"
+          subtitle={t('pages.formula.draftSubtitle')}
         />
         <StatCard
-          label="待审核"
+          label={t('pages.formula.pendingReview')}
           value={statsData.pendingReview}
           icon={Clock}
           variant="warning"
-          subtitle="需审批处理"
+          subtitle={t('pages.formula.pendingReviewSubtitle')}
         />
         <StatCard
-          label="已通过"
+          label={t('pages.formula.approved')}
           value={statsData.approved}
           icon={CheckCircle2}
           variant="success"
-          subtitle="可投入使用"
+          subtitle={t('pages.formula.approvedSubtitle')}
         />
       </div>
 
@@ -1040,146 +980,146 @@ export default function FormulaListPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* ═══════════════ 移动端/平板端：顶部搜索栏 ═══════════════ */}
-        <div className="lg:hidden col-span-12 space-y-3">
+        <div className="lg:hidden col-span-12 space-y-[var(--space-apple-md)]">
           <div className="relative">
             {/* A-24：移动端顶部的搜索框（lg:hidden 分支）——placeholder 不是可访问名称，
                 它与筛选面板里那个搜索框是两个独立实例，需要各自带 aria-label。 */}
             <Input
               ref={searchInputRef}
-              aria-label="搜索配方名称或编号"
+              aria-label={t('pages.formula.searchAria')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="搜索配方名称或编号..."
+              placeholder={t('pages.formula.searchPlaceholder')}
               prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
               className="h-11 w-full"
             />
             <button
               onClick={() => setShowMobileFilter(true)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="打开筛选面板"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label={t('pages.formula.openFilter')}
             >
-              <SlidersHorizontal size={18} />
+              <SlidersHorizontal size={18} aria-hidden="true" />
             </button>
-            <Modal open={showMobileFilter} onClose={() => setShowMobileFilter(false)} title="筛选条件">
-              <div className="space-y-5 overflow-y-auto pb-4 max-h-[60vh]">
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">状态</label>
-                  <div className="grid grid-cols-2 gap-2">
+            <Modal open={showMobileFilter} onClose={() => setShowMobileFilter(false)} title={t('pages.formula.filterConditions')}>
+              <div className="space-y-[var(--space-apple-lg)] overflow-y-auto pb-[var(--space-apple-md)] max-h-[60vh]">
+                <div className="space-y-[var(--space-apple-md)]">
+                  <label className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.status')}</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {STATUS_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => toggleStatusFilter(opt.value)}
                         className={cn(
-                          'px-4 py-3 rounded-xl text-sm font-medium transition-all border min-h-[44px]',
+                          'px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] text-sm font-medium transition-all border min-h-[44px]',
                           selectedStatuses.has(opt.value)
-                            ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
-                            : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300',
+                            ? 'border-[var(--color-primary-border)] bg-[var(--color-primary-container)] text-[var(--color-primary-text)]'
+                            : 'border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--border-color)]',
                         )}
                       >
-                        {opt.label}
+                        {t(`common.statusLabels.${opt.value}`, { defaultValue: opt.label })}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">创建日期</label>
-                  <div className="space-y-2">
+                <div className="space-y-[var(--space-apple-md)]">
+                  <label className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.createdDate')}</label>
+                  <div className="space-y-[var(--space-apple-sm)]">
                     <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
-        aria-label="创建日期（起）"
+                      className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-sm border border-[var(--border-color)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--color-primary-container)] outline-none min-h-[44px]"
+        aria-label={t('pages.formula.dateStart')}
       />
                     <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
-        aria-label="创建日期（止）"
+                      className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-sm border border-[var(--border-color)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--color-primary-container)] outline-none min-h-[44px]"
+        aria-label={t('pages.formula.dateEnd')}
       />
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">标签</label>
-                  <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder="选择标签..." />
+                <div className="space-y-[var(--space-apple-md)]">
+                  <label className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.tags')}</label>
+                  <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder={t('pages.formula.selectTagsPlaceholder')} />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">功效分类</label>
+                <div className="space-y-[var(--space-apple-md)]">
+                  <label className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.effectCategory')}</label>
                   <Select value={effectCategory} onValueChange={(v) => { setEffectCategory(v); setPage(1); }} className="w-full">
                     <SelectTrigger className="min-h-[44px]">
-                      <SelectValue placeholder="全部分类" />
+                      <SelectValue placeholder={t('pages.formula.allCategories')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">全部分类</SelectItem>
+                      <SelectItem value="">{t('pages.formula.allCategories')}</SelectItem>
                       {EFFECT_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">配方分类</label>
-                  <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder="选择分类..." />
+                <div className="space-y-[var(--space-apple-md)]">
+                  <label className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.formulaCategory')}</label>
+                  <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder={t('pages.formula.selectCategoryPlaceholder')} />
                 </div>
-                <div className="flex gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <Button variant="secondary" onClick={() => setShowMobileFilter(false)} className="flex-1 min-h-[48px]">应用筛选</Button>
-                  <Button variant="outline" onClick={() => { clearAllFilters(); setShowMobileFilter(false); }} className="flex-1 min-h-[48px]">清除全部</Button>
+                <div className="flex gap-4 pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
+                  <Button variant="secondary" onClick={() => setShowMobileFilter(false)} className="flex-1 min-h-[48px]">{t('pages.formula.applyFilters')}</Button>
+                  <Button variant="outline" onClick={() => { clearAllFilters(); setShowMobileFilter(false); }} className="flex-1 min-h-[48px]">{t('pages.formula.clearAll')}</Button>
                 </div>
               </div>
             </Modal>
           </div>
 
           {activeFilterTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
-              <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">已选：</span>
+            <div className="flex flex-wrap items-center gap-2 px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+              <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{t('pages.formula.currentFilters')}</span>
               <div className="flex flex-wrap gap-1.5 flex-1">
                 {activeFilterTags.slice(0, 3).map((tag, idx) => (
-                  <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors">
+                  <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-[var(--color-primary-container)] transition-colors">
                     {tag.label.length > 10 ? `${tag.label.slice(0, 10)}...` : tag.label}
-                    <button onClick={tag.onRemove} className="hover:text-error-500" aria-label="移除筛选"><X size={10} /></button>
+                    <button onClick={tag.onRemove} className="hover:text-[var(--color-error-text)]" aria-label={t('pages.formula.removeFilter', { label: tag.label })}><X size={10} /></button>
                   </Badge>
                 ))}
                 {activeFilterTags.length > 3 && <Badge variant="neutral" size="sm">+{activeFilterTags.length - 3}</Badge>}
               </div>
-              <button onClick={clearAllFilters} className="text-xs text-error-600 hover:text-error-700 font-medium shrink-0 ml-auto">清除</button>
+              <button onClick={clearAllFilters} className="text-xs text-[var(--color-error-text)] hover:text-[var(--color-error-text)] font-medium shrink-0 ml-auto">{t('pages.formula.clearAll')}</button>
             </div>
           )}
         </div>
 
         {/* ═══════════════ 左侧：筛选面板（桌面端）═══════════════ */}
-        <Card className="hidden lg:block lg:col-span-3 transition-all duration-300 hover:shadow-md border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm h-fit overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+        <Card className="hidden lg:block lg:col-span-3 transition-all duration-300 hover:shadow-md border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm h-fit overflow-hidden" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           {/* 卡片顶部色条 */}
-          <div className="h-[3px] bg-primary-500 dark:bg-primary-600 shrink-0" />
-          <CardContent className="p-6 space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div className="h-[3px] bg-[var(--color-primary-text)] shrink-0" />
+          <CardContent className="p-[var(--space-apple-lg)] space-y-[var(--space-apple-lg)] overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <div className="flex items-center justify-between pb-[var(--space-apple-md)] border-b border-[var(--border-color)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
-                  <Filter className="w-4 h-4 text-primary-700 dark:text-primary-700" />
+                <div className="w-8 h-8 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                  <Filter className="w-4 h-4 text-[var(--color-primary-text)]" />
                 </div>
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">筛选条件</span>
+                <span className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.filterConditions')}</span>
               </div>
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs font-medium text-neutral-400 hover:text-error-600 dark:hover:text-error-400 transition-colors px-2 py-1 rounded-lg hover:bg-error-50 dark:hover:bg-error-900/20"
-                  aria-label="清除所有筛选"
+                  className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--color-error-text)] transition-colors px-2 py-1 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--color-error-container)]"
+                  aria-label={t('pages.formula.clearAllFilters')}
                 >
-                  清除全部
+                  {t('pages.formula.clearAll')}
                 </button>
               )}
             </div>
 
             {/* 名称搜索 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">名称搜索</label>
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.nameSearch')}</label>
               <Input
                 /* A-23：placeholder 不算可访问名称（WCAG 4.1.2 / 1.3.1）。
                    该输入框的 <label> 是兄弟节点且没有 htmlFor，无法形成关联。 */
-                aria-label="搜索配方名称或编号"
+                aria-label={t('pages.formula.searchAria')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="搜索配方名称或编号…"
+                placeholder={t('pages.formula.searchPlaceholder')}
                 prefix={<Search size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
                 size="sm"
               />
             </div>
 
             {/* 状态多选 */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">状态</label>
+            <div className="space-y-[var(--space-apple-sm)]">
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.status')}</label>
               <div className="space-y-1.5">
                 {STATUS_OPTIONS.map((opt) => (
                   /* A-23：原 192×28，未达 WCAG 2.5.5 的 44×44 —— 整行 label 就是
@@ -1187,9 +1127,9 @@ export default function FormulaListPage() {
                      因为 Radix 渲染的是 <button role=checkbox>，外层 <label>
                      并不会为它提供可访问名称。 */
                   <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group py-1 min-h-[44px]">
-                    <Checkbox checked={selectedStatuses.has(opt.value)} onChange={() => toggleStatusFilter(opt.value)} aria-label={`按状态筛选：${opt.label}`} />
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors">
-                      {opt.label}
+                    <Checkbox checked={selectedStatuses.has(opt.value)} onCheckedChange={() => toggleStatusFilter(opt.value)} aria-label={`${t('pages.formula.status')}: ${t(`common.statusLabels.${opt.value}`, { defaultValue: opt.label })}`} />
+                    <span className="text-sm text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors">
+                      {t(`common.statusLabels.${opt.value}`, { defaultValue: opt.label })}
                     </span>
                   </label>
                 ))}
@@ -1198,31 +1138,31 @@ export default function FormulaListPage() {
 
             {/* 日期范围 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">创建日期</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.createdDate')}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {/* A-23：原 92×34（<44），且日期输入框没有可访问名称 */}
-                <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)} aria-label="创建日期起始"
-                  className="w-full px-3 py-2 min-h-[44px] text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
-                <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)} aria-label="创建日期结束"
-                  className="w-full px-3 py-2 min-h-[44px] text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
+                <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)} aria-label={t('pages.formula.dateStart')}
+                  className="w-full px-[var(--space-apple-sm)] py-2 min-h-[44px] text-xs border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/50 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--color-primary-container)] focus:border-[var(--color-primary-text)] outline-none transition-all" />
+                <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)} aria-label={t('pages.formula.dateEnd')}
+                  className="w-full px-[var(--space-apple-sm)] py-2 min-h-[44px] text-xs border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/50 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--color-primary-container)] focus:border-[var(--color-primary-text)] outline-none transition-all" />
               </div>
             </div>
 
             {/* 标签选择 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">标签</label>
-              <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder="选择标签…" />
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.tags')}</label>
+              <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder={t('pages.formula.selectTagsPlaceholder')} />
             </div>
 
             {/* 功效分类 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">功效分类</label>
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.effectCategory')}</label>
               <Select value={effectCategory} onValueChange={(v) => { setEffectCategory(v); setPage(1); }} className="w-full">
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="全部分类" />
+                  <SelectValue placeholder={t('pages.formula.allCategories')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部分类</SelectItem>
+                  <SelectItem value="">{t('pages.formula.allCategories')}</SelectItem>
                   {EFFECT_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
                 </SelectContent>
               </Select>
@@ -1230,62 +1170,62 @@ export default function FormulaListPage() {
 
             {/* 配方分类 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">配方分类</label>
-              <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder="选择分类…" />
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.formulaCategory')}</label>
+              <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder={t('pages.formula.selectCategoryPlaceholder')} />
             </div>
 
             {/* 创建者筛选 */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">创建者</label>
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.creator')}</label>
               <Select value={creatorId} onValueChange={(v) => { setCreatorId(v); setPage(1); }} className="w-full">
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="全部创建者" />
+                  <SelectValue placeholder={t('pages.formula.allCreators')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部创建者</SelectItem>
-                  {creatorOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  <SelectItem value="">{t('pages.formula.allCreators')}</SelectItem>
+                  {creatorOptions.map((opt, idx) => (
+                    <SelectItem key={`${opt.value}-${idx}`} value={opt.value}>{opt.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             {/* 显示设置 */}
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
-              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-300">每页数量</label>
+            <div className="pt-[var(--space-apple-md)] border-t border-[var(--border-color)] space-y-[var(--space-apple-sm)]">
+              <label className="text-xs font-medium text-[var(--text-primary)]">{t('pages.formula.pageSize')}</label>
               <Select value={String(pageSize)} onValueChange={(v) => handlePageSizeChange(Number(v))} className="w-full">
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {PAGE_SIZE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                    <SelectItem key={opt.value} value={String(opt.value)}>{t('pages.formula.pageSizeOptions', { size: opt.value })}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             {/* 快捷统计 */}
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-              <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-3">当前筛选结果</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">总数</p>
-                  <p className="text-base font-semibold text-neutral-900 dark:text-white tabular-nums">{total}</p>
+            <div className="pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
+              <p className="text-xs font-medium text-[var(--text-muted)] mb-[var(--space-apple-md)]">{t('pages.formula.currentFilterResults')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+                  <p className="text-xs text-[var(--text-muted)] mb-0.5">{t('pages.formula.total')}</p>
+                  <p className="text-base font-semibold text-[var(--text-primary)] tabular-nums">{total}</p>
                 </div>
-                <div className="px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-primary-100 dark:border-primary-800/40">
-                  <p className="text-xs text-primary-700 dark:text-primary-700 mb-0.5">已通过</p>
-                  <p className="text-base font-semibold text-primary-700 dark:text-primary-700 tabular-nums">{statsData.approved}</p>
+                <div className="px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] border border-[var(--color-primary-border)]">
+                  <p className="text-xs text-[var(--color-primary-text)] mb-0.5">{t('pages.formula.approved')}</p>
+                  <p className="text-base font-semibold text-[var(--color-primary-text)] tabular-nums">{statsData.approved}</p>
                 </div>
-                <div className="px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 border border-warning-100 dark:border-warning-800/40">
-                  {/* A-35：原 text-warning-600(#d97706) 压 bg-warning-50(#fffbeb) 仅 3.07:1；
+                <div className="px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] border border-[var(--color-warning-border)]">
+                  {/* A-35：原 text-[var(--color-warning-text)](#d97706) 压 bg-[var(--color-warning-container)](#fffbeb) 仅 3.07:1；
                       同张卡的数值已是 700 档，标签却是 600 档，本来就不一致。 */}
-                  <p className="text-xs text-warning-700 dark:text-warning-700 mb-0.5">待审核</p>
-                  <p className="text-base font-semibold text-warning-700 dark:text-warning-700 tabular-nums">{statsData.pendingReview}</p>
+                  <p className="text-xs text-[var(--color-warning-text)] mb-0.5">{t('pages.formula.pendingReview')}</p>
+                  <p className="text-base font-semibold text-[var(--color-warning-text)] tabular-nums">{statsData.pendingReview}</p>
                 </div>
-                <div className="px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700">
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">收藏</p>
-                  <p className="text-base font-semibold text-neutral-900 dark:text-white tabular-nums">{favorites.size}</p>
+                <div className="px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+                  <p className="text-xs text-[var(--text-muted)] mb-0.5">{t('pages.formula.favorites')}</p>
+                  <p className="text-base font-semibold text-[var(--text-primary)] tabular-nums">{favorites.size}</p>
                 </div>
               </div>
             </div>
@@ -1293,38 +1233,38 @@ export default function FormulaListPage() {
         </Card>
 
         {/* ═══════════════ 中间：主内容区 ═══════════════ */}
-        <div className="lg:col-span-9 space-y-5">
+        <div className="lg:col-span-9 space-y-[var(--space-apple-lg)]">
 
           {/* ── 筛选条件 Tag 展示栏 ── */}
           {activeFilterTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 px-4 py-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 animate-in fade-in duration-200">
-              <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前筛选：</span>
+            <div className="flex flex-wrap items-center gap-2 px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] animate-in fade-in duration-200">
+              <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.formula.currentFilters')}</span>
               {activeFilterTags.map((tag, idx) => (
-                <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors">
+                <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-[var(--color-primary-container)] transition-colors">
                   {tag.label}
-                  <button onClick={tag.onRemove} className="hover:text-error-500" aria-label={`移除筛选: ${tag.label}`}><X size={10} /></button>
+                  <button onClick={tag.onRemove} className="hover:text-[var(--color-error-text)]" aria-label={t('pages.formula.removeFilter', { label: tag.label })}><X size={10} /></button>
                 </Badge>
               ))}
-              <button onClick={clearAllFilters} className="text-xs text-error-600 hover:text-error-700 font-medium ml-auto">清除全部</button>
+              <button onClick={clearAllFilters} className="text-xs text-[var(--color-error-text)] hover:text-[var(--color-error-text)] font-medium ml-auto">{t('pages.formula.clearAll')}</button>
             </div>
           )}
 
           {/* ── 批量操作提示条 ── */}
           {selectedIds.size > 0 && (
-            <Alert className="rounded-xl border-primary-200 bg-primary-50 dark:border-primary-800 dark:bg-primary-950/20 shadow-sm">
-              <CheckCircle2 className="w-4 h-4 text-primary-700" />
+            <Alert className="rounded-[var(--radius-Apple-md)] border-[var(--color-primary-border)] bg-[var(--color-primary-container)] shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-[var(--color-primary-text)]" />
               <AlertTitle className="text-sm font-medium">
-                已选择 <strong className="text-primary-700 dark:text-primary-700">{selectedIds.size}</strong> 个配方
+                {t('pages.formula.selectedCountPrefix')} <strong className="text-[var(--color-primary-text)]">{selectedIds.size}</strong> {t('pages.formula.selectedCountSuffix')}
               </AlertTitle>
               <AlertDescription className="flex flex-wrap items-center gap-2 mt-2">
                 {has(FormulaPermission.EXPORT) && (
                   <Button size="md" variant="outline" className="min-h-[44px]" onClick={handleBatchExport}>
-                    <Download className="w-3.5 h-3.5 mr-1" /> 导出选中
+                    <Download className="w-3.5 h-3.5 mr-1" /> {t('pages.formula.exportSelected')}
                   </Button>
                 )}
                 {has(FormulaPermission.DELETE) && (
                   <Button size="md" variant="danger" className="min-h-[44px]" onClick={handleBatchDelete}>
-                    <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量删除
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> {t('pages.formula.batchDelete')}
                   </Button>
                 )}
                 {has(FormulaPermission.EDIT) && (
@@ -1338,14 +1278,14 @@ export default function FormulaListPage() {
                       aria-expanded={batchMenuOpen}
                       onClick={() => setBatchMenuOpen(!batchMenuOpen)}
                     >
-                      批量改状态
+                      {t('pages.formula.batchChangeStatus')}
                     </Button>
                     {batchMenuOpen && (
-                      <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50" role="listbox">
+                      <div className="absolute right-0 mt-1 w-44 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-lg border border-[var(--border-color)] py-1 z-50" role="listbox">
                         {STATUS_OPTIONS.map((opt) => (
-                          <button key={opt.value} className="w-full text-left px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                          <button key={opt.value} className="w-full text-left px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--color-primary-container)] transition-colors"
                             onClick={() => { handleBatchStatusChange(opt.value as FormulaStatus); setBatchMenuOpen(false); }}>
-                            {opt.label}
+                            {t(`common.statusLabels.${opt.value}`, { defaultValue: opt.label })}
                           </button>
                         ))}
                       </div>
@@ -1353,7 +1293,7 @@ export default function FormulaListPage() {
                   </div>
                 )}
                 <Button size="md" variant="ghost" className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] min-h-[44px]" onClick={() => setSelectedIds(new Set())}>
-                  取消选择
+                  {t('pages.formula.cancelSelect')}
                 </Button>
               </AlertDescription>
             </Alert>
@@ -1363,34 +1303,34 @@ export default function FormulaListPage() {
           {error && (
             <Alert variant="destructive">
               <AlertTriangle className="w-4 h-4" />
-              <AlertTitle>加载失败</AlertTitle>
+              <AlertTitle>{t('pages.formula.loadFailed')}</AlertTitle>
               <AlertDescription className="flex items-center gap-2 mt-1.5">
-                <span>无法获取配方数据，请检查网络连接后重试</span>
+                <span>{t('pages.formula.loadFailedDesc')}</span>
                 <Button variant="outline" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['formulas-list'] })}>
-                  <RefreshCw className="w-3.5 h-3.5 mr-1" /> 重试
+                  <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('pages.formula.retry')}
                 </Button>
               </AlertDescription>
             </Alert>
           )}
 
           {/* ── 主内容区域（响应式：移动端强制卡片视图）── */}
-          <Card className="transition-shadow duration-200 border-neutral-200 dark:border-neutral-700 overflow-visible bg-white dark:bg-neutral-900 shadow-sm">
+          <Card className="transition-shadow duration-200 border-[var(--border-color)] overflow-visible bg-[var(--bg-secondary)] shadow-sm">
             {isLoading ? (
               viewMode === 'card' || isMobile ? (
-                <div className="p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                <div className="p-[var(--space-apple-md)] md:p-[var(--space-apple-lg)] grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <Card key={i}>
-                      <CardContent className="p-4 md:p-5">
-                        <Skeleton className="h-5 w-1/3 mb-3" />
+                      <CardContent className="p-[var(--space-apple-md)] md:p-5">
+                        <Skeleton className="h-5 w-1/3 mb-[var(--space-apple-md)]" />
                         <Skeleton className="h-3 w-2/3" />
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <div className="p-4 md:p-6 space-y-3">
+                <div className="p-[var(--space-apple-md)] md:p-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
                   {Array.from({ length: 8 }).map((_, i) => (
-                    <Skeleton key={i} className="h-14 w-full rounded-lg" />
+                    <Skeleton key={i} className="h-14 w-full rounded-[var(--radius-Apple-sm)]" />
                   ))}
                 </div>
               )
@@ -1399,27 +1339,27 @@ export default function FormulaListPage() {
               <div className="py-16 md:py-20">
                 <EmptyState
                   icon={
-                    <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center mx-auto mb-4">
-                      <FlaskConical size={24} className="text-primary-500 dark:text-primary-700" />
+                    <div className="w-12 h-12 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center mx-auto mb-4">
+                      <FlaskConical size={24} className="text-[var(--color-primary-text)]" />
                     </div>
                   }
-                  title={hasActiveFilters ? '没有匹配的配方' : '暂无配方'}
-                  titleClassName="text-base font-semibold text-neutral-900 dark:text-white"
+                  title={hasActiveFilters ? t('pages.formula.noMatchingFormulas') : t('pages.formula.noFormulas')}
+                  titleClassName="text-base font-semibold text-[var(--text-primary)]"
                   description={
                     hasActiveFilters
-                      ? '尝试调整搜索关键词或筛选条件，让数据重新显现'
-                      : '创建您的第一个配方，开始智能配方设计之旅'
+                      ? t('pages.formula.noMatchingDesc')
+                      : t('pages.formula.noFormulasDesc')
                   }
-                  descriptionClassName="text-xs text-neutral-500 dark:text-neutral-400 mt-2"
+                  descriptionClassName="text-xs text-[var(--text-muted)] mt-2"
                   action={
                     hasActiveFilters ? (
                       <Button variant="secondary" onClick={clearAllFilters} className="min-h-[44px]">
-                        清除筛选条件
+                        {t('pages.formula.clearFilters')}
                       </Button>
                     ) : (
                       <Link to="/formulas/new">
                         <Button icon={<Plus size={16} />} size="md" className="min-h-[44px] shadow-md hover:shadow-lg">
-                          新建配方
+                          {t('pages.formula.newFormula')}
                         </Button>
                       </Link>
                     )
@@ -1430,7 +1370,7 @@ export default function FormulaListPage() {
               /* 卡片视图（移动端自动启用） */
               <div ref={parentRef} className="overflow-auto" style={{ maxHeight: '60vh', minHeight: '400px' }}>
                 <div
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 p-4 md:p-5"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 p-[var(--space-apple-md)] md:p-5"
                   style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}
                 >
                   {shouldUseVirtualizer
@@ -1438,7 +1378,7 @@ export default function FormulaListPage() {
                         const formula = items[virtualRow.index];
                         return (
                           <div
-                            key={formula.id}
+                            key={virtualRow.key}
                             style={{
                               position: 'absolute',
                               top: 0,
@@ -1478,176 +1418,176 @@ export default function FormulaListPage() {
               /* 表格视图 */
               <>
                 <div ref={parentRef} className="overflow-x-auto" style={{ maxHeight: '70vh' }}>
-                  <table className="w-full text-sm" role="table" aria-label="配方列表">
-                    <thead className="sticky top-0 z-10 bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 text-xs font-semibold">
+                  <table className="w-full text-sm" role="table" aria-label={t('pages.formula.listTitle')}>
+                    <thead className="sticky top-0 z-10 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] text-xs font-semibold">
                       <tr>
-                        <th className="w-10 px-4 py-3">
+                        <th className="w-10 px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                           <Checkbox
                             checked={selectedIds.size === items.length && items.length > 0}
                             indeterminate={selectedIds.size > 0 && selectedIds.size < items.length}
                             onChange={toggleSelectAll}
-                            aria-label="全选"
+                            aria-label={t('pages.formula.selectAll')}
                           />
                         </th>
                         <th
-                          className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors group"
+                          className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors group"
                           onClick={() => handleSort('name')}
                           aria-sort={sortField === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
-                            名称{' '}
+                            {t('pages.formula.tableName')}{' '}
                             <SortIcon field="name" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
                         <th
-                          className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors"
+                          className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors"
                           onClick={() => handleSort('status')}
                           aria-sort={sortField === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
-                            状态{' '}
+                            {t('pages.formula.tableStatus')}{' '}
                             <SortIcon field="status" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden lg:table-cell">成分数量</th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">创建者</th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">关联实验</th>
+                        <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] hidden lg:table-cell">{t('pages.formula.tableIngredients')}</th>
+                        <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] hidden xl:table-cell">{t('pages.formula.tableCreator')}</th>
+                        <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] hidden xl:table-cell">{t('pages.formula.tableExperiments')}</th>
                         <th
-                          className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors"
+                          className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] hidden xl:table-cell cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors"
                           onClick={() => handleSort('created_at')}
                           aria-sort={sortField === 'created_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
-                            创建日期{' '}
+                            {t('pages.formula.tableCreatedAt')}{' '}
                             <SortIcon field="created_at" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
                         <th
-                          className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors"
+                          className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold text-[var(--text-primary)] cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors"
                           onClick={() => handleSort('updated_at')}
                           aria-sort={sortField === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
-                            更新日期{' '}
+                            {t('pages.formula.tableUpdatedAt')}{' '}
                             <SortIcon field="updated_at" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
-                        <th className="px-4 py-3 text-center font-semibold text-neutral-600 dark:text-neutral-400 w-20">操作</th>
+                        <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center font-semibold text-[var(--text-primary)] w-20">{t('pages.formula.tableActions')}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700/50">
-                      {items.map((formula, idx) => {
+                    <tbody className="divide-y divide-[var(--border-color)]">
+                      {items.map((formula) => {
                         const isSelected = selectedIds.has(formula.id);
                         const showMenu = actionMenuId === formula.id;
                         return (
                           <tr
                             key={formula.id}
                             className={cn(
-                              'group transition-all duration-150 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40',
-                              isSelected && 'bg-primary-50/60 dark:bg-primary-950/20 ring-1 ring-primary-200 dark:ring-primary-800',
+                              'group transition-all duration-150 hover:bg-[var(--bg-secondary)]',
+                              isSelected && 'bg-[var(--color-primary-container)] ring-1 ring-[var(--color-primary-border)]',
                             )}
                           >
-                            <td className="px-4 py-3">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                               <Checkbox
                                 checked={isSelected}
-                                onChange={() => toggleSelect(formula.id)}
-                                aria-label={`选择配方 ${formula.name}`}
+                                onCheckedChange={() => toggleSelect(formula.id)}
+                                aria-label={t('pages.formula.selectFormula', { name: formula.name })}
                               />
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                               <div className="flex items-center gap-2">
                                 {/* A-23：14×14 的星标图标远低于 44×44。撑成 44×44 命中区，
                                     用 -mx-3.5 抵消外框尺寸变化，视觉位置与间距不变。 */}
-                                <button onClick={() => toggleFavoriteItem(formula.id)} className="shrink-0 inline-flex items-center justify-center w-11 h-11 -mx-3.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors" aria-label={favorites.has(formula.id) ? '取消收藏' : '收藏'} aria-pressed={favorites.has(formula.id)}>
-                                  <Star size={14} className={favorites.has(formula.id) ? 'fill-warning-400 text-warning-400' : 'text-neutral-400 dark:text-neutral-400 hover:text-warning-400 transition-colors'} />
+                                <button onClick={() => toggleFavoriteItem(formula.id)} className="shrink-0 inline-flex items-center justify-center w-11 h-11 -mx-3.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] transition-colors" aria-label={favorites.has(formula.id) ? t('pages.formula.unfavorite') : t('pages.formula.favorite')} aria-pressed={favorites.has(formula.id)}>
+                                  <Star size={14} aria-hidden="true" className={favorites.has(formula.id) ? 'fill-[var(--color-warning-text)] text-[var(--color-warning-text)]' : 'text-[var(--text-muted)] hover:text-[var(--color-warning-text)] transition-colors'} />
                                 </button>
-                                <Link to={`/formulas/${formula.id}`} className="inline-flex items-center min-h-[44px] font-medium text-neutral-900 dark:text-white hover:text-primary-700 dark:hover:text-primary-600 transition-colors truncate max-w-[180px]">
+                                <Link to={`/formulas/${formula.id}`} className="inline-flex items-center min-h-[44px] font-medium text-[var(--text-primary)] hover:text-[var(--color-primary-text)] transition-colors truncate max-w-[180px]">
                                   <Highlight text={formula.name} keyword={debouncedSearch} />
                                 </Link>
                                 <Badge variant="neutral" size="sm" className="text-xs">v{formula.version}</Badge>
                               </div>
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                               <StatusBadge status={formula.status} />
                             </td>
-                            <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400 hidden xl:table-cell">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-muted)] hidden xl:table-cell">
                               {formula.ingredients?.length ?? 0}
                             </td>
-                            <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400 hidden xl:table-cell truncate max-w-[120px]">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-muted)] hidden xl:table-cell truncate max-w-[120px]">
                               {formula.creator_name || '-'}
                             </td>
-                            <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400 hidden xl:table-cell">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-muted)] hidden xl:table-cell">
                               {formatDate(formula.createdAt || formula.createdAt)}
                             </td>
-                            <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-muted)]">
                               {formula.experimentIds && formula.experimentIds.length > 0 ? (
-                                <Link to={`/experiments?formula_id=${formula.id}`} className="inline-flex items-center gap-1 text-xs text-secondary-600 dark:text-secondary-700 hover:underline" onClick={(e) => e.stopPropagation()}>
+                                <Link to={`/experiments?formula_id=${formula.id}`} className="inline-flex items-center gap-1 text-xs text-[var(--color-secondary-text)] hover:underline" onClick={(e) => e.stopPropagation()}>
                                   <TestTubes size={12} />
-                                  {formula.experimentIds.length} 个实验
+                                  {t('pages.formula.experimentsCount', { count: formula.experimentIds.length })}
                                 </Link>
                               ) : (
                                 <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">-</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-muted)]">
                               {formatDate(formula.updatedAt || formula.updatedAt)}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
                                 <button
                                   onClick={() => setActionMenuId(showMenu ? null : formula.id)}
-                                  className="p-1.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                  aria-label={`${formula.name} 的操作菜单`}
+                                  className="p-1.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:outline-none"
+                                  aria-label={t('pages.formula.actionMenu', { name: formula.name })}
                                 >
-                                  <MoreVertical className="w-4 h-4" />
+                                  <MoreVertical className="w-4 h-4" aria-hidden="true" />
                                 </button>
                                 {showMenu && (
                                   <div
                                     ref={actionMenuRef}
                                     role="menu"
-                                    aria-label={`${formula.name || '配方'} 的操作菜单`}
-                                    className="absolute right-0 w-44 bg-white dark:bg-neutral-800 rounded-lg shadow-md border border-neutral-200/80 dark:border-neutral-700 py-1 z-[60] min-w-[176px]"
+                                    aria-label={t('pages.formula.actionMenu', { name: formula.name || t('pages.formula.title') })}
+                                    className="absolute right-0 w-44 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] shadow-md border border-[var(--border-color)] py-1 z-[60] min-w-[176px]"
                                     style={{ top: 'calc(100% + 6px)', maxHeight: 'none' }}
                                   >
-                                    <div className="absolute -top-1.5 right-3 w-2.5 h-2.5 bg-white dark:bg-neutral-800 border-l border-t border-neutral-200 dark:border-neutral-700 rotate-45 shadow-sm" />
+                                    <div className="absolute -top-1.5 right-3 w-2.5 h-2.5 bg-[var(--bg-secondary)] border-l border-t border-[var(--border-color)] rotate-45 shadow-sm" />
 
-                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                                    <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--color-primary-container)] transition-colors"
                                       onClick={() => { navigate(`/formulas/${formula.id}`); setActionMenuId(null); }}>
-                                      <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 查看详情
+                                      <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> {t('pages.formula.viewDetail')}
                                     </button>
 
                                     {has(FormulaPermission.EDIT) && (
-                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                      <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                                         onClick={() => { navigate(`/formulas/${formula.id}/edit`); setActionMenuId(null); }}>
-                                        <Edit3 className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 编辑
+                                        <Edit3 className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> {t('pages.formula.edit')}
                                       </button>
                                     )}
 
                                     {has(FormulaPermission.CREATE) && (
-                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                      <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                                         onClick={() => { handleDuplicate(formula); setActionMenuId(null); }}>
-                                        <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 复制
+                                        <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> {t('pages.formula.duplicate')}
                                       </button>
                                     )}
 
                                     {has(FormulaPermission.EXPORT) && (
-                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                      <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                                         onClick={() => { handleExportSingle(formula); setActionMenuId(null); }}>
-                                        <Download className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 导出单个
+                                        <Download className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> {t('pages.formula.exportSingle')}
                                       </button>
                                     )}
 
-                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                    <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                                       onClick={() => { navigate(`/experiments/new?formula_id=${formula.id}`); setActionMenuId(null); }}>
-                                      <TestTubes className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> 关联实验
+                                      <TestTubes className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" /> {t('pages.formula.linkExperiment')}
                                     </button>
 
                                     {has(FormulaPermission.DELETE) && (
                                       <>
-                                        <div className="my-1 mx-3 border-t border-neutral-100 dark:border-neutral-700" />
-                                        <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors"
+                                        <div className="my-1 mx-3 border-t border-[var(--border-color)]" />
+                                        <button className="w-full flex items-center gap-2.5 px-[var(--space-apple-sm)] py-2 text-sm text-[var(--color-error-text)] hover:bg-[var(--color-error-container)] transition-colors"
                                           onClick={() => { setDeleteConfirmId(formula.id); setActionMenuId(null); }}>
-                                          <Trash2 className="w-4 h-4" /> 删除
+                                          <Trash2 className="w-4 h-4" /> {t('pages.formula.delete')}
                                         </button>
                                       </>
                                     )}
@@ -1664,35 +1604,37 @@ export default function FormulaListPage() {
 
                 {/* ── 分页组件 ── */}
                 {totalPages > 1 && (
-                  <div className="px-4 md:px-6 py-3 md:py-4 border-t border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-neutral-50 dark:bg-neutral-800">
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 order-2 sm:order-1">
-                      <span className="sm:hidden">第 {page}/{totalPages} 页</span>
+                  <div className="px-[var(--space-apple-md)] md:px-[var(--space-apple-lg)] py-[var(--space-apple-md)] md:py-4 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-4 bg-[var(--bg-secondary)]">
+                    <p className="text-xs text-[var(--text-muted)] order-2 sm:order-1">
+                      <span className="sm:hidden">{t('pages.formula.mobilePage', { page, totalPages })}</span>
                       <span className="hidden sm:inline">
-                        显示第<span className="font-medium text-neutral-700 dark:text-neutral-300">{(page - 1) * pageSize + 1}</span>
-                        -<span className="font-medium text-neutral-700 dark:text-neutral-300">{Math.min(page * pageSize, total)}</span>
-                        {' '}条，共<span className="font-medium text-neutral-700 dark:text-neutral-300">{total}</span> 条
+                        {t('pages.formula.showingRange', {
+                          from: (page - 1) * pageSize + 1,
+                          to: Math.min(page * pageSize, total),
+                          total,
+                        })}
                       </span>
                     </p>
-                    <div className="flex items-center gap-2 sm:gap-3 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center gap-2 sm:gap-4 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
                       <div className="flex sm:hidden items-center gap-2 w-full">
                         <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="flex-1 min-h-[44px]" icon={<ChevronLeft size={16} />}>
-                          上一页
+                          {t('pages.formula.prevPage')}
                         </Button>
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 min-w-[60px] text-center tabular-nums">
+                        <span className="text-sm font-medium text-[var(--text-primary)] min-w-[60px] text-center tabular-nums">
                           {page}/{totalPages}
                         </span>
                         <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className="flex-1 min-h-[44px]" icon={<ChevronRight size={16} />}>
-                          下一页
+                          {t('pages.formula.nextPage')}
                         </Button>
                       </div>
-                      <div className="hidden sm:flex items-center gap-3">
+                      <div className="hidden sm:flex items-center gap-4">
                         <div className="hidden md:flex items-center gap-2">
-                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">跳至</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.formula.pageJump')}</span>
                           <input type="number" min={1} max={totalPages} value={page}
                             onChange={(e) => { const val = Math.min(Math.max(1, Number(e.target.value)), totalPages); if (!isNaN(val)) setPage(val); }}
                             onKeyDown={(e) => { if (e.key === 'Enter') { const val = Math.min(Math.max(1, Number(e.currentTarget.value)), totalPages); if (!isNaN(val)) setPage(val); } }}
-                            className="w-14 px-2 py-1 text-xs border border-neutral-200 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-center focus:ring-2 focus:ring-primary-200 outline-none"
-        aria-label="跳转页码"
+                            className="w-14 px-2 py-1 text-xs border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)] text-[var(--text-primary)] text-center focus:ring-2 focus:ring-[var(--color-primary-container)] outline-none"
+        aria-label={t('pages.formula.pageJumpAria')}
       />
                           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/{totalPages}</span>
                         </div>
@@ -1709,37 +1651,37 @@ export default function FormulaListPage() {
         {/* ═══════════════ 右侧：最近配方预览 + 导入导出 ═══════════════ */}
         <div className="lg:col-span-3 space-y-4">
           {/* 最近配方 */}
-          <Card className="overflow-hidden border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm h-fit">
+          <Card className="overflow-hidden border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm h-fit">
             {/* 顶部色条 */}
-            <div className="h-[3px] bg-primary-500 dark:bg-primary-600" />
-            <CardHeader className="px-6 pt-5 pb-3">
+            <div className="h-[3px] bg-[var(--color-primary-text)]" />
+            <CardHeader className="px-[var(--space-apple-lg)] pt-5 pb-[var(--space-apple-md)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
-                    <Clock size={14} className="text-primary-700 dark:text-primary-700" />
+                  <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                    <Clock size={14} className="text-[var(--color-primary-text)]" />
                   </div>
-                  <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近更新</CardTitle>
+                  <CardTitle as="h3" className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.recentUpdates')}</CardTitle>
                 </div>
-                <Link to="/formulas" className="text-xs font-medium text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 inline-flex items-center gap-1 min-h-[44px] transition-colors px-2 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20">
-                  全部 <ArrowRight size={11} />
+                <Link to="/formulas" className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--color-primary-text)] inline-flex items-center gap-1 min-h-[44px] transition-colors px-2 py-1 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--color-primary-container)]">
+                  {t('pages.formula.all')} <ArrowRight size={11} />
                 </Link>
               </div>
             </CardHeader>
-            <CardContent className="px-0 pb-4 pt-0">
+            <CardContent className="px-0 pb-[var(--space-apple-md)] pt-0">
               {recentFormulas.length === 0 ? (
-                <div className="px-6 py-10 text-center">
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                <div className="px-[var(--space-apple-lg)] py-10 text-center">
+                  <div className="w-10 h-10 rounded-[var(--radius-pill)] bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-[var(--space-apple-md)]">
                     <FlaskConical size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                   </div>
-                  <p className="text-sm text-neutral-400 dark:text-neutral-400">暂无最近配方</p>
+                  <p className="text-sm text-[var(--text-muted)]">{t('pages.formula.noRecentFormulas')}</p>
                 </div>
               ) : (
-                <div className="px-3 py-1">
+                <div className="px-[var(--space-apple-sm)] py-1">
                   {recentFormulas.slice(0, 5).map((f, idx) => (
                     <Link
                       key={f.id}
                       to={`/formulas/${f.id}`}
-                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all cursor-pointer mb-0.5 last:mb-0"
+                      className="group flex items-center gap-4 px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] hover:bg-[var(--bg-secondary)] transition-all cursor-pointer mb-0.5 last:mb-0"
                     >
                       {/* 序号指示 */}
                       <span className={cn(
@@ -1752,13 +1694,13 @@ export default function FormulaListPage() {
                                     warning-600  #fbbf24 on rgb(87,89,89)  = 4.23 ✗
                            暗色蒙版同时从 /30 降到 /20（与快捷入口 chip 一致），
                            700 档文字对比度提升到 5.7 / 7.6 / 6.9。 */
-                        idx === 0 ? 'bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700'
-                      : idx === 1 ? 'bg-secondary-100 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700'
-                      : idx === 2 ? 'bg-warning-100 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400',
+                        idx === 0 ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]'
+                      : idx === 1 ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]'
+                      : idx === 2 ? 'bg-[var(--color-warning-container)] text-[var(--color-warning-text)]'
+                      : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]',
                       )}>{idx + 1}</span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--color-primary-text)] transition-colors">
                           <Highlight text={f.name} keyword={debouncedSearch} />
                         </p>
                         <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 truncate">
@@ -1774,18 +1716,18 @@ export default function FormulaListPage() {
           </Card>
 
           {/* 导入导出 */}
-          <Card className="overflow-hidden border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm h-fit">
+          <Card className="overflow-hidden border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm h-fit">
             {/* 顶部色条 */}
-            <div className="h-[3px] bg-accent-500 dark:bg-accent-600" />
-            <CardHeader className="px-6 pt-5 pb-3">
+            <div className="h-[3px] bg-[var(--color-accent-text)]" />
+            <CardHeader className="px-[var(--space-apple-lg)] pt-5 pb-[var(--space-apple-md)]">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center">
-                  <Download size={14} className="text-accent-600 dark:text-accent-700" />
+                <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] bg-[var(--color-accent-container)] flex items-center justify-center">
+                  <Download size={14} className="text-[var(--color-accent-text)]" />
                 </div>
-                <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">导入导出</CardTitle>
+                <CardTitle as="h3" className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.importExport')}</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0 space-y-2">
+            <CardContent className="px-[var(--space-apple-md)] pb-[var(--space-apple-md)] pt-0 space-y-[var(--space-apple-sm)]">
               <button
                 onClick={() => {
                   const input = document.createElement('input');
@@ -1804,16 +1746,16 @@ export default function FormulaListPage() {
                   };
                   input.click();
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50/60 dark:hover:bg-primary-900/15 transition-all text-left group min-h-[48px]"
+                className="w-full flex items-center gap-4 px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-container)] transition-all text-left group min-h-[48px]"
               >
-                <div className="w-9 h-9 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Download size={16} className="text-primary-700 dark:text-primary-700" />
+                <div className="w-9 h-9 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Download size={16} className="text-[var(--color-primary-text)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">导入配方</p>
-                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">JSON / CSV 格式</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.importFormulas')}</p>
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{t('pages.formula.jsonCsvFormat')}</p>
                 </div>
-                <ArrowRight size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-primary-500 transition-colors shrink-0" />
+                <ArrowRight size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-[var(--color-primary-text)] transition-colors shrink-0" />
               </button>
 
               <button
@@ -1821,18 +1763,18 @@ export default function FormulaListPage() {
                   const selected = items.filter((f) => selectedIds.has(f.id));
                   exportFormulasCSV(selected.length > 0 ? selected : items);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50/60 dark:hover:bg-accent-900/15 transition-all text-left group min-h-[48px]"
+                className="w-full flex items-center gap-4 px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:border-[var(--color-accent-text)] hover:bg-[var(--color-accent-container)] transition-all text-left group min-h-[48px]"
               >
-                <div className="w-9 h-9 rounded-xl bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Download size={16} className="text-secondary-600 dark:text-secondary-700" />
+                <div className="w-9 h-9 rounded-[var(--radius-Apple-md)] bg-[var(--color-accent-container)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Download size={16} className="text-[var(--color-secondary-text)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">导出 CSV</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">{t('pages.formula.exportCSV')}</p>
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
-                    {selectedIds.size > 0 ? `已选 ${selectedIds.size} 条` : '全部数据'}
+                    {selectedIds.size > 0 ? t('pages.formula.selectedCountSmall', { count: selectedIds.size }) : t('pages.formula.allData')}
                   </p>
                 </div>
-                <ArrowRight size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-accent-500 transition-colors shrink-0" />
+                <ArrowRight size={14} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-[var(--color-accent-text)] transition-colors shrink-0" />
               </button>
             </CardContent>
           </Card>
@@ -1847,18 +1789,18 @@ export default function FormulaListPage() {
       />
 
       {/* ── 删除确认对话框 ── */}
-      <Modal open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="确认删除">
+      <Modal open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title={t('pages.formula.confirmDelete')}>
         {deleteConfirmId && (
           <div className="space-y-4">
-            <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-              确定要删除该配方吗？此操作将永久删除该配方及其相关数据，删除后无法恢复。
+            <p className="text-sm leading-relaxed text-[var(--text-primary)]">
+              {t('pages.formula.confirmDeleteDesc')}
             </p>
             <div className="flex items-center gap-2 pt-1">
               <Button variant="danger" size="sm" onClick={() => handleDelete(deleteConfirmId)} className="flex-1 min-h-[44px]">
-                <Trash2 className="w-4 h-4 mr-1.5" /> 确认删除
+                <Trash2 className="w-4 h-4 mr-1.5" /> {t('pages.formula.confirmDeleteBtn')}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(null)} className="flex-1 min-h-[44px]">
-                取消
+                {t('pages.formula.cancel')}
               </Button>
             </div>
           </div>
@@ -1873,22 +1815,22 @@ export default function FormulaListPage() {
           content={
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center justify-between gap-4">
-                <span>聚焦搜索</span>
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-xs font-mono">Ctrl+F</kbd>
+                <span>{t('pages.formula.focusSearch')}</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] text-xs font-mono">Ctrl+F</kbd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span>新建配方</span>
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-xs font-mono">Ctrl+N</kbd>
+                <span>{t('pages.formula.newFormula')}</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] text-xs font-mono">Ctrl+N</kbd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span>关闭弹窗</span>
-                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-xs font-mono">Esc</kbd>
+                <span>{t('pages.formula.closeDialog')}</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] text-xs font-mono">Esc</kbd>
               </div>
             </div>
           }
         >
-          <button className="p-2.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/80 dark:border-neutral-700/60 shadow-lg hover:shadow-xl transition-all text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300" aria-label="键盘快捷键">
-            <Keyboard size={16} />
+          <button className="p-2.5 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-color)] shadow-lg hover:shadow-xl transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label={t('pages.formula.keyboardShortcuts')}>
+            <Keyboard size={16} aria-hidden="true" />
           </button>
         </Tooltip>
       </div>
@@ -1898,6 +1840,4 @@ export default function FormulaListPage() {
     </div>
   );
 }
-
-
 

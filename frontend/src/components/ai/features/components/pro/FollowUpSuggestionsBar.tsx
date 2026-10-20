@@ -20,6 +20,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
 
   useEffect(() => {
     if (!isVisible || messages.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisibleLocal(false)
       return
     }
@@ -27,6 +28,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
     // 获取最后一条AI回复
     const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant')
     if (!lastAssistantMsg) {
+       
       setIsVisibleLocal(false)
       return
     }
@@ -35,7 +37,6 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
     const content = lastAssistantMsg.content
     const hasFormulaOutput = content.includes('"data-table"') || content.includes('配方')
     const hasSafetyWarning = content.includes('注意事项') || content.includes('warning')
-    const hasMetrics = content.includes('"metrics"')
 
     followUpSuggestionEngine.updateContext({
       hasFormulaOutput,
@@ -75,7 +76,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
 
       {/* 追问选项 */}
       <div className="flex flex-wrap gap-2">
-        {suggestions.map((sug, i) => (
+        {suggestions.map((sug) => (
           <button
             key={sug.id}
             onClick={() => onSendSuggestion(sug.question)}

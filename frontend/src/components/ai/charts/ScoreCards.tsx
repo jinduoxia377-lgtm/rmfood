@@ -22,7 +22,7 @@ export function ScoreCards({ synergyScore, tasteScore, stabilityScore, overallSc
   ]
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {scores.map((score, i) => {
         const Icon = score.icon
         const displayValue = (score.value ?? 0) * 100

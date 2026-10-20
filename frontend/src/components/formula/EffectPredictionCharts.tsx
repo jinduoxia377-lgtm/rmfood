@@ -129,7 +129,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
       </div>
 
       {/* 核心指标卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: '达峰时间', value: `${data.peak_time.toFixed(1)}h`, icon: <Clock />, color: 'blue' },
           {

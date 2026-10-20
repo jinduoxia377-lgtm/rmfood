@@ -1,6 +1,6 @@
 /**
  * RMFOOD 小程序 - 主样式
- * Apple UI Design System
+ * Apple UI Design System（对齐桌面规范 DESIGN.md）
  */
 
 /* 导入设计令牌 */
@@ -18,5 +18,8 @@
 /* 导入布局系统 */
 @import "layout-system.wxss";
 
-/* 导入Apple UI组件库 */
+/* 导入 Apple UI 组件库 */
 @import "apple-ui.wxss";
+
+/* 导入全局动画与通用效果 */
+@import "app-global.wxss";

@@ -18,18 +18,16 @@ import {
   ThumbsDown,
   Eye,
   RefreshCw,
-  Filter,
   Star,
   TrendingUp,
-  Users,
   Clock,
   ChevronRight,
-  X,
   Loader2,
   Zap,
 } from 'lucide-react'
 import { Button, Badge, Card, Tooltip } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
+import { fetchWithCsrf } from '@/utils/csrf'
 
 // ===== 类型定义 =====
 
@@ -76,7 +74,6 @@ interface AIRecommendationSidebarProps {
 }
 
 export function AIRecommendationSidebar({
-  userId,
   maxItems = 8,
   showTypeFilter = true,
   onRecommendationClick,
@@ -91,31 +88,31 @@ export function AIRecommendationSidebar({
   const [feedbackState, setFeedbackState] = useState<Record<string, 'like' | 'dislike'>>({})
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchRecommendations()
   }, [])
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const fetchRecommendations = useCallback(async () => {
     setIsLoading(true)
     setError('')
 
     try {
-      const params = new URLSearchParams({
-        limit: maxItems.toString(),
-        ...(typeFilter !== 'all' && { type_filter: typeFilter }),
+      // 2026-10-12 修复：后端 /recommendations 是 POST，此前用 GET 导致 405。
+      const response = await fetchWithCsrf<RecommendationResponse>('/api/v1/ai/recommendations', {
+        method: 'POST',
+        body: JSON.stringify({
+          limit: maxItems,
+          ...(typeFilter !== 'all' && { type_filter: typeFilter }),
+        }),
       })
 
-      const response = await fetch(`/api/v1/ai/recommendations?${params}`)
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-      const data: RecommendationResponse = await response.json()
-
-      setRecommendations(data.recommendations || [])
+      setRecommendations(response.recommendations || [])
       setLastRefreshTime(new Date())
 
       logger.info('Recommendations fetched', {
-        count: data.recommendations?.length || 0,
-        signals: data.context_signals,
+        count: response.recommendations?.length || 0,
+        signals: response.context_signals,
       })
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err)

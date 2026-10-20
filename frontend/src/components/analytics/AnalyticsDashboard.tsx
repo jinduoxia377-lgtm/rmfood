@@ -15,17 +15,17 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react'
 import {
   TrendingUp, TrendingDown, Minus, BarChart3, PieChart as PieIcon, Activity,
-  Users, FileText, FlaskConical, Zap, Download, RefreshCw, Calendar,
-  Filter, MoreVertical, ArrowUpRight, ArrowDownRight, Clock, Settings2,
-  LayoutGrid, Maximize2, ChevronDown, ChevronLeft, ChevronRight, X,
-  AlertCircle, CheckCircle, Info, Loader2, Sparkles, Eye, EyeOff,
-  Save, RotateCcw, Upload, Table, FileType,
+  Users, FileText, FlaskConical, Zap, Download, RefreshCw,
+  Filter, MoreVertical, ArrowUpRight, Clock,
+  LayoutGrid, Maximize2, ChevronDown, ChevronRight, X,
+  AlertCircle, CheckCircle, Info, Loader2, Sparkles,
+  Save, RotateCcw, Table, FileType,
 } from 'lucide-react'
 // D-40：原 import { useTheme } from '@/hooks/useTheme'（遗留兼容层，与 @/theme 的
 // 同名 hook 返回结构不兼容）。改用 @/theme 的现代 hook，并把原先由
 // getCurrentColors() 派生的字段**逐字**内联，保持渲染行为完全不变。
 import { useTheme } from '@/theme'
-import { fetchMockDashboardData, getMockAnalyticsData } from '@/services/mockAnalyticsData'
+import { fetchMockDashboardData } from '@/services/mockAnalyticsData'
 
 /** Chart component ThemeColors - stricter than store ThemeColors */
 interface ChartThemeColors {
@@ -45,15 +45,11 @@ interface ChartThemeColors {
   info: string
 }
 
-import type { ThemeColors } from '@/types/theme.types'
 import { logger } from '@/utils/safeLogger';
 
 
-const LineChart = lazy(() => import('./charts/EnhancedLineChart'))
-const BarChart = lazy(() => import('./charts/EnhancedBarChart'))
 const PieChart = lazy(() => import('./charts/EnhancedPieChart'))
 const AreaChart = lazy(() => import('./charts/EnhancedAreaChart'))
-const RadarChart = lazy(() => import('./charts/EnhancedRadarChart'))
 
 interface KPIItem {
   id: string
@@ -129,7 +125,7 @@ interface DashboardData {
 export function AnalyticsDashboard() {
   // D-40：等价于原 useTheme().getCurrentColors()（后者实为同一 store 的派生视图）
   const { theme } = useTheme()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const colors = useMemo(() => ({
     ...theme.colors,
     textPrimary: theme.colors.text?.primary || '#1D1D1F',
@@ -149,7 +145,7 @@ export function AnalyticsDashboard() {
 
   const [selectedTimeRange, setSelectedTimeRange] = useState<FilterConfig['timeRange']>('30d')
   const [autoRefresh, setAutoRefresh] = useState(false)
-  const [refreshInterval, setRefreshInterval] = useState(60)
+  const [refreshInterval] = useState(60)
 
   const [filters, setFilters] = useState<FilterConfig>({
     timeRange: '30d',
@@ -173,6 +169,7 @@ export function AnalyticsDashboard() {
   const abortControllerRef = React.useRef<AbortController | null>(null)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchDashboardData()
 
     if (autoRefresh) {
@@ -246,6 +243,7 @@ export function AnalyticsDashboard() {
         setLastRefresh(new Date())
 
         if (!customLayoutMode) {
+          // eslint-disable-next-line react-hooks/immutability
           generateDefaultWidgets(result)
         }
       } else {
@@ -273,6 +271,7 @@ export function AnalyticsDashboard() {
           generateDefaultWidgets(mockData as unknown as DashboardData)
         }
 
+        // eslint-disable-next-line react-hooks/immutability
         showNotification('info', '当前显示为演示数据（后端API未连接）')
       } catch (mockError) {
         logger.error('Mock数据加载失败:', mockError)
@@ -284,7 +283,8 @@ export function AnalyticsDashboard() {
     }
   }, [filters.timeRange, filters.categories, filters.status, filters.users, customLayoutMode])
 
-  const generateDefaultWidgets = useCallback((dashboardData: DashboardData) => {
+  const generateDefaultWidgets = useCallback((_dashboardData: DashboardData) => {
+    void _dashboardData
     const defaultWidgets: DashboardWidget[] = [
       {
         id: 'kpi-overview',
@@ -367,6 +367,7 @@ export function AnalyticsDashboard() {
     return icons[id] || <BarChart3 className="w-6 h-6" />
   }, [])
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const showNotification = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 5000)
@@ -433,12 +434,6 @@ export function AnalyticsDashboard() {
       setCustomLayoutMode(true)
       showNotification('success', `已加载布局 "${layout.name}"`)
     }
-  }
-
-  const toggleWidgetVisibility = (widgetId: string) => {
-    setWidgets(prev => prev.map(w =>
-      w.id === widgetId ? { ...w, visible: !w.visible } : w,
-    ))
   }
 
   if (loading && !data) {
@@ -515,8 +510,6 @@ export function AnalyticsDashboard() {
       </div>
     )
   }
-
-  const visibleWidgets = widgets.filter(w => w.visible)
 
   return (
     <div

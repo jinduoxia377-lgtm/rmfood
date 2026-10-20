@@ -9,24 +9,17 @@
  * - 效果预测图表集成
  */
 
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   FlaskConical, Brain, ShieldCheck, Activity, TrendingUp,
   ChevronRight, ChevronLeft, Sparkles, Settings2, User,
   Lightbulb, BarChart3, PieChart as PieChartIcon, ScatterChart,
-  Clock, AlertTriangle, CheckCircle2, Info, Zap,
-  ArrowRight, RotateCcw, Download, Eye, EyeOff,
+  CheckCircle2, Info, Zap,
+  RotateCcw, Download, Eye, EyeOff,
 } from 'lucide-react'
 import { Card, Button, Input, Slider, Badge, Alert } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
 import type {
-  SynergyAnalysisRequest,
-  SynergyAnalysisResponse,
-  RatioOptimizationRequest,
-  RatioOptimizationResponse,
-  CompatibilityCheckResponse,
-  EffectPredictionResponse,
-  SafetyCheckResponse,
   DeepGenerationResponse,
 } from '@/types/formula'
 
@@ -188,7 +181,7 @@ export function SynergyFormulaDesigner() {
         updated[index].percentage = newPercentage
         updated[index].amount_mg = newPercentage * 10
 
-        others.forEach((ing, i) => {
+        others.forEach((ing) => {
           const originalIdx = prev.indexOf(ing)
           if (originalIdx !== index) {
             const scale = (totalOthers - delta) / totalOthers
@@ -313,7 +306,7 @@ export function SynergyFormulaDesigner() {
 
             {/* 步骤 1: 功效选择 */}
             {currentStep === 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
                 {EFFICACY_OPTIONS.map(option => (
                   <button
                     key={option.id}
@@ -347,7 +340,7 @@ export function SynergyFormulaDesigner() {
                 </Alert>
 
                 <div className="grid gap-3">
-                  {ingredients.map((ing, idx) => (
+                  {ingredients.map((ing) => (
                     <div
                       key={ing.name}
                       className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
@@ -383,7 +376,7 @@ export function SynergyFormulaDesigner() {
                     { key: 'safety' as const, label: '安全性', color: 'green' },
                     { key: 'stability' as const, label: '稳定性', color: 'purple' },
                     { key: 'cost' as const, label: '经济性', color: 'orange' },
-                  ].map(({ key, label, color: sliderColor }) => (
+                  ].map(({ key, label }) => (
                     <div key={key} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
@@ -446,7 +439,7 @@ export function SynergyFormulaDesigner() {
             {currentStep === 3 && generationResult && (
               <div className="space-y-6 mt-6">
                 {/* 总体评分卡片 */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     { label: '协同指数', value: generationResult.synergy_summary?.overall_si ?? 0, icon: <Brain />, color: 'blue' },
                     { label: '方案数', value: generationResult.optimization_summary?.solution_count ?? 0, icon: <BarChart3 />, color: 'green' },
@@ -544,7 +537,7 @@ export function SynergyFormulaDesigner() {
           <div className="space-y-4">
             <h4 className="font-medium text-neutral-700 dark:text-neutral-300">NSGA-III 优化器配置</h4>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1">种群大小</label>
                 <Input type="number" defaultValue={100} min={20} max={200} />

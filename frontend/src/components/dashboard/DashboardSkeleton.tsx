@@ -11,7 +11,7 @@ export function DashboardSkeleton({ className }: { className?: string }) {
       <div className="rounded-xl bg-neutral-100 dark:bg-neutral-800 h-20 animate-pulse" />
 
       {/* 统计卡片行 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="card p-5 space-y-3">
             <div className="flex items-center justify-between">

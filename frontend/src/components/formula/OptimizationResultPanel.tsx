@@ -57,7 +57,7 @@ export function OptimizationResultPanel({ result, onApply, loading }: Optimizati
       </div>
 
       {/* 核心指标 */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <div className="text-center">
           <p className="text-xs text-success-700 dark:text-success-600">最小成本</p>
           <p className="text-lg font-bold text-success-700 dark:text-success-700">

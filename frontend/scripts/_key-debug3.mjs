@@ -1,0 +1,25 @@
+﻿import { chromium, devices } from '@playwright/test';
+const BASE = 'http://localhost:3000';
+const iPhone13 = devices['iPhone 13'];
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ ...iPhone13 });
+const page = await context.newPage();
+let keyWarn = 0; const netErrs = [];
+page.on('console', (msg) => {
+  if (msg.type() !== 'error') return;
+  const t = msg.text();
+  if (t.includes('same key')) keyWarn++;
+  else if (/api\/v1|401|403|404|500|Failed to fetch|NetworkError/i.test(t)) netErrs.push(t.slice(0, 80));
+});
+await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
+await page.fill('#rhine-username', 'admin');
+await page.fill('#rhine-password', 'admin123');
+await page.click('button[type="submit"]');
+await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 20000 });
+await page.waitForTimeout(1000);
+await page.goto(BASE + '/formulas', { waitUntil: 'domcontentloaded', timeout: 45000 });
+await page.waitForTimeout(3000);
+console.log('KEY_WARNINGS>', keyWarn);
+console.log('NET_ERRORS>', netErrs.length);
+netErrs.slice(0,5).forEach(e => console.log('  NET>', e));
+await browser.close();

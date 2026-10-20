@@ -84,7 +84,7 @@ function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
 
       {/* 基本信息 */}
       <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {source && (
             <div className="flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-primary-500 flex-shrink-0 mt-0.5" />

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NotFoundPage v2.1 — 嵌入 MainLayout 的 404 页面
  * 增强版：常用入口快捷卡片
  */
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui'
 
 export default function NotFoundPage() {
   return (
-    <div className="flex items-center justify-center min-h-[60vh] p-6">
+    <div className="min-h-screen flex items-center justify-center p-[var(--space-apple-lg)]">
       <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
         {/* 装饰 */}
         <div className="relative inline-block">
@@ -24,15 +24,15 @@ export default function NotFoundPage() {
 
         {/* 文字 */}
         <div className="space-y-2">
-          <h1 className="h1 text-neutral-900 dark:text-white">页面未找到</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
+          <h1 className="h1 text-[var(--text-primary)]">页面未找到</h1>
+          <p className="text-[var(--text-muted)] text-sm leading-relaxed">
             你访问的页面不存在或已被移除。
             <br />请检查地址是否正确，或从下方快捷入口前往。
           </p>
         </div>
 
         {/* 操作按钮 */}
-        <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="flex items-center justify-center gap-[var(--space-apple-sm)] pt-2">
           <Button
             variant="secondary"
             icon={<ArrowLeft className="w-4 h-4" />}
@@ -48,17 +48,17 @@ export default function NotFoundPage() {
         </div>
 
         {/* 常用入口 */}
-        <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto pt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)] max-w-sm mx-auto pt-2">
           {[
-            { to: '/formulas', icon: FlaskConical, label: '配方', color: 'text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20' },
-            { to: '/experiments', icon: TestTubes, label: '实验', color: 'text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/20' },
-            { to: '/ai', icon: Sparkles, label: 'AI', color: 'text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-900/20' },
-            { to: '/databases', icon: Database, label: '数据库', color: 'text-secondary-500 hover:bg-secondary-50 dark:hover:bg-secondary-900/20' },
+            { to: '/formulas', icon: FlaskConical, label: '配方', color: 'text-[var(--color-primary-text)]0 hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20' },
+            { to: '/experiments', icon: TestTubes, label: '实验', color: 'text-[var(--color-accent-text)]0 hover:bg-[var(--color-accent-container)] dark:hover:bg-[var(--color-accent-container)]/20' },
+            { to: '/ai', icon: Sparkles, label: 'AI', color: 'text-[var(--color-warning-text)]0 hover:bg-[var(--color-warning-container)] dark:hover:bg-[var(--color-warning-container)]/20' },
+            { to: '/databases', icon: Database, label: '数据库', color: 'text-[var(--color-secondary-text)]0 hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20' },
           ].map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-colors ${item.color}`}
+              className={`flex flex-col items-center gap-1.5 p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] transition-colors ${item.color}`}
             >
               <item.icon size={18} />
               <span className="text-xs font-medium">{item.label}</span>

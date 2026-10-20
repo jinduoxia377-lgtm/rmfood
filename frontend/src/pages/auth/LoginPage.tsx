@@ -17,20 +17,20 @@
  * ── 交互: 输入聚焦环、按钮涟漪、卡片入场动画 (尊重 prefers-reduced-motion)
  */
 import {
-  useState, useCallback, useRef, useLayoutEffect, useEffect,
+  useState, useCallback, useRef, useLayoutEffect,
   type FC, type FormEvent, type ChangeEvent,
   type FocusEvent, type MouseEvent as RMouseEvent,
   type KeyboardEvent as RKeyboardEvent,
   type CSSProperties,
 } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Eye, EyeOff, User, Lock, AlertCircle, CheckCircle2,
-  Shield, Mail, Send, Dna, BoxSelect, BrainCircuit,
+  Shield, Mail, Dna, BoxSelect, BrainCircuit,
   ArrowRight, type LucideIcon,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
-import { authApi } from '@/api/auth'
 import { RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG } from '@/config'
 import './LoginPage.css'
 
@@ -119,6 +119,7 @@ const SocialLoginSection: FC = () => {
             aria-label={loadingProvider === 'wechat' ? '微信登录中，请稍候' : '微信登录'}
           >
             <span className="rhine-social-icon-wrap">
+              {/* eslint-disable-next-line react-hooks/static-components */}
               {loadingProvider === 'wechat' ? <span className="rhine-social-spinner" /> : <WechatIcon />}
             </span>
             <span className="rhine-social-label">{socials.wechat.label}</span>
@@ -135,6 +136,7 @@ const SocialLoginSection: FC = () => {
             aria-label={loadingProvider === 'qq' ? 'QQ登录中，请稍候' : 'QQ登录'}
           >
             <span className="rhine-social-icon-wrap">
+              {/* eslint-disable-next-line react-hooks/static-components */}
               {loadingProvider === 'qq' ? <span className="rhine-social-spinner" /> : <QQIcon />}
             </span>
             <span className="rhine-social-label">{socials.qq.label}</span>
@@ -151,6 +153,7 @@ const SocialLoginSection: FC = () => {
             aria-label={loadingProvider === 'github' ? 'GitHub登录中，请稍候' : 'GitHub登录'}
           >
             <span className="rhine-social-icon-wrap">
+              {/* eslint-disable-next-line react-hooks/static-components */}
               {loadingProvider === 'github' ? <span className="rhine-social-spinner" /> : <GitHubIcon />}
             </span>
             <span className="rhine-social-label">{socials.github.label}</span>
@@ -162,164 +165,19 @@ const SocialLoginSection: FC = () => {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PreRegister Section — 邮箱预登记 (平台暂未开放自助注册)
-   折叠入口: 未认证用户可留下联系方式, 由管理员开通账号
+   Whitelist Entry — 白名单申请入口 (v6.0 替换原邮箱预登记折叠表单)
+   点击跳转独立申请页 /whitelist-apply（含申请窗口截止倒计时）
    ═══════════════════════════════════════════════════════════════ */
-const PreRegisterSection: FC = () => {
-  const [expanded, setExpanded] = useState(false)
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [department, setDepartment] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [err, setErr] = useState('')
-  const [ok, setOk] = useState('')
-
-  /* ── F1-3修复: 焦点管理 — 展开/收起/提交成功三处状态切换时,
-     原实现中被替换掉的按钮从 DOM 移除后焦点会掉回 body (键盘用户彻底失去位置)。
-     现按状态显式接管: 展开 → 邮箱输入框; 成功 → 结果容器 (tabIndex=-1); 收起 → 入口按钮。
-     首次挂载跳过, 避免抢走登录表单用户名的 autoFocus。 */
-  const emailRef = useRef<HTMLInputElement>(null)
-  const toggleRef = useRef<HTMLButtonElement>(null)
-  const resultRef = useRef<HTMLDivElement>(null)
-  const mounted = useRef(false)
-  const prevExpanded = useRef(false)
-  const prevOk = useRef('')
-  useEffect(() => {
-    if (!mounted.current) {
-      /* 首次挂载仅记录基线, 不抢焦点 (避免覆盖登录表单用户名的 autoFocus) */
-      mounted.current = true
-      prevExpanded.current = expanded
-      prevOk.current = ok
-      return
-    }
-    /* React StrictMode 下 effect 会 mount→cleanup→mount 双调用 (ref 保留),
-       仅比较「值是否真的变化」, 防止重复挂载时误触发 focus → toggle */
-    if (expanded === prevExpanded.current && ok === prevOk.current) return
-    prevExpanded.current = expanded
-    prevOk.current = ok
-    if (expanded) {
-      if (ok) resultRef.current?.focus()
-      else emailRef.current?.focus()
-    } else {
-      toggleRef.current?.focus()
-    }
-  }, [expanded, ok])
-
-  const handleSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault()
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setErr('请输入有效的邮箱地址'); return
-    }
-    setErr(''); setSubmitting(true)
-    try {
-      await authApi.preRegister({ email: email.trim(), fullName: name.trim() || undefined, department: department.trim() || undefined })
-      setOk('预登记成功，管理员将尽快与您联系开通账号')
-    } catch {
-      setErr('提交失败，请稍后重试')
-    } finally { setSubmitting(false) }
-  }, [email, name, department])
-
-  if (!expanded) {
-    return (
-      <div className="rhine-preregister">
-        <button
-          ref={toggleRef}
-          type="button"
-          className="rhine-preregister-toggle"
-          onClick={() => setExpanded(true)}
-          aria-expanded="false"
-        >
-          <Mail size={15} aria-hidden="true" />
-          <span>申请开通账号？留下您的邮箱</span>
-        </button>
-      </div>
-    )
-  }
+const WhitelistEntryButton: FC = () => {
+  const { t } = useTranslation()
 
   return (
-    <div className="rhine-preregister">
-      <div className="rhine-preregister-head">
-        <span className="rhine-preregister-title">
-          <Mail size={14} aria-hidden="true" /> 账号申请
-        </span>
-        <span className="rhine-preregister-sub">
-          平台暂未开放自助注册，填写邮箱后管理员将联系您开通账号
-        </span>
-      </div>
-
-      <form className="rhine-preregister-form" onSubmit={handleSubmit} noValidate>
-        {ok ? (
-          /* F1-3修复: tabIndex=-1 使结果容器可编程聚焦, 承接提交后焦点 */
-          <div ref={resultRef} tabIndex={-1}
-            className="rhine-preregister-result rhine-preregister-result-ok" role="status">
-            <CheckCircle2 size={15} aria-hidden="true" /><span>{ok}</span>
-          </div>
-        ) : (
-          <>
-            {/* F2-9修复: 错误提示挂 id, 供邮箱输入框 aria-describedby 关联 */}
-            {err && <div id="rhine-prereg-err" className="rhine-alert rhine-alert-error" role="alert">
-              <AlertCircle size={15} className="rhine-alert-icon" aria-hidden="true" /><span>{err}</span>
-            </div>}
-
-            <div className="rhine-form-group">
-              <label htmlFor="rhine-prereg-email" className="rhine-label">邮箱 <span className="rhine-label-opt">（必填）</span></label>
-              <div className="rhine-input-wrap">
-                <Mail size={18} className="rhine-input-icon" aria-hidden="true" />
-                {/* F2-9修复: 邮箱校验错误与主表单对齐 — error 红框 + aria-invalid + describedby
-                    (原仅顶部 alert, 字段无视觉/语义错误态) */}
-                <input ref={emailRef} id="rhine-prereg-email" type="email"
-                  className={`rhine-input${err ? ' error' : ''}`} value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (err) setErr('') }}
-                  placeholder="you@company.com"
-                  autoComplete="email"
-                  aria-required="true" aria-invalid={!!err}
-                  aria-describedby={err ? 'rhine-prereg-err' : undefined} />
-              </div>
-            </div>
-
-            <div className="rhine-preregister-row">
-              <div className="rhine-form-group">
-                <label htmlFor="rhine-prereg-name" className="rhine-label">姓名 <span className="rhine-label-opt">（选填）</span></label>
-                <input id="rhine-prereg-name" type="text"
-                  className="rhine-input" value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="您的姓名" autoComplete="name" />
-              </div>
-              <div className="rhine-form-group">
-                <label htmlFor="rhine-prereg-dept" className="rhine-label">部门 <span className="rhine-label-opt">（选填）</span></label>
-                <input id="rhine-prereg-dept" type="text"
-                  className="rhine-input" value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="所在部门" />
-              </div>
-            </div>
-
-            <div className="rhine-preregister-actions">
-              <button
-                type="submit"
-                className="rhine-preregister-submit"
-                disabled={submitting}
-                aria-busy={submitting}
-              >
-                {submitting ? (
-                  <span className="rhine-spinner" aria-hidden="true" />
-                ) : (
-                  <Send size={14} aria-hidden="true" />
-                )}
-                <span>{submitting ? '提交中…' : '提交预登记'}</span>
-              </button>
-              <button
-                type="button"
-                className="rhine-preregister-cancel"
-                onClick={() => { setExpanded(false); setErr(''); setEmail(''); setName(''); setDepartment('') }}
-                disabled={submitting}
-              >
-                返回登录
-              </button>
-            </div>
-          </>
-        )}
-      </form>
+    <div className="rhine-preregister whitelist-login-entry">
+      <Link to="/whitelist-apply" className="rhine-preregister-toggle" aria-label={t('pages.whitelist.loginEntry')}>
+        <Mail size={15} aria-hidden="true" />
+        <span>{t('pages.whitelist.loginEntry')}</span>
+      </Link>
+      <span className="whitelist-login-entry-sub">{t('pages.whitelist.loginEntrySub')}</span>
     </div>
   )
 }
@@ -400,13 +258,18 @@ const BrandPanel: FC = () => {
 export default function RhineLoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
+  const requiresTwoFactor = useAuthStore((s) => s.requiresTwoFactor)
+  const twoFactorUsername = useAuthStore((s) => s.twoFactorUsername)
+  const clearTwoFactor = useAuthStore((s) => s.clearTwoFactor)
   const msg = RHINE_LOGIN_CONFIG.messages
 
   const userRef = useRef<HTMLInputElement>(null)
   const passRef = useRef<HTMLInputElement>(null)
+  const codeRef = useRef<HTMLInputElement>(null)
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [twoFactorCode, setTwoFactorCode] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
@@ -416,6 +279,11 @@ export default function RhineLoginPage() {
   const [passErr, setPassErr] = useState('')
   /* F3-3: 大写锁定检测 (密码框聚焦期间) */
   const [capsOn, setCapsOn] = useState(false)
+
+  /* 进入登录页时重置 2FA 中间状态 */
+  useLayoutEffect(() => {
+    clearTwoFactor()
+  }, [clearTwoFactor])
 
   /* 429 限频倒计时 (秒) — 与 429 错误提示联动 */
   const [rateCountdown, setRateCountdown] = useState(0)
@@ -443,6 +311,7 @@ export default function RhineLoginPage() {
     if (stored !== '1') return
     const savedUser = sessionStorage.getItem('rhine_user')
     if (!savedUser) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUsername(savedUser)
     setRemember(true)
     requestAnimationFrame(() => requestAnimationFrame(() => { passRef.current?.focus() }))
@@ -453,6 +322,7 @@ export default function RhineLoginPage() {
     setUsername(e.target.value); if (userErr) setUserErr('')
   }, [userErr])
   const handleUserBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
+    void _;
     setUserErr(validateUser(username))
   }, [username, validateUser])
   const handlePassChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -460,6 +330,7 @@ export default function RhineLoginPage() {
     if (passErr) setPassErr('')
   }, [passErr])
   const handlePassBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
+    void _;
     setPassErr(validatePass(password))
     setCapsOn(false) /* F3-3: 失焦后不再提示大写锁定 */
   }, [password, validatePass])
@@ -480,7 +351,21 @@ export default function RhineLoginPage() {
     if (pe) { passRef.current?.focus(); return }
     setError(''); setRateCountdown(0); setLoading(true)
     try {
-      await login(username, password)
+      // 2FA 二次验证：要求输入 6 位动态码
+      if (requiresTwoFactor && twoFactorCode.trim().length !== 6) {
+        setError('请输入 6 位动态验证码')
+        codeRef.current?.focus()
+        setLoading(false)
+        return
+      }
+      const result = await login(username, password, requiresTwoFactor ? twoFactorCode.trim() : undefined)
+      // 2FA 二次验证：登录未完成，等待用户输入动态码
+      if (result === '2fa') return
+      if (requiresTwoFactor) {
+        setSuccess('验证成功，正在登录...')
+        setTimeout(() => navigate('/dashboard'), 1200)
+        return
+      }
       if (remember) {
         sessionStorage.setItem('rhine_remember', '1')
         sessionStorage.setItem('rhine_user', username)
@@ -504,11 +389,15 @@ export default function RhineLoginPage() {
         const secs = isNaN(retryAfter) ? 60 : retryAfter
         setRateCountdown(secs)
         setError('验证请求过于频繁，请稍后再试')
+      } else if (s === 400) {
+        setError('2FA 验证码错误，请重新输入')
+        setTwoFactorCode('')
+        codeRef.current?.focus()
       } else {
         setError(s === 401 ? msg.errorAuth : msg.errorNetwork)
       }
     } finally { setLoading(false) }
-  }, [username, password, remember, validateUser, validatePass, login, navigate, msg, rateCountdown])
+  }, [username, password, twoFactorCode, requiresTwoFactor, remember, validateUser, validatePass, login, navigate, msg, rateCountdown])
 
   /* ── Ripple ── */
   const handleBtnClick = useCallback((e: RMouseEvent<HTMLButtonElement>) => {
@@ -626,6 +515,42 @@ export default function RhineLoginPage() {
                   )}
                 </div>
 
+                {/* 2FA 动态验证码（启用两步验证后出现） */}
+                {requiresTwoFactor && (
+                  <div className="rhine-form-group">
+                    <label htmlFor="rhine-2fa-code" className="rhine-label">
+                      {twoFactorUsername ? `${twoFactorUsername} 的两步验证` : '两步验证'}
+                    </label>
+                    <div className="rhine-input-wrap">
+                      <Shield size={18} className="rhine-input-icon" aria-hidden="true" />
+                      <input
+                        ref={codeRef}
+                        id="rhine-2fa-code"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        className="rhine-input"
+                        value={twoFactorCode}
+                        onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder="6 位动态验证码"
+                        aria-required="true"
+                      />
+                    </div>
+                    <p className="rhine-error-text" role="alert" style={{ minHeight: 0 }}>
+                      {error}
+                    </p>
+                    <button
+                      type="button"
+                      className="rhine-forgot-link"
+                      onClick={() => { clearTwoFactor(); setTwoFactorCode(''); setError('') }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                    >
+                      返回重新输入密码
+                    </button>
+                  </div>
+                )}
+
                 {/* 选项行 */}
                 <div className="rhine-form-options">
                   <label className="rhine-remember" htmlFor="rhine-remember">
@@ -678,8 +603,8 @@ export default function RhineLoginPage() {
                 </div>
               )}
 
-              {/* 邮箱预注册模块 — 平台暂未开放自助注册，仅提供邮箱预登记通道 */}
-              <PreRegisterSection />
+              {/* 白名单申请入口 — 跳转独立申请页（含窗口截止倒计时） */}
+              <WhitelistEntryButton />
 
               {/* 安全提示 */}
               <div className="rhine-security-note">

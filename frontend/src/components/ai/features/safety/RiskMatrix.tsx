@@ -121,7 +121,7 @@ export function RiskMatrix({
         <div className="font-semibold text-neutral-900 dark:text-neutral-100 border-b pb-2">
           {ingredient.name} - {hazardType?.label}
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           <div>
             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">风险等级:</span>
             <span className={`ml-2 font-medium`} style={{ color: colorConfig.text }}>

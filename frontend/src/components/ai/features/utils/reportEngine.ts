@@ -421,14 +421,12 @@ export function generateComprehensiveReport(formulas: AIRecognizedFormula[]): Pr
 }
 
 export function calculateMetadata(formulas: AIRecognizedFormula[]): ReportMetadata {
-  const totalIngredients = formulas.reduce((sum, f) => sum + (f.ingredients?.length || 0), 0)
   const allTags = formulas.flatMap(f =>
     (f.ingredients || [])
       .map(ing => ing.efficacy)
       .filter((tag): tag is string => !!tag && tag.trim().length > 0),
   )
   const uniqueTags = [...new Set(allTags)]
-  const avgConfidence = formulas.reduce((sum, f) => sum + f.confidence, 0) / formulas.length
 
   return {
     tags: uniqueTags.slice(0, 10),

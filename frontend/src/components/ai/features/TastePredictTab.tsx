@@ -12,8 +12,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
-import { Input, Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
-import { Cherry, FlaskConical, BarChart3, Table2, Lightbulb, RotateCcw, Download, History } from 'lucide-react';
+import { Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Cherry, FlaskConical, BarChart3, Table2, Lightbulb, RotateCcw, History } from 'lucide-react';
 
 import { FlavorWheel } from '@/components/ai/visualization/FlavorWheel';
 import { TasteRadarChart } from '@/components/ai/visualization/TasteRadarChart';
@@ -44,7 +44,7 @@ function computeAvgSour(names: string[]): number {
 
 export function TastePredictTab() {
   const [tasteInput, setTasteInput] = useState('');
-  const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
+  const [, setIngredients] = useState<IngredientInput[]>([]);
   const [processingMethod, setProcessingMethod] = useState<string>('');
   const [algorithmMode, setAlgorithmMode] = useState<'weighted' | 'synergy'>('weighted');
   const [tasteResult, setTasteResult] = useState<TastePrediction | null>(null);

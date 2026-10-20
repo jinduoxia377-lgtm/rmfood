@@ -328,23 +328,25 @@ function calculateSpecificDimension(ingredients: Ingredient[], dimensionId: stri
           case 'bioavailability':
             pairScore *= (ingA.source === SourceEnum.PEPTIDE || ingB.source === SourceEnum.PEPTIDE) ? 1.15 : 1.0
             break
-          case 'efficacy_mult':
+          case 'efficacy_mult': {
             const commonTags = (ingA.efficacyTags || []).filter(tag =>
               (ingB.efficacyTags || []).includes(tag),
             )
             pairScore *= (1 + commonTags.length * 0.1)
             break
-          case 'safety_index':
+          }
+          case 'safety_index': {
             const precautions = [...(ingA.precautions || []), ...(ingB.precautions || [])]
             pairScore -= precautions.filter(p => p.severity === 'high').length * 1.5
             pairScore -= precautions.filter(p => p.severity === 'medium').length * 0.5
             break
+          }
           case 'stability':
             if (ingA.source === SourceEnum.EXCIPIENT || ingB.source === SourceEnum.EXCIPIENT) {
               pairScore *= 1.1
             }
             break
-          case 'taste_balance':
+          case 'taste_balance': {
             const bitter = ['黄连', '黄芩', '苦参']
             const sweet = ['甘草', '枸杞', '红枣']
             const hasBitter = bitter.some(b => ingA.name.includes(b) || ingB.name.includes(b))
@@ -352,6 +354,7 @@ function calculateSpecificDimension(ingredients: Ingredient[], dimensionId: stri
             if (hasBitter && hasSweet) pairScore *= 1.1
             else if (hasBitter) pairScore *= 0.9
             break
+          }
         }
 
         totalScore += pairScore
@@ -448,6 +451,7 @@ function generateTimelineEffects(
   ingredients: Ingredient[],
   _scenario?: ScenarioConfig,
 ): TimelineEffect[] {
+  void _scenario;
   const immediateEffects: EffectDescription[] = []
   const shortTermEffects: EffectDescription[] = []
   const mediumTermEffects: EffectDescription[] = []

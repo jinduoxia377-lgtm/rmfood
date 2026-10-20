@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ChatStorageCapability — 统一存储能力
  *
@@ -17,8 +16,6 @@ import type { ChatMessage } from '../../types'
 import { chatHistoryStorage } from '../../services/chatHistoryStorage'
 import { storageService } from '../../services/storageService'
 import { ChatTopic } from '../../types/chatHistory.types'
-import { chatApi } from '@/api/chat'
-import type { ChatSession as BackendSession } from '@/api/chat'
 
 export interface ChatStorageCapability {
   /** 保存指定会话的所有消息 */
@@ -50,6 +47,9 @@ export interface ChatStorageCapability {
 
   /** 从后端加载 */
   fetchFromServer(sessionId: string): Promise<ChatMessage[]>
+
+  /** 从云端恢复全部会话快照（跨设备） */
+  restoreFromServer(): Promise<number>
 }
 
 export interface SessionMeta {
@@ -67,7 +67,6 @@ export interface SessionSummary {
   messageCount: number
 }
 
-const STORAGE_VERSION = 2
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5分钟缓存有效期
 
 export class ChatStorageService implements ChatStorageCapability {
@@ -172,7 +171,7 @@ export class ChatStorageService implements ChatStorageCapability {
           title: meta.title,
           metadata: {
             ...existing.metadata,
-            topic: String(meta.topic || ChatTopic.KNOWLEDGE_QUERY),
+            topic: (meta.topic || ChatTopic.KNOWLEDGE_QUERY) as ChatTopic,
             tags: meta.tags,
             updatedAt: meta.updatedAt,
             messageCount: meta.messageCount,
@@ -185,7 +184,7 @@ export class ChatStorageService implements ChatStorageCapability {
           title: meta.title,
           messages: [],
           metadata: {
-            topic: String(meta.topic || ChatTopic.KNOWLEDGE_QUERY),
+            topic: (meta.topic || ChatTopic.KNOWLEDGE_QUERY) as ChatTopic,
             tags: meta.tags,
             createdAt: meta.createdAt,
             updatedAt: meta.updatedAt,
@@ -242,7 +241,10 @@ export class ChatStorageService implements ChatStorageCapability {
       const messages = await this.loadMessages(sessionId)
       if (messages.length === 0) return
 
-      // 构建后端会话格式并上传
+      // 2026-10-12：后端已新增 POST /api/v1/chat/sync，将本地会话快照持久化到
+      // SystemConfig（chat_sync_<user_id>，按 session id 去重，最多 200 个）。
+      // 注意：这是快照级备份；后端会话表主键仍是 int，与本地字符串 ID 是两套
+      // ID 空间，完整的跨设备恢复需 client_id 关联（结构性改造）。
       const sessionData = {
         id: sessionId,
         title: this.loadSessionList().find(s => s.id === sessionId)?.title || `会话 ${sessionId.slice(-8)}`,
@@ -278,10 +280,23 @@ export class ChatStorageService implements ChatStorageCapability {
   async fetchFromServer(sessionId: string): Promise<ChatMessage[]> {
     try {
       const token = localStorage.getItem('auth_token') || ''
-      const response = await fetch(`/api/v1/chat/session/${encodeURIComponent(sessionId)}`, {
+      // 后端路由是 /chat/sessions/{id}（复数）。此前写的是 /chat/session/{id}，
+      // 必然 404，"从后端加载会话"永远拿不到数据。
+      //
+      // 注意：即使路由名修正后仍不会成功——后端 session_id 是 int（自增主键），
+      // 而前端的 sessionId 是 `session-${Date.now()}-xxxx` 字符串
+      // （见 SessionCapability.ts:97 / sessionManager.ts:32），会返回 422。
+      // 后端会话表与前端会话层目前是两套互不相通的 ID 空间，
+      // 本地 IndexedDB/localStorage 才是真正的主存储。这条路径要在
+      // ID 空间统一后才能真正生效，届时可改为按 title 匹配或加 client_id 列。
+      const response = await fetch(`/api/v1/chat/sessions/${encodeURIComponent(sessionId)}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
+      if (response.status === 422) {
+        logger.warn(`[ChatStorage] 后端会话 ID 为整数，无法用本地字符串 ID "${sessionId}" 查询（422）`)
+        return []
+      }
       if (!response.ok) return []
       const data = await response.json() as { messages?: Array<{ id: string; role: string; content: string; timestamp: number }> }
       if (!data.messages?.length) return []
@@ -299,6 +314,50 @@ export class ChatStorageService implements ChatStorageCapability {
     } catch (error) {
       logger.error('[ChatStorage] 从后端加载失败:', error)
       return []
+    }
+  }
+
+  /** 从云端恢复全部会话快照（跨设备）：拉取 POST /sync 上传过的快照并写回本地 */
+  async restoreFromServer(): Promise<number> {
+    try {
+      const token = localStorage.getItem('auth_token') || ''
+      const response = await fetch('/api/v1/chat/sync/restore', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        logger.warn(`[ChatStorage] 云端恢复失败: HTTP ${response.status}`)
+        return 0
+      }
+      const data = await response.json() as {
+        success?: boolean
+        sessions?: Array<{
+          id: string
+          title?: string
+          messages?: Array<{ id: string; role: string; content: string; timestamp: number }>
+          createdAt?: number
+          updatedAt?: number
+        }>
+      }
+      const sessions = data.sessions || []
+      let restored = 0
+      for (const s of sessions) {
+        if (!s.id) continue
+        const msgs: ChatMessage[] = (s.messages || []).map((m) => ({
+          id: m.id,
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          timestamp: m.timestamp,
+        }))
+        if (msgs.length > 0) {
+          await this.saveMessages(s.id, msgs)
+          restored += 1
+        }
+      }
+      logger.info(`[ChatStorage] 云端恢复 ${restored} 个会话`)
+      return restored
+    } catch (error) {
+      logger.error('[ChatStorage] 云端恢复失败:', error)
+      return 0
     }
   }
 

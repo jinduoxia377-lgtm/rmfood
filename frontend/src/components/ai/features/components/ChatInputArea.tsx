@@ -22,7 +22,6 @@
  */
 
 import React, { memo, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui';
 import {
   Mic,
   Settings,
@@ -47,7 +46,7 @@ import SuggestionPanel from './SuggestionPanel';
 import DeepThinkingPanel from './DeepThinkingPanel';
 import { SearchPanel } from './SearchPanel';
 import ChatInputSettingsDialog from './ChatInputSettingsDialog';
-import type { Attachment, AttachmentType } from '../services/clipboardAttachmentService';
+import type { AttachmentType } from '../services/clipboardAttachmentService';
 
 export interface ChatInputAreaProps {
   value: string;
@@ -109,7 +108,6 @@ export const ChatInputArea = memo(
 
     // AI思考过程相关
     thinkingSteps = [],
-    isThinking = false,
     isThinkingVisible = false,
     onToggleThinking,
   }: ChatInputAreaProps) => {
@@ -245,7 +243,7 @@ export const ChatInputArea = memo(
                   <XCircle className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 </button>
               </div>
-              <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+              <div className="p-3 grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                 {state.attachments.map((attachment) => {
                   const Icon = getAttachmentIcon(attachment.type as AttachmentType);
                   return (

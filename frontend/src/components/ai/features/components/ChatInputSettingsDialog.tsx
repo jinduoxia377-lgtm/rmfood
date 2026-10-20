@@ -51,8 +51,11 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputBehavior(userPreferencesService.getInputBehavior());
+       
       setHotkeys(userPreferencesService.getPreferences().hotkeys);
+       
       setErrors({});
     }
   }, [open]);
@@ -69,6 +72,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
         [field]: value,
       },
     }));
+    // eslint-disable-next-line react-hooks/immutability
     delete errors[action];
   }, []);
 
@@ -153,6 +157,7 @@ const ChatInputSettingsDialog: React.FC<ChatInputSettingsDialogProps> = ({ open,
     const defaultConfig = userPreferencesService.getHotkey(action);
     if (defaultConfig) {
       setHotkeys((prev) => ({ ...prev, [action]: defaultConfig }));
+      // eslint-disable-next-line react-hooks/immutability
       delete errors[action];
     }
   }, []);

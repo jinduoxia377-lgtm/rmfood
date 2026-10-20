@@ -2,7 +2,7 @@
 AI 智能服务 API 入口 - 重组版
 
 原 ai.py (1843行) 已拆分为 7 个子模块:
-- generation.py: /health, /generate, /generate/neural, /safety-check, /synergy-analysis
+- generation.py: /health, /generate/advanced, /safety-check, /synergy-analysis
 - chat.py: /chat, /chat/stream
 - models_and_tools.py: /taste-predict, /stability, /peptide-score, /models/status, /models/config
 - recommendations.py: /analyze/formula, /recommendations

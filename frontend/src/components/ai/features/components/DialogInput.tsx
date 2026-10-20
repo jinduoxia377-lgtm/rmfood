@@ -27,6 +27,9 @@ export interface DialogInputProps extends Omit<React.TextareaHTMLAttributes<HTML
   className?: string
 }
 
+// 模块级常量，避免默认参数每次渲染创建新数组引用导致校验 effect 无限重跑
+const EMPTY_VALIDATION_RULES: ValidationRule[] = []
+
 const DialogInput = memo(
   forwardRef<HTMLTextAreaElement, DialogInputProps>(
     (
@@ -37,7 +40,7 @@ const DialogInput = memo(
         placeholder = '输入您的消息...',
         maxLength = 2000,
         minLength = 0,
-        validationRules = [],
+        validationRules = EMPTY_VALIDATION_RULES,
         disabled = false,
         isLoading = false,
         autoResize = true,
@@ -55,6 +58,7 @@ const DialogInput = memo(
       const [isFocused, setIsFocused] = useState(false)
       const [errors, setErrors] = useState<string[]>([])
       const [charCount, setCharCount] = useState(0)
+      const errorsRef = useRef<string[]>([])
 
       useEffect(() => {
         setCharCount(value.length)
@@ -96,7 +100,7 @@ const DialogInput = memo(
                 validationErrors.push(rule.message)
               }
               break
-            case 'pattern':
+            case 'pattern': {
               const pattern = rule.value instanceof RegExp
                 ? rule.value
                 : new RegExp(rule.value as string)
@@ -104,18 +108,21 @@ const DialogInput = memo(
                 validationErrors.push(rule.message)
               }
               break
-            case 'email':
+            }
+            case 'email': {
               const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
               if (!emailPattern.test(value)) {
                 validationErrors.push(rule.message)
               }
               break
-            case 'url':
-              const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/
+            }
+            case 'url': {
+              const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
               if (!urlPattern.test(value)) {
                 validationErrors.push(rule.message)
               }
               break
+            }
             case 'custom':
               if (rule.validator && !rule.validator(value)) {
                 validationErrors.push(rule.message)
@@ -129,7 +136,12 @@ const DialogInput = memo(
 
       useEffect(() => {
         const validationErrors = validateInput(value)
-        setErrors(validationErrors)
+        // 仅当错误集真正变化时才更新 state；否则当调用方内联传入 validationRules
+        // 导致其引用每次渲染变化时，validateInput 会跟着变，进而无限 setErrors 重渲染。
+        if (JSON.stringify(validationErrors) !== JSON.stringify(errorsRef.current)) {
+          errorsRef.current = validationErrors
+          setErrors(validationErrors)
+        }
       }, [value, validateInput])
 
       const handleChange = useCallback(

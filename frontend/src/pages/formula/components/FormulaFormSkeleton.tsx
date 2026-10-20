@@ -1,15 +1,15 @@
-import { Skeleton } from '@/components/ui/Skeleton'
+﻿import { Skeleton } from '@/components/ui/Skeleton'
 
 export function FormulaFormSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto space-y-6 px-4 lg:px-6 animate-fade-in">
+    <div className="max-w-7xl mx-auto space-y-6 px-[var(--space-apple-md)] lg:px-6 animate-fade-in">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton width={200} height={32} animationType="pulse" />
           <Skeleton width={450} height={16} animationType="pulse" />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           <Skeleton width={80} height={36} radius={8} animationType="pulse" />
           <Skeleton width={100} height={36} radius={8} animationType="pulse" />
         </div>
@@ -18,22 +18,22 @@ export function FormulaFormSkeleton() {
       {/* Main Form Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
         {/* Left - Form Fields */}
-        <div className="space-y-6 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
+        <div className="space-y-6 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-lg)]">
           {/* Basic Info Section */}
           <FormSectionSkeleton title="基本信息" fieldCount={4} />
 
           {/* Effects Section */}
-          <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="pt-6 border-t border-[var(--border-color)]">
             <FormSectionSkeleton title="目标功效" fieldCount={2} />
           </div>
 
           {/* Ingredients Section */}
-          <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="pt-6 border-t border-[var(--border-color)]">
             <IngredientsSectionSkeleton />
           </div>
 
           {/* Additional Info Section */}
-          <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="pt-6 border-t border-[var(--border-color)]">
             <FormSectionSkeleton title="其他信息" fieldCount={5} />
           </div>
         </div>
@@ -50,9 +50,9 @@ export function FormulaFormSkeleton() {
 
 function FormSectionSkeleton({ title, fieldCount }: { title?: string; fieldCount: number }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {title && (
-        <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-color)]">
           <Skeleton width={20} height={20} radius={5} animationType="pulse" />
           <Skeleton width={80 + (title.length * 8)} height={18} animationType="pulse" />
         </div>
@@ -77,8 +77,8 @@ function FormSectionSkeleton({ title, fieldCount }: { title?: string; fieldCount
 
 function IngredientsSectionSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+    <div className="space-y-[var(--space-apple-md)]">
+      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)]">
         <div className="flex items-center gap-2">
           <Skeleton width={20} height={20} radius={5} animationType="pulse" />
           <Skeleton width={80} height={18} animationType="pulse" />
@@ -96,21 +96,21 @@ function IngredientsSectionSkeleton() {
       </div>
 
       {/* Ingredient Items */}
-      <div className="space-y-3">
+      <div className="space-y-[var(--space-apple-sm)]">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3"
+            className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-[var(--space-apple-sm)]">
                 <Skeleton width={24} height={24} radius={6} animationType="pulse" />
                 <Skeleton width={70 + (i * 10)} height={16} animationType="pulse" />
                 <Skeleton width={50} height={20} radius={10} animationType="pulse" />
               </div>
               <Skeleton width={24} height={24} radius={6} animationType="pulse" />
             </div>
-            <div className="grid grid-cols-3 gap-4 pl-9">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pl-9">
               <div className="space-y-1">
                 <Skeleton width={35} height={11} animationType="pulse" />
                 <Skeleton width={50} height={14} animationType="pulse" />
@@ -133,22 +133,22 @@ function IngredientsSectionSkeleton() {
 
 function PreviewPanelSkeleton() {
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-4 sticky top-6">
-      <div className="flex items-center gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+    <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 space-y-[var(--space-apple-md)] sticky top-[var(--space-apple-lg)]">
+      <div className="flex items-center gap-2 pb-3 border-b border-[var(--border-color)]">
         <Skeleton width={20} height={20} radius={5} animationType="pulse" />
         <Skeleton width={80} height={18} animationType="pulse" />
       </div>
 
       {/* Preview Card */}
-      <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <div className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] overflow-hidden">
         {/* Card Header */}
-        <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 space-y-2">
-          <Skeleton width="80%" height={22} animationType="pulse" className="!bg-white dark:bg-neutral-900/30" />
-          <Skeleton width="60%" height={13} animationType="pulse" className="!bg-white dark:bg-neutral-900/20" />
+        <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-[var(--space-apple-md)] space-y-2">
+          <Skeleton width="80%" height={22} animationType="pulse" className="!bg-[var(--bg-secondary)]/30" />
+          <Skeleton width="60%" height={13} animationType="pulse" className="!bg-[var(--bg-secondary)]/20" />
         </div>
 
         {/* Card Body */}
-        <div className="p-4 space-y-3">
+        <div className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
           <div className="flex items-center gap-2">
             <Skeleton width={60} height={20} radius={10} animationType="pulse" />
             <Skeleton width={60} height={20} radius={10} animationType="pulse" />
@@ -164,7 +164,7 @@ function PreviewPanelSkeleton() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)]">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="text-center space-y-1">
                 <Skeleton width={40} height={11} animationType="pulse" />
@@ -193,14 +193,14 @@ function PreviewPanelSkeleton() {
 
 function QuickActionsSkeleton() {
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-3">
+    <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 space-y-[var(--space-apple-sm)]">
       <Skeleton width={80} height={18} animationType="pulse" />
 
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
           >
             <Skeleton width={20} height={20} radius={5} animationType="pulse" />
             <Skeleton width={90 + (i * 15)} height={14} animationType="pulse" />

@@ -4,7 +4,6 @@ import {
   allTemplates,
   getRecommendedTemplates,
   searchTemplates,
-  getTemplatesByType,
 } from '../../../utils/reportTemplates';
 
 interface TemplateSelectorProps {

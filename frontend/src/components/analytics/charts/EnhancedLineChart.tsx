@@ -17,7 +17,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Brush,
 } from 'recharts';
 
@@ -121,6 +120,7 @@ export function EnhancedLineChart({
 
         <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} width={55} />
 
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Tooltip content={<CustomTooltip />} animationDuration={200} />
 
         {(data.datasets || []).map((dataset: { label?: string; tension?: number; pointRadius?: number }, index) => (

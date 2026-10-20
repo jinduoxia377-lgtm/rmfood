@@ -53,7 +53,7 @@ interface FormulaSharePanelProps {
   onImport?: (shareId: string) => void;
 }
 
-export function FormulaSharePanel({ formula, onClose, onShare, onImport }: FormulaSharePanelProps) {
+export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePanelProps) {
   const [config, setConfig] = useState<ShareConfig>({
     permission: 'public',
     expiresInDays: 30,
@@ -504,7 +504,7 @@ export function ImportShareDialog({
 
       onImport(shareData);
       onClose();
-    } catch (err) {
+    } catch {
       setError('无效的分享链接');
     } finally {
       setLoading(false);

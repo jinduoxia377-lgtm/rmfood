@@ -29,7 +29,8 @@ import {
 import type { LanguageCode } from '../services/languageService'
 
 // 从 useChatInputState 导入接口，避免重复定义
-import type { SmartSuggestion, EnhancedSuggestion } from '../hooks/useChatInputState'
+import type { SmartSuggestion } from '../hooks/useChatInputState'
+import type { EnhancedSuggestion } from '../services/suggestionEngine'
 
 
 import { logger } from '@/utils/safeLogger';
@@ -330,6 +331,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsUpdating(true)
     const timer = setTimeout(() => setIsUpdating(false), 100)
 
@@ -344,6 +346,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
 
   useEffect(() => {
     if (!isVisible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedIndex(0)
     }
   }, [isVisible])
@@ -543,7 +546,6 @@ function EnhancedSuggestionCard({
   index,
   isSelected,
   onSelect,
-  onApply,
   onFeedback,
 
   onRegenerate,

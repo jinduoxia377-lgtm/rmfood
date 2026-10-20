@@ -12,8 +12,6 @@
  * @lastUpdated 2026-06-07
  */
 
-import { logger } from '@/utils/safeLogger'
-
 /* ================================================================== */
 /*  类型定义                                                            */
 /* ================================================================== */
@@ -734,7 +732,7 @@ export class FormulaDesignEngine {
    * 使用多目标优化策略
    */
   generateFormula(request: FormulaDesignRequest): FormulaCandidate {
-    const { targetEffects, constraints, userProfile } = request
+    const { targetEffects, constraints } = request
     const maxIngredients = constraints?.maxIngredients ?? 6
 
     // 5.1 根据目标功效筛选候选成分
@@ -768,7 +766,6 @@ export class FormulaDesignEngine {
 
     // 5.4 智能组合优化：迭代寻找最佳组合
     const selectedProfiles = selectedIds.map(id => this.ingredients.get(id)!).filter(Boolean)
-    let bestCombination: string[] = []
     let bestScore = -Infinity
 
     // 简化组合搜索（实际应用中应使用遗传算法/模拟退火）

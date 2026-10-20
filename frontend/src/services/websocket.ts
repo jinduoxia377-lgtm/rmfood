@@ -9,7 +9,6 @@
 
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/utils/safeLogger'
-import { authApi } from '@/api/auth'
 
 
 export interface WebSocketMessage {

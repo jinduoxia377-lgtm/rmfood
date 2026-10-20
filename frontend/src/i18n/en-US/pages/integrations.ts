@@ -1,0 +1,51 @@
+/**
+ * English "Integrations & API" module translations
+ */
+export default {
+  integrations: {
+    title: 'Integrations & API',
+    subtitle: 'Manage API keys, webhooks, and third-party service integrations',
+    refreshKeys: 'Refresh Key List',
+    newApiKey: 'New API Key',
+    tabApiKeys: 'API Keys',
+    tabWebhooks: 'Webhooks',
+    tabThirdParty: 'Third-Party',
+    apiKeysTitle: 'API Keys',
+    apiKeysDesc: 'Manage credentials for programmatic access to the system',
+    createNewKey: 'Create New Key',
+    active: 'Active',
+    copyKey: 'Copy Key',
+    keyCopied: 'Key copied to clipboard',
+    deleteKey: 'Delete Key',
+    keyDeleted: 'API key deleted',
+    scopes: 'Scopes: {{scopes}}',
+    created: 'Created: {{date}}',
+    lastUsed: 'Last used: {{time}}',
+    keySecurityHint: 'Keys are only shown in full once at creation. Please store them securely and rotate them regularly for better security.',
+    webhookConfig: 'Webhook Configuration',
+    webhookDesc: 'Manage callback URLs that receive system event pushes',
+    createWebhook: 'Create Webhook',
+    success: 'Success {{count}}',
+    failed: 'Failed {{count}}',
+    thirdPartyTitle: 'Third-Party Integrations',
+    thirdPartyDesc: 'Connect common collaboration tools and communication platforms',
+    connected: 'Connected',
+    connectService: 'Connect Service',
+    webhookNames: {
+      formulaPublished: 'Formula Published',
+      experimentCompleted: 'Experiment Completed',
+    },
+    thirdPartyNames: {
+      slack: 'Slack',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu',
+      wecom: 'WeCom',
+    },
+    thirdPartyDescs: {
+      slack: 'Messages and team collaboration',
+      dingtalk: 'Alibaba work notification push',
+      feishu: 'Documents and communication',
+      wecom: 'Enterprise communication tool',
+    },
+  },
+}

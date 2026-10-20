@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AboutPage — 关于莱茵分子
  */
 import PublicLayout from './PublicLayout';
@@ -25,12 +25,12 @@ export default function AboutPage() {
     <PublicLayout>
       {/* Hero */}
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">关于我们</span>
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-16">
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">关于我们</span>
           <h1 className="text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-[1.15] text-neutral-900 mb-6">
             解码生命分子<br />赋能科学创新
           </h1>
-          <p className="text-[15px] leading-[1.75] text-neutral-600 max-w-2xl">
+          <p className="text-[15px] leading-[1.75] text-[var(--text-secondary)] max-w-2xl">
             莱茵（厦门）分子生物科技有限公司（简称"莱茵分子"）是一家专注于药食同源领域的生物信息学与人工智能交叉创新企业。我们融合分子生物学、计算化学与中医药现代化理论，构建从基因到配方的全链路研发平台，致力于让配方研发像对话一样简单。
           </p>
         </div>
@@ -38,8 +38,8 @@ export default function AboutPage() {
 
       {/* 核心数据 */}
       <section style={{ background: '#fafafa' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((s, i) => {
               const IconComp = s.icon;
               return (
@@ -56,14 +56,14 @@ export default function AboutPage() {
 
       {/* 发展历程 */}
       <section style={{ background: '#fff' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">发展历程</span>
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">发展历程</span>
           <h2 className="text-[1.5rem] font-bold text-neutral-900 mb-8">关键里程碑</h2>
           <div className="space-y-0">
             {milestones.map((m, i) => (
               <div key={i} className="flex gap-6 py-5" style={{ borderBottom: i < milestones.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
                 <span className="text-sm font-mono font-semibold w-12 shrink-0 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] pt-0.5">{m.year}</span>
-                <p className="text-sm text-neutral-700 leading-relaxed">{m.event}</p>
+                <p className="text-sm text-[var(--text-primary)] leading-relaxed">{m.event}</p>
               </div>
             ))}
           </div>
@@ -72,17 +72,17 @@ export default function AboutPage() {
 
       {/* 使命愿景 */}
       <section style={{ background: '#f8fafc' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">使命</span>
-              <p className="text-[14px] leading-[1.75] text-neutral-700">
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">使命</span>
+              <p className="text-[14px] leading-[1.75] text-[var(--text-primary)]">
                 以人工智能驱动药食同源研发创新，降低配方研发门槛，让每一次创新都有据可依、有章可循。
               </p>
             </div>
             <div>
-              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">愿景</span>
-              <p className="text-[14px] leading-[1.75] text-neutral-700">
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">愿景</span>
+              <p className="text-[14px] leading-[1.75] text-[var(--text-primary)]">
                 成为全球领先的药食同源数字化研发平台，连接传统智慧与现代科技，加速功能性食品创新进程。
               </p>
             </div>

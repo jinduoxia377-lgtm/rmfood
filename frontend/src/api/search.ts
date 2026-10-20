@@ -6,15 +6,40 @@ import api from './client'
 export interface SearchResult {
   id: number
   title: string
-  subtitle: string
-  status: string
-  type: 'formula' | 'experiment' | 'herb' | 'peptide'
+  description?: string
+  subtitle?: string
+  url?: string
+  score?: number
+  type: string
+  status?: string
+  metadata?: Record<string, unknown>
+  created_at?: string
+  highlights?: Record<string, string>
+}
+
+export interface SearchTypeResponse {
+  items: SearchResult[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+  query_time_ms: number
+  suggestions: unknown[]
+  facets: Record<string, unknown>
 }
 
 export interface GlobalSearchResponse {
-  query: string
-  total: number
-  results: {
+  keyword: string
+  query?: string
+  total?: number
+  types: {
+    formula?: SearchTypeResponse
+    experiment?: SearchTypeResponse
+    herb?: SearchTypeResponse
+    peptide?: SearchTypeResponse
+  }
+  // 向后兼容：CommandPalette 等组件使用旧格式
+  results?: {
     formulas?: SearchResult[]
     experiments?: SearchResult[]
     herbs?: SearchResult[]

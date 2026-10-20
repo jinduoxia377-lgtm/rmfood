@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FAQ 组件 v5 — 学术问答风格（升级 v5）
  *
  * 升级要点（v5）：
@@ -13,11 +13,11 @@ import { sectionLabel, faqs } from '../data/faqs';
 export default function FAQ() {
   return (
     <section id="faq" className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-8">
             <div className="lp-faq-accent" />
-            <span className="lp-section-tag block mb-3">{sectionLabel}</span>
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">{sectionLabel}</span>
             <h2 className="lp-h2">常见问题</h2>
           </div>
         </Reveal>
@@ -26,10 +26,10 @@ export default function FAQ() {
           <Accordion type="multiple" className="space-y-1.5">
             {faqs.map((faq, i) => (
               <AccordionItem key={i} value={`faq-${i}`}
-                className="rounded-md transition-all duration-150"
+                className="rounded-[var(--radius-Apple-sm)] transition-all duration-150"
                 style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)', borderRadius: '4px' }}
               >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <AccordionTrigger className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hover:no-underline">
                   <span className="lp-body font-normal text-left" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{faq.q}</span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-3">

@@ -35,8 +35,9 @@ async function generateShareLink(formulaName: string, content: StructuredContent
   return shareUrl
 }
 
-function ShareQRCode({ url }: { url: string }) {
-  // 简单 QR 占位：实际项目接入 qrcode.react
+function ShareQRCode({ url }: { url?: string }) {
+  // 简单 QR 占位：实际项目接入 qrcode.react；url 保留给未来真实二维码使用
+  void url
   return (
     <div className="w-32 h-32 mx-auto bg-white rounded-lg border border-neutral-200 dark:border-neutral-700
       flex items-center justify-center overflow-hidden">
@@ -53,7 +54,7 @@ export function FormulaShareModal({ content, onClose }: FormulaShareModalProps) 
   const [generating, setGenerating] = useState(false)
 
   const headerBlock = content.blocks.find(b => b.type === 'header')
-  const formulaName = (headerBlock?.data as { title?: string })?.title?.replace(/^[🧪💊🍵🥤]?\s*/, '') ?? '配方'
+  const formulaName = (headerBlock?.data as { title?: string })?.title?.replace(/^[🧪💊🍵🥤]?\s*/u, '') ?? '配方'
 
   const handleGenerateLink = useCallback(async () => {
     setGenerating(true)

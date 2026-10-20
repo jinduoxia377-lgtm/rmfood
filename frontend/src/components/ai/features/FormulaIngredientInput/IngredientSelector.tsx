@@ -64,6 +64,7 @@ export const IngredientSelector: React.FC<IngredientSelectorProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchIngredients();
     }
   }, [isOpen, fetchIngredients]);
@@ -73,6 +74,7 @@ export const IngredientSelector: React.FC<IngredientSelectorProps> = ({
       ing.nameCn.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ing.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredIngredients(filtered);
   }, [searchTerm, ingredients]);
 

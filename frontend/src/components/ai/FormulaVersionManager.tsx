@@ -5,7 +5,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { Card } from '@/components/ui'
 import {
-  History, GitBranch, RotateCcw, MessageSquare, ChevronRight, Clock,
+  History, GitBranch, RotateCcw, ChevronRight, Clock,
   AlertTriangle, CheckCircle, X, Download, FileJson, FileText, FileType,
   ArrowRightLeft, Edit3, Save, Loader2, BarChart3, Sparkles, GitMerge,
 } from 'lucide-react'
@@ -77,10 +77,6 @@ export function FormulaVersionManager({
     setFeedbackMessage({ type, message })
     setTimeout(() => setFeedbackMessage(null), 3000)
   }, [])
-
-  const sortedVersions = useMemo(() => {
-    return [...versions].sort((a, b) => b.versionNumber - a.versionNumber)
-  }, [versions])
 
   const versionTimeline = useMemo(() => {
     const timeline: { version: FormulaVersion; branches: FormulaVersion[] }[] = []
@@ -415,7 +411,6 @@ function VersionItem({
   isCurrent,
   isEditing,
   remarkText,
-  editingRemarkId,
   isBranch,
   onSelect,
   onView,
@@ -430,26 +425,8 @@ function VersionItem({
   onToggleExportMenu,
   exportMenuRef,
 }: VersionItemProps) {
-  const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-
-  const handleRemarkChange = (text: string) => {
-    onRemarkChange(text)
-
-    if (autoSaveTimer) {
-      clearTimeout(autoSaveTimer)
-    }
-
-    const timer = setTimeout(() => {
-      if (text.length > 0 && text !== version.remark) {
-        setIsSaving(true)
-        onSaveRemark()
-        setIsSaving(false)
-      }
-    }, 2000)
-
-    setAutoSaveTimer(timer)
-  }
+  const [autoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const [isSaving] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -837,7 +814,7 @@ export function VersionComparePanel({ version1, version2, onClose }: VersionComp
             <Sparkles className="w-4 h-4" />
             功效对比
           </h4>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 bg-success-50 dark:bg-success-300/20 rounded-lg border border-success-200 dark:border-success-800">
               <div className="text-xs text-success-600 dark:text-success-600 mb-1">新增功效</div>
               <div className="flex flex-wrap gap-1">

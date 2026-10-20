@@ -5,17 +5,17 @@
  * @version 2.0.0
  */
 import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { 
-  Target, FileText, MessageSquare, Sparkles, Send, 
+import {
+  Target, FileText, MessageSquare, Sparkles, Send,
   X, ChevronDown, ChevronUp, Zap, Loader2,
-  History, Star, Lightbulb, Settings, Sliders
+  Lightbulb, Settings,
 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
 import { FormulaInputWindow } from '@/components/ai/FormulaInputWindow'
 import { EFFECT_OPTIONS, EFFECT_CATEGORIES, getEffectsByCategory } from '@/config/ai/effects'
 import { DEFAULTS, VALIDATION } from '@/config'
-import { CheckCircle, Upload } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { logger } from '@/utils/safeLogger'
 
 const QUICK_TEMPLATES = [
@@ -148,10 +148,6 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
     }
   }, [handleChatSend])
 
-  const getSelectedCount = useCallback(() => {
-    return selectedEffects.length
-  }, [selectedEffects])
-
   return (
     <div className="space-y-6 animate-[fadeInUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
       {/* 输入模式切换 - 三栏设计 */}
@@ -224,7 +220,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 {QUICK_TEMPLATES.map((template) => (
                   <button
                     key={template.id}
@@ -367,7 +363,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               {EFFECT_OPTIONS.map((effect) => {
                 const isSelected = selectedEffects.some(e => e.id === effect.id)
                 return (

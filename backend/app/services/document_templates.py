@@ -1268,9 +1268,12 @@ class DocumentTemplateService:
 
         doc = SimpleDocTemplate(str(output_path), pagesize=A4)
         styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(name='Chinese', fontName='HeitiSC-Regular', fontSize=12))
-        styles.add(ParagraphStyle(name='TitleChinese', fontName='HeitiSC-Regular', fontSize=20, alignment=1))
-        styles.add(ParagraphStyle(name='HeadingChinese', fontName='HeitiSC-Regular', fontSize=14, spaceAfter=10))
+        # 使用已注册的 Windows 中文字体（HeitiSC-Regular 是 macOS 专有字体，Windows 上 reportlab 无法映射）
+        cn_font = chinese_font_manager.get_pdf_font()
+        cn_font_bold = chinese_font_manager.get_pdf_font(bold=True)
+        styles.add(ParagraphStyle(name='Chinese', fontName=cn_font, fontSize=12))
+        styles.add(ParagraphStyle(name='TitleChinese', fontName=cn_font_bold, fontSize=20, alignment=1))
+        styles.add(ParagraphStyle(name='HeadingChinese', fontName=cn_font_bold, fontSize=14, spaceAfter=10))
 
         story = []
 
@@ -1294,7 +1297,7 @@ class DocumentTemplateService:
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4472C4')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, -1), 'HeitiSC-Regular'),
+            ('FONTNAME', (0, 0), (-1, -1), cn_font),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
             ('GRID', (0, 0), (-1, -1), 1, colors.grey),

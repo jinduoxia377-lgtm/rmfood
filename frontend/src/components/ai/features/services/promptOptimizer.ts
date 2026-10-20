@@ -867,7 +867,7 @@ export class PromptOptimizer {
     const details: string[] = []
     const issues: AnalysisIssue[] = []
 
-    const hasSections = /(?:【[^】]+】|##\s+\w+|\d+[\.、]\s*\w+)/.test(prompt)
+    const hasSections = /(?:【[^】]+】|##\s+\w+|\d+[.、]\s*\w+)/.test(prompt)
     if (hasSections) {
       score += 20
       details.push('✓ 使用了分节或分点结构')
@@ -1051,6 +1051,7 @@ export class PromptOptimizer {
   }
 
   private addStepByStepRequirements(prompt: string, _intent: DetectedIntent): string {
+    void _intent;
     return prompt + `\n\n【思考步骤要求】
 1. 首先理解用户的核心需求和隐含诉求
 2. 基于专业知识进行分析和推理
@@ -1060,6 +1061,7 @@ export class PromptOptimizer {
   }
 
   private addQualityCriteria(prompt: string, _intent: DetectedIntent): string {
+    void _intent;
     return prompt + `\n\n【回答质量标准】
 - 准确性：数据和事实需有可靠来源
 - 完整性：覆盖用户问题的各个方面
@@ -1079,6 +1081,7 @@ export class PromptOptimizer {
   }
 
   private async enhanceWithAI(prompt: string, _analysis: PromptAnalysisResult): Promise<string> {
+    void _analysis;
     try {
       const response = await fetch(API_ENDPOINTS.AI.CHAT, {
         method: 'POST',
@@ -1111,6 +1114,7 @@ export class PromptOptimizer {
     optimized: string,
     _analysis: PromptAnalysisResult,
   ): OptimizationSuggestion[] {
+    void _analysis;
     const suggestions: OptimizationSuggestion[] = []
 
     for (const [informal, formal] of Object.entries(PROFESSIONAL_TERMINOLOGY_MAP)) {
@@ -1198,6 +1202,7 @@ export class PromptOptimizer {
   }
 
   private generateQualitySummary(score: number, _grade: string): string {
+    void _grade;
     if (score >= 90) return '优秀的提示词，结构清晰、要素完整，能够有效引导AI产出高质量结果'
     if (score >= 78) return '良好的提示词，基本要素齐全，有少量可优化空间'
     if (score >= 68) return '中等质量的提示词，核心意图明确但缺少重要细节'

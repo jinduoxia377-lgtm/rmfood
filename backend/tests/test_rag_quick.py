@@ -1,8 +1,16 @@
 """
 RAG 快速验证测试（使用 fallback embedding，不需要 API Key）
 运行: cd backend && python tests/test_rag_quick.py
+
+注意：`EmbeddingService._embed_fallback` 已被移除（生产代码不再提供
+无语义意义的 fallback 哈希向量）。本脚本依赖该旧 API，整体跳过，
+待基于当前 `embed_texts` API 重写。
 """
 import sys, os, asyncio
+import pytest
+
+pytestmark = pytest.mark.skip(reason="依赖已移除的 EmbeddingService._embed_fallback API，待重写")
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app", "services", "ai"))
 import rag.document_processor as _dp
 import rag.vector_store as _vs
@@ -32,4 +40,5 @@ async def main():
     print("删除: ✅")
     print("\n✅ RAG 核心功能验证通过！")
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

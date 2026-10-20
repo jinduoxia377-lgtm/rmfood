@@ -5,24 +5,24 @@ import FormulaNewPage from '../pages/formula/FormulaNewPage'
 import { useAuthStore } from '../stores/auth'
 
 // Mock stores
-jest.mock('../stores/auth')
+vi.mock('../stores/auth')
 
 // Mock hooks
-jest.mock('../hooks/useQueries', () => ({
-  useCreateFormula: jest.fn(() => ({
-    mutateAsync: jest.fn(() => Promise.resolve({ id: 1, name: '测试配方' })),
+vi.mock('../hooks/useQueries', () => ({
+  useCreateFormula: vi.fn(() => ({
+    mutateAsync: vi.fn(() => Promise.resolve({ id: 1, name: '测试配方' })),
     isPending: false,
   })),
-  useAIRecommendations: jest.fn(() => ({
+  useAIRecommendations: vi.fn(() => ({
     data: null,
     isLoading: false,
   })),
 }))
 
 // Mock API
-jest.mock('../api/database', () => ({
+vi.mock('../api/database', () => ({
   databaseApi: {
-    searchHerbs: jest.fn(() => Promise.resolve({ items: [] })),
+    searchHerbs: vi.fn(() => Promise.resolve({ items: [] })),
   },
 }))
 
@@ -36,11 +36,11 @@ describe('FormulaNewPage', () => {
   })
 
   beforeEach(() => {
-    (useAuthStore as unknown as jest.Mock).mockReturnValue({
-      user: {
-        id: 1,
-        role: 'formulator',
-      },
+    // useAuthStore 在组件与 usePermission 中以 selector 形式调用（useAuthStore((s) => s.user)），
+    // 因此 mock 需实现 selector 语义，返回 state.user 而不是整个 state。
+    (useAuthStore as unknown as vi.Mock).mockImplementation((selector?: (state: { user: { id: number; role: string } }) => unknown) => {
+      const state = { user: { id: 1, role: 'formulator' } }
+      return selector ? selector(state) : state
     })
   })
 
@@ -69,9 +69,7 @@ describe('FormulaNewPage', () => {
     const createButton = screen.getByText('创建配方')
     fireEvent.click(createButton)
 
-    await waitFor(() => {
-      expect(screen.getByText('请输入配方名称')).toBeInTheDocument()
-    })
+    expect(await screen.findByText('配方名称不能为空')).toBeInTheDocument()
   })
 
   test('adds target effects', () => {
@@ -90,7 +88,7 @@ describe('FormulaNewPage', () => {
     expect(screen.getByText('增强免疫')).toBeInTheDocument()
   })
 
-  test('removes target effects', () => {
+  test('removes target effects', async () => {
     render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
@@ -103,7 +101,7 @@ describe('FormulaNewPage', () => {
     fireEvent.change(effectInput, { target: { value: '增强免疫' } })
     fireEvent.keyDown(effectInput, { key: 'Enter' })
 
-    const removeButton = screen.getByTitle('Remove')
+    const removeButton = await screen.findByRole('button', { name: '移除功效' })
     fireEvent.click(removeButton)
 
     expect(screen.queryByText('增强免疫')).not.toBeInTheDocument()

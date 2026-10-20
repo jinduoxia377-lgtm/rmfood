@@ -62,7 +62,9 @@ async def init_ai_services():
         from app.services.llm_service import llm_service, load_config_from_db
         db_config = await load_config_from_db()
         if db_config:
-            llm_service.update_config(db_config)
+            # 直接赋值运行时配置，不调用 update_config（它会把配置重新加密写回数据库，
+            # 导致启动时反复覆盖数据库中的明文/历史值）。
+            llm_service.config = db_config
             logger.info("[AI Services] LLM configuration loaded from database")
         else:
             logger.info("[AI Services] LLM using default configuration")

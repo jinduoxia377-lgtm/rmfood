@@ -64,7 +64,7 @@
         <view class="meal-card" wx:for="{{todayRecommend}}" wx:key="*this">
           <view class="meal-icon-wrap">
             <view class="meal-icon {{item === breakfast ? 'breakfast' : item === lunch ? 'lunch' : item === dinner ? 'dinner' : 'snack'}}">
-              <icon name="{{item === breakfast ? 'sunrise' : item === lunch ? 'sun' : item === dinner ? 'moon' : 'cookie'}}" size="lg" color="#FFFFFF" />
+              <icon name="{{item === breakfast ? 'sunrise' : item === lunch ? 'sun' : item === dinner ? 'moon' : 'cookie'}}" size="lg" color="var(--color-text-white)" />
             </view>
           </view>
           <view class="meal-info">

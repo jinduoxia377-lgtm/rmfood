@@ -75,30 +75,6 @@ function useMemoStore<T>(key: string, initial: T, storageType: 'localStorage' | 
 // 🟡 P1-2: 认证状态持久化
 // ═════════════════════════════════════════
 
-interface AuthState {
-  token: string | null;
-  user: {
-    id: number;
-    username: string;
-    role: string;
-    email: string;
-  } | null;
-  lastLoginAt: number | null;
-  sessionId: string | null;
-  // 权限列表
-  permissions: string[];
-
-  // 操作方法
-  login: (token: string, user: any, permissions?: string[]) => void;
-  logout: () => void;
-  updateUser: (updates: Partial<any>) => void;
-  addPermission: (perm: string) => void;
-  removePermission: (perm: string) => void;
-  hasPermission: (perm: string) => boolean;
-  // 刷新 Token
-  refreshToken: (token: string) => void;
-}
-
 // ═════════════════════════════════════════
 // 🟡 P1-2: UI 偏好持久化
 // ═════════════════════════════════════════
@@ -152,7 +128,8 @@ export const useUIStore = create<UIState>()(
         set({ filters });
       },
       removeFilter: (key) => {
-        const { [key]: _, ...rest } = get().filters;
+        const { [key]: _removed, ...rest } = get().filters;
+        void _removed;
         set({ filters: rest });
       },
       clearAllFilters: () => set({ filters: {} }),
@@ -279,7 +256,7 @@ interface AppConfigState {
 
 export const useAppConfigStore = create<AppConfigState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       apiBaseUrl: '/api',
       aiServiceUrl: '/api/ai',
       experimentalFeatures: false,

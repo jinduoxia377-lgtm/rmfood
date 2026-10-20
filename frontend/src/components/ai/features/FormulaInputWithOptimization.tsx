@@ -8,13 +8,8 @@ import {
   GitBranch,
   FileText,
   Settings2,
-  Play,
   RotateCcw,
-  Download,
-  CheckCircle2,
-  AlertTriangle,
   Info,
-  Zap,
   Dna,
   BarChart3,
   Target,
@@ -22,7 +17,6 @@ import {
   ChevronDown,
   ChevronUp,
   Save,
-  FolderOpen,
   Square,
 } from 'lucide-react';
 import { FormulaIngredientInput } from './FormulaIngredientInput';
@@ -52,7 +46,6 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
   const [crossoverRate, setCrossoverRate] = useState(85);
   const [eliteRate, setEliteRate] = useState(10);
   const [candidateCount, setCandidateCount] = useState(10);
-  const [useLocalOptimizer, setUseLocalOptimizer] = useState(true);
   const [currentGeneration, setCurrentGeneration] = useState(0);
   const [progress, setProgress] = useState<number>(0);
   const [expandedCandidate, setExpandedCandidate] = useState<number | null>(null);

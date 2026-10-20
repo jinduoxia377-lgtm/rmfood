@@ -77,7 +77,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
 
       {showDetails && (
         <div className="pb-4 space-y-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
               <FlaskConical className="w-4 h-4" style={{ color: 'var(--color-primary, var(--color-primary-400))' }} />
               <div className="flex-1 min-w-0">

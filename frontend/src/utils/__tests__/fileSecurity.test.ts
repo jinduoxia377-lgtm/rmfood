@@ -75,8 +75,9 @@ describe('sanitizeFileName', () => {
   })
 
   it('应该移除控制字符', () => {
-    const result = sanitizeFileName('file\x00name.txt')
-    expect(result).not.toContain('\x00')
+    // 空字节（\x00）会被拒绝（见「应该拒绝空字节注入」）；其他控制字符应被移除
+    const result = sanitizeFileName('file\x01name.txt')
+    expect(result).not.toContain('\x01')
   })
 
   it('应该截断过长的文件名', () => {
@@ -238,10 +239,15 @@ describe('validateDataUrlSize', () => {
   })
 
   it('应该在边界大小正常工作', () => {
-    const boundaryBase64 = 'A'.repeat(5 * 1024 * 1024)
-    const boundaryDataUrl = `data:image/png;base64,${boundaryBase64}`
+    // 解码后恰好约 5MB（未超过上限）→ 不抛错
+    // base64 长度上限 = floor(5MB * 4/3)
+    const boundaryLen = Math.floor((5 * 1024 * 1024) * 4 / 3)
+    const boundaryDataUrl = `data:image/png;base64,${'A'.repeat(boundaryLen)}`
+    expect(() => validateDataUrlSize(boundaryDataUrl)).not.toThrow()
 
-    expect(() => validateDataUrlSize(boundaryDataUrl)).toThrow()
+    // 略超过 5MB → 抛错
+    const overDataUrl = `data:image/png;base64,${'A'.repeat(boundaryLen + 1)}`
+    expect(() => validateDataUrlSize(overDataUrl)).toThrow(FileSecurityError)
   })
 })
 

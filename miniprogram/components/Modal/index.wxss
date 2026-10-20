@@ -1,4 +1,4 @@
-/** Modal 瀵湱鐛ョ紒鍕閺嶅嘲绱?*/
+/** Modal 弹窗组件 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -50,7 +50,7 @@
   max-width: 100%;
 }
 
-/* 婢舵挳鍎?*/
+/* 头部 */
 .modal-header {
   display: flex;
   align-items: center;
@@ -60,7 +60,7 @@
 }
 
 .modal-title {
-  font-size: 32rpx;
+  font-size: var(--font-size-title-3);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -79,14 +79,14 @@
   background-color: var(--color-border-light);
 }
 
-/* 閸愬懎顔?*/
+/* 内容区 */
 .modal-content {
   padding: 32rpx;
   max-height: 50vh;
   overflow-y: auto;
 }
 
-/* 鎼存洟鍎?*/
+/* 底部操作区 */
 .modal-footer {
   padding: 24rpx 32rpx;
   border-top: 1rpx solid var(--color-border-light);
@@ -105,12 +105,12 @@
   justify-content: flex-end;
 }
 
-/* 閹稿鎸?*/
+/* 按钮 */
 .modal-btn {
   flex: 1;
   padding: 24rpx 32rpx;
   border-radius: 48rpx;
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 500;
   text-align: center;
   transition: opacity var(--transition-normal), transform var(--transition-normal);
@@ -139,7 +139,7 @@
   background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger) 100%);
 }
 
-/* 閸斻劎鏁?*/
+/* 动画 */
 @keyframes slideIn {
   from {
     opacity: 0;

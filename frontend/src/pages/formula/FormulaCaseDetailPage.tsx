@@ -35,7 +35,6 @@ import {
   TrendingUp,
   Sparkles,
   Award,
-  ThumbsUp,
   Trash2,
   X,
   Minus,
@@ -56,7 +55,7 @@ import {
   type FormulaCase,
   type CaseComment,
 } from '@/api/formula'
-import { Card, CardContent, Badge, Button, Input, Textarea } from '@/components/ui'
+import { Card, CardContent, Button, Input, Textarea } from '@/components/ui'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useAuthStore } from '@/stores/auth'
 import { useToastStore } from '@/stores/toastStore'
@@ -64,24 +63,24 @@ import { useToastStore } from '@/stores/toastStore'
 // ── 分类主题映射 ───────────────────────────────────────────────
 const CATEGORY_THEME: Record<string, { gradient: string; text: string; bg: string; ring: string; label: string }> = {
   '补气养血':   { gradient: 'from-danger-600 to-danger-700',   text: 'text-danger-700 dark:text-danger-700', bg: 'bg-danger-100 dark:bg-danger-300/25',  ring: 'ring-danger-300 dark:ring-danger-700', label: '气血' },
-  '滋阴润燥':   { gradient: 'from-accent-600 to-accent-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '润燥' },
-  '清热解毒':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '解毒' },
-  '活血化瘀':   { gradient: 'from-error-600 to-danger-700',   text: 'text-error-700 dark:text-error-700', bg: 'bg-error-100 dark:bg-error-300/25',  ring: 'ring-error-300 dark:ring-error-700', label: '化瘀' },
-  '祛湿化浊':   { gradient: 'from-warning-600 to-warning-700', text: 'text-warning-700 dark:text-warning-700', bg: 'bg-warning-100 dark:bg-warning-300/25', ring: 'ring-warning-300 dark:ring-warning-700', label: '祛湿' },
+  '滋阴润燥':   { gradient: 'from-accent-600 to-accent-700', text: 'text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]', bg: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25', ring: 'ring-[var(--color-accent-container)] dark:ring-[var(--color-accent)]', label: '润燥' },
+  '清热解毒':   { gradient: 'from-success-600 to-success-700', text: 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]', bg: 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25', ring: 'ring-[var(--color-success-container)] dark:ring-[var(--color-success)]', label: '解毒' },
+  '活血化瘀':   { gradient: 'from-error-600 to-danger-700',   text: 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]', bg: 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/25',  ring: 'ring-[var(--color-error-container)] dark:ring-[var(--color-error)]', label: '化瘀' },
+  '祛湿化浊':   { gradient: 'from-warning-600 to-warning-700', text: 'text-[var(--color-warning-text)]', bg: 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25', ring: 'ring-[var(--color-warning-container)] dark:ring-[var(--color-warning)]', label: '祛湿' },
   '扶正固本':   { gradient: 'from-info-600 to-secondary-700',   text: 'text-info-700 dark:text-info-700', bg: 'bg-info-100 dark:bg-info-300/25',  ring: 'ring-info-300 dark:ring-info-700', label: '固本' },
-  '疏肝理气':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '疏肝' },
-  '化痰散结':   { gradient: 'from-accent-600 to-accent-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '散结' },
-  '安神定志':   { gradient: 'from-accent-600 to-secondary-700', text: 'text-accent-700 dark:text-accent-700', bg: 'bg-accent-100 dark:bg-accent-300/25', ring: 'ring-accent-300 dark:ring-accent-700', label: '安神' },
-  '健脾和胃':   { gradient: 'from-warning-600 to-warning-700', text: 'text-warning-700 dark:text-warning-700', bg: 'bg-warning-100 dark:bg-warning-300/25', ring: 'ring-warning-300 dark:ring-warning-700', label: '健脾' },
-  '补肾填精':   { gradient: 'from-success-600 to-success-700', text: 'text-success-700 dark:text-success-700', bg: 'bg-success-100 dark:bg-success-300/25', ring: 'ring-success-300 dark:ring-success-700', label: '补肾' },
+  '疏肝理气':   { gradient: 'from-success-600 to-success-700', text: 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]', bg: 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25', ring: 'ring-[var(--color-success-container)] dark:ring-[var(--color-success)]', label: '疏肝' },
+  '化痰散结':   { gradient: 'from-accent-600 to-accent-700', text: 'text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]', bg: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25', ring: 'ring-[var(--color-accent-container)] dark:ring-[var(--color-accent)]', label: '散结' },
+  '安神定志':   { gradient: 'from-accent-600 to-secondary-700', text: 'text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]', bg: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25', ring: 'ring-[var(--color-accent-container)] dark:ring-[var(--color-accent)]', label: '安神' },
+  '健脾和胃':   { gradient: 'from-warning-600 to-warning-700', text: 'text-[var(--color-warning-text)]', bg: 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25', ring: 'ring-[var(--color-warning-container)] dark:ring-[var(--color-warning)]', label: '健脾' },
+  '补肾填精':   { gradient: 'from-success-600 to-success-700', text: 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]', bg: 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25', ring: 'ring-[var(--color-success-container)] dark:ring-[var(--color-success)]', label: '补肾' },
   '清热利湿':   { gradient: 'from-info-600 to-info-700',   text: 'text-info-700 dark:text-info-700', bg: 'bg-info-100 dark:bg-info-300/25', ring: 'ring-info-300 dark:ring-info-700', label: '利湿' },
   '调和营卫':   { gradient: 'from-danger-600 to-danger-700',  text: 'text-danger-700 dark:text-danger-700', bg: 'bg-danger-100 dark:bg-danger-300/25', ring: 'ring-danger-300 dark:ring-danger-700', label: '调和' },
-  '通络止痛':   { gradient: 'from-neutral-600 to-neutral-700', text: 'text-neutral-700 dark:text-neutral-400', bg: 'bg-neutral-100 dark:bg-neutral-900/30', ring: 'ring-neutral-300 dark:ring-neutral-700', label: '通络' },
+  '通络止痛':   { gradient: 'from-neutral-600 to-neutral-700', text: 'text-[var(--text-primary)] dark:text-[var(--text-muted)]', bg: 'bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/30', ring: 'ring-neutral-300 dark:ring-neutral-700', label: '通络' },
 }
 
 function getTheme(cat?: string) {
-  if (!cat) return { gradient: 'from-primary-600 to-secondary-600', text: 'text-neutral-600 dark:text-neutral-400', bg: 'bg-neutral-100 dark:bg-neutral-800', ring: 'ring-neutral-300', label: '方' }
-  return CATEGORY_THEME[cat] ?? { gradient: 'from-primary-600 to-secondary-600', text: 'text-neutral-600 dark:text-neutral-400', bg: 'bg-neutral-100 dark:bg-neutral-800', ring: 'ring-neutral-300', label: cat.slice(0, 2) }
+  if (!cat) return { gradient: 'from-primary-600 to-secondary-600', text: 'text-[var(--text-secondary)]', bg: 'bg-[var(--bg-tertiary)]', ring: 'ring-neutral-300', label: '方' }
+  return CATEGORY_THEME[cat] ?? { gradient: 'from-primary-600 to-secondary-600', text: 'text-[var(--text-secondary)]', bg: 'bg-[var(--bg-tertiary)]', ring: 'ring-neutral-300', label: cat.slice(0, 2) }
 }
 
 // 字号映射：small=0.8125rem, medium=0.9375rem (默认), large=1.0625rem
@@ -116,21 +115,22 @@ function extractToc(content: string): TocItem[] {
 
 // ── 分享弹窗 ────────────────────────────────────────────────
 function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () => void; caseTitle: string }) {
+  void caseTitle
   if (!open) return null
   const shareUrl = window.location.href
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
-      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
+      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-[var(--border-color)]">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-text-primary">分享案例</h3>
-            <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <h3 className="font-semibold text-[var(--text-primary)]">分享案例</h3>
+            <button onClick={onClose} className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] transition-colors">
               <X size={14} />
             </button>
           </div>
-          <p className="text-xs text-text-muted mb-4">将配方经验传递给更多需要的人</p>
-          <div className="space-y-3">
+          <p className="text-xs text-[var(--text-muted)] mb-[var(--space-apple-md)]">将配方经验传递给更多需要的人</p>
+          <div className="space-y-[var(--space-apple-sm)]">
             <div className="flex gap-2">
               <Input value={shareUrl} readOnly className="text-xs flex-1" />
               <Button size="sm" variant="secondary" onClick={() => {
@@ -140,14 +140,14 @@ function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () 
                 <Copy size={14} />
               </Button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {[
                 { icon: Share2, color: 'text-info-500', bg: 'bg-info-100 dark:bg-info-300/25', label: 'Twitter' },
-                { icon: Mail, color: 'text-primary-500', bg: 'bg-primary-100 dark:bg-primary-300/25', label: '邮件' },
-                { icon: LinkIcon, color: 'text-success-500', bg: 'bg-success-100 dark:bg-success-300/25', label: '复制链接' },
+                { icon: Mail, color: 'text-[var(--color-primary-text)]0', bg: 'bg-[var(--color-primary-container)]', label: '邮件' },
+                { icon: LinkIcon, color: 'text-[var(--color-success-text)]0', bg: 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25', label: '复制链接' },
               ].map(({ icon: Icon, color, bg, label }, i) => (
                 <button key={i}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors ${
+                  className={`flex flex-col items-center gap-1.5 p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] hover:bg-[var(--bg-secondary)] transition-colors ${
                     label === '复制链接' ? '' : ''
                   }`}
                   onClick={() => {
@@ -156,10 +156,10 @@ function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () 
                     useToastStore.getState().addToast({ type: 'success', message: '链接已复制到剪贴板' })
                   }}
                 >
-                  <div className={`w-8 h-8 rounded-full ${bg} flex items-center justify-center`}>
+                  <div className={`w-8 h-8 rounded-[var(--radius-pill)] ${bg} flex items-center justify-center`}>
                     <Icon size={14} className={color} />
                   </div>
-                  <span className="text-xs text-text-muted">{label}</span>
+                  <span className="text-xs text-[var(--text-muted)]">{label}</span>
                 </button>
               ))}
             </div>
@@ -188,22 +188,22 @@ function ReportDialog({ open, onClose, caseId }: { open: boolean; onClose: () =>
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
-      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
+      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-[var(--border-color)]">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-text-primary">举报案例</h3>
-            <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <h3 className="font-semibold text-[var(--text-primary)]">举报案例</h3>
+            <button onClick={onClose} className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] transition-colors">
               <X size={14} />
             </button>
           </div>
-          <p className="text-xs text-text-muted mb-4">帮助我们维护社区内容质量</p>
-          <div className="space-y-3">
+          <p className="text-xs text-[var(--text-muted)] mb-[var(--space-apple-md)]">帮助我们维护社区内容质量</p>
+          <div className="space-y-[var(--space-apple-sm)]">
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">举报类型</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">举报类型</label>
               <select value={reportType} onChange={e => setReportType(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-background text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
+                className="w-full px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-background text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
                 <option value="wrong_content">内容错误</option>
                 <option value="inappropriate">不当内容</option>
                 <option value="spam">垃圾广告</option>
@@ -211,15 +211,15 @@ function ReportDialog({ open, onClose, caseId }: { open: boolean; onClose: () =>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1.5">详细说明</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">详细说明</label>
               <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="请描述您举报的原因..." rows={3} maxLength={500} />
-              <p className="text-xs text-text-muted mt-1">{reason.length}/500</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">{reason.length}/500</p>
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
-            <Button variant="secondary" size="sm" onClick={onClose} className="flex-1 rounded-xl">取消</Button>
+          <div className="flex gap-2 mt-[var(--space-apple-md)]">
+            <Button variant="secondary" size="sm" onClick={onClose} className="flex-1 rounded-[var(--radius-Apple-md)]">取消</Button>
             <Button size="sm" onClick={handleSubmit} disabled={submitting || reason.length < 5}
-              className="flex-1 rounded-xl bg-error-500 hover:bg-error-600 text-white">
+              className="flex-1 rounded-[var(--radius-Apple-md)] bg-[var(--color-error-container)]0 hover:bg-[var(--color-error)] text-white">
               {submitting ? '提交中...' : '提交举报'}
             </Button>
           </div>
@@ -235,26 +235,26 @@ function DeleteDialog({ open, onClose, onConfirm, caseTitle }: {
 }) {
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
-      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
+      <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-[var(--border-color)]">
         <CardContent className="p-5">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-error-100 dark:bg-error-300/25 flex items-center justify-center shrink-0">
-              <Trash2 size={18} className="text-error-500" />
+          <div className="flex items-start gap-[var(--space-apple-sm)] mb-[var(--space-apple-sm)]">
+            <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/25 flex items-center justify-center shrink-0">
+              <Trash2 size={18} className="text-[var(--color-error-text)]0" />
             </div>
             <div>
-              <h3 className="font-semibold text-text-primary">确认删除案例</h3>
-              <p className="text-xs text-text-muted mt-0.5">此操作不可撤销，案例内容将被永久删除</p>
+              <h3 className="font-semibold text-[var(--text-primary)]">确认删除案例</h3>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">此操作不可撤销，案例内容将被永久删除</p>
             </div>
           </div>
-          <div className="bg-neutral-50 dark:bg-neutral-900 rounded-xl p-3 mb-4">
-            <p className="text-sm text-text-secondary truncate">{caseTitle}</p>
+          <div className="bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-sm)] mb-[var(--space-apple-md)]">
+            <p className="text-sm text-[var(--text-secondary)] truncate">{caseTitle}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={onClose} className="flex-1 rounded-xl">取消</Button>
+            <Button variant="secondary" size="sm" onClick={onClose} className="flex-1 rounded-[var(--radius-Apple-md)]">取消</Button>
             <Button size="sm" onClick={() => { onConfirm(); onClose() }}
-              className="flex-1 rounded-xl bg-error-500 hover:bg-error-600 text-white">确认删除</Button>
+              className="flex-1 rounded-[var(--radius-Apple-md)] bg-[var(--color-error-container)]0 hover:bg-[var(--color-error)] text-white">确认删除</Button>
           </div>
         </CardContent>
       </Card>
@@ -273,40 +273,40 @@ function CommentItem({
 }) {
   const [showReply, setShowReply] = useState(false)
   const [replyText, setReplyText] = useState('')
-  const colors = ['bg-primary-500', 'bg-secondary-500', 'bg-accent-500', 'bg-warning-500', 'bg-success-500']
+  const colors = ['bg-[var(--color-primary-container)]0', 'bg-[var(--color-secondary-container)]0', 'bg-[var(--color-accent-container)]0', 'bg-[var(--color-warning-container)]0', 'bg-[var(--color-success-container)]0']
   const colorIdx = Math.abs(Number(comment.id)) % colors.length
 
   return (
     <div className="space-y-2">
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800">
-        <div className={`w-9 h-9 rounded-xl ${colors[colorIdx]} flex items-center justify-center shrink-0 text-white text-xs font-bold shadow-sm`}>
+      <div className="flex items-start gap-[var(--space-apple-sm)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+        <div className={`w-9 h-9 rounded-[var(--radius-Apple-md)] ${colors[colorIdx]} flex items-center justify-center shrink-0 text-white text-xs font-bold shadow-sm`}>
           {(comment.author || '用').slice(0, 1)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="font-medium text-sm text-text-primary">{comment.author || '匿名用户'}</span>
-            <span className="text-xs text-text-muted flex items-center gap-1"><Clock size={11} />{new Date(comment.created_at).toLocaleString('zh-CN')}</span>
+            <span className="font-medium text-sm text-[var(--text-primary)]">{comment.author || '匿名用户'}</span>
+            <span className="text-xs text-[var(--text-muted)] flex items-center gap-1"><Clock size={11} />{new Date(comment.created_at).toLocaleString('zh-CN')}</span>
           </div>
-          <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">{comment.content}</p>
           <div className="flex items-center gap-4 mt-2.5">
             <button
               onClick={() => onLike(Number(comment.id))}
               className={`inline-flex items-center gap-1 text-xs transition-colors ${
-                isLiked ? 'text-error-500' : 'text-text-muted hover:text-error-500'
+                isLiked ? 'text-[var(--color-error-text)]0' : 'text-[var(--text-muted)] hover:text-[var(--color-error-text)]0'
               }`}
             >
               <Heart size={12} className={isLiked ? 'fill-current' : ''} />{comment.likes || 0}
             </button>
-            <button onClick={() => setShowReply(!showReply)} className="text-xs text-text-muted hover:text-primary-500 transition-colors">回复</button>
+            <button onClick={() => setShowReply(!showReply)} className="text-xs text-[var(--text-muted)] hover:text-[var(--color-primary-text)]0 transition-colors">回复</button>
           </div>
         </div>
       </div>
       {showReply && (
         <div className="ml-12 flex gap-2">
-          <Input value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="写下回复..." className="flex-1 text-sm rounded-xl"
+          <Input value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="写下回复..." className="flex-1 text-sm rounded-[var(--radius-Apple-md)]"
             onKeyDown={e => e.key === 'Enter' && replyText.trim() && (onReply(Number(comment.id), replyText), setReplyText(''), setShowReply(false))} />
-          <Button size="sm" onClick={() => { if (replyText.trim()) { onReply(Number(comment.id), replyText); setReplyText(''); setShowReply(false) } }} disabled={!replyText.trim()} className="rounded-xl">发送</Button>
-          <Button size="sm" variant="secondary" onClick={() => setShowReply(false)} className="rounded-xl">取消</Button>
+          <Button size="sm" onClick={() => { if (replyText.trim()) { onReply(Number(comment.id), replyText); setReplyText(''); setShowReply(false) } }} disabled={!replyText.trim()} className="rounded-[var(--radius-Apple-md)]">发送</Button>
+          <Button size="sm" variant="secondary" onClick={() => setShowReply(false)} className="rounded-[var(--radius-Apple-md)]">取消</Button>
         </div>
       )}
       {comment.replies && comment.replies.length > 0 && (
@@ -323,33 +323,33 @@ function CommentItem({
 // ── 骨架屏 ──────────────────────────────────────────────────
 function DetailSkeleton() {
   return (
-    <div className="max-w-6xl mx-auto space-y-5 px-4 py-6">
-      <Skeleton className="h-5 w-40 rounded-full" />
+    <div className="max-w-[1600px] mx-auto space-y-5 px-[var(--space-apple-md)] py-[var(--space-apple-lg)]">
+      <Skeleton className="h-5 w-40 rounded-[var(--radius-pill)]" />
       <div className="grid lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-[var(--space-apple-md)]">
           <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900/20 dark:to-secondary-900/20 h-56" />
-          <Skeleton className="h-8 w-3/4 rounded-xl" />
-          <Skeleton className="h-4 w-full rounded-lg" />
-          <Skeleton className="h-4 w-2/3 rounded-lg" />
-          <div className="flex gap-3">
-            <Skeleton className="h-9 w-20 rounded-xl" />
-            <Skeleton className="h-9 w-20 rounded-xl" />
-            <Skeleton className="h-9 w-20 rounded-xl" />
+          <Skeleton className="h-8 w-3/4 rounded-[var(--radius-Apple-md)]" />
+          <Skeleton className="h-4 w-full rounded-[var(--radius-Apple-sm)]" />
+          <Skeleton className="h-4 w-2/3 rounded-[var(--radius-Apple-sm)]" />
+          <div className="flex gap-[var(--space-apple-sm)]">
+            <Skeleton className="h-9 w-20 rounded-[var(--radius-Apple-md)]" />
+            <Skeleton className="h-9 w-20 rounded-[var(--radius-Apple-md)]" />
+            <Skeleton className="h-9 w-20 rounded-[var(--radius-Apple-md)]" />
           </div>
-          <div className="space-y-3 pt-4">
+          <div className="space-y-[var(--space-apple-sm)] pt-[var(--space-apple-md)]">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex gap-3">
-                <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
+              <div key={i} className="flex gap-[var(--space-apple-sm)]">
+                <Skeleton className="w-9 h-9 rounded-[var(--radius-Apple-md)] shrink-0" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-3 w-1/4 rounded" />
-                  <Skeleton className="h-4 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4 rounded-lg" />
+                  <Skeleton className="h-4 w-full rounded-[var(--radius-Apple-sm)]" />
+                  <Skeleton className="h-4 w-3/4 rounded-[var(--radius-Apple-sm)]" />
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Skeleton className="h-40 rounded-2xl" />
           <Skeleton className="h-56 rounded-2xl" />
         </div>
@@ -477,13 +477,13 @@ export function FormulaCaseDetailPage() {
   if (isLoading) return <DetailSkeleton />
   if (!caseItem) {
     return (
-      <div className="max-w-4xl mx-auto py-16 px-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-[1600px] mx-auto py-16 px-[var(--space-apple-md)] text-center">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--bg-tertiary)] flex items-center justify-center mx-auto mb-[var(--space-apple-md)]">
           <FileText size={28} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         </div>
-        <h2 className="text-lg font-semibold text-text-primary mb-2">案例不存在</h2>
-        <p className="text-sm text-text-muted mb-6">该案例可能已被删除或不存在</p>
-        <Button variant="primary" onClick={() => navigate('/formulas/cases')} className="rounded-xl">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">案例不存在</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-6">该案例可能已被删除或不存在</p>
+        <Button variant="primary" onClick={() => navigate('/formulas/cases')} className="rounded-[var(--radius-Apple-md)]">
           <ArrowLeft size={15} className="mr-1.5" />返回案例库
         </Button>
       </div>
@@ -500,19 +500,19 @@ export function FormulaCaseDetailPage() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 lg:px-6 py-6 space-y-5">
+      <div className="max-w-[1600px] mx-auto px-[var(--space-apple-md)] lg:px-6 py-[var(--space-apple-lg)] space-y-5">
 
         {/* ── 面包屑 ── */}
-        <nav className="flex items-center gap-1.5 text-sm text-text-muted flex-wrap" aria-label="面包屑导航">
-          <Link to="/formulas/cases" className="hover:text-primary-500 transition-colors flex items-center gap-1">
+        <nav className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] flex-wrap" aria-label="面包屑导航">
+          <Link to="/formulas/cases" className="hover:text-[var(--color-primary-text)]0 transition-colors flex items-center gap-1">
             <ArrowLeft size={13} />案例库
           </Link>
           <ChevronRight size={13} />
           {caseItem.category && (
-            <span className="hover:text-primary-500 transition-colors cursor-pointer">{caseItem.category}</span>
+            <span className="hover:text-[var(--color-primary-text)]0 transition-colors cursor-pointer">{caseItem.category}</span>
           )}
           <ChevronRight size={13} />
-          <span className="text-text-primary font-medium truncate max-w-[200px]">{caseItem.title}</span>
+          <span className="text-[var(--text-primary)] font-medium truncate max-w-[200px]">{caseItem.title}</span>
         </nav>
 
         {/* ── 双栏布局 ── */}
@@ -522,33 +522,33 @@ export function FormulaCaseDetailPage() {
           <div className="lg:col-span-2 space-y-5">
 
             {/* Hero Banner */}
-            <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${theme.gradient} p-6 text-white shadow-lg`}>
+            <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${theme.gradient} p-4 sm:p-[var(--space-apple-lg)] text-white shadow-lg`}>
               {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white dark:bg-neutral-900/5 rounded-full -translate-y-1/2 translate-x-8" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-8" />
-              <div className="absolute top-4 right-8 w-16 h-16 border border-white/10 rounded-2xl rotate-12" />
-              <div className="absolute bottom-8 left-16 w-8 h-8 border border-white/10 rounded-full" />
+              <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--bg-secondary)]/5 rounded-[var(--radius-pill)] -translate-y-1/2 translate-x-8" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--bg-secondary)]/5 rounded-[var(--radius-pill)] translate-y-1/2 -translate-x-8" />
+              <div className="absolute top-[var(--space-apple-md)] right-8 w-16 h-16 border border-white/10 rounded-2xl rotate-12" />
+              <div className="absolute bottom-8 left-16 w-8 h-8 border border-white/10 rounded-[var(--radius-pill)]" />
 
               <div className="relative">
                 {/* Badges */}
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-primary-700 dark:text-white shadow-sm`}>
+                <div className="flex items-center gap-2 mb-[var(--space-apple-sm)] flex-wrap">
+                  <span className={`inline-flex items-center px-[var(--space-apple-sm)] py-1 rounded-[var(--radius-pill)] text-xs font-bold bg-[var(--bg-secondary)]/20 backdrop-blur-sm border border-white/30 text-[var(--color-primary-text)] dark:text-white shadow-sm`}>
                     {caseItem.category ?? '未分类'}
                   </span>
                   {caseItem.is_featured && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-warning-500/90 text-white backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-pill)] text-xs font-semibold bg-[var(--color-warning-container)]0/90 text-white backdrop-blur-sm">
                       <Award size={11} className="fill-white" />推荐案例
                     </span>
                   )}
                   {caseItem.generated_by_ai && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-900/20 backdrop-blur-sm border border-white/30 text-primary-700 dark:text-white">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-pill)] text-xs font-semibold bg-[var(--bg-secondary)]/20 backdrop-blur-sm border border-white/30 text-[var(--color-primary-text)] dark:text-white">
                       <Sparkles size={11} />AI生成
                     </span>
                   )}
                 </div>
 
                 {/* Title — 设计系统 H2 级别 */}
-                <h2 className="font-semibold leading-tight mb-3 text-white tracking-tight">
+                <h2 className="font-semibold leading-tight mb-[var(--space-apple-sm)] text-white tracking-tight">
                   {caseItem.title}
                 </h2>
 
@@ -581,7 +581,7 @@ export function FormulaCaseDetailPage() {
             {caseItem.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {caseItem.tags.map(tag => (
-                  <span key={tag} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${theme.bg} ${theme.text} ring-1 ${theme.ring}`}>
+                  <span key={tag} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-pill)] text-xs font-medium ${theme.bg} ${theme.text} ring-1 ${theme.ring}`}>
                     <TagIcon size={10} />{tag}
                   </span>
                 ))}
@@ -590,16 +590,16 @@ export function FormulaCaseDetailPage() {
 
             {/* ── 图片画廊 ── */}
             {caseImages.length > 0 && (
-              <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
+              <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)] overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="flex items-center gap-2 px-4 pt-4 pb-2">
-                    <ImageIcon size={14} className="text-primary-500" />
-                    <span className="text-xs font-medium text-text-muted uppercase tracking-wider">案例配图</span>
-                    <span className="text-xs text-text-disabled ml-auto">{caseImages.length} 张</span>
+                  <div className="flex items-center gap-2 px-[var(--space-apple-md)] pt-[var(--space-apple-md)] pb-2">
+                    <ImageIcon size={14} className="text-[var(--color-primary-text)]0" />
+                    <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">案例配图</span>
+                    <span className="text-xs text-[var(--text-muted)] ml-auto">{caseImages.length} 张</span>
                   </div>
-                  <div className="flex gap-2 px-4 pb-4 overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-2 px-[var(--space-apple-md)] pb-[var(--space-apple-md)] overflow-x-auto scrollbar-hide">
                     {caseImages.map((url, i) => (
-                      <img key={i} src={url} alt={`配图${i + 1}`} className="h-32 rounded-xl object-cover shrink-0 border border-neutral-200 dark:border-neutral-700 hover:opacity-90 transition-opacity cursor-zoom-in" />
+                      <img key={i} src={url} alt={`配图${i + 1}`} className="h-32 rounded-[var(--radius-Apple-md)] object-cover shrink-0 border border-[var(--border-color)] hover:opacity-90 transition-opacity cursor-zoom-in" />
                     ))}
                   </div>
                 </CardContent>
@@ -607,33 +607,33 @@ export function FormulaCaseDetailPage() {
             )}
 
             {/* ── 内容卡片 ── */}
-            <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-              <CardContent ref={contentRef} className="p-6">
+            <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)]">
+              <CardContent ref={contentRef} className="p-[var(--space-apple-lg)]">
                 {/* Section Header */}
-                <div className="flex items-center justify-between mb-5 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
                   <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 rounded-full bg-primary-500 shrink-0" />
-                    <h2 className="font-semibold text-text-primary text-body">案例内容</h2>
+                    <div className="w-1 h-5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 shrink-0" />
+                    <h2 className="font-semibold text-[var(--text-primary)] text-body">案例内容</h2>
                   </div>
                   {/* 字号控制 & TOC 切换 */}
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setShowToc(!showToc)}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                        showToc ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-500' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      className={`w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-colors ${
+                        showToc ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]0' : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]'
                       }`}
                       title="目录"
                     >
                       <List size={13} />
                     </button>
-                    <span className="text-text-disabled text-xs px-0.5">/</span>
-                    <button onClick={() => setFontSize('small')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'small' ? 'bg-neutral-200 dark:bg-neutral-700 text-text-primary' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="小字">
+                    <span className="text-[var(--text-muted)] text-xs px-0.5">/</span>
+                    <button onClick={() => setFontSize('small')} className={`w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'small' ? 'bg-[var(--border-color)] text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]'}`} title="小字">
                       <Minus size={13} />
                     </button>
-                    <button onClick={() => setFontSize('medium')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-bold ${fontSize === 'medium' ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="中字">
+                    <button onClick={() => setFontSize('medium')} className={`w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-colors text-xs font-bold ${fontSize === 'medium' ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]' : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]'}`} title="中字">
                       M
                     </button>
-                    <button onClick={() => setFontSize('large')} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'large' ? 'bg-neutral-200 dark:bg-neutral-700 text-text-primary' : 'text-text-muted hover:bg-neutral-100 dark:hover:bg-neutral-800'}`} title="大字">
+                    <button onClick={() => setFontSize('large')} className={`w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-colors text-xs font-medium ${fontSize === 'large' ? 'bg-[var(--border-color)] text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]'}`} title="大字">
                       <Plus size={13} />
                     </button>
                   </div>
@@ -641,20 +641,20 @@ export function FormulaCaseDetailPage() {
 
                 {/* TOC */}
                 {showToc && tocItems.length > 0 && (
-                  <div className="mb-5 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <Hash size={13} className="text-primary-500" />
-                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">目录</span>
+                  <div className="mb-5 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+                    <div className="flex items-center gap-1.5 mb-[var(--space-apple-sm)]">
+                      <Hash size={13} className="text-[var(--color-primary-text)]0" />
+                      <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">目录</span>
                     </div>
                     <ul className="space-y-1">
                       {tocItems.map((item, i) => (
                         <li key={i}>
-                          <a href={`#${item.id}`} className={`flex items-center gap-2 text-sm text-text-secondary hover:text-primary-500 transition-colors py-1 ${
+                          <a href={`#${item.id}`} className={`flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--color-primary-text)]0 transition-colors py-1 ${
                             item.level === 1 ? 'font-medium pl-0' :
-                            item.level === 2 ? 'pl-3' : 'pl-6 text-text-muted'
+                            item.level === 2 ? 'pl-3' : 'pl-6 text-[var(--text-muted)]'
                           }`}>
-                            <span className={`w-1 h-1 rounded-full shrink-0 ${
-                              item.level === 1 ? 'bg-primary-500' : item.level === 2 ? 'bg-secondary-500' : 'bg-accent-500'
+                            <span className={`w-1 h-1 rounded-[var(--radius-pill)] shrink-0 ${
+                              item.level === 1 ? 'bg-[var(--color-primary-container)]0' : item.level === 2 ? 'bg-[var(--color-secondary-container)]0' : 'bg-[var(--color-accent-container)]0'
                             }`} />
                             {item.text}
                           </a>
@@ -665,17 +665,17 @@ export function FormulaCaseDetailPage() {
                 )}
 
                 {/* Rendered content */}
-                <div className={`${FONT_SIZES[fontSize]} text-text-secondary leading-[1.8] whitespace-pre-wrap`}
+                <div className={`${FONT_SIZES[fontSize]} text-[var(--text-secondary)] leading-[1.8] whitespace-pre-wrap`}
                   style={{ fontFamily: 'var(--font-sans)' }}>
                   {caseItem.content!.split('\n').map((line, i) => {
-                    if (line.startsWith('# ')) return <h1 key={i} id={`toc-${i}`} className="font-semibold text-text-primary mt-6 mb-3 first:mt-0 tracking-tight">{line.slice(2)}</h1>
-                    if (line.startsWith('## ')) return <h2 key={i} id={`toc-${i}`} className="font-semibold text-text-primary mt-5 mb-2 tracking-tight">{line.slice(3)}</h2>
-                    if (line.startsWith('### ')) return <h3 key={i} id={`toc-${i}`} className="font-semibold text-text-primary mt-4 mb-1.5">{line.slice(4)}</h3>
-                    if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 list-disc text-text-secondary py-0.5">{line.slice(2)}</li>
+                    if (line.startsWith('# ')) return <h1 key={i} id={`toc-${i}`} className="font-semibold text-[var(--text-primary)] mt-6 mb-[var(--space-apple-sm)] first:mt-0 tracking-tight">{line.slice(2)}</h1>
+                    if (line.startsWith('## ')) return <h2 key={i} id={`toc-${i}`} className="font-semibold text-[var(--text-primary)] mt-5 mb-2 tracking-tight">{line.slice(3)}</h2>
+                    if (line.startsWith('### ')) return <h3 key={i} id={`toc-${i}`} className="font-semibold text-[var(--text-primary)] mt-[var(--space-apple-md)] mb-1.5">{line.slice(4)}</h3>
+                    if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i} className="ml-4 list-disc text-[var(--text-secondary)] py-0.5">{line.slice(2)}</li>
                     if (line.startsWith('|')) return null
-                    if (line.startsWith('```')) return <code key={i} className="block my-2 px-3 py-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-950 text-sm font-mono text-neutral-700 dark:text-neutral-300 overflow-x-auto whitespace-pre">{line.slice(3).replace(/```$/, '')}</code>
+                    if (line.startsWith('```')) return <code key={i} className="block my-2 px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)] dark:bg-neutral-950 text-sm font-mono text-[var(--text-primary)] overflow-x-auto whitespace-pre">{line.slice(3).replace(/```$/, '')}</code>
                     if (line.trim() === '') return <br key={i} />
-                    return <p key={i} className="mb-2.5 text-text-secondary">{line}</p>
+                    return <p key={i} className="mb-2.5 text-[var(--text-secondary)]">{line}</p>
                   })}
                 </div>
               </CardContent>
@@ -686,12 +686,12 @@ export function FormulaCaseDetailPage() {
               <div className="flex gap-2 flex-wrap">
                 {caseItem.formula_id && (
                   <Link to={`/formulas/${caseItem.formula_id}`}>
-                    <Button variant="outline" size="sm" className="rounded-xl">
+                    <Button variant="outline" size="sm" className="rounded-[var(--radius-Apple-md)]">
                       <FileText size={14} className="mr-1.5" />查看配方
                     </Button>
                   </Link>
                 )}
-                <Button variant="danger" size="sm" className="rounded-xl"
+                <Button variant="danger" size="sm" className="rounded-[var(--radius-Apple-md)]"
                   onClick={() => setShowDeleteDialog(true)}>
                   <Trash2 size={14} className="mr-1.5" />删除案例
                 </Button>
@@ -701,28 +701,28 @@ export function FormulaCaseDetailPage() {
             {/* ── 相关案例 ── */}
             {relatedCases && relatedCases.filter(c => c.id !== caseItem.id).length > 0 && (
               <section aria-label="相关案例">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-text-primary flex items-center gap-2 text-body">
-                    <TrendingUp size={16} className="text-primary-500" />相关案例
+                <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                  <h2 className="font-semibold text-[var(--text-primary)] flex items-center gap-2 text-body">
+                    <TrendingUp size={16} className="text-[var(--color-primary-text)]0" />相关案例
                   </h2>
-                  <Link to={`/formulas/cases?formula_id=${caseItem.formula_id}`} className="text-xs text-primary-500 hover:text-primary-700 flex items-center gap-1 transition-colors">
+                  <Link to={`/formulas/cases?formula_id=${caseItem.formula_id}`} className="text-xs text-[var(--color-primary-text)]0 hover:text-[var(--color-primary-text)] flex items-center gap-1 transition-colors">
                     查看全部 <ArrowRight size={12} />
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)]">
                   {relatedCases.filter(c => c.id !== caseItem.id).slice(0, 4).map(c => {
                     const ct = getTheme(c.category ?? undefined)
                     return (
                       <Link key={c.id} to={`/formulas/cases/${c.id}`} className="group block">
-                        <div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-sm hover:shadow-primary-500/5 transition-all duration-200">
+                        <div className="rounded-[var(--radius-Apple-md)] overflow-hidden border border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)] hover:border-[var(--color-primary-border)] dark:hover:border-[var(--color-primary)] hover:shadow-sm hover:shadow-primary-500/5 transition-all duration-200">
                           <div className={`h-24 bg-gradient-to-br ${ct.gradient} flex items-center justify-center relative`}>
                             <span className="text-white/25 text-2xl font-bold select-none">{ct.label}</span>
-                            <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-white/10" />
+                            <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-[var(--radius-pill)] bg-[var(--bg-secondary)]/10" />
                           </div>
-                          <div className="p-3">
-                            <p className="font-medium text-sm text-text-primary truncate group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">{c.title}</p>
-                            <p className="text-xs text-text-muted mt-1 line-clamp-1">{c.summary}</p>
-                            <div className="flex items-center gap-2 mt-2 text-xs text-neutral-400 dark:text-neutral-400">
+                          <div className="p-[var(--space-apple-sm)]">
+                            <p className="font-medium text-sm text-[var(--text-primary)] truncate group-hover:text-[var(--color-primary-text)] dark:group-hover:text-[var(--color-primary-text)] transition-colors">{c.title}</p>
+                            <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-1">{c.summary}</p>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-[var(--text-muted)]">
                               <span className="inline-flex items-center gap-0.5"><Eye size={10} />{c.views}</span>
                               <span className="inline-flex items-center gap-0.5"><Heart size={10} />{c.likes}</span>
                             </div>
@@ -736,33 +736,33 @@ export function FormulaCaseDetailPage() {
             )}
 
             {/* ── 评论 ── */}
-            <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+            <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)]">
               <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-text-primary flex items-center gap-2 text-body">
-                    <MessageCircle size={16} className="text-primary-500" />
+                <div className="flex items-center justify-between mb-[var(--space-apple-md)]">
+                  <h2 className="font-semibold text-[var(--text-primary)] flex items-center gap-2 text-body">
+                    <MessageCircle size={16} className="text-[var(--color-primary-text)]0" />
                     评论
-                    <span className="text-xs font-semibold text-primary-700 dark:text-primary-700 bg-primary-50 dark:bg-primary-300/25 px-2 py-0.5 rounded-full">{topComments.length}</span>
+                    <span className="text-xs font-semibold text-[var(--color-primary-text)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/25 px-2 py-0.5 rounded-[var(--radius-pill)]">{topComments.length}</span>
                   </h2>
-                  <Button variant="secondary" size="sm" onClick={() => setShowCommentInput(!showCommentInput)} className="rounded-xl">
+                  <Button variant="secondary" size="sm" onClick={() => setShowCommentInput(!showCommentInput)} className="rounded-[var(--radius-Apple-md)]">
                     发表评论
                   </Button>
                 </div>
 
                 {showCommentInput && (
-                  <div className="mb-4 space-y-2">
+                  <div className="mb-[var(--space-apple-md)] space-y-2">
                     <Textarea
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
                       placeholder="分享你的想法，交流配方经验..."
                       rows={3}
-                      className="rounded-xl"
+                      className="rounded-[var(--radius-Apple-md)]"
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-text-muted">{commentText.length}/500</span>
+                      <span className="text-xs text-[var(--text-muted)]">{commentText.length}/500</span>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => { setShowCommentInput(false); setCommentText('') }} variant="secondary" className="rounded-xl">取消</Button>
-                        <Button size="sm" onClick={() => commentText.trim() && commentMutation.mutate(commentText)} disabled={!commentText.trim() || commentMutation.isPending} className="rounded-xl">
+                        <Button size="sm" onClick={() => { setShowCommentInput(false); setCommentText('') }} variant="secondary" className="rounded-[var(--radius-Apple-md)]">取消</Button>
+                        <Button size="sm" onClick={() => commentText.trim() && commentMutation.mutate(commentText)} disabled={!commentText.trim() || commentMutation.isPending} className="rounded-[var(--radius-Apple-md)]">
                           {commentMutation.isPending ? '发布中...' : '发布'}
                         </Button>
                       </div>
@@ -772,14 +772,14 @@ export function FormulaCaseDetailPage() {
 
                 {topComments.length === 0 ? (
                   <div className="text-center py-10">
-                    <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 rounded-2xl bg-[var(--bg-tertiary)] flex items-center justify-center mx-auto mb-[var(--space-apple-sm)]">
                       <MessageCircle size={22} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                     </div>
-                    <p className="text-sm text-text-muted">暂无评论</p>
-                    <p className="text-xs text-text-disabled mt-1">来发表第一条评论吧</p>
+                    <p className="text-sm text-[var(--text-muted)]">暂无评论</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-1">来发表第一条评论吧</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-[var(--space-apple-sm)]">
                     {topComments.map((c: CaseComment) => (
                       <CommentItem
                         key={c.id}
@@ -798,50 +798,50 @@ export function FormulaCaseDetailPage() {
           </div>
 
           {/* ═══ 右侧边栏 ═══ */}
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
 
             {/* 互动卡片 */}
-            <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-4">
-              <CardContent className="p-4">
-                <p className="text-caption font-medium text-text-muted uppercase tracking-wider mb-3">互动操作</p>
+            <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)] sticky top-[var(--space-apple-md)]">
+              <CardContent className="p-[var(--space-apple-md)]">
+                <p className="text-caption font-medium text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-sm)]">互动操作</p>
                 <div className="space-y-1.5">
                   {[
                     {
                       label: '点赞', sub: `${caseItem.likes} 次点赞`, icon: Heart, color: 'error',
-                      bg: 'bg-error-100 dark:bg-error-300/20', hover: 'hover:bg-error-50 dark:hover:bg-error-900/20', text: 'text-error-500',
+                      bg: 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/20', hover: 'hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20', text: 'text-[var(--color-error-text)]0',
                       action: () => likeMutation.mutate(), pending: likeMutation.isPending,
                     },
                     {
                       label: '收藏', sub: `${caseItem.bookmarks ?? 0} 次收藏`, icon: Bookmark, color: 'primary',
-                      bg: 'bg-primary-100 dark:bg-primary-300/20', hover: 'hover:bg-primary-50 dark:hover:bg-primary-900/20', text: 'text-primary-500',
+                      bg: 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20', hover: 'hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20', text: 'text-[var(--color-primary-text)]0',
                       action: () => bookmarkMutation.mutate(), pending: bookmarkMutation.isPending,
                     },
                     {
                       label: '分享', sub: '分享给好友', icon: Share2, color: 'secondary',
-                      bg: 'bg-secondary-100 dark:bg-secondary-300/20', hover: 'hover:bg-secondary-50 dark:hover:bg-secondary-900/20', text: 'text-secondary-500',
+                      bg: 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20', hover: 'hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20', text: 'text-[var(--color-secondary-text)]0',
                       action: () => setShowShareDialog(true), pending: false,
                     },
                     {
                       label: '举报', sub: '反馈问题', icon: Flag, color: 'warning',
-                      bg: 'bg-warning-100 dark:bg-warning-300/20', hover: 'hover:bg-warning-50 dark:hover:bg-warning-900/20', text: 'text-warning-500',
+                      bg: 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/20', hover: 'hover:bg-[var(--color-warning-container)] dark:hover:bg-[var(--color-warning-container)]/20', text: 'text-[var(--color-warning-text)]0',
                       action: () => setShowReportDialog(true), pending: false,
                     },
-                  ].map(({ label, sub, icon: Icon, color, bg, hover, text, action, pending }, i) => (
+                  ].map(({ label, sub, icon: Icon, bg, hover, text, action, pending }, i) => (
                     <button
                       key={i}
                       onClick={action}
                       disabled={pending}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${hover} ${pending ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      className={`w-full flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] transition-all duration-200 ${hover} ${pending ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                      <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
+                      <div className={`w-8 h-8 rounded-[var(--radius-Apple-md)] ${bg} flex items-center justify-center shrink-0`}>
                         <Icon size={15} className={text} />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="text-sm font-medium text-text-primary">{label}</p>
-                        <p className="text-xs text-text-muted">{sub}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{sub}</p>
                       </div>
                       {pending && (
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin text-text-muted" />
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-[var(--radius-pill)] animate-spin text-[var(--text-muted)]" />
                       )}
                     </button>
                   ))}
@@ -850,9 +850,9 @@ export function FormulaCaseDetailPage() {
             </Card>
 
             {/* 案例信息卡片 */}
-            <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-              <CardContent className="p-4">
-                <p className="text-caption font-medium text-text-muted uppercase tracking-wider mb-3">案例信息</p>
+            <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-[var(--bg-secondary)]">
+              <CardContent className="p-[var(--space-apple-md)]">
+                <p className="text-caption font-medium text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-sm)]">案例信息</p>
                 <div className="space-y-2.5">
                   {[
                     { icon: User, label: '作者', value: caseItem.creator_name || '未知用户' },
@@ -863,13 +863,13 @@ export function FormulaCaseDetailPage() {
                     { icon: TagIcon, label: '案例分类', value: caseItem.category || '未分类' },
                     { icon: Sparkles, label: '生成方式', value: caseItem.generated_by_ai ? 'AI 自动生成' : '人工编写' },
                   ].map(({ icon: Icon, label, value }, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-                        <Icon size={13} className="text-text-muted" />
+                    <div key={i} className="flex items-center gap-[var(--space-apple-sm)]">
+                      <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0">
+                        <Icon size={13} className="text-[var(--text-muted)]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-text-muted">{label}</p>
-                        <p className="text-sm font-medium text-text-primary truncate">{value}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{label}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{value}</p>
                       </div>
                     </div>
                   ))}
@@ -880,19 +880,19 @@ export function FormulaCaseDetailPage() {
             {/* 配方来源卡片 */}
             {caseItem.formula_id && (
               <Link to={`/formulas/${caseItem.formula_id}`} className="block group">
-                <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10 hover:shadow-md hover:shadow-primary-500/10 transition-all duration-200">
-                  <CardContent className="p-4">
+                <Card className="rounded-2xl border-[var(--border-color)] dark:border-neutral-800 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10 hover:shadow-md hover:shadow-primary-500/10 transition-all duration-200">
+                  <CardContent className="p-[var(--space-apple-md)]">
                     <div className="flex items-center gap-2.5 mb-2">
-                      <div className="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)]0 flex items-center justify-center shrink-0">
                         <FileText size={14} className="text-white" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-caption text-primary-700 dark:text-primary-700 font-medium">配方来源</p>
-                        <p className="text-sm font-semibold text-text-primary truncate">{caseItem.formula_name || `配方 #${caseItem.formula_id}`}</p>
+                        <p className="text-caption text-[var(--color-primary-text)] font-medium">配方来源</p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{caseItem.formula_name || `配方 #${caseItem.formula_id}`}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-text-muted mb-3">查看完整配方详情与配方分析</p>
-                    <div className="flex items-center text-xs text-primary-500 font-medium group-hover:text-primary-700">
+                    <p className="text-xs text-[var(--text-muted)] mb-[var(--space-apple-sm)]">查看完整配方详情与配方分析</p>
+                    <div className="flex items-center text-xs text-[var(--color-primary-text)]0 font-medium group-hover:text-[var(--color-primary-text)]">
                       前往配方 <ArrowRight size={12} className="ml-1 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </CardContent>

@@ -4,7 +4,7 @@
  * 管理历史会话：新建、切换、重命名、删除
  * 数据持久化到 localStorage
  */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { MessageSquare, Plus, Trash2, Edit2, Check, X, Clock, GitBranch } from 'lucide-react'
 
 export interface HistorySession {
@@ -32,7 +32,7 @@ const STORAGE_KEY = 'rmfood_chat_sessions_v1'
 
 // 持久化工具
 export function saveSessions(sessions: HistorySession[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)) } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)) } catch { /* 忽略持久化失败 */ }
 }
 export function loadSessions(): HistorySession[] {
   try {
@@ -52,7 +52,7 @@ export function formatTime(ts: number): string {
 
 export default function ChatHistory({
   sessions, activeSessionId, onNewChat, onSelectSession,
-  onDeleteSession, onRenameSession, isVisible, onToggle, onForkSession,
+  onDeleteSession, onRenameSession, isVisible, onForkSession,
 }: ChatHistoryProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')

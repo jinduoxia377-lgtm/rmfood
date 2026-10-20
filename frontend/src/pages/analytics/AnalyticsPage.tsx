@@ -1,19 +1,20 @@
 /**
  * 数据分析中心页面 — 参考 Dashboard 设计风格
- * 统一使用 bg-primary-600 横幅、StatCard、Card+CardHeader+CardContent 模式
+ * 统一使用 bg-[var(--color-primary)] 横幅、StatCard、Card+CardHeader+CardContent 模式
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  PageHeader, Badge, Tabs,
+  Tabs,
   TabsList, TabsTrigger, TabsContent, useToast,
-  Card, CardHeader, CardTitle, CardContent, Button,
+  Card, Button,
 } from '@/components/ui'
 import {
   BarChart3, TrendingUp,
   Activity, Users, FileText, FlaskConical, Zap,
-  Filter, Download, LayoutDashboard,
-  PieChart as PieIcon, LineChart, Settings2, Wifi, WifiOff,
-  RefreshCw, Clock, Loader2, AlertCircle,
+  Download, LayoutDashboard,
+  Settings2, Wifi, WifiOff,
+  RefreshCw, Clock, Loader2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAnalyticsWebSocket } from '@/hooks/useAnalyticsWebSocket'
@@ -28,7 +29,6 @@ import BusinessInsightsTab from './tabs/BusinessInsightsTab'
 // 导入企业级错误边界
 import { AnalyticsErrorBoundary } from '@/components/analytics/AnalyticsErrorBoundary'
 import { AnalyticsSkeleton } from '@/components/analytics/skeleton/AnalyticsSkeleton'
-import { logger } from '@/utils/safeLogger'
 import { useAnalyticsData } from '@/hooks/useAnalyticsData'
 
 type AnalyticsTab = 'overview' | 'trends' | 'reports' | 'business' | 'custom'
@@ -40,15 +40,16 @@ interface FilterConfig {
   users: string[]
 }
 
-const TABS: { key: AnalyticsTab; label: string; icon: LucideIcon }[] = [
-  { key: 'overview',        label: '概览',          icon: LayoutDashboard },
-  { key: 'trends',          label: '趋势分析',       icon: TrendingUp },
-  { key: 'reports',         label: '报表中心',       icon: FileText },
-  { key: 'business',        label: '业务洞察',       icon: FlaskConical },
-  { key: 'custom',          label: '自定义仪表盘',   icon: Settings2 },
+const TABS: { key: AnalyticsTab; labelKey: string; icon: LucideIcon }[] = [
+  { key: 'overview',        labelKey: 'pages.analytics.tabOverview', icon: LayoutDashboard },
+  { key: 'trends',          labelKey: 'pages.analytics.tabTrends', icon: TrendingUp },
+  { key: 'reports',         labelKey: 'pages.analytics.tabReports', icon: FileText },
+  { key: 'business',        labelKey: 'pages.analytics.tabBusiness', icon: FlaskConical },
+  { key: 'custom',          labelKey: 'pages.analytics.tabCustom', icon: Settings2 },
 ]
 
 export default function AnalyticsPage() {
+  const { t, i18n } = useTranslation()
   const [tab, setTab] = useState<AnalyticsTab>('overview')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<FilterConfig>({
@@ -80,7 +81,12 @@ export default function AnalyticsPage() {
   // ─── WebSocket 实时连接 ──────────────────────────────────────
   const wsUrl = useMemo(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${window.location.host}/api/v1/analytics/ws/dashboard`
+    // 优先使用 VITE_WS_ANALYTICS_URL（直连后端，避免依赖 dev 代理的 WS 转发）；
+    // 生产部署未配置该变量时，回退到同源路径（需网关/反向代理支持 WS 升级）。
+    return (
+      import.meta.env?.VITE_WS_ANALYTICS_URL ||
+      `${protocol}//${window.location.host}/api/v1/analytics/ws/dashboard`
+    )
   }, [])
 
   const {
@@ -130,10 +136,10 @@ export default function AnalyticsPage() {
         a.click()
         URL.revokeObjectURL(url)
       }
-    } catch (e) {
-      toast.error('导出失败，请稍后重试')
+    } catch {
+      toast.error(t('pages.analytics.exportFailed'))
     }
-  }, [dashboard, filters.timeRange, toast])
+  }, [dashboard, filters.timeRange, toast, t])
 
   // 初始加载完成后清除骨架屏（防止缓存命中时仍显示假 loading）
   useEffect(() => {
@@ -162,7 +168,7 @@ export default function AnalyticsPage() {
   }, [])
 
   const formatTime = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return timestamp.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 
   if (isLoading) {
@@ -170,47 +176,47 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="space-y-[var(--space-apple-md)] max-w-[1600px] mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-[var(--space-apple-lg)]">
 
-      {/* Primary Banner — 与 Dashboard 一致的 bg-primary-600 横幅 */}
-      <div className="surface-primary rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl font-bold leading-snug">数据分析中心</h1>
-            <p className="mt-1 text-white/85 text-sm">
-              配方管理 · 实验追踪 · 用户行为 · 系统性能 · 自定义报表
+      {/* Primary Banner — 与 Dashboard 一致的 bg-[var(--color-primary)] 横幅（移动端紧凑化） */}
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold leading-snug truncate">{t('pages.analytics.title')}</h1>
+            <p className="mt-0.5 text-white/85 text-xs sm:text-sm truncate">
+              {t('pages.analytics.subtitle')}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
             {/* 最后更新时间 */}
-            <div className="flex items-center gap-1.5 text-xs text-primary-700 dark:text-white/75 px-3 py-1.5 bg-primary-50 dark:bg-neutral-900/10 rounded-lg">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary-text)] dark:text-white/75 px-2.5 py-1.5 bg-[var(--color-primary-container)] dark:bg-[var(--bg-secondary)]/10 rounded-[var(--radius-Apple-sm)] shrink-0">
               <Clock className="w-3.5 h-3.5" />
-              <span>更新于 {lastFetched ? formatTime(lastFetched) : '--:--:--'}</span>
+              <span>{t('pages.analytics.updatedAt', { time: lastFetched ? formatTime(lastFetched) : '--:--:--' })}</span>
             </div>
             {/* 数据状态 */}
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-Apple-sm)] text-xs shrink-0 ${
               dataLoading
-                ? 'bg-white/95 dark:bg-warning-500/20 text-warning-800 dark:text-white'
-                : 'bg-white/95 dark:bg-success-500/20 text-success-800 dark:text-white'
+                ? 'bg-[var(--bg-secondary)]/95 dark:bg-[var(--color-warning-container)]0/20 text-[var(--color-warning-text)] dark:text-white'
+                : 'bg-[var(--bg-secondary)]/95 dark:bg-[var(--color-success-container)]0/20 text-[var(--color-success-text)] dark:text-white'
             }`}>
               {dataLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
-              {dataLoading ? '加载中' : '已连接'}
+              {dataLoading ? t('pages.analytics.loading') : t('pages.analytics.connected')}
             </div>
             {/* WebSocket 状态 */}
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-Apple-sm)] text-xs shrink-0 ${
               wsConnected
-                ? 'bg-white/95 dark:bg-success-500/20 text-success-800 dark:text-white'
+                ? 'bg-[var(--bg-secondary)]/95 dark:bg-[var(--color-success-container)]0/20 text-[var(--color-success-text)] dark:text-white'
                 : wsConnecting
-                  ? 'bg-white/95 dark:bg-warning-500/20 text-warning-800 dark:text-white'
-                  : 'bg-white/95 dark:bg-neutral-500/20 text-neutral-700 dark:text-white'
+                  ? 'bg-[var(--bg-secondary)]/95 dark:bg-[var(--color-warning-container)]0/20 text-[var(--color-warning-text)] dark:text-white'
+                  : 'bg-[var(--bg-secondary)]/95 dark:bg-[var(--bg-tertiary)]0/20 text-[var(--text-primary)] dark:text-white'
             }`}>
               {wsConnected
-                ? <Wifi className="w-3.5 h-3.5 text-success-700 dark:text-success-400" />
+                ? <Wifi className="w-3.5 h-3.5 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />
                 : wsConnecting
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-warning-700 dark:text-warning-400" />
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                   : <WifiOff className="w-3.5 h-3.5" />
               }
-              <span>{wsConnected ? '实时' : wsConnecting ? '连接中…' : '轮询'}</span>
+              <span>{wsConnected ? t('pages.analytics.realtime') : wsConnecting ? t('pages.analytics.connecting') : t('pages.analytics.polling')}</span>
             </div>
             {/* 刷新按钮 */}
             <Button
@@ -220,7 +226,7 @@ export default function AnalyticsPage() {
               onClick={refresh}
               disabled={dataLoading}
             >
-              刷新
+              <span className="hidden sm:inline">{t('pages.analytics.refresh')}</span>
             </Button>
             {/* 导出按钮 */}
             <Button
@@ -229,7 +235,7 @@ export default function AnalyticsPage() {
               icon={<Download size={14} />}
               onClick={() => handleExport('excel')}
             >
-              导出 CSV
+              <span className="hidden sm:inline">{t('pages.analytics.exportCsv')}</span>
             </Button>
             <Button
               variant="ghost"
@@ -237,7 +243,7 @@ export default function AnalyticsPage() {
               icon={<Download size={14} />}
               onClick={() => handleExport('json')}
             >
-              导出 JSON
+              <span className="hidden sm:inline">{t('pages.analytics.exportJson')}</span>
             </Button>
           </div>
         </div>
@@ -245,45 +251,45 @@ export default function AnalyticsPage() {
 
       {/* 筛选工具栏 */}
       <div ref={filterRef} className="relative">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           {/* 时间范围 */}
           <select
             value={filters.timeRange}
             onChange={(e) => setFilters({ ...filters, timeRange: e.target.value as FilterConfig['timeRange'] })}
-            className="px-3 py-2 text-sm input min-w-[110px] min-h-[44px]"
+            className="px-[var(--space-apple-sm)] py-2 text-sm input min-w-[110px] min-h-[44px]"
           >
-            <option value="7d">近 7 天</option>
-            <option value="30d">近 30 天</option>
-            <option value="90d">近 90 天</option>
-            <option value="1y">近 1 年</option>
+            <option value="7d">{t('pages.analytics.last7d')}</option>
+            <option value="30d">{t('pages.analytics.last30d')}</option>
+            <option value="90d">{t('pages.analytics.last90d')}</option>
+            <option value="1y">{t('pages.analytics.last1y')}</option>
           </select>
 
           {/* 高级筛选 */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center gap-1.5 ${
+            className={`px-[var(--space-apple-sm)] py-2 text-sm rounded-[var(--radius-Apple-sm)] border transition-colors flex items-center gap-1.5 ${
               showFilters
-                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-700'
-                : 'border-border text-text-secondary dark:text-neutral-300 hover:bg-surface-hover'
+                ? 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/40 border-[var(--color-primary-border)] dark:border-[var(--color-primary)] text-[var(--color-primary-text)]'
+                : 'border-border text-[var(--text-secondary)] dark:text-[var(--text-muted)] hover:bg-surface-hover'
             }`}
           >
             <Settings2 className="w-4 h-4" />
-            筛选
+            {t('pages.analytics.filter')}
           </button>
         </div>
 
         {/* 高级筛选面板 */}
         {showFilters && (
-          <div className="absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 z-50 p-5 w-full animate-micro-in">
+          <div className="absolute top-full left-0 mt-2 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-lg border border-[var(--border-color)] z-50 p-5 w-full animate-micro-in">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
-                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">数据类别</label>
+                <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">{t('pages.analytics.dataCategory')}</label>
                 <div className="space-y-1.5">
-                  {['功能性食品', '保健品', '营养补充剂', '药食同源'].map((category) => (
+                  {[t('pages.analytics.categories.functionalFood'), t('pages.analytics.categories.healthProducts'), t('pages.analytics.categories.nutritionSupplements'), t('pages.analytics.categories.foodHomology')].map((category) => (
                     <label key={category} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="rounded border-border text-primary-700"
+                        className="rounded border-border text-[var(--color-primary-text)]"
                         checked={filters.categories.includes(category)}
                         onChange={(e) => {
                           setFilters(prev => ({
@@ -294,19 +300,19 @@ export default function AnalyticsPage() {
                           }))
                         }}
                       />
-                      <span className="text-sm text-text-primary">{category}</span>
+                      <span className="text-sm text-[var(--text-primary)]">{category}</span>
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">状态</label>
+                <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">{t('pages.analytics.status')}</label>
                 <div className="space-y-1.5">
-                  {['草稿', '审核中', '已发布', '已归档'].map((status) => (
+                  {[t('pages.analytics.statusOptions.draft'), t('pages.analytics.statusOptions.inReview'), t('pages.analytics.statusOptions.published'), t('pages.analytics.statusOptions.archived')].map((status) => (
                     <label key={status} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="rounded border-border text-primary-700"
+                        className="rounded border-border text-[var(--color-primary-text)]"
                         checked={filters.status.includes(status)}
                         onChange={(e) => {
                           setFilters(prev => ({
@@ -317,20 +323,20 @@ export default function AnalyticsPage() {
                           }))
                         }}
                       />
-                      <span className="text-sm text-text-primary">{status}</span>
+                      <span className="text-sm text-[var(--text-primary)]">{status}</span>
                     </label>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">负责人</label>
+                <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">{t('pages.analytics.owner')}</label>
                 <div className="space-y-1.5 max-h-32 overflow-y-auto">
                   {apiFilters?.users?.length ? (
                     apiFilters.users.map((u) => (
                       <label key={u.id} className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          className="rounded border-border text-primary-700"
+                          className="rounded border-border text-[var(--color-primary-text)]"
                           checked={filters.users.includes(u.id)}
                           onChange={(e) => {
                             setFilters(prev => ({
@@ -341,31 +347,31 @@ export default function AnalyticsPage() {
                             }))
                           }}
                         />
-                        <span className="text-sm text-text-primary">{u.full_name || u.username}</span>
+                        <span className="text-sm text-[var(--text-primary)]">{u.full_name || u.username}</span>
                       </label>
                     ))
                   ) : (
-                    <span className="text-xs text-text-muted">暂无用户数据</span>
+                    <span className="text-xs text-[var(--text-muted)]">{t('pages.analytics.noUserData')}</span>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-2 mt-[var(--space-apple-md)] pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
               <button
                 onClick={() => {
                   setFilters({ timeRange: '30d', categories: [], status: [], users: [] })
                   setShowFilters(false)
                   refresh()
                 }}
-                className="px-3 py-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
+                className="px-[var(--space-apple-sm)] py-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
               >
-                重置
+                {t('pages.analytics.reset')}
               </button>
               <button
                 onClick={() => { setShowFilters(false); refresh() }}
-                className="px-4 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors"
+                className="px-[var(--space-apple-md)] py-1.5 bg-primary-container hover:bg-primary-container text-[var(--color-primary)] text-sm rounded-[var(--radius-Apple-sm)] transition-colors"
               >
-                应用筛选
+                {t('pages.analytics.applyFilters')}
               </button>
             </div>
           </div>
@@ -373,30 +379,30 @@ export default function AnalyticsPage() {
       </div>
 
       {/* 统计概览行 — 使用 StatCard 风格 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[var(--space-apple-sm)]">
         {[
-          { label: '配方总数', value: stats?.total_formulas ?? 0, icon: FlaskConical as LucideIcon, variant: 'primary' as const },
-          { label: '实验次数', value: stats?.total_experiments ?? 0, icon: Activity as LucideIcon, variant: 'secondary' as const },
-          { label: '活跃用户', value: stats?.active_users ?? 0, icon: Users as LucideIcon, variant: 'info' as const },
-          { label: 'AI 生成', value: stats?.data_points ?? 0, icon: BarChart3 as LucideIcon, variant: 'success' as const },
-          { label: '成功率', value: `${stats?.success_rate ?? 0}%`, icon: TrendingUp as LucideIcon, variant: 'warning' as const },
-          { label: '存储使用', value: `${(stats?.avg_processing_time ?? 0).toFixed(1)} MB`, icon: Zap as LucideIcon, variant: 'primary' as const },
-        ].map(({ label, value, icon: Icon, variant }) => (
+          { label: t('pages.analytics.statTotalFormulas'), value: stats?.total_formulas ?? 0, icon: FlaskConical as LucideIcon, variant: 'primary' as const },
+          { label: t('pages.analytics.statExperiments'), value: stats?.total_experiments ?? 0, icon: Activity as LucideIcon, variant: 'secondary' as const },
+          { label: t('pages.analytics.statActiveUsers'), value: stats?.active_users ?? 0, icon: Users as LucideIcon, variant: 'info' as const },
+          { label: t('pages.analytics.statAiGenerated'), value: stats?.data_points ?? 0, icon: BarChart3 as LucideIcon, variant: 'success' as const },
+          { label: t('pages.analytics.statSuccessRate'), value: `${stats?.success_rate ?? 0}%`, icon: TrendingUp as LucideIcon, variant: 'warning' as const },
+          { label: t('pages.analytics.statStorage'), value: `${(stats?.avg_processing_time ?? 0).toFixed(1)} MB`, icon: Zap as LucideIcon, variant: 'primary' as const },
+        ].map(({ label, value, icon: Icon }) => (
           <Card key={label} className="px-5 py-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-text-muted">{label}</p>
-              <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
-                <Icon size={14} className="text-primary-700 dark:text-primary-700" />
+              <p className="text-xs text-[var(--text-muted)]">{label}</p>
+              <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                <Icon size={14} className="text-[var(--color-primary-text)]" />
               </div>
             </div>
-            <p className="text-xl font-bold text-text-primary">{value}</p>
+            <p className="text-xl font-bold text-[var(--text-primary)]">{value}</p>
           </Card>
         ))}
       </div>
 
       {/* 错误提示 */}
       {dataError && (
-        <div className="p-3 rounded-lg bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-600 text-sm">
+        <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/20 border border-[var(--color-error-border)] dark:border-error-900/40 text-[var(--color-error-text)] dark:text-[var(--color-error-text)] text-sm">
           {dataError}
         </div>
       )}
@@ -404,9 +410,9 @@ export default function AnalyticsPage() {
       {/* Tab 导航 — 与 Dashboard 一致的药丸风格 */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalyticsTab)}>
         <TabsList className="mb-0">
-          {TABS.map(({ key, label, icon: Icon }) => (
+          {TABS.map(({ key, labelKey, icon: Icon }) => (
             <TabsTrigger key={key} value={key} icon={<Icon className="w-3.5 h-3.5" />}>
-              {label}
+              {t(labelKey)}
             </TabsTrigger>
           ))}
         </TabsList>

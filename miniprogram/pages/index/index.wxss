@@ -12,7 +12,7 @@
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
 }
 
 /* ============================================
@@ -25,7 +25,7 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--blur-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5rpx solid rgba(60, 60, 67, 0.08);
@@ -44,15 +44,15 @@
 }
 
 .brand-title {
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
   font-weight: 700;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   letter-spacing: -0.5rpx;
 }
 
 .brand-subtitle {
-  font-size: 22rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
   margin-top: 2rpx;
 }
 
@@ -87,8 +87,8 @@
 }
 
 .search-placeholder {
-  font-size: 28rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-body);
+  color: var(--color-text-tertiary);
   margin-left: 12rpx;
 }
 
@@ -98,7 +98,7 @@
 
 .content {
   flex: 1;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
 }
 
 .body {
@@ -121,9 +121,9 @@
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: var(--font-size-title-3);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
 }
 
 .more {
@@ -135,8 +135,8 @@
 }
 
 .more text {
-  font-size: 26rpx;
-  color: #007AFF;
+  font-size: var(--font-size-callout);
+  color: var(--color-brand-primary);
 }
 
 /* ============================================
@@ -155,7 +155,7 @@
   flex-direction: column;
   align-items: center;
   padding: 28rpx 12rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 20rpx;
 }
 
@@ -173,23 +173,23 @@
   margin-bottom: 12rpx;
 }
 
-.quick-icon.blue { background: linear-gradient(135deg, #007AFF, #5AC8FA); }
-.quick-icon.green { background: linear-gradient(135deg, #34C759, #30D158); }
-.quick-icon.orange { background: linear-gradient(135deg, #FF9500, #FFCC00); }
-.quick-icon.purple { background: linear-gradient(135deg, #AF52DE, #5856D6); }
-.quick-icon.teal { background: linear-gradient(135deg, #5AC8FA, #007AFF); }
-.quick-icon.red { background: linear-gradient(135deg, #FF3B30, #FF453A); }
+.quick-icon.blue { background: linear-gradient(135deg, var(--color-system-blue), var(--color-system-teal)); }
+.quick-icon.green { background: linear-gradient(135deg, var(--color-system-green), var(--color-system-green)); }
+.quick-icon.orange { background: linear-gradient(135deg, var(--color-system-orange), var(--color-system-yellow)); }
+.quick-icon.purple { background: linear-gradient(135deg, var(--color-system-purple), var(--color-system-indigo)); }
+.quick-icon.teal { background: linear-gradient(135deg, var(--color-system-teal), var(--color-system-blue)); }
+.quick-icon.red { background: linear-gradient(135deg, var(--color-system-red), var(--color-system-red)); }
 
 .quick-name {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   text-align: center;
 }
 
 .quick-desc {
-  font-size: 20rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-fine-print);
+  color: var(--color-text-tertiary);
   margin-top: 4rpx;
   text-align: center;
 }
@@ -200,7 +200,7 @@
 
 .featured-card {
   margin: 0 24rpx;
-  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  background: linear-gradient(135deg, var(--color-system-blue) 0%, var(--color-system-teal) 100%);
   border-radius: 24rpx;
   padding: 32rpx;
   color: white;
@@ -217,13 +217,13 @@
 }
 
 .featured-title {
-  font-size: 34rpx;
+  font-size: var(--font-size-title-3);
   font-weight: 600;
   color: white;
 }
 
 .featured-subtitle {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -251,7 +251,7 @@
 .tip-card {
   display: inline-block;
   width: 260rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 20rpx;
   padding: 24rpx;
 }
@@ -261,17 +261,17 @@
 }
 
 .tip-title {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   line-height: 1.4;
   display: block;
   margin-bottom: 8rpx;
 }
 
 .tip-desc {
-  font-size: 22rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -285,7 +285,7 @@
 
 .formula-list {
   margin: 0 24rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 20rpx;
   overflow: hidden;
 }
@@ -312,15 +312,15 @@
 }
 
 .formula-name {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   display: block;
 }
 
 .formula-subtitle {
-  font-size: 24rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
   margin-top: 6rpx;
   display: block;
 }
@@ -330,8 +330,8 @@
   align-items: center;
   gap: 8rpx;
   margin-top: 10rpx;
-  font-size: 20rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-fine-print);
+  color: var(--color-text-tertiary);
 }
 
 .divider {

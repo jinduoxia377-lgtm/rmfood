@@ -9,22 +9,14 @@ import type { SynergyResult } from '@/types';
 // ===== 统一类型导入 (从 ai.api.ts) =====
 // 所有 API 响应类型集中管理，此处仅为向后兼容重新导出
 import type {
-  PatentSynergyScores,
   AICandidate,
-  GenerationRecord,
   SafetyCheckResult,
-  PeptideResult,
   PeptideGenerateResponse,
-  OptimizedPeptide,
   PeptideOptimizeResponse,
   SampleResponse,
   PepinventStatusResponse,
   GeneticGenerateResponse,
   GeneticHybridResponse,
-  MOObjective,
-  MOParetoPoint,
-  MOCandidate,
-  MOBestByObjective,
   MultiObjectiveResponse,
   MOPresetInfo,
   GAHistoryRecord,
@@ -37,15 +29,6 @@ import type {
   ComparisonResult,
   TastePredictionResponse,
   StabilityPredictionResponse,
-  ModelHealth,
-  RateLimitInfo,
-  AISummaryStats,
-  KnowledgeDoc,
-  KnowledgeChunk,
-  SearchResult,
-  MILPResult,
-  NutritionConstraint,
-  NutritionObjectiveConfig,
 } from '@/types/ai.api';
 
 export type {
@@ -429,6 +412,7 @@ export function sanitizeApiKey(rawKey: string): string {
   let cleaned = rawKey.trim();
   cleaned = cleaned.replace(/[\s\r\n\t\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, '');
   cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '');
+  // eslint-disable-next-line no-control-regex -- 有意清理输入中的控制字符
   cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, '');
 
   if (import.meta.env.DEV && originalLength !== cleaned.length) {

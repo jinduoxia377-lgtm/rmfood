@@ -113,6 +113,7 @@ export class FeedbackTracker {
   }
 
   recordModification(suggestionId: string, originalText: string, _modifiedText: string): void {
+    void _modifiedText;
     this.addRecord(suggestionId, 'modify', {
       inputText: originalText,
       position: 0,
@@ -313,6 +314,7 @@ export class QualityScorer {
   }
 
   private calculateNoveltyScore(suggestion: ExpertSuggestionV2, _userInput: string): number {
+    void _userInput;
     const feedbackRecords = this.feedbackTracker.getFeedbackForSuggestion(suggestion.id)
 
     if (feedbackRecords.length === 0) return 80 // 新建议默认高分

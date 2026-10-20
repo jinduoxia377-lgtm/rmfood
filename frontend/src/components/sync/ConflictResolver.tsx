@@ -4,13 +4,10 @@ import {
   CheckCircle,
   XCircle,
   GitMerge,
-  Clock,
   User,
   Server,
-  ArrowRightLeft,
   ChevronDown,
   ChevronUp,
-  Copy,
   Eye,
   EyeOff,
   RefreshCw,
@@ -92,7 +89,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 }) => {
   const [expandedConflicts, setExpandedConflicts] = useState<Set<string>>(new Set());
   const [selectedResolution, setSelectedResolution] = useState<Record<string, 'local' | 'server' | 'custom'>>({});
-  const [customEdits, setCustomEdits] = useState<Record<string, Record<string, any>>>({});
+  const [customEdits] = useState<Record<string, Record<string, any>>>({});
   const [showSensitiveData, setShowSensitiveData] = useState<Set<string>>(new Set());
 
   const pendingConflicts = useMemo(
@@ -164,16 +161,6 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
     onBatchResolve?.(resolutions);
   }, [pendingConflicts, onBatchResolve]);
 
-  const updateCustomEdit = useCallback((conflictId: string, field: string, value: any) => {
-    setCustomEdits((prev) => ({
-      ...prev,
-      [conflictId]: {
-        ...prev[conflictId],
-        [field]: value,
-      },
-    }));
-  }, []);
-
   const formatTimestamp = (ts?: string) => {
     if (!ts) return '未知时间';
     try {
@@ -209,6 +196,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
   };
 
   const renderFieldValue = (value: any, label: string): React.ReactNode => {
+    void label;
     if (value === null || value === undefined) {
       return <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] italic">空值</span>;
     }
@@ -290,7 +278,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
 
         {isExpanded && (
           <div className="px-4 pb-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-secondary-500" />
                 <span className="text-neutral-600">本地:</span>
@@ -322,7 +310,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
                 {conflict.conflictingFields.map((field) => (
                   <div key={field} className="border rounded p-3 bg-white dark:bg-neutral-900">
                     <div className="font-medium text-sm mb-2 text-neutral-800">{field}</div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <div className="text-xs font-medium text-secondary-600 flex items-center gap-1">
                           <User className="w-3 h-3" /> 本地版本

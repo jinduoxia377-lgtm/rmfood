@@ -6,7 +6,7 @@
  * - 测试和监控集成状态
  */
 import { useState, useEffect } from 'react'
-import { Settings, Plus, Edit, Trash2, Play, TestTube, Activity, AlertCircle, CheckCircle2, RefreshCw, Clock, History } from 'lucide-react'
+import { Settings, Plus, Edit, Trash2, TestTube, AlertCircle, CheckCircle2, RefreshCw, Clock } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Textarea } from '@/components/ui'
 import { apiIntegrationService, type IntegrationConfig, type IntegrationTestResult, type IntegrationType, type AuthType, type IntegrationStatus } from '@/services/apiIntegrationService'
 import { logger } from '@/utils/safeLogger';
@@ -52,11 +52,12 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
   useEffect(() => {
     // 加载集成配置
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIntegrations(apiIntegrationService.getAllIntegrations())
   }, [])
 
   const handleCreateIntegration = () => {
-    const integration = apiIntegrationService.createIntegration(newIntegration)
+    apiIntegrationService.createIntegration(newIntegration)
     setIntegrations(apiIntegrationService.getAllIntegrations())
     setIsCreateDialogOpen(false)
     // 重置表单
@@ -213,7 +214,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="list" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-1 sm:grid-cols-2">
             <TabsTrigger value="list">集成列表</TabsTrigger>
             <TabsTrigger value="monitor">监控状态</TabsTrigger>
           </TabsList>

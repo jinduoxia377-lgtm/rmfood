@@ -1,0 +1,209 @@
+﻿AST 嵌套交互元素探针结果：44 个文件 / 161 处违规
+
+src/components/academic/ChapterTree.tsx  (6 处)
+    :198  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<button>
+    :212  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<button>
+    :231  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<input>
+    :258  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<button>
+    :270  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<button>
+    :282  外层<<div className={cn( 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors d>  内含<<button>
+src/components/academic/CitationPanel.tsx  (2 处)
+    :317  外层<<div key={citation.id} className={cn( 'p-3 rounded-lg border cursor-pointer transition-colors', sele>  内含<<input>
+    :339  外层<<div key={citation.id} className={cn( 'p-3 rounded-lg border cursor-pointer transition-colors', sele>  内含<<button>
+src/components/academic/DocumentEditor.tsx  (12 处)
+    :302  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :310  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :318  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :325  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<button>
+    :331  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<button>
+    :349  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :357  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :366  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :377  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :389  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<input>
+    :396  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<button>
+    :402  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md" role="button" tabIndex=>  内含<<button>
+src/components/academic/editor/DocumentImport.tsx  (7 处)
+    :284  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :290  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<button>
+    :310  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<input>
+    :322  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<button>
+    :363  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<button>
+    :389  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<button>
+    :395  外层<<div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4" role="button>  内含<<button>
+src/components/ai/bots/BotCard.tsx  (1 处)
+    :88  外层<<div className={`group relative cursor-pointer rounded-xl border bg-card p-4 transition-all hover:sh>  内含<<button>
+src/components/ai/components/EnhancedDataTable.tsx  (11 处)
+    :248  外层<<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm>  内含<<div>
+    :260  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :273  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<input>
+    :285  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutr>
+    :292  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :373  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<select>
+    :384  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :392  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :418  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :433  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+    :441  外层<<div className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl ove>  内含<<button>
+src/components/ai/components/TemplateSelector.tsx  (1 处)
+    :205  外层<<div key={template.id} role="button" tabIndex={0} onClick={() => onSelect(template)} className={`rel>  内含<<button>
+src/components/ai/features/components/FormulaPanel.tsx  (33 处)
+    :427  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<div>
+    :445  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :455  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :464  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :484  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<input>
+    :495  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :504  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :549  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<select>
+    :562  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :611  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button variant="outline" size="sm" onClick={() => onExport('json')} className="whitespace>
+    :614  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button variant="ghost" size="sm" onClick={() => {>
+    :625  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :643  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :664  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :703  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button variant="ghost" size="sm" onClick={handleResetFilters} className="flex-1 sm:flex-i>
+    :710  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :722  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<div>
+    :727  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :733  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :740  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :753  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button variant="ghost" size="sm" onClick={onClearMemory} className="hidden md:flex">>
+    :759  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :770  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :785  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :792  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :799  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :806  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<button>
+    :817  外层<<div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] ove>  内含<<Button>
+    :835  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<div>
+    :846  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<button>
+    :853  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<button>
+    :860  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<button>
+    :867  外层<<div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4" role="button" tabInde>  内含<<button>
+src/components/ai/features/components/PromptLibrary.tsx  (4 处)
+    :609  外层<<article className={cn( 'group relative p-5 rounded-xl border transition-all duration-200 cursor-poi>  内含<<button>
+    :686  外层<<article className={cn( 'group relative p-5 rounded-xl border transition-all duration-200 cursor-poi>  内含<<button>
+    :696  外层<<article className={cn( 'group relative p-5 rounded-xl border transition-all duration-200 cursor-poi>  内含<<button>
+    :707  外层<<article className={cn( 'group relative p-5 rounded-xl border transition-all duration-200 cursor-poi>  内含<<button>
+src/components/ai/features/components/SessionHistory.tsx  (4 处)
+    :154  外层<<div className={clsx( 'group relative p-4 rounded-xl cursor-pointer transition-all duration-200', 'b>  内含<<button>
+    :178  外层<<div className={clsx( 'group relative p-4 rounded-xl cursor-pointer transition-all duration-200', 'b>  内含<<div className="fixed inset-0 z-50"  role="button" tabIndex={0} onClick={handleCancelDelet>
+    :182  外层<<div className={clsx( 'group relative p-4 rounded-xl cursor-pointer transition-all duration-200', 'b>  内含<<button>
+    :188  外层<<div className={clsx( 'group relative p-4 rounded-xl cursor-pointer transition-all duration-200', 'b>  内含<<button>
+src/components/ai/features/components/SessionSidebar.tsx  (1 处)
+    :145  外层<<div className={`group/session flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg cursor-pointer tr>  内含<<button>
+src/components/ai/features/components/StartConversationCard.tsx  (1 处)
+    :91  外层<<article ref={ref} role="button" tabIndex={0} aria-label={`${title}。${subtitle}${suggestions ? `，包含 >  内含<<button>
+src/components/ai/features/components/SuggestionPanel.tsx  (4 处)
+    :608  外层<<div data-index={index} onMouseEnter={onSelect} className={`group w-full p-4 cursor-pointer border-b>  内含<<button>
+    :617  外层<<div data-index={index} onMouseEnter={onSelect} className={`group w-full p-4 cursor-pointer border-b>  内含<<button>
+    :649  外层<<div data-index={index} onMouseEnter={onSelect} className={`group w-full p-4 cursor-pointer border-b>  内含<<button>
+    :656  外层<<div data-index={index} onMouseEnter={onSelect} className={`group w-full p-4 cursor-pointer border-b>  内含<<button>
+src/components/ai/features/components/TopBar.tsx  (1 处)
+    :280  外层<<button onClick={() => { if (ragEnabled && ragIsSeeded) onToggleRAG() else if (!ragEnabled) onToggle>  内含<<button onClick={onOpenKBPanel}>
+src/components/ai/features/FormulaIngredientInput/IngredientSelector.tsx  (3 处)
+    :113  外层<<div className="ingredient-selector-overlay" role="button" tabIndex={0} onClick={onClose}>>  内含<<div className="ingredient-selector" ref={wrapperRef}  role="button" tabIndex={0} onClick=>
+    :118  外层<<div className="ingredient-selector" ref={wrapperRef} role="button" tabIndex={0} onClick={(e) => e.s>  内含<<Input>
+    :142  外层<<div className="ingredient-selector" ref={wrapperRef} role="button" tabIndex={0} onClick={(e) => e.s>  内含<<div>
+src/components/ai/features/FormulaInputWithOptimization.tsx  (1 处)
+    :512  外层<<div className="candidate-header" role="button" tabIndex={0} onClick={() => setExpandedCandidate(exp>  内含<<button className="expand-btn">>
+src/components/ai/features/GenerateTab.tsx  (4 处)
+    :398  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :417  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :437  外层<<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="button" tabIn>  内含<<div>
+    :444  外层<<div className="bg-surface rounded-xl max-w-3xl w-full mx-4 overflow-y-auto max-h-[80vh] shadow-2xl >  内含<<button onClick={() => setCompareVersionsEnhanced(false)} className="text-caption text-mut>
+src/components/ai/features/SensitivityAnalysis.tsx  (1 处)
+    :343  外层<<div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive>  内含<<input>
+src/components/ai/FormulaVersionManager.tsx  (12 处)
+    :528  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<div className="mt-2 space-y-2"  role="button" tabIndex={0} onClick={(e) => e.stopPropagat>
+    :530  外层<<div className="mt-2 space-y-2" role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}>>  内含<<textarea>
+    :550  外层<<div className="mt-2 space-y-2" role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}>>  内含<<button>
+    :557  外层<<div className="mt-2 space-y-2" role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}>>  内含<<button>
+    :572  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :583  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :593  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :606  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :618  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :628  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :638  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+    :651  外层<<div className={`px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor>  内含<<button>
+src/components/ai/OptimizationAdvisor.tsx  (2 处)
+    :699  外层<<div className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-neutral-50 dark:hover:bg-ne>  内含<<button>
+    :709  外层<<div className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-neutral-50 dark:hover:bg-ne>  内含<<button>
+src/components/ai/PersonalizedRecommendations.tsx  (2 处)
+    :117  外层<<div key={rec.id} className="group p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral>  内含<<button>
+    :135  外层<<div key={rec.id} className="group p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral>  内含<<button>
+src/components/common/ConfirmDialog.tsx  (2 处)
+    :52  外层<<div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm>  内含<<button>
+    :58  外层<<div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm>  内含<<button>
+src/components/database/graph/components/BookmarkPanel.tsx  (1 处)
+    :43  外层<<div key={bm.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-warning-50/50 da>  内含<<button onClick={(e) => { e.stopPropagation(); onRemoveBookmark(bm.id); }} className="w-5 >
+src/components/database/graph/components/ContextMenu.tsx  (8 处)
+    :35  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={() => onAction('focus', contextMenu.node!)}>
+    :40  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={() => onAction('selectNeighbors', contextMenu.node!)}>
+    :45  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={() => onAction('hide', contextMenu.node!)}>
+    :57  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={() => onAction('exportSubgraph')}>
+    :62  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={() => onAction('clearSelection')}>
+    :75  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={onClearCommunities}>
+    :81  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={onDetectCommunities}>
+    :87  外层<<div className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl roun>  内含<<button onClick={onResetView}>
+src/components/database/graph/components/ImportDialog.tsx  (2 处)
+    :47  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hove>
+    :97  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<input type="file" accept=".csv,.json,.sdf" className="hidden" onChange={e => e.target.fil>
+src/components/database/graph/components/PinnedNodesPanel.tsx  (1 处)
+    :51  外层<<div key={nodeId} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-neutral-50 da>  内含<<button onClick={(e) => { e.stopPropagation(); onTogglePin(nodeId) }}>
+src/components/database/graph/components/ReportDialog.tsx  (6 处)
+    :35  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hove>
+    :41  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<input aria-label="报告标题" value={reportConfig.title} onChange={e => onSetReportConfig({ tit>
+    :44  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<input aria-label="报告标题" value={reportConfig.author} onChange={e => onSetReportConfig({ au>
+    :50  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<button key={fmt} onClick={() => onSetReportConfig({ format: fmt })}>
+    :62  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<input type="checkbox" checked={reportConfig[opt.key] as boolean}>
+    :70  外层<<div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">  内含<<button onClick={onGenerateReport} disabled={reportGenerating}>
+src/components/formula/CategoryTree.tsx  (1 处)
+    :197  外层<<button type="button" onClick={() => setOpen(!open)} className={cn( 'w-full min-h-[44px] px-3 py-1.5>  内含<<button>
+src/components/formula/TagMultiSelect.tsx  (1 处)
+    :177  外层<<button type="button" onClick={() => setOpen(!open)} onKeyDown={(e) => { if (e.key === 'Enter' || e.>  内含<<button>
+src/components/history-sidebar/ConversationList.tsx  (1 处)
+    :173  外层<<div style={style} className={cn( 'relative flex items-start gap-3 p-2 rounded-lg cursor-pointer', '>  内含<<button>
+src/components/import/ImportPanel.tsx  (7 处)
+    :426  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button onClick={onClose} className="w-6 h-6 rounded flex items-center justify-center hove>
+    :445  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+    :451  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+    :474  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+    :480  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+    :500  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+    :508  外层<<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" ro>  内含<<button>
+src/components/inference/InferenceStepCard.tsx  (1 处)
+    :79  外层<<div className="flex items-center gap-3 p-4" role="button" tabIndex={0} onClick={handleToggle} >>  内含<<button>
+src/components/layout/MainLayout.tsx  (1 处)
+    :286  外层<<div className="flex items-center gap-3 cursor-pointer rounded-xl transition-all duration-200 hover:>  内含<<button>
+src/components/search/SearchResults.tsx  (4 处)
+    :176  外层<<div key={item.id} role="button" tabIndex={0} onClick={() => onSelect(item)} className={clsx( 'group>  内含<<button>
+    :244  外层<<div key={item.id} role="button" tabIndex={0} onClick={() => onSelect(item)} className={clsx( 'group>  内含<<button>
+    :253  外层<<div key={item.id} role="button" tabIndex={0} onClick={() => onSelect(item)} className={clsx( 'group>  内含<<button>
+    :266  外层<<div key={item.id} role="button" tabIndex={0} onClick={() => onSelect(item)} className={clsx( 'group>  内含<<button>
+src/pages/database/tabs/HerbsTab.tsx  (1 处)
+    :549  外层<<div key={item.id} role="button" tabIndex={0} onClick={() => setSelectedHerb(item)} className="card >  内含<<button>
+src/pages/formula/components/AIInsights.tsx  (1 处)
+    :228  外层<<a href={insight.actionUrl}>>  内含<<Button variant="secondary" size="sm">>
+src/pages/formula/components/DashboardLayout.tsx  (2 处)
+    :711  外层<<button key={layout.id} type="button" className={cn( 'w-full flex items-center justify-between px-4 >  内含<<button>
+    :723  外层<<button key={layout.id} type="button" className={cn( 'w-full flex items-center justify-between px-4 >  内含<<button>
+src/pages/formula/components/ImportModal.tsx  (1 处)
+    :275  外层<<div onDrop={handleDrop} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={han>  内含<<input>
+src/pages/formula/components/NotificationCenter.tsx  (2 处)
+    :383  外层<<a href={notification.actionUrl}>>  内含<<Button variant="secondary" size="sm">>
+    :422  外层<<a href="/notifications">>  内含<<Button variant="secondary" size="sm" className="w-full">>
+src/pages/formula/FormulaDetailSubComponents.tsx  (1 处)
+    :414  外层<<button type="button" onClick={() => setExpanded((v) => !v)} className="w-full flex items-center jus>  内含<<Button variant="ghost" size="sm" icon={<RefreshCw size={12} />} onClick={(e) => { e.stopP>
+src/pages/notification/NotificationPage.tsx  (1 处)
+    :287  外层<<button key={notif.id} onClick={() => handleNotifClick(notif)} className={cn( 'w-full text-left px-6>  内含<<button>
+src/pages/settings/components/AvatarUpload.tsx  (1 处)
+    :109  外层<<div className={cn( 'relative w-32 h-32 rounded-full overflow-hidden cursor-pointer transition-all d>  内含<<input>
+src/pages/settings/ThemeSettingsPage.tsx  (1 处)
+    :352  外层<<button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify->  内含<<input>
+src/pages/workflow/WorkflowPage.tsx  (1 处)
+    :476  外层<<div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => { if (e.target !== e.currentTar>  内含<<Button>
+
+总计 161 处违规（作为 ui-guard 第 6 条规则的潜在基线）

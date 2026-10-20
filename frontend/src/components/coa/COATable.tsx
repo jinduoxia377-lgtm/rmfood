@@ -79,7 +79,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
     <div className={className}>
       {/* 统计 */}
       {showStats && data && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <div className="bg-white dark:bg-neutral-900 rounded-lg border p-3 text-center">
             <div className="text-xl font-bold">{total}</div>
             <div className="text-xs text-[var(--text-muted)]">总计</div>

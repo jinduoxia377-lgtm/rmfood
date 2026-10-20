@@ -14,12 +14,17 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.ai.agent import get_orchestrator, AgentExecution
 from app.services.ai.agent.workflow_engine import get_workflow_engine, WorkflowEngine, WORKFLOW_TEMPLATES
+
+from ..deps import get_db_session, get_current_active_user
+from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ...models import User
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +56,17 @@ class ToolCallItem(BaseModel):
     arguments: dict = {}
 
 
+def _execution_context(
+    user: User, tenant: TenantContext, db: AsyncSession,
+) -> dict:
+    """构建 Agent 执行上下文，供 bot_admin_tools 等工具读取身份信息（R3）。"""
+    return {
+        "user_id": user.id if user else 0,
+        "tenant_id": tenant.org_id,
+        "db": db,
+    }
+
+
 # ════════════════════════════════════════════
 # Endpoints
 # ════════════════════════════════════════════
@@ -76,7 +92,12 @@ async def get_csrf_token():
 
 
 @router.post("/execute", summary="执行 Agent 任务")
-async def execute_agent(req: AgentExecuteRequest):
+async def execute_agent(
+    req: AgentExecuteRequest,
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
     """
     执行 Agent 任务，返回结构化结果。
 
@@ -87,6 +108,7 @@ async def execute_agent(req: AgentExecuteRequest):
         raise HTTPException(status_code=400, detail="query 不能为空")
 
     orch = get_orchestrator()
+    ctx = _execution_context(current_user, tenant, db)
 
     if req.mode == "fast":
         # 构建工具链
@@ -94,10 +116,12 @@ async def execute_agent(req: AgentExecuteRequest):
             ["rag_retrieve", {"query": req.query, "top_k": 5}],
             ["compliance_check", {"ingredients": [], "target_population": "adults"}],
         ]
-        execution = await orch.execute_fast(req.query, tool_chain)
+        execution = await orch.execute_fast(req.query, tool_chain, context=ctx)
 
     else:
-        execution = await orch.execute_smart(req.query, max_steps=req.max_steps)
+        execution = await orch.execute_smart(
+            req.query, max_steps=req.max_steps, context=ctx,
+        )
 
     # 存储执行记录
     _executions[execution.execution_id] = execution
@@ -122,12 +146,18 @@ async def get_execution(execution_id: str):
 
 
 @router.post("/execute/stream", summary="流式执行 Agent（SSE）")
-async def execute_agent_stream(req: AgentExecuteRequest):
+async def execute_agent_stream(
+    req: AgentExecuteRequest,
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
     """
     流式执行 Agent，通过 SSE 逐步推送中间结果。
     适合长时间运行的任务。
     """
     orch = get_orchestrator()
+    ctx = _execution_context(current_user, tenant, db)
 
     async def event_stream():
         yield {"event": "start", "data": json.dumps({"query": req.query, "mode": req.mode}, ensure_ascii=False)}
@@ -139,7 +169,9 @@ async def execute_agent_stream(req: AgentExecuteRequest):
                 # 此处简化：实际应在 orchestrator 中暴露流式接口
                 yield {"event": "tool_done", "data": json.dumps({"tool": tool_name, "status": "done"}, ensure_ascii=False)}
 
-        execution = await orch.execute_smart(req.query, max_steps=req.max_steps)
+        execution = await orch.execute_smart(
+            req.query, max_steps=req.max_steps, context=ctx,
+        )
 
         yield {
             "event": "complete",
@@ -158,7 +190,10 @@ async def execute_agent_stream(req: AgentExecuteRequest):
 
 
 @router.get("/executions", summary="列出最近的执行记录")
-async def list_executions(limit: int = Query(10, ge=1, le=50)):
+async def list_executions(
+    limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_active_user),
+):
     """返回最近执行的 Agent 任务列表"""
     items = list(_executions.values())[-limit:]
     return {
@@ -169,7 +204,10 @@ async def list_executions(limit: int = Query(10, ge=1, le=50)):
 
 
 @router.delete("/executions/{execution_id}", summary="删除执行记录")
-async def delete_execution(execution_id: str):
+async def delete_execution(
+    execution_id: str,
+    current_user: User = Depends(get_current_active_user),
+):
     """删除指定的执行记录"""
     if execution_id not in _executions:
         raise HTTPException(status_code=404, detail="执行记录不存在")
@@ -211,7 +249,13 @@ class WorkflowExecuteRequest(BaseModel):
 
 
 @router.post("/workflow/{workflow_type}/execute", summary="执行工作流")
-async def execute_workflow(workflow_type: str, req: WorkflowExecuteRequest):
+async def execute_workflow(
+    workflow_type: str,
+    req: WorkflowExecuteRequest,
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
     """
     执行预定义工作流。
 
@@ -227,6 +271,7 @@ async def execute_workflow(workflow_type: str, req: WorkflowExecuteRequest):
         workflow_type=workflow_type,
         user_query=req.query,
         max_steps=req.max_steps,
+        context=_execution_context(current_user, tenant, db),
     )
     return {"success": True, "data": execution.to_dict()}
 
@@ -242,7 +287,13 @@ async def get_workflow_execution(execution_id: str):
 
 
 @router.post("/workflow/{workflow_type}/execute/stream", summary="流式执行工作流（SSE）")
-async def execute_workflow_stream(workflow_type: str, req: WorkflowExecuteRequest):
+async def execute_workflow_stream(
+    workflow_type: str,
+    req: WorkflowExecuteRequest,
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
     """
     流式执行工作流，通过 SSE 逐步推送中间结果。
     """
@@ -258,6 +309,7 @@ async def execute_workflow_stream(workflow_type: str, req: WorkflowExecuteReques
             workflow_type=workflow_type,
             user_query=req.query,
             max_steps=req.max_steps,
+            context=_execution_context(current_user, tenant, db),
         ):
             yield {"event": event["type"], "data": json.dumps(event, ensure_ascii=False)}
 

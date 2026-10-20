@@ -278,7 +278,7 @@ class MicroFrontendCore {
     // 方案 1: 如果是 ES Module, 直接 import()
     if (config.url.endsWith(".js") || config.url.includes(".js?")) {
       try {
-        // eslint-disable-next-line no-undef
+         
         const module = await import(/* webpackIgnore: true */ config.url);
         return (module.default || module) as MicroFrontendAppInstance;
       } catch (err) {
@@ -773,7 +773,7 @@ class WorkerComputeEngine {
   _handleError(worker: ExtendedWorker, event: ErrorEvent): void {
     this.logger.error(`Worker #${worker._index} 发生错误:`, event.message);
     // 标记错误, 尝试重启
-    try { worker.terminate(); } catch {}
+    try { worker.terminate(); } catch { /* 终止失败忽略 */ }
     setTimeout(() => {
       const idx = this.pool.indexOf(worker);
       if (idx !== -1) {
@@ -883,7 +883,7 @@ class WorkerComputeEngine {
     while (this.pool.length > targetSize) {
       const victim = this.pool.pop();
       if (victim && !victim._busy) {
-        try { victim.terminate(); } catch {}
+        try { victim.terminate(); } catch { /* 终止失败忽略 */ }
         this.logger.log(`缩容: 移除 Worker #${victim._index}`);
       }
     }
@@ -928,7 +928,7 @@ class WorkerComputeEngine {
       try {
         w.terminate();
         if (w._url) URL.revokeObjectURL(w._url);
-      } catch {}
+      } catch { /* 终止失败忽略 */ }
     });
     this.pool = [];
     this.taskQueue = [];
@@ -979,7 +979,7 @@ class FrontendMonitor {
         if (last) this.metrics.vitals.LCP = Math.round(last.startTime);
       });
       lcpObserver.observe({ type: "largest-contentful-paint", buffered: true });
-    } catch {}
+    } catch { /* 终止失败忽略 */ }
 
     // FID (First Input Delay) - 新版浏览器替换为 INP
     try {
@@ -993,7 +993,7 @@ class FrontendMonitor {
         }
       });
       fidObserver.observe({ type: "first-input", buffered: true });
-    } catch {}
+    } catch { /* 终止失败忽略 */ }
 
     // CLS (Cumulative Layout Shift)
     let clsValue = 0;
@@ -1005,7 +1005,7 @@ class FrontendMonitor {
         this.metrics.vitals.CLS = Number(clsValue.toFixed(4));
       });
       clsObserver.observe({ type: "layout-shift", buffered: true });
-    } catch {}
+    } catch { /* 终止失败忽略 */ }
 
     // TTFB (Time to First Byte)
     window.addEventListener("load", () => {

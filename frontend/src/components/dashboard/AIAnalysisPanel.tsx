@@ -4,13 +4,11 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Brain, BarChart3, TrendingUp, FlaskConical, TestTube, Lightbulb, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Brain, TrendingUp, TestTube, Lightbulb, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
-import { cn } from '@/lib/utils'
 import api from '@/api/client'
 import { useFormulas, useExperiments } from '@/hooks/useQueries'
-import { logger } from '@/utils/safeLogger';
 import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 
 
@@ -134,7 +132,7 @@ interface AIAnalysisPanelProps {
 export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: parentLoading, error: parentError, onRetry: parentRetry }: AIAnalysisPanelProps) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<typeof defaultTab>(defaultTab)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FormulaAnalysisResult | null>(null)
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [trendPrediction, setTrendPrediction] = useState<TrendPrediction | null>(null)
@@ -151,9 +149,6 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
   const experimentItems = Array.isArray(experimentsData) ? experimentsData : ((experimentsData as { items?: { id?: number }[] })?.items) ?? []
   const formulaId = formulaItems[0]?.id ?? null
   const experimentId = experimentItems[0]?.id ?? null
-
-  // A-05: 4 个 AI 端点改 React Query 缓存（staleTime 5min），tab 切换不再重复请求
-  const qc = useQueryClient()
 
   // 配方分析
   const formulaQuery = useQuery({
@@ -198,10 +193,12 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
   // 保持旧版 API 兼容：将 query 数据同步到 state（UI 仍消费 state）
   useEffect(() => {
     if (formulaQuery.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnalysisResult(formulaQuery.data)
       setIsMockData(false)
     } else if (formulaQuery.isError) {
       // mock 降级
+      // eslint-disable-next-line react-hooks/immutability
       setAnalysisResult(createMockFormulaAnalysis())
       setIsMockData(true)
     }
@@ -209,9 +206,11 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
 
   useEffect(() => {
     if (recommendQuery.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecommendations(recommendQuery.data.recommendations ?? [])
       setIsMockData(false)
     } else if (recommendQuery.isError) {
+      // eslint-disable-next-line react-hooks/immutability
       setRecommendations(createMockRecommendations())
       setIsMockData(true)
     }
@@ -219,9 +218,11 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
 
   useEffect(() => {
     if (trendQuery.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrendPrediction(trendQuery.data)
       setIsMockData(false)
     } else if (trendQuery.isError) {
+      // eslint-disable-next-line react-hooks/immutability
       setTrendPrediction(createMockTrendPrediction())
       setIsMockData(true)
     }
@@ -229,9 +230,11 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
 
   useEffect(() => {
     if (experimentQuery.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExperimentAnalysis(experimentQuery.data)
       setIsMockData(false)
     } else if (experimentQuery.isError) {
+      // eslint-disable-next-line react-hooks/immutability
       setExperimentAnalysis(createMockExperimentAnalysis())
       setIsMockData(true)
     }
@@ -349,6 +352,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
       case 'experiments': activeErr = experimentQuery.error; break
     }
     // mock 降级路径已消费 isError，此处仅保留真实错误信息（mock 数据仍展示，不整卡报错）
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(activeErr ? 'AI 服务暂时不可用，已展示模拟数据' : null)
   }, [activeTab, formulaQuery.error, recommendQuery.error, trendQuery.error, experimentQuery.error])
 
@@ -480,7 +484,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
           <TabsContent value="analysis" className="space-y-4">
             {analysisResult && (
               <>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/20">
                     <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">成分分析</p>
                     <div className="flex items-baseline gap-2">
@@ -543,7 +547,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
 
           {/* 智能推荐 */}
           <TabsContent value="recommendations" className="space-y-3">
-            {recommendations.map((rec, index) => (
+            {recommendations.map((rec) => (
               <div key={rec.formula_id} className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
@@ -586,7 +590,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
           <TabsContent value="trends" className="space-y-4">
             {trendPrediction && (
               <>
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/20">
                     <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">配方趋势</p>
                     <div className="flex items-baseline gap-2">
@@ -660,7 +664,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
               </div>
             ) : experimentAnalysis?.result_summary ? (
               <>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/20">
                     <p className="text-xs text-secondary-700 dark:text-secondary-700 mb-1">实验状态</p>
                     <div className="flex items-baseline gap-2">

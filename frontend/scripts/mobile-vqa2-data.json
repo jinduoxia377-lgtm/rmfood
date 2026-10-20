@@ -1,0 +1,262 @@
+[
+  {
+    "route": "/login",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/landing",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/docs",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/api-docs",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/faqs",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/about",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/careers",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/privacy",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/terms",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/dashboard",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/new",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/templates",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/compare",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/cases",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/test",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/1",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/formulas/cases/1",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/new",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/calendar",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/experiments/1",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/batches",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/batches/1",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/trace/production",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/doe",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/stability",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/documents",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/compliance",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/label-check",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/ingredient-analysis",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/labels",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/ai",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/academic-report",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/databases",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/peptide-structure",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/regulations",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/terminology",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/workflows",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/agent",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/analytics",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/organizations/1",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/integrations",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/notifications",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/settings",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/users",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/audit-logs",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/billing",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/tokens",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/radix-demo",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  },
+  {
+    "route": "/404",
+    "error": "TypeError: Cannot read properties of undefined (reading 'length')",
+    "issueCount": 0
+  }
+]

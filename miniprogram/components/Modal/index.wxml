@@ -12,7 +12,7 @@
     <view wx:if="{{title || showClose}}" class="modal-header">
       <text class="modal-title">{{title}}</text>
       <view wx:if="{{showClose}}" class="modal-close" bindtap="handleClose">
-        <icon name="close" size="md" color="#999999" />
+        <icon name="close" size="md" color="var(--color-text-muted)" />
       </view>
     </view>
     

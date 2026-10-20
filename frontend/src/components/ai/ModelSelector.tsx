@@ -108,7 +108,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
               </div>
             ))}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { key: 'frequencyPenalty', label: '频率惩罚', min: -2, max: 2, step: 0.1 },
                 { key: 'presencePenalty', label: '存在惩罚', min: -2, max: 2, step: 0.1 },

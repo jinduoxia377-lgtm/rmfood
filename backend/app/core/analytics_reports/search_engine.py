@@ -640,23 +640,32 @@ class SearchEngine:
         }
         
         try:
+            # 模型都在 app.models 下。本文件位于 app.core.analytics_reports，
+            # 所以正确深度是三个点（...models）。
+            # 此前写成 ..models，会解析到 app.core.models —— 该目录不存在，
+            # ImportError 被下面的 except 静默吞掉并返回 None，
+            # 导致 global_search 对任意关键词都返回 0 条结果，
+            # 前端 Ctrl+K 全局搜索永远显示"未找到匹配结果"。
             if model_type == "formula":
-                from ..models.formula import Formula
+                from ...models.formula import Formula
                 return Formula
             elif model_type == "experiment":
-                from ..models.experiment import Experiment
+                from ...models.experiment import Experiment
                 return Experiment
             elif model_type == "ingredient":
-                from ..models.ingredient import Ingredient
+                # Ingredient 定义在 app.models.formula（与 Formula 同文件），
+                # 不存在 app.models.ingredient 模块。
+                from ...models.formula import Ingredient
                 return Ingredient
             elif model_type == "workflow":
-                from ..models.workflow import Workflow
+                from ...models.workflow import Workflow
                 return Workflow
             elif model_type == "user":
-                from ..models.user_model import User
+                from ...models.user_model import User
                 return User
         except ImportError as e:
-            logger.warning(f"无法导入模型 {model_type}: {e}")
+            # 不能静默吞掉：否则路由正常返回 200 + 空结果，问题被完全掩盖
+            logger.error(f"无法导入模型 {model_type}: {e}")
         
         return None
     
@@ -715,7 +724,11 @@ class SearchEngine:
     def _highlight_text(self, text: str, keyword: str, tag: str = "mark") -> str:
         """高亮匹配文本"""
         pattern = re.compile(re.escape(keyword), re.IGNORECASE)
-        return pattern.sub(f"<{tag}>\\g</{tag}>", text)
+        # 用 lambda 而不是字符串模板：模板里的 \g 会被 re 当作组引用语法解析
+        # （\g</mark> 报 re.error: bad character in group name '/mark'），
+        # 导致搜索一旦真正命中结果就抛异常、被 global_search 的 try/except 吞掉
+        # 而返回空结果。
+        return pattern.sub(lambda m: f"<{tag}>{m.group(0)}</{tag}>", text)
     
     def _generate_suggestions(self, keyword: str, limit: int = 5) -> List[str]:
         """生成搜索建议"""

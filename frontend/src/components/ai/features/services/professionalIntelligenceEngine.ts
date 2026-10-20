@@ -1254,7 +1254,7 @@ export class ProfessionalIntelligenceEngineV3 {
   private extractKeywords(text: string): string[] {
     // 移除停用词和常见词
     const stopWords = new Set(['的', '是', '在', '有', '和', '了', '我', '你', '他', '这', '那', '一个', '一种', '设计', '开发', '制作'])
-    return text.split(/[\s,.!?;:，。！？；：\(\)\[\]]+/)
+    return text.split(/[\s,.!?;:，。！？；：()[\]]+/)
       .filter(w => w.length > 1 && !stopWords.has(w))
   }
 
@@ -1640,6 +1640,7 @@ export class ProfessionalIntelligenceEngineV3 {
    * 丰富内容
    */
   private enrichContent(content: ExpertSuggestionV2['content'], _analysis: SemanticAnalysisResult): ExpertSuggestionV2['content'] {
+    void _analysis;
     // 可以根据分析结果动态调整内容
     return content
   }

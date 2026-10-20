@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CTABanner 组件 v5 — 学术行动召唤（升级 v5）
  *
  * 升级要点（v5）：
@@ -58,15 +58,15 @@ export default function CTABanner() {
 
   return (
     <section className="py-16 relative" style={{ background: 'var(--color-neutral-900, #0f172a)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 text-center">
         <Reveal>
           <h2 className="lp-h3 text-white mb-2">开始您的配方研发</h2>
           <p className="lp-body-sm mb-7" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>科研版永久免费，无需信用卡，30 秒完成注册。</p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
+          <div className="flex items-center justify-center gap-[var(--space-apple-sm)] flex-wrap">
             {/* 主 CTA：免费注册 — 白色大按钮 */}
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 px-7 min-h-[44px] rounded-md text-[15px] font-semibold transition-opacity hover:opacity-90 lp-label"
+              className="inline-flex items-center gap-1.5 px-7 min-h-[44px] rounded-[var(--radius-Apple-sm)] text-[15px] font-semibold transition-opacity hover:opacity-90 lp-label"
               style={{ background: '#fff', color: 'var(--color-neutral-900, #0f172a)' }}
             >
               免费注册
@@ -77,7 +77,7 @@ export default function CTABanner() {
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 text-[15px] font-medium px-6 py-3 rounded-md transition-colors hover:text-white border min-h-[44px] lp-body-sm"
+                  className="inline-flex items-center gap-1.5 text-[15px] font-medium px-6 py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] transition-colors hover:text-white border min-h-[44px] lp-body-sm"
                   style={{ color: 'var(--color-neutral-300, #cbd5e1)', borderColor: 'var(--color-neutral-600, #475569)' }}
                 >
                   预约演示
@@ -89,7 +89,7 @@ export default function CTABanner() {
                   <DialogDescription>留下您的联系方式，我们的顾问将在 24 小时内与您联系，为您安排专属的产品演示。</DialogDescription>
                 </DialogHeader>
                 {submitted ? (
-                  <div className="flex items-start gap-3 py-4">
+                  <div className="flex items-start gap-[var(--space-apple-sm)] py-4">
                     <CheckCircle size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--color-primary-700, #047857)' }} />
                     <div>
                       <p className="text-[15px] font-semibold text-neutral-900">预约成功</p>
@@ -99,13 +99,13 @@ export default function CTABanner() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-[var(--space-apple-sm)]">
                     <div>
                       <label className="lp-label mb-1 block" htmlFor="demo-booking-name">姓名</label>
                       <input
                         id="demo-booking-name"
                         aria-label="请输入您的姓名"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-[var(--space-apple-sm)] text-[15px] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
                         placeholder="请输入您的姓名"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -116,7 +116,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-email"
                         aria-label="请输入您的公司邮箱"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-[var(--space-apple-sm)] text-[15px] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
                         placeholder="company@example.com"
                         type="email"
                         inputMode="email"
@@ -129,7 +129,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-company"
                         aria-label="请输入公司名称"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
+                        className="w-full h-11 px-[var(--space-apple-sm)] text-[15px] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
                         placeholder="请输入公司名称"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
@@ -163,7 +163,7 @@ export default function CTABanner() {
         type="button"
         onClick={scrollToTop}
         className={cn(
-          'absolute bottom-4 right-8 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5',
+          'absolute bottom-4 right-8 w-11 h-11 rounded-[var(--radius-pill)] flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5',
           'lp-scroll-top',
           showScrollTop && 'lp-scroll-top-visible'
         )}

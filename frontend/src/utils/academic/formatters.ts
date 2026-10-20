@@ -60,7 +60,7 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
   };
 
   switch (style) {
-    case 'apa':
+    case 'apa': {
       const apaAuthors = formatAuthors(authors);
       let apaCitation = `${apaAuthors} (${year}). ${title}.`;
       if (journal) {
@@ -72,8 +72,9 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
       }
       if (doi) apaCitation += ` https://doi.org/${doi}`;
       return apaCitation;
+    }
 
-    case 'mla':
+    case 'mla': {
       const mlaAuthors = authors.join(', ');
       let mlaCitation = `${mlaAuthors}. "${title}."`;
       if (journal) {
@@ -85,8 +86,9 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
         mlaCitation += '.';
       }
       return mlaCitation;
+    }
 
-    case 'chicago':
+    case 'chicago': {
       const chicagoAuthors = authors.join(', ');
       let chicagoCitation = `${chicagoAuthors}. "${title}."`;
       if (journal) {
@@ -98,8 +100,9 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
         chicagoCitation += '.';
       }
       return chicagoCitation;
+    }
 
-    case 'ieee':
+    case 'ieee': {
       const ieeeAuthors = authors.map((a, i) => i === authors.length - 1 ? `and ${a}` : `${a},`).join(' ');
       let ieeeCitation = `${ieeeAuthors}, "${title},"`;
       if (journal) {
@@ -110,8 +113,9 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
         ieeeCitation += `, ${year}`;
       }
       return ieeeCitation + '.';
+    }
 
-    case 'gb-t-7714-2015':
+    case 'gb-t-7714-2015': {
       const gbAuthors = authors.join(', ');
       let gbCitation = `${gbAuthors}. ${title}`;
       if (journal) {
@@ -122,6 +126,7 @@ export function formatCitation(reference: Reference, style: CitationStyle): stri
         gbCitation += `, ${year}`;
       }
       return gbCitation + '.';
+    }
 
     default:
       return `${authors.join(', ')} (${year}). ${title}.`;

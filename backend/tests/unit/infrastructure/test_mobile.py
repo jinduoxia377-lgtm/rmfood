@@ -13,7 +13,8 @@ def service():
 
 @pytest.fixture
 def facade():
-    return MobileFacade()
+    # MobileFacade 现在通过构造函数注入 MobileServicePort 依赖
+    return MobileFacade(MobileService())
 
 
 class TestMobileDashboard:

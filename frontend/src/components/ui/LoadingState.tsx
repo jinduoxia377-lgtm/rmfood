@@ -6,7 +6,7 @@
  */
 
 import React from'react'
-import { Loader2, FileText, Sparkles } from'lucide-react'
+import { Loader2 } from'lucide-react'
 import { Button, Progress } from'@/components/ui'
 
 interface LoadingStateProps {
@@ -104,7 +104,7 @@ export function LoadingSkeleton() {
  <div className="h-4 bg-[var(--fill-secondary,#e2e8f0)] dark:bg-[var(--fill-secondary,#334155)] rounded w-1/2 mb-4" />
  <div className="h-4 bg-[var(--fill-secondary,#e2e8f0)] dark:bg-[var(--fill-secondary,#334155)] rounded w-5/6" />
  </div>
- <div className="grid grid-cols-3 gap-4 mt-6">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
  {[1, 2, 3].map((i) => (
  <div key={i} className="h-32 bg-[var(--fill-secondary,#e2e8f0)] dark:bg-[var(--fill-secondary,#334155)] rounded-lg animate-pulse" />
  ))}

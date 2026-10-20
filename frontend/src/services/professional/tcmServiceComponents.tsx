@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import tcmService from './tcmService';
-import type { TCMHerb, TCMChemistry, TCMChemistryVisualization } from './tcmService';
+import type { TCMHerb, TCMChemistryVisualization } from './tcmService';
 import { sanitizeHTML } from '@/utils/sanitize';
 
 
@@ -14,8 +14,6 @@ interface TCMViewerProps {
 
 const TCMViewer: React.FC<TCMViewerProps> = ({
   herbId,
-  showChemistry = true,
-  showNetwork = false,
   showVisualization = false,
 }) => {
   const [herb, setHerb] = useState<TCMHerb | null>(null);
@@ -25,6 +23,7 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
   const [activeTab, setActiveTab] = useState<'info' | 'targets' | 'diseases' | 'visualization'>('info');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadHerbData();
   }, [herbId]);
 

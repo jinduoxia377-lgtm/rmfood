@@ -100,9 +100,9 @@ export function BatchOperations({
   }, [flatChapters, selectedIds]);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 p-4 z-50 min-w-[600px]">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
+    <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 p-4 z-50 w-[calc(100vw-1.5rem)] max-w-[600px] min-w-0">
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={handleToggleAll}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
@@ -132,7 +132,7 @@ export function BatchOperations({
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <button
           onClick={handleDelete}
           disabled={selectedIds.size === 0}

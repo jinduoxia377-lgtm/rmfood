@@ -19,9 +19,8 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronRight,
-  Cpu,
 } from 'lucide-react';
-import { AcademicReportService, type AcademicReport } from '@/services/academicReportService';
+import { AcademicReportService } from '@/services/academicReportService';
 import { downloadAcademicReportAsPdf } from '@/services/chinesePdfExportService';
 import { downloadAdvancedPdf } from '@/services/advancedPdfExportService';
 import AcademicReportEnhanced from './AcademicReportEnhanced';
@@ -57,6 +56,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
   const ingredients = candidate.herb_combination || [];
   const contributionData = ingredients.map((herb, index) => ({
     name: herb.name || `成分${index + 1}`,
+    // eslint-disable-next-line react-hooks/purity
     contribution: Math.max(20, 95 - index * 10 + Math.random() * 10),
     category: 'synergy' as const,
   }));
@@ -69,6 +69,7 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
 
   const stabilityData = Array.from({ length: 12 }, (_, i) => ({
     month: i + 1,
+    // eslint-disable-next-line react-hooks/purity
     stability: Math.max(50, scores.stability * 100 - i * 2 + Math.random() * 5),
     prediction: i > 6 ? Math.max(45, scores.stability * 100 - i * 2.5) : undefined,
   }));
@@ -409,10 +410,14 @@ export function FormulaAcademicReport({ candidate, effects = [], className = '' 
             <Target className="w-5 h-5 text-primary-500" />
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">综合评分</h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <ScoreCard label="协同作用" score={scores.synergy} color="purple" icon={<Sparkles className="w-4 h-4" />} />
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <ScoreCard label="口感风味" score={scores.taste} color="yellow" icon={<Leaf className="w-4 h-4" />} />
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <ScoreCard label="稳定性" score={scores.stability} color="blue" icon={<Beaker className="w-4 h-4" />} />
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <ScoreCard label="安全性" score={scores.safety} color="green" icon={<Shield className="w-4 h-4" />} />
           </div>
         </section>

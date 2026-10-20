@@ -28,7 +28,7 @@ export interface UseChatCompactionReturn {
 
 export function useChatCompaction(options: UseChatCompactionOptions = {}): UseChatCompactionReturn {
   const { onCompact, forceCompactAfter = 100 } = options;
-  const { checkCompact, compact, getTokenUsage, config } = useCompaction();
+  const { checkCompact, compact, config } = useCompaction();
 
   /**
    * 发送前检查并执行压缩

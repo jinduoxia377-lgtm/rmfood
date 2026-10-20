@@ -1,0 +1,3923 @@
+[
+  {
+    "route": "/dashboard",
+    "url": "/dashboard",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-lg sm:text-xl font-semibold leading-snug tracking-tight truncate",
+      "text": "欢迎回来, 陈昱"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-4 sm:p-[var(--space-apple-lg)",
+        "w": 350,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "rounded-xl bg-neutral-100 dark:bg-neutral-800 h-20 animate-pulse",
+        "w": 318,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "card p-5 space-y-4",
+        "w": 318,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card p-5 space-y-4",
+        "w": 318,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/formulas",
+    "url": "/formulas",
+    "finalUrl": "http://localhost:3000/formulas?sort_field=updated_at&sort_dir=desc",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "max-w-[1520px] mx-auto space-y-8 px-[var(--space-apple-md)] lg:px-6 animate-fade",
+    "contentPad": 17,
+    "title": null,
+    "cards": [
+      {
+        "cls": "rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--b",
+        "w": 332,
+        "pl": 20,
+        "pt": 20,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--b",
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/formulas/new",
+    "url": "/formulas/new",
+    "finalUrl": "http://localhost:3000/formulas/new",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "max-w-[1600px] mx-auto space-y-[var(--space-apple-md)] md:space-y-6 px-[var(--sp",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "h1",
+      "text": "新建配方"
+    },
+    "cards": [
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/experiments",
+    "url": "/experiments",
+    "finalUrl": "http://localhost:3000/experiments",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "实验管理"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card overflow-hidden border-[var(--border-color)]",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card overflow-hidden border-[var(--border-color)]",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/experiments/new",
+    "url": "/experiments/new",
+    "finalUrl": "http://localhost:3000/experiments/new",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "新建实验"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 6,
+    "btnSamples": [
+      {
+        "text": "展开科学设计",
+        "h": 36,
+        "cls": "flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var"
+      },
+      {
+        "text": "浏览全部",
+        "h": 34.6,
+        "cls": "text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primar"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/batches",
+    "url": "/batches",
+    "finalUrl": "http://localhost:3000/batches",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "批记录管理"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 334,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 334,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 334,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/doe",
+    "url": "/doe",
+    "finalUrl": "http://localhost:3000/doe",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "DOE 实验设计"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "tabs-list w-fit",
+        "w": 415,
+        "pl": 3,
+        "pt": 3,
+        "bg": "rgb(241, 245, 249)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/stability",
+    "url": "/stability",
+    "finalUrl": "http://localhost:3000/stability",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "稳定性分析"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/documents",
+    "url": "/documents",
+    "finalUrl": "http://localhost:3000/documents",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "文档智能提取"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/compliance",
+    "url": "/compliance",
+    "finalUrl": "http://localhost:3000/compliance",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "合规检查"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "tabs-list w-fit",
+        "w": 415,
+        "pl": 3,
+        "pt": 3,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/label-check",
+    "url": "/label-check",
+    "finalUrl": "http://localhost:3000/label-check",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-4",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-bold",
+      "text": "配料表核查"
+    },
+    "cards": [
+      {
+        "cls": "card",
+        "w": 366,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/ingredient-analysis",
+    "url": "/ingredient-analysis",
+    "finalUrl": "http://localhost:3000/ingredient-analysis",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold",
+      "text": "配料六维分析"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "tabs-list w-fit",
+        "w": 302,
+        "pl": 3,
+        "pt": 3,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/labels",
+    "url": "/labels",
+    "finalUrl": "http://localhost:3000/labels",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight flex items-center gap-2",
+      "text": "标签生成器"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 5,
+    "btnSamples": [
+      {
+        "text": "创建批记录",
+        "h": 20,
+        "cls": "text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-t"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/ai",
+    "url": "/ai",
+    "finalUrl": "http://localhost:3000/ai",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 43,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      },
+      {
+        "tag": "rect",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "AI 智能助手中心"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "relative rounded-[var(--radius-Apple-md)] border transition-all duration-200 bor",
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "relative rounded-[var(--radius-Apple-md)] border transition-all duration-200 bor",
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "relative rounded-[var(--radius-Apple-md)] border transition-all duration-200 bor",
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 11,
+    "btnSamples": [
+      {
+        "text": "",
+        "h": 40,
+        "cls": "sm:hidden p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] b"
+      },
+      {
+        "text": "",
+        "h": 18,
+        "cls": "relative flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs tran"
+      },
+      {
+        "text": "DeepSeek",
+        "h": 22,
+        "cls": "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-"
+      },
+      {
+        "text": "学者顾问",
+        "h": 24,
+        "cls": "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-ne"
+      },
+      {
+        "text": "知识库OFF",
+        "h": 14,
+        "cls": "flex items-center gap-1"
+      },
+      {
+        "text": "DeepSeek",
+        "h": 22,
+        "cls": "flex items-center gap-1 px-1.5 py-1 rounded-lg text-[12px] font-medium"
+      },
+      {
+        "text": "",
+        "h": 22,
+        "cls": "flex items-center gap-1 px-1.5 py-1 rounded-lg text-[12px] font-medium"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/databases",
+    "url": "/databases",
+    "finalUrl": "http://localhost:3000/databases",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 63,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "150"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "600"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": ">70%"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "50-70%"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "<10%"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "30-50%"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "10-30%"
+      },
+      {
+        "tag": "tspan",
+        "fs": 12,
+        "cls": "",
+        "text": "<0.1"
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-2xl font-semibold leading-snug tracking-tight",
+      "text": "数据库检索中心"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card p-[var(--space-apple-lg)] flex items-center justify-center h-[280px]",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "inline-flex min-h-[44px] items-center justify-center text-muted-foreground relat",
+        "w": 1108,
+        "pl": 4,
+        "pt": 4,
+        "bg": "oklab(0.968254 -0.00253484 -0.00633037 / 0.9)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/regulations",
+    "url": "/regulations",
+    "finalUrl": "http://localhost:3000/regulations",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "法规库"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "flex flex-wrap gap-2 p-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-md)",
+        "w": 332,
+        "pl": 4,
+        "pt": 4,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 5,
+    "btnSamples": [
+      {
+        "text": "标准号—",
+        "h": 17.3,
+        "cls": "flex items-center gap-1 hover:text-[var(--color-primary-text)] transit"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/terminology",
+    "url": "/terminology",
+    "finalUrl": "http://localhost:3000/terminology",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "术语库"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "min-h-[44px] items-center justify-center rounded-lg bg-muted p-1 text-muted-fore",
+        "w": 332,
+        "pl": 4,
+        "pt": 4,
+        "bg": "rgb(226, 232, 240)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card flex items-center gap-4 px-4 py-3.5",
+        "w": 298,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/workflows",
+    "url": "/workflows",
+    "finalUrl": "http://localhost:3000/workflows",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "工作流管理"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card overflow-hidden",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card overflow-hidden",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/agent",
+    "url": "/agent",
+    "finalUrl": "http://localhost:3000/agent",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "mx-auto flex h-full max-w-[1600px] flex-col space-y-4 px-[var(--space-apple-sm)]",
+    "contentPad": 12,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "智能体协作中心"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 342,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "flex items-center rounded-[var(--radius-pill)] bg-black/15 overflow-hidden dark:",
+        "w": 310,
+        "pl": 0,
+        "pt": 0,
+        "bg": "oklab(0 0 0 / 0.15)"
+      },
+      {
+        "cls": "flex min-h-[440px] flex-1 flex-col overflow-hidden rounded-[var(--radius-Apple-m",
+        "w": 342,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "group relative cursor-pointer rounded-[var(--radius-Apple-md)] border bg-card p-",
+        "w": 306,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/analytics",
+    "url": "/analytics",
+    "finalUrl": "http://localhost:3000/analytics",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-[var(--space-apple-md)] max-w-[1600px] mx-auto px-2 sm:px-6 lg:px-8 py-4",
+    "contentPad": 8,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-lg sm:text-xl font-bold leading-snug truncate",
+      "text": "数据分析中心"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-4 sm:p-5 shadow-sm",
+        "w": 350,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "inline-flex min-h-[44px] items-center justify-center rounded-lg bg-muted p-1 tex",
+        "w": 548,
+        "pl": 4,
+        "pt": 4,
+        "bg": "rgb(226, 232, 240)"
+      },
+      {
+        "cls": "lg:col-span-2 card p-[var(--space-apple-lg)]",
+        "w": 350,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card p-[var(--space-apple-lg)]",
+        "w": 350,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/organizations",
+    "url": "/organizations",
+    "finalUrl": "http://localhost:3000/organizations",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · 药食同源配方研发平台"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "系统概览"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-8 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-bold leading-snug",
+      "text": "组织管理"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "inline-flex items-center gap-1.5 bg-[var(--bg-tertiary)]/60 rounded-[var(--radiu",
+        "w": 536,
+        "pl": 6,
+        "pt": 6,
+        "bg": "oklab(0.968254 -0.00253484 -0.00633037 / 0.6)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/settings",
+    "url": "/settings",
+    "finalUrl": "http://localhost:3000/settings",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-[var(--space-apple-lg)] max-w-[1600px] mx-auto px-[var(--space-apple-md)",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-bold leading-snug",
+      "text": "System Settings"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "inline-flex items-center gap-1 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-",
+        "w": 981,
+        "pl": 4,
+        "pt": 4,
+        "bg": "oklab(0.968254 -0.00253484 -0.00633037 / 0.6)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 5,
+    "btnSamples": [
+      {
+        "text": "移除",
+        "h": 25.3,
+        "cls": "inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-[var(--"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/users",
+    "url": "/users",
+    "finalUrl": "http://localhost:3000/users",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 37,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "",
+        "text": "Failed to fetch dynamica"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "",
+    "contentPad": 20,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "",
+      "text": "页面出现问题"
+    },
+    "cards": [
+      {
+        "cls": "",
+        "w": 326,
+        "pl": 40,
+        "pt": 40,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": false
+  },
+  {
+    "route": "/audit-logs",
+    "url": "/audit-logs",
+    "finalUrl": "http://localhost:3000/audit-logs",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "max-w-[1600px] mx-auto space-y-6 py-[var(--space-apple-lg)]",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "Audit Log"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 366,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "flex items-center gap-1 p-1 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertia",
+        "w": 536,
+        "pl": 4,
+        "pt": 4,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)]/60 dark",
+        "w": 366,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/billing",
+    "url": "/billing",
+    "finalUrl": "http://localhost:3000/billing",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-[60vh] flex items-center justify-center",
+    "contentPad": 0,
+    "title": null,
+    "cards": [],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/notifications",
+    "url": "/notifications",
+    "finalUrl": "http://localhost:3000/notifications",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-bold leading-snug",
+      "text": "Notification Center"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)]/60 dark",
+        "w": 332,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/academic-report",
+    "url": "/academic-report",
+    "finalUrl": "http://localhost:3000/academic-report",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "Academic Report Management"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "card overflow-hidden border-[var(--border-color)]",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/peptide-structure",
+    "url": "/peptide-structure",
+    "finalUrl": "http://localhost:3000/peptide-structure?tab=analyze",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-semibold leading-snug tracking-tight",
+      "text": "Peptide Sequence Structure & A"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-[var(--radius-Apple-sm)]",
+        "w": 332,
+        "pl": 4,
+        "pt": 4,
+        "bg": "rgb(241, 245, 249)"
+      },
+      {
+        "cls": "card p-[var(--space-apple-md)] space-y-[var(--space-apple-md)]",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 8,
+    "btnSamples": [
+      {
+        "text": "AC",
+        "h": 21.3,
+        "cls": "px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--bo"
+      },
+      {
+        "text": "VLGYT",
+        "h": 21.3,
+        "cls": "px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--bo"
+      },
+      {
+        "text": "LLPGTFVDNQKF",
+        "h": 21.3,
+        "cls": "px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--bo"
+      },
+      {
+        "text": "RPYPIP",
+        "h": 21.3,
+        "cls": "px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--bo"
+      },
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/integrations",
+    "url": "/integrations",
+    "finalUrl": "http://localhost:3000/integrations",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 36,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[",
+    "contentPad": 17,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-xl font-bold leading-snug",
+      "text": "Integrations & API"
+    },
+    "cards": [
+      {
+        "cls": "surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shado",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(4, 120, 87)"
+      },
+      {
+        "cls": "inline-flex items-center gap-1 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-",
+        "w": 393,
+        "pl": 4,
+        "pt": 4,
+        "bg": "oklab(0.968254 -0.00253484 -0.00633037 / 0.6)"
+      },
+      {
+        "cls": "card",
+        "w": 332,
+        "pl": 16,
+        "pt": 16,
+        "bg": "rgb(255, 255, 255)"
+      }
+    ],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  },
+  {
+    "route": "/landing",
+    "url": "/landing",
+    "finalUrl": "http://localhost:3000/landing",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 12,
+    "below11Count": 0,
+    "below12Count": 0,
+    "at12Count": 469,
+    "below11Samples": [],
+    "below12Samples": [],
+    "at12Samples": [
+      {
+        "tag": "div",
+        "fs": 12,
+        "cls": "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-pill)] lp-label",
+        "text": "正式版即将上线"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "relative inline-flex rounded-[var(--radius-pill)] h-1.5 w-1.5 bg-[var(--color-primary-cont",
+        "text": ""
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "lp-caption mt-0.5",
+        "text": "限量 500 个优先体验名额 · 上线后自动失效"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "lp-caption uppercase tracking-wider",
+        "text": "天"
+      },
+      {
+        "tag": "a",
+        "fs": 12,
+        "cls": "shrink-0 inline-flex items-center gap-1.5 px-[var(--space-apple-md)] min-h-[44px] rounded-",
+        "text": "第一时间通知"
+      },
+      {
+        "tag": "path",
+        "fs": 12,
+        "cls": "",
+        "text": ""
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "lp-brand",
+        "text": "莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "lp-caption",
+        "text": "药食同源 AI 配方研发平台"
+      }
+    ],
+    "mainPadLeft": 0,
+    "mainPadRight": 0,
+    "contentLeft": 0,
+    "contentRight": 0,
+    "contentCls": "lp-grid-bg relative overflow-hidden",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "lp-h1 mb-5",
+      "text": "让配方研发像对话一样简单"
+    },
+    "cards": [
+      {
+        "cls": "lp-grid-bg relative overflow-hidden",
+        "w": 390,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "relative overflow-hidden mt-[64px] border-b",
+        "w": 390,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "lp-preview-window relative z-10",
+        "w": 356,
+        "pl": 0,
+        "pt": 0,
+        "bg": "rgb(255, 255, 255)"
+      },
+      {
+        "cls": "lp-titlebar flex items-center gap-0 px-[var(--space-apple-md)] py-2 border-b",
+        "w": 354,
+        "pl": 17,
+        "pt": 8,
+        "bg": "rgb(15, 23, 42)"
+      }
+    ],
+    "btnSmallCount": 0,
+    "btnSamples": [],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": false
+  },
+  {
+    "route": "/tokens",
+    "url": "/tokens",
+    "finalUrl": "http://localhost:3000/tokens",
+    "viewportW": 390,
+    "bodyFontSize": 17,
+    "bodyLineHeight": "27.2px",
+    "minFont": 11,
+    "below11Count": 0,
+    "below12Count": 1,
+    "at12Count": 38,
+    "below11Samples": [],
+    "below12Samples": [
+      {
+        "tag": "div",
+        "fs": 11,
+        "cls": "flex-1 text-neutral-900 dark:text-white",
+        "text": "设计系统 label-sm - 0.6875re"
+      }
+    ],
+    "at12Samples": [
+      {
+        "tag": "div",
+        "fs": 12,
+        "cls": "flex-1 text-neutral-900 dark:text-white",
+        "text": "设计系统 body-sm - 0.75rem"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "RMFOOD · Medicinal Food "
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "rounded border border-neutral-300/60 px-1.5 py-px font-medium leading-none tracking-wide d",
+        "text": "v1.0.0"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "",
+        "text": "© 2026 莱茵分子"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "truncate px-1",
+        "text": "Overview"
+      },
+      {
+        "tag": "kbd",
+        "fs": 12,
+        "cls": "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 ",
+        "text": "ESC"
+      },
+      {
+        "tag": "p",
+        "fs": 12,
+        "cls": "text-xs text-neutral-600 dark:text-neutral-400 mt-1",
+        "text": "支持搜索配方、实验、中药材、活性肽"
+      },
+      {
+        "tag": "span",
+        "fs": 12,
+        "cls": "flex items-center gap-1",
+        "text": "药材"
+      }
+    ],
+    "mainPadLeft": 12,
+    "mainPadRight": 12,
+    "contentLeft": 12,
+    "contentRight": 12,
+    "contentCls": "min-h-screen",
+    "contentPad": 0,
+    "title": {
+      "tag": "h1",
+      "fs": 20,
+      "cls": "text-3xl font-bold text-neutral-900 dark:text-white",
+      "text": "RMFOOD 设计 Token 文档"
+    },
+    "cards": [],
+    "btnSmallCount": 4,
+    "btnSamples": [
+      {
+        "text": "新建配方",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary"
+      },
+      {
+        "text": "新建实验",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-"
+      },
+      {
+        "text": "AI 助手",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning"
+      },
+      {
+        "text": "数据库",
+        "h": 41.8,
+        "cls": "flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-seconda"
+      }
+    ],
+    "docOverflow": 0,
+    "offenders": [],
+    "contentLoaded": true
+  }
+]

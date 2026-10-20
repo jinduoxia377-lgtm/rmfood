@@ -1,9 +1,9 @@
-/**
+﻿/**
  * SocialProof 组件 v11 — 学术引用风格（升级 v11）
  *
  * 升级要点（v11）：
  *   - 星级评分从实色填充改为空心描边风格（学术克制感）
- *   - 圆角统一 rounded-sm → rounded-md / rounded-sm
+ *   - 圆角统一 rounded-sm → rounded-[var(--radius-Apple-sm)] / rounded-sm
  *   - 指标卡片改用 lp-metric-card CSS 类
  */
 import { useState } from 'react';
@@ -25,17 +25,17 @@ function TrustMetrics() {
   return (
     <Reveal>
       <div className="mb-10">
-        <div className="lp-section-tag mb-4">
+        <div className="lp-section-tag mb-[var(--space-apple-md)]">
           平台数据 · {new Date().getFullYear()}
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--space-apple-sm)]">
           {trustMetrics.map((m) => {
             const IconComp = iconMap[m.icon];
             return (
               <div key={m.label} className="lp-metric-card">
                 <div className="flex items-center gap-2 mb-2">
                   <div
-                    className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+                    className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0"
                     style={{ background: m.color + '18', color: m.color, boxShadow: `0 0 0 1px ${m.color}20` }}
                   >
                     {IconComp ? <IconComp size={14} strokeWidth={1.8} /> : null}
@@ -59,10 +59,10 @@ function PartnerLogos() {
   return (
     <Reveal delay="lp-reveal-delay-1">
       <div className="mb-10">
-        <div className="lp-section-tag mb-4">
+        <div className="lp-section-tag mb-[var(--space-apple-md)]">
           合作机构
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {partnerOrgs.map((org) => {
             const s = categoryStyle[org.category];
             const label = categoryLabel[org.category];
@@ -70,7 +70,7 @@ function PartnerLogos() {
             return (
               <div
                 key={org.name}
-                className="rounded-md px-3 py-2 text-center transition-all duration-200 cursor-default"
+                className="rounded-[var(--radius-Apple-sm)] px-[var(--space-apple-sm)] py-2 text-center transition-all duration-200 cursor-default"
                 style={{
                   background: isHovered ? '#fff' : s.bg,
                   border: `1px solid ${isHovered ? s.border : s.border}`,
@@ -83,7 +83,7 @@ function PartnerLogos() {
                 <span className="text-[12px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
-                <div className="mt-1.5 text-[12px] text-neutral-600 leading-relaxed">
+                <div className="mt-1.5 text-[12px] text-[var(--text-secondary)] leading-relaxed">
                   {org.category === 'university' && '中医药学术研究'}
                   {org.category === 'hospital' && '临床验证与处方研究'}
                   {org.category === 'enterprise' && '药食同源产品研发'}
@@ -104,7 +104,7 @@ function Testimonials() {
   return (
     <Reveal delay="lp-reveal-delay-2">
       <div>
-        <div className="lp-section-tag mb-4">
+        <div className="lp-section-tag mb-[var(--space-apple-md)]">
           用户评价
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -112,7 +112,7 @@ function Testimonials() {
             <div
               key={t.name}
               className={cn(
-                'relative rounded-md p-4 transition-all duration-200 cursor-default',
+                'relative rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-md)] transition-all duration-200 cursor-default',
                 hovered === i && 'translate-y-[-1px]'
               )}
               style={{
@@ -140,14 +140,14 @@ function Testimonials() {
               </div>
 
               {/* 引言 */}
-              <div className="text-[15px] leading-[1.7] text-neutral-600 mb-3 min-h-[60px] lp-quote">
+              <div className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)] min-h-[60px] lp-quote">
                 {t.quote}
               </div>
 
               {/* 作者 */}
-              <div className="flex items-center gap-2 pt-2.5 border-t border-neutral-100">
+              <div className="flex items-center gap-2 pt-2.5 border-t border-[var(--border-color)]">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center lp-label text-white shrink-0"
+                  className="w-7 h-7 rounded-[var(--radius-pill)] flex items-center justify-center lp-label text-white shrink-0"
                   style={{ background: t.gradient, boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}
                 >
                   {t.name[0]}
@@ -168,18 +168,18 @@ function Testimonials() {
 export default function SocialProof() {
   return (
     <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题 */}
         <Reveal>
           <div className="mb-10">
-            <span className="lp-section-tag block mb-3">
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">
               信任证明
             </span>
             <h2 className="lp-h2">
               200+ 研发团队信赖
             </h2>
-            <p className="text-[15px] leading-relaxed max-w-lg text-neutral-600 mt-2">
+            <p className="text-[15px] leading-relaxed max-w-lg text-[var(--text-secondary)] mt-2">
               从高校实验室到大型企业研发中心，覆盖全国 6 所重点中医药院校及 Top 50 药企。
             </p>
           </div>

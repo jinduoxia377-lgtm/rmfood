@@ -1,244 +1,133 @@
-// @ts-nocheck
 import { renderHook, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useExportManager } from '../../../hooks/useExportManager'
-import { createMockExportService, createMockEventBus } from '../../helpers/mockServices'
-import { ExportFormat } from '../../../types'
+import { exportService } from '../../../services/exportService'
+import { eventBus } from '../../../services/eventBus'
+import type { ExportFormat } from '../../../services/exportService'
+
+// 当前 useExportManager 以模块单例方式依赖 exportService / eventBus / chatApi
+vi.mock('../../../services/exportService', () => ({
+  exportService: {
+    generateFilename: vi.fn(() => 'test-export.json'),
+    exportAsync: vi.fn().mockResolvedValue('{"exported":true}'),
+  },
+}))
+
+vi.mock('../../../services/eventBus', () => ({
+  eventBus: {
+    emit: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+  },
+}))
+
+vi.mock('@/api/chat', () => ({
+  chatApi: {
+    exportSession: vi.fn().mockResolvedValue({}),
+  },
+}))
 
 describe('useExportManager', () => {
-  let mockExportService: ReturnType<typeof createMockExportService>
-  let mockEventBus: ReturnType<typeof createMockEventBus>
-
   beforeEach(() => {
-    mockExportService = createMockExportService()
-    mockEventBus = createMockEventBus()
+    vi.clearAllMocks()
   })
 
-  describe('初始化状态', () => {
-    it('应初始化为非导出状态', () => {
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
+  it('应初始化为非导出状态', () => {
+    const { result } = renderHook(() => useExportManager())
 
-      expect(result.current.isExporting).toBe(false)
-      expect(result.current.exportProgress).toBe(0)
-      expect(result.current.currentFormat).toBeNull()
-      expect(result.current.lastError).toBeNull()
-    })
+    expect(result.current.isExporting).toBe(false)
+    expect(result.current.exportProgress).toBe(0)
+    expect(result.current.showExportDialog).toBe(false)
+    expect(result.current.exportFormat).toBe('json')
+    expect(result.current.includeMetadata).toBe(true)
+    expect(result.current.currentSessionId).toBeNull()
   })
 
-  describe('导出流程', () => {
-    it('应成功执行 PDF 导出', async () => {
-      const exportData = {
-        title: 'PDF 测试报告',
-        messages: [],
-        formulas: [],
-        metadata: {}
-      }
+  it('validateFormat 应识别合法格式并拒绝非法格式', () => {
+    const { result } = renderHook(() => useExportManager())
 
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
+    for (const format of ['json', 'csv', 'txt', 'html', 'markdown'] as ExportFormat[]) {
+      expect(result.current.validateFormat(format).valid).toBe(true)
+    }
 
-      await act(async () => {
-        await result.current.startExport(exportData, ExportFormat.PDF)
-      })
-
-      expect(mockExportService.exportToPDF).toHaveBeenCalledWith(exportData)
-      expect(result.current.isExporting).toBe(false)
-      expect(result.current.exportProgress).toBe(100)
-      expect(mockEventBus.emit).toHaveBeenCalledWith(
-        'EXPORT_COMPLETE',
-        expect.objectContaining({ format: ExportFormat.PDF })
-      )
-    })
-
-    it('应支持所有 5 种导出格式', async () => {
-      const formats = [
-        ExportFormat.PDF,
-        ExportFormat.WORD,
-        ExportFormat.EXCEL,
-        ExportFormat.MARKDOWN,
-        ExportFormat.JSON
-      ]
-
-      for (const format of formats) {
-        const exportData = {
-          title: `${format} 测试`,
-          messages: [],
-          formulas: [],
-          metadata: {}
-        }
-
-        const { result } = renderHook(() =>
-          useExportManager(mockExportService, mockEventBus)
-        )
-
-        await act(async () => {
-          await result.current.startExport(exportData, format)
-        })
-
-        expect(result.current.lastExportFormat).toBe(format)
-      }
-    })
-
-    it('应在导出过程中跟踪进度', async () => {
-      const progressCallback: ((progress: number) => void) | null = null
-
-      mockExportService.exportToPDF.mockImplementation(async () => {
-        return new Promise((resolve) => {
-          let progress = 0
-          const interval = setInterval(() => {
-            progress += 25
-            progressCallback?.(progress)
-            if (progress >= 100) {
-              clearInterval(interval)
-              resolve(new Blob())
-            }
-          }, 50)
-        })
-      })
-
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
-
-      const exportPromise = act(async () => {
-        await result.current.startExport(
-          { title: '进度测试', messages: [], formulas: [], metadata: {} },
-          ExportFormat.PDF
-        )
-      })
-
-      expect(result.current.isExporting).toBe(true)
-      expect(result.current.exportProgress).toBeGreaterThan(0)
-
-      await exportPromise
-      expect(result.current.exportProgress).toBe(100)
-    })
+    expect(result.current.validateFormat('pdf' as ExportFormat).valid).toBe(false)
+    expect(result.current.validateFormat('excel' as ExportFormat).valid).toBe(false)
   })
 
-  describe('取消导出', () => {
-    it('应能取消正在进行的导出', async () => {
-      mockExportService.exportToPDF.mockImplementation(
-        () => new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Cancelled')), 10000))
-      )
+  it('setExportFormat 应更新当前导出格式', () => {
+    const { result } = renderHook(() => useExportManager())
 
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
-
-      const exportPromise = act(async () => {
-        result.current.startExport(
-          { title: '取消测试', messages: [], formulas: [], metadata: {} },
-          ExportFormat.PDF
-        )
-      })
-
-      act(() => {
-        result.current.cancelCurrentExport()
-      })
-
-      expect(mockExportService.cancelExport).toHaveBeenCalled()
-
-      try {
-        await exportPromise
-      } catch (error) {
-        expect((error as any).message).toContain('cancelled')
-      }
-
-      expect(result.current.isExporting).toBe(false)
-      expect(mockEventBus.emit).toHaveBeenCalledWith('EXPORT_CANCELLED', expect.anything())
+    act(() => {
+      result.current.setExportFormat('csv')
     })
+
+    expect(result.current.exportFormat).toBe('csv')
   })
 
-  describe('错误处理', () => {
-    it('应处理导出过程中的错误', async () => {
-      const error = new Error('Export failed')
-      mockExportService.exportToWord.mockRejectedValueOnce(error)
+  it('setIncludeMetadata / setShowExportDialog 应更新对应状态', () => {
+    const { result } = renderHook(() => useExportManager())
 
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
-
-      await act(async () => {
-        try {
-          await result.current.startExport(
-            { title: '错误测试', messages: [], formulas: [], metadata: {} },
-            ExportFormat.WORD
-          )
-        } catch (e) {
-          // Expected
-        }
-      })
-
-      expect(result.current.lastError).toEqual(error)
-      expect(result.current.isExporting).toBe(false)
-      expect(mockEventBus.emit).toHaveBeenCalledWith(
-        'EXPORT_ERROR',
-        expect.objectContaining({ error })
-      )
+    act(() => {
+      result.current.setIncludeMetadata(false)
+      result.current.setShowExportDialog(true)
     })
 
-    it('应防止重复导出', async () => {
-      mockExportService.exportToPDF.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 1000))
-      )
-
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
-
-      act(() => {
-        result.current.startExport(
-          { title: '测试', messages: [], formulas: [], metadata: {} },
-          ExportFormat.PDF
-        )
-      })
-
-      const secondAttempt = result.current.startExport(
-        { title: '重复', messages: [], formulas: [], metadata: {} },
-        ExportFormat.PDF
-      )
-
-      await expect(secondAttempt).rejects.toThrow(/already exporting/i)
-      expect(mockExportService.exportToPDF).toHaveBeenCalledTimes(1)
-    })
+    expect(result.current.includeMetadata).toBe(false)
+    expect(result.current.showExportDialog).toBe(true)
   })
 
-  describe('导出历史记录', () => {
-    it('应记录最近的导出操作', async () => {
-      const { result } = renderHook(() =>
-        useExportManager(mockExportService, mockEventBus)
-      )
+  it('exportMessages 应调用 exportService.exportAsync 并发布开始事件', async () => {
+    const messages = [
+      { id: '1', role: 'user', content: '你好', timestamp: 1 },
+    ]
 
-      await act(async () => {
-        await result.current.startExport(
-          { title: '第一次导出', messages: [], formulas: [], metadata: {} },
-          ExportFormat.PDF
-        )
-      })
+    const { result } = renderHook(() => useExportManager())
 
-      expect(result.current.exportHistory).toHaveLength(1)
-      expect(result.current.exportHistory[0]).toEqual(
-        expect.objectContaining({
-          format: ExportFormat.PDF,
-          title: '第一次导出',
-          timestamp: expect.any(Number),
-          status: 'success'
-        })
-      )
-
-      await act(async () => {
-        await result.current.startExport(
-          { title: '第二次导出', messages: [], formulas: [], metadata: {} },
-          ExportFormat.EXCEL
-        )
-      })
-
-      expect(result.current.exportHistory).toHaveLength(2)
+    await act(async () => {
+      await result.current.exportMessages(messages as never, { includeMetadata: false })
     })
+
+    expect(exportService.exportAsync).toHaveBeenCalledWith(
+      expect.any(Array),
+      'json',
+      expect.any(Function),
+    )
+    expect(eventBus.emit).toHaveBeenCalledWith(
+      'export:started',
+      expect.objectContaining({ format: 'json' }),
+    )
+    expect(result.current.isExporting).toBe(false)
+    expect(result.current.exportProgress).toBe(100)
+  })
+
+  it('空消息不应触发导出', async () => {
+    const { result } = renderHook(() => useExportManager())
+
+    await act(async () => {
+      await result.current.exportMessages([])
+    })
+
+    expect(exportService.exportAsync).not.toHaveBeenCalled()
+    expect(result.current.isExporting).toBe(false)
+  })
+
+  it('cancelExport 应结束导出状态', () => {
+    const { result } = renderHook(() => useExportManager())
+
+    act(() => {
+      result.current.cancelExport()
+    })
+
+    expect(result.current.isExporting).toBe(false)
+  })
+
+  it('onExportProgress / onExportComplete 应返回退订函数', () => {
+    const { result } = renderHook(() => useExportManager())
+
+    const unsubscribeProgress = result.current.onExportProgress(() => {})
+    const unsubscribeComplete = result.current.onExportComplete(() => {})
+
+    expect(typeof unsubscribeProgress).toBe('function')
+    expect(typeof unsubscribeComplete).toBe('function')
   })
 })

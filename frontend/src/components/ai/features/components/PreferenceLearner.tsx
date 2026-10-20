@@ -15,7 +15,7 @@
  * @lastUpdated 2026-05-12
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { Star, TrendingUp, Download, RefreshCw, BarChart3 } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
@@ -84,6 +84,7 @@ function PreferenceLearner({
           dimensionId: dim.id,
           dimensionLabel: dim.label,
           rating: 3, // 默认中等偏好
+          // eslint-disable-next-line react-hooks/purity
           timestamp: Date.now(),
         })),
   )
@@ -125,9 +126,6 @@ function PreferenceLearner({
    * 生成推荐产品（模拟）
    */
   const generateRecommendations = useCallback(() => {
-    const highRatedDims = ratings.filter(r => r.rating >= 4).map(r => r.dimensionLabel)
-    const lowRatedDims = ratings.filter(r => r.rating <= 2).map(r => r.dimensionLabel)
-
     const mockProducts: RecommendedProduct[] = [
       {
         id: 'prod_001',
@@ -226,6 +224,7 @@ function PreferenceLearner({
   // 自动生成推荐
   useEffect(() => {
     if (showRecommendations) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       generateRecommendations()
     }
   }, [ratings, showRecommendations, generateRecommendations])

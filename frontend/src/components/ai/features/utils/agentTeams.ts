@@ -140,7 +140,8 @@ export class TaskDAG {
     for (const taskId of this.tasks.keys()) {
       visit(taskId);
     }
-    return sorted.reverse();
+    // 后序 DFS 已保证「依赖先于依赖者」；不要再 reverse（否则会颠倒执行顺序）
+    return sorted;
   }
 
   /** 获取所有任务 */

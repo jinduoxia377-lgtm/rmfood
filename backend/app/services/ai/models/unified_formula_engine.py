@@ -79,7 +79,7 @@ class UnifiedFormulaEngine:
         try:
             from .signal_encoder import get_signal_encoder
             # ★ 关键修复：优先使用真正的 PyTorch LSTM 生成器
-            from .pytorch_generator import get_pytorch_generator
+            from .pytorch_generator import PyTorchFormulaGenerator
             from .formula_predictor import get_formula_predictor
             from .formula_discriminator import get_formula_discriminator
             from .template_subsystem import get_template_subsystem
@@ -87,10 +87,15 @@ class UnifiedFormulaEngine:
             from .formula_selector import get_formula_selector
 
             self._signal_encoder = get_signal_encoder()
-            # 使用真正的 PyTorch LSTM 生成器（而非启发式版本）
-            self._generator = get_pytorch_generator(
-                n_herbs=len(self.herb_vocab),
+            # 使用真正的 PyTorch LSTM 生成器（而非启发式版本）。
+            # 注意：这里创建引擎专属的生成器实例，而不是使用全局单例
+            # get_pytorch_generator() —— 全局单例可能已被其他调用方以不同的
+            # input_dim/n_herbs 创建（例如测试 test_get_pytorch_generator 以
+            # input_dim=40 创建），导致信号向量维度与 input_proj 不匹配。
+            self._generator = PyTorchFormulaGenerator(
+                n_herbs=max(len(self.herb_vocab), 1),
                 input_dim=self._signal_encoder.output_dim,
+                device="cpu",
             )
             self._predictor = get_formula_predictor(herb_db=self.herb_db)
             self._discriminator = get_formula_discriminator()
@@ -124,6 +129,60 @@ class UnifiedFormulaEngine:
         self._rl_tuner = get_rl_tuner()
         self._selector = get_formula_selector()
         logger.info("[UnifiedEngine] 已降级到启发式生成器")
+
+    def _generate_candidate(
+        self,
+        signal: "EncodedSignal",
+        template: Any,
+        constraints: Optional[Dict],
+    ) -> Optional[Dict[str, float]]:
+        """调用底层生成器生成一个候选配方。
+
+        PyTorchFormulaGenerator.generate() 的真实签名为
+        ``generate(signal, herb_vocab, config=None)``，不支持 min_herbs/max_herbs/
+        exclude_herbs/template_prefix 关键字参数；启发式生成器（AutoregressiveGenerator）
+        则支持这些参数。这里按生成器类型分别适配，保证两种生成器都能正常工作。
+        """
+        exclude_herbs = constraints.get("exclude_herbs", []) if constraints else []
+        exclude_set = set(exclude_herbs)
+
+        if type(self._generator).__name__ == "PyTorchFormulaGenerator":
+            import torch
+            from .pytorch_generator import GenerationConfig
+
+            config = GenerationConfig(
+                max_seq_len=12,
+                min_seq_len=3,
+                device=self._generator.device,
+            )
+            signal_tensor = torch.tensor(
+                signal.raw_vector,
+                dtype=torch.float32,
+                device=self._generator.device,
+            ).unsqueeze(0)
+            formulas = self._generator.generate(
+                signal=signal_tensor,
+                herb_vocab=self.herb_vocab,
+                config=config,
+            )
+            formula = formulas[0] if formulas else {}
+        else:
+            formula = self._generator.generate(
+                signal=signal.raw_vector,
+                herb_vocab=self.herb_vocab,
+                min_herbs=3,
+                max_herbs=12,
+                exclude_herbs=exclude_herbs,
+                template_prefix=template.base_sequence if template else None,
+            )
+
+        if not formula:
+            return None
+
+        # PyTorch 生成器不支持 exclude_herbs，统一在引擎层过滤，保证约束语义一致
+        if exclude_set:
+            formula = {k: v for k, v in formula.items() if k not in exclude_set}
+        return formula or None
 
     async def generate(
         self,
@@ -174,14 +233,7 @@ class UnifiedFormulaEngine:
             # Step 3: 自回归生成（多轮采样）
             generated_formulas = []
             for _ in range(n_candidates):
-                formula = self._generator.generate(
-                    signal=signal.raw_vector,
-                    herb_vocab=self.herb_vocab,
-                    min_herbs=3,
-                    max_herbs=12,
-                    exclude_herbs=constraints.get("exclude_herbs", []) if constraints else [],
-                    template_prefix=template.base_sequence if template else None,
-                )
+                formula = self._generate_candidate(signal, template, constraints)
                 if formula:
                     generated_formulas.append(formula)
 

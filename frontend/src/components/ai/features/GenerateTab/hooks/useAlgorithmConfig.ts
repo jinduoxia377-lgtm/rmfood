@@ -4,9 +4,8 @@
  * @description 管理遗传算法参数配置，支持预设场景和自定义参数
  * @version 1.0.0
  */
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { usePersistentState } from '@/hooks/usePersistentState'
-import { STORAGE_KEYS } from '@/config'
 import { logger } from '@/utils/safeLogger'
 
 export type AlgorithmStrategy = 'ga' | 'nsga2' | 'hybrid' | 'auto'
