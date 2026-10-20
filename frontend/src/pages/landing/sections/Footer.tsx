@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Footer 组件 v3 — 企业官网级专业版
  *
  * 升级要点（v3）：
@@ -47,21 +47,21 @@ export default function Footer() {
   return (
     <footer className="lp-footer">
       {/* 主内容区 */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
 
           {/* 品牌区 */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: 'var(--color-primary-700, #047857)' }}>
+            <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
+              <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center" style={{ background: 'var(--color-primary-700, #047857)' }}>
                 <Beaker size={13} color="white" strokeWidth={2.2} />
               </div>
               <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--color-neutral-100, #f1f5f9)' }}>莱茵分子</span>
             </div>
-            <p className="lp-footer-desc mb-4 leading-relaxed">
+            <p className="lp-footer-desc mb-[var(--space-apple-md)] leading-relaxed">
               {RHINE_BRAND_CONFIG.description}
             </p>
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-[var(--space-apple-sm)] mt-[var(--space-apple-md)]">
               {[
                 { icon: Github, label: 'GitHub', href: 'https://github.com/rmfood' },
                 { icon: MessageCircle, label: '微信', href: '#' },
@@ -121,7 +121,7 @@ export default function Footer() {
 
       {/* 底部分隔线 */}
       <div className="border-t lp-footer-bottom">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-[12px]" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>
               &copy; {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}

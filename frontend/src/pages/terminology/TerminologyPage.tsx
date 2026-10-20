@@ -11,19 +11,21 @@
  * - 统计 (1 个端点)
  */
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Input, Button, Badge, Modal, Pagination, Card, CardHeader, CardTitle, CardContent, Tabs, TabsList, TabsTrigger, TabsContent,
-  StatCard, Alert,
+  StatCard,
 } from '@/components/ui'
 import * as terminologyApi from '@/api/terminology'
-import type { Term, TermCategory, TermCategoryCreate, TermStatistics, TermValidationResponse, TermVariant } from '@/api/terminology'
-import { activityApi, type TimelineEvent } from '@/api/activity'
+import type { Term, TermCategory, TermCategoryCreate, TermValidationResponse } from '@/api/terminology'
+import { activityApi } from '@/api/activity'
 import {
-  BookOpen, Search, Tag, Settings, BarChart3, Plus, Trash2, Edit2, X, Check,
-  FileText, List, Database, RefreshCw, Clock, ShieldCheck, ChevronDown, ChevronRight,
-  Eye, Type, Activity,
+  BookOpen, Search, Settings, Plus, Trash2, Edit2, Check,
+  List, Database, RefreshCw, Clock, ShieldCheck, ChevronDown, ChevronRight,
+  Type,
 } from 'lucide-react'
+import i18n from '@/i18n'
 import { TableSkeleton, EmptyState } from '@/components/ui'
 
 // ═══════════════════════════════════════════════
@@ -50,12 +52,12 @@ function formatRelativeTime(dateStr?: string): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMin = Math.floor(diffMs / 60000)
-  if (diffMin < 1) return '刚刚'
-  if (diffMin < 60) return `${diffMin} 分钟前`
+  if (diffMin < 1) return i18n.t('pages.terminology.justNow')
+  if (diffMin < 60) return i18n.t('pages.terminology.minutesAgo', { n: diffMin })
   const diffHr = Math.floor(diffMin / 60)
-  if (diffHr < 24) return `${diffHr} 小时前`
+  if (diffHr < 24) return i18n.t('pages.terminology.hoursAgo', { n: diffHr })
   const diffDay = Math.floor(diffHr / 24)
-  return `${diffDay} 天前`
+  return i18n.t('pages.terminology.daysAgo', { n: diffDay })
 }
 
 // ═══════════════════════════════════════════════
@@ -63,29 +65,31 @@ function formatRelativeTime(dateStr?: string): string {
 // ═══════════════════════════════════════════════
 
 export default function TerminologyPage() {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState('categories')
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* 顶部横幅 */}
-      <div className="rounded-2xl bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-primary-surface-hover)] p-6 text-white shadow-lg">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl font-bold leading-snug">术语库管理</h1>
-            <p className="mt-1 text-white/90 text-sm">管理药食同源专业术语库，支持分类、验证、搜索和标准化</p>
+    <div className="space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)]">
+      {/* 欢迎横幅（surface-primary 实底，对齐 DashboardPage） */}
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-apple-md)]">
+          <div>
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">{t('pages.terminology.title')}</h1>
+            <p className="mt-1 text-sm text-white/80">{t('pages.terminology.subtitle')}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button
               variant="secondary"
               size="sm"
-              icon={<RefreshCw size={14} />}
+              icon={<RefreshCw size={14} aria-hidden="true" />}
               onClick={() => {
-                useQueryClient().invalidateQueries({ queryKey: ['terminology-statistics'] })
-                useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
-                useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
+                queryClient.invalidateQueries({ queryKey: ['terminology-statistics'] })
+                queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
+                queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
               }}
             >
-              刷新数据
+              {t('pages.terminology.refreshData')}
             </Button>
           </div>
         </div>
@@ -95,26 +99,26 @@ export default function TerminologyPage() {
       <StatCardsRow />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+        <TabsList className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="categories" className="gap-2">
-            <Database className="w-4 h-4" />
-            术语分类
+            <Database className="w-4 h-4" aria-hidden="true" />
+            {t('pages.terminology.tabCategories')}
           </TabsTrigger>
           <TabsTrigger value="terms" className="gap-2">
-            <BookOpen className="w-4 h-4" />
-            术语管理
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            {t('pages.terminology.tabTerms')}
           </TabsTrigger>
           <TabsTrigger value="variants" className="gap-2">
-            <Type className="w-4 h-4" />
-            术语变体
+            <Type className="w-4 h-4" aria-hidden="true" />
+            {t('pages.terminology.tabVariants')}
           </TabsTrigger>
           <TabsTrigger value="validation" className="gap-2">
-            <Check className="w-4 h-4" />
-            术语验证
+            <Check className="w-4 h-4" aria-hidden="true" />
+            {t('pages.terminology.tabValidation')}
           </TabsTrigger>
           <TabsTrigger value="rules" className="gap-2">
-            <Settings className="w-4 h-4" />
-            标准化规则
+            <Settings className="w-4 h-4" aria-hidden="true" />
+            {t('pages.terminology.tabRules')}
           </TabsTrigger>
         </TabsList>
 
@@ -146,6 +150,7 @@ export default function TerminologyPage() {
 // ═══════════════════════════════════════════════
 
 function StatCardsRow() {
+  const { t } = useTranslation()
   const { data: stats, isLoading } = useQuery({
     queryKey: ['terminology-statistics'],
     queryFn: terminologyApi.getStatistics,
@@ -153,9 +158,9 @@ function StatCardsRow() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+          <div key={i} className="h-20 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] animate-pulse" />
         ))}
       </div>
     )
@@ -165,25 +170,25 @@ function StatCardsRow() {
 
   const cards = [
     {
-      label: '术语总数',
+      label: t('pages.terminology.statTotalTerms'),
       value: stats.total_terms,
       icon: BookOpen,
       variant: 'primary' as const,
     },
     {
-      label: '分类数量',
+      label: t('pages.terminology.statTotalCategories'),
       value: stats.total_categories,
       icon: Database,
       variant: 'secondary' as const,
     },
     {
-      label: '标准术语',
+      label: t('pages.terminology.statStandardized'),
       value: stats.category_stats?.reduce((sum, c) => sum + c.term_count, 0) ?? 0,
       icon: ShieldCheck,
       variant: 'success' as const,
     },
     {
-      label: '验证次数',
+      label: t('pages.terminology.statTotalValidations'),
       value: stats.total_validations,
       icon: Check,
       variant: 'info' as const,
@@ -191,7 +196,7 @@ function StatCardsRow() {
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((card) => (
         <StatCard
           key={card.label}
@@ -210,6 +215,7 @@ function StatCardsRow() {
 // ═══════════════════════════════════════════════
 
 function RecentActivitySection() {
+  const { t } = useTranslation()
   const { data: timelineData, isLoading } = useQuery({
     queryKey: ['terminology-activity'],
     queryFn: ({ signal }) => activityApi.timeline(7, signal),
@@ -226,12 +232,12 @@ function RecentActivitySection() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle as="h3" className="text-sm font-bold">最近术语活动</CardTitle>
+          <CardTitle as="h3" className="text-sm font-bold">{t('pages.terminology.recentTermActivity')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-[var(--space-apple-sm)]">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-4 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse" />
+              <div key={i} className="h-4 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -243,20 +249,20 @@ function RecentActivitySection() {
 
   return (
     <Card>
-      <CardHeader className="px-6 pt-6 pb-4">
+      <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
         <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-          <Clock size={14} />
-          最近术语活动
+          <Clock size={14} aria-hidden="true" />
+          {t('pages.terminology.recentTermActivity')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
-        <div className="space-y-3">
+        <div className="space-y-[var(--space-apple-sm)]">
           {terminologyEvents.map((event) => (
-            <div key={event.id} className="flex items-start gap-3 text-sm">
-              <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+            <div key={event.id} className="flex items-start gap-[var(--space-apple-sm)] text-sm">
+              <div className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 mt-1.5 shrink-0" />
               <div className="flex-1">
                 <span className="font-medium">{event.title}</span>
-                <span className="text-neutral-500 dark:text-neutral-400 ml-2 text-xs">{formatRelativeTime(event.created_at)}</span>
+                <span className="text-[var(--text-muted)] ml-2 text-xs">{formatRelativeTime(event.created_at)}</span>
               </div>
               {event.status && (
                 <Badge variant={event.status === 'success' ? 'success' : 'info'} size="sm">
@@ -294,15 +300,15 @@ function CategoryTreeNode({
 
   return (
     <>
-      <tr className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-        <td className="px-4 py-3" style={{ paddingLeft: `${depth * 20 + 16}px` }}>
+      <tr className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/50">
+        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]" style={{ paddingLeft: `${depth * 20 + 16}px` }}>
           <div className="flex items-center gap-1">
             {hasChildren && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)]"
               >
-                {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                {expanded ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
               </button>
             )}
             {!hasChildren && <span className="w-5" />}
@@ -312,24 +318,24 @@ function CategoryTreeNode({
             )}
           </div>
         </td>
-        <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{category.name_en || '-'}</td>
-        <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs max-w-[200px] truncate" title={category.description || ''}>
+        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{category.name_en || '-'}</td>
+        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs max-w-[200px] truncate" title={category.description || ''}>
           {category.description || '-'}
         </td>
-        <td className="px-4 py-3 text-right">
+        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right">
           <button
             onClick={() => onEdit(category)}
-            className="text-secondary-600 hover:text-secondary-800 mr-3"
+            className="text-[var(--color-secondary-text)] hover:text-[var(--color-secondary-text)] mr-3"
             title="编辑"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={() => onDelete(category.id)}
-            className="text-error-600 hover:text-error-800"
+            className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)]"
             title="删除"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" aria-hidden="true" />
           </button>
         </td>
       </tr>
@@ -366,7 +372,7 @@ function CategoryManagementTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createCategory,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
       setShowCreateModal(false)
     },
   })
@@ -375,7 +381,7 @@ function CategoryManagementTab() {
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       terminologyApi.updateCategory(id, data),
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
       setEditingCategory(null)
     },
   })
@@ -383,7 +389,7 @@ function CategoryManagementTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteCategory,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
     },
   })
 
@@ -407,7 +413,7 @@ function CategoryManagementTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">术语分类管理</h2>
         <Button variant="primary" size="sm" onClick={() => {
@@ -415,7 +421,7 @@ function CategoryManagementTab() {
           setFormData({ name: '', name_en: '', description: '', sort_order: 0, parent_id: null })
           setShowCreateModal(true)
         }}>
-          <Plus className="w-4 h-4 mr-1" />
+          <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
           新建分类
         </Button>
       </div>
@@ -428,9 +434,9 @@ function CategoryManagementTab() {
         </Card>
       ) : tree.length === 0 && categories.length === 0 ? (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-[var(--space-apple-lg)]">
             <EmptyState
-              icon={<Database size={48} />}
+              icon={<Database size={48} aria-hidden="true" />}
               title="暂无分类"
               description="添加第一个术语分类，开始构建术语库"
             />
@@ -438,13 +444,14 @@ function CategoryManagementTab() {
         </Card>
       ) : (
         <Card>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                <th className="px-4 py-3 text-left font-semibold">名称</th>
-                <th className="px-4 py-3 text-left font-semibold">英文名</th>
-                <th className="px-4 py-3 text-left font-semibold">描述</th>
-                <th className="px-4 py-3 text-right font-semibold">操作</th>
+              <tr className="border-b border-[var(--border-color)]">
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">名称</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">英文名</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">描述</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right font-semibold">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -460,6 +467,7 @@ function CategoryManagementTab() {
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
 
@@ -473,7 +481,7 @@ function CategoryManagementTab() {
           }}
           title={editingCategory ? '编辑分类' : '新建分类'}
         >
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <div>
               <label className="block text-sm font-medium mb-1">中文名 *</label>
               <Input
@@ -612,7 +620,7 @@ function TermManagementTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createTerm,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
       setShowCreateModal(false)
     },
   })
@@ -621,7 +629,7 @@ function TermManagementTab() {
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       terminologyApi.updateTerm(id, data),
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
       setEditingTerm(null)
     },
   })
@@ -629,7 +637,7 @@ function TermManagementTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteTerm,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
     },
   })
 
@@ -648,7 +656,7 @@ function TermManagementTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">术语列表</h2>
         <Button variant="primary" size="sm" onClick={() => {
@@ -656,15 +664,15 @@ function TermManagementTab() {
           setFormData({ term: '', term_en: '', pinyin: '', definition: '', category_id: 1 })
           setShowCreateModal(true)
         }}>
-          <Plus className="w-4 h-4 mr-1" />
+          <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
           新建术语
         </Button>
       </div>
 
       {/* 搜索和筛选 */}
-      <div className="flex gap-3">
+      <div className="flex gap-[var(--space-apple-sm)]">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
           <Input
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
@@ -674,11 +682,11 @@ function TermManagementTab() {
             className="pl-9"
           />
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] shadow-lg max-h-48 overflow-y-auto">
               {suggestions.map((s) => (
                 <button
                   key={s}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 first:rounded-t-lg last:rounded-b-lg"
+                  className="w-full text-left px-[var(--space-apple-sm)] py-2 text-sm hover:bg-[var(--bg-secondary)] first:rounded-t-lg last:rounded-b-lg"
                   onClick={() => selectSuggestion(s)}
                 >
                   {s}
@@ -701,9 +709,9 @@ function TermManagementTab() {
           setSearchQuery('')
           setCategoryId(undefined)
           setPage(1)
-          useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
+          queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
         }}>
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
 
@@ -716,9 +724,9 @@ function TermManagementTab() {
         </Card>
       ) : terms.length === 0 ? (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-[var(--space-apple-lg)]">
             <EmptyState
-              icon={<BookOpen size={48} />}
+              icon={<BookOpen size={48} aria-hidden="true" />}
               title="暂无术语"
               description="添加第一个术语，或调整筛选条件"
             />
@@ -726,16 +734,17 @@ function TermManagementTab() {
         </Card>
       ) : (
         <Card>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                <th className="px-4 py-3 w-8"></th>
-                <th className="px-4 py-3 text-left font-semibold">术语</th>
-                <th className="px-4 py-3 text-left font-semibold">英文名</th>
-                <th className="px-4 py-3 text-left font-semibold">拼音</th>
-                <th className="px-4 py-3 text-left font-semibold">分类</th>
-                <th className="px-4 py-3 text-left font-semibold">标准</th>
-                <th className="px-4 py-3 text-right font-semibold">操作</th>
+              <tr className="border-b border-[var(--border-color)]">
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] w-8"></th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">术语</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">英文名</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">拼音</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">分类</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">标准</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right font-semibold">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -743,51 +752,51 @@ function TermManagementTab() {
                 const isExpanded = expandedTermId === term.id
                 return (
                   <>
-                    <tr key={term.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-                      <td className="px-4 py-3">
+                    <tr key={term.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/50">
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                         <button
                           onClick={() => setExpandedTermId(isExpanded ? null : term.id)}
-                          className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                          className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)]"
                         >
-                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          {isExpanded ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
                         </button>
                       </td>
-                      <td className="px-4 py-3 font-medium">{term.term}</td>
-                      <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.term_en || '-'}</td>
-                      <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.pinyin || '-'}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-medium">{term.term}</td>
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.term_en || '-'}</td>
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{term.pinyin || '-'}</td>
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                         <Badge variant="neutral">
                           {categories.find((c) => c.id === term.category_id)?.name || '-'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                         {term.is_standard ? (
                           <Badge variant="success">标准</Badge>
                         ) : (
                           <Badge variant="info">非标准</Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right">
                         <button
                           onClick={() => openEdit(term)}
-                          className="text-secondary-600 hover:text-secondary-800 mr-3"
+                          className="text-[var(--color-secondary-text)] hover:text-[var(--color-secondary-text)] mr-3"
                           title="编辑"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => deleteMutation.mutate(term.id)}
-                          className="text-error-600 hover:text-error-800"
+                          className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)]"
                           title="删除"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </td>
                     </tr>
                     {isExpanded && (
                       <tr key={`${term.id}-detail`}>
-                        <td colSpan={7} className="px-4 py-3 bg-neutral-50 dark:bg-neutral-900/30">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                        <td colSpan={7} className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/30">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">定义：</span>
                               <span className="ml-1">{term.definition || '暂无'}</span>
@@ -827,8 +836,9 @@ function TermManagementTab() {
               })}
             </tbody>
           </table>
+          </div>
           {total > 20 && (
-            <div className="px-4 py-3 flex justify-center">
+            <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] flex justify-center">
               <Pagination
                 currentPage={page}
                 totalPages={termsData?.total_pages || 1}
@@ -849,7 +859,7 @@ function TermManagementTab() {
           }}
           title={editingTerm ? '编辑术语' : '新建术语'}
         >
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <div>
               <label className="block text-sm font-medium mb-1">术语 *</label>
               <Input
@@ -959,20 +969,20 @@ function VariantManagementTab() {
   })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">术语变体管理</h2>
         <Button variant="primary" size="sm" onClick={() => {
           setFormData({ variant: '', term_id: selectedTermId, similarity: 0.8, variant_type: 'synonym' })
           setShowCreateModal(true)
         }}>
-          <Plus className="w-4 h-4 mr-1" />
+          <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
           新建变体
         </Button>
       </div>
 
       {/* 按术语筛选 */}
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-[var(--space-apple-sm)] items-center">
         <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">按术语筛选：</span>
         <select
           value={selectedTermId ?? ''}
@@ -989,7 +999,7 @@ function VariantManagementTab() {
           size="sm"
           onClick={() => { setSelectedTermId(undefined); queryClient.invalidateQueries({ queryKey: ['terminology-variants'] }) }}
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
 
@@ -1001,9 +1011,9 @@ function VariantManagementTab() {
         </Card>
       ) : variants.length === 0 ? (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-[var(--space-apple-lg)]">
             <EmptyState
-              icon={<Type size={48} />}
+              icon={<Type size={48} aria-hidden="true" />}
               title="暂无变体"
               description="为术语添加别名、拼写变体等，辅助搜索和纠错"
             />
@@ -1011,48 +1021,50 @@ function VariantManagementTab() {
         </Card>
       ) : (
         <Card>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                <th className="px-4 py-3 text-left font-semibold">变体</th>
-                <th className="px-4 py-3 text-left font-semibold">归属术语</th>
-                <th className="px-4 py-3 text-left font-semibold">类型</th>
-                <th className="px-4 py-3 text-left font-semibold">相似度</th>
-                <th className="px-4 py-3 text-right font-semibold">操作</th>
+              <tr className="border-b border-[var(--border-color)]">
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">变体</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">归属术语</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">类型</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">相似度</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right font-semibold">操作</th>
               </tr>
             </thead>
             <tbody>
               {variants.map((v) => (
-                <tr key={v.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-                  <td className="px-4 py-3 font-medium">{v.variant}</td>
-                  <td className="px-4 py-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{v.term || `ID:${v.term_id}`}</td>
-                  <td className="px-4 py-3">
+                <tr key={v.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/50">
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-medium">{v.variant}</td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{v.term || `ID:${v.term_id}`}</td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                     <Badge variant="neutral">{v.variant_type}</Badge>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                      <div className="w-16 h-1.5 bg-[var(--border-color)] rounded-[var(--radius-pill)] overflow-hidden">
                         <div
-                          className="h-full bg-primary-500 rounded-full"
+                          className="h-full bg-[var(--color-primary-container)]0 rounded-[var(--radius-pill)]"
                           style={{ width: `${(v.similarity ?? 0.8) * 100}%` }}
                         />
                       </div>
                       <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{(v.similarity ?? 0.8).toFixed(2)}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right">
                     <button
                       onClick={() => deleteMutation.mutate(v.id)}
-                      className="text-error-600 hover:text-error-800"
+                      className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)]"
                       title="删除"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
 
@@ -1063,7 +1075,7 @@ function VariantManagementTab() {
           onClose={() => setShowCreateModal(false)}
           title="新建术语变体"
         >
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <div>
               <label className="block text-sm font-medium mb-1">变体名称 *</label>
               <Input
@@ -1085,7 +1097,7 @@ function VariantManagementTab() {
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">类型</label>
                 <select
@@ -1149,17 +1161,17 @@ function ValidationTab() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* 单个验证 */}
         <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
+          <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
             <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4" aria-hidden="true" />
               单个术语验证
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6 pt-0">
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-apple-sm)]">
               <Input
                 value={validationInput}
                 onChange={(e) => setValidationInput(e.target.value)}
@@ -1174,7 +1186,7 @@ function ValidationTab() {
               </Button>
             </div>
             {validationResult && (
-              <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-900 rounded">
+              <div className="mt-[var(--space-apple-md)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)]">
                 <div className="flex items-center gap-2 mb-2">
                   {validationResult.is_valid ? (
                     <Badge variant="success">有效</Badge>
@@ -1203,14 +1215,14 @@ function ValidationTab() {
 
         {/* 批量验证 */}
         <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
+          <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
             <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <List className="w-4 h-4" />
+              <List className="w-4 h-4" aria-hidden="true" />
               批量验证
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6 pt-0">
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-apple-sm)]">
               <textarea
                 value={batchInput}
                 onChange={(e) => setBatchInput(e.target.value)}
@@ -1229,7 +1241,7 @@ function ValidationTab() {
               </Button>
             </div>
             {batchResult.length > 0 && (
-              <div className="mt-4 space-y-2">
+              <div className="mt-[var(--space-apple-md)] space-y-2">
                 {batchResult.map((r: any, i: number) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     {r.is_valid ? (
@@ -1271,7 +1283,7 @@ function RulesTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createNormalizationRule,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-rules'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-rules'] })
       setShowCreateModal(false)
     },
   })
@@ -1279,16 +1291,16 @@ function RulesTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteNormalizationRule,
     onSuccess: () => {
-      useQueryClient().invalidateQueries({ queryKey: ['terminology-rules'] })
+      queryClient.invalidateQueries({ queryKey: ['terminology-rules'] })
     },
   })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">标准化规则</h2>
         <Button variant="primary" size="sm" onClick={() => setShowCreateModal(true)}>
-          <Plus className="w-4 h-4 mr-1" />
+          <Plus className="w-4 h-4 mr-1" aria-hidden="true" />
           新建规则
         </Button>
       </div>
@@ -1301,9 +1313,9 @@ function RulesTab() {
         </Card>
       ) : rules.length === 0 ? (
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-[var(--space-apple-lg)]">
             <EmptyState
-              icon={<Settings size={48} />}
+              icon={<Settings size={48} aria-hidden="true" />}
               title="暂无规则"
               description="添加标准化规则，自动处理术语变体"
             />
@@ -1311,50 +1323,52 @@ function RulesTab() {
         </Card>
       ) : (
         <Card>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                <th className="px-4 py-3 text-left font-semibold">模式</th>
-                <th className="px-4 py-3 text-left font-semibold">替换</th>
-                <th className="px-4 py-3 text-left font-semibold">类型</th>
-                <th className="px-4 py-3 text-left font-semibold">优先级</th>
-                <th className="px-4 py-3 text-left font-semibold">启用</th>
-                <th className="px-4 py-3 text-right font-semibold">操作</th>
+              <tr className="border-b border-[var(--border-color)]">
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">模式</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">替换</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">类型</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">优先级</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left font-semibold">启用</th>
+                <th className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right font-semibold">操作</th>
               </tr>
             </thead>
             <tbody>
               {rules.map((rule) => (
-                <tr key={rule.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-                  <td className="px-4 py-3 font-mono text-xs">{rule.pattern}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{rule.replacement}</td>
-                  <td className="px-4 py-3"><Badge variant="info">{rule.rule_type}</Badge></td>
-                  <td className="px-4 py-3">{rule.priority}</td>
-                  <td className="px-4 py-3">
+                <tr key={rule.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/50">
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-mono text-xs">{rule.pattern}</td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-mono text-xs">{rule.replacement}</td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]"><Badge variant="info">{rule.rule_type}</Badge></td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">{rule.priority}</td>
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                     {rule.enabled ? (
                       <Badge variant="success">启用</Badge>
                     ) : (
                       <Badge variant="info">禁用</Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-right">
                     <button
                       onClick={() => deleteMutation.mutate(rule.id)}
-                      className="text-error-600 hover:text-error-800"
+                      className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)]"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
 
       {/* 新建规则弹窗 */}
       {showCreateModal && (
         <Modal open={showCreateModal} onClose={() => setShowCreateModal(false)} title="新建标准化规则">
-          <div className="space-y-4">
+          <div className="space-y-[var(--space-apple-md)]">
             <div>
               <label className="block text-sm font-medium mb-1">匹配模式 *</label>
               <Input
@@ -1371,7 +1385,7 @@ function RulesTab() {
                 placeholder="替换后的文本"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">规则类型</label>
                 <select

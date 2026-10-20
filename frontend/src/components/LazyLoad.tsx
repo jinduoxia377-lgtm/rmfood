@@ -35,7 +35,6 @@ export function lazyWithPreload<P = object>(
 ): LoadableComponent<P> {
   const LazyComponent = React.lazy(factory) as LoadableComponent<P>;
   const componentName = options.componentName || 'Component';
-  const timeoutDuration = options.timeout || 15000;
 
   // 🔒 P3-1: 添加 preload 方法（空闲时预加载）
   let preloadPromise: Promise<void> | null = null;
@@ -90,14 +89,12 @@ export function LazyLoadWrapper<P = object>(props: {
     fallback,
     errorFallback,
     skeleton,
-    minLoadTime = 300,
     timeout = 15000,
-    onError,
-    onLoad,
   } = props;
 
   const [error, setError] = useState<Error | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  // eslint-disable-next-line react-hooks/purity
   const startTimeRef = useRef<number>(Date.now());
   const timeoutRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
@@ -174,7 +171,5 @@ export function LazyLoadWrapper<P = object>(props: {
     </Suspense>
   );
 }
-
-import { ErrorBoundary } from './ErrorBoundary';
 
 import { logger } from '@/utils/safeLogger';

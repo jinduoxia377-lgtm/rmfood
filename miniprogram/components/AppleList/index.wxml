@@ -14,7 +14,7 @@
   >
     <!-- 图标 -->
     <view wx:if="{{item.icon}}" class="apple-list-item-icon {{item.iconColor || 'gray'}}">
-      <icon name="{{item.icon}}" size="sm" color="#FFFFFF" />
+      <icon name="{{item.icon}}" size="sm" color="var(--color-text-white)" />
     </view>
     
     <!-- 内容 -->

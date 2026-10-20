@@ -359,7 +359,7 @@ const BUILTIN_TEMPLATES: Omit<PromptTemplate, 'id' | 'createdAt' | 'updatedAt' |
 export function usePromptManager(): UsePromptManagerReturn {
   // ===== 状态定义 =====
 
-  const [categories, _setCategories] = useState<PromptCategory[]>(BUILTIN_CATEGORIES)
+  const [categories] = useState<PromptCategory[]>(BUILTIN_CATEGORIES)
   const [templates, setTemplates] = useState<PromptTemplate[]>(() => {
     const initialTemplates = BUILTIN_TEMPLATES.map((t, index) => ({
       ...t,
@@ -677,6 +677,7 @@ export function usePromptManager(): UsePromptManagerReturn {
   // ===== 导入/导出 =====
 
   const exportPrompts = useCallback((_format: 'json' = 'json'): string => {
+    void _format;
     const exportData: PromptExportData = {
       version: '2.0.0',
       exportTime: Date.now(),
@@ -714,7 +715,7 @@ export function usePromptManager(): UsePromptManagerReturn {
 
           setTemplates(prev => [...prev, newTemplate])
           importedCount++
-        } catch (e) {
+        } catch {
           errors.push(`导入模板 "${template.title}" 失败`)
         }
       })
@@ -726,7 +727,7 @@ export function usePromptManager(): UsePromptManagerReturn {
         count: importedCount,
         errors,
       }
-    } catch (e) {
+    } catch {
       return {
         success: false,
         count: 0,

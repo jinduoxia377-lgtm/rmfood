@@ -196,7 +196,9 @@ export function EnhancedAreaChart({
           width={60}
         />
 
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Tooltip content={<CustomTooltip />} animationDuration={200} />
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Legend content={<CustomLegend />} />
 
         {(data.datasets || []).map((dataset, index) => {

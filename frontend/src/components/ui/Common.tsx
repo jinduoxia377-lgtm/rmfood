@@ -3,6 +3,7 @@
  * StatusBadge / EmptyState / Skeleton / Pagination
  */
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, Inbox, FlaskConical, AlertTriangle, Lock } from 'lucide-react'
 
@@ -32,7 +33,10 @@ const statusConfig: Record<string, { label: string; cls: string; dot?: string }>
 }
 
 export function StatusBadge({ status, className, size = 'md' }: StatusBadgeProps) {
-  const config = statusConfig[status.toLowerCase()] ?? statusConfig[status] ?? { label: status, cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400', dot: 'bg-neutral-400' }
+  const { t } = useTranslation()
+  const key = status.toLowerCase()
+  const config = statusConfig[key] ?? statusConfig[status] ?? { label: status, cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400', dot: 'bg-neutral-400' }
+  const label = t(`common.statusLabels.${key}`, { defaultValue: config.label })
   return (
     <span
       className={cn(
@@ -45,7 +49,7 @@ export function StatusBadge({ status, className, size = 'md' }: StatusBadgeProps
       {config.dot && (
         <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', config.dot)} />
       )}
-      {config.label}
+      {label}
     </span>
   )
 }

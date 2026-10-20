@@ -14,7 +14,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   Search,
-  Filter,
   Grid,
   List,
   Star,
@@ -23,31 +22,19 @@ import {
   Copy,
   Check,
   Loader2,
-  ChevronRight,
   Tag,
   BookOpen,
   Zap,
   TrendingUp,
   Heart,
   Share2,
-  ExternalLink,
   X,
   Sparkles,
 } from 'lucide-react';
-import { Button, Input, Badge, Card, Textarea, Select } from '@/components/ui';
+import { Button, Input, Badge, Card, Select } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 
 // ===== 类型定义 =====
-
-interface TemplateVariable {
-  name: string;
-  var_type: string;
-  required: boolean;
-  default?: unknown;
-  options?: string[];
-  example: string;
-  description: string;
-}
 
 interface TemplateItem {
   id: number;
@@ -129,9 +116,11 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchTemplates();
   }, [currentPage, categoryFilter, sortBy]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const fetchTemplates = useCallback(async () => {
     setIsLoading(true);
     setError('');

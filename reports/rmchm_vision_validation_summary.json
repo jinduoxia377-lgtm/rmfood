@@ -1,0 +1,1274 @@
+{
+  "total": 726,
+  "counts": {
+    "无法识别": 191,
+    "不匹配": 316,
+    "匹配": 219
+  },
+  "mismatch_list": [
+    {
+      "name_cn": "安息香",
+      "model_answer": "树脂类中药（疑似龙血香）"
+    },
+    {
+      "name_cn": "巴豆",
+      "model_answer": "肉豆蔻"
+    },
+    {
+      "name_cn": "巴戟天",
+      "model_answer": "白鲜皮"
+    },
+    {
+      "name_cn": "菝葜",
+      "model_answer": "鳖甲"
+    },
+    {
+      "name_cn": "白附子",
+      "model_answer": "牛蒡根"
+    },
+    {
+      "name_cn": "白花蛇舌草",
+      "model_answer": "地锦"
+    },
+    {
+      "name_cn": "白及",
+      "model_answer": "瓜南香附子"
+    },
+    {
+      "name_cn": "白蔹",
+      "model_answer": "干燥果实（无法确定具体品种）"
+    },
+    {
+      "name_cn": "白毛藤",
+      "model_answer": "茯苓"
+    },
+    {
+      "name_cn": "白前",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "白屈菜",
+      "model_answer": "荆芥"
+    },
+    {
+      "name_cn": "白芍",
+      "model_answer": "甘草"
+    },
+    {
+      "name_cn": "白术",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "白头翁",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "白薇",
+      "model_answer": "细辛"
+    },
+    {
+      "name_cn": "白鲜皮",
+      "model_answer": "桑白皮"
+    },
+    {
+      "name_cn": "白药子",
+      "model_answer": "红参"
+    },
+    {
+      "name_cn": "百部",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "柏子仁",
+      "model_answer": "稻谷"
+    },
+    {
+      "name_cn": "败酱草",
+      "model_answer": "鱼腥草"
+    },
+    {
+      "name_cn": "板蓝根",
+      "model_answer": "菊花心"
+    },
+    {
+      "name_cn": "半边莲",
+      "model_answer": "白花蛇舌草"
+    },
+    {
+      "name_cn": "半枝莲",
+      "model_answer": "大花马齿苋"
+    },
+    {
+      "name_cn": "北豆根",
+      "model_answer": "大血藤"
+    },
+    {
+      "name_cn": "北沙参",
+      "model_answer": "防风"
+    },
+    {
+      "name_cn": "五味子",
+      "model_answer": "桃仁"
+    },
+    {
+      "name_cn": "蓖麻子",
+      "model_answer": "诃子"
+    },
+    {
+      "name_cn": "苍术",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "草乌",
+      "model_answer": "川乌"
+    },
+    {
+      "name_cn": "柴胡",
+      "model_answer": "白鲜皮"
+    },
+    {
+      "name_cn": "车前草",
+      "model_answer": "紫花地丁"
+    },
+    {
+      "name_cn": "车前子",
+      "model_answer": "决明子"
+    },
+    {
+      "name_cn": "陈皮",
+      "model_answer": "橘皮"
+    },
+    {
+      "name_cn": "赤芍",
+      "model_answer": "木通"
+    },
+    {
+      "name_cn": "茺蔚子",
+      "model_answer": "决明子"
+    },
+    {
+      "name_cn": "楮实子",
+      "model_answer": "榧子"
+    },
+    {
+      "name_cn": "川楝子",
+      "model_answer": "龙眼"
+    },
+    {
+      "name_cn": "川木通",
+      "model_answer": "大血藤"
+    },
+    {
+      "name_cn": "川乌",
+      "model_answer": "乌头"
+    },
+    {
+      "name_cn": "穿山龙",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "穿心莲",
+      "model_answer": "石竹"
+    },
+    {
+      "name_cn": "垂盆草",
+      "model_answer": "柴胡"
+    },
+    {
+      "name_cn": "椿皮",
+      "model_answer": "土茯苓"
+    },
+    {
+      "name_cn": "大腹皮",
+      "model_answer": "薏苡仁"
+    },
+    {
+      "name_cn": "大黄",
+      "model_answer": "川木香"
+    },
+    {
+      "name_cn": "大蓟",
+      "model_answer": "紫菀"
+    },
+    {
+      "name_cn": "大青叶",
+      "model_answer": "番泻叶"
+    },
+    {
+      "name_cn": "大血藤",
+      "model_answer": "甘草"
+    },
+    {
+      "name_cn": "大枣",
+      "model_answer": "枣"
+    },
+    {
+      "name_cn": "玳玳花",
+      "model_answer": "花蕾/花类药材（疑似木棉花或其他带柄干花）"
+    },
+    {
+      "name_cn": "灯心草",
+      "model_answer": "太子参"
+    },
+    {
+      "name_cn": "地肤子",
+      "model_answer": "蔓荆子"
+    },
+    {
+      "name_cn": "地骨皮",
+      "model_answer": "桑白皮"
+    },
+    {
+      "name_cn": "地榆",
+      "model_answer": "肉桂"
+    },
+    {
+      "name_cn": "冬葵果",
+      "model_answer": "橘红（或陈皮）"
+    },
+    {
+      "name_cn": "断血流",
+      "model_answer": "猫薄荷"
+    },
+    {
+      "name_cn": "莪术",
+      "model_answer": "商陆"
+    },
+    {
+      "name_cn": "鹅不食草",
+      "model_answer": "地锦草"
+    },
+    {
+      "name_cn": "儿茶",
+      "model_answer": "没药"
+    },
+    {
+      "name_cn": "番泻叶",
+      "model_answer": "木贼"
+    },
+    {
+      "name_cn": "防风",
+      "model_answer": "黄芪"
+    },
+    {
+      "name_cn": "防己",
+      "model_answer": "白芷"
+    },
+    {
+      "name_cn": "粉萆薢",
+      "model_answer": "海风藤"
+    },
+    {
+      "name_cn": "凤仙透骨草",
+      "model_answer": "凤仙花"
+    },
+    {
+      "name_cn": "凤眼草",
+      "model_answer": "苹婆"
+    },
+    {
+      "name_cn": "甘松",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "甘遂",
+      "model_answer": "天麻"
+    },
+    {
+      "name_cn": "干姜",
+      "model_answer": "姜"
+    },
+    {
+      "name_cn": "藁本",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "枸骨叶",
+      "model_answer": "枇杷叶"
+    },
+    {
+      "name_cn": "骨碎补",
+      "model_answer": "鸡血藤"
+    },
+    {
+      "name_cn": "关黄柏",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "桂枝",
+      "model_answer": "三叉苦"
+    },
+    {
+      "name_cn": "海金沙",
+      "model_answer": "蒲黄"
+    },
+    {
+      "name_cn": "海藻",
+      "model_answer": "钩吻"
+    },
+    {
+      "name_cn": "诃子",
+      "model_answer": "杏仁"
+    },
+    {
+      "name_cn": "鹤虱",
+      "model_answer": "牛蒡子"
+    },
+    {
+      "name_cn": "黑老虎",
+      "model_answer": "薰衣草"
+    },
+    {
+      "name_cn": "红参",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "红芪",
+      "model_answer": "鸡血藤"
+    },
+    {
+      "name_cn": "猴枣",
+      "model_answer": "诃子"
+    },
+    {
+      "name_cn": "胡黄连",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "胡芦巴",
+      "model_answer": "酸枣仁"
+    },
+    {
+      "name_cn": "槲寄生",
+      "model_answer": "麻黄"
+    },
+    {
+      "name_cn": "虎杖",
+      "model_answer": "土槿皮"
+    },
+    {
+      "name_cn": "华山参",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "槐角",
+      "model_answer": "使君子"
+    },
+    {
+      "name_cn": "黄柏",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "黄芩",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "黄药子",
+      "model_answer": "川乌"
+    },
+    {
+      "name_cn": "鸡骨草",
+      "model_answer": "大蓟根"
+    },
+    {
+      "name_cn": "鸡冠花",
+      "model_answer": "红花"
+    },
+    {
+      "name_cn": "鸡屎藤",
+      "model_answer": "钩藤"
+    },
+    {
+      "name_cn": "鸡血藤",
+      "model_answer": "降香"
+    },
+    {
+      "name_cn": "蒺藜",
+      "model_answer": "苍耳子"
+    },
+    {
+      "name_cn": "绞股蓝",
+      "model_answer": "木通"
+    },
+    {
+      "name_cn": "金沸草",
+      "model_answer": "黄芪"
+    },
+    {
+      "name_cn": "金果榄",
+      "model_answer": "罗汉果"
+    },
+    {
+      "name_cn": "金钱草",
+      "model_answer": "马齿苋"
+    },
+    {
+      "name_cn": "金荞麦",
+      "model_answer": "白术"
+    },
+    {
+      "name_cn": "金樱子",
+      "model_answer": "栀子"
+    },
+    {
+      "name_cn": "京大戟",
+      "model_answer": "葛根"
+    },
+    {
+      "name_cn": "荆芥",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "荆芥穗",
+      "model_answer": "夏枯草"
+    },
+    {
+      "name_cn": "韭菜子",
+      "model_answer": "急性子"
+    },
+    {
+      "name_cn": "卷柏",
+      "model_answer": "伸筋草"
+    },
+    {
+      "name_cn": "苦参",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "苦地丁",
+      "model_answer": "夏枯草"
+    },
+    {
+      "name_cn": "苦楝皮",
+      "model_answer": "杜仲"
+    },
+    {
+      "name_cn": "款冬花",
+      "model_answer": "附子"
+    },
+    {
+      "name_cn": "老鹳草",
+      "model_answer": "水棘针"
+    },
+    {
+      "name_cn": "连翘",
+      "model_answer": "诃子"
+    },
+    {
+      "name_cn": "莲子心",
+      "model_answer": "钩藤"
+    },
+    {
+      "name_cn": "两面针",
+      "model_answer": "柴胡"
+    },
+    {
+      "name_cn": "龙胆",
+      "model_answer": "当归"
+    },
+    {
+      "name_cn": "漏芦",
+      "model_answer": "沉香"
+    },
+    {
+      "name_cn": "鹿衔草",
+      "model_answer": "虎耳草"
+    },
+    {
+      "name_cn": "罗布麻叶",
+      "model_answer": "香叶"
+    },
+    {
+      "name_cn": "络石藤",
+      "model_answer": "海风藤"
+    },
+    {
+      "name_cn": "马勃",
+      "model_answer": "雷丸"
+    },
+    {
+      "name_cn": "没药",
+      "model_answer": "乳香"
+    },
+    {
+      "name_cn": "玫瑰花",
+      "model_answer": "山栀"
+    },
+    {
+      "name_cn": "绵萆薢",
+      "model_answer": "白术"
+    },
+    {
+      "name_cn": "牡荆叶",
+      "model_answer": "大麻叶"
+    },
+    {
+      "name_cn": "木鳖子",
+      "model_answer": "龟甲"
+    },
+    {
+      "name_cn": "木通",
+      "model_answer": "五指毛桃"
+    },
+    {
+      "name_cn": "木香",
+      "model_answer": "肉桂"
+    },
+    {
+      "name_cn": "木贼",
+      "model_answer": "木通"
+    },
+    {
+      "name_cn": "南鹤虱",
+      "model_answer": "牛蒡子"
+    },
+    {
+      "name_cn": "南沙参",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "南蛇藤果",
+      "model_answer": "商陆"
+    },
+    {
+      "name_cn": "闹羊花",
+      "model_answer": "红花"
+    },
+    {
+      "name_cn": "牛蒡子",
+      "model_answer": "水飞蓟"
+    },
+    {
+      "name_cn": "牛黄",
+      "model_answer": "降香"
+    },
+    {
+      "name_cn": "女贞子",
+      "model_answer": "瓜蒌"
+    },
+    {
+      "name_cn": "佩兰",
+      "model_answer": "穿心莲"
+    },
+    {
+      "name_cn": "枇杷叶",
+      "model_answer": "功劳叶"
+    },
+    {
+      "name_cn": "平贝母",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "千金子",
+      "model_answer": "砂仁"
+    },
+    {
+      "name_cn": "千年健",
+      "model_answer": "檀香"
+    },
+    {
+      "name_cn": "牵牛子",
+      "model_answer": "补骨脂"
+    },
+    {
+      "name_cn": "茜草",
+      "model_answer": "五加皮"
+    },
+    {
+      "name_cn": "茄根",
+      "model_answer": "牛茄子"
+    },
+    {
+      "name_cn": "秦艽",
+      "model_answer": "党参"
+    },
+    {
+      "name_cn": "秦皮",
+      "model_answer": "杜仲"
+    },
+    {
+      "name_cn": "青风藤",
+      "model_answer": "大血藤"
+    },
+    {
+      "name_cn": "青蒿",
+      "model_answer": "白花蛇舌草"
+    },
+    {
+      "name_cn": "青皮",
+      "model_answer": "枳实"
+    },
+    {
+      "name_cn": "青葙子",
+      "model_answer": "补骨脂"
+    },
+    {
+      "name_cn": "青叶胆",
+      "model_answer": "三七"
+    },
+    {
+      "name_cn": "瞿麦",
+      "model_answer": "石斛"
+    },
+    {
+      "name_cn": "拳参",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "三白草",
+      "model_answer": "白英"
+    },
+    {
+      "name_cn": "三分三",
+      "model_answer": "白头翁"
+    },
+    {
+      "name_cn": "三棱",
+      "model_answer": "附子"
+    },
+    {
+      "name_cn": "桑白皮",
+      "model_answer": "瓜蒌皮"
+    },
+    {
+      "name_cn": "桑寄生",
+      "model_answer": "鸡血藤"
+    },
+    {
+      "name_cn": "桑枝",
+      "model_answer": "桂枝"
+    },
+    {
+      "name_cn": "沙苑子",
+      "model_answer": "沙"
+    },
+    {
+      "name_cn": "山慈菇",
+      "model_answer": "天麻"
+    },
+    {
+      "name_cn": "山豆根",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "商陆",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "蛇床子",
+      "model_answer": "小茴香"
+    },
+    {
+      "name_cn": "射干",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "伸筋草",
+      "model_answer": "石松"
+    },
+    {
+      "name_cn": "生姜",
+      "model_answer": "姜"
+    },
+    {
+      "name_cn": "石菖蒲",
+      "model_answer": "骨碎补"
+    },
+    {
+      "name_cn": "石韦",
+      "model_answer": "鱼腥草"
+    },
+    {
+      "name_cn": "柿蒂",
+      "model_answer": "木通"
+    },
+    {
+      "name_cn": "水飞蓟",
+      "model_answer": "决明子"
+    },
+    {
+      "name_cn": "水红花子",
+      "model_answer": "蔓荆子"
+    },
+    {
+      "name_cn": "松花粉",
+      "model_answer": "松节"
+    },
+    {
+      "name_cn": "娑罗子",
+      "model_answer": "七叶树花"
+    },
+    {
+      "name_cn": "太子参",
+      "model_answer": "白芍"
+    },
+    {
+      "name_cn": "檀香",
+      "model_answer": "黄芪"
+    },
+    {
+      "name_cn": "天花粉",
+      "model_answer": "黄芪"
+    },
+    {
+      "name_cn": "天葵子",
+      "model_answer": "巴戟天"
+    },
+    {
+      "name_cn": "天南星",
+      "model_answer": "川乌"
+    },
+    {
+      "name_cn": "天山雪莲",
+      "model_answer": "蒲公英"
+    },
+    {
+      "name_cn": "天仙子",
+      "model_answer": "薏苡仁"
+    },
+    {
+      "name_cn": "天竺黄",
+      "model_answer": "浮石"
+    },
+    {
+      "name_cn": "葶苈子",
+      "model_answer": "郁李仁"
+    },
+    {
+      "name_cn": "通草",
+      "model_answer": "西红花"
+    },
+    {
+      "name_cn": "土贝母",
+      "model_answer": "山柰"
+    },
+    {
+      "name_cn": "土茯苓",
+      "model_answer": "川乌"
+    },
+    {
+      "name_cn": "土荆皮",
+      "model_answer": "合欢皮"
+    },
+    {
+      "name_cn": "菟丝子",
+      "model_answer": "莱菔子"
+    },
+    {
+      "name_cn": "王不留行",
+      "model_answer": "Wu Zhui"
+    },
+    {
+      "name_cn": "威灵仙",
+      "model_answer": "川木香"
+    },
+    {
+      "name_cn": "委陵菜",
+      "model_answer": "白蒿"
+    },
+    {
+      "name_cn": "乌敛莓",
+      "model_answer": "白蔹"
+    },
+    {
+      "name_cn": "乌药",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "无患子皮",
+      "model_answer": "陈皮"
+    },
+    {
+      "name_cn": "吴茱萸",
+      "model_answer": "苍术"
+    },
+    {
+      "name_cn": "五倍子",
+      "model_answer": "牛黄"
+    },
+    {
+      "name_cn": "豨莶草",
+      "model_answer": "灰灰草"
+    },
+    {
+      "name_cn": "细辛",
+      "model_answer": "五指毛桃"
+    },
+    {
+      "name_cn": "夏枯草",
+      "model_answer": "夏菇草"
+    },
+    {
+      "name_cn": "仙鹤草",
+      "model_answer": "麻黄"
+    },
+    {
+      "name_cn": "仙茅",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "仙桃草",
+      "model_answer": "桃"
+    },
+    {
+      "name_cn": "香附",
+      "model_answer": "肉桂"
+    },
+    {
+      "name_cn": "香加皮",
+      "model_answer": "土茯苓"
+    },
+    {
+      "name_cn": "徐长卿",
+      "model_answer": "白前"
+    },
+    {
+      "name_cn": "续断",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "玄参",
+      "model_answer": "锁阳"
+    },
+    {
+      "name_cn": "鸦胆子",
+      "model_answer": "枳椇子"
+    },
+    {
+      "name_cn": "亚麻子",
+      "model_answer": "亚麻籽"
+    },
+    {
+      "name_cn": "洋金花",
+      "model_answer": "西红花"
+    },
+    {
+      "name_cn": "野菊花",
+      "model_answer": "旋覆花"
+    },
+    {
+      "name_cn": "一枝黄花",
+      "model_answer": "一枝蒿"
+    },
+    {
+      "name_cn": "益母草",
+      "model_answer": "苍耳子"
+    },
+    {
+      "name_cn": "银柴胡",
+      "model_answer": "当归"
+    },
+    {
+      "name_cn": "淫羊藿",
+      "model_answer": "虎杖"
+    },
+    {
+      "name_cn": "罂粟壳",
+      "model_answer": "川楝子"
+    },
+    {
+      "name_cn": "禹州漏芦",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "郁金",
+      "model_answer": "益智仁"
+    },
+    {
+      "name_cn": "芫花",
+      "model_answer": "夏枯草"
+    },
+    {
+      "name_cn": "月季花",
+      "model_answer": "山栀"
+    },
+    {
+      "name_cn": "皂角刺",
+      "model_answer": "鸡血藤"
+    },
+    {
+      "name_cn": "泽兰",
+      "model_answer": "桑寄生"
+    },
+    {
+      "name_cn": "肿节风",
+      "model_answer": "鱼腥草"
+    },
+    {
+      "name_cn": "猪苓",
+      "model_answer": "附子"
+    },
+    {
+      "name_cn": "猪牙皂",
+      "model_answer": "降香"
+    },
+    {
+      "name_cn": "苎麻根",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "紫草",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "紫苏叶",
+      "model_answer": "大青叶"
+    },
+    {
+      "name_cn": "紫苏子",
+      "model_answer": "紫苏籽"
+    },
+    {
+      "name_cn": "紫菀",
+      "model_answer": "茜草"
+    },
+    {
+      "name_cn": "九里香",
+      "model_answer": "夜交藤"
+    },
+    {
+      "name_cn": "三颗针",
+      "model_answer": "黄柏"
+    },
+    {
+      "name_cn": "土木香",
+      "model_answer": "黄芪"
+    },
+    {
+      "name_cn": "大豆黄卷",
+      "model_answer": "白芥子"
+    },
+    {
+      "name_cn": "山麦冬",
+      "model_answer": "木薯"
+    },
+    {
+      "name_cn": "山银花",
+      "model_answer": "龙胆"
+    },
+    {
+      "name_cn": "千金子霜",
+      "model_answer": "脂脉康胶囊"
+    },
+    {
+      "name_cn": "川木香",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "广金钱草",
+      "model_answer": "人字果"
+    },
+    {
+      "name_cn": "石膏",
+      "model_answer": "葛根"
+    },
+    {
+      "name_cn": "煅石膏",
+      "model_answer": "龙骨"
+    },
+    {
+      "name_cn": "白矾",
+      "model_answer": "石英"
+    },
+    {
+      "name_cn": "炒瓜蒌子",
+      "model_answer": "黑木耳"
+    },
+    {
+      "name_cn": "瓜蒌皮",
+      "model_answer": "陈皮"
+    },
+    {
+      "name_cn": "冬凌草",
+      "model_answer": "藿香"
+    },
+    {
+      "name_cn": "姜半夏",
+      "model_answer": "姜"
+    },
+    {
+      "name_cn": "丝瓜络",
+      "model_answer": "龙胆"
+    },
+    {
+      "name_cn": "地龙",
+      "model_answer": "水蛭"
+    },
+    {
+      "name_cn": "芒硝",
+      "model_answer": "石膏"
+    },
+    {
+      "name_cn": "当药",
+      "model_answer": "多种中药材混合物"
+    },
+    {
+      "name_cn": "虫白蜡",
+      "model_answer": "葛根"
+    },
+    {
+      "name_cn": "血余炭",
+      "model_answer": "没药"
+    },
+    {
+      "name_cn": "血竭",
+      "model_answer": "南朱"
+    },
+    {
+      "name_cn": "合欢花",
+      "model_answer": "旋覆花"
+    },
+    {
+      "name_cn": "红大戟",
+      "model_answer": "丹参"
+    },
+    {
+      "name_cn": "红豆蔻",
+      "model_answer": "诃子"
+    },
+    {
+      "name_cn": "红景天",
+      "model_answer": "代赭石"
+    },
+    {
+      "name_cn": "远志",
+      "model_answer": "巴戟天"
+    },
+    {
+      "name_cn": "苏木",
+      "model_answer": "鸡血藤"
+    },
+    {
+      "name_cn": "何首乌",
+      "model_answer": "制首乌"
+    },
+    {
+      "name_cn": "谷芽",
+      "model_answer": "麦冬"
+    },
+    {
+      "name_cn": "阿魏",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "忍冬藤",
+      "model_answer": "茜草"
+    },
+    {
+      "name_cn": "青礞石",
+      "model_answer": "白术"
+    },
+    {
+      "name_cn": "苦玄参",
+      "model_answer": "川芎"
+    },
+    {
+      "name_cn": "枫香脂",
+      "model_answer": "树脂"
+    },
+    {
+      "name_cn": "刺五加",
+      "model_answer": "鸡骨草"
+    },
+    {
+      "name_cn": "明党参",
+      "model_answer": "牛膝"
+    },
+    {
+      "name_cn": "岩白菜",
+      "model_answer": "九头狮子草"
+    },
+    {
+      "name_cn": "金钱白花蛇",
+      "model_answer": "乌梢蛇"
+    },
+    {
+      "name_cn": "金礞石",
+      "model_answer": "代赭石"
+    },
+    {
+      "name_cn": "狗脊",
+      "model_answer": "人参"
+    },
+    {
+      "name_cn": "炉甘石",
+      "model_answer": "龙骨"
+    },
+    {
+      "name_cn": "荆芥穗炭",
+      "model_answer": "香薷"
+    },
+    {
+      "name_cn": "制草乌",
+      "model_answer": "玄参"
+    },
+    {
+      "name_cn": "草豆蔻",
+      "model_answer": "蔓荆子"
+    },
+    {
+      "name_cn": "南板蓝根",
+      "model_answer": "苏梗"
+    },
+    {
+      "name_cn": "哈蟆油",
+      "model_answer": "枸杞"
+    },
+    {
+      "name_cn": "重楼",
+      "model_answer": "泽泻"
+    },
+    {
+      "name_cn": "胆南星",
+      "model_answer": "半夏"
+    },
+    {
+      "name_cn": "洪连",
+      "model_answer": "鸢尾"
+    },
+    {
+      "name_cn": "桃枝",
+      "model_answer": "药膳方（莲子、红花、枸杞、菊花、陈皮、紫苏梗）"
+    },
+    {
+      "name_cn": "臭灵丹草",
+      "model_answer": "白前"
+    },
+    {
+      "name_cn": "狼毒",
+      "model_answer": "葛根"
+    },
+    {
+      "name_cn": "粉葛",
+      "model_answer": "浙贝母"
+    },
+    {
+      "name_cn": "海螵蛸",
+      "model_answer": "牛黄"
+    },
+    {
+      "name_cn": "桑螵蛸",
+      "model_answer": "龟甲"
+    },
+    {
+      "name_cn": "黄山药",
+      "model_answer": "黄山松"
+    },
+    {
+      "name_cn": "黄藤",
+      "model_answer": "棕竹"
+    },
+    {
+      "name_cn": "蛇蜕",
+      "model_answer": "蝮蛇"
+    },
+    {
+      "name_cn": "猪胆粉",
+      "model_answer": "猪苓"
+    },
+    {
+      "name_cn": "鹿茸",
+      "model_answer": "水牛角"
+    },
+    {
+      "name_cn": "羚羊角",
+      "model_answer": "水牛角"
+    },
+    {
+      "name_cn": "棕榈",
+      "model_answer": "五加皮"
+    },
+    {
+      "name_cn": "硫黄",
+      "model_answer": "党参"
+    },
+    {
+      "name_cn": "紫苏梗",
+      "model_answer": "桑寄生"
+    },
+    {
+      "name_cn": "紫萁贯众",
+      "model_answer": "卷柏"
+    },
+    {
+      "name_cn": "蛤壳",
+      "model_answer": "瓦楞子"
+    },
+    {
+      "name_cn": "锁阳",
+      "model_answer": "秦艽"
+    },
+    {
+      "name_cn": "滑石",
+      "model_answer": "石膏"
+    },
+    {
+      "name_cn": "蜈蚣",
+      "model_answer": "水蛭"
+    },
+    {
+      "name_cn": "蜂胶",
+      "model_answer": "蜂蜜"
+    },
+    {
+      "name_cn": "蜂蜡",
+      "model_answer": "蜂巢"
+    },
+    {
+      "name_cn": "榧子",
+      "model_answer": "橄榄仁"
+    },
+    {
+      "name_cn": "榼藤子",
+      "model_answer": "紫衣瓜子"
+    },
+    {
+      "name_cn": "赭石",
+      "model_answer": "大血藤"
+    },
+    {
+      "name_cn": "蕲蛇",
+      "model_answer": "乌梢蛇"
+    },
+    {
+      "name_cn": "暴马子皮",
+      "model_answer": "土茯苓"
+    },
+    {
+      "name_cn": "稻芽",
+      "model_answer": "麦芽"
+    },
+    {
+      "name_cn": "颠茄草",
+      "model_answer": "龙葵"
+    },
+    {
+      "name_cn": "北五味子",
+      "model_answer": "桃金娘"
+    },
+    {
+      "name_cn": "白毛夏枯草",
+      "model_answer": "紫苏"
+    },
+    {
+      "name_cn": "贯众",
+      "model_answer": "骨碎补"
+    },
+    {
+      "name_cn": "金果揽",
+      "model_answer": "山楂"
+    },
+    {
+      "name_cn": "马兜铃",
+      "model_answer": "青皮"
+    },
+    {
+      "name_cn": "蝮蛇",
+      "model_answer": "白花蛇"
+    },
+    {
+      "name_cn": "桔红",
+      "model_answer": "枳壳"
+    }
+  ]
+}

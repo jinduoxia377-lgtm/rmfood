@@ -1,13 +1,14 @@
-// @ts-nocheck
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
   size?: 'sm' | 'md' | 'lg'
   error?: string | boolean
   prefix?: React.ReactNode
   suffix?: React.ReactNode
   showCount?: boolean
+  /** 聚焦时是否显示 ring 光圈（默认 true；搜索框等场景可传 false 关闭） */
+  focusRing?: boolean
 }
 
 const sizeClasses: Record<NonNullable<InputProps['size']>, string> = {
@@ -17,7 +18,7 @@ const sizeClasses: Record<NonNullable<InputProps['size']>, string> = {
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, size = 'md', error, prefix, suffix, showCount, maxLength, value, ...props }, ref) => {
+  ({ className, type, size = 'md', error, prefix, suffix, showCount, maxLength, value, focusRing = true, ...props }, ref) => {
     const currentLength = typeof value === 'string' ? value.length : 0
     const isNearLimit = maxLength !== undefined && currentLength > maxLength * 0.8
     const isOverLimit = maxLength !== undefined && currentLength > maxLength
@@ -32,8 +33,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           ref={ref}
+          value={value}
           className={cn(
-            'flex min-h-[44px] w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+            'flex min-h-[44px] w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[color:var(--text-muted)] dark:placeholder:text-[color:var(--text-secondary)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            focusRing
+              ? 'focus-visible:ring-1 focus-visible:ring-ring'
+              : 'focus-visible:ring-0 focus-visible:ring-transparent',
             sizeClasses[size],
             prefix && 'pl-9',
             suffix && 'pr-9',

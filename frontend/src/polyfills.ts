@@ -1,5 +1,9 @@
 import { logger } from '@/utils/safeLogger';
 
+// Polyfill 的 EventEmitter 兼容方法签名使用下划线前缀参数（_event/_listener/_args），
+// 它们是文档性占位参数，从未在函数体内使用，故对本文件关闭 no-unused-vars。
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /**
  * 浏览器环境 Polyfills
  * 为 Node.js 依赖库提供兼容性支持
@@ -72,7 +76,7 @@ if (typeof global === 'undefined') {
 
 // Buffer polyfill (如果需要)
 if (typeof Buffer === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   ;(globalThis as Record<string, unknown>).Buffer = {
     from: (data: ArrayBuffer | string | number[], encoding?: BufferEncoding): Uint8Array => {
       if (typeof data === 'string') {
@@ -108,8 +112,8 @@ if (typeof Buffer === 'undefined') {
 
 // __dirname and __filename polyfill
 if (typeof __dirname === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   ;(globalThis as Record<string, unknown>).__dirname = '/'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   ;(globalThis as Record<string, unknown>).__filename = '/'
 }

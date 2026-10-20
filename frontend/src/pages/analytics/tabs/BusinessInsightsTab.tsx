@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import api from '@/api/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
-import { AnalyticsChart, ChartDataItem } from '@/components/analytics/charts/RechartsWrapper'
 import { SankeyFunnelChart } from '@/components/analytics/charts/SankeyFunnelChart'
 import { IngredientNetworkChart } from '@/components/analytics/charts/IngredientNetworkChart'
 
@@ -66,6 +65,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
 
   useEffect(() => {
     let cancelled = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setError(null)
 
@@ -95,9 +95,9 @@ export default function BusinessInsightsTab({ filters }: Props) {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-primary-700 animate-spin" />
-          <span className="text-sm text-text-muted">正在加载业务洞察…</span>
+        <div className="flex flex-col items-center gap-[var(--space-apple-sm)]">
+          <Loader2 className="w-8 h-8 text-[var(--color-primary-text)] animate-spin" />
+          <span className="text-sm text-[var(--text-muted)]">正在加载业务洞察…</span>
         </div>
       </div>
     )
@@ -105,9 +105,9 @@ export default function BusinessInsightsTab({ filters }: Props) {
 
   if (error) {
     return (
-      <div className="p-4 rounded-lg bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/40 flex items-center gap-3">
-        <AlertCircle className="w-5 h-5 text-error-600 flex-shrink-0" />
-        <span className="text-sm text-error-700 dark:text-error-600">{error}</span>
+      <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/20 border border-[var(--color-error-border)] dark:border-error-900/40 flex items-center gap-[var(--space-apple-sm)]">
+        <AlertCircle className="w-5 h-5 text-[var(--color-error-text)] flex-shrink-0" />
+        <span className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</span>
       </div>
     )
   }
@@ -134,7 +134,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
         [a.ingredient_b, { name: a.ingredient_b, count: a.co_occurrence }],
       ])
     ).entries()
-  ).slice(0, 20).map(([id, v], i) => ({ id: String(i), ...v }))
+  ).slice(0, 20).map(([, v], i) => ({ id: String(i), ...v }))
 
   const networkEdges = ingredient_associations.slice(0, 30).map(a => {
     const si = networkNodes.findIndex(n => n.name === a.ingredient_a)
@@ -143,37 +143,37 @@ export default function BusinessInsightsTab({ filters }: Props) {
   }).filter(e => e.source !== '-1' && e.target !== '-1')
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
 
       {/* ── KPI 概览行 ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
         <StatCard
           label="药食同源占比"
           value={`${food_homology_ratio.ratio_percent}%`}
           sub={`${food_homology_ratio.food_homology_formulas} / ${food_homology_ratio.total_formulas} 个配方`}
           icon={<Leaf className="w-4 h-4" />}
-          color="text-success-600"
+          color="text-[var(--color-success-text)]"
         />
         <StatCard
           label="AI 采纳率"
           value={`${ai_quality.adoption_rate}%`}
           sub={`${ai_quality.adopted_count} / ${ai_quality.total_generations} 次生成`}
           icon={<Zap className="w-4 h-4" />}
-          color="text-warning-600"
+          color="text-[var(--color-warning-text)]"
         />
         <StatCard
           label="总配方数"
           value={lifecycle_funnel.total_formulas.toLocaleString()}
           sub="含全部状态"
           icon={<FlaskConical className="w-4 h-4" />}
-          color="text-primary-700"
+          color="text-[var(--color-primary-text)]"
         />
         <StatCard
           label="平均成分数"
           value={ai_quality.avg_components_per_generation.toFixed(1)}
           sub="每次 AI 生成"
           icon={<Users className="w-4 h-4" />}
-          color="text-secondary-600"
+          color="text-[var(--color-secondary-text)]"
         />
       </div>
 
@@ -181,7 +181,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <FlaskConical className="w-4 h-4 text-primary-700" />
+            <FlaskConical className="w-4 h-4 text-[var(--color-primary-text)]" />
             配方生命周期转化漏斗
           </CardTitle>
         </CardHeader>
@@ -189,11 +189,11 @@ export default function BusinessInsightsTab({ filters }: Props) {
           {sankeyStages.length > 0 ? (
             <SankeyFunnelChart stages={sankeyStages} height={180} />
           ) : (
-            <div className="h-[180px] flex items-center justify-center text-text-muted text-sm">暂无漏斗数据</div>
+            <div className="h-[180px] flex items-center justify-center text-[var(--text-muted)] text-sm">暂无漏斗数据</div>
           )}
           {sankeyStages.length > 1 && (
-            <div className="mt-2 text-xs text-text-muted text-right">
-              整体转化率 <span className="font-bold text-primary-700">{lifecycle_funnel.total_conversion}%</span>
+            <div className="mt-2 text-xs text-[var(--text-muted)] text-right">
+              整体转化率 <span className="font-bold text-[var(--color-primary-text)]">{lifecycle_funnel.total_conversion}%</span>
             </div>
           )}
         </CardContent>
@@ -206,7 +206,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FlaskConical className="w-4 h-4 text-secondary-600" />
+              <FlaskConical className="w-4 h-4 text-[var(--color-secondary-text)]" />
               食材共现网络（Top 20 食材）
             </CardTitle>
           </CardHeader>
@@ -218,7 +218,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
                 height={320}
               />
             ) : (
-              <div className="h-[320px] flex items-center justify-center text-text-muted text-sm">暂无食材关联数据</div>
+              <div className="h-[320px] flex items-center justify-center text-[var(--text-muted)] text-sm">暂无食材关联数据</div>
             )}
           </CardContent>
         </Card>
@@ -227,7 +227,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Zap className="w-4 h-4 text-warning-600" />
+              <Zap className="w-4 h-4 text-[var(--color-warning-text)]" />
               AI 生成质量评估（{
                 _filters.timeRange === '7d' ? '近 7 天' :
                 _filters.timeRange === '30d' ? '近 30 天' :
@@ -236,36 +236,36 @@ export default function BusinessInsightsTab({ filters }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-surface-hover rounded-lg">
-                <span className="text-sm text-text-muted">总生成次数</span>
-                <span className="text-lg font-bold text-text-primary">{ai_quality.total_generations}</span>
+            <div className="space-y-[var(--space-apple-md)]">
+              <div className="flex items-center justify-between p-[var(--space-apple-sm)] bg-surface-hover rounded-[var(--radius-Apple-sm)]">
+                <span className="text-sm text-[var(--text-muted)]">总生成次数</span>
+                <span className="text-lg font-bold text-[var(--text-primary)]">{ai_quality.total_generations}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-surface-hover rounded-lg">
-                <span className="text-sm text-text-muted">已采纳（审核通过）</span>
-                <span className="text-lg font-bold text-success-600">{ai_quality.adopted_count}</span>
+              <div className="flex items-center justify-between p-[var(--space-apple-sm)] bg-surface-hover rounded-[var(--radius-Apple-sm)]">
+                <span className="text-sm text-[var(--text-muted)]">已采纳（审核通过）</span>
+                <span className="text-lg font-bold text-[var(--color-success-text)]">{ai_quality.adopted_count}</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-surface-hover rounded-lg">
-                <span className="text-sm text-text-muted">采纳率</span>
-                <span className={`text-lg font-bold ${ai_quality.adoption_rate >= 20 ? 'text-success-600' : ai_quality.adoption_rate >= 10 ? 'text-warning-600' : 'text-error-600'}`}>
+              <div className="flex items-center justify-between p-[var(--space-apple-sm)] bg-surface-hover rounded-[var(--radius-Apple-sm)]">
+                <span className="text-sm text-[var(--text-muted)]">采纳率</span>
+                <span className={`text-lg font-bold ${ai_quality.adoption_rate >= 20 ? 'text-[var(--color-success-text)]' : ai_quality.adoption_rate >= 10 ? 'text-[var(--color-warning-text)]' : 'text-[var(--color-error-text)]'}`}>
                   {ai_quality.adoption_rate}%
                 </span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-surface-hover rounded-lg">
-                <span className="text-sm text-text-muted">平均每配方成分数</span>
-                <span className="text-lg font-bold text-text-primary">{ai_quality.avg_components_per_generation}</span>
+              <div className="flex items-center justify-between p-[var(--space-apple-sm)] bg-surface-hover rounded-[var(--radius-Apple-sm)]">
+                <span className="text-sm text-[var(--text-muted)]">平均每配方成分数</span>
+                <span className="text-lg font-bold text-[var(--text-primary)]">{ai_quality.avg_components_per_generation}</span>
               </div>
 
               {/* 采纳率进度条 */}
               <div>
-                <div className="flex items-center justify-between text-xs text-text-muted mb-1.5">
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)] mb-1.5">
                   <span>采纳率进度</span>
                   <span>目标 ≥ 20%</span>
                 </div>
-                <div className="h-2 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
+                <div className="h-2 rounded-[var(--radius-pill)] bg-[var(--bg-tertiary)] overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      ai_quality.adoption_rate >= 20 ? 'bg-success-500' : ai_quality.adoption_rate >= 10 ? 'bg-warning-500' : 'bg-error-500'
+                    className={`h-full rounded-[var(--radius-pill)] transition-all duration-700 ${
+                      ai_quality.adoption_rate >= 20 ? 'bg-[var(--color-success-container)]0' : ai_quality.adoption_rate >= 10 ? 'bg-[var(--color-warning-container)]0' : 'bg-[var(--color-error-container)]0'
                     }`}
                     style={{ width: `${Math.min(100, ai_quality.adoption_rate * 5)}%` }}
                   />
@@ -277,7 +277,7 @@ export default function BusinessInsightsTab({ filters }: Props) {
       </div>
 
       {/* ── 药食同源说明 ── */}
-      <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
+      <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
         <p className="font-medium mb-1">药食同源分析说明</p>
         <p className="text-xs text-info-600 dark:text-info-700">
           药食同源食材指国家卫健委发布的《既是食品又是药品的物品名单》中的原料。
@@ -303,13 +303,13 @@ function StatCard({
   color: string
 }) {
   return (
-    <Card className="px-4 py-3">
+    <Card className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-xs text-text-muted">{label}</p>
+        <p className="text-xs text-[var(--text-muted)]">{label}</p>
         <span className={`${color}`}>{icon}</span>
       </div>
-      <p className="text-xl font-bold text-text-primary">{value}</p>
-      <p className="text-xs text-text-muted mt-0.5">{sub}</p>
+      <p className="text-xl font-bold text-[var(--text-primary)]">{value}</p>
+      <p className="text-xs text-[var(--text-muted)] mt-0.5">{sub}</p>
     </Card>
   )
 }

@@ -8,10 +8,9 @@
  * - Token 估算器
  */
 
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AgentWorkflowTab } from '../../AgentWorkflowTab';
-import { useUnifiedAgent } from '../../hooks/useUnifiedAgent';
 import { getWaterfallEmitter, resetWaterfallEmitter } from '../../utils/waterfall';
 import { tokenEstimator } from '../../utils/eventSourcing';
 import type { AgentMessage } from '@/components/ai/shared/types';
@@ -87,9 +86,9 @@ describe('AgentWorkflowTab', () => {
   it('应渲染空状态', () => {
     render(<AgentWorkflowTab />);
 
-    expect(screen.getByText(/AI 研发助手/i)).toBeInTheDocument();
-    expect(screen.getByText(/开始新的对话/i)).toBeInTheDocument();
-    expect(screen.getByText(/输入您的问题/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/AI 研发助手/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Agent v3\.0/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Turn\/Step 驱动/i).length).toBeGreaterThan(0);
   });
 
   it('应显示快捷提示按钮', () => {
@@ -108,9 +107,9 @@ describe('AgentWorkflowTab', () => {
   it('应显示技术特性描述', () => {
     render(<AgentWorkflowTab />);
 
-    expect(screen.getByText(/Turn\/Step 驱动/i)).toBeInTheDocument();
-    expect(screen.getByText(/Waterfall 事件/i)).toBeInTheDocument();
-    expect(screen.getByText(/IndexedDB 持久化/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Turn\/Step 驱动/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Waterfall 事件/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/IndexedDB 持久化/i).length).toBeGreaterThan(0);
   });
 });
 

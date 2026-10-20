@@ -38,14 +38,12 @@ import {
   Upload,
   Info,
   Shield,
-  Key,
   History,
   Clock,
 } from 'lucide-react';
 import { ConfigManager } from '@/utils/configManager';
 import type { ModelType, ModelConfig } from '@/utils/configManager';
 import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager';
-import { secureApiKeyManager } from '@/utils/secureKeyManager';
 import { ModelClient } from '@/api/modelClient';
 import { logger } from '@/utils/safeLogger';
 import { useAuthStore } from '@/stores/auth';
@@ -79,7 +77,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   }>>([]);
 
   // 获取认证状态和 token
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   // v7.0: 安全存储模式 (仅LLM模型支持AES-256-GCM加密)
   const [useSecureStorage, setUseSecureStorage] = useState(() => {
@@ -135,6 +133,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
 
   // 加载配置
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     loadConfigs();
   }, []);
 
@@ -142,7 +141,9 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   useEffect(() => {
     try {
       const stored = localStorage.getItem('rmfood_llm_provider');
+      // eslint-disable-next-line react-hooks/immutability
       if (stored && llmProviderPresets[stored]) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLlmProvider(stored);
         const preset = llmProviderPresets[stored];
         const storedModel = localStorage.getItem('rmfood_llm_model');
@@ -152,7 +153,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
           setLlmModel(preset.models[0]);
         }
       }
-    } catch {}
+    } catch { /* 恢复 Provider 失败时静默 */ }
   }, []);
 
   // 保存 LLM Provider/Model 到 localStorage
@@ -160,7 +161,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
     try {
       localStorage.setItem('rmfood_llm_provider', llmProvider);
       localStorage.setItem('rmfood_llm_model', llmModel);
-    } catch {}
+    } catch { /* 持久化失败时静默 */ }
   }, [llmProvider, llmModel]);
 
   // LLM Provider 预设（与后端 PROVIDER_PRESETS 保持一致）
@@ -217,6 +218,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   useEffect(() => {
     try {
       const logs = JSON.parse(localStorage.getItem('rmfood_config_audit_log') || '[]');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuditLogs(logs);
     } catch {
       // ignore

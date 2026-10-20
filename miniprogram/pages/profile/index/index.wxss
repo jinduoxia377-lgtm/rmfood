@@ -1,12 +1,12 @@
 /* pages/profile/index/index.wxss */
 .profile-container {
   min-height: 100vh;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
 }
 
 .profile-header {
   padding: 40rpx 32rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   display: flex;
   align-items: center;
   gap: 24rpx;
@@ -17,7 +17,7 @@
   height: 120rpx;
   border-radius: 60rpx;
   overflow: hidden;
-  background: #E5E5EA;
+  background: var(--color-bg-tertiary);
 }
 
 .avatar image {
@@ -31,20 +31,20 @@
 
 .username {
   display: block;
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
 }
 
 .user-desc {
   display: block;
-  font-size: 26rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-callout);
+  color: var(--color-text-tertiary);
   margin-top: 8rpx;
 }
 
 .profile-menu {
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   margin: 16rpx 24rpx;
   border-radius: 16rpx;
   overflow: hidden;
@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 32rpx 24rpx;
-  border-bottom: 0.5rpx solid #F2F2F7;
+  border-bottom: 0.5rpx solid var(--color-border-light);
 }
 
 .menu-item:last-child {
@@ -63,6 +63,6 @@
 }
 
 .arrow {
-  color: #C7C7CC;
-  font-size: 28rpx;
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-body);
 }

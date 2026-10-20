@@ -31,7 +31,7 @@ const TokenGallery: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-12 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-12 max-w-7xl mx-auto">
       {/* 标题 */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">RMFOOD 设计 Token 文档</h1>
@@ -45,7 +45,7 @@ const TokenGallery: React.FC = () => {
         {/* 品牌主色 */}
         <div>
           <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-3">品牌主色 - Emerald Green</h3>
-          <div className="grid grid-cols-10 gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {Object.entries(colors.brand.primary).map(([shade, hex]) =>
               shade.match(/^\d{3}$/) ? (
                 <div key={shade} className="text-center">
@@ -64,7 +64,7 @@ const TokenGallery: React.FC = () => {
         {/* 品牌辅色 */}
         <div>
           <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-3">品牌辅色 - Ocean Blue</h3>
-          <div className="grid grid-cols-10 gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {Object.entries(colors.secondary.secondary).map(([shade, hex]) =>
               shade.match(/^\d{3}$/) ? (
                 <div key={shade} className="text-center">
@@ -83,7 +83,7 @@ const TokenGallery: React.FC = () => {
         {/* 品牌强调色 */}
         <div>
           <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-3">品牌强调色 - Bio Purple</h3>
-          <div className="grid grid-cols-10 gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
             {Object.entries(colors.accent.accent).map(([shade, hex]) =>
               shade.match(/^\d{3}$/) ? (
                 <div key={shade} className="text-center">
@@ -102,7 +102,7 @@ const TokenGallery: React.FC = () => {
         {/* 功能色 */}
         <div>
           <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-3">功能色 (Functional Colors)</h3>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
             {Object.entries(colors.functional).map(([name, color]) => (
               <div key={name} className="text-center space-y-2">
                 <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300 capitalize">{name}</div>
@@ -196,7 +196,7 @@ const TokenGallery: React.FC = () => {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200">圆角系统 (Border Radius)</h2>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
           {Object.entries(radius).map(([name, value]) => (
             <div key={name} className="text-center">
               <div
@@ -214,7 +214,7 @@ const TokenGallery: React.FC = () => {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200">阴影系统 (Shadows)</h2>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
           {Object.entries(shadows).map(([name, value]) => (
             <div key={name} className="text-center">
               <div

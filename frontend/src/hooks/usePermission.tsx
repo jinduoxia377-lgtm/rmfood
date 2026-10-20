@@ -27,7 +27,7 @@
  * const { can, isAdmin, hasAny } = usePermission()
  */
 
-import { useEffect, useMemo, useContext, createContext } from 'react';
+import { useMemo, useContext, createContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 // 权限元数据配置
@@ -144,6 +144,7 @@ export function hasPermission(required: string, user: any = getCurrentUser()): b
  * 🔒 P1-1: Permission Hook
  */
 export function usePermission(user: any = getCurrentUser()) {
+  const permissionsKey = user?.permissions?.join(',');
   return useMemo(() => {
     const can = (required: string) => hasPermission(required, user);
     const isAdmin = user?.role === 'admin';
@@ -158,7 +159,7 @@ export function usePermission(user: any = getCurrentUser()) {
       // 当前角色
       role: user?.role || 'viewer',
     };
-  }, [user?.role, user?.permissions?.join(',')]);
+  }, [user?.role, permissionsKey]);
 }
 
 /**
@@ -167,7 +168,6 @@ export function usePermission(user: any = getCurrentUser()) {
 export function PermissionGuard({
   required, // 需要的权限
   fallback = null, // Fallback 组件（默认不通过时）
-  redirect, // 重定向 URL（权限不足时跳转的）
   requireAll = true, // 是否需要所有权限
   children, // 受保护的子组件
 }: {
@@ -243,7 +243,7 @@ export function PermissionButton({
   children: React.ReactNode;
   className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { can, canAny } = usePermission();
+  const { can } = usePermission();
 
   // 检查是否有权限
   const hasAccess = Array.isArray(required)
@@ -272,7 +272,7 @@ export function PermissionMenuItem({
   children: React.ReactNode;
   onClick?: () => void;
 }) {
-  const { can, canAny } = usePermission();
+  const { can } = usePermission();
   const hasAccess = Array.isArray(required)
     ? required.some((p) => can(p))
     : can(required);
@@ -341,9 +341,10 @@ const PermissionContext = createContext<{
  */
 export function usePermissionContext() {
   const context = useContext(PermissionContext);
+  const fallback = usePermission();
   if (!context) {
     // 未在组件中调用
-    return usePermission();
+    return fallback;
   }
   return context;
 }
@@ -399,11 +400,7 @@ export function PermissionDebugInfo() {
  * 🔒 P1-1: 权限检查工具（页面级权限检查快速方法
  */
 export function checkPagePermission(required: string): boolean {
-  const { can, canAny } = usePermission();
-  if (Array.isArray(required)) {
-    return required.every((p) => can(p));
-  }
-  return can(required);
+  return hasPermission(required);
 }
 
 // 为兼容旧代码的导出别名

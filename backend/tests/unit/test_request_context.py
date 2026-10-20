@@ -16,7 +16,7 @@ import re
 
 import pytest
 
-from app.core.request_context import (
+from app.core.observability.request_context import (
     RequestContextFilter,
     clear_context,
     generate_request_id,

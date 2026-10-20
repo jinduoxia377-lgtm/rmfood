@@ -17,7 +17,7 @@ interface FileDeliveryProps {
 
 export function FileDelivery({ taskId, filename, format, onClose }: FileDeliveryProps) {
   const [status, setStatus] = useState<TaskStatusType | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -70,7 +70,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
           // 继续轮询
           setTimeout(pollStatus, 1000)
         }
-      } catch (err) {
+      } catch {
         setError('获取任务状态失败')
         setIsLoading(false)
       }
@@ -91,7 +91,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
       a.download = filename
       a.click()
       URL.revokeObjectURL(url)
-    } catch (err) {
+    } catch {
       setError('文件下载失败')
     } finally {
       setIsDownloading(false)
@@ -106,7 +106,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
       const url = URL.createObjectURL(blob)
       setPreviewUrl(url)
       setShowPreview(true)
-    } catch (err) {
+    } catch {
       setError('文件预览失败')
     }
   }

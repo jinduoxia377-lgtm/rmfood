@@ -10,7 +10,6 @@
  * @version 4.0.0
  */
 import React, { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
   Leaf,
   MessageSquare,
@@ -93,9 +92,10 @@ function Dropdown({ trigger, children, className = '' }: {
   }, [])
   return (
     <div ref={ref} className={`relative ${className}`}>
-      <button onClick={() => setOpen(!open)} className="h-full">
+      {/* 外层用 div 而非 button，避免 trigger（本身是 button）嵌套 button 导致 HTML 非法 */}
+      <div onClick={() => setOpen(!open)} className="h-full cursor-pointer">
         {trigger}
-      </button>
+      </div>
       {open && (
         <>
           <div className="fixed inset-0 z-30"  role="button" tabIndex={0} onClick={() => setOpen(false)} />
@@ -166,7 +166,7 @@ function SettingsMenu({
 
 // ─── 主组件 ────────────────────────────────────────────────────────
 export function TopBar({
-  llmAvailable, llmModel, onModelChange,
+  llmModel, onModelChange,
   scenarioMode, onScenarioSwitch,
   historyVisible, historySessions, onToggleHistory,
   ragEnabled, ragIsSeeded, ragIsSeeding,
@@ -243,6 +243,7 @@ export function TopBar({
           title={`切换角色：${currentScenario.label}`}
           className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
         >
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <ScenarioIcon className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="hidden sm:inline">{currentScenario.label}</span>
         </button>
@@ -250,20 +251,8 @@ export function TopBar({
         {/* 分隔 */}
         <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
 
-        {/* ③ RAG知识库 — 常驻开关按钮 */}
-        <button
-          onClick={() => {
-            if (ragEnabled && ragIsSeeded) onToggleRAG()
-            else if (!ragEnabled) onToggleRAG()
-            else onTriggerSeed()
-          }}
-          disabled={ragIsSeeding}
-          title={
-            !ragEnabled ? '启用知识库检索' :
-            ragIsSeeding ? '知识库初始化中…' :
-            ragIsSeeded ? '关闭知识库检索' :
-            '知识库初始化中'
-          }
+        {/* ③ RAG知识库 — 常驻开关 + 管理（外层用 div，避免按钮嵌套） */}
+        <div
           className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
             ragEnabled && ragIsSeeded
               ? 'bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800 text-success-700 dark:text-success-700 hover:bg-success-100 dark:hover:bg-success-900/30'
@@ -272,17 +261,33 @@ export function TopBar({
                 : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:border-neutral-300 dark:hover:border-neutral-700'
           }`}
         >
-          <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-success-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
-          <span className="hidden sm:inline">
-            {ragIsSeeding ? '初始化…' : ragEnabled && ragIsSeeded ? '知识库ON' : !ragEnabled ? '知识库OFF' : '准备中'}
-          </span>
+          <button
+            onClick={() => {
+              if (ragEnabled && ragIsSeeded) onToggleRAG()
+              else if (!ragEnabled) onToggleRAG()
+              else onTriggerSeed()
+            }}
+            disabled={ragIsSeeding}
+            title={
+              !ragEnabled ? '启用知识库检索' :
+              ragIsSeeding ? '知识库初始化中…' :
+              ragIsSeeded ? '关闭知识库检索' :
+              '知识库初始化中'
+            }
+            className="flex items-center gap-1"
+          >
+            <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-success-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
+            <span className="hidden sm:inline">
+              {ragIsSeeding ? '初始化…' : ragEnabled && ragIsSeeded ? '知识库ON' : !ragEnabled ? '知识库OFF' : '准备中'}
+            </span>
+          </button>
           {ragEnabled && ragIsSeeded && (
             <button onClick={onOpenKBPanel}
               className="ml-1 px-1.5 py-0.5 text-[9px] bg-success-200/60 dark:bg-success-800/40 text-success-700 dark:text-success-700 rounded hover:bg-success-200 transition-colors">
               管理
             </button>
           )}
-        </button>
+        </div>
 
         {/* 分隔 */}
         <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />

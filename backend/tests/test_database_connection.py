@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 sys.path.insert(0, 'd:/RMFOOD配方平台/backend')
 
 from app.core.config import settings
-from app.core.session import engine, get_db
+from app.core.database.session import engine, get_db
 from app.models.models import TCMHerb, BioactivePeptide
 
 

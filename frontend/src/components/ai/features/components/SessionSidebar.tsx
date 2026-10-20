@@ -39,7 +39,6 @@ import {
   PanelLeftClose,
   PanelLeft,
   X,
-  Check,
 } from 'lucide-react'
 import { useChatSessions } from '../hooks/useChatSessions'
 import type { ChatSession, SessionExportFormat } from '../hooks/useChatSessions'
@@ -85,10 +84,10 @@ interface SessionItemProps {
 const SessionItem: React.FC<SessionItemProps> = React.memo(({
   session,
   isActive,
-  onClick,
   onContextMenu,
 }) => {
   const formatTime = (timestamp: number) => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now()
     const diff = now - timestamp
     const minutes = Math.floor(diff / 60000)

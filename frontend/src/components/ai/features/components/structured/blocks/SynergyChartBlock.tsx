@@ -6,7 +6,7 @@
  */
 import React, { useState } from 'react'
 import { Network, GitBranch, TrendingUp } from 'lucide-react'
-import type { SynergyChartData, SynergyNode, SynergyEdge } from '../types'
+import type { SynergyChartData, SynergyNode } from '../types'
 
 interface SynergyChartBlockProps {
   data: SynergyChartData

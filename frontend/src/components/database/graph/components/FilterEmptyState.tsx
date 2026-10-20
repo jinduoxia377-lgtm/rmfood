@@ -1,10 +1,9 @@
 export interface FilterEmptyStateProps {
-  [key: string]: any;
   onClearFilter: () => void
   activeFilter?: string | null
 }
 
-export default function FilterEmptyState({ onClearFilter, activeFilter }: FilterEmptyStateProps) {
+export default function FilterEmptyState({ onClearFilter }: FilterEmptyStateProps) {
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-neutral-900/40 backdrop-blur-sm rounded-xl animate-fade-in">
       <div className="text-center space-y-3">

@@ -18,7 +18,7 @@
 /* 尺寸 */
 .tag-xs {
   padding: 2rpx 8rpx;
-  font-size: 18rpx;
+  font-size: var(--font-size-fine-print);
 }
 
 .tag-sm {

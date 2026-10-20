@@ -9,7 +9,6 @@ export interface NodeAnnotationEntry {
 }
 
 export interface AnnotationPanelProps {
-  [key: string]: any;
   showAnnotationPanel: boolean
   selectedNodeLabel: string
   nodeAnnotations: NodeAnnotationEntry[]
@@ -31,7 +30,7 @@ export default function AnnotationPanel({
   if (!showAnnotationPanel) return null
 
   return (
-    <div className="absolute bottom-16 left-3 z-45 w-[320px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-danger-200/60 dark:border-danger-700/40 animate-fade-in">
+    <div className="absolute bottom-16 left-3 z-45 w-[min(320px,calc(100vw-1.5rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-danger-200/60 dark:border-danger-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-danger-50 to-danger-50 dark:from-danger-950/50 dark:to-danger-950/50 border-b border-danger-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2"><span>💬</span><span className="text-sm font-bold text-danger-700 dark:text-danger-700">节点批注</span>
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">[{selectedNodeLabel}]</span>

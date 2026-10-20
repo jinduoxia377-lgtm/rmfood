@@ -18,6 +18,8 @@ class ChatSession(Base):
     
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    # DS Bot 移植：单 Bot 对话复用会话表，bot_id 为空表示普通 AI 会话
+    bot_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("ai_bots.id", ondelete="SET NULL"), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     message_count: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

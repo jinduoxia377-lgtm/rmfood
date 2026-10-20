@@ -1,9 +1,6 @@
 import tcmService from './tcmService';
 import type {
   TCMHerb,
-  TCMChemistry,
-  TCMTarget,
-  TCMDisease,
   TCMSearchParams,
   TCMPredictionParams,
   TCMChemistryVisualization,
@@ -23,20 +20,21 @@ export class TCMServiceIntegration {
 
     const results = await this.service.searchHerbs(searchParams);
 
-    results.herbs.forEach((herb: TCMHerb) => {
+    results.herbs.forEach(() => {
     });
   }
 
   async getHerbDetailsExample(herbId: string): Promise<void> {
     const herb = await this.service.getHerbById(herbId);
     if (herb) {
+      // 示例：此处处理药材详情
     }
   }
 
   async analyzeCompoundExample(herbId: string): Promise<void> {
     const { compounds } = await this.service.getHerbCompounds(herbId);
 
-    compounds.forEach((compound: TCMChemistry) => {
+    compounds.forEach(() => {
     });
   }
 
@@ -48,7 +46,7 @@ export class TCMServiceIntegration {
       predictPathways: true,
     };
 
-    const result = await this.service.getFullPrediction(params);
+    await this.service.getFullPrediction(params);
   }
 
   async visualizeChemistryExample(smiles: string): Promise<TCMChemistryVisualization> {
@@ -60,7 +58,7 @@ export class TCMServiceIntegration {
   async getHerbNetworkExample(herbId: string): Promise<void> {
     const network = await this.service.getHerbNetwork(herbId);
 
-    network.nodes.forEach((node) => {
+    network.nodes.forEach(() => {
     });
   }
 
@@ -74,19 +72,19 @@ export class TCMServiceIntegration {
       }
     }
 
-    herbs.forEach((herb) => {
+    herbs.forEach(() => {
     });
   }
 
   async findRelatedHerbsExample(herbId: string): Promise<void> {
     const related = await this.service.getRelatedHerbs(herbId);
 
-    related.forEach((herb) => {
+    related.forEach(() => {
     });
   }
 
   getServiceInfo(): void {
-    const info = this.service.getServiceInfo();
+    this.service.getServiceInfo();
   }
 
   clearCache(herbId?: string): void {

@@ -39,7 +39,7 @@ from typing import Dict, Any, List, Optional
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from app.core.ray_manager import (
+from app.core.distributed.ray_manager import (
     RayClusterManager,
     RayConfig,
     TaskConfig,
@@ -47,7 +47,7 @@ from app.core.ray_manager import (
     ClusterState,
     ClusterStatus,
     ResourceUsage,
-    TaskStatus,
+    RayTaskStatus,
     get_ray_manager
 )
 
@@ -97,7 +97,7 @@ def test_task_config():
 @pytest.fixture
 def mock_ray():
     """模拟Ray环境"""
-    with patch('app.core.ray_manager.ray') as mock_ray:
+    with patch('app.core.distributed.ray_manager.ray') as mock_ray:
         mock_ray.is_initialized.return_value = True
         mock_ray.get_dashboard_url.return_value = "http://localhost:8265"
         mock_ray.init = MagicMock()
@@ -112,7 +112,7 @@ def mock_ray():
 @pytest.fixture
 def mock_redis():
     """模拟Redis连接"""
-    with patch('app.core.ray_manager.redis') as mock_redis:
+    with patch('app.core.distributed.ray_manager.redis') as mock_redis:
         mock_client = AsyncMock()
         mock_client.ping = AsyncMock()
         mock_client.close = AsyncMock()
@@ -216,7 +216,7 @@ class TestRayClusterManager:
     async def test_start_cluster_success(self, ray_manager, mock_ray, mock_redis):
         """测试成功启动集群"""
         # 设置环境变量确保Ray可用
-        with patch('app.core.ray_manager.RAY_AVAILABLE', True):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', True):
             # 启动集群
             status = await ray_manager.start_cluster()
 
@@ -234,7 +234,7 @@ class TestRayClusterManager:
     @pytest.mark.asyncio
     async def test_start_cluster_ray_not_available(self, ray_manager):
         """测试Ray库不可用时的启动"""
-        with patch('app.core.ray_manager.RAY_AVAILABLE', False):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', False):
             with pytest.raises(ImportError, match="Ray库未安装"):
                 await ray_manager.start_cluster()
 
@@ -244,7 +244,7 @@ class TestRayClusterManager:
     async def test_stop_cluster(self, ray_manager, mock_ray, mock_redis):
         """测试停止集群"""
         # 先启动集群
-        with patch('app.core.ray_manager.RAY_AVAILABLE', True):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', True):
             await ray_manager.start_cluster()
 
         # 停止集群
@@ -302,7 +302,7 @@ class TestRayClusterManager:
     async def test_get_task_status(self, ray_manager, test_task_config):
         """测试获取任务状态"""
         # 创建测试任务
-        ray_manager._tasks[test_task_config.task_id] = TaskStatus(
+        ray_manager._tasks[test_task_config.task_id] = RayTaskStatus(
             task_id=test_task_config.task_id,
             state=TaskState.RUNNING,
             progress=0.5
@@ -326,7 +326,7 @@ class TestRayClusterManager:
     async def test_cancel_task(self, ray_manager, test_task_config):
         """测试取消任务"""
         # 创建测试任务
-        ray_manager._tasks[test_task_config.task_id] = TaskStatus(
+        ray_manager._tasks[test_task_config.task_id] = RayTaskStatus(
             task_id=test_task_config.task_id,
             state=TaskState.RUNNING
         )
@@ -350,7 +350,7 @@ class TestRayClusterManager:
     async def test_cancel_task_already_completed(self, ray_manager):
         """测试取消已完成的任务"""
         task_id = "completed_task"
-        ray_manager._tasks[task_id] = TaskStatus(
+        ray_manager._tasks[task_id] = RayTaskStatus(
             task_id=task_id,
             state=TaskState.COMPLETED,
             end_time=datetime.now(timezone.utc)
@@ -426,7 +426,7 @@ class TestRayClusterManager:
         # 创建测试任务
         for i in range(5):
             task_id = f"test_task_{i}"
-            ray_manager._tasks[task_id] = TaskStatus(
+            ray_manager._tasks[task_id] = RayTaskStatus(
                 task_id=task_id,
                 state=TaskState.COMPLETED if i < 3 else TaskState.FAILED,
                 start_time=datetime.now(timezone.utc)
@@ -453,14 +453,14 @@ class TestRayClusterManager:
         now = datetime.now(timezone.utc)
 
         # 创建旧任务（8天前）
-        old_task = TaskStatus(
+        old_task = RayTaskStatus(
             task_id="old_task",
             state=TaskState.COMPLETED,
             end_time=now - timedelta(days=8)
         )
 
         # 创建新任务（3天前）
-        new_task = TaskStatus(
+        new_task = RayTaskStatus(
             task_id="new_task",
             state=TaskState.COMPLETED,
             end_time=now - timedelta(days=3)
@@ -488,7 +488,7 @@ class TestRayClusterManager:
     @pytest.mark.asyncio
     async def test_is_available(self, ray_manager, mock_ray):
         """测试检查可用性"""
-        with patch('app.core.ray_manager.RAY_AVAILABLE', True):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', True):
             # 集群未运行
             ray_manager._cluster_state = ClusterState.IDLE
             assert not ray_manager.is_available()
@@ -504,7 +504,7 @@ class TestRayClusterManager:
     @pytest.mark.asyncio
     async def test_context_manager(self, ray_manager, mock_ray):
         """测试异步上下文管理器"""
-        with patch('app.core.ray_manager.RAY_AVAILABLE', True):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', True):
             async with RayClusterManager() as mgr:
                 assert isinstance(mgr, RayClusterManager)
                 assert mgr._cluster_state == ClusterState.RUNNING
@@ -682,11 +682,11 @@ class TestSingleton:
 
     def test_get_ray_manager_singleton(self):
         """测试单例模式"""
-        from app.core.ray_manager import _ray_manager_instance
+        from app.core.distributed.ray_manager import _ray_manager_instance
 
         # 清除现有实例
-        from app.core.ray_manager import get_ray_manager
-        import app.core.ray_manager as ray_module
+        from app.core.distributed.ray_manager import get_ray_manager
+        import app.core.distributed.ray_manager as ray_module
 
         ray_module._ray_manager_instance = None
 
@@ -713,7 +713,7 @@ class TestAdvancedFeatures:
     @pytest.mark.asyncio
     async def test_execute_distributed_analysis(self, ray_manager, mock_ray):
         """测试分布式分析函数"""
-        with patch('app.core.ray_manager.RAY_AVAILABLE', True):
+        with patch('app.core.distributed.ray_manager.RAY_AVAILABLE', True):
             ray_manager._cluster_state = ClusterState.RUNNING
 
             # 模拟任务提交和完成
@@ -722,7 +722,7 @@ class TestAdvancedFeatures:
 
             # 这个测试在真实环境下需要Ray支持，所以可能失败
             # 这里只是验证函数调用不会出现语法错误
-            from app.core.ray_manager import execute_distributed_analysis
+            from app.core.distributed.ray_manager import execute_distributed_analysis
 
             try:
                 result = await execute_distributed_analysis(recipe_ids, analysis_type)

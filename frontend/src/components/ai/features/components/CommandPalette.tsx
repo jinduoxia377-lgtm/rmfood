@@ -322,7 +322,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery('')
+       
       setSelectedIndex(0)
     }
   }, [isOpen])
@@ -392,7 +394,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   <div className="px-4 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                     {category}
                   </div>
-                  {items.map((command, index) => {
+                  {items.map((command) => {
                     const globalIndex = filteredCommands.indexOf(command)
                     const isSelected = globalIndex === selectedIndex
                     return (

@@ -55,14 +55,18 @@ const QUICK_ACTIONS = [
 ]
 
 export function MessageList({
-	messages, isStreaming, isLoading, chatError,
+	messages: rawMessages, isStreaming, isLoading, chatError,
 	onRetry, onRetryMessage, onCopyMessage, onRegenerate, onDeleteMessage,
-	onGenerateReport, showReportButton,
+	showReportButton,
 	highlightedMessageId, selectedMessageIds, onReferenceMessage,
-	onEditMessage, onRetractMessage, onForkMessage, onDetailsMessage,
+	onRetractMessage, onForkMessage, onDetailsMessage,
 	onStructureSave, onStructureShare,
 	thinkingSteps,
 }: MessageListProps) {
+	// 防御：上游在初始加载态可能传入 undefined（类型声明虽为必填）。
+	// 若不归一化，下方 :78 的 messages.length 会抛 TypeError 导致整个列表崩溃。
+	const messages = rawMessages ?? []
+
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const bottomRef = useRef<HTMLDivElement>(null)
 	const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -158,17 +162,6 @@ export function MessageList({
 		setEditContent(msg.content)
 	}, [])
 
-	const confirmEdit = useCallback(() => {
-		if (editingId && editContent.trim()) onEditMessage?.(editingId, editContent.trim())
-		setEditingId(null)
-		setEditContent('')
-	}, [editingId, editContent, onEditMessage])
-
-	const cancelEdit = useCallback(() => {
-		setEditingId(null)
-		setEditContent('')
-	}, [])
-
 	// 网络恢复自动重试
 	useEffect(() => {
 		if (!isOnline || retryQueue.length === 0 || !onRetryMessage) return
@@ -185,6 +178,7 @@ export function MessageList({
 	// 渲染消息列表（必须在所有条件 return 之前定义，遵守 React hooks 规则）
 	const renderInner = useCallback((msg: ChatMessage, i: number) => (
 		<MessageBubble
+			key={msg.id}
 			msg={msg}
 			index={i}
 			allMessages={messages}
@@ -241,29 +235,31 @@ export function MessageList({
 		)
 	}
 
-	// 空状态
+	// 空状态（可滚动：内容超高时内部滚动，避免溢出压到输入框）
 	if (messages.length === 0 && !chatError) {
 		return (
-			<div className="flex-1 flex flex-col items-center justify-center px-4 py-8 space-y-6">
-				<div className="text-center space-y-3">
-					<div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 shadow-lg shadow-primary-300/40 dark:shadow-primary-900/30 flex items-center justify-center animate-pulse-slow">
-						<Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
+			<div className="flex-1 overflow-y-auto px-4 py-8 chat-custom-scrollbar">
+				<div className="min-h-full flex flex-col items-center justify-center space-y-6">
+					<div className="text-center space-y-3">
+						<div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 shadow-lg shadow-primary-300/40 dark:shadow-primary-900/30 flex items-center justify-center animate-pulse-slow">
+							<Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
+						</div>
+						<h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">开始新对话</h3>
+						<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
 					</div>
-					<h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">开始新对话</h3>
-					<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
-				</div>
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
-					{QUICK_ACTIONS.map((action, i) => (
-						<button key={i} className="group relative flex items-start gap-3 p-4 rounded-xl border border-neutral-200 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50/60 hover:to-transparent dark:hover:from-primary-900/15 dark:hover:to-transparent transition-all duration-200 ease-out text-left hover:scale-[1.02] hover:shadow-md hover:shadow-primary-100/50 dark:hover:shadow-primary-900/20 active:scale-[0.98]">
-							<div className={`w-8 h-8 rounded-lg flex items-center justify-center ${action.color} bg-white dark:bg-neutral-800 shadow-sm`}>
-								<action.Icon className="w-4 h-4" />
-							</div>
-							<div>
-								<div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{action.title}</div>
-								<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{action.desc}</div>
-							</div>
-						</button>
-					))}
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+						{QUICK_ACTIONS.map((action, i) => (
+							<button key={i} className="group relative flex items-start gap-3 p-4 rounded-xl border border-neutral-200 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50/60 hover:to-transparent dark:hover:from-primary-900/15 dark:hover:to-transparent transition-all duration-200 ease-out text-left hover:scale-[1.02] hover:shadow-md hover:shadow-primary-100/50 dark:hover:shadow-primary-900/20 active:scale-[0.98]">
+								<div className={`w-8 h-8 rounded-lg flex items-center justify-center ${action.color} bg-white dark:bg-neutral-800 shadow-sm`}>
+									<action.Icon className="w-4 h-4" />
+								</div>
+								<div>
+									<div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{action.title}</div>
+									<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{action.desc}</div>
+								</div>
+							</button>
+						))}
+					</div>
 				</div>
 			</div>
 		)

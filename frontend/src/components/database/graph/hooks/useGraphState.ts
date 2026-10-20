@@ -15,9 +15,85 @@
 import { useCallback, useReducer, useMemo } from 'react'
 import type { Reducer } from 'react'
 import * as d3 from 'd3'
-import type { LayoutType, ThemeConfig, GraphNode } from '../types'
+import type { LayoutType, ThemeConfig, GraphNode, GraphEdge } from '../types'
+import { TYPE_ORDER, TYPE_CONFIG, EDGE_TYPE_LABELS } from '../types'
 import type { SmartPathResult } from '../analytics'
+import { findSmartPath, findPathBFS } from '../analytics/stats'
 import type { GraphEngine } from '../engine/forceSimulation'
+import { computeCentralityMetrics } from '../utils/centrality'
+import { useGraphHandlers } from './useGraphHandlers'
+
+// 稳定的空数组常量 —— 避免每次渲染重建引用导致 useMemo 依赖失效
+const EMPTY_NODES: GraphNode[] = []
+const EMPTY_EDGES: GraphEdge[] = []
+
+// ── INSIGHT_TEMPLATES：AI 洞察模板（原 KnowledgeGraph.tsx 中定义，重构后丢失）──
+type InsightTemplateFn = {
+  highDegreeHub: (node: GraphNode, degree: number, maxDeg: number) => AIInsight
+  isolatedNode: (node: GraphNode) => AIInsight
+  bridgeNode: (node: GraphNode, betweenness: number) => AIInsight
+  denseCluster: (type: string, count: number, avgDegree: number) => AIInsight
+  synergyPair: (source: string, target: string, edgeType: string) => AIInsight
+}
+
+const INSIGHT_TEMPLATES: InsightTemplateFn = {
+  highDegreeHub: (node, degree, maxDeg) => ({
+    id: `hub-${node.id || node.label}`,
+    type: 'keyFinding',
+    title: '高度枢纽节点',
+    description: `节点 ${node.label || node.id} 的度为 ${degree}，接近全图最高值 ${maxDeg}，是信息流通的关键枢纽。`,
+    confidence: 0.85,
+    severity: 'info',
+    relatedNodeIds: [node.id || node.label],
+  }),
+  isolatedNode: (node) => ({
+    id: `iso-${node.id || node.label}`,
+    type: 'anomaly',
+    title: '孤立节点',
+    description: `节点 ${node.label || node.id} 的关联较少，可能代表稀缺成分或尚未建立连接的数据。`,
+    confidence: 0.7,
+    severity: 'warning',
+    relatedNodeIds: [node.id || node.label],
+  }),
+  bridgeNode: (node, betweenness) => ({
+    id: `bridge-${node.id || node.label}`,
+    type: 'topology',
+    title: '桥梁节点',
+    description: `节点 ${node.label || node.id} 的介数中心性为 ${betweenness.toFixed(3)}，连接多个社区，删除它可能显著影响连通性。`,
+    confidence: 0.8,
+    severity: 'info',
+    relatedNodeIds: [node.id || node.label],
+  }),
+  denseCluster: (type, count, avgDegree) => ({
+    id: `cluster-${type}-${count}`,
+    type: 'summary',
+    title: '密集簇',
+    description: `检测到 ${count} 个「${type}」类型节点构成密集簇，平均度为 ${avgDegree.toFixed(1)}，可能存在强关联成分组合。`,
+    confidence: 0.75,
+  }),
+  synergyPair: (source, target, edgeType) => ({
+    id: `synergy-${source}-${target}`,
+    type: 'recommendation',
+    title: '协同关系',
+    description: `「${source}」与「${target}」通过「${edgeType}」关系相连，可能具有协同增效潜力。`,
+    confidence: 0.65,
+    relatedNodeIds: [source, target],
+  }),
+}
+
+// ── MOCK_EXTERNAL_DB：外部数据库模拟（原 KnowledgeGraph.tsx 中的 MOCK_EXTERNAL_DB）──
+const MOCK_EXTERNAL_DB: Record<string, ExternalData> = {
+  人参: { source: 'tcmsp', description: '人参皂苷 Rg1、Rb1 等活性成分，补气固脱。', molecularFormula: 'C42H72O14', targets: ['PIK3CA', 'AKT1'], literatureCount: 120 },
+  黄芪: { source: 'tcmsp', description: '黄芪甲苷 IV，增强免疫。', molecularFormula: 'C41H68O14', targets: ['STAT3', 'JAK2'], literatureCount: 98 },
+  枸杞: { source: 'tcmsp', description: '枸杞多糖，抗氧化。', targets: ['SOD2', 'CAT'], literatureCount: 76 },
+  当归: { source: 'tcmsp', description: '阿魏酸，活血补血。', molecularFormula: 'C10H10O4', targets: ['HIF1A'], literatureCount: 54 },
+}
+
+// ── LOD 分级阈值（节点数硬上限）─────────────────────────────
+// 超过 MAX_RENDER_NODES 时前端只渲染度数最高的子集，防止 SVG 冻结。
+export const MAX_RENDER_NODES = 900
+const LOD_FULL_MAX = 150
+const LOD_REDUCED_MAX = 500
 
 // ════════════════════════════════════════════════════════════
 // Inline type definitions (mirrored from KnowledgeGraph.tsx)
@@ -438,6 +514,19 @@ export type GraphAction =
   | { type: 'SET_AI_QUESTION'; payload: string }
   | { type: 'SET_AI_ANSWERING'; payload: boolean }
 
+  // ── Setter actions（补齐原空桩 setter 的真实 dispatch）──────────
+  | { type: 'SET_COLLAPSED_GROUPS'; payload: Set<string> }
+  | { type: 'SET_ANNOTATIONS'; payload: AnnotationEntry[] }
+  | { type: 'SET_GRAPH_SNAPSHOTS'; payload: Array<{ id: string; timestamp: number; label: string; nodeCount: number }> }
+  | { type: 'SET_IMPORT_STATE'; payload: ImportState }
+  | { type: 'SET_NODE_ANNOTATIONS'; payload: Map<string, NodeAnnotation[]> }
+  | { type: 'SET_HISTORY_ENTRIES'; payload: HistoryEntry[] }
+  | { type: 'SET_HISTORY_INDEX'; payload: number }
+  | { type: 'SET_BOOKMARKS'; payload: GraphBookmark[] }
+  | { type: 'SET_REPORT_CONFIG'; payload: ReportConfig }
+  | { type: 'SET_SAVED_SUBGRAPHS'; payload: SubGraphResult[] }
+  | { type: 'SET_AI_QA_HISTORY'; payload: AIQARecord[] }
+
 // ════════════════════════════════════════════════════════════
 // Reducer
 // ════════════════════════════════════════════════════════════
@@ -734,10 +823,44 @@ const graphReducer: Reducer<GraphState, GraphAction> = (state, action) => {
     case 'SET_AI_ANSWERING':
       return { ...state, aiAnswering: action.payload }
 
-    default:
+    case 'SET_COLLAPSED_GROUPS':
+      return { ...state, collapsedGroups: action.payload }
+
+    case 'SET_ANNOTATIONS':
+      return { ...state, annotations: action.payload }
+
+    case 'SET_GRAPH_SNAPSHOTS':
+      return { ...state, graphSnapshots: action.payload }
+
+    case 'SET_IMPORT_STATE':
+      return { ...state, importState: action.payload }
+
+    case 'SET_NODE_ANNOTATIONS':
+      return { ...state, nodeAnnotations: action.payload }
+
+    case 'SET_HISTORY_ENTRIES':
+      return { ...state, historyEntries: action.payload }
+
+    case 'SET_HISTORY_INDEX':
+      return { ...state, historyIndex: action.payload }
+
+    case 'SET_BOOKMARKS':
+      return { ...state, bookmarks: action.payload }
+
+    case 'SET_REPORT_CONFIG':
+      return { ...state, reportConfig: action.payload }
+
+    case 'SET_SAVED_SUBGRAPHS':
+      return { ...state, savedSubGraphs: action.payload }
+
+    case 'SET_AI_QA_HISTORY':
+      return { ...state, aiQAHistory: action.payload }
+
+    default: {
       // TypeScript exhaustive check — add `: never` below if we miss a case
       const _: never = action
       return _ satisfies never
+    }
   }
 }
 
@@ -887,8 +1010,23 @@ function createInitialState(initialLayout: LayoutType): GraphState {
 // Hook
 // ════════════════════════════════════════════════════════════
 
-export function useGraphState(initialLayout: LayoutType = 'force') {
+export interface UseGraphStateOptions {
+  initialLayout?: LayoutType
+  /** 外部传入的节点数据 —— 用于计算 filteredData / degreeStats / searchMatches 等派生值 */
+  nodes?: GraphNode[]
+  /** 外部传入的边数据 */
+  edges?: GraphEdge[]
+  onNodeClick?: (node: GraphNode) => void
+}
+
+export function useGraphState(options: UseGraphStateOptions = {}) {
+  const { initialLayout = 'force', nodes = EMPTY_NODES, edges = EMPTY_EDGES } = options
   const [state, dispatch] = useReducer(graphReducer, createInitialState(initialLayout))
+
+  // ── 稳定的 ref 别名（与 state 中的 ref 对象共享同一引用）──
+  const svgRef = state.svgRef
+  const zoomBehaviorRef = state.zoomBehaviorRef
+  const prevDataRef = state.prevDataRef
 
   // ── Convenience dispatch wrappers ──
 
@@ -916,9 +1054,6 @@ export function useGraphState(initialLayout: LayoutType = 'force') {
   const setShowMinimap = useCallback((v: boolean) => dispatch({ type: 'SET_SHOW_MINIMAP', payload: v }), [])
   const setPathAnimation = useCallback((p: GraphState['pathAnimation']) => dispatch({ type: 'SET_PATH_ANIMATION', payload: p }), [])
 
-  const setCollapsedGroupsSet = useCallback((fn: (prev: Set<string>) => Set<string>) => {
-    // Toggle by individual type key only (matches original toggleGroupCollapse)
-  }, [])
   const setShowCentralityPanel = useCallback((v: boolean) => dispatch({ type: 'SET_SHOW_CENTRALITY_PANEL', payload: v }), [])
   const setSortBy = useCallback((s: 'degree' | 'label' | 'type') => dispatch({ type: 'SET_SORT_BY', payload: s }), [])
   const setPinnedNodes = useCallback((s: Set<string>) => dispatch({ type: 'SET_PINNED_NODES', payload: s }), [])
@@ -984,6 +1119,296 @@ export function useGraphState(initialLayout: LayoutType = 'force') {
   const appendAIQARecord = useCallback((r: AIQARecord) => dispatch({ type: 'APPEND_AI_QA_RECORD', payload: r }), [])
   const setAiQuestion = useCallback((q: string) => dispatch({ type: 'SET_AI_QUESTION', payload: q }), [])
   const setAiAnswering = useCallback((v: boolean) => dispatch({ type: 'SET_AI_ANSWERING', payload: v }), [])
+
+  // ═══════════════════════════════════════════════════════════
+  // 派生数据计算（恢复自 4d9b782^ 的原实现，重构时曾丢失）
+  // ═══════════════════════════════════════════════════════════
+
+  const onNodeClickRef = options.onNodeClick
+  const optsRef = { onNodeClick: onNodeClickRef, dispatch }
+
+  /** 按 activeFilter 过滤节点与边（原 KnowledgeGraph.tsx 第 784-791 行） */
+  const filteredData = useMemo(() => {
+    const fn = state.activeFilter ? nodes.filter((n) => n.type === state.activeFilter) : nodes
+    const fIds = new Set(fn.map((n) => n.id || n.label))
+    const fe = edges.filter(
+      (e) =>
+        fIds.has(e.source as string) &&
+        fIds.has(e.target as string),
+    )
+    return { filteredNodes: fn, filteredEdges: fe }
+  }, [nodes, edges, state.activeFilter])
+
+  /** 大规模图渲染护栏：节点数超过上限时按度数降序截取，避免 SVG 冻结 */
+  const renderableData = useMemo(() => {
+    if (filteredData.filteredNodes.length <= MAX_RENDER_NODES) return filteredData
+    const counts = new Map<string, number>()
+    for (const e of filteredData.filteredEdges) {
+      counts.set(e.source as string, (counts.get(e.source as string) || 0) + 1)
+      counts.set(e.target as string, (counts.get(e.target as string) || 0) + 1)
+    }
+    const sorted = [...filteredData.filteredNodes].sort(
+      (a, b) =>
+        (counts.get(b.id || b.label) || 0) - (counts.get(a.id || a.label) || 0),
+    )
+    const keep = new Set(
+      sorted.slice(0, MAX_RENDER_NODES).map((n) => n.id || n.label),
+    )
+    return {
+      filteredNodes: sorted.slice(0, MAX_RENDER_NODES),
+      filteredEdges: filteredData.filteredEdges.filter(
+        (e) =>
+          keep.has(e.source as string) &&
+          keep.has(e.target as string),
+      ),
+    }
+  }, [filteredData])
+
+  /** LOD 分级：节点数硬上限 + 缩放比例自适应（原第 795-799 行扩展） */
+  const lodLevel = useMemo<'minimal' | 'reduced' | 'full'>(() => {
+    const count = renderableData.filteredNodes.length
+    const zoom = state.zoomTransform?.k ?? 1
+    if (count > LOD_REDUCED_MAX) {
+      return zoom < 0.4 ? 'minimal' : 'reduced'
+    }
+    if (zoom < 0.25) return 'minimal'
+    if (zoom < 0.5 || count > LOD_FULL_MAX) return 'reduced'
+    return 'full'
+  }, [renderableData.filteredNodes.length, state.zoomTransform])
+
+  /** 数据变更检测（原第 802-815 行）—— 引擎 renderFull 的唯一触发条件 */
+  const dataChanged = useMemo(() => {
+    const currentIds = renderableData.filteredNodes
+      .map((n) => n.id || n.label)
+      .sort()
+      .join(',')
+    const changed =
+      prevDataRef.current.nodeCount !== renderableData.filteredNodes.length ||
+      prevDataRef.current.edgeCount !== renderableData.filteredEdges.length ||
+      prevDataRef.current.nodeIds !== currentIds
+    if (changed) {
+      prevDataRef.current = {
+        nodeCount: renderableData.filteredNodes.length,
+        edgeCount: renderableData.filteredEdges.length,
+        nodeIds: currentIds,
+      }
+    }
+    return changed
+  }, [renderableData, prevDataRef])
+
+  /** 度数统计 */
+  const degreeStats = useMemo(() => {
+    const degreeMap = new Map<string, number>()
+    for (const e of renderableData.filteredEdges) {
+      const s = e.source as string
+      const t = e.target as string
+      degreeMap.set(s, (degreeMap.get(s) || 0) + 1)
+      degreeMap.set(t, (degreeMap.get(t) || 0) + 1)
+    }
+    let maxDegree = 0
+    for (const n of renderableData.filteredNodes) {
+      const d = degreeMap.get(n.id || n.label) || 0
+      if (d > maxDegree) maxDegree = d
+    }
+    return { degreeMap, maxDegree }
+  }, [renderableData])
+
+  /** 节点类型列表（按 TYPE_ORDER 排序） */
+  const allTypes = useMemo(() => {
+    const present = new Set<string>(renderableData.filteredNodes.map((n) => n.type))
+    const ordered = (TYPE_ORDER as readonly string[]).filter((t) => present.has(t))
+    for (const t of [...present]) if (!ordered.includes(t)) ordered.push(t)
+    return ordered
+  }, [renderableData])
+
+  /** 各类型节点计数 */
+  const typeCounts = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const n of renderableData.filteredNodes) m[n.type] = (m[n.type] || 0) + 1
+    return m
+  }, [renderableData])
+
+  /** 选中节点的连接信息 */
+  const nodeConnections = useMemo(() => {
+    const id = state.selectedNode?.id || state.selectedNode?.label
+    if (!id) return { incoming: [] as GraphEdge[], outgoing: [] as GraphEdge[], neighbors: [] as GraphNode[], totalConnections: 0 }
+    const outgoing = renderableData.filteredEdges.filter((e) => (e.source as string) === id)
+    const incoming = renderableData.filteredEdges.filter((e) => (e.target as string) === id)
+    const nbIds = new Set<string>()
+    for (const e of outgoing) nbIds.add(e.target as string)
+    for (const e of incoming) nbIds.add(e.source as string)
+    nbIds.delete(id)
+    const neighbors = renderableData.filteredNodes.filter((n) => nbIds.has(n.id || n.label))
+    return { incoming, outgoing, neighbors, totalConnections: incoming.length + outgoing.length }
+  }, [renderableData, state.selectedNode])
+
+  /** 搜索匹配（前缀 > 包含 > id 包含，降序） */
+  const searchMatches = useMemo(() => {
+    const q = state.searchQuery.trim().toLowerCase()
+    if (!q) return []
+    const matches: { node: GraphNode; score: number; matchFields: string[] }[] = []
+    for (const n of renderableData.filteredNodes) {
+      const label = (n.label || '').toLowerCase()
+      const idStr = (n.id || '').toLowerCase()
+      let score = 0
+      const fields: string[] = []
+      if (label === q) { score = 100; fields.push('label') }
+      else if (label.startsWith(q)) { score = 80; fields.push('label') }
+      else if (label.includes(q)) { score = 60; fields.push('label') }
+      else if (idStr.includes(q)) { score = 30; fields.push('id') }
+      if (score > 0) matches.push({ node: n, score, matchFields: fields })
+    }
+    return matches.sort((a, b) => b.score - a.score)
+  }, [renderableData, state.searchQuery])
+
+  /** 度中心性（本地快速版，供 CentralityPanel 使用） */
+  const centralityData = useMemo(() => {
+    const nodeCount = renderableData.filteredNodes.length
+    if (!nodeCount) return {}
+    const topByDegree = renderableData.filteredNodes
+      .map((n) => {
+        const degree = degreeStats.degreeMap.get(n.id || n.label) || 0
+        return { node: n, degree, score: degree }
+      })
+      .sort((a, b) => b.degree - a.degree)
+      .slice(0, 50)
+    const edgeCount = renderableData.filteredEdges.length
+    return {
+      stats: {
+        nodeCount,
+        edgeCount,
+        maxDegree: degreeStats.maxDegree,
+        avgDegree: nodeCount ? (2 * edgeCount) / nodeCount : 0,
+      },
+      topByDegree,
+    }
+  }, [renderableData, degreeStats])
+
+  const sortedNodeList = useMemo(() => {
+    if (!centralityData.topByDegree) return []
+    const list = [...(centralityData.topByDegree as { node: GraphNode; degree: number }[])]
+    if (state.sortBy === 'label') list.sort((a, b) => (a.node.label || '').localeCompare(b.node.label || '', 'zh-CN'))
+    else if (state.sortBy === 'type') list.sort((a, b) => a.node.type.localeCompare(b.node.type))
+    return list
+  }, [centralityData, state.sortBy])
+
+  // ── 交互回调（恢复真实实现，原为 useCallback(() => {}) 空桩）──
+
+  const handleSearchChange = useCallback(
+    (q: string) => {
+      dispatch({ type: 'SET_SEARCH_QUERY', payload: q })
+      if (q.length >= 2) dispatch({ type: 'ADD_SEARCH_HISTORY_ITEM', payload: q })
+    },
+    [],
+  )
+
+  const handleSearchSelect = useCallback(
+    (node: GraphNode) => {
+      dispatch({ type: 'SELECT_NODE', payload: node })
+      dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
+      optsRef.onNodeClick?.(node)
+    },
+    [],
+  )
+
+  const clearSearch = useCallback(() => {
+    dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
+    dispatch({ type: 'SET_SEARCH_RESULTS', payload: [] })
+  }, [])
+
+  const togglePinNode = useCallback(
+    (nodeId: string) => {
+      dispatch({ type: 'TOGGLE_PIN', payload: nodeId })
+    },
+    [],
+  )
+
+  const clearAllPins = useCallback(() => {
+    dispatch({ type: 'CLEAR_ALL_PINS' })
+  }, [])
+
+  const applyTheme = useCallback(
+    (theme: ThemeConfig) => {
+      dispatch({ type: 'SET_THEME', payload: theme })
+    },
+    [],
+  )
+
+  const switchLayoutMode = useCallback(
+    (l: LayoutType) => {
+      dispatch({ type: 'SET_LAYOUT', payload: l })
+    },
+    [],
+  )
+
+  const switchAnimationPreset = useCallback(
+    (p: string) => {
+      dispatch({ type: 'SET_ANIMATION_PRESET', payload: p as never })
+    },
+    [],
+  )
+
+  const handleZoomIn = useCallback(() => {
+    if (!svgRef.current || !zoomBehaviorRef.current) return
+    d3.select(svgRef.current as SVGSVGElement)
+      .transition()
+      .duration(250)
+      .call(zoomBehaviorRef.current.scaleBy, 1.3)
+  }, [svgRef, zoomBehaviorRef])
+
+  const handleZoomOut = useCallback(() => {
+    if (!svgRef.current || !zoomBehaviorRef.current) return
+    d3.select(svgRef.current as SVGSVGElement)
+      .transition()
+      .duration(250)
+      .call(zoomBehaviorRef.current.scaleBy, 1 / 1.3)
+  }, [svgRef, zoomBehaviorRef])
+
+  const handleFitToCanvas = useCallback(() => {
+    if (!svgRef.current || !zoomBehaviorRef.current) return
+    d3.select(svgRef.current as SVGSVGElement)
+      .transition()
+      .duration(350)
+      .call(zoomBehaviorRef.current.transform, d3.zoomIdentity)
+  }, [svgRef, zoomBehaviorRef])
+
+  const handleResetView = useCallback(() => {
+    dispatch({ type: 'SELECT_NODE', payload: null })
+    dispatch({ type: 'SET_FILTER', payload: null })
+    dispatch({ type: 'SET_SEARCH_QUERY', payload: '' })
+    dispatch({ type: 'SET_SORT_BY', payload: 'degree' })
+    if (!svgRef.current || !zoomBehaviorRef.current) return
+    d3.select(svgRef.current as SVGSVGElement)
+      .transition()
+      .duration(350)
+      .call(zoomBehaviorRef.current.transform, d3.zoomIdentity)
+  }, [svgRef, zoomBehaviorRef])
+
+  // ── 真实功能 handlers：从 useGraphHandlers 接线（替代原 42 个空桩）──
+  const handlers = useGraphHandlers({
+    state,
+    dispatch,
+    filteredNodes: renderableData.filteredNodes,
+    filteredEdges: renderableData.filteredEdges,
+    nodes,
+    edges,
+    onNodeClick: options.onNodeClick,
+    highlightPath: state.pathAnimation ? state.pathAnimation.pathNodes : undefined,
+    zoomTransform: state.zoomTransform,
+    svgRef,
+    zoomBehaviorRef,
+    detectedComm: state.communities,
+    commColors: state.communityColors,
+    centralityTop: centralityData?.topByDegree ?? [],
+    insig: INSIGHT_TEMPLATES,
+    typeConfig: TYPE_CONFIG,
+    edgeTypeLabels: EDGE_TYPE_LABELS,
+    mockExternalDB: MOCK_EXTERNAL_DB,
+    findSmartPathFn: findSmartPath,
+    findPathBFSFn: findPathBFS,
+    width: 800,
+    height: 600,
+  })
 
   // ── Return ─────────────────────────────────────────────────
 
@@ -1192,79 +1617,120 @@ export function useGraphState(initialLayout: LayoutType = 'force') {
     toggleGroupCollapse: useCallback((type: string) => dispatch({ type: 'TOGGLE_GROUP_COLLAPSE', payload: type }), []),
 
     // ── Add missing handlers (no-op stubs for KnowledgeGraph compatibility) ──
-    addAnnotation: useCallback(() => {}, []),
-    removeAnnotation: useCallback(() => {}, []),
-    clearSearch: useCallback(() => {}, []),
-    handleSearchChange: useCallback(() => {}, []),
-    handleSearchSelect: useCallback(() => {}, []),
-    togglePinNode: useCallback(() => {}, []),
-    clearAllPins: useCallback(() => {}, []),
-    batchOperationOnSelected: useCallback(() => {}, []),
-    applyTheme: useCallback(() => {}, []),
-    switchLayoutMode: useCallback(() => {}, []),
-    switchAnimationPreset: useCallback(() => {}, []),
-    generateAIInsights: useCallback(() => {}, []),
-    generateNodeAnalysis: useCallback(() => {}, []),
-    runSmartPathSearch: useCallback(() => {}, []),
-    takeSnapshot: useCallback(() => {}, []),
-    queryExternalData: useCallback(() => {}, []),
-    handleFileImport: useCallback(() => {}, []),
-    runGraphComparison: useCallback(() => {}, []),
-    triggerAutoSync: useCallback(() => {}, []),
-    handleDragOver: useCallback(() => {}, []),
-    handleDragLeave: useCallback(() => {}, []),
-    handleDrop: useCallback(() => {}, []),
-    generateShareLink: useCallback(() => {}, []),
-    copyShareLink: useCallback(() => {}, []),
-    addNodeAnnotation: useCallback(() => {}, []),
-    loadBookmark: useCallback(() => {}, []),
-    addBookmark: useCallback(() => {}, []),
-    generateReport: useCallback(() => {}, []),
-    computeGraphStatistics: useCallback(() => {}, []),
-    computePageRank: useCallback(() => {}, []),
-    computeBetweenness: useCallback(() => {}, []),
-    computeCloseness: useCallback(() => {}, []),
-    runCentralityAnalysis: useCallback(() => {}, []),
-    detectCommunitiesLouvain: useCallback(() => {}, []),
-    computeKCore: useCallback(() => {}, []),
-    extractEgoNetwork: useCallback(() => {}, []),
-    handleAIQuestion: useCallback(() => {}, []),
-    handleSelectionComplete: useCallback(() => {}, []),
-    handleContextAction: useCallback(() => {}, []),
-    exportSubgraphJSON: useCallback(() => {}, []),
-    findPathBFS: useCallback(() => {}, []),
-    startPathAnimation: useCallback(() => {}, []),
-    handleZoomIn: useCallback(() => {}, []),
-    handleZoomOut: useCallback(() => {}, []),
-    handleFitToCanvas: useCallback(() => {}, []),
-    handleResetView: useCallback(() => {}, []),
+    addAnnotation: handlers.addAnnotation,
+    removeAnnotation: handlers.removeAnnotation,
+    clearSearch,
+    handleSearchChange,
+    handleSearchSelect,
+    togglePinNode,
+    clearAllPins,
+    batchOperationOnSelected: handlers.batchOperationOnSelected,
+    applyTheme,
+    switchLayoutMode,
+    switchAnimationPreset,
+    generateAIInsights: handlers.generateAIInsights,
+    generateNodeAnalysis: handlers.generateNodeAnalysis,
+    runSmartPathSearch: handlers.runSmartPathSearch,
+    takeSnapshot: handlers.takeSnapshot,
+    queryExternalData: handlers.queryExternalData,
+    handleFileImport: handlers.handleFileImport,
+    runGraphComparison: handlers.runGraphComparison,
+    triggerAutoSync: handlers.triggerAutoSync,
+    handleDragOver: handlers.handleDragOver,
+    handleDragLeave: handlers.handleDragLeave,
+    handleDrop: handlers.handleDrop,
+    generateShareLink: handlers.generateShareLink,
+    copyShareLink: handlers.copyShareLink,
+    addNodeAnnotation: handlers.addNodeAnnotation,
+    // 真实实现：把当前视图快照成书签。原为 useCallback(() => {}, []) 空桩，
+    // 与上方第 993 行已正确实现的 appendBookmark 重名但被覆盖，导致"保存书签"
+    // 按钮点击后无任何效果。
+    addBookmark: useCallback((name: string) => {
+      const trimmed = (name || '').trim()
+      if (!trimmed) return
+      const zt = state.zoomTransform
+      appendBookmark({
+        id: `bm_${Date.now()}`,
+        name: trimmed,
+        icon: '⭐',
+        createdAt: new Date(),
+        snapshot: {
+          selectedNode: state.selectedNode?.label,
+          highlightPath: state.pathAnimation ? state.pathAnimation.pathNodes : undefined,
+          filterTypes: state.activeFilter ? [state.activeFilter] : [],
+          searchQuery: state.searchQuery,
+          layoutType: state.localLayout,
+          zoomLevel: zt ? zt.k : 1,
+          panOffset: zt ? { x: zt.x, y: zt.y } : { x: 0, y: 0 },
+        },
+      })
+    }, [state, appendBookmark]),
+    // 真实实现：还原书签快照到当前视图
+    loadBookmark: useCallback((bm: GraphBookmark) => {
+      dispatch({ type: 'SET_FILTER', payload: bm.snapshot.filterTypes[0] ?? null })
+      dispatch({ type: 'SET_SEARCH_QUERY', payload: bm.snapshot.searchQuery || '' })
+      dispatch({ type: 'SET_LAYOUT', payload: bm.snapshot.layoutType as LayoutType })
+      dispatch({
+        type: 'SET_ZOOM_TRANSFORM',
+        payload: d3.zoomIdentity.translate(bm.snapshot.panOffset?.x ?? 0, bm.snapshot.panOffset?.y ?? 0).scale(bm.snapshot.zoomLevel || 1),
+      })
+      dispatch({ type: 'ADD_HISTORY_ENTRY', payload: { type: 'zoom', description: `载入书签：${bm.name}` } })
+    }, []),
+    generateReport: handlers.generateReport,
+    computeGraphStatistics: handlers.computeGraphStatistics,
+    computePageRank: handlers.computePageRank,
+    computeBetweenness: handlers.computeBetweenness,
+    computeCloseness: handlers.computeCloseness,
+    // 真实实现：对当前筛选视图计算全部中心性指标并写入 state。
+    // 原为空桩 useCallback(() => {}, [])，centralityMetrics 因此恒为 null，
+    // CentralityMetricsPanel 的 `if (!showCentralityPanel || !centralityMetrics) return null`
+    // 使其永不渲染——整个中心性面板功能完全不可用。
+    runCentralityAnalysis: useCallback(() => {
+      if (!renderableData.filteredNodes.length) return
+      dispatch({
+        type: 'SET_CENTRALITY_METRICS',
+        payload: computeCentralityMetrics(renderableData.filteredNodes, renderableData.filteredEdges),
+      })
+    }, [renderableData]),
+    detectCommunitiesLouvain: handlers.detectCommunitiesLouvain,
+    computeKCore: handlers.computeKCore,
+    extractEgoNetwork: handlers.extractEgoNetwork,
+    handleAIQuestion: handlers.handleAIQuestion,
+    handleSelectionComplete: handlers.handleSelectionComplete,
+    handleContextAction: handlers.handleContextAction,
+    exportSubgraphJSON: handlers.exportSubgraphJSON,
+    findPathBFS: handlers.findPathBFSLocal,
+    startPathAnimation: handlers.startPathAnimation,
+    handleZoomIn,
+    handleZoomOut,
+    handleFitToCanvas,
+    handleResetView,
 
     // ── Add missing setters ──
-    setCollapsedGroups: useCallback(() => {}, []),
-    setAnnotations: useCallback(() => {}, []),
-    setGraphSnapshots: useCallback(() => {}, []),
-    setImportState: useCallback(() => {}, []),
-    setNodeAnnotations: useCallback(() => {}, []),
-    setHistoryEntries: useCallback(() => {}, []),
-    setHistoryIndex: useCallback(() => {}, []),
-    setBookmarks: useCallback(() => {}, []),
-    setReportConfig: useCallback(() => {}, []),
-    setSavedSubGraphs: useCallback(() => {}, []),
-    setAiQAHistory: useCallback(() => {}, []),
-
-    // ── Add missing derived properties ──
-    filteredData: useMemo(() => ({ filteredNodes: [], filteredEdges: [] }), []),
-    lodLevel: 'full',
-    dataChanged: false,
-    detectedCommunities: useMemo(() => new Map(), []),
-    generatedCommunityColors: useMemo(() => ({}), []),
-    centralityData: useMemo(() => ({}), []),
-    sortedNodeList: useMemo(() => [], []),
-    degreeStats: useMemo(() => ({ degreeMap: new Map(), maxDegree: 0 }), []),
-    allTypes: useMemo(() => [], []),
-    typeCounts: useMemo(() => ({}), []),
-    nodeConnections: useMemo(() => ({}), []),
-    searchMatches: useMemo(() => [], []),
-    maxDegree: 0,
+    setCollapsedGroups: useCallback((g: Set<string>) => dispatch({ type: 'SET_COLLAPSED_GROUPS', payload: g }), []),
+    setAnnotations: useCallback((a: AnnotationEntry[]) => dispatch({ type: 'SET_ANNOTATIONS', payload: a }), []),
+    setGraphSnapshots: useCallback((s: Array<{ id: string; timestamp: number; label: string; nodeCount: number }>) => dispatch({ type: 'SET_GRAPH_SNAPSHOTS', payload: s }), []),
+    setImportState: useCallback((s: ImportState) => dispatch({ type: 'SET_IMPORT_STATE', payload: s }), []),
+    setNodeAnnotations: useCallback((m: Map<string, NodeAnnotation[]>) => dispatch({ type: 'SET_NODE_ANNOTATIONS', payload: m }), []),
+    setHistoryEntries: useCallback((h: HistoryEntry[]) => dispatch({ type: 'SET_HISTORY_ENTRIES', payload: h }), []),
+    setHistoryIndex: useCallback((i: number) => dispatch({ type: 'SET_HISTORY_INDEX', payload: i }), []),
+    setBookmarks: useCallback((b: GraphBookmark[]) => dispatch({ type: 'SET_BOOKMARKS', payload: b }), []),
+    setReportConfig: useCallback((c: Partial<ReportConfig>) => dispatch({ type: 'SET_REPORT_CONFIG_PARTIAL', payload: c }), []),
+    setSavedSubGraphs: useCallback((s: SubGraphResult[]) => dispatch({ type: 'SET_SAVED_SUBGRAPHS', payload: s }), []),
+    setAiQAHistory: useCallback((h: AIQARecord[]) => dispatch({ type: 'SET_AI_QA_HISTORY', payload: h }), []),
+    // ── Derived properties（真实计算，来自本 hook 上方的 useMemo）──
+    filteredData: renderableData,
+    lodLevel,
+    dataChanged,
+    detectedCommunities: state.communities,
+    generatedCommunityColors: state.communityColors,
+    centralityData,
+    sortedNodeList,
+    degreeStats,
+    allTypes,
+    typeCounts,
+    nodeConnections,
+    searchMatches,
+    maxDegree: degreeStats.maxDegree,
   }
 }

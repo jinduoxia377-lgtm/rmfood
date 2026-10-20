@@ -4,6 +4,7 @@
 import type { FC } from 'react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Plus, TestTubes, Clock, Brain, Database, ArrowRight, Pencil, Trash2, Check, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Modal, Input } from '@/components/ui'
 
@@ -14,6 +15,9 @@ interface Action {
   icon: React.ComponentType<{ size?: number; className?: string }>
   title: string
   desc: string
+  /** 可选翻译 key（默认快捷项用；用户自定义项为空则显示原 title） */
+  titleKey?: string
+  descKey?: string
   iconBg: string
   iconColor: string
 }
@@ -23,7 +27,9 @@ const DEFAULT_ACTIONS: Action[] = [
     to: '/formulas/new',
     icon: Plus,
     title: '新建配方',
+    titleKey: 'pages.dashboard.cards.newFormula',
     desc: '药食同源配方',
+    descKey: 'pages.dashboard.cards.formulaDesc',
     iconBg: 'bg-primary-100 dark:bg-primary-300/25',
     iconColor: 'text-primary-700 dark:text-primary-700',
   },
@@ -31,7 +37,9 @@ const DEFAULT_ACTIONS: Action[] = [
     to: '/experiments',
     icon: TestTubes,
     title: '实验管理',
+    titleKey: 'pages.dashboard.cards.experimentManagement',
     desc: '查看所有实验',
+    descKey: 'pages.dashboard.cards.viewAllExperiments',
     iconBg: 'bg-secondary-100 dark:bg-secondary-300/25',
     iconColor: 'text-secondary-600 dark:text-secondary-700',
   },
@@ -39,7 +47,9 @@ const DEFAULT_ACTIONS: Action[] = [
     to: '/formulas?status=pending_review',
     icon: Clock,
     title: '待审核配方',
+    titleKey: 'pages.dashboard.cards.pendingReview',
     desc: '审核配方方案',
+    descKey: 'pages.dashboard.cards.reviewFormulaPlan',
     iconBg: 'bg-warning-100 dark:bg-warning-300/25',
     iconColor: 'text-warning-600 dark:text-warning-700',
   },
@@ -47,7 +57,9 @@ const DEFAULT_ACTIONS: Action[] = [
     to: '/ai',
     icon: Brain,
     title: 'AI智能助手',
+    titleKey: 'pages.dashboard.cards.aiAssistant',
     desc: '配方生成/分析',
+    descKey: 'pages.dashboard.cards.formulaGenAnalysis',
     iconBg: 'bg-accent-100 dark:bg-accent-300/25',
     iconColor: 'text-accent-600 dark:text-accent-700',
   },
@@ -55,6 +67,7 @@ const DEFAULT_ACTIONS: Action[] = [
     to: '/databases',
     icon: Database,
     title: '数据库检索',
+    titleKey: 'pages.dashboard.cards.databaseSearch',
     desc: 'TCMSP / DFBP',
     iconBg: 'bg-info-100 dark:bg-info-300/25',
     iconColor: 'text-info-600 dark:text-info-600',
@@ -78,6 +91,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 }
 
 export const QuickActions: FC = () => {
+  const { t } = useTranslation()
   const [actions, setActions] = useState<Action[]>([])
   const [editMode, setEditMode] = useState(false)
   // C-04: 自定义入口 Modal 表单（替代 4 次 prompt()）
@@ -129,7 +143,7 @@ export const QuickActions: FC = () => {
     const newAction: Action = {
       to,
       icon,
-      title: draft.title.trim() || '自定义入口',
+      title: draft.title.trim() || t('pages.dashboard.cards.customEntry'),
       desc: draft.desc.trim(),
       iconBg: 'bg-accent-100 dark:bg-accent-300/25',
       iconColor: 'text-accent-600 dark:text-accent-700',
@@ -142,20 +156,23 @@ export const QuickActions: FC = () => {
     saveActions(actions.filter((_, i) => i !== index))
   }
 
+  const actionTitle = (a: Action) => (a.titleKey ? t(a.titleKey) : a.title)
+  const actionDesc = (a: Action) => (a.descKey ? t(a.descKey) : a.desc)
+
   return (
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">快捷操作</CardTitle>
+          <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{t('pages.dashboard.cards.quickActions')}</CardTitle>
           {/* A-10：原 min-h-[24px] 实测命中区仅 48×24，低于 WCAG 2.5.5 的 44×44。
               抬到 44px 高，用 -my-3.5 / -mx-2 的负外边距抵消，保持视觉位置不变。 */}
           <button
             onClick={() => setEditMode(!editMode)}
             className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors flex items-center gap-1 min-h-[44px] px-2 -mx-2 -my-3.5"
-            aria-label={editMode ? '完成编辑' : '编辑快捷操作'}
+            aria-label={editMode ? t('pages.dashboard.cards.editQuickActions') : t('pages.dashboard.cards.editQuickActions')}
           >
             {editMode ? <Check size={12} /> : <Pencil size={12} />}
-            {editMode ? '完成' : '编辑'}
+            {editMode ? t('pages.dashboard.cards.finish') : t('pages.dashboard.cards.edit')}
           </button>
         </div>
       </CardHeader>
@@ -171,8 +188,8 @@ export const QuickActions: FC = () => {
                   <action.icon size={16} className={action.iconColor} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-neutral-900 dark:text-white text-sm truncate">{action.title}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{action.desc}</p>
+                  <p className="font-medium text-neutral-900 dark:text-white text-sm truncate">{actionTitle(action)}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{actionDesc(action)}</p>
                 </div>
                 <ArrowRight size={14} className="text-neutral-600 dark:text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors" />
               </Link>
@@ -180,7 +197,7 @@ export const QuickActions: FC = () => {
                 <button
                   onClick={(e) => { e.preventDefault(); handleDelete(idx) }}
                   className="absolute top-1 right-1 p-1 rounded bg-error-100 dark:bg-error-300/30 text-error-600 dark:text-error-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="删除"
+                  title={t('pages.dashboard.cards.delete')}
                 >
                   <Trash2 size={12} />
                 </button>
@@ -193,7 +210,7 @@ export const QuickActions: FC = () => {
               className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-700 dark:hover:border-primary-500 dark:hover:text-primary-600 transition-colors text-sm"
             >
               <Plus size={14} />
-              添加快捷入口
+              {t('pages.dashboard.cards.addQuickEntry')}
             </button>
           )}
         </div>
@@ -203,36 +220,36 @@ export const QuickActions: FC = () => {
       <Modal
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="添加快捷入口"
+        title={t('pages.dashboard.cards.addQuickEntry')}
         maxWidth="max-w-md"
       >
         <div className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">跳转路径 *</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('pages.dashboard.cards.jumpPath')}</label>
             <Input
               value={draft.to}
               onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
-              placeholder="如 /formulas"
+              placeholder={t('pages.dashboard.cards.pathPlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">标题</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('pages.dashboard.cards.title')}</label>
             <Input
               value={draft.title}
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-              placeholder="自定义入口"
+              placeholder={t('pages.dashboard.cards.customEntry')}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">描述</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('pages.dashboard.cards.desc')}</label>
             <Input
               value={draft.desc}
               onChange={(e) => setDraft((d) => ({ ...d, desc: e.target.value }))}
-              placeholder="可选"
+              placeholder={t('pages.dashboard.cards.optional')}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">图标</label>
+            <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('pages.dashboard.cards.icon')}</label>
             <select
               value={draft.iconKey}
               onChange={(e) => setDraft((d) => ({ ...d, iconKey: e.target.value }))}
@@ -244,13 +261,13 @@ export const QuickActions: FC = () => {
             </select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" size="sm" onClick={() => setShowAddModal(false)}>取消</Button>
+            <Button variant="secondary" size="sm" onClick={() => setShowAddModal(false)}>{t('common.cancel')}</Button>
             <Button
               size="sm"
               disabled={!draft.to.trim()}
               onClick={handleConfirmAdd}
             >
-              添加
+              {t('pages.dashboard.cards.add')}
             </Button>
           </div>
         </div>

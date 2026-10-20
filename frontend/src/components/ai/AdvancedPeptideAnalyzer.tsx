@@ -88,6 +88,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
   // 组件挂载时自动加载历史
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHistory()
   }, [loadHistory])
 
@@ -267,7 +268,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
   )
 
   const renderPropertyGrid = (props: Record<string, any>) => (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
       {Object.entries(props).map(([key, value]) => (
         <div key={key} className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] capitalize">{key.replace(/_/g, ' ')}</div>
@@ -289,30 +290,43 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white">高级肽分析引擎</h2>
-            <p className="text-white/80 text-sm">二级结构预测 · Pareto 优化 · 协同效应 · 溶解度建模</p>
+            <p className="text-white/80 text-sm">
+              二级结构预测 · 理化性质 · 安全性评分
+              <span className="text-white/50">（批量 / Pareto / 协同 / 溶解度模式后端未实现，已禁用）</span>
+            </p>
           </div>
         </div>
 
         {/* Mode Tabs */}
+        {/* ready=false 的 4 个模式后端还没有对应端点，必须显式禁用，
+            否则用户点进去只看到"即将上线"，误以为功能已完成。 */}
         <div className="flex gap-2 mt-5 flex-wrap">
           {[
-            { id: 'single', icon: Microscope, label: '深度分析' },
-            { id: 'batch', icon: Layers, label: '批量分析' },
-            { id: 'pareto', icon: Target, label: 'Pareto 优化' },
-            { id: 'synergy', icon: Dna, label: '协同分析' },
-            { id: 'solubility', icon: FlaskConical, label: '溶解度曲线' },
-          ].map(({ id, icon: Icon, label }) => (
+            { id: 'single', icon: Microscope, label: '深度分析', ready: true },
+            { id: 'batch', icon: Layers, label: '批量分析', ready: false },
+            { id: 'pareto', icon: Target, label: 'Pareto 优化', ready: false },
+            { id: 'synergy', icon: Dna, label: '协同分析', ready: false },
+            { id: 'solubility', icon: FlaskConical, label: '溶解度曲线', ready: false },
+          ].map(({ id, icon: Icon, label, ready }) => (
             <button
               key={id}
               onClick={() => setActiveMode(id as 'single' | 'batch' | 'pareto' | 'synergy' | 'solubility')}
+              disabled={!ready}
+              title={ready ? undefined : '该模式后端端点尚未实现，暂不可用'}
+              aria-disabled={!ready}
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeMode === id
                   ? 'bg-white dark:bg-neutral-900 text-accent-600 shadow-md'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  : ready
+                    ? 'bg-white/10 text-white hover:bg-white/20'
+                    : 'bg-white/5 text-white/40 cursor-not-allowed'
               }`}
             >
               <Icon className="w-4 h-4" />
               {label}
+              {!ready && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50">规划中</span>
+              )}
             </button>
           ))}
         </div>
@@ -609,7 +623,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                   {result.secondary_structure && (
                     <div className="space-y-4">
                       {/* Structure Percentages */}
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
                           { type: 'α-Helix', percent: result.secondary_structure.percentages?.alpha_helix ?? 0, color: 'red' },
                           { type: 'β-Sheet', percent: result.secondary_structure.percentages?.beta_sheet ?? 0, color: 'blue' },
@@ -710,7 +724,13 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                           {sa.risk_level === 'high' && <AlertTriangle className="w-6 h-6 text-error-500" />}
                           <div>
                             <div className="font-semibold">安全等级: {sa.risk_level?.toUpperCase() ?? '-'}</div>
-                            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">评分: {(sa.safety_score ?? 0 * 100).toFixed(1)}%</div>
+                            <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                              {/* safety_score 是 0-1 尺度（后端 advanced_peptide_analyzer.py:884，
+                                  阈值 0.8/0.5 对应 low/medium/high），展示为百分数必须 ×100。
+                                  原写法 `sa.safety_score ?? 0 * 100` 因 ?? 优先级低于 * 等价于
+                                  `sa.safety_score ?? 0`，0.85 会显示成 "0.85%"，比真实值小 100 倍。 */}
+                              评分: {((sa.safety_score ?? 0) * 100).toFixed(1)}%
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -727,7 +747,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         {[
                           { label: '免疫原性风险', value: sa.immunogenicity_risk },
                           { label: '过敏风险', value: sa.allergenicity_risk },
@@ -769,12 +789,15 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
           </div>
         )}
 
-        {/* Other modes placeholder */}
+        {/* 非 single 模式的兜底展示。模式按钮已 disabled，正常流程进不来；
+            保留是为了状态被外部改动时不渲染空白。 */}
         {activeMode !== 'single' && (
           <div className="text-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <Atom className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <h3 className="text-lg font-medium mb-2">功能开发中</h3>
-            <p className="text-sm">"{activeMode}" 模式即将上线</p>
+            <h3 className="text-lg font-medium mb-2 text-[color:var(--text-body)] dark:text-[color:var(--text-primary)]">
+              「{activeMode}」模式后端尚未实现
+            </h3>
+            <p className="text-sm">该模式对应的服务端端点不存在，已禁用对应按钮，请勿通过其它方式进入。</p>
             <button
               onClick={() => setActiveMode('single')}
               className="mt-4 px-4 py-2 text-accent-600 hover:bg-accent-50 rounded-lg"

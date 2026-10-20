@@ -10,7 +10,7 @@
  */
 
 import { logger } from '@/utils/safeLogger'
-import { eventBusV2, type PipeHandler } from './EventBusV2'
+import { eventBusV2 } from './EventBusV2'
 import type { EventType, EventPayloadMap } from './eventBus'
 import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 import { userProfileManager } from './userProfileService'

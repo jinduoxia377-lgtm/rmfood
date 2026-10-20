@@ -6,7 +6,6 @@ interface ContraindicationWarningProps {
 
 export function ContraindicationWarning({ contraindications }: ContraindicationWarningProps) {
   if (!contraindications) return null
-  const items = Array.isArray(contraindications) ? contraindications : [contraindications]
 
   return (
     <div className="p-4 rounded-xl flex items-start gap-3 bg-warning-500/8 dark:bg-warning-500/14">

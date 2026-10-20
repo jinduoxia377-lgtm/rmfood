@@ -7,7 +7,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Card } from '@/components/ui'
 import {
   Lightbulb, TrendingUp, AlertTriangle, CheckCircle, DollarSign,
-  Heart, RefreshCw, ChevronDown, ChevronUp, Sparkles,
+  Heart, ChevronDown, ChevronUp, Sparkles,
   Eye, Undo2, Clock, X, Check, ArrowRight, AlertCircle,
 } from 'lucide-react'
 
@@ -80,12 +80,10 @@ const MAX_HISTORY_SIZE = 5
 export function OptimizationAdvisor({
   formula,
   onApplySuggestion,
-  onApplyAll,
   onRevert,
 }: OptimizationAdvisorProps) {
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set())
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<string>>(new Set())
-  const [isGenerating, setIsGenerating] = useState(false)
   const [previewSuggestion, setPreviewSuggestion] = useState<OptimizationSuggestion | null>(null)
   const [confirmSuggestion, setConfirmSuggestion] = useState<OptimizationSuggestion | null>(null)
   const [suggestionHistory, setSuggestionHistory] = useState<SuggestionHistoryEntry[]>([])
@@ -96,6 +94,7 @@ export function OptimizationAdvisor({
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as SuggestionHistoryEntry[]
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSuggestionHistory(parsed)
       } catch {
         localStorage.removeItem(STORAGE_KEY)
@@ -770,7 +769,7 @@ interface SuggestionPreviewPanelProps {
   onCancel: () => void
 }
 
-function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCancel }: SuggestionPreviewPanelProps) {
+function SuggestionPreviewPanel({ preview, onConfirm, onCancel }: SuggestionPreviewPanelProps) {
   return (
     <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-secondary-50 dark:bg-secondary-300/20 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
@@ -807,7 +806,7 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
 
         <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg">
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">预估评分变化：</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {Object.entries(preview.estimatedScoreChange).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between">
                 <span className="text-xs text-neutral-600 dark:text-neutral-400">
@@ -847,7 +846,7 @@ interface SuggestionConfirmDialogProps {
   onCancel: () => void
 }
 
-function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: SuggestionConfirmDialogProps) {
+function SuggestionConfirmDialog({ suggestion, onConfirm, onCancel }: SuggestionConfirmDialogProps) {
   const isSafetyRelated = suggestion.type === 'safety' || suggestion.priority === 'high'
 
   return (
@@ -1005,7 +1004,6 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
         {dimensions.map(({ key, label, icon: Icon, color }) => {
           const score = scores[key]
           const level = getScoreLevel(score)
-          const colorClass = `text-${color}-500`
 
           return (
             <div key={key} className="flex items-center gap-3">

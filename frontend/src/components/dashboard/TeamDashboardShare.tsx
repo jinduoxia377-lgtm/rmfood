@@ -6,11 +6,11 @@
  * - 查看共享状态
  */
 import { useState, useEffect } from 'react'
-import { Users, Share2, UserPlus, X, Check, Shield, Edit, Eye, Lock } from 'lucide-react'
+import { Users, Share2, UserPlus, Shield, Edit, Eye, Lock } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Badge } from '@/components/ui'
 import type { DashboardLayout, AccessLevel } from '@/config/dashboard'
 import DashboardConfigManager from '@/config/dashboard'
-import { RBAC, PermissionAction } from '@/utils/rbac'
+import { RBAC } from '@/utils/rbac'
 import { useAuthStore } from '@/stores/auth'
 
 interface TeamDashboardShareProps {
@@ -42,8 +42,6 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
 
   // 检查权限
   const canShare = RBAC.canShare(currentUserAccessLevel)
-  const canManagePermissions = RBAC.canManagePermissions(currentUserAccessLevel)
-  const canRemoveShare = RBAC.canManagePermissions(currentUserAccessLevel)
 
   useEffect(() => {
     // 模拟获取团队成员列表
@@ -53,6 +51,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
       { id: 'user3', name: '王五', email: 'wangwu@example.com', avatar: 'https://ui-avatars.com/api/?name=王五&background=random' },
       { id: 'user4', name: '赵六', email: 'zhaoliu@example.com', avatar: 'https://ui-avatars.com/api/?name=赵六&background=random' },
     ]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUsers(mockUsers)
   }, [])
 
@@ -76,18 +75,6 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
       setNewUserEmail('')
       setNewUserAccess('view')
     }
-  }
-
-  const handleRemoveShare = (shareId: string) => {
-    DashboardConfigManager.removeShare(dashboard.id, shareId)
-    const updatedDashboard = DashboardConfigManager.getCurrentLayout()
-    onUpdate(updatedDashboard)
-  }
-
-  const handleUpdateAccess = (shareId: string, accessLevel: AccessLevel) => {
-    DashboardConfigManager.updateShareAccess(dashboard.id, shareId, accessLevel)
-    const updatedDashboard = DashboardConfigManager.getCurrentLayout()
-    onUpdate(updatedDashboard)
   }
 
   const getAccessIcon = (accessLevel: AccessLevel) => {

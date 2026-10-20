@@ -639,7 +639,7 @@ export class ChatService implements IChatService {
           throw new Error(`认证失败 (401): ${errorText || '未授权访问'}`);
         }
 
-      case 429:
+      case 429: {
         const resetHeader = response.headers.get('X-RateLimit-Reset');
         const remainingHeader = response.headers.get('X-RateLimit-Remaining');
         const limitHeader = response.headers.get('X-RateLimit-Limit');
@@ -652,12 +652,13 @@ export class ChatService implements IChatService {
 
         this.stateMachine.transition(ChatState.RateLimited);
         throw new Error(`请求过于频繁 (429): 剩余 ${this.rateLimitInfo.remaining} 次`);
+      }
 
       case 400:
       case 422:
         throw new Error(`客户端错误 (${response.status}): ${errorText}`);
 
-      case 403:
+      case 403: {
         // 区分 CSRF token 缺失 vs 真正的权限不足
         const isCsrfError = errorText.includes('CSRF') || errorText.includes('csrf');
         if (isCsrfError) {
@@ -671,6 +672,7 @@ export class ChatService implements IChatService {
           }
         }
         throw new Error(`权限不足 (${response.status}): ${errorText}`);
+      }
 
       default:
         if (response.status >= 500) {
@@ -685,6 +687,7 @@ export class ChatService implements IChatService {
   }
 
   private handleError(error: Error, _question: string): void {
+    void _question;
     this.lastError = error;
     this.lastClassifiedError = this.classifyError(error);
     this.stateMachine.transition(ChatState.Error);
@@ -852,6 +855,7 @@ export class ChatService implements IChatService {
     // 从 auth store 读取认证状态
     try {
       // 动态导入避免循环依赖
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { useAuthStore } = require('@/stores/auth')
       return useAuthStore.getState().isAuthenticated
     } catch {

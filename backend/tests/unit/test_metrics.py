@@ -11,7 +11,7 @@ Covers:
 """
 import pytest
 
-from app.core.metrics import (
+from app.core.observability.metrics import (
     CounterMetric,
     GaugeMetric,
     HistogramMetric,

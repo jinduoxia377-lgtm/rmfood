@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方评分组件
  * 支持5星评分、评价内容和评分统计
  */
@@ -91,11 +91,11 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
     <Card>
       <CardHeader>
         <CardTitle as="h3" className="text-base flex items-center gap-2">
-          <Star className="w-5 h-5 text-warning-500 fill-warning-500" />
+          <Star className="w-5 h-5 text-[var(--color-warning-text)]0 fill-warning-500" />
           配方评分
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-[var(--space-apple-md)]">
         {/* 评星选择 */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
@@ -115,8 +115,8 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
                   className={cn(
                     'transition-colors',
                     star <= displayRating
-                      ? 'text-warning-500 fill-warning-500'
-                      : 'text-neutral-300 dark:text-neutral-400',
+                      ? 'text-[var(--color-warning-text)]0 fill-warning-500'
+                      : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]',
                   )}
                 />
               </button>
@@ -124,22 +124,22 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
           </div>
 
           {userRating > 0 && (
-            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
+            <span className="text-lg font-semibold text-[var(--text-primary)]">
               {userRating}.0
             </span>
           )}
         </div>
 
         {/* 评分统计 */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
-            <div className="text-3xl font-bold text-warning-500">{stats.average}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="text-center p-[var(--space-apple-md)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-md)]">
+            <div className="text-3xl font-bold text-[var(--color-warning-text)]0">{stats.average}</div>
             <div className="flex items-center justify-center gap-0.5 mt-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={12}
-                  className={star <= Math.round(stats.average) ? 'text-warning-500 fill-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
+                  className={star <= Math.round(stats.average) ? 'text-[var(--color-warning-text)]0 fill-warning-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                 />
               ))}
             </div>
@@ -150,10 +150,10 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="flex items-center gap-2 text-xs">
                 <span className="w-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{star}</span>
-                <Star size={10} className="text-warning-500 fill-warning-500" />
-                <div className="flex-1 h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
+                <Star size={10} className="text-[var(--color-warning-text)]0 fill-warning-500" />
+                <div className="flex-1 h-1.5 bg-[var(--bg-tertiary)] rounded-[var(--radius-pill)] overflow-hidden">
                   <div
-                    className="h-full bg-warning-500 rounded-full"
+                    className="h-full bg-[var(--color-warning-container)]0 rounded-[var(--radius-pill)]"
                     style={{ width: `${stats.total > 0 ? (stats.distribution[star as keyof typeof stats.distribution] / stats.total) * 100 : 0}%` }}
                   />
                 </div>
@@ -167,7 +167,7 @@ export function FormulaRating({ formulaId, formulaName, onRatingChange }: Formul
 
         {/* 评价表单 */}
         {showCommentForm && userRating > 0 && (
-          <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4 space-y-3">
+          <div className="border-t border-[var(--border-color)] pt-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}

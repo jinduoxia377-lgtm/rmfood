@@ -2,21 +2,19 @@
  * Features 组件 v9 — 学术卡片风格（升级 v9）
  *
  * 升级要点（v9）：
- *   - 卡片间距 gap-3 → gap-5，增加呼吸感
- *   - 卡片 padding p-5 → p-6
- *   - 圆角 rounded-sm → rounded-md
+ *   - 卡片间距 gap-[var(--space-apple-sm)] → gap-5，增加呼吸感
+ *   - 卡片 padding p-5 → p-[var(--space-apple-lg)]
+ *   - 圆角 rounded-sm → rounded-[var(--radius-Apple-sm)]
  *   - 移除 techLabel 展示（非技术决策者无意义）
  *   - 第一排 AI 能力卡片增加"核心能力"角标
  */
 import { useState } from 'react';
 import { getFeatureIcon } from '../data/features';
 import { Reveal } from '../shared/Reveal';
-import { cn } from '@/lib/utils';
 import {
   sectionLabel, sectionTitle, sectionDesc, features, dimensionConfig,
 } from '../data/features';
 import type { Dimension } from '../data/features';
-import { Sparkles } from 'lucide-react';
 
 const dimensionOrder: Dimension[] = ['ai', 'data', 'team'];
 const coreFeatureIds = new Set(['ai-chat', 'multi-opt', 'safety']);
@@ -47,13 +45,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           </div>
         )}
 
-        <div className="p-6">
+        <div className="p-[var(--space-apple-lg)]">
           {/* 头部：图标 + 标题行 */}
-          <div className="flex items-start gap-3 mb-3">
+          <div className="flex items-start gap-[var(--space-apple-sm)] mb-[var(--space-apple-sm)]">
             <div
-              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 mt-0.5"
+              className="w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0 mt-0.5"
               style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
             >
+              {/* eslint-disable-next-line react-hooks/static-components */}
               <IconComp size={15} strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
@@ -68,16 +67,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-relaxed text-neutral-600 mb-4 min-h-[52px]">
+          <p className="text-[15px] leading-relaxed text-[var(--text-secondary)] mb-[var(--space-apple-md)] min-h-[52px]">
             {feature.desc}
           </p>
 
           {/* 流程步骤（编号列表） */}
           {feature.steps && feature.steps.length > 0 && (
             <ol className="lp-numbered">
-              {feature.steps.map((step, i) => (
-                <li key={step.label} className="text-[12px] text-neutral-600 leading-relaxed">
-                  <span className="font-medium text-neutral-700">{step.label}</span>
+              {feature.steps.map((step) => (
+                <li key={step.label} className="text-[12px] text-[var(--text-secondary)] leading-relaxed">
+                  <span className="font-medium text-[var(--text-primary)]">{step.label}</span>
                   {step.detail && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">— {step.detail}</span>}
                 </li>
               ))}
@@ -96,7 +95,7 @@ function DimensionHeader({ dimension }: { dimension: Dimension }) {
   return (
     <div className="mb-6">
       <span
-        className="lp-section-tag px-3 py-1.5 shrink-0"
+        className="lp-section-tag px-[var(--space-apple-sm)] py-1.5 shrink-0"
         style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
       >
         {labels[dimension]}
@@ -110,15 +109,15 @@ export default function Features() {
 
   return (
     <section id="features" className="py-20 lg:py-24" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
         <Reveal>
           <div className="max-w-2xl mb-12">
-            <span className="lp-section-tag block mb-3">
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">
               {sectionLabel}
             </span>
-            <h2 className="lp-h2 mb-4">
+            <h2 className="lp-h2 mb-[var(--space-apple-md)]">
               {titleLines.map((line, i) => <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>)}
             </h2>
             <p className="lp-body-sm max-w-lg" style={{ color: 'var(--color-neutral-600, #475569)' }}>

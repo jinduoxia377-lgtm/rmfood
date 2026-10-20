@@ -10,10 +10,7 @@
  * 用于：配伍分析、禁忌检测、功效预测、用量推荐
  */
 
-import { knowledgeGraph } from '../knowledge/FormulaKnowledgeGraph'
-import { EdgeType, NodeType } from '../knowledge/FormulaKnowledgeGraph'
-import type { GraphNode } from '../knowledge/FormulaKnowledgeGraph'
-import { logger } from '@/utils/safeLogger'
+import { knowledgeGraph, EdgeType } from '../knowledge/FormulaKnowledgeGraph'
 
 /* ================================================================== */
 /*  规则系统类型定义                                                    */

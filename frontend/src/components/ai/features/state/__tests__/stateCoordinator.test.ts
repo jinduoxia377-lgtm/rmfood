@@ -164,6 +164,7 @@ describe('StateCoordinator', () => {
     it('快速连续更新应该保持最终状态一致性', async () => {
       const results: Array<{ value: unknown; timestamp: number }> = []
       const listener = (newValue: unknown, _oldValue: unknown) => {
+        void _oldValue;
         results.push({ value: newValue, timestamp: Date.now() })
       }
 
@@ -269,6 +270,8 @@ describe('StateCoordinator', () => {
       let secondExecuted = false
 
       coordinator.addMiddleware('beforeSet', 'auth', (_context, _next) => {
+        void _context;
+        void _next;
         throw new Error('Test error')
       })
 

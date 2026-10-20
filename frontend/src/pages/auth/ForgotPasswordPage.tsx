@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen bg-grid flex" style={{ backgroundColor: 'var(--bg-canvas)' }}>
       {/* ══ 左侧品牌区 ══ */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950">
         {/* 分子纹理背景 */}
@@ -58,23 +58,23 @@ export default function ForgotPasswordPage() {
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-neutral-900/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--bg-secondary)]/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg">
               <Icon name="Beaker" size={28} />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">{BRAND_CONFIG.name}</h1>
-              <p className="text-primary-200/80 text-sm">{BRAND_CONFIG.fullName} v{BRAND_CONFIG.version}</p>
+              <p className="text-[var(--color-primary-text)]/80 text-sm">{BRAND_CONFIG.fullName} v{BRAND_CONFIG.version}</p>
             </div>
           </div>
 
           {/* 主体文案 */}
           <div className="max-w-lg">
-            <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-4 tracking-tight">
+            <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-[var(--space-apple-md)] tracking-tight">
               药食同源功能性食品
               <br />
-              <span className="text-primary-200">专业配方研发平台</span>
+              <span className="text-[var(--color-primary-text)]">专业配方研发平台</span>
             </h2>
-            <p className="text-primary-100/70 leading-relaxed text-[15px] max-w-md">
+            <p className="text-[var(--color-primary-text)]/70 leading-relaxed text-[15px] max-w-md">
               {BRAND_CONFIG.description}
             </p>
           </div>
@@ -82,46 +82,46 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* ══ 右侧密码找回区 ══ */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-neutral-50 dark:bg-neutral-950">
+      <div className="flex-1 flex items-center justify-center p-[var(--space-apple-lg)] sm:p-8 bg-[var(--bg-tertiary)] dark:bg-neutral-950">
         <div className="w-full max-w-md mx-auto">
           {/* 移动端 Logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
-            <div className="w-12 h-12 rounded-xl bg-primary-container text-primary-main flex items-center justify-center shadow-lg">
+          <div className="lg:hidden flex items-center gap-[var(--space-apple-sm)] mb-10 justify-center">
+            <div className="w-12 h-12 rounded-[var(--radius-Apple-md)] bg-primary-container text-[var(--color-primary)] flex items-center justify-center shadow-lg">
               <Icon name="Beaker" size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">{BRAND_CONFIG.name}</h1>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">{BRAND_CONFIG.fullName}</p>
+              <h1 className="text-xl font-bold text-[var(--text-primary)]">{BRAND_CONFIG.name}</h1>
+              <p className="text-xs text-[var(--text-muted)]">{BRAND_CONFIG.fullName}</p>
             </div>
           </div>
 
           <div className="card p-8 sm:p-10">
             <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-[var(--space-apple-md)]">
                 <Link
                   to="/login"
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition-colors"
                 >
                   <Icon name="ArrowLeft" size={16} />
                 </Link>
-                <h2 className="h2 text-neutral-900 dark:text-white">忘记密码</h2>
+                <h2 className="h2 text-[var(--text-primary)]">忘记密码</h2>
               </div>
-              <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+              <p className="text-[var(--text-muted)] text-sm">
                 请输入您的邮箱地址，我们将发送密码重置链接到您的邮箱
               </p>
             </div>
 
             {error && (
-              <div className="mb-6 p-3 rounded-xl bg-danger-50 dark:bg-danger-300/20 border border-danger-200 dark:border-danger-800/60 text-danger-700 dark:text-danger-700 text-sm flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-danger-500 shrink-0" />
+              <div className="mb-6 p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] bg-danger-50 dark:bg-danger-300/20 border border-danger-200 dark:border-danger-800/60 text-danger-700 dark:text-danger-700 text-sm flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-danger-500 shrink-0" />
                 {error}
               </div>
             )}
 
             {success ? (
-              <div className="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-300/20 border border-success-200 dark:border-success-800/60 text-primary-700 dark:text-primary-700 text-sm flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center shrink-0">
-                  <Check size={16} className="text-primary-700 dark:text-primary-700" />
+              <div className="mb-6 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] border border-[var(--color-success-border)] dark:border-[var(--color-success)]/60 text-[var(--color-primary-text)] text-sm flex items-center gap-[var(--space-apple-sm)]">
+                <div className="w-8 h-8 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30 flex items-center justify-center shrink-0">
+                  <Check size={16} className="text-[var(--color-primary-text)]" />
                 </div>
                 <div>
                   <p className="font-medium">密码重置邮件已发送</p>
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+                  <label htmlFor="email" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                     邮箱地址
                   </label>
                   <div className="relative">
@@ -163,7 +163,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
-            <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700/60 text-center">
+            <div className="mt-8 pt-6 border-t border-[var(--border-color)]/60 text-center">
               <Link
                 to="/login"
                 className="text-sm text-primary hover:text-primary-hover transition-colors"
@@ -174,7 +174,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* 底部版权 */}
-          <p className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-400">{BRAND_CONFIG.copyright}</p>
+          <p className="mt-6 text-center text-xs text-[var(--text-muted)]">{BRAND_CONFIG.copyright}</p>
         </div>
       </div>
     </div>

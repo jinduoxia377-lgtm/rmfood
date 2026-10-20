@@ -26,8 +26,6 @@ import {
   ChevronUp,
   Info,
   Zap,
-  Target,
-  Scale,
   Lightbulb,
 } from 'lucide-react'
 import { Button, Badge, Tooltip } from '@/components/ui'
@@ -116,6 +114,7 @@ function RecommendationPanel({
       selectedAlgorithm.parameters.forEach(param => {
         defaults[param.id] = param.default
       })
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParameters(defaults)
     }
   }, [selectedAlgorithm])
@@ -125,6 +124,7 @@ function RecommendationPanel({
    */
   useEffect(() => {
     const timer = setTimeout(() => {
+      // eslint-disable-next-line react-hooks/immutability
       calculateRecommendation()
     }, DEBOUNCE_MS)
 
@@ -145,6 +145,7 @@ function RecommendationPanel({
       const score = Math.random() * 40 + 60
       const confidence = Math.random() * 20 + 80
 
+      // eslint-disable-next-line react-hooks/immutability
       const explanation = generateExplanation(selectedAlgorithm.name, parameters, score)
 
       const newResult: RecommendationResult = {

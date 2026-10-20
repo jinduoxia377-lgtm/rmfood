@@ -45,6 +45,15 @@ class OperationLogger {
   private async initDB(): Promise<void> {
     if (this.initialized) return
 
+    // 环境不支持 IndexedDB（隐私模式 / 受限 WebView / 部分测试环境等）时，
+    // 降级为仅内存队列：标记 initialized 并直接返回，saveToIndexedDB 的
+    // `!this.db` 分支会跳过持久化，避免模块加载期产生未处理的 Promise rejection。
+    if (typeof indexedDB === 'undefined') {
+      this.initialized = true
+      logger.warn('[OperationLogger] IndexedDB is unavailable, persistence disabled (in-memory queue only)')
+      return
+    }
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 

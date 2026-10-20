@@ -5,10 +5,8 @@ import { exportToPDF, exportReportToPDF as pdfExportReport } from './pdfExportSe
 import {
   csvEscape,
   sanitizeCSVValue,
-  formatFilename,
   downloadBlob,
   downloadContent,
-  addBOM,
   ExportProgressTracker,
   exportHistory,
   type ExportProgress,
@@ -29,8 +27,7 @@ import {
   createStreamingExporter,
   type ExcelExportOptions,
 } from '@/utils/excelUtils'
-import { ErrorFactory, parseError } from '@/utils/errorHandler'
-import { ERROR_CODES } from '@/constants/errorCodes'
+import { ErrorFactory } from '@/utils/errorHandler'
 
 export interface ExportTask {
   id: string
@@ -554,7 +551,11 @@ function formatDate(): string {
 
 export const exportService = new ExportService()
 
-export const { exportToCSV, exportToExcel, exportToJSON } = exportService
+// 解构导出会丢失 this 绑定，独立调用（import { exportToExcel }）时 this 为 undefined 导致崩溃，
+// 必须显式 bind 到实例。
+export const exportToCSV = exportService.exportToCSV.bind(exportService)
+export const exportToExcel = exportService.exportToExcel.bind(exportService)
+export const exportToJSON = exportService.exportToJSON.bind(exportService)
 
 export {
   ExportFormat,

@@ -1,0 +1,131 @@
+/* ═══════════════════════════════════════════════════════════════
+   RMFOOD 移动端（H5 浏览器）适配硬化层
+   ═══════════════════════════════════════════════════════════════
+   目标：在组件级响应式修复之上，提供全局兜底：
+   1. 防止 iOS Safari 聚焦输入框时自动缩放（字号 <16px 触发）
+   2. 消除点击高亮与双击缩放延迟，提升触控跟手性
+   3. 小屏横向溢出安全网（避免遗漏的固定宽度元素撑出横向滚动）
+   4. 小屏下大尺寸固定宽度浮层/弹窗自动收窄到视口内
+   5. 移动端表格横向滚动顺滑（惯性滚动）
+
+   仅作用于 ≤767px 移动视口，不影响桌面/平板布局。
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 防止移动端字体大小被浏览器自动调整（iOS 横屏/旋转）── */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ── 触控优化：去除点击高亮与 300ms 双击缩放延迟 ── */
+a,
+button,
+[role="button"],
+input,
+select,
+textarea,
+label {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── 移动端输入框字号地板 16px，避免 iOS 聚焦自动缩放 ──
+   说明：iOS Safari 在 input/select/textarea 字号 <16px 时聚焦会自动放大页面。
+   将移动端输入字号统一抬到 16px 是业界标准做法（Google Material / Apple HIG），
+   既消除缩放抖动，也提升可读性。桌面端不受影响。 */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── 小屏横向溢出安全网 ──
+   说明：全局兜底。组件级修复（表格包裹 overflow-x-auto、浮层宽度收窄）为主，
+   此规则防止个别遗漏的固定宽度元素在移动端产生横向滚动。
+   使用 overflow-x: clip 而非 hidden：clip 不创建滚动容器，不会破坏
+   表格/吸顶表头的 position: sticky 行为（hidden 会）。 */
+@media (max-width: 767px) {
+  body {
+    overflow-x: clip;
+  }
+  #root {
+    overflow-x: clip;
+  }
+}
+
+/* ── 小屏固定宽度浮层/弹窗自动收窄到视口内（双保险）──
+   说明：与各组件内的响应式修改配合。若个别浮层/弹窗仍使用固定 px 宽度，
+   此规则将其收窄到 `min(原宽, 100vw - 2rem)`，保证不溢出视口。
+   300–600px 的固定宽度只会出现在浮层/弹窗/侧栏，不会用于表单控件。 */
+@media (max-width: 767px) {
+  .w-\[300px\],
+  .w-\[320px\],
+  .w-\[340px\],
+  .w-\[360px\],
+  .w-\[380px\],
+  .w-\[420px\],
+  .w-\[480px\],
+  .w-\[520px\],
+  .w-\[560px\],
+  .min-w-\[600px\] {
+    width: min(100%, calc(100vw - 2rem)) !important;
+    max-width: calc(100vw - 1rem);
+  }
+}
+
+/* ── 移动端横向滚动容器顺滑化 ── */
+@media (max-width: 767px) {
+  .overflow-x-auto,
+  .overflow-x-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ── iOS 触控细节（Apple HIG）──
+   1. 长按按钮/链接时不弹出系统 callout（复制/查询弹窗）
+   2. 快速连点按钮时避免选中按钮文字 */
+@media (max-width: 767px) {
+  a,
+  button,
+  [role="button"] {
+    -webkit-touch-callout: none;
+  }
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* ── 全站 primary 横幅移动端紧凑化 ──
+   29 个页面共用 `surface-primary rounded-[...] p-[var(--space-apple-lg)]` 横幅模式，
+   移动端 24px 内边距会产生“大色块 + 老年机”观感。此处精确收窄到 16px，
+   仅影响该组合类，不波及其它卡片。 */
+@media (max-width: 767px) {
+  .surface-primary.rounded-\[var\(--radius-Apple-md\)\].p-\[var\(--space-apple-lg\)\] {
+    padding: 16px !important;
+  }
+}
+
+/* ⚠️ 设计回归说明（2026-10-18）：
+   曾在此处加入三条“全局兜底”规则（无高度类按钮强制 min-height:44px、
+   8–10px 字号强制抬升、main > .min-h-screen 归一为 100%），
+   经设计测试验证会拉伸紧凑按钮布局、破坏密集工具栏与图表标签排版，
+   已整体移除。触控目标与超小字号问题应改为**组件级**修复，
+   避免用全局 CSS 覆盖影响既有设计。 */
+
+/* ── 移动端排版与尺寸标准化（iOS HIG，团队规范落地）── */
+@media (max-width: 767px) {
+  /* 页标题在移动端不超过 22px */
+  main h1 { font-size: 20px !important; }
+  main h2 { font-size: 18px !important; }
+  /* 卡片内边距收窄到 16px（仅常见卡片容器，避免影响表格） */
+  main .card,
+  main [class*='CardContent'],
+  main [class*='card p-'] { padding: 16px !important; }
+  /* 12px 辅助文本在移动端提升至 13px（审计建议，仅 UI 文本；桌面不变） */
+  main .text-xs { font-size: 13px !important; }
+}

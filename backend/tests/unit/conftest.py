@@ -67,10 +67,6 @@ def pytest_collection_modifyitems(items):
         "test_rate_limiting_basic",
         "test_rate_limiting_different_clients",
 
-        # ─── sql_security logger 未定义 ───
-        "test_sql_injection_prevention",
-        "test_table_name_whitelist",
-
         # ─── Exception 构造函数变更 ───
         "test_database_error_handling",
         "test_not_found_error_handling",

@@ -69,6 +69,13 @@ async def analyze_formula(
     2. 调用 ai_service 进行成分/功效/安全分析
     3. 生成综合分析报告
     """
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     try:
         # 从数据库加载配方（如果有 formula_id）
         ingredients = req.ingredients
@@ -136,6 +143,21 @@ async def get_recommendations(
     2. 基于成分相似度推荐
     3. 返回真实数据库中的配方
     """
+    # 匿名用户无历史配方，直接返回空推荐（此前 current_user.id 抛 AttributeError → 500）
+    if current_user is None:
+        return {
+            "recommendations": [],
+            "context_signals": {"anonymous": True},
+            "total": 0,
+        }
+
+    # 组织计划 AI 配额检查（超限 403）
+    try:
+        from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
+        await ensure_ai_quota(db, current_user.id)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
     try:
         from ...models.formula import Formula
         from sqlalchemy.orm import selectinload

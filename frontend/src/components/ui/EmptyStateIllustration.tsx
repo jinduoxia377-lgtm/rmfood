@@ -12,8 +12,8 @@
 import type { ReactNode } from'react'
 import { cn } from'@/lib/utils'
 import {
- FlaskConical, TestTubes, Search, Inbox, Brain, GitBranch,
- Bell, Shield, FileText, Clock, AlertTriangle, WifiOff,
+ FlaskConical, TestTubes, Search, Inbox, GitBranch,
+ Bell, Shield, FileText, Clock, WifiOff,
  Database, Sparkles, Users, PackageOpen,
 } from'lucide-react'
 

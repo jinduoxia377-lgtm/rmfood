@@ -478,9 +478,9 @@ console.log(example);
       const startTime = performance.now()
 
       for (let i = 0; i < 100; i++) {
-        markdownContent.split('\n').length
-        markdownContent.match(/```/g)?.length || 0
-        markdownContent.match(/\*\*/g)?.length || 0
+        void markdownContent.split('\n').length
+        void (markdownContent.match(/```/g)?.length || 0)
+        void (markdownContent.match(/\*\*/g)?.length || 0)
       }
 
       const endTime = performance.now()
@@ -555,5 +555,5 @@ const logger = {
   info: (...args: any[]) => console.log('[TEST]', ...args),
   warn: (...args: any[]) => console.warn('[TEST]', ...args),
   error: (...args: any[]) => console.error('[TEST]', ...args),
-  debug: (...args: any[]) => {},
+  debug: () => {},
 }

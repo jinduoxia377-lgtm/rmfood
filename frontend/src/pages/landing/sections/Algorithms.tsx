@@ -9,7 +9,6 @@
  */
 import { useState } from 'react';
 import { Reveal } from '../shared/Reveal';
-import { cn } from '@/lib/utils';
 import {
   algorithms, synergyMechanisms, performanceMetrics,
   getAlgoIcon, type Algorithm, type AlgoCategory,
@@ -34,10 +33,6 @@ const ALGO_COLORS: Record<AlgoCategory, {
   },
 };
 
-const CATEGORY_LABELS: Record<AlgoCategory, string> = {
-  optimizer: '优化算法引擎',
-};
-
 // ── 算法卡片 ─────────────────────────────────────────────────────
 function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
   const [expanded, setExpanded] = useState(false);
@@ -56,7 +51,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="rounded-md overflow-hidden transition-all duration-200"
+        className="rounded-[var(--radius-Apple-sm)] overflow-hidden transition-all duration-200"
         style={{
           border: '1px solid var(--color-neutral-200, #e2e8f0)',
           background: '#fff',
@@ -67,11 +62,12 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
 
         <div className="p-5">
           {/* 头部 */}
-          <div className="flex items-start gap-3 mb-3">
+          <div className="flex items-start gap-[var(--space-apple-sm)] mb-[var(--space-apple-sm)]">
             <div
-              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0"
               style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
             >
+              {/* eslint-disable-next-line react-hooks/static-components */}
               <IconComp size={15} strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
@@ -88,12 +84,12 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-[1.7] text-neutral-600 mb-3">
+          <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">
             {algo.desc}
           </p>
 
           {/* 技术标签 */}
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1 mb-[var(--space-apple-sm)]">
             {algo.tech.map((t) => (
               <span
                 key={t}
@@ -107,7 +103,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
 
           {/* 适用场景（展开时显示） */}
           {expanded && algo.applicable && (
-            <div className="mb-3 pt-3" style={{ borderTop: '1px solid var(--color-neutral-100, #f1f5f9)' }}>
+            <div className="mb-[var(--space-apple-sm)] pt-3" style={{ borderTop: '1px solid var(--color-neutral-100, #f1f5f9)' }}>
               <div className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">适用场景</div>
               <div className="flex flex-wrap gap-1">
                 {algo.applicable.map((s) => (
@@ -143,7 +139,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             <button
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="flex items-center gap-0.5 text-[12px] text-neutral-600 hover:text-neutral-800 transition-colors min-h-[44px] px-1"
+              className="flex items-center gap-0.5 text-[12px] text-[var(--text-secondary)] hover:text-neutral-800 transition-colors min-h-[44px] px-1"
             >
               {expanded ? '收起' : '详情'}
               {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -160,7 +156,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="rounded-md p-4"
+        className="rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-md)]"
         style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <div className="flex items-center justify-between mb-2">
@@ -178,7 +174,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
         >
           {mech.formula}
         </div>
-        <p className="text-[12px] leading-[1.65] text-neutral-600">{mech.desc}</p>
+        <p className="text-[12px] leading-[1.65] text-[var(--text-secondary)]">{mech.desc}</p>
       </div>
     </Reveal>
   );
@@ -189,14 +185,14 @@ function PerformanceTable() {
   return (
     <Reveal>
       <div
-        className="rounded-md overflow-hidden"
+        className="rounded-[var(--radius-Apple-sm)] overflow-x-auto"
         style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <table className="w-full text-[12px] border-collapse">
           <thead>
             <tr style={{ background: 'var(--color-neutral-50, #f8fafc)' }}>
               {['操作类型', 'P50', 'P95', 'P99', 'SLA 目标'].map((h) => (
-                <th key={h} className="px-3 py-2 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">
+                <th key={h} className="px-[var(--space-apple-sm)] py-2 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -205,11 +201,11 @@ function PerformanceTable() {
           <tbody>
             {performanceMetrics.map((m, i) => (
               <tr key={i} style={{ borderBottom: i < performanceMetrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
-                <td className="px-3 py-2 text-neutral-700 font-medium">{m.operation}</td>
-                <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-primary-700, #047857)' }}>{m.p50}</td>
-                <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-secondary-700, #1d4ed8)' }}>{m.p95}</td>
-                <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-warning-700, #b45309)' }}>{m.p99}</td>
-                <td className="px-3 py-2 font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.sla}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 text-[var(--text-primary)] font-medium">{m.operation}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 font-mono" style={{ color: 'var(--color-primary-700, #047857)' }}>{m.p50}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 font-mono" style={{ color: 'var(--color-secondary-700, #1d4ed8)' }}>{m.p95}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 font-mono" style={{ color: 'var(--color-warning-700, #b45309)' }}>{m.p99}</td>
+                <td className="px-[var(--space-apple-sm)] py-2 font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.sla}</td>
               </tr>
             ))}
           </tbody>
@@ -225,13 +221,13 @@ export default function Algorithms() {
 
   return (
     <section id="algorithms" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
         <Reveal>
           <div className="mb-10">
-            <span className="lp-section-tag block mb-3">算法引擎</span>
-            <h2 className="lp-h2 mb-3">
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">算法引擎</span>
+            <h2 className="lp-h2 mb-[var(--space-apple-sm)]">
               7 种优化算法 · 5 种协同机制 ·<br className="hidden sm:block" />
               亚秒级实时推理
             </h2>
@@ -247,7 +243,7 @@ export default function Algorithms() {
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-5">
               <span
-                className="lp-section-tag px-3 py-1.5 shrink-0"
+                className="lp-section-tag px-[var(--space-apple-sm)] py-1.5 shrink-0"
                 style={{ background: 'var(--color-success-50, #ecfdf5)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #a7f3d0)' }}
               >
                 优化算法引擎
@@ -267,7 +263,7 @@ export default function Algorithms() {
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-5">
               <span
-                className="lp-section-tag px-3 py-1.5 shrink-0"
+                className="lp-section-tag px-[var(--space-apple-sm)] py-1.5 shrink-0"
                 style={{ background: 'var(--color-success-50, #f0fdf4)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #bbf7d0)' }}
               >
                 协同机制
@@ -287,7 +283,7 @@ export default function Algorithms() {
           <div className="mb-2">
             <div className="flex items-center gap-2 mb-5">
               <span
-                className="lp-section-tag px-3 py-1.5 shrink-0"
+                className="lp-section-tag px-[var(--space-apple-sm)] py-1.5 shrink-0"
                 style={{ background: 'var(--color-secondary-50, #eff6ff)', color: 'var(--color-secondary-700, #1d4ed8)', border: '1px solid var(--color-secondary-200, #bfdbfe)' }}
               >
                 性能基准

@@ -1,9 +1,110 @@
 # RMFOODFP 云服务器部署报告
 
 **部署完成时间**: 2026-09-30
-**最后迭代更新**: 2026-10-09（全量主题令牌化迭代 + 数据库核心业务数据补全 + user-key 空指针修复）
+**最后迭代更新**: 2026-10-17（数据检索中心全量数据补齐 + RMCHM/CFAM 检索 API 与前端"官方目录"Tab 上线）
 **服务器**: 百度云服务器 `106.12.20.131` (Ubuntu 24.04, 2C4G + 2GB swap)
 **部署方式**: Docker Compose (4 容器)
+
+---
+
+## RMCHM/CFAM 检索 API 与前端 Tab 上线（2026-10-17 第二轮）
+
+在数据补齐基础上，完成 RMCHM/CFAM 的数据消费端接入：
+
+### 后端
+- 新增 ORM 模型：`RMCHMHerb` / `CFAMHerb`（`backend/app/models/database_extras.py`）
+- 新增 API 模块：`backend/app/api/db_modules/database_extras.py`，注册到 `/databases` 前缀：
+  - `GET /api/v1/databases/rmchm/herbs`（关键词/分类/药食同源过滤 + 分页）
+  - `GET /api/v1/databases/rmchm/herbs/{id}`（详情，含化合物/靶点/疾病 JSONB）
+  - `GET /api/v1/databases/rmchm/stats`（总量/药食同源/毒性/分类分布）
+  - `GET /api/v1/databases/cfam/herbs`（关键词/公告批次过滤 + 分页）
+  - `GET /api/v1/databases/cfam/herbs/{id}`（详情）
+  - `GET /api/v1/databases/cfam/stats`（总量/公告批次分布）
+- `cfam_herbs` 表补 `name_en`/`category` 列
+- `databases.py` 补挂载 `database_extras` 与 `compounds` 子模块
+
+### 前端
+- `frontend/src/api/database.ts`：新增 RMCHM/CFAM API 方法与类型
+- 新增 `frontend/src/pages/database/tabs/ExtDatabaseTab.tsx`："官方目录" Tab（RMCHM 中药材库 + CFAM 药食同源双面板，支持搜索/分页/统计）
+- `DatabasePage.tsx`：注册 `ext` Tab（标签"官方目录"，图标 Leaf）
+
+### 验证（16/16 全通过）
+- 前端：`/`、新入口 `index-C2RUPaCi.js`、`sw.js` 200，0 外链 Google Fonts
+- 新 API：`rmchm/herbs`、`rmchm/stats`、`cfam/herbs`、`cfam/stats` 全 200
+- 检索中心：`herbs`、`symmap`、`compounds`、`targets`、`diseases`、`kg-stats`、`unified-search` 全 200
+- 容器 4/4 healthy
+
+---
+
+## 数据检索中心数据补齐（2026-10-17）
+
+**背景**：用户反馈数据检索中心（`/databases`）存在数据缺失。核查发现：仅药材/食材/术语基础表有数据，化合物、靶点、疾病、SymMap 药材、知识图谱等 6 大维度全空，且 `compounds/targets/diseases` 后端路由未注册（前端调用 404）。
+
+### 本次补齐内容（全部真实数据，无 mock）
+
+| 表 | 补齐前 | 补齐后 | 数据源 |
+|:--|:--|:--|:--|
+| `symmap_herbs` | 0 | **698** | SymMap v2.0 真实数据（`data/SymMap/symmap_herbs.json`） |
+| `tcm_compounds` | 0 | **26035** | SymMap v2.0 分子库（`symmap_ingredients.json`） |
+| `tcm_targets` | 0 | **20963** | SymMap v2.0 靶点库（`symmap_targets.json`） |
+| `tcm_diseases` | 0 | **13244** | SymMap v2.0 疾病库（`symmap_diseases.json`，去重后） |
+| `rmchm_herbs` | 表不存在 | **714** | 本地 RMCHM 合并数据 `rmchm_merged_herbs_v324.json`（含化合物/靶点/疾病 JSONB 关联） |
+| `cfam_herbs` | 表不存在 | **106** | 国家卫健委官方药食同源目录 `cfam_complete_import.sql` |
+| `kg_nodes` | 0 | **395** | 基于 tcm_herbs(387)+diseases(8) 重建知识图谱 |
+| `kg_edges` | 0 | **214** | 图谱 treats 关系边 |
+
+### 修复的问题
+
+| # | 问题 | 根因 | 修复 |
+|:--|:-----|:-----|:-----|
+| 1 | `/api/v1/databases/compounds` `/targets` `/diseases` 未注册 | `app/api/databases.py` 未 import `db_modules/compounds` 子模块 | 补充 `from .db_modules import compounds`，重建后端 |
+| 2 | 化合物名超 varchar(200)（83条） | SymMap 部分 IUPAC 长名超列宽 | 截断到列宽后导入（数据完整） |
+| 3 | 靶点名称为空（1192条） | SymMap 靶点缺 Gene_name | 回退用 `gene_symbol` 填充 name |
+| 4 | RMCHM 导入时间字段失败 | `synced_at`/`created_at` ISO 字符串需转 datetime | 增加 `parse_dt` 解析 |
+| 5 | RMCHM `use_part` 超 varchar(100)（2条） | `truncate_text` 截断后再加 "..." 超长 | 截断到 `max_len-3` |
+
+### 验证结果（10/10 全通过）
+
+- 容器 4/4 healthy
+- `/databases/herbs` `herbs/symmap` `compounds` `targets` `diseases` `knowledge-graph/stats` `unified-search` `dashboard/overview` `food-materials` 全 200
+- `unified-search?keyword=人参` 返回真实药材结果
+- 数据行数：symmap_herbs=698, tcm_compounds=26035, tcm_targets=20963, tcm_diseases=13244, rmchm_herbs=714, cfam_herbs=106, kg_nodes=395, kg_edges=214
+
+### 遗留说明
+
+- **多肽维度**（`peptides`/`bioactive_peptides`）：本地无权威 DFBP 数据源，暂未导入（此前已说明）
+- **关联表**（`tcm_herb_compounds`/`tcm_compound_targets`/`tcm_target_diseases`）：SymMap 数据源无 herb-mol/target-disease 直接关联文件，待后续有权威关联数据或 RMCHM 关联映射时补充
+- ✅ **RMCHM/CFAM 前端接入已完成**：模型 + 检索 API + 前端"官方目录"Tab 已上线（见本报告首节）
+
+---
+
+## 迭代更新（2026-10-16）
+
+**本次迭代**：最新代码全量同步部署（前端 + 后端 + 数据库 schema 完整覆盖，无遗漏）。
+
+| 层 | 变更 | 状态 |
+|:--|:--|:--|
+| 前端 | 最新迭代（AI 机器人/任务团队/群聊协作前端 + 旧组件清理等 39 修改 + 大量删除）；`tsc` 通过 → `vite build` 成功（183 chunks，入口 `index-7Ie83ABs.js`，0 Google Fonts） | ✅ dist tar 上传 + web 镜像烘焙 + `--force-recreate` 上线，`/` entry sw.js 全 200 |
+| 后端 | **整目录全量同步**（app 776 py + alembic + scripts + ml_artifacts + static + data），新增多智能体/任务团队/MCP/文档抽取/TOTP/用量统计等 ~50 新文件 + 7 个新迁移 | ✅ 24 文件体系全量覆盖 + Dockerfile 增加 `ml_artifacts/static/data` COPY + 镜像重建 healthy |
+| 数据库 | 新建 9 张新迭代表（`ai_bots`/`ai_bot_memories`/`ai_bot_group_sessions`/`ai_bot_group_members`/`ai_bot_group_messages`/`ai_mcp_servers`/`ai_task_groups`/`ai_bot_usage`/`document_extractions`）+ 补齐 18 个缺失列（users 7 列 2FA/资料、experiments 分享列、knowledge_graph_nodes 5 列等）+ 修复 2 个模型 bug + 补建 `analytics_scheduler_jobs` | ✅ 104 张表全部就绪 |
+
+**部署中发现并修复的问题**：
+
+| # | 问题 | 根因 | 修复 |
+|:--|:-----|:-----|:-----|
+| 1 | 后端容器 `exec format error` 重启循环 | 上传的 `start.sh` 带 Windows CRLF + UTF-8 BOM，Linux 内核无法解析 shebang | `sed -i` 去除 CRLF + BOM，重新构建镜像 |
+| 2 | 后端启动崩溃 `TypeError: object of type 'int' has no len()` | 同步了本地开发 chromadb 向量库（`data/chromadb`），与容器内 chromadb 0.5.0 不兼容 | 清空生产 `data/chromadb`（生产由 chromadb 自建空库） |
+| 3 | `peptide_batch_coas` 建表失败 `column "judgment" does not exist` | 模型 `PeptideBatchCOA.__table_args__` 的 CheckConstraint 引用了**子表** `coa_test_items.judgment` 列（历史模型 bug） | 移除错误约束（judgment 列在 COATestItem 已定义） |
+| 4 | `tcm_herbs_pd` 建表失败 `column "e_max" does not exist` | 模型列名 `E_max`/`EC50`/`Hill` 大写，CheckConstraint 引用被 PostgreSQL 折叠为小写与列名不匹配 | 列显式映射小写 `e_max`/`ec50`/`hill` + 约束同步 |
+| 5 | `ga_candidate_records` 建表失败 | 旧库 `ga_run_records.run_id` 无唯一约束，外键无法引用 | `ALTER TABLE ga_run_records ADD CONSTRAINT uq_ga_run_records_run_id UNIQUE (run_id)` |
+
+**数据库 schema 全量对齐**：通过容器内 SQLAlchemy 对比全部 ORM 模型列 vs 实际库列，逐表幂等补建（每表独立事务 + savepoint），最终 **104 张表**与模型完全一致（此前 74 张，本轮 +30）。
+
+**服务端验证（17/17 全通过）**：
+- 4 容器 healthy；`/` `/health` `/api/v1/health`、入口 `index-7Ie83ABs.js`、`sw.js` 全 200；0 Google Fonts
+- 登录 admin 成功；`databases/herbs` `databases/food-materials` `databases/peptides` `terminology/terms` `ingredients/food-homology` 全 200
+- `ai/models/user-key` `config/llm` `status` 全 200
+- 数据库 104 张表；新迭代 9 张表 + 18 列 + `analytics_scheduler_jobs` 全部就绪
 
 ---
 
@@ -142,7 +243,7 @@
 
 | 容器 | 状态 | 说明 |
 |:-----|:-----|:-----|
-| rmfood_postgres | healthy | PostgreSQL 16, 74 张业务表（9 张核心表已补全 1672 条数据） |
+| rmfood_postgres | healthy | PostgreSQL 16, 104 张业务表（全量模型对齐） |
 | rmfood_redis | healthy | Redis 7, AOF 持久化 |
 | rmfood_backend | healthy | FastAPI, 2 workers :8000 |
 | rmfood_web | healthy | Nginx 1.25, 前端静态 + 反向代理 |

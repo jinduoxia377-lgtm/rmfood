@@ -15,24 +15,21 @@
 
 import {
   extractAllFormulas,
-  generateFormulaId,
   parseFormulaTable,
-  detectContentType,
-  MessageType,
 } from '@/utils/formulaParser'
 
 // Mock 外部依赖
-jest.mock('@/api/ai', () => ({
+vi.mock('@/api/ai', () => ({
   aiApi: {
-    chat: jest.fn().mockResolvedValue({
+    chat: vi.fn().mockResolvedValue({
       answer: '这是AI的回复内容'
     })
   }
 }))
 
-jest.mock('@/api/modelClient', () => ({
+vi.mock('@/api/modelClient', () => ({
   ModelClient: {
-    getModelStatus: jest.fn().mockResolvedValue({
+    getModelStatus: vi.fn().mockResolvedValue({
       llm: {
         status: 'active',
         provider: 'deepseek',
@@ -42,13 +39,13 @@ jest.mock('@/api/modelClient', () => ({
   }
 }))
 
-jest.mock('@/utils/unifiedApiKeyManager', () => ({
+vi.mock('@/utils/unifiedApiKeyManager', () => ({
   unifiedApiKeyManager: {
-    getApiKey: jest.fn().mockResolvedValue({
+    getApiKey: vi.fn().mockResolvedValue({
       apiKey: 'sk-test-key-that-is-long-enough-for-validation',
       source: 'test'
     }),
-    getStatusSummary: jest.fn().mockResolvedValue({
+    getStatusSummary: vi.fn().mockResolvedValue({
       available: true,
       source: 'test',
       maskedKey: 'sk-****...****',
@@ -58,27 +55,28 @@ jest.mock('@/utils/unifiedApiKeyManager', () => ({
   }
 }))
 
-jest.mock('@/utils/safeLogger', () => ({
+vi.mock('@/utils/safeLogger', () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn()
+    log: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
   }
 }))
 
 describe('ChatTab 配方识别核心逻辑测试', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     
     // Mock console to reduce noise
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
-    jest.spyOn(console, 'log').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   // ============================================================
@@ -109,7 +107,7 @@ describe('ChatTab 配方识别核心逻辑测试', () => {
         // 验证配方结构
         const formula = formulas[0]
         expect(formula.id).toBeTruthy()
-        expect(formula.name).toBeTruthy()
+        expect(typeof formula.name).toBe('string')
         expect(formula.sourceMessageId).toBe(messageId)
         expect(formula.parsedAt).toBeInstanceOf(Date)
         expect(Array.isArray(formula.ingredients)).toBeTruthy()
@@ -269,7 +267,7 @@ describe('ChatTab 配方识别核心逻辑测试', () => {
 
         // 验证必需字段
         expect(formula.id).toBeTruthy()
-        expect(formula.name).toBeTruthy()
+        expect(typeof formula.name).toBe('string')
         expect(typeof formula.confidence).toBe('number')
         expect(formula.ingredientCount).toBeGreaterThan(0)
         expect(formula.parsedAt).toBeInstanceOf(Date)

@@ -5,12 +5,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Share2, Star, Calculator, TestTube,
-  FlaskConical, Activity, Shield, CheckCircle2, Zap, Thermometer,
+  Share2, Star, Calculator,
+  FlaskConical, Activity, Shield, CheckCircle2,
   AlertCircle, Loader,
 } from 'lucide-react'
 import { Button, PageHeader, Tabs, TabsList, TabsTrigger, TabsContent, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { formulaApi, listFormulas, getFormula, analyzeSynergy, checkCompatibility, predictEffect, checkSafety } from '@/api/formula'
+import { formulaApi, listFormulas, getFormula } from '@/api/formula'
 import { ShareFormula } from './components/ShareFormula'
 import { FormulaRating } from './components/FormulaRating'
 import { FormulaCostAnalysis } from './components/FormulaCostAnalysis'
@@ -81,6 +81,7 @@ export function FormulaTestPage() {
 
   // 加载真实配方列表
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormulasLoading(true)
     listFormulas({ page: 1, page_size: 20 })
       .then((res: any) => {
@@ -97,14 +98,13 @@ export function FormulaTestPage() {
   // 加载选中配方详情
   useEffect(() => {
     if (!selectedFormulaId) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedFormulaLoading(true)
     getFormula(selectedFormulaId)
       .then(setSelectedFormula)
       .catch(() => setSelectedFormula(null))
       .finally(() => setSelectedFormulaLoading(false))
   }, [selectedFormulaId])
-
-  const runningFormula = selectedFormula || { id: selectedFormulaId, name: '加载中...', ingredients: [] }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

@@ -242,6 +242,7 @@ function generatePrimaryFormula(
   goals: EfficacyTag[],
   _existing?: FormulaTableData,
 ): PersonalizedFormula {
+  void _existing;
   const ingredientPool = selectIngredientsForGoals(goals, profile)
   const optimizedIngredients = optimizeDosages(ingredientPool, profile)
   const formulaId = `formula_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
@@ -381,7 +382,10 @@ function selectIngredientsForGoals(
 
   const maxIngredients = profile.ageGroup === 'elderly' ? 6 : 8
 
-  return scored.slice(0, maxIngredients).map(({ score, ...rest }) => rest)
+  return scored.slice(0, maxIngredients).map(({ score, ...rest }) => {
+    void score
+    return rest
+  })
 }
 
 function optimizeDosages(
@@ -827,6 +831,7 @@ function generateExpectedOutcomes(
   formula: PersonalizedFormula,
   _profile: UserProfile,
 ): ExpectedOutcome[] {
+  void _profile;
   const outcomes: ExpectedOutcome[] = []
 
   const allEfficacies = formula.ingredients.flatMap(ing => ing.efficacyContribution)
@@ -914,13 +919,13 @@ function generateAlternativeFormulas(
     const economyVersion = generatePrimaryFormula(budgetVariant, goals)
     economyVersion.name = `${primary.name}（经济版）`
     alternatives.push(economyVersion)
-  } catch (e) {}
+  } catch { /* 备选版本生成失败时忽略 */ }
 
   try {
     const premiumVersion = generatePrimaryFormula(premiumVariant, goals)
     premiumVersion.name = `${primary.name}（强化版）`
     alternatives.push(premiumVersion)
-  } catch (e) {}
+  } catch { /* 备选版本生成失败时忽略 */ }
 
   const focusedGoals = goals.slice(0, 2)
   if (focusedGoals.length < goals.length) {
@@ -928,7 +933,7 @@ function generateAlternativeFormulas(
       const focusedVersion = generatePrimaryFormula(profile, focusedGoals)
       focusedVersion.name = `${primary.name}（聚焦版）`
       alternatives.push(focusedVersion)
-    } catch (e) {}
+    } catch { /* 备选版本生成失败时忽略 */ }
   }
 
   return alternatives

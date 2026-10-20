@@ -20,16 +20,16 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import {
-  GitBranch, Plus, Trash2, Copy, Save, Play, Settings,
-  ChevronDown, ChevronRight, GripVertical, Clock,
-  CheckCircle, XCircle, Loader2, AlertCircle, ZoomIn,
-  ZoomOut, Maximize2, Download, Upload, Eye,
-  Sparkles, RefreshCw, BarChart3, FileSearch,
+  GitBranch, Plus, Trash2, Save,
+  ChevronRight,
+  CheckCircle, ZoomIn,
+  ZoomOut, Maximize2, Download, Eye,
+  Sparkles, RefreshCw, BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button, Card, Modal, Badge, Input, Textarea, Select } from '@/components/ui'
+import { Button, Card, Modal, Badge, Input, Select } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import type { Workflow, WorkflowDetail, WorkflowTask } from '@/api/workflow'
+import type { WorkflowDetail } from '@/api/workflow'
 import type { WorkflowTemplate as APITemplate } from '@/api/deep_dev'
 import { workflowApi } from '@/api/deep_dev'
 
@@ -74,7 +74,8 @@ interface WorkflowTemplate {
 }
 
 // ── 预设工作流模板 ──
-
+// 预设模板暂未接入 UI（模板弹窗使用 API 模板），保留作为离线兜底参考。
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'ai-formula-gen',
@@ -160,6 +161,7 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     ],
   },
 ]
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // ── 节点样式配置 ──
 
@@ -250,7 +252,6 @@ export function WorkflowVisualEditor({
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null)
   const [scale, setScale] = useState(1)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
   const [draggedNode, setDraggedNode] = useState<string | null>(null)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showConfigPanel, setShowConfigPanel] = useState(false)
@@ -263,6 +264,7 @@ export function WorkflowVisualEditor({
   // 从现有工作流初始化节点
   useEffect(() => {
     if (workflow?.config?.nodes) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 外部工作流数据变化时同步到画布状态
       setNodes(workflow.config.nodes as WorkflowNode[])
       setEdges((workflow.config.edges || []) as WorkflowEdge[])
     }
@@ -270,6 +272,7 @@ export function WorkflowVisualEditor({
 
   // 从 API 加载模板列表
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载时加载模板列表并更新加载状态
     setTemplatesLoading(true)
     workflowApi.listTemplates()
       .then((res) => setTemplates(res.items || []))
@@ -311,23 +314,6 @@ export function WorkflowVisualEditor({
     addToast({ type: 'info', message: '已删除节点' })
   }, [selectedNode, addToast])
 
-  // 添加边
-  const addEdge = useCallback((source: string, target: string) => {
-    if (source === target) return
-    const exists = edges.some(e => e.source === source && e.target === target)
-    if (exists) {
-      addToast({ type: 'warning', message: '该连接已存在' })
-      return
-    }
-    const newEdge: WorkflowEdge = {
-      id: `edge-${Date.now()}`,
-      source,
-      target,
-    }
-    setEdges(prev => [...prev, newEdge])
-    addToast({ type: 'success', message: '已添加连接' })
-  }, [edges, addToast])
-
   // 缩放控制
   const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 2))
   const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.3))
@@ -349,7 +335,7 @@ export function WorkflowVisualEditor({
         },
       })
       addToast({ type: 'success', message: '工作流保存成功' })
-    } catch (error) {
+    } catch {
       addToast({ type: 'error', message: '保存失败，请重试' })
     }
   }

@@ -1172,7 +1172,7 @@ export class PromptEngineeringFramework {
       if (token.length <= 20) {
         const hasKeyword = tokens.some(t =>
           userInput.includes(t) ||
-          t.split(/[\s\/\(\)\[\]]/).some(part => part.length > 1 && userInput.includes(part)),
+          t.split(/[\s/()[\]]/).some(part => part.length > 1 && userInput.includes(part)),
         )
         if (hasKeyword || tokens.length <= 3) {
           relevant.push(token)
@@ -1210,6 +1210,7 @@ export class PromptEngineeringFramework {
   }
 
   private removeExamples(text: string, _maxLength: number): string {
+    void _maxLength;
     return text.replace(/参考:[^|]+\|\|?/g, '').replace(/\s+/g, ' ').trim()
   }
 
@@ -1342,7 +1343,7 @@ export class PromptEngineeringFramework {
     let score = 0.4
     if (/\[.*?\]/.test(prompt)) score += 0.15
     if (/[|｜]/.test(prompt)) score += 0.15
-    if (/[①②③④⑤]/.test(prompt) || /\d+[\.、)]/.test(prompt)) score += 0.15
+    if (/[①②③④⑤]/.test(prompt) || /\d+[.、)]/.test(prompt)) score += 0.15
     if (/[：:]\s*\S+/.test(prompt)) score += 0.15
     return Math.min(1.0, score)
   }

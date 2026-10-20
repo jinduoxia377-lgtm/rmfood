@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card, Badge, Button } from '@/components/ui';
 import { Brain, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, ArrowUpDown } from 'lucide-react';
 import type { AICandidate } from '@/api/ai';
@@ -17,8 +16,6 @@ interface CompareResult {
 }
 
 export function MultiCandidateCompare({ candidates, onSelectCandidate, selectedIndex }: MultiCandidateCompareProps) {
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
-
   if (!candidates || candidates.length < 2) {
     return (
       <Card className="p-6 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">

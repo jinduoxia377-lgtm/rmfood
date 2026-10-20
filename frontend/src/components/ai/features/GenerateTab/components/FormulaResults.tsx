@@ -4,7 +4,6 @@ import { Filter, Lightbulb, Share2, FileText, GitBranch } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard';
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare';
-import { FormulaAcademicReport } from '@/components/ai/FormulaAcademicReport';
 import { ResultsViewSwitcher } from './ResultsViewSwitcher';
 import { DEFAULTS, FORMULA_CATEGORIES } from '@/config';
 import { type FormulaCategory } from '../config/generateTabConfig';
@@ -41,27 +40,6 @@ interface FormulaResultsProps {
   onExportFormula: (format: 'json' | 'csv' | 'pdf') => void;
   effectLabels: string[];
   onCompareVersions?: (v1: number, v2: number) => void;
-}
-
-interface SavedFormulaState {
-  formulaId: number;
-  savedAt: number;
-}
-
-interface OptimizationSuggestion {
-  type: 'ingredient' | 'dosage' | 'effect' | 'combination';
-  priority: 'high' | 'medium' | 'low';
-  description: string;
-  suggestion: string;
-}
-
-interface SharedFormula {
-  id: string;
-  name: string;
-  effects: string[];
-  ingredients: { name: string; dosage: string; role: string }[];
-  createdAt: number;
-  shareUrl?: string;
 }
 
 export const FormulaResults: React.FC<FormulaResultsProps> = ({

@@ -9,7 +9,7 @@
  * @version 2.0.0
  */
 import React, { useState, useRef, useEffect } from 'react'
-import { ChevronRight, ChevronDown, Loader2, Brain, Cpu, Clock } from 'lucide-react'
+import { ChevronDown, Loader2, Brain } from 'lucide-react'
 
 export interface InlineStep {
   step: string
@@ -43,7 +43,7 @@ function formatDuration(ms: number): string {
 
 export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: InlineReasoningRowProps) {
   const [expanded, setExpanded] = useState(false)
-  const [animating, setAnimating] = useState(false)
+  const [, setAnimating] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const completedCount = steps.filter(s => s.status === 'complete').length
 

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+﻿import { useState, useCallback, useMemo } from 'react'
 import {
   Download,
   FileSpreadsheet,
@@ -231,26 +231,26 @@ export function ExportModal({
     >
       <div className="space-y-6">
         {error && (
-          <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-error-700 dark:text-error-600">{error}</p>
+          <div className="flex items-start gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
+            <AlertCircle className="w-5 h-5 text-[var(--color-error-text)]0 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</p>
           </div>
         )}
 
         <div>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
             <Package className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出范围</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">导出范围</span>
           </div>
 
           <div className="space-y-2">
             {availableScopes.map((option) => (
               <label
                 key={option.value}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border-2 cursor-pointer transition-all ${
                   scope === option.value
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20 shadow-sm'
-                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)] shadow-sm'
+                    : 'border-[var(--border-color)] hover:border-[var(--border-color)] dark:hover:border-neutral-600 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50'
                 }`}
               >
                 <input
@@ -260,9 +260,9 @@ export function ExportModal({
                   checked={scope === option.value}
                   onChange={() => setScope(option.value)}
                   disabled={isExporting}
-                  className="w-4 h-4 text-primary-700 focus:ring-primary-500"
+                  className="w-4 h-4 text-[var(--color-primary-text)] focus:ring-[var(--color-primary)]"
                 />
-                <span className="text-sm font-medium text-neutral-900 dark:text-white">{option.label}</span>
+                <span className="text-sm font-medium text-[var(--text-primary)]">{option.label}</span>
                 <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-auto">
                   ({option.getDescription({ totalCount, currentPageCount, filteredCount, selectedIds })})
                 </span>
@@ -272,12 +272,12 @@ export function ExportModal({
         </div>
 
         <div>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
             <FileSpreadsheet className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出格式</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">导出格式</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
             {FORMAT_OPTIONS.map((fmt) => {
               const Icon = fmt.icon
               const isSelected = format === fmt.value
@@ -287,19 +287,19 @@ export function ExportModal({
                   key={fmt.value}
                   onClick={() => setFormat(fmt.value)}
                   disabled={isExporting}
-                  className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                  className={`relative p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border-2 text-left transition-all ${
                     isSelected
                       ? `border-${fmt.color}-500 bg-${fmt.color}-50 dark:bg-${fmt.color}-900/20`
-                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+                      : 'border-[var(--border-color)] hover:border-[var(--border-color)] dark:hover:border-neutral-600'
                   }`}
                 >
                   {isSelected && (
-                    <div className={`absolute top-2 right-2 w-5 h-5 bg-${fmt.color}-500 rounded-full flex items-center justify-center`}>
+                    <div className={`absolute top-2 right-2 w-5 h-5 bg-${fmt.color}-500 rounded-[var(--radius-pill)] flex items-center justify-center`}>
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
                   <Icon className={`w-7 h-7 mb-2 ${isSelected ? `text-${fmt.color}-600` : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
-                  <div className={`text-sm font-semibold ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                  <div className={`text-sm font-semibold ${isSelected ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                     {fmt.label.split(' ')[0]}
                   </div>
                   <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
@@ -312,12 +312,12 @@ export function ExportModal({
         </div>
 
         <div>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
             <Settings className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出选项</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">导出选项</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-[var(--space-apple-sm)]">
             <Checkbox
               id="exp-ingredients"
               /* A-23：Radix 渲染的是 <button role=checkbox>，兄弟 <label htmlFor> 无法为其提供可访问名称，必须显式给 aria-label。 */
@@ -351,7 +351,7 @@ export function ExportModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
             文件名
           </label>
           <input
@@ -360,15 +360,15 @@ export function ExportModal({
             onChange={(e) => setFilename(e.target.value)}
             disabled={isExporting}
             placeholder={defaultFilename}
-            className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors disabled:opacity-50"
+            className="w-full px-[var(--space-apple-md)] py-2.5 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors disabled:opacity-50"
           />
         </div>
 
         {showProgressBar && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-600 dark:text-neutral-400">{exportMessage}</span>
-              <span className="font-medium text-neutral-900 dark:text-white">{exportProgress}%</span>
+              <span className="text-[var(--text-secondary)]">{exportMessage}</span>
+              <span className="font-medium text-[var(--text-primary)]">{exportProgress}%</span>
             </div>
             <Progress
               value={exportProgress}
@@ -379,7 +379,7 @@ export function ExportModal({
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex items-center justify-end gap-[var(--space-apple-sm)] pt-2">
         <Button
           variant="secondary"
           onClick={handleClose}

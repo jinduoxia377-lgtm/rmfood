@@ -33,7 +33,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
   const [isSeeding, setIsSeeding] = useState(false)
   const [seedingProgress, setSeedingProgress] = useState(0)
   const [docs, setDocs] = useState<KBDoc[]>([])
-  const [stats, setStats] = useState<RAGStats | null>(null)
+  const [, setStats] = useState<RAGStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -44,7 +44,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
   const loadStatus = useCallback(async () => {
     try {
       setIsLoading(true)
-      const [status, docList, ragStats] = await Promise.all([
+      const [status, , ragStats] = await Promise.all([
         getSeedStatus(),
         listDocuments().catch(() => []),
         getRAGStats().catch(() => null),
@@ -61,7 +61,10 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
     }
   }, [])
 
-  useEffect(() => { loadStatus() }, [loadStatus])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadStatus()
+  }, [loadStatus])
 
   const handleSeed = async () => {
     setIsSeeding(true)

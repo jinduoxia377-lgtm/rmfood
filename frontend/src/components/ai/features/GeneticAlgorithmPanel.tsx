@@ -1,20 +1,10 @@
 import { useState, useCallback, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts'
 import { aiApi } from '@/api/ai'
 import type { GeneticGenerateResponse } from '@/api/ai'
 import { ParamSlider, StatCard, CandidateCard } from './GeneticAlgorithmPanelSubComponents'
 import { GAFitnessChart, GADiversityChart } from './GAPanelCharts'
-import { EFFECT_OPTIONS, DEFAULT_EFFECT } from '@/config/ai/effects'
+import { EFFECT_OPTIONS } from '@/config/ai/effects'
 import { getAuthToken } from '@/hooks/useSSEAuth'
 
 // 获取 CSRF Token（与 api/client.ts 保持一致）
@@ -42,8 +32,6 @@ import {
   TrendingUp,
   FlaskConical,
   BarChart3,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
   Loader2,
   AlertTriangle,
@@ -52,7 +40,6 @@ import {
   Zap,
   Target,
   Shield,
-  DollarSign,
   Download,
   Wifi,
   WifiOff,
@@ -226,6 +213,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
       addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 模式=${hybridMode ? 'BinaryGA+MILP' : '标准GA'}`, 'info')
 
+      // 目标权重：滑块没动过就不传（后端用内置默认）；动过则把改动值与默认值
+      // 合并成完整 6 维向量 —— 后端会把未列出的目标权重置 0。
+      const objectiveWeights = Object.keys(adjustedWeights).length > 0
+        ? Object.fromEntries(WEIGHT_OPTIONS.map((o) => [o.key, adjustedWeights[o.key] ?? o.default]))
+        : undefined
+
       if (hybridMode) {
         return await aiApi.generateGeneticHybrid(
           {
@@ -234,6 +227,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
             totalDosage,
             warmStartEnabled,
+            objectiveWeights,
           },
           controller.signal,
         )
@@ -243,6 +237,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             targetEffects: selectedEffects,
             ...params,
             constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
+            objectiveWeights,
           },
           controller.signal,
         )
@@ -276,17 +271,36 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     if (maxCost !== null && maxCost > 0) {
       constraints.max_cost = maxCost
     }
+    // 目标权重：滑块没动过就不传（后端用内置默认）；动过则把改动值与默认值
+    // 合并成完整 6 维向量 —— 后端会把未列出的目标权重置 0，只传改动项会让
+    // 其余目标权重归零。
+    const hasCustomWeights = Object.keys(adjustedWeights).length > 0
+    const objective_weights: Record<string, number> | undefined = hasCustomWeights
+      ? Object.fromEntries(WEIGHT_OPTIONS.map((o) => [o.key, adjustedWeights[o.key] ?? o.default]))
+      : undefined
     return {
       target_effects: selectedEffects,
-      ...params,
+      // 后端 GeneticRequest 是 snake_case。此前直接 `...params`（camelCase）会被
+      // Pydantic 静默丢弃，导致种群大小/代数/变异率/交叉率/精英比例/锦标赛规模
+      // 全部滑块失效、后端永远用默认值。
+      population_size: params.populationSize,
+      generations: params.generations,
+      mutation_rate: params.mutationRate,
+      crossover_rate: params.crossoverRate,
+      elite_ratio: params.eliteRatio,
+      tournament_size: params.tournamentSize,
+      count: params.count,
       constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
       include_herbs: includeHerbs.length > 0 ? includeHerbs : undefined,
+      // 注意：hybrid_mode / total_dosage / nutrition_constraints / warm_start_enabled
+      // 后端 GeneticRequest 目前尚无对应字段，会被忽略；混合与否由前端选 URL 决定。
       hybrid_mode: hybridMode,
       total_dosage: hybridMode ? totalDosage : undefined,
       nutrition_constraints: hybridMode ? nutritionConstraints : undefined,
       warm_start_enabled: warmStartEnabled,
+      objective_weights,
     }
-  }, [selectedEffects, params, excludeHerbs, includeHerbs, maxCost, hybridMode, totalDosage, nutritionConstraints, warmStartEnabled])
+  }, [selectedEffects, params, excludeHerbs, includeHerbs, maxCost, hybridMode, totalDosage, nutritionConstraints, warmStartEnabled, adjustedWeights])
 
   // ── SSE 流式执行 ──
   const executeStreaming = useCallback(async () => {
@@ -345,6 +359,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           } else if (trimmed.startsWith('data:')) {
             try {
               const data = JSON.parse(trimmed.replace('data:', '').trim())
+              // eslint-disable-next-line react-hooks/immutability
               handleSSEEvent(currentEventType, data)
             } catch {
               // 忽略解析错误的数据行
@@ -1112,7 +1127,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-results-heading" className="space-y-6">
           {/* 导出报告 + 统计摘要 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 flex-1">
             <StatCard
               icon={<Dna className="w-5 h-5" />}
               label="总代数"

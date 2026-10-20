@@ -46,7 +46,7 @@
 
 .clear-text {
   color: white;
-  font-size: 16rpx;
+  font-size: var(--font-size-micro-legal);
   line-height: 1;
   font-weight: 500;
 }

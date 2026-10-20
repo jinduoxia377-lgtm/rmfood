@@ -90,32 +90,33 @@ export default function ApiDocsPage() {
   return (
     <PublicLayout>
       <section style={{ background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-3">API Reference</span>
-          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-4">API 参考</h1>
-          <p className="text-[14px] text-neutral-600 leading-relaxed max-w-xl">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
+          <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-[var(--space-apple-sm)]">API Reference</span>
+          <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] font-bold leading-[1.15] text-neutral-900 mb-[var(--space-apple-md)]">API 参考</h1>
+          <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed max-w-xl">
             RMFOOD RESTful API v1，支持 AI 配方生成、知识图谱查询、合规检测、肽序列分析等核心能力。Base URL：<code style={{ fontSize: 13, background: '#f1f5f9', padding: '1px 4px', borderRadius: 3 }}>https://api.rmfood.cn</code>
           </p>
         </div>
       </section>
 
       <section style={{ background: '#fafafa' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+        <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12 space-y-6">
           {endpoints.map((ep, i) => (
             <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
               {/* 头部 */}
-              <div className="px-5 py-4 flex items-start gap-3" style={{ borderBottom: '1px solid #e2e8f0' }}>
+              <div className="px-5 py-4 flex items-start gap-[var(--space-apple-sm)]" style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <MethodBadge method={ep.method} />
                 <code className="text-sm font-mono font-medium text-neutral-800 flex-1">{ep.path}</code>
               </div>
               {/* 描述 */}
-              <div className="px-5 py-3">
-                <p className="text-sm text-neutral-600 leading-relaxed">{ep.desc}</p>
+              <div className="px-5 py-[var(--space-apple-md)]">
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{ep.desc}</p>
               </div>
               {/* 参数 */}
               {ep.params.length > 0 && (
-                <div className="px-5 pb-4">
+                <div className="px-5 pb-[var(--space-apple-md)]">
                   <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-2">请求参数</span>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-[12px] border-collapse">
                     <thead>
                       <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
@@ -127,19 +128,20 @@ export default function ApiDocsPage() {
                     <tbody>
                       {ep.params.map(p => (
                         <tr key={p.name} style={{ borderBottom: '1px solid #f8fafc' }}>
-                          <td className="py-1.5 px-2 font-mono text-neutral-700">{p.name}</td>
+                          <td className="py-1.5 px-2 font-mono text-[var(--text-primary)]">{p.name}</td>
                           <td className="py-1.5 px-2 font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{p.type}</td>
                           <td className="py-1.5 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{p.desc}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
               {/* 响应 */}
-              <div className="px-5 pb-4">
+              <div className="px-5 pb-[var(--space-apple-md)]">
                 <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-widest block mb-2">响应示例</span>
-                <pre className="text-xs font-mono text-neutral-600 p-3 rounded-sm" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', overflowX: 'auto' }}>
+                <pre className="text-xs font-mono text-[var(--text-secondary)] p-[var(--space-apple-sm)] rounded-sm" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', overflowX: 'auto' }}>
                   {JSON.stringify(ep.response, null, 2)}
                 </pre>
               </div>

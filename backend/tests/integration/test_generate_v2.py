@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker
 
 # 导入应用
 from app.main import app
-from app.api.ai_modules.generation import sub_router, FormulaGenerateV2Request
+from app.api.ai_modules.generation import FormulaGenerateV2Request
 
 
 class TestGenerateV2API:

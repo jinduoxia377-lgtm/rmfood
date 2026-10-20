@@ -4,7 +4,6 @@ import { storageService } from '../services/storageService'
 import { eventBus } from '../services/eventBus'
 import { logger } from '@/utils/safeLogger'
 import { sanitizeChatMessages } from '../utils/sanitizeChatMessages'
-import { detectStructuredContent } from '../components/structured/utils'
 import { toFriendlyErrorMessage } from '../utils/friendlyError'
 import type { ChatMessage } from '../types'
 import { tokenBudgetManager } from '../capabilities/streaming/TokenBudgetManager'
@@ -74,8 +73,8 @@ export function useChatMessages(): UseChatMessagesReturn {
       const normalized = cleaned.map(msg => {
         if (msg.role === 'assistant' && msg.content) {
           const trimmed = msg.content.trim()
-          if (trimmed.startsWith('{') && trimmed.includes('"blocks"') && !trimmed.includes('\`\`\`json')) {
-            return { ...msg, content: '\`\`\`json\n' + trimmed + '\n\`\`\`' }
+          if (trimmed.startsWith('{') && trimmed.includes('"blocks"') && !trimmed.includes('```json')) {
+            return { ...msg, content: '```json\n' + trimmed + '\n```' }
           }
         }
         return msg
@@ -83,7 +82,7 @@ export function useChatMessages(): UseChatMessagesReturn {
       
       const hasChanges = normalized.some((m: any, i: number) => m.content !== cleaned[i].content)
       if (hasChanges) {
-        try { storageService.set(STORAGE_KEY, normalized) } catch(e) {}
+        try { storageService.set(STORAGE_KEY, normalized) } catch { /* 忽略写回失败 */ }
       }
       
       return normalized
@@ -208,6 +207,7 @@ export function useChatMessages(): UseChatMessagesReturn {
   }, [])
 
   const sendMessage = useCallback(async (content: string, displayContent?: string, scenarioMode?: string) => {
+    void scenarioMode;
     if (!content?.trim()) {
       logger.warn('[useChatMessages] ⚠️ Empty message content, ignoring send request')
       return
@@ -262,7 +262,7 @@ export function useChatMessages(): UseChatMessagesReturn {
       let fullContent = ''
       let streamModel = ''  // 回复来源（后端 meta 事件），用于展示来源徽标
       let streamDialectics: ChatMessage['dialectics'] = undefined
-      let accumulatedFormulas: any[] = []
+      const accumulatedFormulas: any[] = []
       let hasError = false
       let errorMessage = ''
 

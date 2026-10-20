@@ -16,7 +16,9 @@ export default defineConfig({
     testTimeout: 5000,
     hookTimeout: 10000,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules', 'dist', '**/*.d.ts', '**/node_modules/**'],
+    // **/e2e/** 是 Playwright 测试（testDir 见 playwright.config.ts，有独立 test:e2e 脚本），
+    // 若被 vitest 收集会因缺少浏览器上下文而挂起——这是此前全量套件卡在 81/115 不返回的直接原因。
+    exclude: ['node_modules', 'dist', '**/*.d.ts', '**/node_modules/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html', 'json', 'json-summary'],

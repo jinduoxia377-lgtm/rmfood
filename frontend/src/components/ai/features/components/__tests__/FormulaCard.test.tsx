@@ -9,7 +9,7 @@
  * 5. 成分列表展示
  */
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { FormulaCard } from '@/components/ai/features/components/FormulaCard'
 import type { AIRecognizedFormula, FormulaQualityScore } from '@/types/ai.types'
 

@@ -1,22 +1,15 @@
 import {
   tcmService,
-  TCMService,
   ChemistryUtils,
 } from '../professional';
 import type {
-  TCMHerb,
-  TCMChemistry,
-  TCMTarget,
-  TCMDisease,
   TCMSearchParams,
   TCMPredictionParams,
-  TCMChemistryVisualization,
-  ChemistryDescriptor,
 } from '../professional';
 
 export class TCMDataIntegration {
   async demonstrateUsage() {
-    const serviceInfo = tcmService.getServiceInfo();
+    tcmService.getServiceInfo();
 
     const searchParams: TCMSearchParams = {
       keyword: '人参',
@@ -30,21 +23,21 @@ export class TCMDataIntegration {
       const firstHerb = searchResults.herbs[0];
 
       if (firstHerb.chemistry.smiles) {
-        const visualization = await tcmService.visualizeChemistry(firstHerb.chemistry.smiles);
+        await tcmService.visualizeChemistry(firstHerb.chemistry.smiles);
 
         const chemistryUtils = ChemistryUtils.calculateDescriptors(firstHerb.chemistry.smiles);
 
-        const isDrugLike = ChemistryUtils.isDrugLike(chemistryUtils);
+        ChemistryUtils.isDrugLike(chemistryUtils);
 
-        const svg = ChemistryUtils.generateSVG(firstHerb.chemistry.smiles, 500, 400);
+        ChemistryUtils.generateSVG(firstHerb.chemistry.smiles, 500, 400);
       }
 
-      const network = await tcmService.getHerbNetwork(firstHerb.id);
+      await tcmService.getHerbNetwork(firstHerb.id);
 
-      const related = await tcmService.getRelatedHerbs(firstHerb.id);
+      await tcmService.getRelatedHerbs(firstHerb.id);
     }
 
-    const stats = tcmService.getServiceInfo();
+    tcmService.getServiceInfo();
   }
 
   async testCompoundPrediction() {
@@ -57,19 +50,19 @@ export class TCMDataIntegration {
       predictPathways: true,
     };
 
-    const result = await tcmService.getFullPrediction(params);
+    await tcmService.getFullPrediction(params);
   }
 
   async testChemistryUtils() {
     const smiles1 = 'CCO';
     const smiles2 = 'CCCO';
 
-    const desc1 = ChemistryUtils.calculateDescriptors(smiles1);
-    const desc2 = ChemistryUtils.calculateDescriptors(smiles2);
+    ChemistryUtils.calculateDescriptors(smiles1);
+    ChemistryUtils.calculateDescriptors(smiles2);
 
-    const similarity = ChemistryUtils.calculateSimilarity(smiles1, smiles2);
+    ChemistryUtils.calculateSimilarity(smiles1, smiles2);
 
-    const svg = ChemistryUtils.generateSVG(smiles1);
+    ChemistryUtils.generateSVG(smiles1);
   }
 
   clearCache() {

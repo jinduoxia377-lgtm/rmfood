@@ -132,9 +132,9 @@ export class WorkflowEngine {
   private async executeNode(node: WorkflowNode, context: Record<string, unknown>): Promise<unknown> {
     switch (node.type) {
       case 'tool':
-        return this.executeTool(node, context);
+        return this.executeTool(node);
       case 'llm':
-        return this.executeLLM(node, context);
+        return this.executeLLM(node);
       case 'condition':
         return this.evaluateCondition(node, context);
       default:
@@ -142,31 +142,46 @@ export class WorkflowEngine {
     }
   }
 
-  private async executeTool(node: WorkflowNode, context: Record<string, unknown>): Promise<unknown> {
+  private async executeTool(node: WorkflowNode): Promise<unknown> {
     const toolName = node.config.tool as string;
     const args = node.config.args as Record<string, unknown>;
+
+    if (!toolName || typeof toolName !== 'string') {
+      throw new Error('工具节点缺少 tool 配置（config.tool），请检查工作流定义');
+    }
 
     logger.info(`[WorkflowEngine] Executing tool: ${toolName}`, args);
 
     try {
-      // 根据工具名称路由到对应的后端 API
+      // 根据工具名称路由到真实存在的后端 API（2026-10-12 修复：此前指向不存在的端点导致 404）
       if (toolName.includes('rag') || toolName.includes('search') || toolName.includes('knowledge')) {
-        return await this.callApi('/api/v1/ai/rag/search', { query: args?.query ?? '', top_k: args?.top_k ?? 5 });
+        // RAG 知识检索端点尚未接入后端，明确报错而非调用不存在的路径
+        throw new Error('RAG 知识检索工具暂未接入后端，请使用 /ai 页面的搜索功能替代');
       }
       if (toolName.includes('formula') || toolName.includes('generate') || toolName.includes('design')) {
-        return await this.callApi('/api/v1/ai/formula/generate', args ?? {});
+        // 指向真实 GA 配方生成端点（/api/v1/ai/generate），需要 target_effects
+        const effectsRaw = Array.isArray(args?.target_effects) ? args.target_effects : (args?.query || args?.description || '增强免疫');
+        const effects = Array.isArray(effectsRaw) ? effectsRaw.map(String) : [String(effectsRaw)];
+        return await this.callApi('/api/v1/ai/generate', {
+          target_effects: effects.slice(0, 5),
+          use_llm: true,
+        });
       }
       if (toolName.includes('compliance') || toolName.includes('check') || toolName.includes('safety')) {
-        return await this.callApi('/api/v1/ai/compliance/check', args ?? {});
+        // 指向真实合规检查端点（/api/v1/compliance/check/realtime）
+        const ingredients = Array.isArray(args?.ingredients) ? args.ingredients : (Array.isArray(args?.current_ingredients) ? args.current_ingredients : []);
+        return await this.callApi('/api/v1/compliance/check/realtime', { current_ingredients: ingredients });
       }
       if (toolName.includes('experiment') || toolName.includes('plan')) {
-        return await this.callApi('/api/v1/ai/experiment/plan', args ?? {});
+        // 实验方案规划端点尚未接入后端，明确报错
+        throw new Error('实验方案规划工具暂未接入后端');
       }
       if (toolName.includes('kg') || toolName.includes('graph') || toolName.includes('inference')) {
-        return await this.callApi('/api/v1/kg/infer', args ?? {});
+        // 指向真实知识图谱推理端点（/api/v1/kg/infer/all）
+        return await this.callApi('/api/v1/kg/infer/all', args ?? {});
       }
-      // 默认：通过通用 Agent API 执行
-      return await this.callApi('/api/v1/agent/tools/execute', { tool: toolName, arguments: args });
+      // 默认：通过通用 Agent API 执行（真实端点 /api/v1/agent/execute）
+      return await this.callApi('/api/v1/agent/execute', { tool: toolName, arguments: args });
     } catch (err) {
       throw new Error(`Tool execution failed: ${toolName} - ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -179,7 +194,7 @@ export class WorkflowEngine {
     });
   }
 
-  private async executeLLM(node: WorkflowNode, context: Record<string, unknown>): Promise<string> {
+  private async executeLLM(node: WorkflowNode): Promise<string> {
     const prompt = node.config.prompt as string;
     const systemPrompt = node.config.system_prompt as string | undefined;
 

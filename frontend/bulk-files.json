@@ -1,0 +1,562 @@
+﻿[
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\__tests__\\components\\ai\\PersonalizedRecommendations.test.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\AcademicReportEnhanced.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\AdvancedGeneratePanel.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\AdvancedPeptideAnalyzer.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\AdvancedPeptideDesign.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\ApiKeyConfigPanel.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\ApiKeyDiagnosticTool.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\bots\\botChatService.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\ContraindicationWarning.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\EnhancedFormulaAnalyzer.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\ExportDialog.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\FilterBuilder.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\ProfessionalReport.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\ShareDialog.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\SynergyRadarChart.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\components\\TemplateSelector.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\e2e\\fixtures.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\e2e\\nav-diagnostic.e2e.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\helpers\\testFactories.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\unit\\hooks\\useStreamingText.test.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\unit\\reportPlumbing.test.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\unit\\services\\chatHistoryStorage.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\__tests__\\unit\\services\\eventBus.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\capabilities\\delegation\\SubagentDelegation.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\ChatStateContext.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\__tests__\\AdvancedFilter.test.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\__tests__\\FormulaCard.test.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\AdvancedFilter.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\ApiKeyConfigCenter.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\EmptyStateContent.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\ErrorRecoveryDialog.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\FormulaPanel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\KnowledgeGraph.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\MessageAnimationWrapper.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\pro\\ChatMessages.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\pro\\DetailsPanel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\pro\\DSActions.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\pro\\ReasoningRow.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\ScenarioToolbar.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\SearchPanel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\SessionHistory.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\StabilityDegradationChart.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\structured\\blocks\\CalloutBlock.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\structured\\blocks\\SynergyChartBlock.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\components\\ThemeToolbar.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\FormulaIngredientInput\\IngredientSelector.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\FormulaIngredientInput\\TemplateSelector.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\components\\FormulaExplanationModal.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\components\\GenerationInput.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\components\\HeaderEnhanced.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\components\\HeaderPro.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\components\\ParetoFrontChart.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\config\\generateTabConfig.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\hooks\\__tests__\\useFormulaTemplates.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerateTab\\hooks\\useSavedFormulas.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\GenerationProgress.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useAgentSmartRouter.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useChatCompaction.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useChatInputValidation.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useChatSendMessage.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useExportManager.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useFocusTrap.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useFormulaManager.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useInfiniteScroll.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useKeyboardShortcuts.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useMultiTurnDialogue.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useShortTermMemory.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\hooks\\useStreamingText.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\MOPanelCharts.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\SafetyTab.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\__tests__\\chatService.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\__tests__\\nlpRefactoringTest.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\bertIntegration.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\contextManager.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\deepThinkingService.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\domainKnowledge.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\EventBusV2.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\feedbackLoopSystem.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\followUpSuggestionService.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\formulaIntelligenceService.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\hybridNLPEngineV2.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\intelligentSuggestionGenerator.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\knowledge\\FormulaKnowledgeGraph.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\nlpProcessor.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\professionalIntelligenceEngineV4.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\suggestionEngine.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\threeLevelCacheSystem.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\userPreferencesService.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\services\\WaterfallInterceptor.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\SynergyTab.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\__tests__\\llmAdapter.test.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\chatHelpers.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\chatStateMachine.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\compactionLock.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\networkAwareness.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\projectionCache.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\ralphLoop.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\features\\utils\\sanitizeChatMessages.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\FormulaSharePanel.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\GenerationProgressPanel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\MultiCandidateCompare.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\ParameterAdjustPanel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\PersonalizedRecommendations.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\PromptOptimizer.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\rag\\DocumentUploader.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\renderers\\SimpleMarkdown.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\SearchModal.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\components\\ai\\visualization\\FlavorWheel.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\components\\MobileBottomSheet.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useAnalyticsRealtime.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useColumnView.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useExportFormulas.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useFormulaAnalysis.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useKeyboardShortcut.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useKeyboardShortcuts.tsx",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useMemoOptimization.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useMobile.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useOnboarding.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useOperationFeedback.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useOptimizedComponents.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\usePersistentState.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useRAGContext.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useRealtimeSync.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useReportGenerator.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useReportStructure.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useSemanticTheme.tsx",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\hooks\\useSmartPrefetch.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\pages\\settings\\hooks\\usePersonalInfo.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\_test_parse.js",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\asyncOperationManager.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\conflictResolver.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\excelUtils.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\formulaNamingEngine.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\formulaStorage.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\operationLogger.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\persistentStore.ts",
+        "Errors":  2
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\safeLogger.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\secureKeyManager.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\themeTransitions.ts",
+        "Errors":  1
+    },
+    {
+        "Path":  "D:\\RMFOODFP\\frontend\\src\\utils\\unifiedApiKeyManager.ts",
+        "Errors":  1
+    }
+]

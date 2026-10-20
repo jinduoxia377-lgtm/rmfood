@@ -14,7 +14,6 @@ import { efficacyTagService } from '@/services/efficacyTagService'
 import EfficacyTagList from './EfficacyTagList'
 
 import { Badge } from '@/components/ui'
-import { calculateAllPercentages } from '@/services/dosageCalculator'
 import {
   Search,
   ArrowUp,
@@ -29,9 +28,6 @@ import {
   Package,
 } from 'lucide-react'
 
-import {
-  evaluatePrecautions,
-} from '@/services/precautionEngine'
 import PrecautionDetailPanel from './PrecautionDetailPanel'
 
 type SortField = 'name' | 'amount' | 'percentage'
@@ -388,7 +384,9 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
   useEffect(() => {
     if (!data?.ingredients || data.ingredients.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTagMatchStatus('idle')
+       
       setMatchedTagMap(new Map())
       return
     }
@@ -471,7 +469,9 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
   const hasValidData = safeData && Array.isArray(safeData.ingredients) && safeData.ingredients.length > 0
 
   const handleClosePrecautionPanel = useCallback(() => {
+    // eslint-disable-next-line react-hooks/immutability
     setPrecautionPanelVisible(false)
+    // eslint-disable-next-line react-hooks/immutability
     setSelectedPrecautions([])
   }, [])
 
@@ -903,7 +903,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
             </h4>
             <span className="text-xs text-secondary-600 dark:text-secondary-700 font-mono">FormulaTable Debug</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
               <div className="text-neutral-500 dark:text-neutral-400">接收数据</div>
               <div className="font-mono font-bold text-neutral-900 dark:text-neutral-100">{safeData.ingredients?.length ?? 0} 条</div>

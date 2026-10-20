@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard'
 import type { AICandidate } from '@/types'
 
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   RadarChart: () => null,
   Radar: () => null,
   PolarGrid: () => null,

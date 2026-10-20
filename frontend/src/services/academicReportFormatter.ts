@@ -7,9 +7,7 @@ import type {
   ModuleData,
   ReportMetadata,
   ReportConfiguration,
-  MODULE_TITLE_MAP,
 } from '@/types/academicReportModules';
-import type { ReportModuleType as ReportModuleTypeEnum } from '@/types/academicReportModules';
 
 // 导出格式类型
 export type ExportFormat = 'markdown' | 'html' | 'word' | 'pdf';
@@ -235,6 +233,7 @@ export class AcademicReportFormatter {
    * 格式化为HTML
    */
   formatToHtml(format: 'html' | 'word' | 'pdf' = 'html'): string {
+    void format;
     const theme = STYLE_THEMES[this.metadata.reportType] || STYLE_THEMES.research_report;
 
     const html = `<!DOCTYPE html>

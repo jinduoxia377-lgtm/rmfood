@@ -871,14 +871,18 @@ async def update_safety_threshold(
         from ..services.formula.safety_alert_system import SafetyAlertSystem
         
         system = SafetyAlertSystem()
-        result = system.update_threshold(ingredient_name, updates)
+        result = system.update_threshold(
+            ingredient_name,
+            updates,
+            operator=getattr(current_user, "username", str(current_user.id)),
+        )
         
         return {
             "success": result["success"],
             "updated_ingredient": ingredient_name,
             "changes": result.get("changes", {}),
             "effective_immediately": True,
-            "version": system.version
+            "version": getattr(system, "_current_version", "unknown")
         }
         
     except ImportError as e:

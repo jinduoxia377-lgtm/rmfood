@@ -8,7 +8,7 @@ import { ArrowLeft, Search, Package, TestTube, AlertCircle, CheckCircle2 } from 
 import { useQuery } from '@tanstack/react-query'
 import { batchApi } from '@/api/batch'
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { StatusBadge, EmptyState, Skeleton } from '@/components/ui/Common'
+import { StatusBadge, Skeleton } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 
@@ -33,7 +33,7 @@ export default function TracePage() {
   })
 
   // 加载原料批号列表（正向追溯时使用，从 ingredient_lots 提取）
-  const { data: ingredientsData } = useQuery({
+  useQuery({
     queryKey: ['ingredients', 'lots'],
     queryFn: async () => {
       const res = await fetch('/api/v1/ingredients')
@@ -55,7 +55,10 @@ export default function TracePage() {
       // 从 URL 读取?batch=X 参数
       const params = new URLSearchParams(window.location.search)
       const urlBatch = params.get('batch')
-      if (urlBatch && !batchId) setBatchId(urlBatch)
+      if (urlBatch && !batchId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setBatchId(urlBatch)
+      }
     }
   }, [mode, batchesData, batchId])
 
@@ -108,18 +111,18 @@ export default function TracePage() {
   }
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen">
+      <div className="max-w-[1600px] mx-auto space-y-6 py-[var(--space-apple-lg)] px-4 sm:px-5 lg:px-[var(--space-apple-lg)]">
       {/* 返回按钮 */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+        className="flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
       >
         <ArrowLeft size={16} /> 返回
       </button>
 
       {/* 页头横幅 — 对齐 Dashboard 品牌横幅规范 */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
           <Search size={20} className="text-white/80 shrink-0" />
           双向追溯
@@ -128,14 +131,14 @@ export default function TracePage() {
       </div>
 
       {/* 模式切换标签 */}
-      <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl w-fit">
+      <div className="flex gap-2 p-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-md)] w-fit">
         <button
           onClick={() => { setTraceMode('backward'); setResult(null); setTraceError(null) }}
           className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            'px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-all',
             traceMode === 'backward'
-              ? 'bg-white dark:bg-neutral-700 text-primary shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300',
+              ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-primary shadow-sm'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
           )}
         >
           <span className="flex items-center gap-2">
@@ -146,10 +149,10 @@ export default function TracePage() {
         <button
           onClick={() => { setTraceMode('forward'); setResult(null); setTraceError(null) }}
           className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+            'px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-all',
             traceMode === 'forward'
-              ? 'bg-white dark:bg-neutral-700 text-primary shadow-sm'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300',
+              ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-primary shadow-sm'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
           )}
         >
           <span className="flex items-center gap-2">
@@ -167,7 +170,7 @@ export default function TracePage() {
               <Package size={16} className="text-primary" /> 反向追溯 — 选择批次
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-[var(--space-apple-md)]">
             {batchesLoading ? (
               <Skeleton className="h-10 w-full" />
             ) : batchesData?.items?.length === 0 ? (
@@ -180,7 +183,7 @@ export default function TracePage() {
                 <select
                   value={batchId}
                   onChange={e => setBatchId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full h-10 px-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-transparent text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
                   <option value="">— 选择批次 —</option>
                   {batchesData?.items?.map((b: any) => (
@@ -195,7 +198,7 @@ export default function TracePage() {
                 </div>
                 <Button onClick={handleBackwardTrace} disabled={loading || !batchId} className="w-full sm:w-auto">
                   {loading ? (
-                    <span className="flex items-center gap-2"><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />查询中...</span>
+                    <span className="flex items-center gap-2"><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-[var(--radius-pill)] animate-spin" />查询中...</span>
                   ) : (
                     <><Search size={14} /> 开始追溯</>
                   )}
@@ -214,8 +217,8 @@ export default function TracePage() {
               <TestTube size={16} className="text-primary" /> 正向追溯 — 输入原料批号
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-3">
+          <CardContent className="space-y-[var(--space-apple-md)]">
+            <div className="flex gap-[var(--space-apple-sm)]">
               <Input
                 placeholder="输入原料批号 ID..."
                 value={lotCode}
@@ -225,7 +228,7 @@ export default function TracePage() {
               />
               <Button onClick={handleForwardTrace} disabled={loading || !lotCode.trim()}>
                 {loading ? (
-                  <span className="flex items-center gap-2"><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />查询中...</span>
+                  <span className="flex items-center gap-2"><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-[var(--radius-pill)] animate-spin" />查询中...</span>
                 ) : (
                   <><Search size={14} /> 追溯</>
                 )}
@@ -239,7 +242,7 @@ export default function TracePage() {
       {/* 错误提示 */}
       {traceError && (
         <Card className="border-danger-200 dark:border-danger-900/50">
-          <CardContent className="pt-4 flex items-start gap-3 text-danger-600 dark:text-danger-600">
+          <CardContent className="pt-[var(--space-apple-md)] flex items-start gap-[var(--space-apple-sm)] text-danger-600 dark:text-danger-600">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <div>
               <div className="font-medium text-sm">追溯失败</div>
@@ -251,7 +254,7 @@ export default function TracePage() {
 
       {/* 追溯结果 */}
       {result && !result.error && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           {traceMode === 'backward' ? (
             <ResultCard result={result} type="backward" onGoToBatch={(id: number) => navigate(`/batches/${id}`)} />
           ) : (
@@ -280,7 +283,7 @@ function ResultCard({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CheckCircle2 size={16} className="text-success-500 dark:text-success-600" />
+            <CheckCircle2 size={16} className="text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]" />
             反向追溯结果
             {result.batch_code && (
               <span className="font-mono text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-normal ml-auto">
@@ -289,26 +292,26 @@ function ResultCard({
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-[var(--space-apple-md)]">
           {/* 批次摘要 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
+            <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">配方</div>
               <div className="text-sm font-medium truncate" title={result.formula_name || result.formula_code}>
                 {result.formula_name || result.formula_code || '—'}
               </div>
             </div>
-            <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">目标产量</div>
               <div className="text-sm font-medium">
                 {result.target_weight_kg?.toFixed(3)} kg
               </div>
             </div>
-            <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原料批号数</div>
               <div className="text-sm font-medium">{result.ingredient_lot_count ?? 0}</div>
             </div>
-            <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">样品数</div>
               <div className="text-sm font-medium">{result.samples?.length ?? 0}</div>
             </div>
@@ -317,22 +320,22 @@ function ResultCard({
           {/* 原料批号列表 */}
           {result.ingredient_lots?.length > 0 ? (
             <div>
-              <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <h2 className="text-sm font-medium text-[var(--text-primary)] mb-2">
                 使用的原料批号 ({result.ingredient_lots.length})
               </h2>
               <div className="space-y-2">
                 {result.ingredient_lots.map((lot: any) => (
                   <div
                     key={lot.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
+                    className="flex items-center justify-between p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)]/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-[var(--space-apple-sm)]">
+                      <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-primary/10 flex items-center justify-center">
                         <Package size={14} className="text-primary" />
                       </div>
                       <div>
                         <div className="font-mono text-xs text-primary">{lot.internal_lot_code}</div>
-                        <div className="text-sm text-neutral-600 dark:text-neutral-400">{lot.ingredient_name}</div>
+                        <div className="text-sm text-[var(--text-secondary)]">{lot.ingredient_name}</div>
                       </div>
                     </div>
                     <div className="text-right text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
@@ -350,21 +353,21 @@ function ResultCard({
           {/* 样品列表 */}
           {result.samples?.length > 0 && (
             <div>
-              <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2">
+              <h2 className="text-sm font-medium text-[var(--text-primary)] mb-2 flex items-center gap-2">
                 <TestTube size={14} /> 关联样品 ({result.samples.length})
               </h2>
               <div className="space-y-2">
                 {result.samples.map((s: any) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
+                    className="flex items-center justify-between p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)]/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex items-center justify-center">
-                        <TestTube size={14} className="text-accent-500" />
+                    <div className="flex items-center gap-[var(--space-apple-sm)]">
+                      <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-accent-container)] flex items-center justify-center">
+                        <TestTube size={14} className="text-[var(--color-accent-text)]0" />
                       </div>
                       <div>
-                        <div className="font-mono text-xs text-accent-600 dark:text-accent-700">{s.sample_code}</div>
+                        <div className="font-mono text-xs text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">{s.sample_code}</div>
                         <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{s.sample_type}</div>
                       </div>
                     </div>
@@ -384,7 +387,7 @@ function ResultCard({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <CheckCircle2 size={16} className="text-success-500 dark:text-success-600" />
+          <CheckCircle2 size={16} className="text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]" />
           正向追溯结果
           {result.ingredient_name && (
             <span className="font-mono text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-normal ml-auto">
@@ -393,29 +396,29 @@ function ResultCard({
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-[var(--space-apple-md)]">
         {/* 原料摘要 */}
         {(result.ingredient_name || result.received_qty_kg) && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
             {result.ingredient_name && (
-              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+              <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
                 <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原料</div>
                 <div className="text-sm font-medium">{result.ingredient_name}</div>
               </div>
             )}
             {result.received_qty_kg != null && (
-              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+              <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
                 <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">入库量</div>
                 <div className="text-sm font-medium">{result.received_qty_kg.toFixed(3)} kg</div>
               </div>
             )}
             {result.remaining_qty_kg != null && (
-              <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+              <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
                 <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">剩余量</div>
                 <div className="text-sm font-medium">{result.remaining_qty_kg.toFixed(3)} kg</div>
               </div>
             )}
-            <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+            <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">使用批次</div>
               <div className="text-sm font-medium">{result.batch_count ?? 0}</div>
             </div>
@@ -425,27 +428,27 @@ function ResultCard({
         {/* 关联批次 */}
         {result.batches?.length > 0 ? (
           <div>
-            <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <h2 className="text-sm font-medium text-[var(--text-primary)] mb-2">
               使用的批次 ({result.batches.length})
             </h2>
             <div className="space-y-2">
               {result.batches.map((b: any) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900/50"
+                  className="flex items-center justify-between p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)]/50"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-300/20 flex items-center justify-center">
-                      <Package size={14} className="text-warning-500" />
+                  <div className="flex items-center gap-[var(--space-apple-sm)]">
+                    <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-warning-container)] flex items-center justify-center">
+                      <Package size={14} className="text-[var(--color-warning-text)]0" />
                     </div>
                     <div>
                       <div className="font-mono text-xs text-primary">{b.batch_code}</div>
-                      <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         {b.formula_name || b.formula_code}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-[var(--space-apple-sm)]">
                     <StatusBadge status={b.status} />
                     {onGoToBatch && (
                       <button
@@ -466,9 +469,9 @@ function ResultCard({
 
         {/* 关联样品统计 */}
         {result.samples?.length > 0 && (
-          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="pt-2 border-t border-[var(--border-color)]">
             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              共关联 <span className="font-medium text-neutral-700 dark:text-neutral-300">{result.samples.length}</span> 个样品
+              共关联 <span className="font-medium text-[var(--text-primary)]">{result.samples.length}</span> 个样品
               {(() => {
                 const flat = (result.samples as any[]).flat()
                 return flat?.length ? `，${flat.length} 条测试记录` : ''

@@ -17,7 +17,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Cell,
 } from 'recharts'
 
@@ -157,6 +156,7 @@ export function EnhancedBarChart({
             width={75}
           />
 
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <Tooltip content={<CustomTooltip />} animationDuration={200} cursor={{ fill: `${themeColors.primary}08` }} />
 
           {(data.datasets || []).map((dataset, index) => (
@@ -198,7 +198,8 @@ export function EnhancedBarChart({
         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 12 }} width={55} />
 
-        <Tooltip content={<CustomTooltip />} animationDuration={200} cursor={{ fill: `${themeColors.primary}08` }} />
+        {/* eslint-disable-next-line react-hooks/static-components */}
+          <Tooltip content={<CustomTooltip />} animationDuration={200} cursor={{ fill: `${themeColors.primary}08` }} />
 
         {(data.datasets || []).map((dataset, index) => (
           <Bar

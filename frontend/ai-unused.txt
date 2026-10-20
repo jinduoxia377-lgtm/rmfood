@@ -1,0 +1,106 @@
+﻿
+File                                                                      Line Col Msg                                                        
+----                                                                      ---- --- ---                                                        
+components\ai\bots\botChatService.ts                                       102  15 'accumulated' is assigned a value but never used.          
+components\ai\components\ContraindicationWarning.tsx                         9   9 'items' is assigned a value but never used.                
+components\ai\components\EnhancedFormulaAnalyzer.ts                        177   7 'warningCount' is assigned a value but never used.         
+components\ai\components\FilterBuilder.tsx                                 399  39 'toastWarning' is assigned a value but never used.         
+components\ai\components\FilterBuilder.tsx                                 399  62 'toastSuccess' is assigned a value but never used.         
+components\ai\components\TemplateSelector.tsx                                7   3 'getTemplatesByType' is defined but never used.            
+components\ai\features\__tests__\e2e\fixtures.ts                             1  38 'BrowserContext' is defined but never used.                
+components\ai\features\__tests__\e2e\nav-diagnostic.e2e.test.ts              1  16 'expect' is defined but never used.                        
+components\ai\features\__tests__\helpers\testFactories.ts                   24  11 'FactoryOptions' is defined but never used.                
+components\ai\features\__tests__\unit\hooks\useStreamingText.test.tsx        5  10 'TEST_CONSTANTS' is defined but never used.                
+components\ai\features\__tests__\unit\reportPlumbing.test.tsx               18  18 '_' is defined but never used.                             
+components\ai\features\__tests__\unit\services\chatHistoryStorage.test.ts    1  55 'vi' is defined but never used.                            
+components\ai\features\__tests__\unit\services\eventBus.test.ts              1  48 'Mock' is defined but never used.                          
+components\ai\features\capabilities\delegation\SubagentDelegation.ts       177  40 'signal' is defined but never used.                        
+components\ai\features\ChatStateContext.ts                                  15  15 'BackendThinkingStep' is defined but never used.           
+components\ai\features\components\__tests__\AdvancedFilter.test.tsx        147  15 'container' is assigned a value but never used.            
+components\ai\features\components\__tests__\FormulaCard.test.tsx            12  37 'within' is defined but never used.                        
+components\ai\features\components\AdvancedFilter.tsx                        20  29 'Check' is defined but never used.                         
+components\ai\features\components\EmptyStateContent.tsx                      2  25 'Inbox' is defined but never used.                         
+components\ai\features\components\FormulaPanel.tsx                         188  10 '_deletingIds' is assigned a value but never used.         
+components\ai\features\components\KnowledgeGraph.tsx                        21  44 'Maximize2' is defined but never used.                     
+components\ai\features\components\pro\DetailsPanel.tsx                      13  24 'ChevronDown' is defined but never used.                   
+components\ai\features\components\pro\DSActions.tsx                         31   3 'isStreaming' is defined but never used.                   
+components\ai\features\components\pro\ReasoningRow.tsx                      37   9 'pendingCount' is assigned a value but never used.         
+components\ai\features\components\ScenarioToolbar.tsx                       36  51 't' is defined but never used.                             
+components\ai\features\components\SearchPanel.tsx                           61  72 '_index' is defined but never used.                        
+components\ai\features\components\StabilityDegradationChart.tsx             11   3 'LineChart' is defined but never used.                     
+components\ai\features\components\structured\blocks\SynergyChartBlock.tsx    9  46 'SynergyEdge' is defined but never used.                   
+components\ai\features\components\ThemeToolbar.tsx                          22  63 't' is defined but never used.                             
+components\ai\features\FormulaIngredientInput\TemplateSelector.tsx           7  10 'LayoutTemplate' is defined but never used.                
+components\ai\features\GenerateTab\components\FormulaExplanationModal.tsx    1  17 'useState' is defined but never used.                      
+components\ai\features\GenerateTab\components\FormulaExplanationModal.tsx    2  10 'X' is defined but never used.                             
+components\ai\features\GenerateTab\components\GenerationInput.tsx           55   3 'onClearEffects' is defined but never used.                
+components\ai\features\GenerateTab\components\GenerationInput.tsx           67   3 'onFullReset' is defined but never used.                   
+components\ai\features\GenerateTab\components\HeaderEnhanced.tsx             2  77 'Download' is defined but never used.                      
+components\ai\features\GenerateTab\components\HeaderEnhanced.tsx             2  58 'Settings' is defined but never used.                      
+components\ai\features\GenerateTab\components\HeaderPro.tsx                  8  77 'ChevronDown' is defined but never used.                   
+components\ai\features\GenerateTab\components\HeaderPro.tsx                  8  58 'Settings' is defined but never used.                      
+components\ai\features\GenerateTab\components\ParetoFrontChart.tsx          15  10 'cn' is defined but never used.                            
+components\ai\features\GenerateTab\components\ParetoFrontChart.tsx         214  33 'i' is defined but never used.                             
+components\ai\features\GenerateTab\config\generateTabConfig.ts               8  19 'API' is defined but never used.                           
+components\ai\features\GenerateTab\config\generateTabConfig.ts               8  10 'STORAGE' is defined but never used.                       
+components\ai\features\GenerateTab\hooks\useSavedFormulas.ts                 3  10 'logger' is defined but never used.                        
+components\ai\features\GenerationProgress.tsx                               14   3 'AlertCircle' is defined but never used.                   
+components\ai\features\hooks\useAgentSmartRouter.ts                         11  33 'useMemo' is defined but never used.                       
+components\ai\features\hooks\useChatCompaction.ts                           31  34 'getTokenUsage' is assigned a value but never used.        
+components\ai\features\hooks\useChatInputValidation.ts                      13  10 'useCallback' is defined but never used.                   
+components\ai\features\hooks\useChatSendMessage.ts                          93  13 'multiTurnResult' is assigned a value but never used.      
+components\ai\features\hooks\useExportManager.ts                           425  53 '_format' is defined but never used.                       
+components\ai\features\hooks\useFocusTrap.ts                               105   9 'getLastFocusable' is assigned a value but never used.     
+components\ai\features\hooks\useFormulaManager.ts                          234  17 '_storageKey' is assigned a value but never used.          
+components\ai\features\hooks\useKeyboardShortcuts.ts                        28  52 'useMemo' is defined but never used.                       
+components\ai\features\hooks\useKeyboardShortcuts.ts                       220   7 'MAX_STATS_HISTORY' is assigned a value but never used.    
+components\ai\features\hooks\useMultiTurnDialogue.ts                        79   7 'MAX_TOPIC_STACK_DEPTH' is assigned a value but never used.
+components\ai\features\hooks\useShortTermMemory.ts                           2  33 'useRef' is defined but never used.                        
+components\ai\features\hooks\useStreamingText.ts                           164   5 'codeHighlightTheme' is assigned a value but never used.   
+components\ai\features\MOPanelCharts.tsx                                    20  10 'cn' is defined but never used.                            
+components\ai\features\SafetyTab.tsx                                       492  15 '_mutation' is assigned a value but never used.            
+components\ai\features\services\__tests__\chatService.test.ts                1  44 'vi' is defined but never used.                            
+components\ai\features\services\__tests__\nlpRefactoringTest.ts             12  10 'getNLPConfigService' is defined but never used.           
+components\ai\features\services\bertIntegration.ts                         612  11 'heapSize' is assigned a value but never used.             
+components\ai\features\services\contextManager.ts                          138  17 'category' is assigned a value but never used.             
+components\ai\features\services\deepThinkingService.ts                     374  11 'efficacyMatches' is assigned a value but never used.      
+components\ai\features\services\deepThinkingService.ts                     506  32 '_domain' is defined but never used.                       
+components\ai\features\services\domainKnowledge.ts                           1  10 'logger' is defined but never used.                        
+components\ai\features\services\EventBusV2.ts                               13  15 'EventType' is defined but never used.                     
+components\ai\features\services\feedbackLoopSystem.ts                      115  66 '_modifiedText' is defined but never used.                 
+components\ai\features\services\feedbackLoopSystem.ts                      315  65 '_userInput' is defined but never used.                    
+components\ai\features\services\followUpSuggestionService.ts                 9  27 'getQuestionsByCategory' is defined but never used.        
+components\ai\features\services\formulaIntelligenceService.ts               14  55 'ScoreDimension' is defined but never used.                
+components\ai\features\services\formulaIntelligenceService.ts              212  14 '_e' is defined but never used.                            
+components\ai\features\services\hybridNLPEngineV2.ts                        44   6 'ConfidenceLevel' is defined but never used.               
+components\ai\features\services\intelligentSuggestionGenerator.ts          329  75 '_keywords' is defined but never used.                     
+components\ai\features\services\intelligentSuggestionGenerator.ts          473  39 '_input' is defined but never used.                        
+components\ai\features\services\knowledge\FormulaKnowledgeGraph.ts          15  10 'logger' is defined but never used.                        
+components\ai\features\services\nlpProcessor.ts                            685  17 '_' is defined but never used.                             
+components\ai\features\services\professionalIntelligenceEngineV4.ts         19   8 'IntentType' is defined but never used.                    
+components\ai\features\services\professionalIntelligenceEngineV4.ts        542   5 '_maxCount' is defined but never used.                     
+components\ai\features\services\suggestionEngine.ts                        272  57 '_intentResult' is defined but never used.                 
+components\ai\features\services\threeLevelCacheSystem.ts                   644  45 '_source' is defined but never used.                       
+components\ai\features\services\userPreferencesService.ts                   98   7 'CURRENT_VERSION' is assigned a value but never used.      
+components\ai\features\services\WaterfallInterceptor.ts                     13  27 'PipeHandler' is defined but never used.                   
+components\ai\features\utils\__tests__\llmAdapter.test.ts                   83  13 'request' is assigned a value but never used.              
+components\ai\features\utils\chatHelpers.ts                                300  64 '_keywords' is assigned a value but never used.            
+components\ai\features\utils\chatStateMachine.ts                           232   5 '_minRelevance' is assigned a value but never used.        
+components\ai\features\utils\compactionLock.ts                              34   7 'LOCK_SUFFIX' is assigned a value but never used.          
+components\ai\features\utils\networkAwareness.ts                           147  14 '_error' is defined but never used.                        
+components\ai\features\utils\projectionCache.ts                             53   9 'invalidateRef' is assigned a value but never used.        
+components\ai\features\utils\ralphLoop.ts                                   11  15 'SessionId' is defined but never used.                     
+components\ai\features\utils\sanitizeChatMessages.ts                       103  10 'isOldFormatMessage' is defined but never used.            
+components\ai\FormulaSharePanel.tsx                                         56  46 'onClose' is defined but never used.                       
+components\ai\FormulaSharePanel.tsx                                        507  14 'err' is defined but never used.                           
+components\ai\MultiCandidateCompare.tsx                                     20  22 'setHoveredRow' is assigned a value but never used.        
+components\ai\MultiCandidateCompare.tsx                                     20  10 'hoveredRow' is assigned a value but never used.           
+components\ai\ParameterAdjustPanel.tsx                                      10  11 'ParameterConfig' is defined but never used.               
+components\ai\PersonalizedRecommendations.tsx                               20  43 'toggleHistoryLike' is assigned a value but never used.    
+components\ai\rag\DocumentUploader.tsx                                       9  18 'FileText' is defined but never used.                      
+components\ai\renderers\SimpleMarkdown.tsx                                 230  16 'error' is defined but never used.                         
+components\ai\SearchModal.tsx                                               78  16 '_error' is defined but never used.                        
+components\ai\visualization\FlavorWheel.tsx                                 12  10 'Tooltip' is defined but never used.                       
+
+
+

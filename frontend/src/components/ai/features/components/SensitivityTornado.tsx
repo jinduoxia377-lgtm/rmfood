@@ -264,6 +264,7 @@ function SensitivityTornado({
               tickFormatter={(value: number) => `${(value * 100).toFixed(0)}%`}
             />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-gray-700, #374151)' }} width={80} />
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <Tooltip content={<TornadoTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
 
             {/* 正向影响 */}
@@ -331,6 +332,7 @@ function SensitivityTornado({
                 />
                 <YAxis type="category" dataKey="y" name="因素 Y" tick={{ fontSize: 12, fill: 'var(--color-neutral-500, #6B7280)' }} width={60} />
                 <ZAxis type="number" dataKey="z" range={[50, 400]} name="效应大小" />
+                {/* eslint-disable-next-line react-hooks/static-components */}
                 <Tooltip content={<ScatterTooltipContent />} cursor={{ strokeDasharray: '3 3' }} />
 
                 {/* 最优条件区域高亮 */}
@@ -400,7 +402,7 @@ function SensitivityTornado({
       {/* 敏感性排名摘要 */}
       <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
         <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">敏感性排名摘要</h4>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
           {sortedFactors.slice(0, 10).map((factor, idx) => (
             <div
               key={factor.id}

@@ -3,8 +3,7 @@
  * 饼图展示君臣佐使角色分布 + 柱状图展示用量分布
  */
 import { useMemo } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
-import { CHART_TYPOGRAPHY } from '../../../utils/typography'
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
 import { getChartThemeColors, getRoleColor } from '../../../utils/chartTheme'
 import { useIsDarkMode } from '@/theme'
 
@@ -95,7 +94,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
   if (totalIngredients === 0) {
     return (
-      <div className="py-8 text-center text-neutral-400 dark:text-neutral-400">
+      <div className="py-8 text-center text-[var(--text-muted)]">
         <p className="text-sm">暂无成分数据</p>
         <p className="text-xs mt-1">请先添加成分后查看分布图</p>
       </div>
@@ -104,7 +103,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-[var(--space-apple-sm)]">
         <div className="w-20 h-20 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -125,11 +124,11 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
           </ResponsiveContainer>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
             {roleData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
-                <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
+                <div className="w-2.5 h-2.5 rounded-[var(--radius-pill)] shrink-0" style={{ backgroundColor: entry.fill }} />
+                <span className="text-xs text-[var(--text-secondary)] truncate">
                   {entry.name} ({entry.value})
                 </span>
               </div>
@@ -141,10 +140,10 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {roleData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">君臣佐使分布</h5>
+          <h5 className="text-xs font-medium text-[var(--text-muted)] mb-2">君臣佐使分布</h5>
           <div className="flex items-center gap-4">
             <div className="w-28 h-28 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -172,12 +171,12 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
               </ResponsiveContainer>
             </div>
             <div className="flex-1">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-2">
                 {roleData.map((entry) => (
-                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
+                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
+                    <div className="w-3 h-3 rounded-[var(--radius-pill)] shrink-0" style={{ backgroundColor: entry.fill }} />
                     <div className="min-w-0">
-                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{entry.name}</span>
+                      <span className="text-xs font-medium text-[var(--text-primary)]">{entry.name}</span>
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{entry.value} 种</p>
                     </div>
                   </div>
@@ -190,7 +189,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
       {dosageData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">用量分布 (Top {dosageData.length})</h5>
+          <h5 className="text-xs font-medium text-[var(--text-muted)] mb-2">用量分布 (Top {dosageData.length})</h5>
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dosageData} layout="vertical" margin={{ left: 50, right: 16 }}>
@@ -209,11 +208,11 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
       {categoryData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">药材分类分布</h5>
+          <h5 className="text-xs font-medium text-[var(--text-muted)] mb-2">药材分类分布</h5>
           <div className="flex flex-wrap gap-1.5">
             {categoryData.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs" style={{ backgroundColor: `${entry.fill}15`, color: entry.fill }}>
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.fill }} />
+              <div key={entry.name} className="flex items-center gap-1.5 px-2 py-1 rounded-[var(--radius-pill)] text-xs" style={{ backgroundColor: `${entry.fill}15`, color: entry.fill }}>
+                <div className="w-2 h-2 rounded-[var(--radius-pill)]" style={{ backgroundColor: entry.fill }} />
                 <span>{entry.name}</span>
                 <span className="opacity-70">{entry.value}</span>
               </div>

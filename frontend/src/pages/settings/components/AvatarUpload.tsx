@@ -1,11 +1,14 @@
-import React, { useCallback, useRef, useState } from 'react';
+﻿import React, { useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Upload, Camera, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, Camera, X, Loader2, Image as ImageIcon, Sparkles, RefreshCw } from 'lucide-react';
+import { resolveAvatarUrl } from '@/utils/avatarUrl';
 
 interface AvatarUploadProps {
   avatarUrl: string | null;
   onSelect: (file: File) => void;
   onRemove: () => void;
+  onGenerate?: () => void;
+  generating?: boolean;
   uploading?: boolean;
   error?: string | null;
   disabled?: boolean;
@@ -15,6 +18,8 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   avatarUrl,
   onSelect,
   onRemove,
+  onGenerate,
+  generating = false,
   uploading = false,
   error,
   disabled = false,
@@ -23,17 +28,17 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   const [isDragging, setIsDragging] = useState(false);
 
   const handleClick = useCallback(() => {
-    if (!disabled && !uploading) {
+    if (!disabled && !uploading && !generating) {
       inputRef.current?.click();
     }
-  }, [disabled, uploading]);
+  }, [disabled, uploading, generating]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled && !uploading) {
+    if (!disabled && !uploading && !generating) {
       setIsDragging(true);
     }
-  }, [disabled, uploading]);
+  }, [disabled, uploading, generating]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -43,13 +48,13 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (!disabled && !uploading) {
+    if (!disabled && !uploading && !generating) {
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) {
         onSelect(file);
       }
     }
-  }, [disabled, uploading, onSelect]);
+  }, [disabled, uploading, generating, onSelect]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,15 +64,18 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     e.target.value = '';
   }, [onSelect]);
 
+  const canInteract = !disabled && !uploading && !generating;
+  const displaySrc = resolveAvatarUrl(avatarUrl);
+
   return (
     <div className="flex flex-col items-center">
       <div
         className={cn(
-          'relative w-32 h-32 rounded-full overflow-hidden cursor-pointer transition-all duration-200',
+          'relative w-32 h-32 rounded-[var(--radius-pill)] overflow-hidden cursor-pointer transition-all duration-200',
           'ring-4 ring-offset-4',
           isDragging
-            ? 'ring-primary-400 bg-primary-50 dark:bg-primary-300/20 scale-105'
-            : 'ring-neutral-200 dark:ring-neutral-700 hover:ring-primary-400 hover:scale-105',
+            ? 'ring-[var(--color-primary)] bg-[var(--color-primary-container)] scale-105'
+            : 'ring-neutral-200 dark:ring-neutral-700 hover:ring-[var(--color-primary)] hover:scale-105',
           disabled && 'opacity-50 cursor-not-allowed',
           error && 'ring-danger-400',
         )}
@@ -78,14 +86,14 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         tabIndex={disabled ? -1 : 0}
         aria-label="上传头像"
       >
-        {uploading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        {uploading || generating ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-tertiary)]">
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary-text)]0" />
           </div>
-        ) : avatarUrl ? (
+        ) : displaySrc ? (
           <>
             <img
-              src={avatarUrl}
+              src={displaySrc}
               alt="头像预览"
               className="w-full h-full object-cover"
             />
@@ -94,9 +102,9 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             </div>
           </>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-tertiary)] text-[var(--text-muted)]">
             {isDragging ? (
-              <Upload className="w-8 h-8 mb-1 text-primary-500" />
+              <Upload className="w-8 h-8 mb-1 text-[var(--color-primary-text)]0" />
             ) : (
               <ImageIcon className="w-8 h-8 mb-1" />
             )}
@@ -115,26 +123,63 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           disabled={disabled} aria-hidden="true" tabIndex={-1} />
       </div>
 
-      {avatarUrl && !uploading && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="mt-2 flex items-center gap-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-500 transition-colors"
-        >
-          <X className="w-3 h-3" />
-          移除图片
-        </button>
-      )}
+      {/* 操作区：上传 / 自动生成 / 移除 */}
+      <div className="mt-[var(--space-apple-sm)] flex flex-wrap items-center justify-center gap-2">
+        {onGenerate && !disabled && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onGenerate();
+            }}
+            disabled={uploading || generating}
+            className={cn(
+              'inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-[var(--space-apple-sm)] py-1 text-xs font-medium transition-colors',
+              'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]0/15 dark:text-[var(--color-primary-text)]',
+              'hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]0/25',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+          >
+            {avatarUrl ? <RefreshCw className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+            {avatarUrl ? '换一个' : '自动生成'}
+          </button>
+        )}
+
+        {canInteract && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!disabled && !uploading) inputRef.current?.click();
+            }}
+            className="inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-[var(--space-apple-sm)] py-1 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-primary-text)] dark:hover:text-[var(--color-primary-text)] transition-colors"
+          >
+            <Upload className="w-3 h-3" />
+            上传
+          </button>
+        )}
+
+        {displaySrc && !uploading && !generating && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            className="inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-[var(--space-apple-sm)] py-1 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-500 transition-colors"
+          >
+            <X className="w-3 h-3" />
+            移除
+          </button>
+        )}
+      </div>
 
       {error && (
         <p className="mt-2 text-sm text-danger-500 text-center">{error}</p>
       )}
 
       <p className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-        支持 JPG、PNG、WebP，不超过 2MB
+        支持 JPG、PNG、WebP，不超过 2MB；或一键自动生成
       </p>
     </div>
   );

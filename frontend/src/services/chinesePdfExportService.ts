@@ -5,7 +5,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { AcademicReport, AcademicReportSection } from './academicReportService';
+import type { AcademicReport } from './academicReportService';
 
 
 import { logger } from '@/utils/safeLogger';
@@ -351,7 +351,7 @@ export class ChinesePdfExportService {
   private addReferences(references: AcademicReport['references']): void {
     this.addSectionTitle('参考文献');
 
-    references.forEach((ref, index) => {
+    references.forEach((ref) => {
       this.checkPageBreak(10);
 
       const refText = [
@@ -383,7 +383,6 @@ export class ChinesePdfExportService {
 
       this.doc.setFontSize(this.options.fontSize.body);
       this.doc.setTextColor(100, 100, 100);
-      const infoY = this.pageState.currentY + 5;
 
       this.addInfoItem('配方名称', report.formulaName);
       this.addInfoItem('配方类型', report.formulaType);
@@ -402,7 +401,7 @@ export class ChinesePdfExportService {
 
       this.pageState.currentY += 10;
 
-      report.chapters.forEach((chapter, chapterIndex) => {
+      report.chapters.forEach((chapter) => {
         this.addSectionTitle(chapter.title, 1);
 
         const paragraphs = chapter.content.split('\n');

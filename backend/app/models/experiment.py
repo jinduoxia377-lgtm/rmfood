@@ -41,6 +41,11 @@ class Experiment(Base):
     conclusions: Mapped[str | None] = mapped_column(Text)
     recommendations: Mapped[str | None] = mapped_column(Text)
 
+    # ── 分享功能 ──────────────────────────────────────────────
+    share_code: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
+    share_password_hash: Mapped[str | None] = mapped_column(String(256))
+    view_count: Mapped[int] = mapped_column(Integer, default=0, index=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_naive)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_naive, onupdate=now_utc_naive)
 

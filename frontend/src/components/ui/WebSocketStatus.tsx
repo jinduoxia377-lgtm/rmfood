@@ -7,7 +7,7 @@
  */
 import { useState, useEffect } from'react'
 import { Pocket, RefreshCw, X, CheckCircle, AlertCircle, BarChart3, Clock, ArrowUpDown, Wifi, Zap, AlertTriangle } from'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Progress } from'@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Progress } from'@/components/ui'
 import { wsService } from'@/services/websocket'
 
 interface WebSocketStatusProps {
@@ -16,7 +16,6 @@ interface WebSocketStatusProps {
 
 export function WebSocketStatus({ className }: WebSocketStatusProps) {
  const [status, setStatus] = useState<'disconnected' |'connecting' |'connected' |'error' |'reconnecting'>('disconnected')
- const [latency, setLatency] = useState(0)
  const [stats, setStats] = useState({
  messagesSent: 0,
  messagesReceived: 0,
@@ -27,6 +26,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  const [reconnectAttempts, setReconnectAttempts] = useState(0)
  const [connectionTime, setConnectionTime] = useState<string>('')
  const [networkStatus, setNetworkStatus] = useState<'online' |'offline'>('online')
+ const [latency] = useState(0)
 
  useEffect(() => {
  // 监听连接状态
@@ -199,7 +199,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  </div>
 
  {/* 延迟和活动 */}
- <div className="grid grid-cols-2 gap-4 mb-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-1">
@@ -226,7 +226,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  </div>
 
  {/* 数据统计 */}
- <div className="grid grid-cols-2 gap-4 mb-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
  <div className="p-3 rounded-lg bg-neutral-700/50">
  <div className="flex items-center gap-2 mb-2">
  <BarChart3 size={16} className="text-text-muted" />
@@ -270,7 +270,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  </div>
 
  {/* 连接信息 */}
- <div className="grid grid-cols-2 gap-4 mb-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
  <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-300/15 border border-secondary-100 dark:border-secondary-800/30">
  <div className="flex items-center gap-2 mb-2">
  <AlertTriangle size={16} className="text-secondary-600 dark:text-secondary-700" />
@@ -301,7 +301,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  {/* 状态说明 */}
  <div className="mt-4 p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800/50">
  <h4 className="text-xs font-semibold text-text-secondary mb-2">状态说明</h4>
- <div className="grid grid-cols-2 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  <div className="flex items-center gap-2">
  <CheckCircle size={14} className="text-success-600" />
  <span className="text-xs text-text-secondary">已连接</span>

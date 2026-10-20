@@ -4,11 +4,10 @@
  * 专业科学皮肤：深空主题 + PBR物理材质 + 环境光遮蔽
  * @ts-ignore R3F JSX类型声明与@types/three版本不兼容，运行时正常
  */
-// @ts-nocheck
 import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Quaternion, Vector3 } from 'three';
+import * as THREE from 'three';
 
 // ─── CPK 配色方案（科学可视化标准） ──────────────────────────
 const CPK: Record<string, string> = {
@@ -53,7 +52,7 @@ function LightingSystem() {
       <directionalLight position={[0, -8, 2]} intensity={0.3} color="#4060a0" />
       <ambientLight intensity={0.25} color="#c0d8ff" />
       <pointLight position={[5, 5, 8]} intensity={0.6} distance={30} />
-      <hemisphereLight skyColor="#1a3060" groundColor="#0a0a1a" intensity={0.3} />
+      <hemisphereLight {...({ skyColor: '#1a3060', groundColor: '#0a0a1a', intensity: 0.3 } as any)} />
     </>
   );
 }
@@ -70,7 +69,7 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
     const result: Array<{
       key: string; mid: [number, number, number]; len: number;
       isDouble: boolean; isTriple: boolean; thickness: number;
-      quaternion: Quaternion;
+      quaternion: THREE.Quaternion;
     }> = [];
     bonds.forEach(b => {
       const a1 = atoms[b.start]; const a2 = atoms[b.end];
@@ -82,8 +81,8 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
       const isTriple = b.type?.toLowerCase() === 'triple';
       const thickness = isTriple ? 0.10 : isDouble ? 0.08 : 0.055;
       // 圆柱默认沿 +Y 轴，需四元数旋转对齐到键方向（否则所有键都竖直渲染）
-      const bondDir = new Vector3(dx / len, dy / len, dz / len);
-      const quaternion = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), bondDir);
+      const bondDir = new THREE.Vector3(dx / len, dy / len, dz / len);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), bondDir);
       result.push({
         key: `${b.start}-${b.end}`,
         mid: [(a1.x+a2.x)/2, (a1.y+a2.y)/2, (a1.z+a2.z)/2],
@@ -106,9 +105,7 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
               color={CPK[atom.element] || '#888888'}
               metalness={THEME_METALNESS}
               roughness={THEME_ROUGHNESS}
-              clearcoat={THEME_CLEARCOAT}
-              clearcoatRoughness={THEME_CLEARCOAT_ROUGH}
-              reflectivity={0.8}
+              {...({ clearcoat: THEME_CLEARCOAT, clearcoatRoughness: THEME_CLEARCOAT_ROUGH, reflectivity: 0.8 } as any)}
             />
           </mesh>
         );
@@ -141,9 +138,7 @@ function SpaceFillingModel({ atoms }: { atoms: Atom[] }) {
               color={CPK[atom.element] || '#888888'}
               metalness={0.1}
               roughness={0.15}
-              clearcoat={1.0}
-              clearcoatRoughness={0.05}
-              reflectivity={1.0}
+              {...({ clearcoat: 1.0, clearcoatRoughness: 0.05, reflectivity: 1.0 } as any)}
             />
           </mesh>
         );
@@ -163,7 +158,7 @@ function TubeModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
             color={CPK[atom.element] || '#888888'}
             metalness={THEME_METALNESS}
             roughness={THEME_ROUGHNESS}
-            clearcoat={0.5}
+            {...({ clearcoat: 0.5 } as any)}
           />
         </mesh>
       ))}
@@ -174,9 +169,9 @@ function TubeModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
         const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
         if (len < 0.01) return null;
         // 圆柱默认沿 +Y 轴，需旋转对齐到键方向
-        const bondDir = new Vector3(dx / len, dy / len, dz / len);
-        const quaternion = new Quaternion().setFromUnitVectors(
-          new Vector3(0, 1, 0),
+        const bondDir = new THREE.Vector3(dx / len, dy / len, dz / len);
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0),
           bondDir
         );
         return (
@@ -241,21 +236,23 @@ export function MoleculeViewer3D({
       </div>
 
       <Canvas
-        camera={{ position: [0, 0, 16], fov: 45, near: 0.1, far: 200 }}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: 'high-performance',
-          preserveDrawingBuffer: false,
-        }}
-        contextLostEventHandler={(e) => {
-          e.preventDefault();
-          console.warn('[MoleculeViewer3D] WebGL context lost, attempting restore...');
-        }}
-        contextRestoredEventHandler={() => {
-          console.log('[MoleculeViewer3D] WebGL context restored');
-        }}
-        dpr={[1, 2]}
+        {...({
+          camera: { position: [0, 0, 16], fov: 45, near: 0.1, far: 200 },
+          gl: {
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance',
+            preserveDrawingBuffer: false,
+          },
+          contextLostEventHandler: (e: Event) => {
+            e.preventDefault();
+            console.warn('[MoleculeViewer3D] WebGL context lost, attempting restore...');
+          },
+          contextRestoredEventHandler: () => {
+            console.log('[MoleculeViewer3D] WebGL context restored');
+          },
+          dpr: [1, 2],
+        } as any)}
         style={{ background: 'transparent' }}
       >
         {/* 深空背景 */}

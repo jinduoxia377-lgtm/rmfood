@@ -203,6 +203,7 @@ class AcademicianChatEngine:
 
         # Step 3: 调用 LLM（三级降级 + 超时）
         content = ""
+        llm_error = ""  # 记录失败原因，降级时向用户明示「这不是大模型在回答」
         factory = get_provider_factory()
         for mt in [8192, 4096, 2048]:
             try:
@@ -214,13 +215,26 @@ class AcademicianChatEngine:
                 )
                 content = content.strip()
                 logger.info(f"[ChatEngine] LLM 成功 (mt={mt}): {len(content)}字符")
+                # 记录实际模型名，供前端展示来源徽标（而非默认 deepseek-chat）
+                try:
+                    from ...services.llm_service import llm_service as _llm_svc
+                    _cfg = getattr(_llm_svc, "config", None)
+                    if _cfg and getattr(_cfg, "model", ""):
+                        result.model = _cfg.model
+                except Exception:
+                    pass
                 break
             except Exception as e:
                 err_str = str(e)
-                # 401/403 认证错误：降低 token 数无法解决，立即跳出循环进入降级
-                if any(kw in err_str for kw in ['401', '403', 'Unauthorized', 'invalid_api_key', '认证', '未授权']):
-                    logger.error(f"[ChatEngine] LLM 认证错误（{err_str[:80]}），跳过后续重试，直接降级")
+                # 认证/额度类错误：降低 max_tokens 无法解决，继续重试只会白等
+                # 三次 120s 超时。立即跳出，进入降级并记录原因。
+                if any(kw in err_str.lower() for kw in
+                        ('401', '403', 'unauthorized', 'forbidden', 'invalid_api_key',
+                         'insufficient', 'quota', '余额', '额度', '认证', '未授权')):
+                    llm_error = self._classify_llm_error(err_str)
+                    logger.error(f"[ChatEngine] LLM 配置/额度错误（{err_str[:80]}），跳过后续重试，直接降级")
                     break
+                llm_error = self._classify_llm_error(err_str)
                 logger.warning(f"[ChatEngine] LLM mt={mt} 失败: {e}")
 
         # Step 4: 质量检查与增强
@@ -256,18 +270,22 @@ class AcademicianChatEngine:
             "detail": f"引擎: {'LLM' if content else '规则引擎(降级)'}",
         })
 
-        # Step 7: LLM 降级
+        # Step 7: LLM 降级 — 降级原因随回复正文一并发给用户，不做静默替换
         if not content:
             try:
-                content = self._fallback_response(question)
+                content = self._fallback_response(question, reason=llm_error)
             except Exception as e:
                 logger.debug("回退响应生成失败: %s", e)
                 content = ""
             result.model = "rule-engine-fallback" if content else "error"
+            if llm_error:
+                logger.warning(f"[ChatEngine] 已降级为规则引擎：{llm_error}")
 
-        # 最终保底
+        # 最终保底（前两级均失败）— 同样必须明示降级，不做静默替换
         if not content:
             content = (
+                f"> ⚠️ **当前为大模型降级模式** — {llm_error or 'LLM 服务不可用'}。"
+                f"以下为固定引导文案，非大模型推理。\n\n"
                 f"您好！关于「{question}」，您可以尝试：\n"
                 f"1. 配方生成 - 选择功效标签自动生成\n"
                 f"2. 肽分析 - 分析活性成分\n"
@@ -374,8 +392,18 @@ class AcademicianChatEngine:
                 effects.append(eff)
         return effects[:5]
 
-    def _fallback_response(self, question: str) -> str:
-        """LLM 不可用时的降级回复 — 调用配方引擎生成专业方案"""
+    def _fallback_response(self, question: str, reason: str = "") -> str:
+        """LLM 不可用时的降级回复 — 调用配方引擎生成专业方案
+
+        reason: LLM 失败原因（额度不足 / Key 无效 / 超时等）。会出现在回复
+                正文顶部，避免降级输出被用户误认为大模型推理结果。
+        """
+        # 降级告示：始终置于最前，保证用户一眼看出「这不是大模型在回答」
+        notice = (
+            "> ⚠️ **当前为大模型降级模式** — "
+            + (reason or "LLM 服务不可用")
+            + "。以下内容由本地配方引擎（贝叶斯优化器）生成，**非大模型推理**。\n\n"
+        )
         try:
             from .bayesian_formula_optimizer import get_bayesian_optimizer
             effects = self._extract_effects(question)
@@ -384,7 +412,7 @@ class AcademicianChatEngine:
             if candidates:
                 # 格式化最优方案
                 best = candidates[0]
-                lines = [f"## 智能配方方案（离线模式）\n"]
+                lines = [notice, f"## 智能配方方案（离线模式）\n"]
                 lines.append(f"基于「{'、'.join(effects)}」功效需求，为您设计以下配方方案：\n")
                 lines.append("| 角色 | 成分 | 用量 | 功效定位 |\n")
                 lines.append("|:-----|:-----|:-----|:---------|\n")
@@ -411,13 +439,33 @@ class AcademicianChatEngine:
                     matched.append(f"**{herb.name_cn}** ({herb.dosage_min}-{herb.dosage_max}g): "
                                   f"{', '.join(f'{k}({v*100:.0f}%)' for k,v in top)}")
             if matched:
-                return "**药材知识库匹配结果**\n\n" + "\n".join(matched)
+                return notice + "**药材知识库匹配结果**\n\n" + "\n".join(matched)
         except Exception as e:
             logger.debug("知识库匹配失败: %s", e)
-            return (
+            return notice + (
                 f"您好！关于「{question}」，建议您在配方生成模块选择功效标签获取专业方案。\n"
                 f"当前支持: 免疫调节、抗氧化、抗疲劳、降血糖、降压、护肝、安神等功效。"
             )
+
+    @staticmethod
+    def _classify_llm_error(err_str: str) -> str:
+        """把原始异常串翻译为用户可理解的降级原因。
+
+        返回值会直接出现在回复正文顶部的降级告示里，因此措辞需
+        明确指向可操作的结论，而不是复述 HTTP 错误码。
+        """
+        s = err_str.lower()
+        if any(k in s for k in ('quota', 'insufficient', '余额', '额度')):
+            return "LLM 服务额度不足（账户余额为 0），需充值后恢复大模型推理"
+        if any(k in s for k in ('401', 'invalid_api_key', '未授权', '认证')):
+            return "LLM API Key 无效或未配置，请检查 .env 中的 OPENAI_API_KEY"
+        if '403' in s or 'forbidden' in s:
+            return "LLM 网关拒绝访问（HTTP 403），请确认密钥权限范围"
+        if any(k in s for k in ('timeout', '超时', 'timed out')):
+            return "LLM 服务响应超时（120s）"
+        if any(k in s for k in ('connection', 'network', '连接', 'name or service not known')):
+            return "LLM 网关网络不可达"
+        return "LLM 服务不可用"
 
     def _complete_content(self, content: str) -> tuple[str, List[str]]:
         """内容完整性补全"""

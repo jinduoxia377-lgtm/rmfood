@@ -1,7 +1,7 @@
 <!-- Checkbox 多选组件 -->
 <view class="checkbox {{className}}" bindtap="handleTap">
   <view class="checkbox-box {{checked ? 'checkbox-box-checked' : ''}} {{disabled ? 'checkbox-box-disabled' : ''}}">
-    <icon wx:if="{{checked}}" name="check" size="sm" color="#FFFFFF" />
+    <icon wx:if="{{checked}}" name="check" size="sm" color="var(--color-text-white)" />
   </view>
   <view class="checkbox-label">
     <slot></slot>

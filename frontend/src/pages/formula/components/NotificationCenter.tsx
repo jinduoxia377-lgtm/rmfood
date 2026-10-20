@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 智能通知中心组件
  * 支持实时通知、分类管理、批量操作
  * R-02：列表接后端 /notifications API；接口不可用时降级为本地 mock 并展示「离线模式」标识
@@ -110,12 +110,12 @@ const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
 }
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
-  system: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800',
-  formula_review: 'text-warning-600 bg-warning-100 dark:bg-warning-300/25',
-  experiment_complete: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-300/25',
-  ai_task_done: 'text-accent-600 bg-accent-100 dark:bg-accent-300/25',
+  system: 'text-[var(--text-muted)] bg-[var(--bg-tertiary)]',
+  formula_review: 'text-[var(--color-warning-text)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25',
+  experiment_complete: 'text-[var(--color-secondary-text)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25',
+  ai_task_done: 'text-[var(--color-accent-text)] bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25',
   data_sync: 'text-info-600 bg-info-100 dark:bg-info-300/25',
-  other: 'text-error-600 bg-error-100 dark:bg-error-300/25',
+  other: 'text-[var(--color-error-text)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/25',
 }
 
 const NOTIFICATION_LABELS: Record<NotificationType, string> = {
@@ -250,10 +250,10 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     <Modal open={isOpen} onClose={onClose} maxWidth="max-w-lg" title="通知中心">
       <div className="flex flex-col h-[600px]">
         {/* 顶部工具栏 */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-[var(--space-apple-md)]">
           <div className="flex items-center gap-2">
-            <Bell size={20} className="text-neutral-600 dark:text-neutral-400" />
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">通知中心</h3>
+            <Bell size={20} className="text-[var(--text-secondary)]" />
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">通知中心</h3>
             {unreadCount > 0 && (
               <Badge variant="primary" size="sm">{unreadCount}条未读</Badge>
             )}
@@ -266,19 +266,19 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
           <div className="flex items-center gap-2">
             <button
               onClick={markAllAsRead}
-              className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-700"
+              className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               title="全部标为已读"
             >
               <CheckCircle size={16} />
             </button>
-            <button className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-700" title="设置">
+            <button className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]" title="设置">
               <Settings size={16} />
             </button>
           </div>
         </div>
 
         {/* 搜索框 */}
-        <div className="mb-4">
+        <div className="mb-[var(--space-apple-md)]">
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -287,14 +287,14 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
         </div>
 
         {/* 筛选标签 */}
-        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex items-center gap-2 mb-[var(--space-apple-md)] overflow-x-auto pb-2">
           <button
             onClick={() => setFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
+              'px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-pill)] text-xs font-medium whitespace-nowrap transition-all',
               filter === 'all'
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
-                : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/25 dark:text-[var(--color-primary-text)]'
+                : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]',
             )}
           >
             全部
@@ -304,10 +304,10 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
               key={type}
               onClick={() => setFilter(type as NotificationType)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all',
+                'px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-pill)] text-xs font-medium whitespace-nowrap transition-all',
                 filter === type
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700'
-                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                  ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/25 dark:text-[var(--color-primary-text)]'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]',
               )}
             >
               {label}
@@ -320,37 +320,37 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
           {loading ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 animate-pulse">
-                  <div className="h-4 w-1/3 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
-                  <div className="h-3 w-2/3 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                <div key={i} className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] animate-pulse">
+                  <div className="h-4 w-1/3 bg-[var(--border-color)] rounded mb-2" />
+                  <div className="h-3 w-2/3 bg-[var(--bg-tertiary)] rounded" />
                 </div>
               ))}
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <Bell size={48} className="text-neutral-300 dark:text-neutral-400 mb-3" />
-              <p className="text-neutral-500 dark:text-neutral-400 text-sm">暂无通知</p>
+              <Bell size={48} className="text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-[var(--space-apple-sm)]" />
+              <p className="text-[var(--text-muted)] text-sm">暂无通知</p>
             </div>
           ) : (
             filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 className={cn(
-                  'p-4 rounded-xl border transition-all duration-200 group relative',
+                  'p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border transition-all duration-200 group relative',
                   notification.isRead
-                    ? 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800'
-                    : 'bg-primary-50 dark:bg-primary-300/15 border-primary-200 dark:border-primary-800/50',
+                    ? 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
+                    : 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/15 border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/50',
                 )}
               >
                 {/* 未读指示 */}
                 {!notification.isRead && (
-                  <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-primary-500" />
+                  <div className="absolute top-[var(--space-apple-md)] left-4 w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0" />
                 )}
 
-                <div className="flex items-start gap-3 pl-6">
+                <div className="flex items-start gap-[var(--space-apple-sm)] pl-6">
                   {/* 图标 */}
                   <div className={cn(
-                    'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                    'w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center shrink-0',
                     NOTIFICATION_COLORS[notification.type],
                   )}>
                     {NOTIFICATION_ICONS[notification.type]}
@@ -362,7 +362,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                       <div className="flex items-center gap-2">
                         <h4 className={cn(
                           'text-sm font-semibold',
-                          notification.isRead ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-900 dark:text-white',
+                          notification.isRead ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]',
                         )}>
                           {notification.title}
                         </h4>
@@ -372,7 +372,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                         {formatTime(notification.createdAt)}
                       </span>
                     </div>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
+                    <p className="text-sm text-[var(--text-muted)] mb-[var(--space-apple-sm)]">
                       {notification.message}
                     </p>
 
@@ -388,7 +388,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600"
+                          className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                           title="标为已读"
                         >
                           <Check size={14} />
@@ -396,14 +396,14 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                       )}
                       <button
                         onClick={() => archive(notification.id)}
-                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600"
+                        className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                         title="归档"
                       >
                         <Archive size={14} />
                       </button>
                       <button
                         onClick={() => deleteNotification(notification.id)}
-                        className="p-1.5 rounded-lg hover:bg-error-100 dark:hover:bg-error-900/30 text-neutral-400 hover:text-error-600"
+                        className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/30 text-[var(--text-muted)] hover:text-[var(--color-error-text)]"
                         title="删除"
                       >
                         <Trash2 size={14} />
@@ -417,7 +417,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
         </div>
 
         {/* 底部操作 */}
-        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 mt-4">
+        <div className="pt-[var(--space-apple-md)] border-t border-[var(--border-color)] dark:border-neutral-800 mt-[var(--space-apple-md)]">
           <a href="/notifications">
             <Button variant="secondary" size="sm" className="w-full">
               查看全部通知
@@ -438,12 +438,12 @@ export function NotificationBadge({ count, onClick }: NotificationBadgeProps) {
   return (
     <button
       onClick={onClick}
-      className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+      className="relative p-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-[var(--radius-Apple-md)] hover:bg-[var(--bg-secondary)] transition-colors"
       aria-label={count > 0 ? `${count} 条未读通知` : '通知中心'}
     >
-      <Bell size={20} className="text-neutral-600 dark:text-neutral-400" />
+      <Bell size={20} className="text-[var(--text-secondary)]" />
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-error-500 text-white text-xs font-semibold" aria-hidden="true">
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-[var(--radius-pill)] bg-[var(--color-error-container)]0 text-white text-xs font-semibold" aria-hidden="true">
           {count > 99 ? '99+' : count}
         </span>
       )}

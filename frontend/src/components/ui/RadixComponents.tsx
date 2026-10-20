@@ -110,7 +110,7 @@ export const RadixText = React.forwardRef<HTMLElement, RadixTextProps>(
     { className, as: Tag = 'p', size = '2', weight = 'regular', color = 'gray', style, children, ...props },
     ref,
   ) => {
-    const Component = Tag as React.ElementType
+    const Component = Tag as unknown as React.ComponentType<any>
     const resolvedColor = TEXT_COLOR_VAR[color]
     return (
       <Component

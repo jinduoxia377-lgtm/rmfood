@@ -234,6 +234,9 @@ const validateReviewData = (review: Partial<Review>): { valid: boolean; errors: 
 /**
  * 计算整体评审状态 */
 const calculateOverallStatus = (stages: ReviewStage[]): ReviewStatus => {
+  if (stages.some(s => s.status === 'rejected')) {
+    return 'rejected';
+  }
   if (stages.every(s => s.status === 'approved')) {
     return 'approved';
   }
@@ -287,7 +290,7 @@ export const useReviewStore = create<ReviewState>()(
             const stageConfigs = options.stages || DEFAULT_REVIEW_STAGES;
             const startDate = new Date();
 
-            const stages: ReviewStage[] = stageConfigs.map((config, _index) => ({
+            const stages: ReviewStage[] = stageConfigs.map((config) => ({
               id: generateId('stage'),
               name: config.name,
               description: config.description,
@@ -350,7 +353,9 @@ export const useReviewStore = create<ReviewState>()(
               : reviews.get(reviewId);
 
             if (!review) {
-              return { success: false, error: '评审不存在' };
+              const errorMessage = '评审不存在';
+              set({ error: errorMessage });
+              return { success: false, error: errorMessage };
             }
 
             if (review.status !== 'pending') {
@@ -387,7 +392,7 @@ export const useReviewStore = create<ReviewState>()(
           }
         },
 
-        updateStageStatus: (reviewId, stageId, status, _approverId) => {
+        updateStageStatus: (reviewId, stageId, status) => {
           try {
             const { currentReview, reviews } = get();
             const review = currentReview?.id === reviewId
@@ -405,9 +410,10 @@ export const useReviewStore = create<ReviewState>()(
 
             set(state => {
               const stageStatus: StageStatus = status === 'approved' ? 'approved' :
+                                 status === 'rejected' ? 'rejected' :
                                  status === 'in_progress' ? 'in_progress' :
                                  status === 'published' ? 'completed' : 'pending';
-              const updatedStages = review.stages.map((stage, _index) => {
+              const updatedStages = review.stages.map((stage) => {
                 if (stage.id !== stageId) return stage;
 
                 const updatedStage: ReviewStage = {
@@ -727,18 +733,21 @@ export const useReviewStore = create<ReviewState>()(
 
           if (!review) return false;
 
-          const currentStage = review.stages.find(
+          // 当前阶段已自动前进到下一阶段；判断「上一阶段」是否已批准且无未解决评论，
+          // 即是否允许从该阶段继续前进。
+          const currentIndex = review.stages.findIndex(
             s => s.id === review.currentStage,
           );
 
-          if (!currentStage) return false;
+          if (currentIndex <= 0) return false;
 
-          // 检查当前阶段是否已批准
-          if (currentStage.status !== 'approved') return false;
+          const previousStage = review.stages[currentIndex - 1];
+          if (!previousStage) return false;
+          if (previousStage.status !== 'approved') return false;
 
-          // 检查是否有未解决的评论
+          // 检查上一阶段是否有未解决的评论
           const unresolvedComments = (review.comments || []).filter(
-            c => c.stageId === currentStage.id && !c.resolvedAt,
+            c => c.stageId === previousStage.id && !c.resolvedAt,
           );
 
           return unresolvedComments.length === 0;

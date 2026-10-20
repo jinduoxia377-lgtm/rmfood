@@ -3,8 +3,9 @@
  * 功能：基本信息编辑 + 材料/设备管理 + 可视化参数编辑 + 目标管理 + 时间计划
  */
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Save, FlaskConical, CalendarDays, Plus, X, Settings, Wrench, ClipboardList, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Save, FlaskConical, CalendarDays, Plus, X, Settings, Wrench, ClipboardList, Trash2, AlertCircle } from 'lucide-react'
 import { useExperiment } from '@/hooks/useQueries'
 import { experimentApi } from '@/api/experiment'
 import { useQueryClient } from '@tanstack/react-query'
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils'
 import type { ExperimentCreatePayload } from '@/api/experiment'
 
 export default function ExperimentEditPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -47,6 +49,7 @@ export default function ExperimentEditPage() {
 
   useEffect(() => {
     if (experiment) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         title: experiment.title,
         description: experiment.description || '',
@@ -125,7 +128,7 @@ export default function ExperimentEditPage() {
 
   const validate = (): boolean => {
     if (!form.title.trim()) {
-      setError('请输入实验标题')
+      setError(t('pages.experimentForm.titleRequired'))
       return false
     }
     setError('')
@@ -142,7 +145,7 @@ export default function ExperimentEditPage() {
       qc.invalidateQueries({ queryKey: ['experiments'] })
       navigate(`/experiments/${experimentId}`)
     } catch (err: any) {
-      setError(err?.response?.data?.detail || '保存失败')
+      setError(err?.response?.data?.detail || t('pages.experimentForm.saveFailed'))
     } finally {
       setSaving(false)
     }
@@ -162,14 +165,14 @@ export default function ExperimentEditPage() {
   })()
 
   const tabs = [
-    { key: 'basic' as const, label: '基本信息', icon: FlaskConical },
-    { key: 'params' as const, label: '参数', icon: Settings },
-    { key: 'materials' as const, label: '材料与设备', icon: ClipboardList },
+    { key: 'basic' as const, labelKey: 'pages.experimentForm.basicInfo', icon: FlaskConical },
+    { key: 'params' as const, labelKey: 'pages.experimentForm.params', icon: Settings },
+    { key: 'materials' as const, labelKey: 'pages.experimentForm.materialsEquipment', icon: ClipboardList },
   ]
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="max-w-[1600px] mx-auto space-y-[var(--space-apple-md)]">
         <Skeleton className="h-8 w-1/4" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -178,9 +181,9 @@ export default function ExperimentEditPage() {
 
   if (!experiment) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实验不存在</p>
-        <Link to="/experiments" className="text-primary-700 text-sm mt-2 inline-block">返回列表</Link>
+      <div className="max-w-[1600px] mx-auto text-center py-20">
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentForm.experimentNotExist')}</p>
+        <Link to="/experiments" className="text-[var(--color-primary-text)] text-sm mt-2 inline-block">{t('pages.experimentForm.backToList')}</Link>
       </div>
     )
   }
@@ -189,33 +192,33 @@ export default function ExperimentEditPage() {
 
   if (!isEditable) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前状态的实验不可编辑</p>
-        <Link to={`/experiments/${experimentId}`} className="text-primary-700 text-sm mt-2 inline-block">返回详情</Link>
+      <div className="max-w-[1600px] mx-auto text-center py-20">
+        <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentForm.notEditable')}</p>
+        <Link to={`/experiments/${experimentId}`} className="text-[var(--color-primary-text)] text-sm mt-2 inline-block">{t('pages.experimentForm.backToDetail')}</Link>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 space-y-6">
       {/* 头部 */}
       <div className="flex items-center justify-between">
         {/* A-47：这一页原本完全没有 h1 —— 只有「返回详情」和「保存修改」两个按钮，
             屏幕阅读器用户进入后拿不到任何页面主题。补一个可见的 h1 作为页面标题。 */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           <button
             onClick={() => navigate(`/experiments/${experimentId}`)}
-            className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+            className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
           >
             <ArrowLeft size={16} />
-            返回详情
+            {t('pages.experimentForm.backToDetail')}
           </button>
-          <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">编辑实验</h1>
+          <h1 className="text-xl font-semibold leading-snug tracking-tight text-[var(--text-primary)]">{t('pages.experimentForm.titleEdit')}</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
           <div className="flex items-center gap-2">
-            <div className="w-16 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-              <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
+            <div className="w-16 h-1.5 bg-[var(--bg-tertiary)] rounded-[var(--radius-pill)] overflow-hidden">
+              <div className="h-full bg-[var(--color-primary-container)]0 rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
             </div>
             <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">{formCompleteness.percent}%</span>
           </div>
@@ -223,21 +226,21 @@ export default function ExperimentEditPage() {
             onClick={handleSave}
             loading={saving}
             icon={<Save size={14} />}
-            className="bg-primary-600 hover:bg-primary-700 shadow-primary-600/25"
+            className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)] shadow-primary-600/25"
           >
-            保存修改
+            {t('pages.experimentForm.saveChanges')}
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 text-error-600 dark:text-error-600 text-sm">
+        <div className="flex items-center gap-2 px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] text-[var(--color-error-text)] dark:text-[var(--color-error-text)] text-sm">
           <AlertCircle size={16} />{error}
         </div>
       )}
 
       {/* 标签导航 */}
-      <div className="flex gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1">
+      <div className="flex gap-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-md)] p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
@@ -245,14 +248,14 @@ export default function ExperimentEditPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                'flex-1 flex items-center justify-center gap-2 px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-all',
                 activeTab === tab.key
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300',
+                  ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
               )}
             >
               <Icon size={14} />
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           )
         })}
@@ -263,38 +266,38 @@ export default function ExperimentEditPage() {
         <div className="space-y-6">
           <Card>
             <CardContent className="space-y-5">
-              <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
+              <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
                 <FlaskConical size={18} />
-                基本信息
+                {t('pages.experimentForm.basicInfo')}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  实验标题 <span className="text-error-500">*</span>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                  {t('pages.experimentForm.experimentTitle')} <span className="text-[var(--color-error-text)]0">*</span>
                 </label>
                 <Input
                   value={form.title}
                   onChange={(e) => updateField('title', e.target.value)}
-                  placeholder="请输入实验标题"
+                  placeholder={t('pages.experimentForm.experimentTitlePlaceholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">实验描述</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t('pages.experimentForm.experimentDescription')}</label>
                 <Textarea
                   value={form.description}
                   onChange={(e) => updateField('description', e.target.value)}
-                  placeholder="请输入实验描述"
+                  placeholder={t('pages.experimentForm.experimentDescriptionPlaceholder')}
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">实验方法</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t('pages.experimentForm.methodology')}</label>
                 <Textarea
                   value={form.methodology}
                   onChange={(e) => updateField('methodology', e.target.value)}
-                  placeholder="请输入实验方法"
+                  placeholder={t('pages.experimentForm.methodologyPlaceholder')}
                   rows={4}
                 />
               </div>
@@ -303,15 +306,15 @@ export default function ExperimentEditPage() {
 
           {/* 实验目标 */}
           <Card>
-            <CardContent className="space-y-4">
-              <div className="text-neutral-900 dark:text-white font-semibold">实验目标</div>
+            <CardContent className="space-y-[var(--space-apple-md)]">
+              <div className="text-[var(--text-primary)] font-semibold">{t('pages.experimentForm.objectives')}</div>
 
               {form.objectives && form.objectives.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {form.objectives.map((obj, i) => (
                     <Badge key={i} variant="info" className="gap-1">
                       {obj}
-                      <button onClick={() => removeObjective(i)} className="ml-0.5 hover:text-error-500">
+                      <button onClick={() => removeObjective(i)} className="ml-0.5 hover:text-[var(--color-error-text)]0">
                         <X size={10} />
                       </button>
                     </Badge>
@@ -324,11 +327,11 @@ export default function ExperimentEditPage() {
                   value={objectiveInput}
                   onChange={(e) => setObjectiveInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addObjective() } }}
-                  placeholder="输入实验目标，按 Enter 添加"
+                  placeholder={t('pages.experimentForm.objectivePlaceholder')}
                   className="flex-1"
                 />
                 <Button onClick={addObjective} disabled={!objectiveInput.trim()} variant="secondary" size="sm">
-                  添加
+                  {t('pages.experimentForm.add')}
                 </Button>
               </div>
             </CardContent>
@@ -337,20 +340,20 @@ export default function ExperimentEditPage() {
           {/* 时间计划 */}
           <Card>
             <CardContent className="space-y-5">
-              <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
+              <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
                 <CalendarDays size={18} />
-                时间计划
+                {t('pages.experimentForm.schedule')}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    计划开始日期
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                    {t('pages.experimentForm.startDate')}
                   </label>
                   <Input type="date" value={form.start_date} onChange={(e) => updateField('start_date', e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    计划结束日期
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                    {t('pages.experimentForm.endDate')}
                   </label>
                   <Input type="date" value={form.end_date} onChange={(e) => updateField('end_date', e.target.value)} />
                 </div>
@@ -364,27 +367,27 @@ export default function ExperimentEditPage() {
       {activeTab === 'params' && (
         <Card>
           <CardContent className="space-y-5">
-            <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
+            <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
               <Settings size={18} />
-              实验参数
+              {t('pages.experimentForm.params')}
             </div>
 
             {/* 参数表格 */}
             <div className="space-y-2">
               {(form.parameters ? Object.entries(form.parameters) : []).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 min-w-[120px] truncate">{key}</span>
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400 flex-1 truncate">{String(value)}</span>
+                <div key={key} className="flex items-center gap-2 p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] group">
+                  <span className="text-sm font-medium text-[var(--text-primary)] min-w-[120px] truncate">{key}</span>
+                  <span className="text-sm text-[var(--text-muted)] flex-1 truncate">{String(value)}</span>
                   <button
                     onClick={() => removeParam(key)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={12} />
                   </button>
                 </div>
               ))}
               {(form.parameters ? Object.keys(form.parameters).length === 0 : true) && (
-                <div className="text-center py-6 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无参数，请在下方添加</div>
+                <div className="text-center py-[var(--space-apple-lg)] text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentForm.noParams')}</div>
               )}
             </div>
 
@@ -393,14 +396,14 @@ export default function ExperimentEditPage() {
               <Input
                 value={paramKey}
                 onChange={(e) => setParamKey(e.target.value)}
-                placeholder="参数名"
+                placeholder={t('pages.experimentForm.paramName')}
                 size="sm"
                 className="flex-1"
               />
               <Input
                 value={paramValue}
                 onChange={(e) => setParamValue(e.target.value)}
-                placeholder="参数值"
+                placeholder={t('pages.experimentForm.paramValue')}
                 size="sm"
                 className="flex-1"
               />
@@ -417,44 +420,44 @@ export default function ExperimentEditPage() {
         <div className="space-y-6">
           {/* 材料管理 */}
           <Card>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
-                <FlaskConical size={18} className="text-accent-500" />
-                实验材料
+            <CardContent className="space-y-[var(--space-apple-md)]">
+              <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
+                <FlaskConical size={18} className="text-[var(--color-accent-text)]0" />
+                {t('pages.experimentForm.experimentMaterials')}
               </div>
 
               {(form.materials || []).map((mat: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
-                  <div className="flex-1 grid grid-cols-3 gap-2">
+                <div key={idx} className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] group">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <Input
                       value={mat.name || ''}
                       onChange={(e) => updateMaterial(idx, 'name', e.target.value)}
-                      placeholder="材料名称"
+                      placeholder={t('pages.experimentForm.materialNamePlaceholder')}
                       size="sm"
                     />
                     <Input
                       value={mat.quantity || ''}
                       onChange={(e) => updateMaterial(idx, 'quantity', e.target.value)}
-                      placeholder="数量"
+                      placeholder={t('pages.experimentForm.quantityPlaceholder')}
                       size="sm"
                     />
                     <Input
                       value={mat.unit || ''}
                       onChange={(e) => updateMaterial(idx, 'unit', e.target.value)}
-                      placeholder="单位"
+                      placeholder={t('pages.experimentForm.unitPlaceholder')}
                       size="sm"
                     />
                   </div>
                   <button
                     onClick={() => removeMaterial(idx)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
               {(form.materials || []).length === 0 && (
-                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无材料，请在下方添加</div>
+                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentForm.noMaterials')}</div>
               )}
 
               <div className="flex gap-2">
@@ -462,7 +465,7 @@ export default function ExperimentEditPage() {
                   value={materialInput}
                   onChange={(e) => setMaterialInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMaterial() } }}
-                  placeholder="输入材料名称，按 Enter 添加"
+                  placeholder={t('pages.experimentForm.materialPlaceholder')}
                   className="flex-1"
                 />
                 <Button onClick={addMaterial} disabled={!materialInput.trim()} variant="secondary" size="sm">
@@ -474,28 +477,28 @@ export default function ExperimentEditPage() {
 
           {/* 设备管理 */}
           <Card>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-semibold">
+            <CardContent className="space-y-[var(--space-apple-md)]">
+              <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
                 <Wrench size={18} className="text-info-500" />
-                实验设备
+                {t('pages.experimentForm.experimentEquipment')}
               </div>
 
               {(form.equipment || []).map((eq: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg group">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex-1">{eq.name}</span>
+                <div key={idx} className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] group">
+                  <span className="text-sm font-medium text-[var(--text-primary)] flex-1">{eq.name}</span>
                   <Badge variant={eq.status === 'available' ? 'success' : 'warning'} size="sm">
-                    {eq.status === 'available' ? '可用' : '使用中'}
+                    {eq.status === 'available' ? t('pages.experimentForm.equipmentStatusAvailable') : t('pages.experimentForm.equipmentStatusInUse')}
                   </Badge>
                   <button
                     onClick={() => removeEquipment(idx)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
               {(form.equipment || []).length === 0 && (
-                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无设备，请在下方添加</div>
+                <div className="text-center py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentForm.noEquipment')}</div>
               )}
 
               <div className="flex gap-2">
@@ -503,7 +506,7 @@ export default function ExperimentEditPage() {
                   value={equipmentInput}
                   onChange={(e) => setEquipmentInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addEquipment() } }}
-                  placeholder="输入设备名称，按 Enter 添加"
+                  placeholder={t('pages.experimentForm.equipmentPlaceholder')}
                   className="flex-1"
                 />
                 <Button onClick={addEquipment} disabled={!equipmentInput.trim()} variant="secondary" size="sm">
@@ -516,17 +519,17 @@ export default function ExperimentEditPage() {
       )}
 
       {/* 底部保存按钮 */}
-      <div className="flex items-center justify-end gap-3 pt-2 pb-8">
+      <div className="flex items-center justify-end gap-[var(--space-apple-sm)] pt-2 pb-8">
         <Link to={`/experiments/${experimentId}`}>
-          <Button variant="secondary">取消</Button>
+          <Button variant="secondary">{t('pages.experimentForm.cancelForm')}</Button>
         </Link>
         <Button
           onClick={handleSave}
           loading={saving}
           icon={<Save size={14} />}
-          className="bg-primary-600 hover:bg-primary-700 shadow-primary-600/25"
+          className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)] shadow-primary-600/25"
         >
-          保存修改
+          {t('pages.experimentForm.saveChanges')}
         </Button>
       </div>
     </div>

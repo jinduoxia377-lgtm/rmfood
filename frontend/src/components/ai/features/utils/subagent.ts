@@ -59,7 +59,8 @@ class SubagentImpl implements SubagentHandle {
   private startTime: number;
 
   constructor(private options: SubagentOptions) {
-    this.id = options.id ?? `subagent-${Date.now()}`;
+    // 同一毫秒内多次 spawn 时 Date.now() 相同会导致 id 冲突（map 覆盖），加随机后缀保证唯一
+    this.id = options.id ?? `subagent-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     this.startTime = Date.now();
     this.abortController = new AbortController();
     this.resultPromise = this.execute();

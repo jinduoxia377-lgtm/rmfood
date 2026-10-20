@@ -160,7 +160,7 @@ export function ParameterAdjustPanel({
           {/* 口感偏好 */}
           <div>
             <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">口感偏好</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TasteSlider
                 label="甜度"
                 value={tasteProfile.sweetness}

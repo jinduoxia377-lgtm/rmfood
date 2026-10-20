@@ -191,7 +191,7 @@ export default function ChatInputPro({
                           >
                             <span className={m.color}><Bot className="w-3.5 h-3.5" /></span>
                             <span className="text-neutral-700 dark:text-neutral-300 font-medium">{m.label}</span>
-                            {m.id === modelName && <span className="ml-auto text-success-500 text-xs">✓</span>}
+                            {m.id === modelName && <Check className="ml-auto w-3.5 h-3.5 text-success-500" aria-hidden="true" />}
                           </button>
                         ))}
                       </div>

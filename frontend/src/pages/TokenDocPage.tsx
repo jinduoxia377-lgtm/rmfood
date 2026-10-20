@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Token 可视化文档页面
  * 显示所有设计 token 的可视化预览
  */
@@ -8,7 +8,7 @@ import { TokenGallery } from '@/components/TokenGallery';
 
 const TokenDocumentation: React.FC = () => {
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+    <div className="min-h-screen">
       <TokenGallery />
     </div>
   );

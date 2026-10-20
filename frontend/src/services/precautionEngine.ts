@@ -38,8 +38,8 @@ export function loadPresetPrecautions(): Precaution[] {
     const isActive = (p as unknown as Record<string, unknown>).isActive !== false
     return isActive
   }).sort((a, b) => {
-    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0) ?? 0
-    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0) ?? 0
+    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0)
+    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0)
     return priorityB - priorityA
   })
 }
@@ -192,8 +192,8 @@ export function evaluatePrecautions(
     const severityDiff = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
     if (severityDiff !== 0) return severityDiff
 
-    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0) ?? 0
-    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0) ?? 0
+    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0)
+    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0)
     return priorityB - priorityA
   })
 

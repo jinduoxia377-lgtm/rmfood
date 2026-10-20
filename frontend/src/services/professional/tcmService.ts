@@ -509,7 +509,7 @@ class TCMService extends ProfessionalBaseService {
       const herb = await this.get<TCMHerb>(`/api/herbs/${herbId}`);
       this.setCache(cacheKey, herb);
       return herb;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -532,7 +532,7 @@ class TCMService extends ProfessionalBaseService {
       const herb = await this.get<TCMHerb>(`/api/herbs/name/${encodeURIComponent(name)}`);
       this.setCache(cacheKey, herb);
       return herb;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -586,6 +586,7 @@ class TCMService extends ProfessionalBaseService {
   }
 
   private mockPredictTargets(params: TCMPredictionParams): TCMTarget[] {
+    void params;
     const mockTargets: TCMTarget[] = [
       {
         geneName: '预测靶点1',
@@ -621,6 +622,7 @@ class TCMService extends ProfessionalBaseService {
   }
 
   private mockPredictDiseases(params: TCMPredictionParams): TCMDisease[] {
+    void params;
     const mockDiseases: TCMDisease[] = [
       {
         diseaseName: '预测疾病1',
@@ -643,6 +645,7 @@ class TCMService extends ProfessionalBaseService {
   }
 
   private mockPredictPathways(params: TCMPredictionParams): string[] {
+    void params;
     return ['Predicted pathway 1', 'Predicted pathway 2', 'Predicted pathway 3'];
   }
 

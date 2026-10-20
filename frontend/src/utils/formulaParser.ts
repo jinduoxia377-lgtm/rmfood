@@ -752,6 +752,9 @@ export function validateIngredient(ingredient: Partial<Ingredient>): boolean {
  * const id2 = generateFormulaId('抗氧化配方', new Date('2026-01-01'))
  * ```
  */
+let lastAutoTime = ''
+let autoCounter = 0
+
 export function generateFormulaId(name: string, timestamp?: Date): string {
   const time = timestamp || new Date()
   const timeStr = time.getTime().toString(36)
@@ -763,7 +766,21 @@ export function generateFormulaId(name: string, timestamp?: Date): string {
     hash = hash & hash
   }
 
-  return `FMT-${hash.toString(36)}-${timeStr}`
+  // 显式传入时间戳时保持确定性（同一 name + timestamp 生成相同 ID，供测试与可复现场景使用）
+  if (timestamp) {
+    return `FMT-${hash.toString(36)}-${timeStr}`
+  }
+
+  // 未指定时间戳（真实解析场景）时，同一毫秒内追加自增序号，
+  // 避免同名（如空名）配方在同一毫秒内解析产生重复 ID。
+  if (timeStr === lastAutoTime) {
+    autoCounter += 1
+  } else {
+    lastAutoTime = timeStr
+    autoCounter = 0
+  }
+
+  return `FMT-${hash.toString(36)}-${timeStr}${autoCounter > 0 ? `x${autoCounter}` : ''}`
 }
 
 export interface ParsedFormula {
@@ -841,7 +858,7 @@ export function extractAllFormulas(text: string, messageId = ''): ParsedFormula[
               ingredients: formula.ingredients,
             }
 
-            if (!parsedFormula.id || !parsedFormula.name || parsedFormula.ingredientCount <= 0) {
+            if (!parsedFormula.id || parsedFormula.ingredientCount <= 0) {
               logger.warn(`[extractAllFormulas] 生成的配方对象缺少必需字段`, {
                 messageId,
                 formulaId: parsedFormula.id,

@@ -12,14 +12,16 @@
 
 import { test, expect } from '@playwright/test';
 
-const AGENT_WORKFLOW_URL = '/ai';
+const AGENT_WORKFLOW_URL = '/agent';
 
 // ── 辅助函数 ────────────────────────────────────────────────
 
 async function navigateToAgentWorkflow(page: any): Promise<void> {
   await page.goto(AGENT_WORKFLOW_URL);
-  // 等待页面加载（使用 data-testid）
-  await page.waitForSelector('[data-testid="agent-workflow-tab"]', { timeout: 10000 });
+  // 等待多智能体协作中心加载，进入 Chief 控制台（AgentWorkflowTab 迁移到 /agent）
+  await page.waitForSelector('[data-testid="agent-nav-chief"]', { timeout: 10000 });
+  await page.locator('[data-testid="agent-nav-chief"]').click();
+  await page.waitForSelector('[data-testid="agent-input"]', { timeout: 10000 });
 }
 
 async function sendAgentMessage(page: any, message: string): Promise<void> {
@@ -33,19 +35,6 @@ async function waitForAgentResponse(page: any, timeout: number = 15000): Promise
   await page.waitForSelector('.animate-spin', { state: 'hidden', timeout });
   // 等待新消息出现（使用 data-testid）
   await page.locator('[data-testid="assistant-message"]').last().waitFor({ state: 'visible', timeout });
-}
-
-async function getTurnState(page: any): Promise<{ status: string; steps: number }> {
-  const turnIndicator = page.locator('[class*="violet-50"]');
-  const status = await turnIndicator.locator('text=/Turn:/').textContent();
-  const steps = await page.locator('[class*="rounded-md"]').count();
-  return { status: status ?? 'none', steps };
-}
-
-async function getTokenCount(page: any): Promise<number> {
-  const tokenText = await page.locator('[class*="Activity"]').textContent();
-  const match = tokenText?.match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 0;
 }
 
 // ── 测试套件 ────────────────────────────────────────────────
@@ -236,8 +225,7 @@ test.describe('Agent 工作流 - 错误处理测试', () => {
 test.describe('Agent 工作流 - 性能测试', () => {
   test('首次加载应小于 2 秒', async ({ page }) => {
     const startTime = Date.now();
-    await page.goto(AGENT_WORKFLOW_URL);
-    await page.waitForSelector('[data-testid="agent-workflow-tab"]', { timeout: 5000 });
+    await navigateToAgentWorkflow(page);
     const loadTime = Date.now() - startTime;
 
     expect(loadTime).toBeLessThan(2000);

@@ -165,9 +165,9 @@ class CoordinationIssue:
     type: str                      # "missing_role" | "ratio_violation" | "effect_gap" | "temporal_conflict" | "redundant_effect"
     severity: str                  # "error" | "warning" | "info"
     dimension: str                 # "structure" | "ratio" | "functional" | "temporal"
-    ingredient: str                # 涉及的成分名（可为空）
     message: str
     suggestion: str
+    ingredient: str = ""                # 涉及的成分名（可为空）
     severity_score: float = 0.0    # 0-10
 
 

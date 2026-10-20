@@ -6,9 +6,9 @@
 import React, { useState } from 'react'
 import {
   Brain, Search, Database, FileText, CheckCircle2, Clock,
-  ChevronDown, ChevronRight, Loader2, Lightbulb, Cpu,
-  BarChart3, GitBranch, Target, Sigma, Activity,
-  ChevronLeft, ChevronRight as ChevronRightIcon,
+  ChevronDown, ChevronRight, Loader2, Cpu,
+  Sigma,
+  ChevronLeft,
 } from 'lucide-react'
 
 // ═══════════════════════════════

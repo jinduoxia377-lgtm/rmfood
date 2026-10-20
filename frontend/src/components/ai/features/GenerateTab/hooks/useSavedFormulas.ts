@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
 import { DEFAULTS, TIMEOUTS } from '@/config'
-import { logger } from '@/utils/safeLogger'
 import type { AICandidate } from '@/api/ai'
 
 interface SavedFormulaState {

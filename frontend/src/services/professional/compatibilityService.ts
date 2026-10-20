@@ -3,14 +3,12 @@ import type { ProfessionalServiceConfig } from '../../types/professional';
 import {
   CompatibilityRule,
   CompatibilityGroup,
-  SHIBAFAN,
-  SHIJIUWEI,
   XIANGSHENG,
   COMPATIBILITY_GROUPS,
   getCompatibilityRulesByHerb,
   checkCompatibility,
 } from '../../data/compatibilityKnowledge';
-import { checkCompatibilityBatch, isCompatible, getHerbConflicts } from '../../data/compatibilityKnowledge';
+import { checkCompatibilityBatch, getHerbConflicts } from '../../data/compatibilityKnowledge';
 
 export interface CompatibilityCheckResult {
   compatible: boolean;

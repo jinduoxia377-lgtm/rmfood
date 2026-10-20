@@ -12,7 +12,6 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { peptideAnalysisApi, type PeptideAnalysisData } from '@/api/ai';
 import { logger } from '@/utils/safeLogger';
 import { useToast } from '@/components/ui';
-const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
 
 
 // ════════════════════════════════════════════
@@ -64,6 +63,7 @@ interface AnalysisActions {
 }
 
 export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, AnalysisActions] {
+  const { error: toastError, success: toastSuccess } = useToast();
   const [state, setState] = useState<AnalysisState>({
     sequence: initialSequence,
     result: null,
@@ -135,6 +135,7 @@ export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, Analys
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadHistory(1);
   }, [loadHistory]);
 
@@ -406,6 +407,7 @@ export function useCachedQuery<T>(
   }, [key, queryFn, enabled, ttl]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 

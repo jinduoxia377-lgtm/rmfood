@@ -69,24 +69,11 @@ export async function tryAcquireCompactionLock(
 ): Promise<CompactionLock | null> {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, owner = 'unknown' } = options;
 
-  // 检查是否已有锁
+  // 检查是否已有锁 —— 已被占用则直接返回 null（非阻塞，避免调用方无意义等待）
   const existingLock = getActiveCompactionLock();
   if (existingLock && !existingLock.released) {
-    logger.warn(`[CompactionLock] Lock already held by ${existingLock.compactionId}, waiting...`);
-    // 等待锁释放 (最多 5 秒)
-    for (let i = 0; i < 10; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const current = getActiveCompactionLock();
-      if (!current || current.released) {
-        break;
-      }
-    }
-    // 再次检查
-    const stillHeld = getActiveCompactionLock();
-    if (stillHeld && !stillHeld.released) {
-      logger.error('[CompactionLock] Failed to acquire lock, another compaction is in progress');
-      return null;
-    }
+    logger.warn(`[CompactionLock] Lock already held by ${existingLock.compactionId}, returning null`);
+    return null;
   }
 
   // 创建新锁

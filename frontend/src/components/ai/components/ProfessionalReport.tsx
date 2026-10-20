@@ -26,7 +26,7 @@ import { SynergyRadarChart } from './SynergyRadarChart'
 
 // ==================== Types ====================
 
-interface ProfessionalReportProps {
+export interface ProfessionalReportProps {
   report: ProfessionalReportType | null
   isLoading?: boolean
   error?: string | null
@@ -102,6 +102,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
   // Initialize edit title when report changes
   useEffect(() => {
     if (report) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditTitle(report.title)
     }
   }, [report?.title])
@@ -185,6 +186,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
   // ==================== Computed Values ====================
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const sortedSections = useMemo(() => {
     if (!report?.sections) return []
     return [...report.sections].sort((a, b) => a.order - b.order)
@@ -285,7 +287,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
         <div className="bg-secondary-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-secondary-500">
           <h4 className="font-semibold mb-3 text-secondary-900 dark:text-secondary-200">📋 配方概览</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-secondary-600 dark:text-secondary-700">{ingredientCount}</p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">成分数量</p>
@@ -366,7 +368,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <FormulaTable data={formulaData} isLoading={false} />
 
             {statistics && Object.keys(statistics).length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(statistics).map(([key, value]) => (
                   <div key={key} className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow text-center border border-neutral-200 dark:border-neutral-700">
                     <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-700">{String(value)}</p>

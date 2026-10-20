@@ -442,6 +442,7 @@ export function useReportGenerator(
    * 增强型报告生成（整合 AI 分析、评分、风险评估）
    */
   async function generateEnhancedReport(formula: AIRecognizedFormula, template: ReportTemplate, _aiEnabled: boolean): Promise<ProfessionalReport> {
+    void _aiEnabled;
     const baseReport = generateSingleFormulaReport(formula)
 
     return {
@@ -594,14 +595,17 @@ export function useReportGenerator(
   }
 
   function calculateStabilityScore(_formula: AIRecognizedFormula): number {
+    void _formula;
     return 85 // 默认值，需要实际测试数据
   }
 
   function calculateComplianceScore(_formula: AIRecognizedFormula): number {
+    void _formula;
     return 90 // 默认值，需要法规数据库比对
   }
 
   function calculateCostScore(_formula: AIRecognizedFormula): number {
+    void _formula;
     return 80 // 默认值，需要成本计算模块
   }
 
@@ -755,6 +759,7 @@ export function useReportGenerator(
   }, [reportData, scores, currentFormula])
 
   const applySuggestion = useCallback(async (_suggestionId: string): Promise<boolean> => {
+    void _suggestionId;
     // 实际项目中这里会触发工作流或调用外部服务
     logger.info('[ReportGenerator] 🔧 应用优化建议')
     return true
@@ -775,6 +780,7 @@ export function useReportGenerator(
   const createCustomTemplate = useCallback((
     _template: Omit<ReportTemplate, 'id'>,
   ): string => {
+    void _template;
     const id = 'custom-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11)
 
     logger.info('[ReportGenerator] 自定义模板已创建: ' + id)
@@ -1004,6 +1010,7 @@ export function useReportGenerator(
   }, [handleGenerateReport, reportData])
 
   const scheduleGeneration = useCallback((_config: ScheduleConfig): string => {
+    void _config;
     const scheduleId = 'schedule-' + Date.now()
     logger.info('[ReportGenerator] ⏰ 定时任务已创建: ' + scheduleId)
     return scheduleId

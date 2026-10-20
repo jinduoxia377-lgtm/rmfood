@@ -79,10 +79,10 @@ const MOCK_API_ENDPOINTS: ApiEndpointStat[] = [
 ]
 
 const FILE_TYPE_CONFIG: Record<StorageFileItem['type'], { icon: typeof FileText; color: string; label: string }> = {
-  document: { icon: FileText, color: 'text-secondary-500 bg-secondary-100 dark:bg-secondary-300/25', label: '文档' },
-  image: { icon: Image, color: 'text-primary-500 bg-primary-100 dark:bg-primary-300/25', label: '图片' },
-  archive: { icon: FileArchive, color: 'text-warning-500 bg-warning-100 dark:bg-warning-300/25', label: '压缩包' },
-  other: { icon: Server, color: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800', label: '其他' },
+  document: { icon: FileText, color: 'text-[var(--color-secondary-text)]0 bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25', label: '文档' },
+  image: { icon: Image, color: 'text-[var(--color-primary-text)]0 bg-[var(--color-primary-container)]', label: '图片' },
+  archive: { icon: FileArchive, color: 'text-[var(--color-warning-text)]0 bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25', label: '压缩包' },
+  other: { icon: Server, color: 'text-[var(--text-muted)] bg-[var(--bg-tertiary)]', label: '其他' },
 }
 
 function formatBytes(bytes: number): string {
@@ -94,9 +94,9 @@ function formatBytes(bytes: number): string {
 }
 
 function getStorageColor(percentage: number): { bar: string; text: string } {
-  if (percentage < 60) return { bar: 'bg-success-500', text: 'text-success-600 dark:text-success-600' }
-  if (percentage < 90) return { bar: 'bg-warning-500', text: 'text-warning-600 dark:text-warning-700' }
-  return { bar: 'bg-error-500', text: 'text-error-600 dark:text-error-600' }
+  if (percentage < 60) return { bar: 'bg-[var(--color-success-container)]0', text: 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]' }
+  if (percentage < 90) return { bar: 'bg-[var(--color-warning-container)]0', text: 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]' }
+  return { bar: 'bg-[var(--color-error-container)]0', text: 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]' }
 }
 
 function ProgressBar({
@@ -120,14 +120,14 @@ function ProgressBar({
           {formatBytes(value)} / {formatBytes(max)}
         </span>
         {showLabel && (
-          <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-full', colors.bar.replace('bg-', 'bg-opacity-20 bg-').replace('500', '100') + ` ${colors.text}`)}>
+          <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-[var(--radius-pill)]', colors.bar.replace('bg-', 'bg-opacity-20 bg-').replace('500', '100') + ` ${colors.text}`)}>
             {percentage.toFixed(1)}%
           </span>
         )}
       </div>
-      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden" style={{ height }}>
+      <div className="w-full bg-[var(--border-color)] rounded-[var(--radius-pill)] overflow-hidden" style={{ height }}>
         <div
-          className={cn('h-full rounded-full transition-all duration-500 ease-out', colors.bar)}
+          className={cn('h-full rounded-[var(--radius-pill)] transition-all duration-500 ease-out', colors.bar)}
           style={{ width: `${percentage}%` }}
           role="progressbar"
           aria-valuenow={value}
@@ -174,26 +174,26 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
     <div className="p-8 space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">资源配额</h2>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">查看组织的存储空间、API 调用和成员席位使用情况</p>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">资源配额</h2>
+        <p className="text-sm text-[var(--text-muted)] mt-0.5">查看组织的存储空间、API 调用和成员席位使用情况</p>
       </div>
 
       {/* Storage Section */}
-      <section aria-label="存储空间" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center">
-            <HardDrive className="w-5.5 h-5.5 text-accent-600 dark:text-accent-700" />
+      <section aria-label="存储空间" className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-8 space-y-6">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
+          <div className="w-11 h-11 rounded-[var(--radius-Apple-md)] bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25 flex items-center justify-center">
+            <HardDrive className="w-5.5 h-5.5 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
           </div>
           <div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">存储空间</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">文件和数据占用情况</p>
+            <h3 className="font-semibold text-[var(--text-primary)]">存储空间</h3>
+            <p className="text-sm text-[var(--text-muted)]">文件和数据占用情况</p>
           </div>
         </div>
 
         <ProgressBar value={storageUsed} max={storageLimit} />
 
         {/* File Type Distribution */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)] pt-2">
           {[
             { type: 'document' as const, percent: 55, size: formatBytes(storageUsed * 0.55), count: 24 },
             { type: 'image' as const, percent: 25, size: formatBytes(storageUsed * 0.25), count: 12 },
@@ -203,14 +203,14 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
             const config = FILE_TYPE_CONFIG[item.type]
             const Icon = config.icon
             return (
-              <div key={item.type} className="rounded-lg border border-neutral-100 dark:border-neutral-700 p-3">
+              <div key={item.type} className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] dark:border-neutral-700 p-[var(--space-apple-sm)]">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', config.color)}>
+                  <div className={cn('w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center', config.color)}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{config.label}</span>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{config.label}</span>
                 </div>
-                <p className="text-lg font-bold text-neutral-900 dark:text-white">{item.size}</p>
+                <p className="text-lg font-bold text-[var(--text-primary)]">{item.size}</p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.percent}% · {item.count} 个文件</p>
               </div>
             )
@@ -219,17 +219,17 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
 
         {/* Large Files TOP 10 */}
         <div>
-          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
+          <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)] flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4" />
             大文件 TOP 10
           </h4>
-          <div className="border border-neutral-100 dark:border-neutral-700 rounded-lg overflow-hidden">
+          <div className="border border-[var(--border-color)] dark:border-neutral-700 rounded-[var(--radius-Apple-sm)] overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-neutral-50 dark:bg-neutral-800/50">
-                  <th className="px-4 py-2.5 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">文件名</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">大小</th>
-                  <th className="hidden sm:table-cell px-4 py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">更新时间</th>
+                <tr className="bg-[var(--bg-tertiary)]/50">
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">文件名</th>
+                  <th className="px-[var(--space-apple-md)] py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">大小</th>
+                  <th className="hidden sm:table-cell px-[var(--space-apple-md)] py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">更新时间</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
@@ -237,15 +237,15 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
                   const config = FILE_TYPE_CONFIG[file.type]
                   const Icon = config.icon
                   return (
-                    <tr key={index} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/20 transition-colors">
-                      <td className="px-4 py-2.5">
+                    <tr key={index} className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/20 transition-colors">
+                      <td className="px-[var(--space-apple-md)] py-2.5">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Icon className={cn('w-4 h-4 shrink-0', config.color.split(' ')[0])} />
-                          <span className="truncate text-neutral-700 dark:text-neutral-300">{file.name}</span>
+                          <span className="truncate text-[var(--text-primary)]">{file.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-2.5 text-right font-mono text-neutral-600 dark:text-neutral-400">{file.size}</td>
-                      <td className="hidden sm:table-cell px-4 py-2.5 text-right text-neutral-400 dark:text-neutral-400">{file.updatedAt}</td>
+                      <td className="px-[var(--space-apple-md)] py-2.5 text-right font-mono text-[var(--text-secondary)]">{file.size}</td>
+                      <td className="hidden sm:table-cell px-[var(--space-apple-md)] py-2.5 text-right text-[var(--text-muted)]">{file.updatedAt}</td>
                     </tr>
                   )
                 })}
@@ -256,14 +256,14 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
       </section>
 
       {/* API Calls Section */}
-      <section aria-label="API调用配额" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
-            <Zap className="w-5.5 h-5.5 text-warning-600 dark:text-warning-700" />
+      <section aria-label="API调用配额" className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-8 space-y-6">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
+          <div className="w-11 h-11 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25 flex items-center justify-center">
+            <Zap className="w-5.5 h-5.5 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
           </div>
           <div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">API 调用配额</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">本月 API 使用量统计</p>
+            <h3 className="font-semibold text-[var(--text-primary)]">API 调用配额</h3>
+            <p className="text-sm text-[var(--text-muted)]">本月 API 使用量统计</p>
           </div>
         </div>
 
@@ -271,7 +271,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
 
         {/* API Endpoint Ranking */}
         <div>
-          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
+          <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)] flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4" />
             端点使用排行 TOP 10
           </h4>
@@ -279,22 +279,22 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
             {MOCK_API_ENDPOINTS.map((ep, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/20 transition-colors"
+                className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/20 transition-colors"
               >
                 <span className={cn(
-                  'w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0',
-                  index < 3 ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
+                  'w-6 h-6 rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-xs font-bold shrink-0',
+                  index < 3 ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)] dark:bg-[var(--color-secondary-container)]/25 dark:text-[var(--color-secondary-text)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]',
                 )}>
                   {index + 1}
                 </span>
-                <code className="flex-1 text-xs font-mono text-neutral-600 dark:text-neutral-400 truncate">{ep.endpoint}</code>
-                <span className="text-sm font-semibold text-neutral-900 dark:text-white shrink-0">
+                <code className="flex-1 text-xs font-mono text-[var(--text-secondary)] truncate">{ep.endpoint}</code>
+                <span className="text-sm font-semibold text-[var(--text-primary)] shrink-0">
                   {ep.calls.toLocaleString()}
                 </span>
                 <span className="hidden md:block text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-14 text-right">{ep.avgLatency}</span>
                 <span className={cn(
-                  'w-1.5 h-1.5 rounded-full shrink-0',
-                  ep.trend === 'up' ? 'bg-error-500' : ep.trend === 'down' ? 'bg-success-500' : 'bg-neutral-400',
+                  'w-1.5 h-1.5 rounded-[var(--radius-pill)] shrink-0',
+                  ep.trend === 'up' ? 'bg-[var(--color-error-container)]0' : ep.trend === 'down' ? 'bg-[var(--color-success-container)]0' : 'bg-neutral-400',
                 )} title={ep.trend === 'up' ? '上升' : ep.trend === 'down' ? '下降' : '稳定'} />
               </div>
             ))}
@@ -303,14 +303,14 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
       </section>
 
       {/* Members Section */}
-      <section aria-label="成员席位" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-secondary-100 dark:bg-secondary-300/25 flex items-center justify-center">
-            <Users className="w-5.5 h-5.5 text-secondary-600 dark:text-secondary-700" />
+      <section aria-label="成员席位" className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-8 space-y-6">
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
+          <div className="w-11 h-11 rounded-[var(--radius-Apple-md)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25 flex items-center justify-center">
+            <Users className="w-5.5 h-5.5 text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
           </div>
           <div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">成员席位</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">组织成员数量与上限</p>
+            <h3 className="font-semibold text-[var(--text-primary)]">成员席位</h3>
+            <p className="text-sm text-[var(--text-muted)]">组织成员数量与上限</p>
           </div>
         </div>
 
@@ -321,38 +321,38 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
         />
 
         {memberLimit <= 0 && (
-          <p className="text-sm text-secondary-600 dark:text-secondary-700 bg-secondary-50 dark:bg-secondary-300/20 rounded-lg px-3 py-2">
+          <p className="text-sm text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 rounded-[var(--radius-Apple-sm)] px-[var(--space-apple-sm)] py-2">
             企业版计划无成员数量限制
           </p>
         )}
 
         {/* Invite Link & Upgrade */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div className="rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 p-4 space-y-3">
-            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">邀请成员链接</p>
+          <div className="rounded-[var(--radius-Apple-sm)] border border-dashed border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
+            <p className="text-sm font-medium text-[var(--text-primary)]">邀请成员链接</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs bg-neutral-50 dark:bg-neutral-900 px-3 py-2 rounded-lg truncate text-neutral-500">
+              <code className="flex-1 text-xs bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] truncate text-[var(--text-muted)]">
                 {window.location.origin}/invite?org={organization?.id}
               </code>
               <button
                 onClick={handleCopyInviteLink}
-                className="shrink-0 p-2 rounded-lg text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
+                className="shrink-0 p-2 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20 transition-colors"
                 title="复制邀请链接"
               >
-                {copiedInviteLink ? <CheckCircle className="w-4.5 h-4.5 text-success-500" /> : <Copy className="w-4.5 h-4.5" />}
+                {copiedInviteLink ? <CheckCircle className="w-4.5 h-4.5 text-[var(--color-success-text)]0" /> : <Copy className="w-4.5 h-4.5" />}
               </button>
             </div>
           </div>
 
-          <div className="rounded-lg bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-secondary-200 dark:border-secondary-800 p-4 space-y-2">
-            <p className="text-sm font-medium text-secondary-800 dark:text-secondary-200 flex items-center gap-1.5">
+          <div className="rounded-[var(--radius-Apple-sm)] bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)] p-[var(--space-apple-md)] space-y-2">
+            <p className="text-sm font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] flex items-center gap-1.5">
               需要更多席位？
               <ArrowUpRight className="w-4 h-4" />
             </p>
-            <p className="text-xs text-secondary-600 dark:text-secondary-700">升级计划以解锁更多成员席位和高级功能</p>
+            <p className="text-xs text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]">升级计划以解锁更多成员席位和高级功能</p>
             <button
               onClick={() => onRefresh?.()}
-              className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors"
+              className="mt-1 px-[var(--space-apple-sm)] py-1.5 text-xs font-medium bg-secondary-container text-secondary-main rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container transition-colors"
             >
               刷新数据
             </button>

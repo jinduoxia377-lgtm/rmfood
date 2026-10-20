@@ -4,7 +4,7 @@
  * 展示知识库中文档列表、统计信息，支持上传、删除、检索测试和质量指标。
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Database,
@@ -16,11 +16,9 @@ import {
   RefreshCw,
   Search,
   Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
   Network,
-  X,
 } from 'lucide-react';
 import {
   listDocuments,
@@ -28,7 +26,6 @@ import {
   getRAGStats,
   searchChunks,
   type RAGStats,
-  type DocumentInfo,
   type SearchChunkResult,
 } from '@/api/rag';
 import { databaseApi } from '@/api/database';
@@ -74,7 +71,7 @@ function QualityMetrics({ stats, docCount }: { stats: RAGStats; docCount: number
         <Eye className="w-4 h-4 text-primary-500" />
         质量指标
       </h3>
-      <div className="grid grid-cols-3 gap-3 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div>
           <div className="text-base font-bold text-primary-700 dark:text-primary-700">
             {stats.total_docs ?? docCount}

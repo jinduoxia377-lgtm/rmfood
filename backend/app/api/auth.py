@@ -10,6 +10,7 @@
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Response, Request
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas import (
@@ -105,18 +106,27 @@ async def logout(
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db_session)):
     """注册新用户，默认角色为 researcher"""
     service = AuthService(db)
-    user = await service.register(
-        username=data.username,
-        email=data.email,
-        password=data.password,
-        full_name=data.full_name,
-    )
-    # 🔒 修复：service.register 内仅 flush（使 session.new 清空），
-    # 依赖层的"session.dirty or session.new"条件提交会因此判定为假，
-    # 导致事务回滚、新用户实际未持久化。这里必须显式提交。
-    await db.commit()
-    await db.refresh(user)
-    return user
+    try:
+        user = await service.register(
+            username=data.username,
+            email=data.email,
+            password=data.password,
+            full_name=data.full_name,
+        )
+        # 🔒 修复：service.register 内仅 flush（使 session.new 清空），
+        # 依赖层的"session.dirty or session.new"条件提交会因此判定为假，
+        # 导致事务回滚、新用户实际未持久化。这里必须显式提交。
+        await db.commit()
+        await db.refresh(user)
+        return user
+    except IntegrityError as e:
+        # 并发/竞态下唯一约束冲突（用户名或邮箱重复）：回滚并返回 400，
+        # 避免全局异常中间件将其包装为 503。
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户名或邮箱已被注册",
+        ) from e
 
 
 @router.post("/refresh", response_model=Token, summary="刷新令牌")
@@ -138,7 +148,11 @@ async def refresh_token(
 
     # 如果 Cookie 中没有，尝试从请求体读取（向后兼容）
     if not refresh_token_value:
-        body = await request.json()
+        try:
+            body = await request.json()
+        except Exception:
+            # 空 body / 非 JSON body：按空请求处理，由下方统一返回 400
+            body = {}
         refresh_token_value = body.get("refresh_token")
 
     if not refresh_token_value:

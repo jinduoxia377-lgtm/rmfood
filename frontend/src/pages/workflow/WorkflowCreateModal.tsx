@@ -6,10 +6,10 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   GitBranch, Plus, Search, CheckCircle, Loader2,
-  X, FlaskConical, RefreshCw, FileSearch, Sparkles, BarChart3,
+  FlaskConical, RefreshCw, FileSearch, Sparkles, BarChart3,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Button, Input, Badge, Card, CardContent } from '@/components/ui'
+import { Modal, Button, Input, Badge, Card } from '@/components/ui'
 import { workflowApi, type WorkflowTemplate, type WorkflowCreatePayload } from '@/api/workflow'
 import { useToast } from '@/components/ui/Toast'
 import { cn } from '@/lib/utils'
@@ -80,9 +80,13 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
     if (selectedRef.current === preselectedTemplateId) return
     const found = templates.find(t => t.template_id === preselectedTemplateId)
     if (found) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedTemplate(found)
       // 同步类型：根据模板 category 自动选中对应的工作流类型
-      if (found.category) setSelectedType(found.category)
+      if (found.category) {
+         
+        setSelectedType(found.category)
+      }
       selectedRef.current = preselectedTemplateId
     }
   }, [open, preselectedTemplateId, templates.length]) // 只依赖长度，不依赖数组引用
@@ -145,14 +149,14 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
     <Modal title="创建工作流" open={open} onClose={handleClose} size="lg">
       <div className="space-y-5 mt-2">
         {/* 模式切换 */}
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 w-fit">
+        <div className="flex items-center gap-2 p-1 rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] w-fit">
           <button
             onClick={() => setMode('template')}
             className={cn(
-              'px-4 py-1.5 rounded-lg text-xs font-medium transition-all',
+              'px-[var(--space-apple-md)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all',
               mode === 'template'
-                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                : 'text-neutral-500 dark:text-neutral-400',
+                ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                : 'text-[var(--text-muted)]',
             )}
           >
             从模板创建
@@ -160,10 +164,10 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
           <button
             onClick={() => setMode('custom')}
             className={cn(
-              'px-4 py-1.5 rounded-lg text-xs font-medium transition-all',
+              'px-[var(--space-apple-md)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all',
               mode === 'custom'
-                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                : 'text-neutral-500 dark:text-neutral-400',
+                ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                : 'text-[var(--text-muted)]',
             )}
           >
             空白创建
@@ -173,7 +177,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
         {/* 基本信息 */}
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
               工作流名称 <span className="text-danger-500">*</span>
             </label>
             <Input
@@ -185,10 +189,10 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
               类型
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-2">
               {WORKFLOW_TYPE_OPTIONS.map((opt) => {
                 const Icon = opt.icon
                 const isActive = selectedType === opt.value
@@ -197,25 +201,25 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                     key={opt.value}
                     onClick={() => setSelectedType(opt.value)}
                     className={cn(
-                      'flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 text-left transition-all',
+                      'flex flex-col items-start gap-1.5 p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] border-2 text-left transition-all',
                       isActive
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-300/20'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-container)]'
+                        : 'border-[var(--border-color)] hover:border-[var(--border-color)] dark:hover:border-neutral-600',
                     )}
                   >
                     <div className={cn(
-                      'w-7 h-7 rounded-lg flex items-center justify-center',
-                      isActive ? 'bg-primary-container text-primary-main' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500',
+                      'w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center',
+                      isActive ? 'bg-primary-container text-[var(--color-primary)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)]',
                     )}>
                       <Icon size={14} />
                     </div>
                     <span className={cn(
                       'text-xs font-medium',
-                      isActive ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300',
+                      isActive ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-primary)]',
                     )}>
                       {opt.label}
                     </span>
-                    <span className="text-xs text-neutral-400 dark:text-neutral-400 leading-tight hidden sm:block">
+                    <span className="text-xs text-[var(--text-muted)] leading-tight hidden sm:block">
                       {opt.desc}
                     </span>
                   </button>
@@ -225,7 +229,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
               描述（可选）
             </label>
             <Input
@@ -240,10 +244,10 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
         {/* 模板选择区 */}
         {mode === 'template' && (
           <div>
-            <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
               选择模板
             </label>
-            <div className="relative mb-3">
+            <div className="relative mb-[var(--space-apple-sm)]">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <Input
                 value={searchQuery}
@@ -259,7 +263,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                 加载模板中...
               </div>
             ) : filteredTemplates.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)] max-h-48 overflow-y-auto pr-1">
                 {filteredTemplates.map((template) => {
                   const isSelected = selectedTemplate?.template_id === template.template_id
                   return (
@@ -267,24 +271,24 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                       key={template.template_id}
                       hoverable
                       className={cn(
-                        'p-3 cursor-pointer transition-all',
-                        isSelected && 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-300/20',
+                        'p-[var(--space-apple-sm)] cursor-pointer transition-all',
+                        isSelected && 'ring-2 ring-[var(--color-primary)] bg-[var(--color-primary-container)]',
                       )}
                       onClick={() => setSelectedTemplate(template)}
                     >
                       <div className="flex items-start gap-2.5">
                         {(() => {
                           const TIcon = TEMPLATE_ICON_MAP[template.category] || Sparkles
-                          return <TIcon size={18} className="shrink-0 text-primary-500 dark:text-primary-700 opacity-75" />
+                          return <TIcon size={18} className="shrink-0 text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)] opacity-75" />
                         })()}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <h4 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                            <h4 className="text-sm font-medium text-[var(--text-primary)] truncate">
                               {template.name}
                             </h4>
-                            {isSelected && <CheckCircle size={12} className="text-primary-500 shrink-0" />}
+                            {isSelected && <CheckCircle size={12} className="text-[var(--color-primary-text)]0 shrink-0" />}
                           </div>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
+                          <p className="text-xs text-[var(--text-muted)] mt-0.5 line-clamp-1">
                             {template.description}
                           </p>
                           <div className="flex items-center gap-2 mt-1.5">
@@ -305,7 +309,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
                 })}
               </div>
             ) : (
-              <div className="text-center py-6 text-neutral-400 text-sm bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
+              <div className="text-center py-[var(--space-apple-lg)] text-[var(--text-muted)] text-sm bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-md)]">
                 {searchQuery ? '没有找到匹配的模板' : '暂无可用模板'}
               </div>
             )}
@@ -314,7 +318,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
 
         {/* 空白创建提示 */}
         {mode === 'custom' && (
-          <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/30 text-sm text-warning-700 dark:text-warning-700">
+          <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/15 border border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/30 text-sm text-[var(--color-warning-text)]">
             <div className="flex items-start gap-2">
               <FlaskConical size={16} className="mt-0.5 shrink-0" />
               <div>
@@ -329,7 +333,7 @@ export default function WorkflowCreateModal({ open, onClose, onSuccess, preselec
         )}
 
         {/* 底部操作 */}
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center justify-end gap-[var(--space-apple-sm)] pt-2 border-t border-[var(--border-color)]">
           <Button variant="outline" size="sm" onClick={handleClose} disabled={isCreating}>
             取消
           </Button>

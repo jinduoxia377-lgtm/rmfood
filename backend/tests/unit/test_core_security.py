@@ -359,7 +359,7 @@ class TestSecurityMiddleware:
     
     def test_sql_injection_prevention(self):
         """测试SQL注入防护"""
-        from app.core.sql_security import SafeQueryBuilder, SecurityError
+        from app.core.security.sql_security import SafeQueryBuilder, SecurityError
         
         builder = SafeQueryBuilder("users")
         
@@ -374,7 +374,7 @@ class TestSecurityMiddleware:
     
     def test_table_name_whitelist(self):
         """测试表名白名单验证"""
-        from app.core.sql_security import SafeQueryBuilder
+        from app.core.security.sql_security import SafeQueryBuilder
         
         # 允许的表
         builder = SafeQueryBuilder("users")  # 不抛异常

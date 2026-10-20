@@ -2,12 +2,11 @@ import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 
 import { useTranslation } from 'react-i18next';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore';
-import { useOperationFeedback } from '@/hooks/useOperationFeedback';
 import { STORAGE_KEYS } from '@/config';
 import { Card } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 import type { AICandidate } from '@/api/ai';
-import type { InputMode, ViewMode, FormulaCategory } from './GenerateTab/config/generateTabConfig';
+import type { InputMode, ViewMode } from './GenerateTab/config/generateTabConfig';
 import { AcademicReportEnhanced } from '@/components/ai/AcademicReportEnhanced';
 import { VersionComparePanel } from '@/components/ai/FormulaVersionManager';
 
@@ -21,7 +20,6 @@ import { useExportFormula } from './GenerateTab/hooks/useExportFormula';
 import { useGenerationShortcuts } from './GenerateTab/hooks/useGenerationShortcuts';
 import { useGenerationCache, generateCacheKey } from './GenerateTab/hooks/useGenerationCache';
 import { useAlgorithmConfig } from './GenerateTab/hooks/useAlgorithmConfig';
-import type { AlgorithmConfig, ConstraintConfig } from './GenerateTab/hooks/useAlgorithmConfig';
 
 // Professional Components
 import { HeaderPro } from './GenerateTab/components/HeaderPro';
@@ -29,11 +27,8 @@ import { GenerationInputPro } from './GenerateTab/components/GenerationInputPro'
 import { FormulaResultsPro } from './GenerateTab/components/FormulaResultsPro';
 
 // Legacy Components
-import { Header } from './GenerateTab/components/Header';
 import { ErrorMessage } from './GenerateTab/components/ErrorMessage';
 import { SuccessMessage } from './GenerateTab/components/SuccessMessage';
-import { GenerationInputEnhanced } from './GenerateTab/components/GenerationInputEnhanced';
-import { FormulaResultsEnhanced } from './GenerateTab/components/FormulaResultsEnhanced';
 import { FormulaComparePanel } from './GenerateTab/components/FormulaComparePanel';
 
 // Lazy components
@@ -53,7 +48,6 @@ interface GenerateTabProps {
 export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: GenerateTabProps) {
   const { t } = useTranslation();
   const { addGenerationHistory } = useUserPreferenceStore();
-  const feedback = useOperationFeedback();
 
   // Hooks
   const effectsHook = useGenerateEffects();
@@ -76,7 +70,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const exportHook = useExportFormula(generationHook.generateResult);
   
   // New hooks
-  const shortcuts = useGenerationShortcuts({
+  useGenerationShortcuts({
     onGenerate: () => generationHook.mutation.mutate(effectsHook.effectLabels),
     onCancel: generationHook.handleCancelGeneration,
     onReset: () => {

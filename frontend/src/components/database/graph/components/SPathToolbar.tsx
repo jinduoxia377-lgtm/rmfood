@@ -1,5 +1,4 @@
 import { GraphNode } from '../types'
-import type { SmartPathResult as AnalyticsSmartPathResult } from '../analytics'
 
 export interface SmartPathData {
   path: string[]
@@ -8,7 +7,6 @@ export interface SmartPathData {
 }
 
 export interface SPathToolbarProps {
-  [key: string]: any;
   showPathPanel: boolean
   smartPathResult: SmartPathData | null
   filteredNodes: GraphNode[]
@@ -16,7 +14,7 @@ export interface SPathToolbarProps {
   pathTargetId: string
   onSetPathSourceId: (id: string) => void
   onSetPathTargetId: (id: string) => void
-  onRunSearch: () => void
+  onRunSearch: (sourceId: string, targetId: string) => void
   onClose: () => void
 }
 
@@ -24,17 +22,12 @@ export default function SPathToolbar({
   showPathPanel,
   smartPathResult,
   filteredNodes,
-  pathSourceId,
-  pathTargetId,
-  onSetPathSourceId,
-  onSetPathTargetId,
-  onRunSearch,
   onClose,
 }: SPathToolbarProps) {
   if (!showPathPanel || !smartPathResult) return null
 
   return (
-    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-[420px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-secondary-200/60 dark:border-secondary-700/40 animate-fade-in">
+    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-[min(420px,calc(100vw-2rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-secondary-200/60 dark:border-secondary-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-secondary-50 to-info-50 dark:from-secondary-950/50 dark:to-info-950/50 border-b border-secondary-100/50 dark:border-secondary-800/30 rounded-t-2xl">
         <div className="flex items-center gap-2">
           <span>🛤️</span>

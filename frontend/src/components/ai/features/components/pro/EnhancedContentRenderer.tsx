@@ -9,7 +9,7 @@
  * @version 1.0.0
  */
 import React, { useMemo } from 'react'
-import { BarChart3, PieChart, Award, Shield, Leaf, Star, Target, Sparkles } from 'lucide-react'
+import { PieChart, Award, Shield, Leaf, Star, Target, Sparkles } from 'lucide-react'
 
 interface EnhancedContentRendererProps {
   content: string
@@ -18,6 +18,8 @@ interface EnhancedContentRendererProps {
 
 // 解析占比数据
 function parseRatioTable(content: string): { labels: string[]; values: number[] } | null {
+  // 防御：content 缺失时直接返回，避免 .match 抛 TypeError 拖垮整条消息渲染。
+  if (!content) return null
   const sectionMatch = content.match(/(?:###\s*)?二、功效成分占比[\s\S]*?(?=###|$)/)
   if (!sectionMatch) return null
 
@@ -47,6 +49,8 @@ function parseRatioTable(content: string): { labels: string[]; values: number[] 
 
 // 解析特色总结列表
 function parseFeatureSummary(content: string): string[] {
+  // 防御：content 缺失时直接返回，避免 .match 抛 TypeError 拖垮整条消息渲染。
+  if (!content) return []
   const sectionMatch = content.match(/(?:###\s*)?三、配方特色总结[\s\S]*?(?=###|$)/)
   if (!sectionMatch) return []
 
@@ -55,7 +59,7 @@ function parseFeatureSummary(content: string): string[] {
   for (const line of section.split('\n')) {
     const trimmed = line.trim()
     if (trimmed.startsWith('*') || trimmed.startsWith('-') || trimmed.startsWith('1.') || trimmed.startsWith('2.') || trimmed.startsWith('3.') || trimmed.startsWith('4.') || trimmed.startsWith('5.')) {
-      const text = trimmed.replace(/^[\d.]*\s*[\*\-]\s*/, '').trim()
+      const text = trimmed.replace(/^[\d.]*\s*[*-]\s*/, '').trim()
       if (text.length > 5) features.push(text)
     }
   }
@@ -108,7 +112,7 @@ export function EnhancedRatioChart({ content }: { content: string }) {
       </div>
 
       {/* 卡片汇总 */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         {data.labels.map((label, i) => (
           <div key={i} className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-2.5 text-center">
             <div className="text-lg font-bold text-primary-700 dark:text-primary-700">
@@ -159,7 +163,12 @@ export function EnhancedFeatureCards({ content }: { content: string }) {
 }
 
 export function EnhancedRoleCards({ content }: { content: string }) {
-  const sectionMatch = useMemo(() => content.match(/(?:###\s*)?一、君臣佐使配伍解析[\s\S]*?(?=###|$)/), [content])
+  // 防御：父级在消息 content 缺失时可能传入 null/undefined。
+  // 若不归一化，:163 的 content.match(...) 会抛 TypeError 并连带整条消息渲染失败。
+  const sectionMatch = useMemo(
+    () => (content ?? '').match(/(?:###\s*)?一、君臣佐使配伍解析[\s\S]*?(?=###|$)/),
+    [content],
+  )
   if (!sectionMatch) return null
 
   const rows: { role: string; name: string; pct: string; effect: string }[] = []
@@ -186,12 +195,6 @@ export function EnhancedRoleCards({ content }: { content: string }) {
     '臣': 'from-secondary-500 to-accent-600',
     '佐': 'from-warning-500 to-warning-600',
     '使': 'from-success-500 to-success-600',
-  }
-  const roleIcons: Record<string, string> = {
-    '君': '君',
-    '臣': '臣',
-    '佐': '佐',
-    '使': '使',
   }
 
   return (

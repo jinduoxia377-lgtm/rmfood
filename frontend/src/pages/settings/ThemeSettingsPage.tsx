@@ -11,7 +11,6 @@ import {
   Download,
   Upload,
   Share2,
-  Settings,
   Sparkles,
   Search,
   Bell,
@@ -27,13 +26,11 @@ import { Section } from '@/components/common';
 import {
   useTheme,
   useThemeStore,
-  useThemeColors,
   useIsDarkMode,
   type ThemeMode,
   type AccessibilityMode,
   presetThemes,
   type PresetThemeId,
-  type ThemeConfig,
 } from '@/theme';
 
 const ThemeSettingsPage: React.FC = () => {
@@ -51,7 +48,6 @@ const ThemeSettingsPage: React.FC = () => {
     setMotionPreferences,
   } = useThemeStore();
 
-  const colors = useThemeColors();
   const isDark = useIsDarkMode();
 
   const [expandedSections, setExpandedSections] = useState({
@@ -123,18 +119,18 @@ const ThemeSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
+    <div className="max-w-[1600px] mx-auto py-[var(--space-apple-lg)] sm:py-8 px-[var(--space-apple-sm)] sm:px-[var(--space-apple-md)]">
       {/* 页面标题 */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
           主题设置
         </h1>
-        <p className="text-sm sm:text-base mt-2 text-text-secondary">
+        <p className="text-sm sm:text-base mt-2 text-[var(--text-secondary)]">
           自定义 RMFOOD 平台的外观和交互体验，支持无障碍访问
         </p>
       </div>
 
-      <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+      <div className="space-y-[var(--space-apple-md)] sm:space-y-6 mb-6 sm:mb-8">
         {/* ==================== 1. 主题模式选择 ==================== */}
         <Section
           id="theme"
@@ -143,7 +139,7 @@ const ThemeSettingsPage: React.FC = () => {
           isExpanded={expandedSections.theme}
           onToggle={toggleSection}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)] sm:gap-4">
             {[
               { mode: 'light' as ThemeMode, icon: Sun, label: '浅色模式', desc: '明亮清爽，适合白天使用' },
               { mode: 'dark' as ThemeMode, icon: Moon, label: '深色模式', desc: '护眼沉浸，适合夜间使用' },
@@ -153,25 +149,25 @@ const ThemeSettingsPage: React.FC = () => {
                 key={modeOption}
                 onClick={() => setThemeMode(modeOption)}
                 className={`
-                  flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-200
+                  flex flex-col items-center justify-center p-[var(--space-apple-lg)] rounded-[var(--radius-Apple-md)] border-2 transition-all duration-200
                   ${mode === modeOption
-                    ? 'border-primary-main bg-primary-main/5 dark:bg-primary-main/10'
-                    : 'border-border-default hover:border-border-hover bg-background-elevated'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 dark:bg-[var(--color-primary)]/10'
+                    : 'border-[var(--border-color)] hover:border-border-hover bg-[var(--bg-secondary)]'
                   }
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50
                 `}
               >
                 <div className={`
-                  w-12 h-12 rounded-full flex items-center justify-center mb-3
+                  w-12 h-12 rounded-[var(--radius-pill)] flex items-center justify-center mb-[var(--space-apple-sm)]
                   ${mode === modeOption
-                    ? 'bg-primary-main text-primary-contrast-text'
-                    : 'bg-background-hover text-text-secondary'
+                    ? 'bg-[var(--color-primary)] text-[var(--color-primary-contrast-text)]'
+                    : 'bg-background-hover text-[var(--text-secondary)]'
                   }
                 `}>
                   <Icon size={24} />
                 </div>
-                <span className="font-semibold text-text-primary">{label}</span>
-                <span className="text-xs mt-1 text-text-secondary">{desc}</span>
+                <span className="font-semibold text-[var(--text-primary)]">{label}</span>
+                <span className="text-xs mt-1 text-[var(--text-secondary)]">{desc}</span>
               </button>
             ))}
           </div>
@@ -207,39 +203,39 @@ const ThemeSettingsPage: React.FC = () => {
                   key={id}
                   onClick={() => handlePresetApply(id)}
                   className={`
-                    text-left p-5 rounded-xl border-2 transition-all duration-200
+                    text-left p-5 rounded-[var(--radius-Apple-md)] border-2 transition-all duration-200
                     ${isActive
-                      ? 'border-primary-main bg-primary-main/5 shadow-md'
-                      : 'border-border-default hover:border-border-hover bg-background-elevated hover:shadow-sm'
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-md'
+                      : 'border-[var(--border-color)] hover:border-border-hover bg-[var(--bg-secondary)] hover:shadow-sm'
                     }
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50
                   `}
                 >
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-[var(--space-apple-sm)] mb-[var(--space-apple-sm)]">
                     <div
-                      className="w-10 h-10 rounded-lg shadow-sm"
+                      className="w-10 h-10 rounded-[var(--radius-Apple-sm)] shadow-sm"
                       style={{ backgroundColor: primaryColor }}
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-text-primary truncate">{theme.name}</h4>
-                      <p className="text-xs text-text-secondary line-clamp-1">{theme.description}</p>
+                      <h4 className="font-semibold text-[var(--text-primary)] truncate">{theme.name}</h4>
+                      <p className="text-xs text-[var(--text-secondary)] line-clamp-1">{theme.description}</p>
                     </div>
                     {isActive && (
-                      <CheckCircle2 size={20} className="text-primary-main flex-shrink-0" />
+                      <CheckCircle2 size={20} className="text-[var(--color-primary)] flex-shrink-0" />
                     )}
                   </div>
 
                   {/* 颜色条预览 */}
-                  <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden">
+                  <div className="flex gap-1.5 h-6 rounded-[var(--radius-Apple-sm)] overflow-hidden">
                     <div className="flex-[2]" style={{ backgroundColor: theme.colors.primary.main }} />
                     <div className="flex-[1.5]" style={{ backgroundColor: theme.colors.secondary.main }} />
                     <div className="flex-[1]" style={{ backgroundColor: theme.colors.success.main }} />
                   </div>
 
                   {/* 标签 */}
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-[var(--space-apple-sm)]">
                     {theme.mode === 'dark' && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
+                      <span className="px-2 py-0.5 text-xs rounded-[var(--radius-pill)] bg-neutral-900 text-white dark:bg-[var(--bg-tertiary)] dark:text-neutral-900">
                         Dark
                       </span>
                     )}
@@ -261,10 +257,10 @@ const ThemeSettingsPage: React.FC = () => {
           <div className="space-y-6">
             {/* 辅助功能模式 */}
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-3">
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">
                 辅助功能模式
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)]">
                 {[
                   { mode: 'normal' as AccessibilityMode, icon: Eye, label: '标准', desc: '默认模式' },
                   { mode: 'high-contrast' as AccessibilityMode, icon: ContrastIcon, label: '高对比度', desc: 'WCAG AAA' },
@@ -275,41 +271,41 @@ const ThemeSettingsPage: React.FC = () => {
                     key={accMode}
                     onClick={() => setAccessibilityMode(accMode)}
                     className={`
-                      p-4 rounded-xl border-2 transition-all text-center
+                      p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border-2 transition-all text-center
                       ${accessibilityMode === accMode
-                        ? 'border-primary-main bg-primary-main/5'
-                        : 'border-border-default hover:border-border-hover bg-background-elevated'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
+                        : 'border-[var(--border-color)] hover:border-border-hover bg-[var(--bg-secondary)]'
                       }
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50
                     `}
                   >
                     <Icon size={24} className={`mx-auto mb-2 ${
-                      accessibilityMode === accMode ? 'text-primary-main' : 'text-text-secondary'
+                      accessibilityMode === accMode ? 'text-[var(--color-primary)]' : 'text-[var(--text-secondary)]'
                     }`} />
-                    <div className="font-medium text-sm text-text-primary">{label}</div>
-                    <div className="text-xs text-text-secondary">{desc}</div>
+                    <div className="font-medium text-sm text-[var(--text-primary)]">{label}</div>
+                    <div className="text-xs text-[var(--text-secondary)]">{desc}</div>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Reduced Motion 开关 */}
-            <div className="flex items-center justify-between p-4 rounded-xl border border-border-default bg-background-elevated">
+            <div className="flex items-center justify-between p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)]">
               <div>
-                <div className="font-medium text-text-primary">减少动画</div>
-                <div className="text-sm text-text-secondary">减少或禁用动态效果（符合用户系统偏好）</div>
+                <div className="font-medium text-[var(--text-primary)]">减少动画</div>
+                <div className="text-sm text-[var(--text-secondary)]">减少或禁用动态效果（符合用户系统偏好）</div>
               </div>
               <button
                 onClick={() => setMotionPreferences({ reducedMotion: !motionPreferences.reducedMotion })}
                 className={`
-                  relative w-14 h-8 rounded-full transition-colors duration-200
-                  ${motionPreferences.reducedMotion ? 'bg-primary-main' : 'bg-border-default'}
+                  relative w-14 h-8 rounded-[var(--radius-pill)] transition-colors duration-200
+                  ${motionPreferences.reducedMotion ? 'bg-[var(--color-primary)]' : 'bg-[var(--border-color)]'}
                 `}
                 aria-label="切换减少动画"
               >
                 <span
                   className={`
-                    absolute top-1 left-1 w-6 h-6 rounded-full bg-white dark:bg-neutral-200 transition-transform duration-200 shadow-md
+                    absolute top-1 left-1 w-6 h-6 rounded-[var(--radius-pill)] bg-[var(--bg-secondary)] dark:bg-[var(--border-color)] transition-transform duration-200 shadow-md
                     ${motionPreferences.reducedMotion ? 'translate-x-6' : 'translate-x-0'}
                   `}
                 />
@@ -330,25 +326,25 @@ const ThemeSettingsPage: React.FC = () => {
             {/* 导出 */}
             <button
               onClick={exportThemeConfig}
-              className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
+              className="flex flex-col items-center justify-center p-[var(--space-apple-lg)] rounded-[var(--radius-Apple-md)] border-2 border-[var(--border-color)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50"
             >
-              <div className="w-12 h-12 rounded-full bg-secondary-100 dark:bg-secondary-300/25 flex items-center justify-center mb-3">
-                <Download size={24} className="text-secondary-600 dark:text-secondary-700" />
+              <div className="w-12 h-12 rounded-[var(--radius-pill)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25 flex items-center justify-center mb-[var(--space-apple-sm)]">
+                <Download size={24} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
               </div>
-              <span className="font-semibold text-text-primary">导出配置</span>
-              <span className="text-xs text-text-secondary mt-1">保存为 JSON 文件</span>
+              <span className="font-semibold text-[var(--text-primary)]">导出配置</span>
+              <span className="text-xs text-[var(--text-secondary)] mt-1">保存为 JSON 文件</span>
             </button>
 
             {/* 导入 */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
+              className="flex flex-col items-center justify-center p-[var(--space-apple-lg)] rounded-[var(--radius-Apple-md)] border-2 border-[var(--border-color)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50"
             >
-              <div className="w-12 h-12 rounded-full bg-success-100 dark:bg-success-300/25 flex items-center justify-center mb-3">
-                <Upload size={24} className="text-success-600 dark:text-success-600" />
+              <div className="w-12 h-12 rounded-[var(--radius-pill)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25 flex items-center justify-center mb-[var(--space-apple-sm)]">
+                <Upload size={24} className="text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />
               </div>
-              <span className="font-semibold text-text-primary">导入配置</span>
-              <span className="text-xs text-text-secondary mt-1">从文件恢复设置</span>
+              <span className="font-semibold text-[var(--text-primary)]">导入配置</span>
+              <span className="text-xs text-[var(--text-secondary)] mt-1">从文件恢复设置</span>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -364,20 +360,20 @@ const ThemeSettingsPage: React.FC = () => {
                   alert('🔗 页面链接已复制到剪贴板');
                 });
               }}
-              className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
+              className="flex flex-col items-center justify-center p-[var(--space-apple-lg)] rounded-[var(--radius-Apple-md)] border-2 border-[var(--border-color)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50"
             >
-              <div className="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center mb-3">
-                <Share2 size={24} className="text-accent-600 dark:text-accent-700" />
+              <div className="w-12 h-12 rounded-[var(--radius-pill)] bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/25 flex items-center justify-center mb-[var(--space-apple-sm)]">
+                <Share2 size={24} className="text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
               </div>
-              <span className="font-semibold text-text-primary">分享页面</span>
-              <span className="text-xs text-text-secondary mt-1">复制当前链接</span>
+              <span className="font-semibold text-[var(--text-primary)]">分享页面</span>
+              <span className="text-xs text-[var(--text-secondary)] mt-1">复制当前链接</span>
             </button>
           </div>
         </Section>
       </div>
 
       {/* 底部操作栏 */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pt-6 border-t border-border-divider">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-[var(--space-apple-sm)] sm:gap-4 pt-6 border-t border-border-divider">
         <Button
           variant="ghost"
           onClick={resetToDefault}
@@ -402,79 +398,79 @@ const ThemeSettingsPage: React.FC = () => {
 // ==================== 子组件 ====================
 
 /** 主题预览组件 */
-const ThemePreview: React.FC<{ isDark: boolean }> = ({ isDark }) => (
-  <div className="rounded-2xl overflow-hidden border border-border-default shadow-lg" style={{ maxWidth: '800px', margin: '0 auto' }}>
+const ThemePreview: React.FC<{ isDark: boolean }> = () => (
+  <div className="rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-lg" style={{ maxWidth: '800px', margin: '0 auto' }}>
     {/* 模拟导航栏 */}
-    <div className="flex items-center justify-between px-6 py-4 border-b border-border-divider bg-surface-default">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-main to-primary-dark flex items-center justify-center text-white">
+    <div className="flex items-center justify-between px-6 py-4 border-b border-border-divider bg-[var(--bg-secondary)]">
+      <div className="flex items-center gap-[var(--space-apple-sm)]">
+        <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-gradient-to-br from-primary-main to-primary-dark flex items-center justify-center text-white">
           <Sparkles size={16} />
         </div>
-        <span className="font-semibold text-text-primary">RMFOOD</span>
+        <span className="font-semibold text-[var(--text-primary)]">RMFOOD</span>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-[var(--space-apple-sm)]">
         <div className="relative hidden sm:block">
           <input
             type="text"
             placeholder="搜索配方..."
-            className="pl-9 pr-4 py-2 rounded-lg text-sm border border-border-default bg-background-elevated text-text-primary placeholder:text-text-disabled focus:border-primary-main focus:outline-none focus:ring-1 focus:ring-primary-main/30"
+            className="pl-9 pr-4 py-2 rounded-[var(--radius-Apple-sm)] text-sm border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/30"
           />
-          <Search size={16} className="absolute left-3 top-2.5 text-text-disabled" />
+          <Search size={16} className="absolute left-3 top-2.5 text-[var(--text-muted)]" />
         </div>
-        <button className="p-2 rounded-lg hover:bg-background-hover transition-colors">
-          <Bell size={18} className="text-text-secondary" />
+        <button className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-background-hover transition-colors">
+          <Bell size={18} className="text-[var(--text-secondary)]" />
         </button>
-        <button className="p-2 rounded-lg hover:bg-background-hover transition-colors">
-          <User size={18} className="text-text-secondary" />
+        <button className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-background-hover transition-colors">
+          <User size={18} className="text-[var(--text-secondary)]" />
         </button>
       </div>
     </div>
 
     {/* 主内容区 */}
-    <div className="p-6 bg-background-default space-y-6">
+    <div className="p-[var(--space-apple-lg)] bg-background-default space-y-6">
       {/* 欢迎横幅 */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-primary-main to-primary-dark text-white">
+      <div className="p-[var(--space-apple-lg)] rounded-2xl bg-gradient-to-r from-primary-main to-primary-dark text-white">
         <h2 className="text-2xl font-bold mb-2">欢迎回来 👋</h2>
         <p className="text-white/80">开始您今天的配方研发工作</p>
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-5 rounded-xl border border-border-default bg-surface-default shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-main/10 flex items-center justify-center">
-              <FileText size={20} className="text-primary-main" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-5 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+            <div className="w-10 h-10 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary)]/10 flex items-center justify-center">
+              <FileText size={20} className="text-[var(--color-primary)]" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-text-primary">128</span>
-            <span className="text-sm text-text-secondary">配方总数</span>
+            <span className="text-3xl font-bold text-[var(--text-primary)]">128</span>
+            <span className="text-sm text-[var(--text-secondary)]">配方总数</span>
           </div>
         </div>
-        <div className="p-5 rounded-xl border border-border-default bg-surface-default shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-secondary-main/10 flex items-center justify-center">
+        <div className="p-5 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+            <div className="w-10 h-10 rounded-[var(--radius-Apple-sm)] bg-secondary-main/10 flex items-center justify-center">
               <Home size={20} className="text-secondary-main" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-text-primary">32</span>
-            <span className="text-sm text-text-secondary">实验总数</span>
+            <span className="text-3xl font-bold text-[var(--text-primary)]">32</span>
+            <span className="text-sm text-[var(--text-secondary)]">实验总数</span>
           </div>
         </div>
       </div>
 
       {/* 按钮预览 */}
       <div>
-        <h3 className="text-sm font-medium text-text-secondary mb-3">按钮样式</h3>
-        <div className="flex flex-wrap gap-3">
-          <button className="px-5 py-2.5 rounded-lg font-medium bg-primary-main text-primary-contrast-text hover:bg-primary-light transition-colors shadow-sm">
+        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">按钮样式</h3>
+        <div className="flex flex-wrap gap-[var(--space-apple-sm)]">
+          <button className="px-5 py-2.5 rounded-[var(--radius-Apple-sm)] font-medium bg-[var(--color-primary)] text-[var(--color-primary-contrast-text)] hover:bg-[var(--color-primary)] transition-colors shadow-sm">
             主要按钮
           </button>
-          <button className="px-5 py-2.5 rounded-lg font-medium border-2 border-primary-main text-primary-main hover:bg-primary-main/5 transition-colors">
+          <button className="px-5 py-2.5 rounded-[var(--radius-Apple-sm)] font-medium border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
             次要按钮
           </button>
-          <button className="px-5 py-2.5 rounded-lg font-medium text-primary-main hover:bg-primary-main/10 transition-colors">
+          <button className="px-5 py-2.5 rounded-[var(--radius-Apple-sm)] font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-colors">
             文本按钮
           </button>
         </div>
@@ -482,11 +478,11 @@ const ThemePreview: React.FC<{ isDark: boolean }> = ({ isDark }) => (
 
       {/* 输入框预览 */}
       <div>
-        <h3 className="text-sm font-medium text-text-secondary mb-3">输入框样式</h3>
+        <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">输入框样式</h3>
         <input
           type="text"
           placeholder="请输入内容..."
-          className="w-full px-4 py-3 rounded-lg border border-border-default bg-surface-default text-text-primary placeholder:text-text-disabled focus:border-primary-main focus:outline-none focus:ring-2 focus:ring-primary-main/20"
+          className="w-full px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
         />
       </div>
     </div>

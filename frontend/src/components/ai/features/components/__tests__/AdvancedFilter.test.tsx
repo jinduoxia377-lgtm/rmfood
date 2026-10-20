@@ -144,12 +144,13 @@ describe('AdvancedFilter - 高级筛选组件', () => {
     })
 
     it('选中的选项应该有特殊样式', () => {
-      const { container } = render(
+      const { container: _container } = render(
         <AdvancedFilter
           {...defaultProps}
           filters={{ ...defaultFilters, qualityGrades: ['A'] }}
         />
       )
+      void _container;
 
       const selectedButton = screen.getByText('A级')
       expect(selectedButton.className).toContain('text-success-600')

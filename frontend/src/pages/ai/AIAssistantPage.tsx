@@ -17,17 +17,18 @@
  */
 
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 // AIContext 已移除（2026-07-22）：经确认，AIProvider 包裹内无任何子组件使用 useAIContext()。
 // 所有状态已由独立 Hooks（useChatMessages、useFormulaManager 等）和 Zustand Stores 管理。
 // 保留 ErrorBoundary 作为全局容错边界。
 
 import { useQuery } from '@tanstack/react-query';
 import { ModelClient } from '@/api/modelClient';
-import type { ModelType } from '@/api/modelClient';
 import { Badge, Tabs, TabsList, TabsTrigger, TabsContent, StatCard, Input } from '@/components/ui';
 import { Skeleton as SkeletonComp } from '@/components/ui/Skeleton';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import { ToastContainer } from '@/components/ui/ToastContainer';
+// 全局 Toast 已由 App.tsx 提供，页面内不再重复渲染 ToastContainer（避免 toast 双重叠加）
 // ModelConfigPanel 改用下方懒加载版本（ModelConfigPanelLazy），此前的即时导入从未被引用。
 import { ConfigManagementPanel } from '@/components/ai/ConfigManagementPanel';
 // ModelSelector 在本页从未使用，已移除（模型选择由各 Tab 内部自行持有）。
@@ -47,13 +48,14 @@ import {
   GitBranch,
   Cpu,
   Wrench,
-  ChevronDown,
   Zap,
   Beaker,
   FlaskConical,
   FileText,
   Brain,
   AlertTriangle,
+  Loader2,
+  ArrowRight,
 } from 'lucide-react';
 import { logger } from '@/utils/safeLogger';
 import { useFeedbackSystem, useAccessibility, useResponsive } from '@/utils/uiuxEnhancement';
@@ -71,29 +73,27 @@ const TastePredictTab = lazy(() => import('@/components/ai/features/TastePredict
 const StabilityPredictTab = lazy(() => import('@/components/ai/features/StabilityPredictTab').then(m => ({ default: m.StabilityPredictTab })));
 const AdvancedPeptideAnalyzer = lazy(() => import('@/components/ai/AdvancedPeptideAnalyzer').then(m => ({ default: m.AdvancedPeptideAnalyzer })));
 const AdvancedPeptideDesign = lazy(() => import('@/components/ai/AdvancedPeptideDesign').then(m => ({ default: m.AdvancedPeptideDesign })));
-const ModelConfigPanelLazy = lazy(() => import('@/components/ai/ModelConfigPanel').then(m => ({ default: m.ModelConfigPanel })));
 const KnowledgeBasePanel = lazy(() => import('@/components/ai/rag/KnowledgeBasePanel').then(m => ({ default: m.KnowledgeBasePanel })));
 const GeneticAlgorithmPanel = lazy(() => import('@/components/ai/features/GeneticAlgorithmPanel').then(m => ({ default: m.GeneticAlgorithmPanel })));
 const MultiObjectivePanel = lazy(() => import('@/components/ai/features/MultiObjectivePanel').then(m => ({ default: m.MultiObjectivePanel })));
 const FormulaInputWithOptimization = lazy(() => import('@/components/ai/features/FormulaInputWithOptimization').then(m => ({ default: m.FormulaInputWithOptimization })));
-const AgentWorkflowTab = lazy(() => import('@/components/ai/features/AgentWorkflowTab').then(m => ({ default: m.AgentWorkflowTab })));
 
 // Tab 分组导航专属主题色板 — 桌面/移动共用（原 L577/L672 两份逐字重复，抽成模块级常量 P3-10）
 // 注：这些色族是分组导航的「标识色」（emerald/blue/amber 各自成套），属设计意图内的多色系装饰层。
 const TAB_GROUP_ACCENTS = [
-  { bar: 'bg-success-500',  bgActive: 'bg-success-50 dark:bg-success-950/30', textActive: 'text-success-700 dark:text-success-700', ring: 'ring-success-500/20',       iconBg: 'bg-success-100 dark:bg-success-300/30', iconText: 'text-success-700 dark:text-success-600', border: 'border-success-200 dark:border-success-800/50', subtext: 'text-success-600/60 dark:text-success-700/60', badge: 'bg-success-100 text-success-700 dark:bg-success-300/30 dark:text-success-700' },
-  { bar: 'bg-secondary-500',     bgActive: 'bg-secondary-50 dark:bg-secondary-950/30',        textActive: 'text-secondary-700 dark:text-secondary-700',      ring: 'ring-secondary-500/20',          iconBg: 'bg-secondary-100 dark:bg-secondary-300/30',    iconText: 'text-secondary-700 dark:text-secondary-700',    border: 'border-secondary-200 dark:border-secondary-800/50',   subtext: 'text-secondary-600/60 dark:text-secondary-700/60',  badge: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/30 dark:text-secondary-700' },
-  { bar: 'bg-warning-500',    bgActive: 'bg-warning-50 dark:bg-warning-950/30',      textActive: 'text-warning-700 dark:text-warning-700',    ring: 'ring-warning-500/20',         iconBg: 'bg-warning-100 dark:bg-warning-300/30',   iconText: 'text-warning-600 dark:text-warning-700',  border: 'border-warning-200 dark:border-warning-800/50', subtext: 'text-warning-600/60 dark:text-warning-700/60', badge: 'bg-warning-100 text-warning-700 dark:bg-warning-300/30 dark:text-warning-700' },
+  { bar: 'bg-[var(--color-success)]',  bgActive: 'bg-[var(--color-success-container)]', textActive: 'text-[var(--color-success-text)]', ring: 'ring-[var(--color-success)]/20',       iconBg: 'bg-[var(--color-success-container)]', iconText: 'text-[var(--color-success-text)]', border: 'border-[var(--color-success-border)]', subtext: 'text-[var(--color-success-text)]/60', badge: 'bg-[var(--color-success-container)] text-[var(--color-success-text)]' },
+  { bar: 'bg-[var(--color-secondary)]',     bgActive: 'bg-[var(--color-secondary-container)]',        textActive: 'text-[var(--color-secondary-text)]',      ring: 'ring-[var(--color-secondary)]/20',          iconBg: 'bg-[var(--color-secondary-container)]',    iconText: 'text-[var(--color-secondary-text)]',    border: 'border-[var(--color-secondary-border)]',   subtext: 'text-[var(--color-secondary-text)]/60',  badge: 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]' },
+  { bar: 'bg-[var(--color-warning)]',    bgActive: 'bg-[var(--color-warning-container)]',      textActive: 'text-[var(--color-warning-text)]',    ring: 'ring-[var(--color-warning)]/20',         iconBg: 'bg-[var(--color-warning-container)]',   iconText: 'text-[var(--color-warning-text)]',  border: 'border-[var(--color-warning-border)]', subtext: 'text-[var(--color-warning-text)]/60', badge: 'bg-[var(--color-warning-container)] text-[var(--color-warning-text)]' },
 ];
 
-// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
+// Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
 function TabLoadingSkeleton() {
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
       <SkeletonComp width="25%" height="2rem" radius={8} />
       <SkeletonComp width="50%" height="1rem" radius={4} />
       <SkeletonComp width="100%" height="10rem" radius={8} />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <SkeletonComp width="100%" height="6rem" radius={8} />
         <SkeletonComp width="100%" height="6rem" radius={8} />
       </div>
@@ -112,13 +112,82 @@ type AITab =
   | 'peptide-analyze'
   | 'peptide-design'
   | 'knowledge'
-  | 'config'
-  | 'agent';
+  | 'config';
+
+/** 内联搜索下拉结果项 */
+interface GlobalSearchItem {
+  type: string;
+  title: string;
+  to: string;
+}
+
+/** 将后端 /search/global 响应归一化为搜索下拉结果（参照仪表盘实现） */
+function normalizeSearchResults(data: unknown): GlobalSearchItem[] {
+  const payload = data as { types?: Record<string, { items?: Array<Record<string, unknown>> }> };
+  const out: GlobalSearchItem[] = [];
+  const seen = new Set<string>();
+  for (const [bucket, value] of Object.entries(payload?.types ?? {})) {
+    for (const raw of value?.items ?? []) {
+      const id = String(raw.id ?? '');
+      const title = String(raw.title ?? '');
+      if (!id || !title || seen.has(id)) continue;
+      seen.add(id);
+      const typeMeta: Record<string, { label: string; to: (i: string) => string }> = {
+        formula: { label: '配方', to: (i) => `/formulas/${i}` },
+        experiment: { label: '实验', to: (i) => `/experiments/${i}` },
+        ingredient: { label: '原料', to: (i) => `/database?ingredient=${i}` },
+      };
+      const meta = typeMeta[bucket] ?? { label: bucket, to: () => `/ai` };
+      out.push({ type: meta.label, title, to: meta.to(id) });
+    }
+  }
+  return out.slice(0, 8);
+}
 
 export default function AIAssistantPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<AITab>('chat');
-  const [selectedModel, setSelectedModel] = useState<ModelType>('formula_gpt');
   const [geneticMode, setGeneticMode] = useState<'single' | 'multi' | 'formula'>('single');
+
+  // ===== 全局搜索（输入框内联搜索，仪表盘同款；Ctrl+K 另开模态框）=====
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GlobalSearchItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchResults([]);
+       
+      setHasSearched(false);
+       
+      setSearching(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const url = `/api/v1/search/global?q=${encodeURIComponent(searchQuery)}&types=formula,experiment,ingredient&page_size=8`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(normalizeSearchResults(data));
+        } else {
+          setSearchResults([]);
+        }
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+        setHasSearched(true);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // ===== 搜索快捷键 =====
   const { isOpen: searchOpen, toggle: toggleSearch, close: closeSearch } = useKeyboardSearch();
@@ -135,14 +204,13 @@ export default function AIAssistantPage() {
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
   // UI/UX Enhancement Hooks
-  const { feedbacks, showSuccess, showError } = useFeedbackSystem();
+  const { showError } = useFeedbackSystem();
   const { announceToScreenReader } = useAccessibility();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { isMobile } = useResponsive();
 
   // Data fetching with error handling (使用 useEffect 监听错误，符合 TanStack Query v5 规范)
   const {
     data: modelStatus,
-    refetch: refetchModelStatus,
     error: modelStatusError,
     isError: isModelStatusError,
   } = useQuery({
@@ -170,7 +238,6 @@ export default function AIAssistantPage() {
     safetyChecks,
     synergyCount,
     tasteCount,
-    stabilityCount,
     peptideAnalyzeCount,
     peptideDesignCount,
     knowledgeDocCount,
@@ -183,30 +250,10 @@ export default function AIAssistantPage() {
     announceToScreenReader('AI智能助手中心页面已加载');
   }, [announceToScreenReader]);
 
-  const handleModelChange = useCallback(
-    (modelType: ModelType) => {
-      setSelectedModel(modelType);
-      showSuccess('模型已切换', `当前使用 ${modelType} 模型`);
-    },
-    [showSuccess],
-  );
-
-  const handleConfigChange = useCallback(
-    async (_modelType: ModelType, _config?: any) => {
-      try {
-        await refetchModelStatus();
-        showSuccess('配置更新成功', '模型配置已保存并生效');
-      } catch (error) {
-        logger.error('刷新模型状态失败:', error);
-        showError('配置更新失败', '请检查配置项后重试');
-      }
-    },
-    [refetchModelStatus, showSuccess, showError],
-  );
-
   const handleTabChange = useCallback(
     (newTab: AITab) => {
       setTab(newTab);
+      // eslint-disable-next-line react-hooks/immutability
       announceToScreenReader(`切换到${getTabLabel(newTab)}标签页`);
     },
     [announceToScreenReader],
@@ -222,7 +269,6 @@ export default function AIAssistantPage() {
 
   const getTabLabel = (tab: AITab): string => {
     const labels: Record<AITab, string> = {
-      agent: 'Agent 工作流',
       chat: '智能对话',
       generate: '配方生成',
       genetic: '遗传优化',
@@ -253,13 +299,6 @@ export default function AIAssistantPage() {
       label: '核心功能',
       icon: Zap,
       tabs: [
-        {
-          value: 'agent' as AITab,
-          label: 'Agent 工作流',
-          icon: Bot,
-          badge: undefined,
-          badgeVariant: 'primary' as const,
-        },
         {
           value: 'chat' as AITab,
           label: '智能对话',
@@ -347,14 +386,11 @@ export default function AIAssistantPage() {
 
   return (
     <ErrorBoundary onError={handleError}>
-      {/* Toast Notification Container — 使用独立容器组件 */}
-      <ToastContainer />
-
-      <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+      <div className="min-h-screen">
         {/* 移动端汉堡菜单遮罩 */}
         {isMobile && mobileMenuOpen && (
           <div
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm sm:hidden"
+            className="fixed inset-0 z-[500] bg-black/50 backdrop-blur-sm sm:hidden"
              onClick={closeMobileMenu}
             aria-hidden="true"
           />
@@ -362,33 +398,33 @@ export default function AIAssistantPage() {
         {/* 移动端汉堡菜单抽屉 */}
         {isMobile && (
           <aside
-            className={`fixed top-0 right-0 z-50 h-full w-72 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-l border-neutral-200 dark:border-neutral-800 shadow-2xl transition-all duration-300 ease-out sm:hidden ${
+            className={`fixed top-0 right-0 z-[500] h-full w-72 bg-[var(--bg-secondary)]/95 backdrop-blur-md border-l border-[var(--border-color)] shadow-2xl transition-all duration-300 ease-out sm:hidden ${
               mobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
             }`}
             role="navigation"
-            aria-label="功能导航菜单"
+            aria-label={t('ai.page.featureNavAria')}
             aria-hidden={!mobileMenuOpen}
           >
-            <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50">
+            <div className="flex items-center justify-between p-[var(--space-apple-md)] border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50" style={{ paddingTop: 'calc(var(--space-apple-md, 17px) + var(--safe-area-inset-top, 0px))' }}>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                  <Brain className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-text)] flex items-center justify-center">
+                  <Brain className="w-4 h-4 text-white" aria-hidden="true" />
                 </div>
-                <span className="font-semibold text-neutral-900 dark:text-white">功能导航</span>
+                <span className="font-semibold text-[var(--text-primary)]">{t('ai.page.featureNav')}</span>
               </div>
               <button
                 onClick={closeMobileMenu}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-800 transition-all duration-200 hover:rotate-90"
-                aria-label="关闭菜单"
+                className="p-1.5 min-w-[44px] min-h-[44px] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] transition-all duration-200 hover:rotate-90"
+                aria-label="{t('ai.page.closeMenu')}"
               >
-                <X className="w-5 h-5 text-neutral-500 dark:text-neutral-300" />
+                <X className="w-5 h-5 text-[var(--text-muted)]" />
               </button>
             </div>
-            <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-72px)]">
+            <nav className="p-[var(--space-apple-sm)] space-y-1 overflow-y-auto max-h-[calc(100vh-72px)]" style={{ maxHeight: 'calc(100dvh - 72px)' }}>
               {tabGroups.map((group) => (
-                <div key={group.key} className="mb-3">
-                  <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 uppercase tracking-wider">
-                    <group.icon className="w-3.5 h-3.5" />
+                <div key={group.key} className="mb-[var(--space-apple-sm)]">
+                  <div className="flex items-center gap-2 px-[var(--space-apple-sm)] py-2 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                    <group.icon className="w-3.5 h-3.5" aria-hidden="true" />
                     {group.label}
                   </div>
                   <div className="space-y-0.5">
@@ -401,10 +437,10 @@ export default function AIAssistantPage() {
                             handleTabChange(t.value as AITab);
                             closeMobileMenu();
                           }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          className={`w-full flex min-h-[44px] items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-md)] text-sm font-medium transition-all duration-200 ${
                             tab === t.value
-                              ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 shadow-sm scale-[1.02]'
-                              : 'text-neutral-600 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:scale-[1.01]'
+                              ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] shadow-sm scale-[1.02]'
+                              : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:scale-[1.01]'
                           }`}
                           aria-current={tab === t.value ? 'page' : undefined}
                         >
@@ -426,74 +462,133 @@ export default function AIAssistantPage() {
         )}
 
         <main
-          className="max-w-7xl mx-auto space-y-5 px-4 sm:px-6 lg:px-8 py-6"
+          className="max-w-[1600px] mx-auto space-y-[var(--space-apple-md)] px-[var(--space-apple-md)] sm:px-[var(--space-apple-lg)] lg:px-[var(--space-apple-xl)] py-[var(--space-apple-lg)]"
           role="main"
-          aria-label="AI智能助手中心主内容区"
+          aria-label={t('ai.page.mainContentAria')}
         >
           {/* ── 页面横幅 — Dashboard 风格，DESIGN.md 规范 ── */}
-          <div className="surface-primary rounded-xl p-6 shadow-sm">
+          <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-xl font-semibold leading-snug tracking-tight">
-                  AI 智能助手中心
+                  {t('ai.page.pageTitle')}
                 </h1>
-                <p className="mt-1 text-sm text-white/90 dark:text-success-950/80">
-                  智能对话 · 配方生成 · 安全检查 · 协同分析
+                <p className="mt-1 text-sm text-white/90 dark:text-white/80">
+                  {t('ai.page.pageSubtitle')}
                 </p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                 {/* 汉堡菜单按钮（移动端） */}
                 <button
                   onClick={toggleMobileMenu}
-                  className="sm:hidden p-2.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-primary-700 dark:text-white transition-colors duration-150"
-                  aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
+                  className="sm:hidden p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/90 dark:bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)] dark:hover:bg-[var(--bg-tertiary)]/20 text-[var(--color-primary-text)] dark:text-white transition-colors duration-150"
+                  aria-label={mobileMenuOpen ? t('ai.page.closeMenu') : t('ai.page.openMenu')}
                   aria-expanded={mobileMenuOpen}
                 >
                   <Menu className="w-4 h-4" aria-hidden="true" />
                 </button>
                 {/* 模型状态指示器 — Dashboard 风格 pill */}
-                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
+                <div className={`flex items-center gap-2 px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium ${
                   llmAvailable
-                    ? 'bg-success-400/20 text-success-100'
-                    : 'bg-error-400/20 text-error-100'
+                    ? 'bg-[var(--color-success)]/20 text-[var(--color-success-text)]'
+                    : 'bg-[var(--color-error)]/20 text-[var(--color-error-text)]'
                 }`}>
                   <span className={`relative flex h-2 w-2`}>
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${llmAvailable ? 'bg-success-300' : 'bg-error-300'}`}></span>
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${llmAvailable ? 'bg-success-400' : 'bg-error-400'}`}></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-pill)] opacity-75 ${llmAvailable ? 'bg-[var(--color-success-container)]' : 'bg-[var(--color-error-container)]'}`}></span>
+                    <span className={`relative inline-flex rounded-[var(--radius-pill)] h-2 w-2 ${llmAvailable ? 'bg-[var(--color-success)]' : 'bg-[var(--color-error)]'}`}></span>
                   </span>
                   {llmAvailable ? '模型在线' : '模型离线'}
                 </div>
                 {/* 快速操作 */}
                 <button
                   onClick={() => handleStatCardClick('chat', '智能对话')}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/15 hover:bg-white dark:hover:bg-neutral-800/20 text-primary-700 dark:text-white transition-colors duration-150 text-sm font-medium"
+                  className="flex min-h-[44px] items-center gap-2 px-[var(--space-apple-md)] py-1.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/90 dark:bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)] dark:hover:bg-[var(--bg-tertiary)]/20 text-[var(--color-primary-text)] dark:text-white transition-colors duration-150 text-sm font-medium"
                 >
-                  <MessageSquare className="w-4 h-4" />
+                  <MessageSquare className="w-4 h-4" aria-hidden="true" />
                   开始对话
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ── 搜索栏 — Dashboard 风格 ── */}
+          {/* ── 搜索栏 — Dashboard 风格（输入即搜索，Ctrl+K 打开全局模态框）── */}
           <div className="relative">
             <Input
               type="search"
-              placeholder="搜索配方、药材、分析工具…"
-              aria-label="搜索配方、药材、分析工具"
-              prefix={<Search size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />}
-              className="h-10 pl-10 rounded-lg border-neutral-200 dark:border-neutral-700 focus:border-primary-400 dark:focus:border-primary-500 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-colors duration-150"
+              placeholder={t('ai.page.searchPlaceholder')}
+              aria-label={t('ai.page.searchAria')}
+              focusRing={false}
+              style={{ outline: 'none', boxShadow: 'none' }}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); setSelectedIndex(-1); }}
+              onFocus={() => setShowSearch(true)}
+              onBlur={() => setTimeout(() => setShowSearch(false), 150)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setShowSearch(false);
+                  setSearchQuery('');
+                  setSelectedIndex(-1);
+                  return;
+                }
+                if (e.key === 'ArrowDown' && searchResults.length > 0) {
+                  e.preventDefault();
+                  setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
+                  return;
+                }
+                if (e.key === 'ArrowUp' && searchResults.length > 0) {
+                  e.preventDefault();
+                  setSelectedIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
+                  return;
+                }
+                if (e.key === 'Enter') {
+                  const target = searchResults[selectedIndex] || searchResults[0];
+                  if (target) {
+                    navigate(target.to);
+                    setShowSearch(false);
+                    setSearchQuery('');
+                    setSelectedIndex(-1);
+                  }
+                }
+              }}
+              prefix={
+                searching ? (
+                  <Loader2 size={16} className="animate-spin text-[var(--text-muted)]" role="status" aria-label={t('ai.page.searching')} />
+                ) : (
+                  <Search size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
+                )
+              }
+              className="h-10 pl-10 pr-16 sm:pr-20 rounded-[var(--radius-Apple-sm)] border-[var(--border-color)] transition-colors duration-150"
             />
             <kbd
-              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
-              aria-label="快捷键 Ctrl+K"
+              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] bg-[var(--bg-tertiary)] rounded border border-[var(--border-color)]"
+              aria-label={t('ai.page.shortcutAria')}
             >
               ⌘K
             </kbd>
+            {showSearch && hasSearched && (
+              <div className="absolute top-full mt-2 left-0 right-0 bg-[var(--card-bg)] rounded-[var(--radius-Apple-md)] shadow-lg border border-[var(--border-color)] py-2 z-[100]">
+                {searchResults.length > 0 ? (
+                  searchResults.map((r, idx) => (
+                    <Link
+                      key={`${r.type}-${r.title}`}
+                      to={r.to}
+                      onMouseDown={(e) => { e.preventDefault(); setShowSearch(false); setSearchQuery(''); navigate(r.to) }}
+                      className={`flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-2.5 hover:bg-[var(--bg-secondary)] transition-colors ${selectedIndex === idx ? 'bg-[var(--bg-secondary)]' : ''}`}
+                    >
+                      <span className="text-xs px-1.5 py-0.5 rounded-[var(--radius-pill)] font-medium" style={r.type === '配方' ? { backgroundColor: 'var(--color-primary-container)', color: 'var(--color-primary-text)' } : { backgroundColor: 'var(--color-secondary-container)', color: 'var(--color-secondary)' }}>{r.type}</span>
+                      <span className="text-sm text-[var(--text-primary)] truncate">{r.title}</span>
+                      <ArrowRight size={12} className="text-[var(--text-muted)] ml-auto shrink-0" aria-hidden="true" />
+                    </Link>
+                  ))
+                ) : (
+                  <div className="px-[var(--space-apple-md)] py-[var(--space-apple-sm)] text-sm text-[var(--text-muted)] text-center">{t('ai.page.noResults')}</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── 统计卡片 — Dashboard 风格，DESIGN.md 规范 ── */}
-          <section aria-label="功能模块统计" className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <section aria-label={t('ai.page.moduleStats')} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {/* 主卡（large） */}
             <StatCard
               label="智能对话"
@@ -541,7 +636,7 @@ export default function AIAssistantPage() {
               value={peptideAnalyzeCount}
               icon={Dna}
               variant="info"
-              subtitle="氨基酸序列预测"
+              subtitle="{t('ai.page.peptideSeqSubtitle')}"
               className="cursor-pointer"
               onClick={() => handleStatCardClick('peptide-analyze', '肽序列分析')}
             />
@@ -550,7 +645,7 @@ export default function AIAssistantPage() {
               value={peptideDesignCount}
               icon={Dna}
               variant="success"
-              subtitle="自定义肽段设计"
+              subtitle="{t('ai.page.peptideDesignSubtitle')}"
               className="cursor-pointer"
               onClick={() => handleStatCardClick('peptide-design', '肽设计优化')}
             />
@@ -578,9 +673,9 @@ export default function AIAssistantPage() {
           {statsIsError && (
             <div
               role="status"
-              className="flex items-center gap-2 rounded-lg border border-warning-200 bg-warning-50 dark:border-warning-700/50 dark:bg-warning-900/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-600"
+              className="flex items-center gap-2 rounded-[var(--radius-Apple-sm)] border-[var(--color-warning-border)] bg-[var(--color-warning-container)] px-[var(--space-apple-sm)] py-2 text-xs text-[var(--color-warning-text)]"
             >
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
               <span>
                 统计数据加载失败（{statsErrorMessage}），上方数字为 0，不代表从未使用。
               </span>
@@ -588,7 +683,7 @@ export default function AIAssistantPage() {
           )}
 
           {/* ── Tab 导航 — 三列并排布局，Dashboard 风格 ── */}
-          <nav aria-label="AI助手功能标签导航" className="space-y-4">
+          <nav aria-label={t('ai.page.featureTabsNavAria')} className="space-y-[var(--space-apple-md)]">
               {/* 桌面端：三列并排 */}
               <div className="hidden md:grid md:grid-cols-3 gap-4">
                 {tabGroups.map((group, groupIdx) => {
@@ -600,23 +695,23 @@ export default function AIAssistantPage() {
                   return (
                     <div
                       key={group.key}
-                      className={`relative rounded-xl border transition-all duration-200 ${
+                      className={`relative rounded-[var(--radius-Apple-md)] border transition-all duration-200 ${
                         isActive
-                          ? `${c.border} bg-white dark:bg-neutral-900 shadow-sm ring-1 ${c.ring}`
-                          : 'border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-500'
+                          ? `${c.border} bg-[var(--bg-secondary)] shadow-sm ring-1 ${c.ring}`
+                          : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--color-primary-border)]'
                       }`}
                     >
                       {/* 顶部主题色条 */}
-                      <div className={`absolute top-0 left-4 right-4 h-[2px] rounded-full transition-colors duration-200 ${isActive ? c.bar : 'bg-neutral-200 dark:bg-neutral-500'}`} />
+                      <div className={`absolute top-0 left-4 right-4 h-[2px] rounded-[var(--radius-pill)] transition-colors duration-200 ${isActive ? c.bar : 'bg-[var(--border-color)]'}`} />
 
                       {/* 分组标题 */}
-                      <div className={`flex items-center gap-2.5 px-4 py-3.5 border-b transition-colors duration-150 ${
+                      <div className={`flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var(--space-apple-md)] border-b transition-colors duration-150 ${
                         isActive
-                          ? `${c.border} ${c.bgActive}`
-                          : 'border-neutral-100 dark:border-neutral-700'
+                          ? c.border
+                          : 'border-[var(--border-color)]'
                       }`}>
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
-                          isActive ? c.iconBg : 'bg-neutral-100 dark:bg-neutral-800'
+                        <div className={`w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
+                          isActive ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-tertiary)]'
                         }`}>
                           <GroupIcon className={`w-4 h-4 transition-colors duration-150 ${
                             isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
@@ -631,15 +726,15 @@ export default function AIAssistantPage() {
                           </span>
                         </div>
                         {isActive && (
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.badge}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${c.bar}`} />
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium bg-transparent ${c.textActive}`}>
+                            <span className={`w-1.5 h-1.5 rounded-[var(--radius-pill)] ${c.bar}`} />
                             活跃
                           </span>
                         )}
                       </div>
 
                       {/* 分组内 Tab 按钮 */}
-                      <div ref={(el) => { tabGroupRefs.current.set(group.key, el); }} className="p-2.5 space-y-0.5">
+                      <div ref={(el) => { tabGroupRefs.current.set(group.key, el); }} className="p-[var(--space-apple-sm)] space-y-0.5">
                         {group.tabs.map((t) => {
                           const TabIcon = t.icon;
                           const isSelected = tab === t.value;
@@ -650,23 +745,21 @@ export default function AIAssistantPage() {
                               role="tab"
                               aria-selected={isSelected}
                               aria-controls={`panel-${t.value}`}
-                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 text-left ${
+                              className={`w-full flex min-h-[44px] items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] text-sm transition-all duration-150 text-left ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive} shadow-sm`
-                                  : 'text-neutral-500 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-100'
+                                  : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                               }`}
                             >
-                              <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
-                                isSelected ? c.iconBg : 'bg-transparent'
-                              }`}>
+                              <div className={`w-6 h-6 rounded-[var(--radius-Apple-sm)] flex items-center justify-center flex-shrink-0 transition-colors duration-150 bg-transparent`}>
                                 <TabIcon className={`w-3.5 h-3.5 transition-colors duration-150 ${
-                                  isSelected ? c.iconText : 'text-neutral-400 dark:text-neutral-400'
+                                  isSelected ? c.iconText : 'text-[var(--text-muted)]'
                                 }`} aria-hidden="true" />
                               </div>
                               <span className="flex-1 font-medium">{t.label}</span>
                               {t.badge != null && t.badge > 0 && (
-                                <span className={`flex-shrink-0 inline-flex items-center justify-center h-5 px-1.5 rounded-md text-xs font-semibold ${
-                                  isSelected ? c.badge : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                                <span className={`flex-shrink-0 inline-flex items-center justify-center h-5 px-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-semibold ${
+                                  isSelected ? `bg-[var(--bg-tertiary)]/70 ${c.textActive}` : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)]'
                                 }`}>
                                   {t.badge}
                                 </span>
@@ -689,28 +782,28 @@ export default function AIAssistantPage() {
                   return (
                     <div
                       key={group.key}
-                      className={`relative rounded-xl border transition-all duration-200 ${
+                      className={`relative rounded-[var(--radius-Apple-md)] border transition-all duration-200 ${
                         isActive
-                          ? `${c.border} bg-white dark:bg-neutral-900 shadow-sm ring-1 ${c.ring}`
-                          : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900'
+                          ? `${c.border} bg-[var(--bg-secondary)] shadow-sm ring-1 ${c.ring}`
+                          : 'border-[var(--border-color)] bg-[var(--bg-secondary)]'
                       }`}
                     >
                       {/* 顶部主题色条 */}
-                      <div className={`absolute top-0 left-3 right-3 h-[2px] rounded-full ${isActive ? c.bar : 'bg-neutral-200 dark:bg-neutral-700'}`} />
+                      <div className={`absolute top-0 left-3 right-3 h-[2px] rounded-[var(--radius-pill)] ${isActive ? c.bar : 'bg-[var(--border-color)]'}`} />
 
-                      <div className={`flex items-center gap-2 px-3 py-2.5 border-b ${
-                        isActive ? c.border : 'border-neutral-100 dark:border-neutral-800'
+                      <div className={`flex items-center gap-2 px-[var(--space-apple-sm)] py-2.5 border-b ${
+                        isActive ? c.border : 'border-[var(--border-color)]'
                       }`}>
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? c.iconBg : 'bg-neutral-100 dark:bg-neutral-800'}`}>
-                          <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
+                        <div className={`w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-tertiary)]'}`}>
+                          <GroupIcon className={`w-3.5 h-3.5 ${isActive ? c.iconText : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-xs font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-neutral-400 dark:text-neutral-400'}`}>{group.label}</span>
-                          <span className={`text-xs ${isActive ? c.subtext : 'text-neutral-300 dark:text-neutral-400'}`}>{group.tabs.length} 个功能</span>
+                          <span className={`text-xs font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-[var(--text-muted)]'}`}>{group.label}</span>
+                          <span className={`text-xs ${isActive ? c.subtext : 'text-[var(--text-muted)]'}`}>{group.tabs.length} 个功能</span>
                         </div>
                         {isActive && (
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${c.badge}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${c.bar}`} />
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium bg-transparent ${c.textActive}`}>
+                            <span className={`w-1.5 h-1.5 rounded-[var(--radius-pill)] ${c.bar}`} />
                             活跃
                           </span>
                         )}
@@ -726,16 +819,16 @@ export default function AIAssistantPage() {
                               role="tab"
                               aria-selected={isSelected}
                               aria-controls={`panel-${t.value}`}
-                              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-150 ${
+                              className={`flex min-h-[44px] items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-xs font-medium whitespace-nowrap transition-all duration-150 ${
                                 isSelected
                                   ? `${c.bgActive} ${c.textActive}`
-                                  : 'text-neutral-500 dark:text-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-800/50'
+                                  : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]'
                               }`}
                             >
-                              <TabIcon className="w-3.5 h-3.5" />
+                              <TabIcon className="w-3.5 h-3.5" aria-hidden="true" />
                               <span>{t.label}</span>
                               {t.badge != null && t.badge > 0 && (
-                                <span className={`h-4 px-1 rounded-md text-xs font-semibold ${isSelected ? c.badge : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'}`}>{t.badge}</span>
+                                <span className={`h-4 px-1 rounded-[var(--radius-Apple-sm)] text-xs font-semibold ${isSelected ? `bg-[var(--bg-tertiary)]/70 ${c.textActive}` : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)]'}`}>{t.badge}</span>
                               )}
                             </button>
                           );
@@ -746,20 +839,11 @@ export default function AIAssistantPage() {
                 })}
               </div>
             {/* Tab Panels — 条件渲染，避免 Radix Tabs 状态冲突 */}
-            <div className="mt-4">
-              {tab === 'agent' && (
-                <div role="tabpanel" id="panel-agent" aria-label="Agent 工作流 面板" className="h-[calc(100vh-12rem)]">
-                  <Suspense fallback={<TabLoadingSkeleton />}>
-                    <ErrorBoundary moduleName="Agent 工作流">
-                      <AgentWorkflowTab />
-                    </ErrorBoundary>
-                  </Suspense>
-                </div>
-              )}
+            <div className="mt-[var(--space-apple-md)]">
               {tab === 'chat' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-chat" aria-label="智能对话 面板">
+                  <div role="tabpanel" id="panel-chat" aria-label={t('ai.page.panelChat')}>
                     <ErrorBoundary moduleName="智能对话">
                       <ChatStateProvider>
                         <ChatTab />
@@ -771,7 +855,7 @@ export default function AIAssistantPage() {
               {tab === 'generate' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-generate" aria-label="配方生成 面板">
+                  <div role="tabpanel" id="panel-generate" aria-label={t('ai.page.panelGenerate')}>
                     <ErrorBoundary moduleName="配方生成">
                     <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
                   </ErrorBoundary>
@@ -782,8 +866,8 @@ export default function AIAssistantPage() {
               {tab === 'genetic' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-genetic" aria-label="遗传优化 面板">
-                    <div className="mb-4">
+                  <div role="tabpanel" id="panel-genetic" aria-label={t('ai.page.panelGenetic')}>
+                    <div className="mb-[var(--space-apple-md)]">
                     <Tabs
                       value={geneticMode}
                       onValueChange={(v) => {
@@ -795,17 +879,17 @@ export default function AIAssistantPage() {
                         }
                       }}
                     >
-                      <TabsList className="mb-4" role="tablist" aria-label="遗传优化模式切换">
+                      <TabsList className="mb-[var(--space-apple-md)]" role="tablist" aria-label={t('ai.page.geneticModeSwitch')}>
                         <TabsTrigger value="single" role="tab" aria-selected={geneticMode === 'single'}>
-                          <Dna className="w-3.5 h-3.5 mr-1.5 text-accent-500" />
+                          <Dna className="w-3.5 h-3.5 mr-1.5 text-[var(--color-accent-text)]" aria-hidden="true" />
                           单目标 (GA)
                         </TabsTrigger>
                         <TabsTrigger value="multi" role="tab" aria-selected={geneticMode === 'multi'}>
-                          <GitBranch className="w-3.5 h-3.5 mr-1.5 text-accent-500" />
+                          <GitBranch className="w-3.5 h-3.5 mr-1.5 text-[var(--color-accent-text)]" aria-hidden="true" />
                           多目标 (NSGA-II)
                         </TabsTrigger>
                         <TabsTrigger value="formula" role="tab" aria-selected={geneticMode === 'formula'}>
-                          <FileText className="w-3.5 h-3.5 mr-1.5 text-primary-500" />
+                          <FileText className="w-3.5 h-3.5 mr-1.5 text-[var(--color-primary-text)]" aria-hidden="true" />
                           配方优化
                         </TabsTrigger>
                       </TabsList>
@@ -828,7 +912,7 @@ export default function AIAssistantPage() {
               {tab === 'safety' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-safety" aria-label="安全检查 面板">
+                  <div role="tabpanel" id="panel-safety" aria-label={t('ai.page.panelSafety')}>
                     <ErrorBoundary moduleName="安全检查">
                     <SafetyTab />
                   </ErrorBoundary>
@@ -839,7 +923,7 @@ export default function AIAssistantPage() {
               {tab === 'synergy' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-synergy" aria-label="协同分析 面板">
+                  <div role="tabpanel" id="panel-synergy" aria-label={t('ai.page.panelSynergy')}>
                     <ErrorBoundary moduleName="协同分析">
                     <SynergyTab />
                   </ErrorBoundary>
@@ -850,7 +934,7 @@ export default function AIAssistantPage() {
               {tab === 'taste' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-taste" aria-label="口感预测 面板">
+                  <div role="tabpanel" id="panel-taste" aria-label={t('ai.page.panelTaste')}>
                     <ErrorBoundary moduleName="口感预测">
                     <TastePredictTab />
                   </ErrorBoundary>
@@ -861,7 +945,7 @@ export default function AIAssistantPage() {
               {tab === 'stability' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-stability" aria-label="稳定性评估 面板">
+                  <div role="tabpanel" id="panel-stability" aria-label={t('ai.page.panelStability')}>
                     <ErrorBoundary moduleName="稳定性评估">
                     <StabilityPredictTab />
                   </ErrorBoundary>
@@ -872,7 +956,7 @@ export default function AIAssistantPage() {
               {tab === 'peptide-analyze' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-peptide-analyze" aria-label="肽序列分析 面板">
+                  <div role="tabpanel" id="panel-peptide-analyze" aria-label={t('ai.page.panelPeptideAnalyze')}>
                     <ErrorBoundary moduleName="肽序列分析">
                     <AdvancedPeptideAnalyzer />
                   </ErrorBoundary>
@@ -883,7 +967,7 @@ export default function AIAssistantPage() {
               {tab === 'peptide-design' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-peptide-design" aria-label="肽设计优化 面板">
+                  <div role="tabpanel" id="panel-peptide-design" aria-label={t('ai.page.panelPeptideDesign')}>
                     <ErrorBoundary moduleName="肽设计优化">
                     <AdvancedPeptideDesign />
                   </ErrorBoundary>
@@ -894,7 +978,7 @@ export default function AIAssistantPage() {
               {tab === 'knowledge' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-knowledge" aria-label="知识库 面板">
+                  <div role="tabpanel" id="panel-knowledge" aria-label={t('ai.page.panelKnowledge')}>
                     <ErrorBoundary moduleName="知识库">
                     <KnowledgeBasePanel isEmbedded />
                   </ErrorBoundary>
@@ -905,7 +989,7 @@ export default function AIAssistantPage() {
               {tab === 'config' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
-                  <div role="tabpanel" id="panel-config" aria-label="配置管理 面板">
+                  <div role="tabpanel" id="panel-config" aria-label={t('ai.page.panelConfig')}>
                     <ErrorBoundary moduleName="配置管理">
                     <ConfigManagementPanel />
                   </ErrorBoundary>

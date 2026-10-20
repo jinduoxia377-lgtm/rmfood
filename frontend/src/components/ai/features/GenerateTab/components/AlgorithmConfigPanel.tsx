@@ -112,7 +112,7 @@ function StrategySelector({
   onChange: (v: AlgorithmStrategy) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {(Object.keys(STRATEGY_LABELS) as AlgorithmStrategy[]).map((s) => (
         <button
           key={s}
@@ -139,7 +139,7 @@ function PresetSelector({
   onChange: (v: PresetMode) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {PRESET_OPTIONS.map((opt) => (
         <button
           key={opt.value}
@@ -232,7 +232,7 @@ export function AlgorithmConfigPanel({
       {/* 口感偏好 */}
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground">口感偏好</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {TASTE_PREFERENCES.map((opt) => (
             <button
               key={opt.value}

@@ -2,6 +2,7 @@
  * 实验状态柱状图
  */
 import type { FC } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
@@ -39,13 +40,16 @@ const tooltipStyle = {
 }
 
 export const ExperimentBarChart: FC<Props> = ({ data, loading }) => {
+  const { t } = useTranslation()
+  const title = t('pages.dashboard.cards.experimentStatusStats')
+
   if (loading) {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
             <BarChart3 size={18} className="text-neutral-600 dark:text-neutral-400" />
-            实验状态统计
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
@@ -61,19 +65,19 @@ export const ExperimentBarChart: FC<Props> = ({ data, loading }) => {
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
             <BarChart3 size={18} className="text-neutral-600 dark:text-neutral-400" />
-            实验状态统计
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
           <div className="h-[200px] flex items-center justify-center">
             <EmptyState
               icon={<BarChart3 size={28} className="text-neutral-600 dark:text-neutral-400" />}
-              title="暂无实验数据"
-              description="创建第一个实验后，这里将显示实验状态分布"
+              title={t('pages.dashboard.cards.noExperimentStats')}
+              description={t('pages.dashboard.cards.experimentEmptyDesc')}
               action={
                 <Link to="/experiments" className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-700 dark:text-primary-700 hover:text-primary-700 dark:hover:text-primary-700 font-medium">
                   <Plus size={14} />
-                  查看实验
+                  {t('pages.dashboard.cards.viewExperiments')}
                 </Link>
               }
               titleClassName="text-sm"
@@ -90,7 +94,7 @@ export const ExperimentBarChart: FC<Props> = ({ data, loading }) => {
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
           <BarChart3 size={18} className="text-neutral-600 dark:text-neutral-400" />
-          实验状态统计
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">

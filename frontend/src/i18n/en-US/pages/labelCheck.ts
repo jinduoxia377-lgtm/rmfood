@@ -1,0 +1,35 @@
+/**
+ * English "Label Check" module translations
+ */
+export default {
+  labelCheck: {
+    title: 'Label Check',
+    subtitle: 'Paste or scan ingredient label text and compare against public standards such as the food-homology catalog, GB 2760, and GB 14880',
+    inputTitle: 'Enter Ingredient Label',
+    placeholder: 'Example:\nIngredients: water, sugar, non-dairy creamer (glucose syrup, hydrogenated vegetable oil), potassium sorbate, wheat flour',
+    startCheck: 'Start Check',
+    uploadImage: 'Upload Image to Recognize',
+    uploadAria: 'Upload ingredient label image',
+    clear: 'Clear',
+    ocrText: 'OCR recognized text:',
+    resultTitle: 'Check Result',
+    reportId: 'Report ID: {{id}}',
+    categoryFoodHomology: 'Food Homology',
+    categoryNewFood: 'New Food Resource',
+    categoryAdditive: 'Additive',
+    categoryOrdinary: 'Ordinary Ingredient',
+    categoryEnricher: 'Nutrition Enricher',
+    categoryProhibited: 'Prohibited / Risk',
+    categoryUnknown: 'Unlisted',
+    ingredientDetails: 'Ingredient Details',
+    allergen: 'Allergen: {{group}}',
+    levelInfo: 'Info',
+    levelNote: 'Note',
+    levelWarning: 'Warning',
+    toastInputRequired: 'Please enter the ingredient label content',
+    toastRecognized: 'Recognized {{count}} ingredients',
+    toastFailed: 'Check failed. Please try again later.',
+    toastOcrSuccess: 'OCR succeeded, {{count}} ingredients in total',
+    toastOcrUnavailable: 'OCR unavailable, please paste the text',
+  },
+}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Force-directed graph rendering engine.
  *
@@ -23,7 +22,7 @@ import type { RefObject } from 'react'
 export type { SimNode, SimEdge, LayoutType, ThemeConfig } from '../types'
 import type { SimNode, SimEdge, LayoutType, ThemeConfig, GraphNode, GraphEdge } from '../types'
 import {
-  TYPE_CONFIG, EDGE_COLORS, TYPE_ORDER,
+  EDGE_COLORS, TYPE_ORDER,
   getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
   calcInitialPosition, curvedLinkPath, calcEdgeWidth,
   PERF_THRESHOLD,
@@ -102,7 +101,7 @@ export class GraphEngine {
     this.svg.attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`)
 
     let g = this.svg.select<SVGGElement>('g.graph-container')
-    let defs = this.svg.select('defs')
+    let defs = this.svg.select<SVGDefsElement>('defs')
 
     if (g.empty()) {
       g = this.svg.append('g').attr('class', 'graph-container')
@@ -121,8 +120,7 @@ export class GraphEngine {
     if (!this.svg || !this.g) return
 
     const { nodes, edges, layout, lodLevel, highlightPath, selectedNodes,
-            communities, generatedCommunityColors, dataChanged, pinnedNodes,
-            focusedNodeIndex, animationPreset } = this.input
+            communities, generatedCommunityColors, dataChanged } = this.input
     const containerWidth = this.container?.clientWidth || this.input.width
     const containerHeight = Math.max(this.input.height, 420)
 
@@ -148,8 +146,7 @@ export class GraphEngine {
 
     // ── Full render ──
     this.renderFull(nodes, edges, layout, containerWidth, containerHeight,
-                    highlightPath, selectedNodes, communities, generatedCommunityColors,
-                    pinnedNodes, focusedNodeIndex, animationPreset)
+                    highlightPath, selectedNodes, communities, generatedCommunityColors)
   }
 
   destroy(): void {
@@ -173,14 +170,28 @@ export class GraphEngine {
 
   setZoom(transform: d3.ZoomTransform): void {
     if (!this.svg || !this.zoomBehavior) return
-    d3.transition().duration(350).call(this.zoomBehavior!.transform, this.svg!, transform)
+    // d3 v7 对 transition().call(zoom.transform, t) 的泛型约束比 v5 严格，
+    // 这里显式收窄到 d3 期望的过渡选择集。
+    this.svg.transition().duration(350).call(
+      (sel) => this.zoomBehavior!.transform!(sel as d3.Transition<SVGSVGElement, unknown, null, undefined>, transform),
+    )
+  }
+
+  /**
+   * 原地更新引擎输入（不重建模拟，保留当前节点坐标）。
+   *
+   * 典型用法：React effect 中先 updateInput({...latestProps}) 再 update()。
+   * 与「销毁重建」相比，可避免 force simulation 重新随机初始化布局。
+   */
+  updateInput(partial: Partial<GraphEngineInput>): void {
+    Object.assign(this.input, partial)
   }
 
   // ────────────────────────────────────────
   // Private methods
   // ────────────────────────────────────────
 
-  private buildDefs(defs: d3.Selection<d3.BaseType, unknown, null, undefined>): void {
+  private buildDefs(defs: d3.Selection<SVGDefsElement, unknown, null, undefined>): void {
     Object.entries(EDGE_COLORS).forEach(([etype, config]) => {
       const isCore = config.priority === 'core'
       defs.append('marker')
@@ -250,7 +261,9 @@ export class GraphEngine {
     this.zoomBehavior!(this.svg!)
 
     this.svgEl?.addEventListener('dblclick', () => {
-      d3.transition().duration(600).call(this.zoomBehavior!.transform, this.svg!, d3.zoomIdentity).ease(d3.easeCubicOut)
+      this.svg?.transition().duration(600).call(
+        (sel) => this.zoomBehavior!.transform!(sel as d3.Transition<SVGSVGElement, unknown, null, undefined>, d3.zoomIdentity),
+      ).ease(d3.easeCubicOut)
     })
   }
 
@@ -302,9 +315,6 @@ export class GraphEngine {
     selectedNodes: Set<string>,
     communities: Map<string, number>,
     generatedCommunityColors: Record<number, string>,
-    _pinnedNodes: Set<string>,
-    _focusedNodeIndex: number,
-    _animationPreset: string,
   ): void {
     const g = this.g!
     const highlightSet = new Set(highlightPath || [])
@@ -394,7 +404,7 @@ export class GraphEngine {
     this.simulation = d3.forceSimulation<SimNode>(simNodes)
       .alphaDecay((isLarge ? 0.018 : 0.01) * lodAlphaMultiplier)
       .velocityDecay(isLarge ? 0.38 : 0.26)
-      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges as unknown as d3.SimulationLinkDatum<SimNode>[])
+      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges)
         .id((d: any) => d.id)
         .distance(baseLinkDistance))
       .force('charge', d3.forceManyBody<SimNode>().strength(
@@ -497,7 +507,7 @@ export class GraphEngine {
     this.renderEdges(simEdges, highlightSet)
 
     // ── Node rendering ──
-    this.renderNodes(simNodes, simEdges, densityScale, selectedNodes, communities, generatedCommunityColors, highlightSet, layout)
+    this.renderNodes(simNodes, simEdges, densityScale, selectedNodes, communities, generatedCommunityColors, highlightSet)
 
     // ── Interaction events ──
     this.setupInteractions(simEdges)
@@ -533,7 +543,27 @@ export class GraphEngine {
 
   private renderEdges(simEdges: SimEdge[], highlightSet: Set<string>): void {
     const g = this.g!
-    const useCurve = this.input.layout === 'force'
+
+    // ── 并行边预计算 ─────────────────────────────────────────────
+    // 一次 O(E) 遍历建立 无向键 → {count, index} 索引；回调内 O(1) 查询。
+    // 原实现在每条边的 .attr('d') 回调内做 simEdges.forEach()，复杂度 O(E²)
+    // —— 实测 depth≥2 时 E=2472 → 约 612 万次比较，直接卡死主线程。
+    const edgeKey = (e: SimEdge): string => {
+      const sId = typeof e.source === 'string' ? e.source : (e.source as SimNode)?.id || ''
+      const tId = typeof e.target === 'string' ? e.target : (e.target as SimNode)?.id || ''
+      return sId <= tId ? `${sId}|||${tId}` : `${tId}|||${sId}`
+    }
+    const parallelMap = new Map<string, { count: number; index: Map<SimEdge, number> }>()
+    for (const e of simEdges) {
+      const k = edgeKey(e)
+      let entry = parallelMap.get(k)
+      if (!entry) {
+        entry = { count: 0, index: new Map<SimEdge, number>() }
+        parallelMap.set(k, entry)
+      }
+      entry.index.set(e, entry.count)
+      entry.count += 1
+    }
 
     const linkG = g.select<SVGGElement>('g.links').empty()
       ? g.append('g').attr('class', 'links') : g.select<SVGGElement>('g.links')
@@ -573,19 +603,11 @@ export class GraphEngine {
         const sy = (d.source as SimNode).y ?? 0
         const tx = (d.target as SimNode).x ?? 0
         const ty = (d.target as SimNode).y ?? 0
-        const sId = typeof d.source === 'string' ? d.source : (d.source as SimNode)?.id || ''
-        const tId = typeof d.target === 'string' ? d.target : (d.target as SimNode)?.id || ''
 
-        let parallelCount = 0
-        let parallelIndex = 0
-        simEdges.forEach((e: SimEdge) => {
-          const esId = typeof e.source === 'string' ? e.source : (e.source as SimNode)?.id || ''
-          const etId = typeof e.target === 'string' ? e.target : (e.target as SimNode)?.id || ''
-          if ((esId === sId && etId === tId) || (esId === tId && etId === sId)) {
-            if (e === d) parallelIndex = parallelCount
-            parallelCount++
-          }
-        })
+        // O(1) 查询并行边分组（替代原 O(E) 的 simEdges.forEach 全扫描）
+        const group = parallelMap.get(edgeKey(d))
+        const parallelCount = group?.count ?? 1
+        const parallelIndex = group?.index.get(d) ?? 0
 
         if (parallelCount > 1) {
           const midX = (sx + tx) / 2
@@ -607,7 +629,7 @@ export class GraphEngine {
       .style('opacity', 1)
 
     // Animated edge flow
-    links.each(function (_d: SimEdge) {
+    links.each(function () {
       const el = d3.select(this)
       const dash = el.attr('stroke-dasharray') || ''
       if (dash && dash !== '') {
@@ -651,7 +673,6 @@ export class GraphEngine {
     communities: Map<string, number>,
     generatedCommunityColors: Record<number, string>,
     highlightSet: Set<string>,
-    layout: LayoutType,
   ): void {
     const g = this.g!
     const nodeG = g.select<SVGGElement>('g.nodes').empty()
@@ -674,6 +695,10 @@ export class GraphEngine {
     const entered = nodeSelection.enter()
       .append('g')
       .attr('class', 'node-group')
+      // data-* 属性供 GraphPanelLayout 的右键菜单 / 键盘导航按类型定位节点
+      .attr('data-type', (d: SimNode) => d.type)
+      .attr('data-id', (d: SimNode) => d.id)
+      .attr('data-label', (d: SimNode) => d.label)
       .style('cursor', 'pointer')
       .style('opacity', 0)
 
@@ -739,7 +764,6 @@ export class GraphEngine {
       .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) * 0.38)
 
     // Degree badge (for nodes with degree >= 5)
-    const MAX_DEGREE_CAP = 18
     entered.each(function (d: SimNode) {
       if ((d.degree || 0) >= 5) {
         const group = d3.select(this)
@@ -772,25 +796,33 @@ export class GraphEngine {
     })
 
     // Hub glow ring for high-degree nodes
+    // maxDegree 提到循环外一次性计算 —— 原实现在 entered.each 回调内对 simNodes
+    // 做 reduce + map+spread，复杂度 O(N²)（N=900 时约 81 万次遍历）。
+    let maxDegree = 1
+    for (const n of simNodes) {
+      const dg = n.degree || 0
+      if (dg > maxDegree) maxDegree = dg
+    }
+    const hubThreshold = maxDegree * 0.5
+
     entered.each(function (d: SimNode) {
       const degree = d.degree || 0
-      if (degree >= simNodes.reduce((max, n) => Math.max(max, n.degree || 0), 1) * 0.5) {
+      if (degree >= hubThreshold) {
         const group = d3.select(this)
         const baseR = calcNodeRadius(d, densityScale)
-        const maxDeg = Math.max(...simNodes.map(n => n.degree || 0), 1)
-        const hubRingR = baseR + 6 + (degree / maxDeg) * 8
+        const hubRingR = baseR + 6 + (degree / maxDegree) * 8
         group.insert('circle', ':first-child')
           .attr('class', 'hub-glow-ring')
           .attr('r', 0)
           .attr('fill', 'none')
           .attr('stroke', getTypeConf(d.type).color)
           .attr('stroke-opacity', 0)
-          .attr('stroke-width', 2 + (degree / maxDeg) * 2)
+          .attr('stroke-width', 2 + (degree / maxDegree) * 2)
           .style('filter', 'url(#glow-outer)')
           .transition().delay(600 + Math.random() * 400).duration(800)
           .ease(d3.easeCubicOut)
           .attr('r', hubRingR)
-          .attr('stroke-opacity', 0.35 - (degree / maxDeg) * 0.15)
+          .attr('stroke-opacity', 0.35 - (degree / maxDegree) * 0.15)
       }
     })
 
@@ -907,6 +939,23 @@ export class GraphEngine {
     const allLinks = this.allLinksSel
     if (!allNodes || allNodes.empty()) return
 
+    // ── 邻接索引 ─────────────────────────────────────────────────
+    // 建一次 O(E)，悬停时 O(度数) 查询。
+    // 原实现每次 hover 对 simEdges 做 2 次全量 forEach（E=2472 时约 4.9k 次迭代/悬停），
+    // 加上两个 .attr() 回调的再扫描，一次 hover 累计约 1.5 万次迭代。
+    const adjacency = new Map<string, Set<string>>()
+    const adjOf = (k: string): Set<string> => {
+      let s = adjacency.get(k)
+      if (!s) { s = new Set<string>(); adjacency.set(k, s) }
+      return s
+    }
+    for (const e of simEdges) {
+      const sId = typeof e.source === 'object' ? e.source.id : e.source
+      const tId = typeof e.target === 'object' ? e.target.id : e.target
+      adjOf(sId).add(tId)
+      adjOf(tId).add(sId)
+    }
+
     // Drag behavior
     const dragBehavior = d3.drag<SVGGElement, SimNode>()
       .on('start', (event: d3.D3DragEvent<SVGGElement, SimNode, SimNode>, d: SimNode) => {
@@ -953,12 +1002,8 @@ export class GraphEngine {
     const handleHoverIn = (el: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) => {
       const conf = getTypeConf(d.type)
       const dynamicR = calcNodeRadius(d)
-      let connCount = 0
-      simEdges.forEach((e: SimEdge) => {
-        const sId = typeof e.source === 'object' ? e.source.id : e.source
-        const tId = typeof e.target === 'object' ? e.target.id : e.target
-        if (sId === d.id || tId === d.id) connCount++
-      })
+      // 度数已在 prepare 阶段算好，直接读取 —— 省掉一次 O(E) 全边扫描
+      const connCount = d.degree || 0
       const rect = this.container?.getBoundingClientRect() || { width: 0, height: 0 }
       const clientX = (event as MouseEvent).clientX ?? (event as TouchEvent).touches?.[0]?.clientX ?? rect.width / 2
       const clientY = (event as MouseEvent).clientY ?? (event as TouchEvent).touches?.[0]?.clientY ?? rect.height / 2
@@ -995,13 +1040,8 @@ export class GraphEngine {
         .attr('stroke-width', 3.5)
         .attr('filter', 'url(#glow-inner)')
 
-      const connectedIds = new Set<string>([d.id])
-      simEdges.forEach((e: SimEdge) => {
-        const sId = typeof e.source === 'object' ? e.source.id : e.source
-        const tId = typeof e.target === 'object' ? e.target.id : e.target
-        if (sId === d.id) connectedIds.add(tId)
-        if (tId === d.id) connectedIds.add(sId)
-      })
+      // O(度数) 邻居查询（替代原 O(E) 全边扫描）
+      const connectedIds = new Set<string>([d.id, ...(adjacency.get(d.id) ?? [])])
 
       allLinks?.transition().duration(160)
         .attr('stroke-opacity', (e: SimEdge) => {
@@ -1031,12 +1071,9 @@ export class GraphEngine {
         .attr('stroke-width', 2)
         .attr('filter', null)
 
+      // 原回调里计算了 sId/tId 但恒返回 0.55（死代码），改为常量赋值
       allLinks?.transition().duration(220)
-        .attr('stroke-opacity', (e: SimEdge) => {
-          const sId = typeof e.source === 'object' ? e.source.id : e.source
-          const tId = typeof e.target === 'object' ? e.target.id : e.target
-          return 0.55
-        })
+        .attr('stroke-opacity', 0.55)
         .attr('stroke-width', (e: SimEdge) => calcEdgeWidth(e.type, e.strength))
 
       allNodes?.select('.node-body')

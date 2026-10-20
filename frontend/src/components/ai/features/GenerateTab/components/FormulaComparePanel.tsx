@@ -131,7 +131,7 @@ export function FormulaComparePanel({
 
       {/* 药材组成对比 */}
       {(added.length > 0 || removed.length > 0) && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-lg border border-success/20 bg-success/5 p-3">
             <h4 className="text-caption font-semibold text-success mb-1.5">新增药材</h4>
             <ul className="space-y-1">

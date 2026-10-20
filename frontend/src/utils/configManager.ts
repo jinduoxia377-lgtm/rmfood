@@ -115,7 +115,7 @@ function getEffectiveDerivationInput(): { userId?: number | string; token?: stri
   try {
     const storedId = localStorage.getItem('rmfood_current_user_id');
     if (storedId) return { ..._aesDerivationInput, userId: storedId };
-  } catch {}
+  } catch { /* localStorage 不可用时忽略 */ }
   return _aesDerivationInput;
 }
 
@@ -137,7 +137,7 @@ async function deriveAesKey(cryptoObj: Crypto, input: { userId?: number | string
     let token = input.token || '';
     try {
       token = token || localStorage.getItem('rmfood_access_token') || localStorage.getItem('access_token') || '';
-    } catch {}
+    } catch { /* localStorage 不可用时忽略 */ }
     if (token) {
       const baseKey = await cryptoObj.subtle.importKey('raw', new TextEncoder().encode(token), { name: 'HKDF' }, false, ['deriveKey']);
       return await cryptoObj.subtle.deriveKey(
@@ -162,11 +162,11 @@ async function getOrCreateDpapiKey(): Promise<CryptoKey | null> {
     if (derived) return derived;
     // 未注入派生输入且无账号 ID/token：sessionStorage 随机 256-bit 密钥兜底
     let raw: string | null = null;
-    try { raw = sessionStorage.getItem(DPAPI_KEY_STORAGE); } catch {}
+    try { raw = sessionStorage.getItem(DPAPI_KEY_STORAGE); } catch { /* sessionStorage 不可用时忽略 */ }
     if (!raw) {
       const bytes = cryptoObj.getRandomValues(new Uint8Array(32));
       raw = btoa(String.fromCharCode(...bytes));
-      try { sessionStorage.setItem(DPAPI_KEY_STORAGE, raw); } catch {}
+      try { sessionStorage.setItem(DPAPI_KEY_STORAGE, raw); } catch { /* sessionStorage 不可用时忽略 */ }
     }
     const keyBytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
     return cryptoObj.subtle.importKey('raw', keyBytes.buffer as ArrayBuffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
@@ -201,9 +201,8 @@ export async function decryptKeyAsync(stored: string): Promise<{ raw: string; le
       const key = await getOrCreateDpapiKey();
       if (!key) return { raw: '', legacyUnencrypted: true };
       const cryptoObj = (globalThis.crypto || (self as any).crypto);
-      const [saltB64, ivB64, cipherB64] = stored.slice(FORMAT_V2_PREFIX.length).split(':');
+      const [, ivB64, cipherB64] = stored.slice(FORMAT_V2_PREFIX.length).split(':');
       const dec = (s: string) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-      const salt = dec(saltB64);
       const iv = dec(ivB64);
       const cipherU8 = dec(cipherB64);
       const plain = await cryptoObj.subtle.decrypt(
@@ -232,7 +231,7 @@ function generateConfigSyncToken(): string {
     const cryptoObj = (globalThis.crypto || (self as any).crypto);
     const b = cryptoObj.getRandomValues ? cryptoObj.getRandomValues(new Uint8Array(16)) : null;
     if (b) return Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
-  } catch {}
+  } catch { /* crypto 不可用时忽略 */ }
   return `t_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
@@ -242,7 +241,7 @@ export function dispatchConfigSync(): void {
     const token = generateConfigSyncToken();
     sessionStorage.setItem(CONFIG_SYNC_TOKEN_KEY, token);
     window.dispatchEvent(new CustomEvent(CONFIG_SYNC_EVENT, { detail: { token } }));
-  } catch {}
+  } catch { /* 派发失败时忽略 */ }
 }
 
 /** 校验广播事件是否为合法派发（token 匹配），拒绝外来脚本派发的裸事件 */

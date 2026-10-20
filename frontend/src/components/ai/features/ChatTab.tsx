@@ -18,19 +18,14 @@
 import React from 'react'
 import { useChatContext } from './ChatStateContext'
 import { logger } from '@/utils/safeLogger'
-import { useScenarioStore } from '@/stores/scenarioStore'
 
 // ===== Pro 组件 =====
-import { ChatMessages, ChatInputPro, ChatHistory, type HistorySession } from './components/pro'
+import { ChatMessages, ChatInputPro, ChatHistory } from './components/pro'
 import { TopBar, EmptyStateCard } from './components/pro'
 import ComposerStatusBar from './components/pro/ComposerStatusBar'
 import DetailsPanel from './components/pro/DetailsPanel'
 import FollowUpSuggestionsBar from './components/pro/FollowUpSuggestionsBar'
 import type { DraftAttachment } from './components/pro/ChatInput'
-
-// ===== UI 子组件 =====
-import { FormulaPanel } from './components/FormulaPanel'
-import { ErrorBoundary } from './components/ErrorBoundary'
 
 // ===== 视觉设计系统 =====
 import { scenarioSwitcher } from './services/scenarioSwitcher'
@@ -40,9 +35,7 @@ import { sessionCapability } from './capabilities/session/SessionCapability'
 import { Button } from '@/components/ui'
 
 // ===== 专业内容组件 =====
-import { ProfessionalReport as ProfessionalReportModal } from '@/components/ai/components/ProfessionalReport'
-import { EnhancedDataTable } from '@/components/ai/components/EnhancedDataTable'
-import type { EnhancedIngredient } from '@/types/ai.types'
+import { ProfessionalReport as ProfessionalReportModal, type ProfessionalReportProps as ProfessionalReportModalProps } from '@/components/ai/components/ProfessionalReport'
 
 // ===== 新功能组件 =====
 import { UserProfileSettingsPanel } from './components/UserProfileSettingsPanel'
@@ -50,21 +43,18 @@ import { FormulaShareModal } from './components/FormulaShareModal'
 import { ChatSearchOverlay } from './components/ChatSearchOverlay'
 import { detectStructuredContent } from './components/structured/utils'
 import * as formulaExtractorService from './services/formulaExtractorService'
+import { createFormula } from '@/api/formula'
+import { FormulaStatus } from '@/types'
+import type { FormulaCreatePayload } from '@/types/formula'
 
 // ===== 图标库 =====
-import {
-  AlertTriangle, Play, Pause, Leaf, Database,
-  UserCircle, Share2, Search as SearchIcon,
-  Save,
-} from 'lucide-react'
+import { AlertTriangle, Pause, Leaf } from 'lucide-react'
 
 // ===== 配置 =====
 import { QUICK_QUESTIONS } from '@/config/ai'
 
 // ===== RAG / UI =====
-import { RAGSourcesBanner } from '@/components/ai/rag/RAGSourcesBanner'
 import { RAGKnowledgePanel } from './components/RAGKnowledgePanel'
-import { Card } from '@/components/ui'
 
 interface ChatTabProps {
   onBatchExport?: (ids: string[], format: 'json' | 'csv' | 'excel' | 'pdf') => void
@@ -79,31 +69,32 @@ interface ChatTabProps {
  * ChatTab - 纯布局组装组件 (v13.0)
  * 所有业务逻辑已提取至 ChatStateProvider
  */
-export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll: propsSelectAll, onToggleSelect: propsToggleSelect, onImport: propsImport }: ChatTabProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 兼容既有 Props 契约，当前实现未使用这些 props
+export function ChatTab(_props: ChatTabProps) {
   // ===== 从 Context 获取所有状态 =====
   const ctx = useChatContext()
   const {
     // 消息
-    messages, input, setInput, isStreaming, setIsStreaming,
-    chatError, setChatError, clearMessages, addMessage, updateMessage,
-    retryLastMessage, clearError, isPaused, pauseStreaming, resumeStreaming,
-    editMessage, retractMessage, setActiveSessionId, checkCompaction,
+    messages, input, setInput, isStreaming,
+    chatError, clearError, pauseStreaming,
+    editMessage, retractMessage,
     // 会话
-    historySessions, setHistorySessions, activeSessionId, setHistoryVisible, historyVisible,
+    historySessions, activeSessionId, historyVisible,
     // UI
-    isDetailModalOpen, selectedForDetail, showFormulaList, searchQuery, highlightedMessageId,
+    highlightedMessageId,
     attachments, detailsCall, detailsOpen, showKBPanel,
     // 引擎
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
     // 配方
-    formulaCount, expandedIds, selectedIds, formulas,
+    formulaCount,
     // 报告
-    showReportModal, reportData, isGeneratingReport,
+    showReportModal, setShowReportModal, reportData, isGeneratingReport,
     // 方法
-    handleSendMessage, handleNewSession, handleSelectSession, handleDeleteSession,
+    handleNewSession, handleSelectSession, handleDeleteSession,
     handleRenameSession, handleClearChat, handleRetry, handleSend, handleForkMessage,
-    handleAddAttachment, handleRemoveAttachment, toggleHistory, syncSessionsFromServer,
+    handleGenerateReport,
+    handleAddAttachment, handleRemoveAttachment, toggleHistory,
   } = ctx
 
   // ===== 本地 UI 状态 =====
@@ -115,36 +106,93 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   const [showUserProfileSettings, setShowUserProfileSettings] = React.useState(false)
   const [shareModalContent, setShareModalContent] = React.useState<{ messageId: string; content: string } | null>(null)
   const [searchOpen, setSearchOpen] = React.useState(false)
-  const [savedFormulaId, setSavedFormulaId] = React.useState<string | null>(null)
+  // 轻量提示条：后端未提供端点的按钮点下去必须给出明确反馈，不能静默无响应
+  const [notice, setNotice] = React.useState<{ kind: 'success' | 'warning' | 'error'; text: string } | null>(null)
+  const noticeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const showNotice = React.useCallback((kind: 'success' | 'warning' | 'error', text: string) => {
+    setNotice({ kind, text })
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    noticeTimer.current = setTimeout(() => setNotice(null), 4000)
+  }, [])
+  React.useEffect(() => () => { if (noticeTimer.current) clearTimeout(noticeTimer.current) }, [])
 
   // ── 同步 Context 状态到本地（用于回调）──
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
     if (detailsCall !== detailsCallLocal) setDetailsCall(detailsCall)
   }, [detailsCall])
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
     if (detailsOpen !== detailsOpenLocal) setDetailsOpen(detailsOpen)
   }, [detailsOpen])
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
     if (showKBPanel !== showKBPanelLocal) setShowKBPanelLocal(showKBPanel)
   }, [showKBPanel])
 
-  // ── 从结构化内容提取配方并保存 ──
-  const handleStructureSave = React.useCallback((messageId: string, content: string) => {
+  // ── 从结构化内容提取配方并真正保存到后端 /formulas ──
+  // 此前只生成本地 id 就弹"✓ 配方已保存到配方库"，实际没有落库。
+  const handleStructureSave = React.useCallback(async (messageId: string, content: string) => {
     const structured = detectStructuredContent(content)
     if (!structured) {
       logger.warn('[ChatTab] 消息内容不是结构化格式，无法保存:', messageId)
+      showNotice('warning', '该消息不是结构化配方，无法保存')
       return
     }
     const extracted = formulaExtractorService.extractFormulaFromContent(structured)
     if (!extracted) {
       logger.warn('[ChatTab] 未能从结构化内容中提取配方:', messageId)
+      showNotice('warning', '未能从消息中提取到配方成分表')
       return
     }
-    const formulaId = formulaExtractorService.generateFormulaId(extracted.name)
-    setSavedFormulaId(formulaId)
-    logger.info('[ChatTab] 配方已保存到库:', { formulaId, name: extracted.name, ingredients: extracted.ingredients.length })
-    // TODO: 调用后端API保存到数据库
-  }, [])
+
+    // 剂量字符串 -> 数值（"10g" / "10-15g" / "约15克"）。区间取上限。
+    const parseDosage = (raw: string): number => {
+      const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
+      const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
+      return Number.isFinite(val) ? val : 0
+    }
+    const totalAmount = extracted.ingredients.reduce((s, i) => s + parseDosage(i.dosage), 0)
+    const ingredients = extracted.ingredients.map((i) => {
+      const amount = parseDosage(i.dosage)
+      return {
+        name: i.name,
+        amount,
+        unit: /斤/.test(i.dosage) ? 'kg' : 'g',
+        percentage: totalAmount > 0 ? Number(((amount / totalAmount) * 100).toFixed(2)) : 0,
+        role: i.role,
+      }
+    })
+
+    const payload: FormulaCreatePayload = {
+      name: extracted.name,
+      description: [extracted.description, extracted.rationale && `【配伍思路】${extracted.rationale}`]
+        .filter(Boolean)
+        .join('\n\n'),
+      status: FormulaStatus.DRAFT,
+      ingredients,
+      effects: extracted.expectedEffects ?? [],
+      target_effects: extracted.expectedEffects ?? [],
+      dosage: extracted.dosageAdvice,
+      processing_method: extracted.productionSteps?.length ? extracted.productionSteps.join('；') : undefined,
+      notes: extracted.precautions?.length ? `【注意事项】${extracted.precautions.join('；')}` : undefined,
+      composition: extracted.scores,
+      version_notes: '由 AI 对话结构化内容导入',
+    }
+
+    try {
+      const created = await createFormula(payload)
+      showNotice('success', `配方「${created.name ?? extracted.name}」已保存到配方库`)
+      logger.info('[ChatTab] 配方已保存到配方库:', {
+        formulaId: created.id,
+        name: created.name,
+        ingredients: ingredients.length,
+      })
+    } catch (e) {
+      logger.error('[ChatTab] 配方保存失败:', e)
+      showNotice('error', '配方保存失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+    }
+  }, [showNotice])
 
   const handleStructureShare = React.useCallback((messageId: string, content: string) => {
     setShareModalContent({ messageId, content })
@@ -182,7 +230,12 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
         <TopBar
           llmAvailable={llmAvailable}
           llmModel={llmModel}
-          onModelChange={(model) => logger.debug('[ChatTab] Model changed:', model)}
+          onModelChange={(model) => {
+            // 后端没有"按对话切换模型"的端点，聊天始终走 /models/status 的默认模型。
+            // 此前这里只打日志，用户以为切换生效了。
+            logger.debug('[ChatTab] Model changed:', model)
+            showNotice('warning', '模型切换暂不可用：后端未提供按对话指定模型的接口，当前仍使用默认模型')
+          }}
           scenarioMode={scenarioMode}
           onScenarioSwitch={(mode) => scenarioSwitcher.switchTo(mode, 'user_selected')}
           historyVisible={historyVisible}
@@ -191,17 +244,22 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           ragEnabled={false}
           ragIsSeeded={false}
           ragIsSeeding={false}
-          onToggleRAG={() => {}}
-          onTriggerSeed={() => {}}
+          onToggleRAG={() =>
+            showNotice('warning', '知识库检索暂不可用：后端未提供 RAG 索引与检索端点')
+          }
+          onTriggerSeed={() =>
+            showNotice('warning', '知识库初始化暂不可用：后端未提供 RAG 端点')
+          }
           formulaCount={formulaCount}
-          onShowFormulaList={() => {}}
+          onShowFormulaList={() => setShowKBPanelLocal(true)}
           messageCount={messages.length}
           onClearChat={handleClearChat}
           onOpenKBPanel={() => setShowKBPanelLocal(true)}
           onOpenUserProfile={() => setShowUserProfileSettings(true)}
           onToggleSearch={() => setSearchOpen(v => !v)}
           searchOpen={searchOpen}
-          t={() => ''}
+          // 此前是 t={() => ''}，把 TopBar 标题清空了
+          t={(_key, fallback) => fallback ?? _key}
         />
 
         {/* ② 消息滚动区 */}
@@ -242,11 +300,32 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
               isStreaming={isStreaming}
               chatError={chatError}
               onRetry={handleRetry}
-              onGenerateReport={() => {}}
+              onGenerateReport={() => {
+                if (isGeneratingReport) {
+                  showNotice('warning', '报告正在生成中，请稍候')
+                  return
+                }
+                if (formulaCount === 0) {
+                  showNotice('warning', '还没有配方数据，请先在对话中描述配方需求或导入配方')
+                  return
+                }
+                showNotice('success', '开始生成配方报告…')
+                // 汇总当前会话识别出的全部配方；useReportGenerator 内部会做缓存与版本记录
+                handleGenerateReport().catch((err) => {
+                  const msg = err instanceof Error ? err.message : String(err ?? '未知错误')
+                  showNotice('error', `报告生成失败：${msg}`)
+                })
+              }}
               showReportButton={formulaCount > 0}
               highlightedMessageId={highlightedMessageId}
               selectedMessageIds={[]}
-              onReferenceMessage={() => {}}
+              onReferenceMessage={(msg) => {
+                const text = typeof msg.content === 'string' ? msg.content : String(msg.content ?? '')
+                const snippet = text.length > 160 ? text.slice(0, 160) + '…' : text
+                if (!snippet.trim()) return
+                // 把被引用的消息作为上下文插入输入框，供下一轮提问引用
+                setInput(`> ${snippet}\n${input}`)
+              }}
               onEditMessage={editMessage}
               onRetractMessage={retractMessage}
               onForkMessage={handleForkMessage}
@@ -329,9 +408,9 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           />
         </div>
 
-        {/* Details 面板 */}
+        {/* Details 面板 — 移动端为全屏抽屉，sm+ 恢复为右侧内嵌列 */}
         {detailsOpenLocal && detailsCallLocal && (
-          <div className="w-[320px] flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[320px] flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 overflow-hidden sm:static sm:z-auto sm:w-[320px] sm:max-w-none">
             <DetailsPanel
               selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as any}
               onClose={() => setDetailsOpen(false)}
@@ -377,11 +456,32 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           />
         )}
 
-        {/* 保存成功提示 */}
-        {savedFormulaId && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
-            bg-success-500 text-white text-xs font-medium shadow-lg animate-fade-in">
-            ✓ 配方已保存到配方库
+        {/* 专业配方报告模态框
+            注意：ProfessionalReport 内部 report.sections / report.title 无空值守卫，
+            所以必须同时要求 reportData 存在才渲染，不能只看 showReportModal。 */}
+        {showReportModal && !!reportData && (
+          <ProfessionalReportModal
+            report={reportData as ProfessionalReportModalProps['report']}
+            isLoading={isGeneratingReport}
+            onClose={() => setShowReportModal(false)}
+          />
+        )}
+
+        {/* 操作反馈提示：成功 / 后端未提供端点 / 失败 */}
+        {notice && (
+          <div
+            role="status"
+            className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
+              text-xs font-medium shadow-lg animate-fade-in text-white ${
+                notice.kind === 'success'
+                  ? 'bg-success-500'
+                  : notice.kind === 'error'
+                    ? 'bg-error-500'
+                    : 'bg-warning-500'
+              }`}
+          >
+            {notice.kind === 'success' ? '✓ ' : '⚠ '}
+            {notice.text}
           </div>
         )}
       </div>

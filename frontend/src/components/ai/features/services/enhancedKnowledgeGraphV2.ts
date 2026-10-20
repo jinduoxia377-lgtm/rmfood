@@ -9,25 +9,9 @@
 
 import {
   DomainCategory,
-  DomainExpertiseLevel,
   type DomainTerm,
-  type SemanticAnalysisResult,
-  type RecognizedDomainTerm,
   type IntentClassification,
-  type ExpertSuggestionV2,
-  type IntentType,
 } from './professionalIntelligenceEngine'
-
-import {
-  SYSTEM_LIMITATIONS_ANALYSIS,
-  OPTIMIZATION_METRICS,
-  IMPLEMENTATION_PHASES,
-  type SystemLimitation,
-  type OptimizationMetric,
-  type ImplementationPhase,
-  type PluginInterface,
-  type ExtensionPoint,
-} from './systemAnalysisAndMetrics'
 
 // ============ 类型定义扩展 ============
 

@@ -11,14 +11,14 @@ import { useThemeStore } from '@/stores/themeStore';
  * 应该在 App 根组件中调用一次
  */
 export function useThemeInit() {
-  const { mode, setTransitionType } = useThemeStore();
+  const { mode } = useThemeStore();
 
   useEffect(() => {
     // 初始化主题
 
     // 监听系统主题变化
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
+    const handleChange = () => {
       if (mode === 'system') {
         // useThemeStore.getState().setMode(e.matches ? 'dark' : 'light');
       }

@@ -1,11 +1,11 @@
-// @ts-nocheck
+ 
 /**
  * MoleculeViewer3D — 3D 分子结构查看器
  * Three.js JSX 类型通过外部声明文件解决
  */
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Text, Html } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface MoleculeProps {
@@ -14,9 +14,9 @@ interface MoleculeProps {
 }
 
 function Molecule({ structure, bonds }: MoleculeProps) {
-  const groupRef = useRef<unknown>(null)
+  const groupRef = useRef<THREE.Group>(null)
 
-  useFrame((_state) => {
+  useFrame(() => {
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.005
     }
@@ -44,12 +44,10 @@ function Molecule({ structure, bonds }: MoleculeProps) {
 
             <float32BufferAttribute
               attach="attributes-position"
-              count={2}
-              array={new Float32Array([
+              args={[new Float32Array([
                 structure[i].x, structure[i].y, structure[i].z,
                 structure[j].x, structure[j].y, structure[j].z
-              ])}
-              itemSize={3}
+              ]), 3]}
             />
           </bufferGeometry>
 

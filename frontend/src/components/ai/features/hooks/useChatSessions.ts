@@ -22,9 +22,8 @@
  * @lastUpdated 2026-05-12
  */
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { logger } from '@/utils/safeLogger'
-import type { ExportFormat } from '@/types/ai.types'
 
 // ===== 类型定义 =====
 
@@ -109,17 +108,6 @@ const DEFAULT_TITLE = '新对话'
  */
 function generateId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-}
-
-/**
- * 从消息内容自动生成标题（取前30个字符）
- */
-function generateTitleFromContent(content: string): string {
-  if (!content) return DEFAULT_TITLE
-  const cleaned = content.replace(/\n/g, ' ').trim()
-  return cleaned.length > MAX_TITLE_LENGTH
-    ? cleaned.slice(0, MAX_TITLE_LENGTH) + '...'
-    : cleaned || DEFAULT_TITLE
 }
 
 // ===== 主 Hook 实现 =====
@@ -467,7 +455,7 @@ export function useChatSessions(): UseChatSessionsReturn {
     let importedSession: ChatSession
     try {
       importedSession = JSON.parse(jsonText)
-    } catch (error) {
+    } catch {
       throw new Error('无效的会话数据格式（期望 JSON）')
     }
 

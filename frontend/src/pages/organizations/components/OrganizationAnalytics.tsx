@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 组织数据分析仪表盘 - KPI 指标 + 趋势图表
  */
 import React, { memo, useMemo, useState } from 'react'
@@ -13,7 +13,7 @@ interface KPIData {
   label: string
   value: number | string
   change: number
-  icon: React.ElementType
+  icon: React.ComponentType<any>
   color: string
   unit?: string
   format?: 'number' | 'percent' | 'k'
@@ -104,19 +104,19 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
     <div className="space-y-8">
       {/* 时间范围选择器 */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary-700" />
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-[var(--color-primary-text)]" />
           数据概览
         </h2>
-        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-1">
           {(['7d', '30d', '90d'] as const).map(range => (
             <button
               key={range}
               onClick={() => handleRangeChange(range)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+              className={`px-[var(--space-apple-sm)] py-1.5 text-sm font-medium rounded-[var(--radius-Apple-sm)] transition-all ${
                 selectedRange === range
-                  ? 'bg-white dark:bg-neutral-900 text-primary-700 shadow-sm'
-                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-text-primary'
+                  ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
+                  : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {range === '7d' ? '近7天' : range === '30d' ? '近30天' : '近90天'}
@@ -134,14 +134,14 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
           return (
             <div
               key={index}
-              className="bg-white dark:bg-neutral-900 rounded-xl p-5 border border-neutral-200 dark:border-neutral-700 hover:shadow-md transition-shadow"
+              className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-5 border border-[var(--border-color)] hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className={`p-2.5 rounded-lg bg-${kpi.color}-50 dark:bg-${kpi.color}-900/20`}>
+              <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
+                <div className={`p-2.5 rounded-[var(--radius-Apple-sm)] bg-${kpi.color}-50 dark:bg-${kpi.color}-900/20`}>
                   <Icon className={`w-5 h-5 text-${kpi.color}-600 dark:text-${kpi.color}-400`} />
                 </div>
                 <div className={`flex items-center gap-1 text-sm font-medium ${
-                  isPositive ? 'text-success-600' : 'text-error-600'
+                  isPositive ? 'text-[var(--color-success-text)]' : 'text-[var(--color-error-text)]'
                 }`}>
                   {isPositive ? (
                     <TrendingUp className="w-4 h-4" />
@@ -153,14 +153,14 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
               </div>
 
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+                <p className="text-2xl font-bold text-[var(--text-primary)]">
                   {formatValue(kpi)}
                 </p>
                 <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{kpi.label}</p>
               </div>
 
               {/* 迷你趋势线 */}
-              <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)]">
                 <svg width="100%" height="32" className="overflow-visible">
                   <polyline
                     points={Array.from({ length: 12 }, (_, i) =>
@@ -182,16 +182,16 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       {/* 趋势图表区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 成员增长趋势 */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-secondary-500" />
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] border border-[var(--border-color)]">
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)] flex items-center gap-2">
+            <Users className="w-5 h-5 text-[var(--color-secondary-text)]0" />
             成员增长趋势
           </h3>
           <div className="h-64 flex items-end space-x-2">
             {memberTrend.slice(-14).map((point, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full bg-secondary-100 dark:bg-secondary-300/25 rounded-t relative" style={{ height: `${(point.value / 400) * 100}%`, minHeight: 8 }}>
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap">
+                <div className="w-full bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25 rounded-t relative" style={{ height: `${(point.value / 400) * 100}%`, minHeight: 8 }}>
+                  <div className="absolute -top-[var(--space-apple-lg)] left-1/2 -translate-x-1/2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap">
                     {point.value}
                   </div>
                 </div>
@@ -202,41 +202,47 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
         </div>
 
         {/* 存储使用趋势 */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-            <HardDrive className="w-5 h-5 text-warning-500" />
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] border border-[var(--border-color)]">
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)] flex items-center gap-2">
+            <HardDrive className="w-5 h-5 text-[var(--color-warning-text)]0" />
             存储使用趋势 (GB)
           </h3>
           <div className="h-64 flex items-end">
             <div className="w-full h-full relative">
-              <svg width="100%" height="100%" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="storageGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-warning-500)" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="var(--color-warning-500)" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d={storageTrend.map((p, i, arr) => {
-                    const x = (i / (arr.length - 1)) * 100
-                    const y = 100 - ((p.value / 10) * 80 + 10)
-                    return `${i === 0 ? 'M' : 'L'} ${x},${y}`
-                  }).join(' ') + ` L 100,100 L 0,100 Z`}
-                  fill="url(#storageGradient)"
-                />
-                <path
-                  d={storageTrend.map((p, i, arr) => {
-                    const x = (i / (arr.length - 1)) * 100
-                    const y = 100 - ((p.value / 10) * 80 + 10)
-                    return `${i === 0 ? 'M' : 'L'} ${x},${y}`
-                  }).join(' ')}
-                  fill="none"
-                  stroke="var(--color-warning-500)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {storageTrend.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                  暂无存储使用数据
+                </div>
+              ) : (
+                <svg width="100%" height="100%" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="storageGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-warning-500)" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="var(--color-warning-500)" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d={storageTrend.map((p, i, arr) => {
+                      const x = (i / (arr.length - 1)) * 100
+                      const y = 100 - ((p.value / 10) * 80 + 10)
+                      return `${i === 0 ? 'M' : 'L'} ${x},${y}`
+                    }).join(' ') + ` L 100,100 L 0,100 Z`}
+                    fill="url(#storageGradient)"
+                  />
+                  <path
+                    d={storageTrend.map((p, i, arr) => {
+                      const x = (i / (arr.length - 1)) * 100
+                      const y = 100 - ((p.value / 10) * 80 + 10)
+                      return `${i === 0 ? 'M' : 'L'} ${x},${y}`
+                    }).join(' ')}
+                    fill="none"
+                    stroke="var(--color-warning-500)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </div>
           </div>
         </div>
@@ -245,28 +251,28 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       {/* 底部图表 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 组织活动排行 */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">组织活跃度 TOP 5</h3>
-          <div className="space-y-3">
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] border border-[var(--border-color)]">
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">组织活跃度 TOP 5</h3>
+          <div className="space-y-[var(--space-apple-sm)]">
             {orgActivity.map((org, index) => (
-              <div key={index} className="flex items-center gap-3">
+              <div key={index} className="flex items-center gap-[var(--space-apple-sm)]">
                 <span className="text-sm font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-6">{index + 1}</span>
-                <span className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 truncate">{org.name}</span>
-                <div className="w-32 h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                <span className="text-sm text-[var(--text-primary)] flex-1 truncate">{org.name}</span>
+                <div className="w-32 h-2 bg-[var(--bg-tertiary)] rounded-[var(--radius-pill)] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-accent-500 to-danger-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-accent-500 to-danger-500 rounded-[var(--radius-pill)]"
                     style={{ width: `${org.activity}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium text-neutral-900 dark:text-white w-10 text-right">{org.activity}</span>
+                <span className="text-sm font-medium text-[var(--text-primary)] w-10 text-right">{org.activity}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* 计划类型分布 */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">计划类型分布</h3>
+        <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] border border-[var(--border-color)]">
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">计划类型分布</h3>
           <div className="flex items-center justify-center h-48">
             <div className="relative w-40 h-40">
               <svg viewBox="0 0 42 42" className="w-full h-full">
@@ -301,9 +307,9 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
             <div className="ml-6 space-y-2">
               {planDistribution.map((item, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-neutral-700 dark:text-neutral-300">{item.name}</span>
-                  <span className="font-medium text-neutral-900 dark:text-white ml-auto">{item.value}</span>
+                  <span className="w-3 h-3 rounded-[var(--radius-pill)]" style={{ backgroundColor: item.color }} />
+                  <span className="text-[var(--text-primary)]">{item.name}</span>
+                  <span className="font-medium text-[var(--text-primary)] ml-auto">{item.value}</span>
                 </div>
               ))}
             </div>

@@ -64,7 +64,7 @@ export class TokenBudgetManager {
     const nums = (content.match(/\d+/g) || []).length
     const newlines = (content.match(/\n/g) || []).length
     // 标点、空白及常见 JSON 结构字符（{ } : " , [ ]）的近似 token 贡献
-    const structChars = (content.match(/[{}\[\]:,"\s]/g) || []).length
+    const structChars = (content.match(/[{}[\]:,"\s]/g) || []).length
 
     let raw =
       cn * CN_CHAR_WEIGHT +
@@ -74,7 +74,7 @@ export class TokenBudgetManager {
       structChars * PUNCT_WEIGHT
 
     // 若消息中含明显 JSON/markup 结构，施加小幅修正
-    const hasJson = /[{\[]/.test(content)
+    const hasJson = /[{}[]/.test(content)
     if (hasJson) raw *= JSON_PENALTY
 
     return Math.ceil(raw)
@@ -203,7 +203,6 @@ export class TokenBudgetManager {
    * 估算指定模型每 1K tokens 的价格（参照 DSH TokenMeter.pricingFor）
    */
   pricingFor(provider: string, model: string): ModelPricing {
-    const key = `${provider}/${model}`.toLowerCase()
     const direct = MODEL_PRICING[model.toLowerCase()]
     if (direct) {
       return { provider, model, inputPerK: direct.input, outputPerK: direct.output }

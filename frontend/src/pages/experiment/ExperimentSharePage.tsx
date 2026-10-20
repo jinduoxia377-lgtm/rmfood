@@ -3,9 +3,10 @@
  */
 import { useParams } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  ArrowLeft, FlaskConical, Calendar, Target, FileText,
-  BarChart3, Table, CheckCircle2, XCircle,
+  ArrowLeft, Target, FileText,
+  BarChart3, XCircle,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
@@ -14,30 +15,37 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Badg
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { experimentApi } from '@/api/experiment'
+
+/** 安全日期格式化：避免 Invalid Date 抛 RangeError */
+function safeDate(raw: string | null | undefined, pattern = 'yyyy-MM-dd HH:mm'): string {
+  if (!raw) return '-'
+  const dt = new Date(raw)
+  if (Number.isNaN(dt.getTime())) return '-'
+  return format(dt, pattern, { locale: zhCN })
+}
 
 async function fetchSharedExperiment(shareId: string) {
-  const res = await fetch(`${API_BASE}/experiments/share/${shareId}`)
-  if (!res.ok) throw new Error('Not found')
-  return res.json()
+  return experimentApi.getShared(shareId)
 }
 
 export default function ExperimentSharePage() {
-  const { share_id } = useParams<{ share_id: string }>()
+  const { t, i18n } = useTranslation()
+  const { shareId } = useParams<{ shareId: string }>()
   const [dataView, setDataView] = useState<'table' | 'chart'>('table')
 
   const { data: exp, isLoading, error } = useQuery({
-    queryKey: ['shared-experiment', share_id],
-    queryFn: () => fetchSharedExperiment(share_id!),
-    enabled: !!share_id,
+    queryKey: ['shared-experiment', shareId],
+    queryFn: () => fetchSharedExperiment(shareId!),
+    enabled: !!shareId,
   })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-grid flex items-center justify-center" style={{ backgroundColor: 'var(--bg-canvas)' }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</p>
+          <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-[var(--radius-pill)] animate-spin mx-auto mb-[var(--space-apple-sm)]" />
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.loading')}</p>
         </div>
       </div>
     )
@@ -45,13 +53,13 @@ export default function ExperimentSharePage() {
 
   if (error || !exp) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <XCircle size={48} className="mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3" />
-          <h1 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">实验不存在</h1>
-          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">该实验可能已被删除或分享已取消。</p>
+      <div className="min-h-screen bg-grid flex items-center justify-center" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+        <div className="text-center max-w-md px-[var(--space-apple-md)]">
+          <XCircle size={48} className="mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-[var(--space-apple-sm)]" />
+          <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-2">{t('pages.experimentShare.notExist')}</h1>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-[var(--space-apple-md)]">{t('pages.experimentShare.notExistDesc')}</p>
           <Link to="/experiments">
-            <Button variant="secondary" size="sm">返回首页</Button>
+            <Button variant="secondary" size="sm">{t('pages.experimentShare.backHome')}</Button>
           </Link>
         </div>
       </div>
@@ -63,25 +71,25 @@ export default function ExperimentSharePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6 space-y-6">
+      <div className="max-w-4xl mx-auto px-[var(--space-apple-md)] lg:px-6 py-[var(--space-apple-lg)] space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link to="/experiments" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+          <Link to="/experiments" className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
             <ArrowLeft size={16} />
-            返回首页
+            {t('pages.experimentShare.backHome')}
           </Link>
-          <Badge variant="info" size="sm">公开分享</Badge>
+          <Badge variant="info" size="sm">{t('pages.experimentShare.publicShare')}</Badge>
         </div>
 
         {/* 基本信息 */}
         <Card>
           <CardContent>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">{exp.title}</h1>
+            <div className="flex items-center gap-[var(--space-apple-sm)] mb-2">
+              <h1 className="text-xl font-semibold text-[var(--text-primary)]">{exp.title}</h1>
               {exp.status && <StatusBadge status={exp.status} />}
             </div>
-            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-3">{exp.code} · 创建于 {exp.created_at ? format(new Date(exp.created_at), 'yyyy-MM-dd', { locale: zhCN }) : '-'}</p>
-            {exp.description && <p className="text-sm text-neutral-600 leading-relaxed">{exp.description}</p>}
+            <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-[var(--space-apple-sm)]">{exp.code} · {t('pages.experimentShare.createdOn', { date: safeDate(exp.created_at, 'yyyy-MM-dd') })}</p>
+            {exp.description && <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{exp.description}</p>}
           </CardContent>
         </Card>
 
@@ -92,17 +100,17 @@ export default function ExperimentSharePage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
-                      <Target size={16} className="text-primary-500" />
+                    <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                      <Target size={16} className="text-[var(--color-primary-text)]0" />
                     </div>
-                    <CardTitle as="h2">实验目标</CardTitle>
+                    <CardTitle as="h2">{t('pages.experimentShare.objectives')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
                     {exp.objectives.map((obj: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-neutral-600">
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
+                      <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 shrink-0" />
                         {obj}
                       </li>
                     ))}
@@ -114,14 +122,14 @@ export default function ExperimentSharePage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
-                      <FileText size={16} className="text-primary-500" />
+                    <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                      <FileText size={16} className="text-[var(--color-primary-text)]0" />
                     </div>
-                    <CardTitle as="h2">实验方法</CardTitle>
+                    <CardTitle as="h2">{t('pages.experimentShare.methodology')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{exp.methodology}</p>
+                  <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">{exp.methodology}</p>
                 </CardContent>
               </Card>
             )}
@@ -133,18 +141,18 @@ export default function ExperimentSharePage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
-                    <BarChart3 size={16} className="text-primary-500" />
+                <div className="flex items-center gap-[var(--space-apple-sm)]">
+                  <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                    <BarChart3 size={16} className="text-[var(--color-primary-text)]0" />
                   </div>
                   <div>
-                    <CardTitle as="h2">实验数据</CardTitle>
-                    <CardDescription>{dataPoints.length} 条数据</CardDescription>
+                    <CardTitle as="h2">{t('pages.experimentShare.data')}</CardTitle>
+                    <CardDescription>{t('pages.experimentShare.dataCount', { count: dataPoints.length })}</CardDescription>
                   </div>
                 </div>
-                <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
-                  <button onClick={() => setDataView('table')} className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors', dataView === 'table' ? 'surface-card text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500')}>数据表</button>
-                  <button onClick={() => setDataView('chart')} className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors', dataView === 'chart' ? 'surface-card text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500')}>图表</button>
+                <div className="flex bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-0.5">
+                  <button onClick={() => setDataView('table')} className={cn('px-2.5 py-1 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-colors min-h-[44px] inline-flex items-center', dataView === 'table' ? 'surface-card text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-muted)]')}>{t('pages.experimentShare.dataTable')}</button>
+                  <button onClick={() => setDataView('chart')} className={cn('px-2.5 py-1 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-colors min-h-[44px] inline-flex items-center', dataView === 'chart' ? 'surface-card text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-muted)]')}>{t('pages.experimentShare.chart')}</button>
                 </div>
               </div>
             </CardHeader>
@@ -153,31 +161,31 @@ export default function ExperimentSharePage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">参数</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">数值</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">单位</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">备注</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">时间</th>
+                      <tr className="border-b border-[var(--border-color)]">
+                        <th className="text-left py-2 px-[var(--space-apple-sm)] text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.colParam')}</th>
+                        <th className="text-left py-2 px-[var(--space-apple-sm)] text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.colValue')}</th>
+                        <th className="text-left py-2 px-[var(--space-apple-sm)] text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.colUnit')}</th>
+                        <th className="text-left py-2 px-[var(--space-apple-sm)] text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.colNotes')}</th>
+                        <th className="text-left py-2 px-[var(--space-apple-sm)] text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.colTime')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {dataPoints.map((d: any) => (
-                        <tr key={d.id} className="border-b border-neutral-100 hover:bg-neutral-50 dark:bg-neutral-800/50 transition-colors">
-                          <td className="py-2 px-3 font-medium text-neutral-900 dark:text-white">{d.parameter}</td>
-                          <td className="py-2 px-3 text-neutral-700 font-mono">{d.value ?? '-'}</td>
-                          <td className="py-2 px-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{d.unit ?? '-'}</td>
-                          <td className="py-2 px-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-[200px] truncate">{d.notes ?? '-'}</td>
-                          <td className="py-2 px-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{d.recorded_at ? format(new Date(d.recorded_at), 'MM-dd HH:mm', { locale: zhCN }) : '-'}</td>
+                        <tr key={d.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]/50 transition-colors">
+                          <td className="py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-primary)]">{d.parameter}</td>
+                          <td className="py-2 px-[var(--space-apple-sm)] text-[var(--text-primary)] font-mono">{d.value ?? '-'}</td>
+                          <td className="py-2 px-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{d.unit ?? '-'}</td>
+                          <td className="py-2 px-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-[200px] truncate">{d.notes ?? '-'}</td>
+                          <td className="py-2 px-[var(--space-apple-sm)] text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{safeDate(d.recorded_at, 'MM-dd HH:mm')}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : hasNumericData ? (
-                <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">图表功能即将推出</div>
+                <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.chartComingSoon')}</div>
               ) : (
-                <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无数值型数据</div>
+                <div className="text-center py-8 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('pages.experimentShare.noNumericData')}</div>
               )}
             </CardContent>
           </Card>
@@ -187,19 +195,19 @@ export default function ExperimentSharePage() {
         {(exp.conclusions || exp.recommendations) && (
           <Card>
             <CardHeader>
-              <CardTitle as="h2">结论与建议</CardTitle>
+              <CardTitle as="h2">{t('pages.experimentShare.conclusion')}</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {exp.conclusions && (
                 <div>
-                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">实验结论</h2>
-                  <p className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{exp.conclusions}</p>
+                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">{t('pages.experimentShare.conclusionLabel')}</h2>
+                  <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">{exp.conclusions}</p>
                 </div>
               )}
               {exp.recommendations && (
                 <div>
-                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">改进建议</h2>
-                  <p className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">{exp.recommendations}</p>
+                  <h2 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-2">{t('pages.experimentShare.improvement')}</h2>
+                  <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">{exp.recommendations}</p>
                 </div>
               )}
             </CardContent>
@@ -208,7 +216,7 @@ export default function ExperimentSharePage() {
 
         {/* Footer */}
         <div className="text-center text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] py-4">
-          通过 RMFOOD 实验平台分享 · {exp.code}
+          {t('pages.experimentShare.sharedVia', { code: exp.code })}
         </div>
       </div>
     </div>

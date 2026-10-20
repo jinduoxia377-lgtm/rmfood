@@ -11,7 +11,7 @@
  * - 离线错误缓存（网络恢复后自动上报）
  */
 
-import React, { Component, ErrorInfo, ReactNode, useCallback, useEffect, useRef, useState, createContext, useContext } from 'react';
+import React, { Component, ErrorInfo, ReactNode, useCallback, useRef, useState, createContext, useContext } from 'react';
 import type {
   CapturedError,
   ErrorHandlerConfig,
@@ -25,8 +25,6 @@ import {
   getErrorStack,
   detectErrorType,
   detectSeverity,
-  getCurrentPath,
-  getSessionId,
   getContextData,
 } from './errorUtils';
 
@@ -67,7 +65,7 @@ function persistErrorsToCache() {
     if (toCache.length > 0) {
       localStorage.setItem(OFFLINE_ERROR_STORAGE_KEY, JSON.stringify(toCache));
     }
-  } catch (e) {
+  } catch {
     // 忽略 localStorage 失败
   }
 }
@@ -194,7 +192,7 @@ export function handleCapturedError(
     try {
       globalConfig.onError(captured);
       captured.reported = true;
-    } catch (reportErr) {
+    } catch {
       captured.reported = false;
       persistErrorsToCache();
     }
@@ -250,7 +248,7 @@ function registerGlobalEventListeners() {
     if (cached.length > 0 && globalConfig.onError) {
       cached.forEach((err) => {
         try {
-          globalConfig.onError && globalConfig.onError(err);
+          globalConfig.onError?.(err);
         } catch {
           // 忽略
         }
@@ -372,7 +370,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           componentStack: info?.componentStack,
           time: new Date().toISOString()
         }));
-      } catch(e) {}
+      } catch { /* 忽略 localStorage 写入失败 */ }
     }
     
     // 写入 localStorage 以便调试
@@ -384,7 +382,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           componentStack: info?.componentStack,
           time: new Date().toISOString()
         }));
-      } catch(e) {}
+      } catch { /* 忽略 localStorage 写入失败 */ }
     }
 
     if (captured) {
@@ -436,7 +434,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   // 将 Fallback UI 提取为类方法，避免在 render 中调用函数组件
   private defaultFallback = (): ReactNode => {
     const error = this.state.error;
-    const errorDetails = this.state.capturedError || buildCapturedError(error, { type: 'component' });
 
     return (
       <div
@@ -646,10 +643,10 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
             textDecoration: 'underline',
           }}
         >
-          {true ? '隐藏技术详情' : '查看技术详情'}
+          {'隐藏技术详情'}
         </button>
 
-        {true && (
+        {(
           <div
             style={{
               marginTop: '16px',
@@ -691,6 +688,7 @@ const ErrorTrackingContext = createContext<ErrorTrackingContextValue | null>(nul
 export function ErrorTrackingProvider({ children }: { children: ReactNode }) {
   const [errors, setErrors] = useState<CapturedError[]>([]);
   const errorsRef = useRef(errors);
+  // eslint-disable-next-line react-hooks/refs
   errorsRef.current = errors;
 
   const reportError = useCallback(

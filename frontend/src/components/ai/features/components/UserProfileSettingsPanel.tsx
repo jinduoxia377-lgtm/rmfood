@@ -11,7 +11,7 @@
  */
 import React, { useState, useEffect } from 'react'
 import {
-  HeartPulse, ShieldAlert, UtensilsCrossed, Scale,
+  HeartPulse, Scale,
   Check, X, Pencil, Save, RefreshCw,
 } from 'lucide-react'
 import { userPreferencesService } from '../services/userPreferencesService'
@@ -162,10 +162,15 @@ export function UserProfileSettingsPanel({ onClose }: UserProfileSettingsPanelPr
   useEffect(() => {
     const p = userPreferencesService.getUserProfile()
     if (p) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHealthGoals(p.healthGoals ?? [])
+       
       setAllergens(p.allergens ?? [])
+       
       setDietRestrictions(p.dietRestrictions ?? [])
+       
       setConstitutionType(p.constitutionType ?? '')
+       
       setHealthNotes(p.healthNotes ?? '')
     }
   }, [])

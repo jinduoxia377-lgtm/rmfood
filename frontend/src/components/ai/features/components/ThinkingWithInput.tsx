@@ -73,6 +73,7 @@ function useTypewriter(text: string, enabled = true, speed = 30): string {
 
   useEffect(() => {
     if (!enabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayText(text)
       return
     }
@@ -90,7 +91,9 @@ function useTypewriter(text: string, enabled = true, speed = 30): string {
   }, [text, index, enabled, speed])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIndex(0)
+     
     setDisplayText('')
   }, [text])
 

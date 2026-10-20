@@ -1,9 +1,9 @@
 // 文件生成历史记录组件
 import React, { useState, useEffect } from 'react'
-import { Card, Button, Badge, EmptyState, Modal, Divider } from '@/components/ui'
+import { Card, Button, Badge, EmptyState, Modal } from '@/components/ui'
 import { FileFormat } from '@/types/fileGenerator'
 import { fileGeneratorApi } from '@/api/fileGenerator'
-import { Download, Eye, Trash2, FileText, Table, File, Clock, Check, AlertCircle } from 'lucide-react'
+import { Download, Eye, FileText, Table, File, Clock, Check, AlertCircle } from 'lucide-react'
 import { logger } from '@/utils/safeLogger';
 
 
@@ -18,7 +18,7 @@ interface FileHistoryItem {
 
 export function FileHistory() {
   const [history, setHistory] = useState<FileHistoryItem[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [, setIsLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
 
@@ -98,6 +98,7 @@ export function FileHistory() {
 
   useEffect(() => {
     if (showHistory) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadHistory()
     }
   }, [showHistory])
@@ -118,6 +119,7 @@ export function FileHistory() {
   }
 
   const handlePreview = async (taskId: string, format: FileFormat) => {
+    void format;
     try {
       const blob = await fileGeneratorApi.downloadFile(taskId)
       const url = URL.createObjectURL(blob)
@@ -161,7 +163,7 @@ export function FileHistory() {
                       </div>
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
                     <div>
                       <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">格式</div>
                       <div className="text-sm">{formatName[item.format]}</div>

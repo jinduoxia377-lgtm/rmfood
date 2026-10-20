@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('Academic Report Lifecycle Management Tests', () => {
   beforeEach(() => {
-    jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
-    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
-    jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {});
-    jest.spyOn(Storage.prototype, 'clear').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'clear').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Basic Store Operations', () => {

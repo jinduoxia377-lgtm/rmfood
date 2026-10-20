@@ -8,7 +8,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { useImportEngine, type ImportStep } from '@/hooks/useImportEngine'
 import type { ImportProgress } from '@/hooks/useImportEngine'
-import type { UploadResponse } from '@/api/import'
 import type { FieldMappingConfig } from '@/api/import'
 
 // ── Step indicators ──────────────────────────────────────────────
@@ -20,8 +19,6 @@ const STEPS = [
   { key: 'running', label: '导入中', icon: '⚙️' },
   { key: 'done', label: '完成', icon: '✅' },
 ] as const
-
-type StepKey = (typeof STEPS)[number]['key']
 
 function StepIndicator({ currentStep }: { currentStep: ImportStep }) {
   const currentIndex = STEPS.findIndex(s => s.key === currentStep)
@@ -249,7 +246,7 @@ function MappingStep({
   return (
     <div className="space-y-4">
       {/* Target config */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">目标表</label>
           <select
@@ -333,7 +330,7 @@ function ProgressStep({ progress, errorMessage }: { progress: ImportProgress | n
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <StatCard label="总行数" value={progress.totalRows.toLocaleString()} color="neutral" />
         <StatCard label="成功" value={(progress.insertedRows + progress.updatedRows).toLocaleString()} color="green" />
         <StatCard label="错误" value={progress.errorRows.toLocaleString()} color={progress.errorRows > 0 ? 'red' : 'green'} />
@@ -367,22 +364,23 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 
 export function ImportPanel({ onClose }: { onClose: () => void }) {
   const {
-    step, task, uploadResponse, previewData, errors, progress, file, errorMessage,
-    setFile, uploadFile, fetchPreview, runImport, refreshTask, cancelTask, clear, goToStep,
+    step, task, uploadResponse, previewData, progress, file, errorMessage,
+    setFile, uploadFile, fetchPreview, runImport, refreshTask, clear, goToStep,
   } = useImportEngine()
 
   // Local state for mapping UI
   const [targetTable, setTargetTable] = useState('retail_products')
   const [idField, setIdField] = useState('external_id')
   const [mappings, setMappings] = useState<FieldMappingConfig[]>([])
-  const [delimiter, setDelimiter] = useState('auto')
-  const [fileType, setFileType] = useState('csv')
+  const [delimiter] = useState('auto')
+  const [fileType] = useState('csv')
 
   // Polling for running imports
   const pollingRef = useRef<any>(null)
 
   // Start polling when running
   if (step === 'running' && uploadResponse?.task_id) {
+    // eslint-disable-next-line react-hooks/refs
     if (!pollingRef.current) {
       pollingRef.current = setInterval(async () => {
         await refreshTask()
@@ -391,8 +389,11 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
   }
 
   // Cleanup polling
+  // eslint-disable-next-line react-hooks/refs
   if (step !== 'running' && pollingRef.current) {
+    // eslint-disable-next-line react-hooks/refs
     clearInterval(pollingRef.current)
+    // eslint-disable-next-line react-hooks/refs
     pollingRef.current = null
   }
 
@@ -405,18 +406,12 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
     runImport(targetTable, idField, mappings)
   }, [targetTable, idField, mappings, runImport])
 
-  const handleBack = useCallback(() => {
-    if (step === 'preview') goToStep('upload')
-    else if (step === 'mapping') goToStep('preview')
-    else if (step === 'done' || step === 'error') clear()
-  }, [step, goToStep, clear])
-
   // Derive columns from preview data
   const columns = previewData?.length ? Object.keys(previewData[0]) : []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[560px] max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"  role="button" tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-950/50 dark:to-warning-950/50 border-b border-warning-100/50 dark:border-warning-900/30 shrink-0">
           <div className="flex items-center gap-2">
@@ -517,8 +512,4 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   )
-}
-
-function taskId(resp: UploadResponse | null): string {
-  return resp?.task_id || ''
 }

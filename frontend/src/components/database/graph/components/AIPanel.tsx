@@ -5,7 +5,6 @@ export interface AIPanelEntry {
 }
 
 export interface AIPanelProps {
-  [key: string]: any;
   showAIPanel: boolean
   aiQAHistory: AIPanelEntry[]
   aiQuestion: string
@@ -29,7 +28,7 @@ export default function AIPanel({
   const suggestions = ['哪个节点连接最多？', '药材和化合物的关系？', '有哪些协同关系？']
 
   return (
-    <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[480px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-secondary-200/60 dark:border-secondary-700/40 animate-fade-in max-h-[60vh] flex flex-col custom-scrollbar">
+    <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[min(480px,calc(100vw-2rem))] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-secondary-200/60 dark:border-secondary-700/40 animate-fade-in max-h-[60vh] flex flex-col custom-scrollbar">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-950/50 dark:to-accent-950/50 border-b border-secondary-100/50 rounded-t-2xl shrink-0">
         <div className="flex items-center gap-2">
           <span>🧠</span>

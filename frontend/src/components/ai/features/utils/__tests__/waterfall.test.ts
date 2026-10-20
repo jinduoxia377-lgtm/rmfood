@@ -1,6 +1,7 @@
 /**
  * WaterfallEmitter 单元测试
  */
+import { vi } from 'vitest';
 import { WaterfallEmitter, resetWaterfallEmitter } from '../waterfall';
 
 describe('WaterfallEmitter', () => {
@@ -12,11 +13,11 @@ describe('WaterfallEmitter', () => {
   });
 
   test('emit 应调用所有监听器并返回数据', async () => {
-    const handler1 = jest.fn((data: any, next: () => void) => {
+    const handler1 = vi.fn((data: any, next: () => void) => {
       data.value = (data.value ?? 0) + 1;
       next();
     });
-    const handler2 = jest.fn((data: any, next: () => void) => {
+    const handler2 = vi.fn((data: any, next: () => void) => {
       data.value = (data.value ?? 0) + 10;
       next();
     });
@@ -30,10 +31,10 @@ describe('WaterfallEmitter', () => {
   });
 
   test('监听器不调用 next 时应自动继续', async () => {
-    const handler1 = jest.fn((data: any, next: () => void) => {
+    const handler1 = vi.fn(() => {
       // 不调用 next
     });
-    const handler2 = jest.fn((data: any, next: () => void) => {
+    const handler2 = vi.fn((data: any, next: () => void) => {
       data.called = true;
       next();
     });
@@ -46,7 +47,7 @@ describe('WaterfallEmitter', () => {
   });
 
   test('once 应只调用一次', async () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     emitter.once('agent/pre-step', handler);
 
     await emitter.emit('agent/pre-step', { input: 'test', turnId: 't1' });
@@ -56,7 +57,7 @@ describe('WaterfallEmitter', () => {
   });
 
   test('off 应移除监听器', async () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     const unsubscribe = emitter.on('agent/pre-step', handler);
 
     unsubscribe();
@@ -65,7 +66,7 @@ describe('WaterfallEmitter', () => {
   });
 
   test('emitSerial 应调用 Serial 监听器', async () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     emitter.onSerial('agent/turn-stopping', handler);
 
     await emitter.emitSerial('agent/turn-stopping', { turnId: 't1', reason: 'completed' });
@@ -73,7 +74,7 @@ describe('WaterfallEmitter', () => {
   });
 
   test('setEnabled(false) 应阻止事件', async () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     emitter.on('agent/pre-step', handler);
     emitter.setEnabled(false);
 

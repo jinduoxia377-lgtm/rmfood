@@ -13,8 +13,7 @@
  * - 避免登录期间 401 导致重定向回登录页的死循环
  */
 import axios from 'axios'
-import type { Token, User } from '@/types'
-import { UserRole } from '@/types'
+import type { Token } from '@/types'
 import { envConfig } from '@/config/env'
 
 
@@ -81,7 +80,9 @@ const refreshToken = async (): Promise<string> => {
     )
 
     // 🔒 Token 现在存储在后端设置的 HttpOnly Cookie 中，前端不再需要处理
-    return response.data.accessToken
+    // 后端实际返回 snake_case access_token，兼容两种字段名
+    const data = response.data as Token & { access_token?: string }
+    return data.accessToken ?? data.access_token ?? ''
   } catch (error) {
     // 🔒 刷新失败时，Cookie 会被后端清除或过期
     // 重定向到登录页
@@ -195,7 +196,7 @@ api.interceptors.response.use(
 
           // 重新发送原始请求（Cookie 会自动携带）
           return api(original)
-        } catch (refreshError) {
+        } catch {
           isRefreshing = false
           if (import.meta.env.DEV) logger.warn('[API] Token 刷新失败，用户将被登出')
           clearAuthState()
@@ -214,6 +215,21 @@ api.interceptors.response.use(
     if (error.response?.status === 403) {
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
       if (import.meta.env.DEV) logger.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
+      // AI/组织配额超限提示：dispatch 全局事件供前端升级引导
+      if (typeof errorDetail === 'string' && (errorDetail.includes('升级计划') || errorDetail.includes('上限'))) {
+        try {
+          if (typeof window !== 'undefined') {
+            const orgMatch = errorDetail.match(/\[org_id=(\d+)\]/)
+            window.dispatchEvent(new CustomEvent('ai-quota-exceeded', {
+              detail: {
+                message: errorDetail,
+                url: original.url,
+                org_id: orgMatch ? Number(orgMatch[1]) : undefined,
+              },
+            }))
+          }
+        } catch { /* ignore */ }
+      }
       return Promise.reject(error)
     }
 

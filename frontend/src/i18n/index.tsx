@@ -2,7 +2,7 @@
  * 🟡 P4-5: 国际化 (i18n) 增强系统
  *
  * 提供企业级国际化能力:
- * 1. 🌍 多语言支持 - 中文 / 英文 / 日文 / 韩文 / ...
+ * 1. 🌍 多语言支持 - 中文 / 英文 / 德文 / 韩文 / ...
  * 2. 📝 Key 管理 - 统一管理翻译 Key，避免冲突
  * 3. 🔄 动态切换 - 无刷新切换语言
  * 4. 📦 懒加载 - 按需加载语言包
@@ -16,7 +16,7 @@
  *     locales/
  *       zh-CN.json       # 中文
  *       en-US.json       # 英文
- *       ja-JP.json       # 日文
+ *       de-DE.json       # 德文
  *       index.ts         # 导出
  *     i18n/
  *       index.ts         # 配置
@@ -48,11 +48,13 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 
 
 import { logger } from '@/utils/safeLogger';
+import zhCNAiTranslations from './zh-CN/ai';
+import enUSAiTranslations from './en-US/ai';
 // ═════════════════════════════════════════════
 // 🟡 P4-5: 类型定义
 // ═════════════════════════════════════════════
 
-export type Locale = 'zh-CN' | 'en-US' | 'ja-JP' | 'ko-KR';
+export type Locale = 'zh-CN' | 'en-US' | 'de-DE' | 'ko-KR';
 
 export interface LocaleConfig {
   /** 语言代码 */
@@ -97,19 +99,19 @@ export const LOCALES: Record<Locale, LocaleConfig> = {
     rtl: false,
     pluralRules: (n: number) => (n === 1 ? 0 : 1),
   },
-  'ja-JP': {
-    code: 'ja-JP',
-    name: 'Japanese',
-    nativeName: '日本語',
+  'de-DE': {
+    code: 'de-DE',
+    name: 'German',
+    nativeName: 'Deutsch',
     rtl: false,
-    pluralRules: (n: number) => 0, // 日语没有复数
+    pluralRules: (n: number) => (n === 1 ? 0 : 1), // 德语有单复数
   },
   'ko-KR': {
     code: 'ko-KR',
     name: 'Korean',
     nativeName: '한국어',
     rtl: false,
-    pluralRules: (n: number) => 0, // 韩语没有复数
+    pluralRules: () => 0, // 韩语没有复数
   },
 };
 
@@ -118,6 +120,22 @@ export const LOCALES: Record<Locale, LocaleConfig> = {
 // ═════════════════════════════════════════════
 
 type TranslationMessages = typeof ZH_CN_MESSAGES;
+
+/** 深合并两个对象（用于把模块化翻译文件合并进主语言包） */
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  for (const key of Object.keys(source)) {
+    const sv = source[key];
+    const tv = target[key];
+    if (
+      sv && typeof sv === 'object' && !Array.isArray(sv) &&
+      tv && typeof tv === 'object' && !Array.isArray(tv)
+    ) {
+      deepMerge(tv as Record<string, unknown>, sv as Record<string, unknown>);
+    } else {
+      target[key] = sv;
+    }
+  }
+}
 
 const ZH_CN_MESSAGES = {
   // 通用
@@ -299,6 +317,9 @@ const ZH_CN_MESSAGES = {
   },
 };
 
+// 合并 AI 模块翻译（chat/synergy/taste/stability 等）到主语言包的 ai 命名空间
+deepMerge(ZH_CN_MESSAGES.ai as unknown as Record<string, unknown>, zhCNAiTranslations as unknown as Record<string, unknown>);
+
 const EN_US_MESSAGES: TranslationMessages = {
   common: {
     app: {
@@ -464,15 +485,18 @@ const EN_US_MESSAGES: TranslationMessages = {
   },
 };
 
+// 合并 AI 模块翻译到英文主语言包的 ai 命名空间
+deepMerge(EN_US_MESSAGES.ai as unknown as Record<string, unknown>, enUSAiTranslations as unknown as Record<string, unknown>);
+
 // 其他语言的消息可以从 API 懒加载
-const JA_JP_MESSAGES: TranslationMessages = ZH_CN_MESSAGES; // 简化示例
+const DE_DE_MESSAGES: TranslationMessages = ZH_CN_MESSAGES; // 简化示例
 const KO_KR_MESSAGES: TranslationMessages = ZH_CN_MESSAGES; // 简化示例
 
 // 语言包映射
 const MESSAGES_MAP: Record<Locale, TranslationMessages> = {
   'zh-CN': ZH_CN_MESSAGES,
   'en-US': EN_US_MESSAGES,
-  'ja-JP': JA_JP_MESSAGES,
+  'de-DE': DE_DE_MESSAGES,
   'ko-KR': KO_KR_MESSAGES,
 };
 
@@ -516,7 +540,6 @@ function interpolate(
       const localeCode = locale || 'zh-CN';
       try {
         if (format.startsWith('number')) {
-          const options = parseNumberOptions(format);
           return new Intl.NumberFormat(localeCode.replace('-', '_')).format(value);
         }
         if (format.startsWith('date')) {
@@ -530,11 +553,6 @@ function interpolate(
 
     return String(value);
   });
-}
-
-function parseNumberOptions(format: string): Intl.NumberFormatOptions {
-  // 简化实现
-  return {};
 }
 
 // ═════════════════════════════════════════════
@@ -650,6 +668,7 @@ export function TranslationProvider({
   // 格式化函数
   const formatNumber = useCallback(
     (value: number, options?: Intl.NumberFormatOptions) => {
+      void options;
       return new Intl.NumberFormat(locale.replace('-', '_')).format(value);
     },
     [locale],
@@ -675,6 +694,7 @@ export function TranslationProvider({
 
   // 初始化
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLocale(locale);
   }, [locale, loadLocale]);
 
@@ -729,7 +749,7 @@ export function setGlobalLocale(locale: Locale) {
 
 export function tf(key: string, params?: Record<string, any>): string {
   const messages = MESSAGES_MAP[_currentLocale] || ZH_CN_MESSAGES;
-  let translation = getNestedValue(messages, key);
+  const translation = getNestedValue(messages, key);
 
   if (translation === undefined) {
     return key;

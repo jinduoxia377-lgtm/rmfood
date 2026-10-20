@@ -6,6 +6,7 @@ import { useState, useCallback, useRef } from 'react'
 import { aiApi } from '@/api/ai'
 import { parseFormulaTable, type FormulaTableData } from '@/utils/formulaParser'
 import type { AICandidate, SafetyCheckResult, SynergyResult } from '@/types'
+import type { StabilityPredictionResponse } from '@/types/ai.api'
 import { logger } from '@/utils/safeLogger';
 
 
@@ -134,7 +135,7 @@ export function useFormulaAnalysis() {
 
       // 5. 稳定性预测
       updateProgress('stability', '正在评估稳定性...', 85)
-      let stabilityResult: { stability_score: number; estimated_shelf_life_months: number; risk_factors: string[]; monthly_curve: { month: number; stability: number }[]; storage_advice: string }
+      let stabilityResult: StabilityPredictionResponse
       try {
         stabilityResult = await aiApi.stabilityPredict(
           parsedFormula.ingredients.map(i => ({ name: i.name })),
@@ -146,7 +147,8 @@ export function useFormulaAnalysis() {
           estimated_shelf_life_months: 18,
           risk_factors: [],
           monthly_curve: [],
-          storage_advice: '常温保存',
+          // 后端返回 string[]，不是单个 string
+          storage_advice: ['常温保存'],
         }
       }
 

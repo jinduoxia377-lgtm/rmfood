@@ -52,7 +52,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
 }) => {
   const structure = useReportStructure(initialSections);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [_showLibrary, setShowLibrary] = useState(false);
+  const [, setShowLibrary] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   const handleSectionChange = () => {
@@ -89,6 +89,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
 
   const handleAddFromLibrary = (sectionType: SectionType) => {
     const newSection: ReportSection = {
+      // eslint-disable-next-line react-hooks/purity
       id: `section-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       type: sectionType,
       title: availableSections.find(s => s.type === sectionType)?.title || '新章节',

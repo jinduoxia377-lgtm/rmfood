@@ -24,7 +24,7 @@
   
   <!-- 清除按钮 -->
   <view wx:if="{{clearable && value}}" class="input-clear" bindtap="handleClear">
-    <icon name="close" size="sm" color="#999999" />
+    <icon name="close" size="sm" color="var(--color-text-muted)" />
   </view>
   
   <!-- 后置图标 -->
@@ -34,7 +34,7 @@
   
   <!-- 错误提示 -->
   <view wx:if="{{errorMessage}}" class="input-error">
-    <icon name="warning" size="sm" color="#EF4444" />
+    <icon name="warning" size="sm" color="var(--color-danger-text)" />
     <text class="error-text">{{errorMessage}}</text>
   </view>
   

@@ -69,6 +69,10 @@ export function useAISummaryStats() {
     isLoading,
     error,
     refetch,
+    // 失败时必须暴露给调用方：此前 hook 只暴露 error，页面只解构数字，
+    // 于是 401/500 时 9 张统计卡静默显示全 0，用户以为"从未使用过"。
+    isError: error !== null && error !== undefined,
+    errorMessage: error ? (error instanceof Error ? error.message : '统计数据加载失败') : null,
     chatCount: data?.chatCount ?? 0,
     generateCount: data?.generateCount ?? 0,
     safetyChecks: data?.safetyChecks ?? 0,

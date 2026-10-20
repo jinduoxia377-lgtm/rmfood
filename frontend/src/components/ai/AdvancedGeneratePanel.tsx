@@ -97,14 +97,17 @@ export function AdvancedGeneratePanel({ onCandidatesGenerated, className }: Adva
 
   useEffect(() => {
     if (mutation.isPending) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnnouncement('开始生成配方，请稍候...');
     }
   }, [mutation.isPending]);
 
   useEffect(() => {
     if (mutation.isSuccess) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnnouncement('配方生成成功');
     } else if (mutation.isError) {
+       
       setAnnouncement('配方生成失败，请检查输入后重试');
     }
   }, [mutation.isSuccess, mutation.isError]);

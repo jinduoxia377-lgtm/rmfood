@@ -19,7 +19,7 @@ interface ThemeToolbarProps {
   t: (key: string, fallback?: string) => string
 }
 
-export function ThemeToolbar({ scheme, schemeNameCN, onCycle, t }: ThemeToolbarProps) {
+export function ThemeToolbar({ scheme, schemeNameCN, onCycle }: ThemeToolbarProps) {
   return (
     <button
       onClick={onCycle}

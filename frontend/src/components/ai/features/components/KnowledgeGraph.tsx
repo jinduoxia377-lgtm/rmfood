@@ -18,7 +18,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, memo } from 'react'
 import * as d3 from 'd3'
-import { ZoomIn, ZoomOut, RotateCcw, Info, Maximize2 } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Info } from 'lucide-react'
 import { Tooltip } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
 
@@ -415,7 +415,7 @@ const KnowledgeGraph = memo(({
               <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
                 详细信息
               </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {Object.entries(selectedNode.metadata).map(([key, value]) => (
                   <div key={key}>
                     <span className="text-[var(--text-muted)]">{key}:</span>{' '}

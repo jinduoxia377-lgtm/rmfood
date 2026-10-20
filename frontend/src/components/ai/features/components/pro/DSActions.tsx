@@ -28,7 +28,6 @@ export interface DSActionsProps {
 export default function DSActions({
   time,
   role,
-  isStreaming,
   onCopy,
   copied,
   onEdit,

@@ -2,6 +2,7 @@
  * 配方状态分布饼图
  */
 import type { FC } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
 } from 'recharts'
@@ -38,13 +39,16 @@ const tooltipStyle = {
 }
 
 export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
+  const { t } = useTranslation()
+  const title = t('pages.dashboard.cards.formulaStatusDistribution')
+
   if (loading) {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
             <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
-            配方状态分布
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
@@ -60,11 +64,11 @@ export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
             <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
-            配方状态分布
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
-          <div className="h-[200px] flex items-center justify-center text-neutral-500 dark:text-neutral-400 text-sm">暂无配方数据</div>
+          <div className="h-[200px] flex items-center justify-center text-neutral-500 dark:text-neutral-400 text-sm">{t('pages.dashboard.cards.noFormulaDataShort')}</div>
         </CardContent>
       </Card>
     )
@@ -75,7 +79,7 @@ export const FormulaPieChart: FC<Props> = ({ data, loading }) => {
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h2" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
           <PieChartIcon size={18} className="text-neutral-600 dark:text-neutral-400" />
-          配方状态分布
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">

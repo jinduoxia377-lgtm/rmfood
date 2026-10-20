@@ -6,7 +6,7 @@
  *
  * 规范：所有导航项标签统一为 4 个汉字
  */
-import type { ElementType } from 'react';
+import type { ComponentType } from 'react';
 import {
   LayoutDashboard,
   FlaskConical,
@@ -39,13 +39,18 @@ import {
 // ── 类型定义 ──
 export interface NavItem {
   to: string;
+  /** i18n key 后缀（完整 key 为 nav.items.<key>），供多语言渲染 */
+  key: string;
+  /** 中文标签（默认语言兜底，规范：统一为 4 个汉字） */
   label: string;
-  icon: ElementType;
+  icon: ComponentType<any>;
   adminOnly?: boolean;
   badge?: number;
 }
 
 export interface NavGroup {
+  /** i18n key 后缀（完整 key 为 nav.groups.<key>） */
+  key: string;
   title: string;
   items: NavItem[];
 }
@@ -54,59 +59,65 @@ export interface NavGroup {
 // 规范：所有 label 统一为 4 个汉字
 export const NAV_GROUPS: NavGroup[] = [
   {
+    key: 'core',
     title: '核心工作',
     items: [
-      { to: '/dashboard',       label: '系统概览', icon: LayoutDashboard },
-      { to: '/formulas',        label: '配方管理', icon: FlaskConical },
-      { to: '/batches',         label: '生产批次', icon: Package },
+      { to: '/dashboard',       key: 'dashboard',       label: '系统概览', icon: LayoutDashboard },
+      { to: '/formulas',        key: 'formulas',        label: '配方管理', icon: FlaskConical },
+      { to: '/batches',         key: 'batches',         label: '生产批次', icon: Package },
     ],
   },
   {
+    key: 'lab',
     title: '实验中心',
     items: [
-      { to: '/experiments',     label: '实验管理', icon: TestTubes },
-      { to: '/doe',             label: '实验设计', icon: Beaker },
-      { to: '/stability',       label: '稳定分析',   icon: Clock },
-      { to: '/documents',       label: '智能提取', icon: FileCheck },
+      { to: '/experiments',     key: 'experiments',     label: '实验管理', icon: TestTubes },
+      { to: '/doe',             key: 'doe',             label: '实验设计', icon: Beaker },
+      { to: '/stability',       key: 'stability',       label: '稳定分析',   icon: Clock },
+      { to: '/documents',       key: 'documents',       label: '智能提取', icon: FileCheck },
     ],
   },
   {
+    key: 'compliance',
     title: '合规质量',
     items: [
-      { to: '/compliance',      label: '合规核验', icon: Scale },
-      { to: '/label-check',     label: '配料核查', icon: ScanText },
-      { to: '/ingredient-analysis', label: '配料分析', icon: ScanLine },
-      { to: '/labels',          label: '标签生成', icon: Barcode },
+      { to: '/compliance',      key: 'compliance',      label: '合规核验', icon: Scale },
+      { to: '/label-check',     key: 'labelCheck',     label: '配料核查', icon: ScanText },
+      { to: '/ingredient-analysis', key: 'ingredientAnalysis', label: '配料分析', icon: ScanLine },
+      { to: '/labels',          key: 'labels',          label: '标签生成', icon: Barcode },
     ],
   },
   {
+    key: 'intelligence',
     title: '智能工具',
     items: [
-      { to: '/ai',              label: '智能助手',   icon: Brain },
-      { to: '/agent',           label: '智能协作',   icon: Bot },
-      { to: '/academic-report', label: '学术报告',   icon: FileText },
-      { to: '/databases',       label: '数据检索',   icon: Database },
-      { to: '/peptide-structure', label: '肽链结构', icon: Dna },
-      { to: '/regulations',     label: '法规标准',   icon: ShieldCheck },
-      { to: '/terminology',     label: '术语辞典',   icon: BookOpen },
-      { to: '/workflows',       label: '流程管理',   icon: Workflow },
+      { to: '/ai',              key: 'ai',              label: '智能助手',   icon: Brain },
+      { to: '/agent',           key: 'agent',           label: '智能协作',   icon: Bot },
+      { to: '/academic-report', key: 'academicReport', label: '学术报告',   icon: FileText },
+      { to: '/databases',       key: 'databases',       label: '数据检索',   icon: Database },
+      { to: '/peptide-structure', key: 'peptideStructure', label: '肽链结构', icon: Dna },
+      { to: '/regulations',     key: 'regulations',     label: '法规标准',   icon: ShieldCheck },
+      { to: '/terminology',     key: 'terminology',     label: '术语辞典',   icon: BookOpen },
+      { to: '/workflows',       key: 'workflows',       label: '流程管理',   icon: Workflow },
     ],
   },
   {
+    key: 'enterprise',
     title: '企业管理',
     items: [
-      { to: '/analytics',       label: '数据分析', icon: BarChart3 },
-      { to: '/organizations', label: '组织架构', icon: Building2 },
-      { to: '/integrations',  label: '系统集成', icon: Plug },
+      { to: '/analytics',       key: 'analytics',       label: '数据分析', icon: BarChart3 },
+      { to: '/organizations', key: 'organizations', label: '组织架构', icon: Building2 },
+      { to: '/integrations',  key: 'integrations',  label: '系统集成', icon: Plug },
     ],
   },
   {
+    key: 'system',
     title: '系统设置',
     items: [
-      { to: '/notifications', label: '消息通知', icon: Bell },
-      { to: '/users',         label: '用户管理', icon: Users, adminOnly: true },
-      { to: '/audit-logs',    label: '审计日志', icon: Shield, adminOnly: true },
-      { to: '/settings',      label: '系统设置', icon: Settings },
+      { to: '/notifications', key: 'notifications', label: '消息通知', icon: Bell },
+      { to: '/users',         key: 'users',         label: '用户管理', icon: Users, adminOnly: true },
+      { to: '/audit-logs',    key: 'auditLogs',    label: '审计日志', icon: Shield, adminOnly: true },
+      { to: '/settings',      key: 'settings',      label: '系统设置', icon: Settings },
     ],
   },
 ];

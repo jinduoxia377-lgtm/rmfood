@@ -129,7 +129,7 @@ export function ExportDialog({ report }: ExportDialogProps) {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-3">选择导出格式</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {FORMAT_OPTIONS.map((option) => (
                         <button
                           key={option.value}

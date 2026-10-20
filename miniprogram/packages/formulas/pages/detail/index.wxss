@@ -1,12 +1,12 @@
 /* packages/formulas/pages/detail/index.wxss */
 .detail-container {
   min-height: 100vh;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
   padding-bottom: 40rpx;
 }
 
 .detail-header {
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   padding: 40rpx 32rpx;
 }
 
@@ -18,32 +18,32 @@
 
 .name {
   display: block;
-  font-size: 44rpx;
+  font-size: var(--font-size-2xl);
   font-weight: 700;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   flex: 1;
   margin-right: 16rpx;
 }
 
 .code {
   display: block;
-  font-size: 24rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
   margin-top: 8rpx;
   white-space: nowrap;
 }
 
 .status {
-  font-size: 24rpx;
-  color: #8E8E93;
-  background: #F2F2F7;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-page);
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
   white-space: nowrap;
 }
 
 .detail-section {
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   margin: 16rpx 24rpx;
   padding: 32rpx;
   border-radius: 16rpx;
@@ -51,9 +51,9 @@
 
 .section-title {
   display: block;
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
   margin-bottom: 16rpx;
 }
 
@@ -64,9 +64,9 @@
 }
 
 .tag {
-  background: #E8F5E9;
-  color: #2E7D32;
-  font-size: 24rpx;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: var(--font-size-caption);
   padding: 8rpx 16rpx;
   border-radius: 8rpx;
 }
@@ -82,7 +82,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16rpx 0;
-  border-bottom: 0.5rpx solid #F2F2F7;
+  border-bottom: 0.5rpx solid var(--color-border-light);
 }
 
 .ingredient:last-child {
@@ -90,35 +90,35 @@
 }
 
 .ingredient .name {
-  font-size: 28rpx;
-  color: #1D1D1F;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
   font-weight: 500;
 }
 
 .ingredient .weight {
-  font-size: 26rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-callout);
+  color: var(--color-text-tertiary);
 }
 
 .ingredient .prep {
-  font-size: 24rpx;
-  color: #007AFF;
+  font-size: var(--font-size-caption);
+  color: var(--color-brand-primary);
   margin-left: 16rpx;
 }
 
 .method, .dosage, .storage {
-  font-size: 28rpx;
-  color: #3A3A3C;
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 .shelf-life {
-  font-size: 28rpx;
-  color: #3A3A3C;
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
 }
 
 .ai-summary {
-  font-size: 26rpx;
-  color: #6E6E73;
+  font-size: var(--font-size-callout);
+  color: var(--color-text-tertiary);
   line-height: 1.6;
 }

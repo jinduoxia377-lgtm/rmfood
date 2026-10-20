@@ -31,7 +31,7 @@ export async function renderWithAxe(ui: React.ReactElement, options?: Parameters
 }
 
 export async function checkA11y(container: HTMLElement): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const results: AxeResults = axeCore
     ? await axeCore.run(container)
     : ((await (axe as any)(React, require('react-dom'), 0)) as AxeResults);

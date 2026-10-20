@@ -76,7 +76,6 @@ interface PendingAction {
 }
 
 const MAX_CONTEXT_SIZE = 50
-const MAX_TOPIC_STACK_DEPTH = 5
 
 class MultiTurnDialogueManager {
   private state: DialogueState

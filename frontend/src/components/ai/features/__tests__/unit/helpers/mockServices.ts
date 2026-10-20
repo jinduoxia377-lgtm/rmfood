@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 测试用的 mock 服务
 
 export function createMockChatService() {
@@ -51,7 +50,7 @@ export function createMockEventBus() {
   const listeners = new Map();
   
   return {
-    subscribe: jest.fn().mockImplementation((event: string, callback: Function) => {
+    subscribe: jest.fn().mockImplementation((event: string, callback: (...args: any[]) => void) => {
       if (!listeners.has(event)) {
         listeners.set(event, []);
       }
@@ -69,7 +68,7 @@ export function createMockEventBus() {
       const eventListeners = listeners.get(event) || [];
       eventListeners.forEach(callback => callback(data));
     }),
-    unsubscribe: jest.fn().mockImplementation((event: string, callback: Function) => {
+    unsubscribe: jest.fn().mockImplementation((event: string, callback: (...args: any[]) => void) => {
       const eventListeners = listeners.get(event) || [];
       const index = eventListeners.indexOf(callback);
       if (index > -1) {

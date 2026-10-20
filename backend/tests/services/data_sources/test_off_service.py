@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.data_sources.openfoodfacts.client import OFFDataService
+from app.services.data_sources.openfoodfacts_client import OFFDataService, POPULAR_CATEGORIES, CATEGORY_MAP
 from app.services.data_sources.openfoodfacts.mapper import OFFMapper
 
 
@@ -19,7 +19,7 @@ class TestOFFDataService:
     @pytest.fixture
     def mock_off_service(self):
         """创建带有 mock 的 OFFDataService"""
-        with patch('app.services.data_sources.openfoodfacts.client.OFFClient') as mock_client,              patch('app.services.data_sources.openfoodfacts.client.OFFMapper') as mock_mapper:
+        with patch('app.services.data_sources.openfoodfacts_client.OFFClient') as mock_client,              patch('app.services.data_sources.openfoodfacts.mapper.OFFMapper') as mock_mapper:
             
             # 设置 mock 实例
             mock_client_instance = mock_client.return_value
@@ -33,7 +33,7 @@ class TestOFFDataService:
 
     def test_category_count(self, mock_off_service):
         """测试分类计数属性"""
-        assert mock_off_service.category_count == len(mock_off_service.service_class.POPULAR_CATEGORIES)  # type: ignore
+        assert mock_off_service.category_count == len(POPULAR_CATEGORIES)
 
     async def test_search_products_with_realtime_true(self, mock_off_service, mock_db):
         """测试 realtime=True 时调用实时搜索"""
@@ -67,8 +67,8 @@ class TestOFFDataService:
 
     def test_get_category_map(self, mock_off_service):
         """测试 CATEGORY_MAP 构建"""
-        assert len(mock_off_service.service_class.CATEGORY_MAP) > 0  # 应该有映射
-        assert "beverages" in mock_off_service.service_class.CATEGORY_MAP  # 测试一个已知的 tag
+        assert len(CATEGORY_MAP) > 0  # 应该有映射
+        assert "beverages" in CATEGORY_MAP  # 测试一个已知的 tag
 
     async def test_get_product_by_barcode_cache_hit(self, mock_off_service, mock_db):
         """测试条码查询命中缓存（DB 优先）"""

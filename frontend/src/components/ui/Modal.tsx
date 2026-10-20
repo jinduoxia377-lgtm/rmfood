@@ -55,11 +55,20 @@ const DialogContent = React.forwardRef<
           widthClass,
           heightClass,
           'max-h-[90vh] overflow-hidden flex flex-col',
+          /* 移动端小屏（≤479px）：切换为全屏底部弹层，避免通栏贴边、适配安全区 */
+          'max-[479px]:left-0 max-[479px]:top-0 max-[479px]:right-0 max-[479px]:bottom-0 max-[479px]:translate-x-0 max-[479px]:translate-y-0 max-[479px]:max-w-none max-[479px]:max-h-none max-[479px]:rounded-none max-[479px]:border-0 max-[479px]:shadow-none max-[479px]:pb-[max(env(safe-area-inset-bottom),1rem)] max-[479px]:data-[state=open]:slide-in-from-bottom max-[479px]:data-[state=closed]:slide-out-to-bottom',
           className
         )}
         {...props}
       >
         {children}
+        {/* 统一右上角关闭按钮（DialogContent 原语级补齐，避免弹层缺失关闭入口） */}
+        <DialogPrimitive.Close
+          className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="关闭"
+        >
+          <X className="h-4 w-4" />
+        </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
   )

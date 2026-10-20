@@ -228,11 +228,12 @@ export class SearchService {
         case 'createdAt':
           comparison = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           break;
-        case 'updatedAt':
+        case 'updatedAt': {
           const aUpdated = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
           const bUpdated = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
           comparison = bUpdated - aUpdated;
           break;
+        }
       }
 
       return sortOrder === 'desc' ? comparison : -comparison;
@@ -350,7 +351,7 @@ export class SearchService {
         if (b.count !== a.count) return b.count - a.count;
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       })
-      .map(({ count, ...rest }) => rest) // 移除临时 count
+      .map(({ count: _count, ...rest }) => { void _count; return rest; }) // 移除临时 count
       .slice(0, limit);
   }
 

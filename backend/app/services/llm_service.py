@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import httpx
+from pathlib import Path
 from typing import Any, AsyncIterator
 from dataclasses import dataclass, field
 
@@ -80,10 +82,41 @@ async def delete_user_config(user_id: int) -> bool:
 
 
 def _get_encryption_key() -> bytes:
-    """获取 API Key 加密密钥。优先使用独立 ENCRYPTION_KEY，fallback 到 SECRET_KEY（兼容旧版）"""
+    """获取 API Key 加密密钥。优先使用独立 ENCRYPTION_KEY，fallback 到 SECRET_KEY（兼容旧版）
+
+    修复：os.environ 优先；其次 settings.encryption.encryption_key；
+    若嵌套 settings 未填充（ENCRYPTION_KEY 未注入），则直接读取 .env 文件中的
+    ENCRYPTION_KEY —— 必须在 settings.secret_key（开发环境每次启动随机生成）之前，
+    否则不同进程用不同随机密钥导致 DB 加密值无法跨进程解密。
+    """
     import hashlib
+    import os
+    from pathlib import Path
     from ..core.config import settings
-    raw = settings.encryption.encryption_key or settings.secret_key or ""
+
+    def _read_env_file(key: str) -> str:
+        for env_path in (
+            Path.cwd() / ".env",
+            Path(__file__).resolve().parents[2] / ".env",  # backend/.env
+        ):
+            try:
+                if env_path.exists():
+                    for line in env_path.read_text(encoding="utf-8").splitlines():
+                        stripped = line.strip()
+                        if stripped.startswith(f"{key}="):
+                            return stripped.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+            except Exception:
+                continue
+        return ""
+
+    raw = (
+        os.environ.get("ENCRYPTION_KEY")
+        or settings.encryption.encryption_key
+        or _read_env_file("ENCRYPTION_KEY")
+        or settings.secret_key
+        or ""
+    )
     if not raw:
         logger.error("[LLMConfig] 未设置 ENCRYPTION_KEY 或 SECRET_KEY，API Key 将以明文存储")
         return b""
@@ -290,7 +323,9 @@ class LLMService:
         if config:
             self.config = config
         else:
-            # 优先级: 尝试从数据库恢复 → fallback 到 settings
+            # 优先级: 尝试从数据库恢复 → fallback 到 settings/.env
+            # 修复：DB 解密失败返回的配置 api_key 为空，不能作为有效配置使用，
+            # 必须 fallback 到 settings（确保 .env 密钥可被加载）。
             db_config = None
             try:
                 import asyncio
@@ -301,7 +336,10 @@ class LLMService:
                     db_config = asyncio.run(load_config_from_db())
             except Exception as e:
                 logger.debug("LLM 配置初始化失败（非致命）: %s", e)
-            self.config = db_config or self._build_config_from_settings()
+            if db_config and getattr(db_config, "api_key", ""):
+                self.config = db_config
+            else:
+                self.config = self._build_config_from_settings()
         self._client: httpx.AsyncClient | None = None
 
     def update_config(self, config: LLMConfig, user_id: int | None = None):
@@ -335,12 +373,28 @@ class LLMService:
     def _build_config_from_settings() -> LLMConfig:
         """从应用配置构建 LLM 配置"""
         import os
-        
+
+        # 直接读取 backend/.env（当环境变量未注入、settings 未映射时兜底，
+        # 与 _get_encryption_key 读取 ENCRYPTION_KEY 的方式保持一致）
+        env_file_values: dict[str, str] = {}
+        for p in (Path.cwd() / ".env", Path(__file__).resolve().parents[2] / ".env"):
+            try:
+                if p.exists():
+                    for line in p.read_text(encoding="utf-8").splitlines():
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, _, v = line.partition("=")
+                            env_file_values[k.strip()] = v.strip().strip('"').strip("'")
+                    break
+            except Exception:
+                continue
+
         # 从嵌套配置读取
         ai_service = getattr(settings, "ai_service", None)
         
         # 获取 provider（支持多种配置方式）
         provider = os.environ.get("LLM_PROVIDER", "") or \
+                   env_file_values.get("LLM_PROVIDER", "") or \
                    getattr(settings, "llm_provider", "") or \
                    getattr(ai_service, "provider", "") or \
                    PROVIDER_OPENAI
@@ -348,12 +402,14 @@ class LLMService:
         # 获取 api_key（支持多种配置方式）
         api_key = os.environ.get("OPENAI_API_KEY", "") or \
                   os.environ.get("AI_API_KEY", "") or \
+                  env_file_values.get("OPENAI_API_KEY", "") or \
                   (ai_service.api_key if ai_service else "") or \
                   getattr(settings, "openai_api_key", "")
         
         # 获取 base_url（支持多种配置方式）
         base_url = os.environ.get("OPENAI_BASE_URL", "") or \
                    os.environ.get("AI_BASE_URL", "") or \
+                   env_file_values.get("OPENAI_BASE_URL", "") or \
                    (ai_service.base_url if ai_service else "") or \
                    getattr(settings, "openai_base_url", "")
 
@@ -400,6 +456,7 @@ class LLMService:
 
         # 默认模型（支持多种配置方式）
         model = os.environ.get("LLM_MODEL", "") or \
+                env_file_values.get("LLM_MODEL", "") or \
                 getattr(settings, "llm_model", "") or \
                 (ai_service.model if ai_service else "")
         if not model and provider in PROVIDER_DEFAULTS:
@@ -602,12 +659,15 @@ class LLMService:
         stream: bool = False,
         tools: list[dict] | None = None,
         response_format: dict | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
     ) -> dict[str, Any]:
+        # model / temperature 支持按调用覆盖（DS Bot 移植：每个 Bot 独立选模型）
         payload: dict[str, Any] = {
-            "model": self.config.model,
+            "model": model or self.config.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
             "max_tokens": self.config.max_tokens,
-            "temperature": self.config.temperature,
+            "temperature": self.config.temperature if temperature is None else temperature,
             "top_p": self.config.top_p,
             "stream": stream,
         }
@@ -622,6 +682,8 @@ class LLMService:
         messages: list[LLMMessage],
         tools: list[dict] | None = None,
         response_format: dict | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
     ) -> LLMResponse:
         """
         非流式对话
@@ -630,6 +692,8 @@ class LLMService:
             messages: 对话消息列表
             tools: 函数调用定义（Function Calling）
             response_format: 响应格式约束
+            model: 按调用覆盖模型 ID（DS Bot 移植，可选）
+            temperature: 按调用覆盖温度（可选）
 
         Returns:
             LLMResponse
@@ -639,7 +703,10 @@ class LLMService:
 
         url = f"{self.config.base_url}/chat/completions"
         headers = self._build_headers()
-        payload = self._build_payload(messages, stream=False, tools=tools, response_format=response_format)
+        payload = self._build_payload(
+            messages, stream=False, tools=tools, response_format=response_format,
+            model=model, temperature=temperature,
+        )
 
         try:
             resp = await self.client.post(url, headers=headers, json=payload)
@@ -710,9 +777,17 @@ class LLMService:
         self,
         messages: list[LLMMessage],
         tools: list[dict] | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
     ) -> AsyncIterator[str]:
         """
         流式对话（SSE）
+
+        Args:
+            messages: 对话消息列表
+            tools: 函数调用定义（Function Calling）
+            model: 按调用覆盖模型 ID（DS Bot 移植，可选）
+            temperature: 按调用覆盖温度（可选）
 
         Yields:
             每次产出一段文本 chunk
@@ -722,7 +797,10 @@ class LLMService:
 
         url = f"{self.config.base_url}/chat/completions"
         headers = self._build_headers()
-        payload = self._build_payload(messages, stream=True, tools=tools)
+        payload = self._build_payload(
+            messages, stream=True, tools=tools,
+            model=model, temperature=temperature,
+        )
 
         logger.info(f"[chat_stream] 开始流式请求: URL={url}, model={payload.get('model')}, msg_count={len(payload.get('messages', []))}, stream={payload.get('stream')}")
         logger.debug(f"[chat_stream] 请求 payload keys: {list(payload.keys())}, headers keys: {list(headers.keys())}")

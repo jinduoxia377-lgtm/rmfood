@@ -54,6 +54,8 @@ class NotificationPreference(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
+    # data 列用于存储完整的偏好快照（历史遗留 schema，NOT NULL）
+    data: Mapped[dict] = mapped_column("data", JSON, default=dict, nullable=False)
     email_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     in_app_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     webhook_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

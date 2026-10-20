@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/Skeleton'
+﻿import { Skeleton } from '@/components/ui/Skeleton'
 
 interface StatisticsCardsSkeletonProps {
   count?: number
@@ -6,20 +6,20 @@ interface StatisticsCardsSkeletonProps {
 
 export function StatisticsCardsSkeleton({ count = 4 }: StatisticsCardsSkeletonProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-3 hover:shadow-md transition-shadow"
+          className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 space-y-[var(--space-apple-sm)] hover:shadow-md transition-shadow"
         >
           {/* Header */}
           <div className="flex items-center justify-between">
             <div
-              className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                i === 0 ? 'bg-secondary-50 dark:bg-secondary-300/20' :
-                i === 1 ? 'bg-primary-50 dark:bg-primary-300/20' :
-                i === 2 ? 'bg-warning-50 dark:bg-warning-300/20' :
-                'bg-accent-50 dark:bg-accent-300/20'
+              className={`w-10 h-10 rounded-[var(--radius-Apple-sm)] flex items-center justify-center ${
+                i === 0 ? 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20' :
+                i === 1 ? 'bg-[var(--color-primary-container)]' :
+                i === 2 ? 'bg-[var(--color-warning-container)]' :
+                'bg-[var(--color-accent-container)]'
               }`}
             >
               <Skeleton width={22} height={22} radius={5} animationType="pulse" />

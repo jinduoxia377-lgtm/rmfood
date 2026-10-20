@@ -1,5 +1,5 @@
 /**
- * 濞达絾鎹佸婵喢圭€ｎ厾妲?- 闁哄秴鍢茬槐?- 缂佹绠戦幃搴☆嚗椤旇绻嗛悗瑙勆戦弻鐔烘媼閹规劦鍚€閻熸瑥瀚€? */
+ * 中医体质测试页面样式 - Apple HIG */
 
 .page-container {
   min-height: 100vh;
@@ -63,7 +63,7 @@
 }
 
 .welcome-icon {
-  font-size: 120rpx;
+  font-size: var(--font-size-hero-2xl);
 }
 
 .welcome-title {
@@ -238,7 +238,7 @@
 }
 
 .result-icon {
-  font-size: 80rpx;
+  font-size: var(--font-size-hero);
   margin-bottom: var(--space-3);
 }
 

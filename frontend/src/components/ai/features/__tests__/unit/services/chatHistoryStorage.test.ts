@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { ChatHistoryStorage } from '../../../services/chatHistoryStorage'
 import { ChatSession, ChatTopic, MAX_TAGS_PER_SESSION } from '../../../types/chatHistory.types'
 

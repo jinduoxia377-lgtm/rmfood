@@ -359,7 +359,7 @@ export const PATTERNS = {
   PEPTIDE_SEQUENCE: /^[ACDEFGHIKLMNPQRSTVWY]+$/i,
   DNA_SEQUENCE: /^[ACGT]+$/i,
   RNA_SEQUENCE: /^[ACGU]+$/i,
-  SMILES: /^[A-Za-z0-9@+\-\[\]\(\)\\\/=#$]+$/,
+  SMILES: /^[A-Za-z0-9@+\-[\]()\\/=#$]+$/,
 
   // 格式化
   CAMEL_CASE: /^[a-z][a-zA-Z0-9]*$/,
@@ -398,10 +398,6 @@ export const STATUS = {
   IDLE: 'idle',
   LOADING: 'loading',
 } as const
-
-// 向后兼容性别名：支持 PLACEHOLDER_TEXTs (小写s) 访问
-// 注意：由于 DEFAULTS 是 as const，这里仅作类型说明，实际使用 PLACEHOLDER_TEXTS
-type PlaceHolderTextsAlias = typeof DEFAULTS.PLACEHOLDER_TEXTS
 
 // ============================================================================
 // 风险等级定义 (Risk Levels)

@@ -7,12 +7,12 @@ import type { AgentMessage } from '@/components/ai/shared/types';
 // Mock IndexedDB
 const mockDB = {
   objectStoreNames: new Set(['events', 'metadata']),
-  transaction: jest.fn(),
-  close: jest.fn(),
+  transaction: vi.fn(),
+  close: vi.fn(),
 };
 
-jest.mock('indexedDB', () => ({
-  open: jest.fn(() => ({
+vi.mock('indexedDB', () => ({
+  open: vi.fn(() => ({
     onupgradeneeded: null,
     onsuccess: null,
     onerror: null,
@@ -76,8 +76,8 @@ describe('EventSourcedSession', () => {
       }));
 
       // 手动设置 session 的消息来测试
-      jest.spyOn(session, 'estimateTokenCount').mockReturnValue(130000);
-      jest.spyOn(session, 'deriveMessages').mockReturnValue(largeMessages);
+      vi.spyOn(session, 'estimateTokenCount').mockReturnValue(130000);
+      vi.spyOn(session, 'deriveMessages').mockReturnValue(largeMessages);
 
       const decision = checkCompactionTrigger(session, 128000);
       expect(decision.trigger).toBe('context-overflow');

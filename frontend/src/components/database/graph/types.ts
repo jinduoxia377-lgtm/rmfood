@@ -123,11 +123,20 @@ export const EDGE_TYPE_LABELS: Record<string, string> = {
   relates_to: '相关',
 }
 
-/** Performance threshold */
+/**
+ * 性能分档阈值：节点数超过此值走 isLarge 分支。
+ *
+ * 注意语义是反直觉的——isLarge 是「高性能」分支，不是「慢」分支：
+ *   alphaDecay  0.018 (大) > 0.01 (小) → 大图冷却更快、迭代更少
+ *   velocityDecay 0.38 (大) > 0.26 (小) → 大图阻尼更重、运动更稳
+ * 小图分支冷却慢、阻尼轻，用于 ego-network / 子图抽取等几十节点的局部视图，
+ * 让它有更完整的弹性动画。
+ *
+ * 全量图谱 669–1508 节点全部落入 isLarge 是预期行为，不要「修正」这个阈值。
+ */
 export const PERF_THRESHOLD = 80
 
 /** Degree scale parameters — v7.1: enhanced size difference + density adaptive */
-const DEGREE_SCALE_FACTOR = 4.5
 const MAX_DEGREE_CAP = 18
 const CORE_DEGREE_THRESHOLD = 6
 const NODE_SIZE_BOOST_FACTOR = 1.45
@@ -138,8 +147,6 @@ const DENSITY_MEDIUM_THRESHOLD = 60
 const DENSITY_SCALE_HIGH = 0.72
 const DENSITY_SCALE_MEDIUM = 0.85
 const MIN_NODE_RADIUS_FLOOR = 6
-const LABEL_HIDE_ZOOM_THRESHOLD = 0.55
-const LINK_DISTANCE_MULTIPLIER = 2.8
 
 // ═══════════════════════════════════════════
 // 工具函数

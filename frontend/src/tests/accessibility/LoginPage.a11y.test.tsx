@@ -16,9 +16,14 @@ describe('LoginPage Accessibility Tests', () => {
   });
 
   beforeEach(() => {
-    (useAuthStore as unknown as vi.Mock).mockReturnValue({
-      login: vi.fn(),
-    });
+    (useAuthStore as unknown as vi.Mock).mockImplementation(
+      (selector: (s: Record<string, unknown>) => unknown) => selector({
+        login: vi.fn(),
+        requiresTwoFactor: false,
+        twoFactorUsername: null,
+        clearTwoFactor: vi.fn(),
+      })
+    );
   });
 
   test('should have no accessibility violations', async () => {

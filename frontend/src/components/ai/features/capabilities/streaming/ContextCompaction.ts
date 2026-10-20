@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ContextCompaction — 上下文压缩引擎
  *
  * 参照 DeepSeek Harness Compaction 算法：
@@ -86,12 +86,10 @@ export class ContextCompactionEngine {
     const messagesToKeep = validMessages.slice(compressUpTo)
 
     // 2. 构建压缩提示
-    const compressionPrompt = this.buildCompressionPrompt(messagesToCompress)
-
     onProgress?.('正在生成摘要...')
 
     // 3. 纯规则摘要（不依赖 LLM，避免递归调用）
-    let summary = this.buildRuleSummary(messagesToCompress)
+    const summary = this.buildRuleSummary(messagesToCompress)
 
     // 4. 构建压缩后的消息列表
     const summaryMessage: ChatMessage = {

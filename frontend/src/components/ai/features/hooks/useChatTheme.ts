@@ -37,11 +37,12 @@ export const SCHEME_INFO: Record<DesignScheme, { name: string; nameCN: string; d
 }
 
 export function useChatTheme(_initialScheme?: DesignScheme): UseChatThemeReturn {
+  void _initialScheme;
   const [scheme] = useState<DesignScheme>(UNIFIED_SCHEME)
 
   // 无主题切换功能
   const cycleScheme = useCallback(() => {}, [])
-  const setScheme = useCallback((_newScheme: DesignScheme) => {}, [])
+  const setScheme = useCallback((_newScheme: DesignScheme) => { void _newScheme; }, [])
 
   return { scheme, schemeInfo: SCHEME_INFO[scheme], cycleScheme, setScheme }
 }

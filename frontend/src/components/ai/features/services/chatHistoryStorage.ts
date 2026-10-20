@@ -26,7 +26,7 @@ export class ChatHistoryStorage {
         return;
       }
 
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const request = indexedDB.open(this.config.indexedDBName, 2);
 
         request.onerror = () => {
@@ -52,7 +52,7 @@ export class ChatHistoryStorage {
           }
 
           if (!database.objectStoreNames.contains('tags')) {
-            const tagStore = database.createObjectStore('tags', { keyPath: 'name' });
+            database.createObjectStore('tags', { keyPath: 'name' });
           }
         };
       });
@@ -144,7 +144,9 @@ export class ChatHistoryStorage {
       sessions = this.getAllFromLocalStorage();
     }
 
-    return this.applyFilters(sessions, filters);
+    const filtered = this.applyFilters(sessions, filters);
+    // 统一裁剪到配置上限（与 localStorage 保存路径一致），避免 IndexedDB 无界增长导致超限
+    return filtered.slice(0, this.config.maxSessions);
   }
 
   async deleteSession(id: string): Promise<void> {

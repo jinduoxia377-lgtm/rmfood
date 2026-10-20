@@ -28,6 +28,7 @@ export function HerbImage({ herbName, className = '', fallbackIcon = DEFAULT_HER
 
   useEffect(() => {
     if (!herbName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 空名称时同步结束加载态是预期行为
       setIsLoading(false);
       return;
     }

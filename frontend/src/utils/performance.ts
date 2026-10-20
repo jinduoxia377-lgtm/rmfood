@@ -55,8 +55,8 @@ const DEFAULT_CONFIG: PerformanceConfig = {
 
 let config: PerformanceConfig = DEFAULT_CONFIG;
 let metrics: VitalMetric[] = [];
-let customMetrics: Record<string, number> = {};
-let pageLoadStart: number = Date.now();
+const customMetrics: Record<string, number> = {};
+const pageLoadStart: number = Date.now();
 let isInitialized = false;
 let reportTimer: number | null = null;
 let pendingReports: any[] = [];
@@ -127,7 +127,7 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
     });
 
     observer.observe({ type: 'largest-contentful-paint', buffered: true });
-  } catch (e) {
+  } catch {
     if (config.debug) logger.warn('[Perf] LCP observer not supported');
   }
 }
@@ -183,7 +183,7 @@ function observeCLS(callback: (metric: VitalMetric) => void) {
     });
 
     observer.observe({ type: 'layout-shift', buffered: true });
-  } catch (e) {
+  } catch {
     if (config.debug) logger.warn('[Perf] CLS observer not supported');
   }
 }
@@ -213,7 +213,7 @@ function observeFID(callback: (metric: VitalMetric) => void) {
     });
 
     observer.observe({ type: 'first-input', buffered: true });
-  } catch (e) {
+  } catch {
     if (config.debug) logger.warn('[Perf] FID observer not supported');
   }
 }
@@ -239,7 +239,7 @@ function observeFCP(callback: (metric: VitalMetric) => void) {
     });
 
     observer.observe({ type: 'paint', buffered: true });
-  } catch (e) {
+  } catch {
     if (config.debug) logger.warn('[Perf] FCP observer not supported');
   }
 }
@@ -267,7 +267,7 @@ function collectTTFB(callback: (metric: VitalMetric) => void) {
         },
       });
     }
-  } catch (e) {
+  } catch {
     if (config.debug) logger.warn('[Perf] TTFB collection failed');
   }
 }
@@ -340,7 +340,7 @@ export function markPerfTiming(name: string): void {
     if (config.debug) {
       logger.info(`[Perf] Marked: ${name} at ${performance.now().toFixed(2)}ms`);
     }
-  } catch (e) {
+  } catch {
     // performance.mark 可能在某些环境失败
   }
 }
@@ -437,7 +437,7 @@ function getNavigationTimingSummary(): any {
       domComplete: nav.domComplete,
       loadEvent: nav.loadEventEnd,
     };
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -457,7 +457,7 @@ function getMemoryUsage(): any {
       };
     }
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -612,6 +612,7 @@ export function initPerformanceMonitoring(userConfig: Partial<PerformanceConfig>
  * 🔒 P3-4: 便捷的 React Hook 包装
  */
 export function usePerformance(enabled: boolean = true) {
+  void enabled;
   return {
     startTimer: startPerfTimer,
     mark: markPerfTiming,

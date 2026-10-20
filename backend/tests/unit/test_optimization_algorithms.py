@@ -325,10 +325,13 @@ class TestSimulatedAnnealingGetNeighbor:
 
     def test_neighbor_ingredient_names_in_pool(self, optimizer, sample_formula):
         random.seed(42)
+        # 当前实现使用 _herb_db（来自 bayesian_formula_optimizer 的知识库），
+        # 旧属性 herbs_pool 已移除
+        herb_names = {hp.name_cn for hp in (optimizer._herb_db or {}).values()}
         for _ in range(20):
             neighbor = optimizer.get_neighbor(sample_formula)
             for ing in neighbor["ingredients"]:
-                assert ing["name"] in optimizer.herbs_pool
+                assert ing["name"] in herb_names
 
 
 class TestSimulatedAnnealingAccept:

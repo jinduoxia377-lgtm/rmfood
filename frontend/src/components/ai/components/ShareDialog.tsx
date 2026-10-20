@@ -35,6 +35,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const [newCollaboratorPermission, setNewCollaboratorPermission] = useState<CollaborationPermission>(CollaborationPermission.VIEW);
   const [copied, setCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  // eslint-disable-next-line react-hooks/purity
+  const embedTimestamp = Date.now();
 
   if (!isOpen) return null;
 
@@ -155,7 +157,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
                 <div>
                   <label className="block text-xs font-medium text-neutral-600 mb-1">访问密码（可选）</label>
                   <input
@@ -272,7 +274,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               <div className="relative">
                 <pre className="bg-neutral-900 text-success-400 p-4 rounded-lg text-sm overflow-x-auto">
                   <code>{`<iframe
-  src="${window.location.origin}/embed/report/${Date.now()}"
+  src="${window.location.origin}/embed/report/${embedTimestamp}"
   width="100%"
   height="800"
   frameborder="0"
@@ -293,7 +295,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
           {activeTab === 'stats' && accessStats && (
             <div className="space-y-6">
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <StatCard title="总浏览量" value={accessStats.totalViews} icon="👁️" />
                 <StatCard title="独立访客" value={accessStats.uniqueVisitors} icon="👤" />
                 <StatCard title="下载次数" value={accessStats.totalDownloads} icon="⬇️" />
@@ -315,7 +317,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-neutral-700 mb-2">来源分布</h4>
                   <div className="space-y-2">

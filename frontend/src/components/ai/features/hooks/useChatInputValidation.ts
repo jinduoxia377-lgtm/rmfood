@@ -10,7 +10,7 @@
  * @author RMFOOD Team
  */
 
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 export interface UseChatInputValidationOptions {
   maxLength?: number

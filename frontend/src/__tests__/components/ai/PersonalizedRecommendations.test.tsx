@@ -3,7 +3,7 @@ import { PersonalizedRecommendations } from '@/components/ai/PersonalizedRecomme
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore'
 import type { GenerationHistory } from '@/stores/userPreferenceStore'
 
-jest.mock('@/stores/userPreferenceStore')
+vi.mock('@/stores/userPreferenceStore')
 
 const mockHistory: GenerationHistory[] = [
   {
@@ -27,13 +27,13 @@ const mockHistory: GenerationHistory[] = [
 ]
 
 describe('PersonalizedRecommendations', () => {
-  const mockGetPersonalizedRecommendations = jest.fn()
-  const mockToggleHistoryLike = jest.fn()
-  const mockAddRecommendationFeedback = jest.fn()
+  const mockGetPersonalizedRecommendations = vi.fn()
+  const mockToggleHistoryLike = vi.fn()
+  const mockAddRecommendationFeedback = vi.fn()
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(useUserPreferenceStore as unknown as jest.Mock).mockReturnValue({
+    vi.clearAllMocks()
+    ;(useUserPreferenceStore as unknown as vi.Mock).mockReturnValue({
       getPersonalizedRecommendations: mockGetPersonalizedRecommendations,
       toggleHistoryLike: mockToggleHistoryLike,
       addRecommendationFeedback: mockAddRecommendationFeedback,
@@ -59,7 +59,7 @@ describe('PersonalizedRecommendations', () => {
 
   it('renders frequent effects when no recommendations', () => {
     mockGetPersonalizedRecommendations.mockReturnValue([])
-    ;(useUserPreferenceStore as unknown as jest.Mock).mockReturnValue({
+    ;(useUserPreferenceStore as unknown as vi.Mock).mockReturnValue({
       getPersonalizedRecommendations: mockGetPersonalizedRecommendations,
       toggleHistoryLike: mockToggleHistoryLike,
       addRecommendationFeedback: mockAddRecommendationFeedback,
@@ -98,7 +98,7 @@ describe('PersonalizedRecommendations', () => {
   })
 
   it('calls onSelectRecommendation when recommendation is clicked', () => {
-    const mockOnSelect = jest.fn()
+    const mockOnSelect = vi.fn()
     mockGetPersonalizedRecommendations.mockReturnValue(mockHistory)
 
     render(<PersonalizedRecommendations onSelectRecommendation={mockOnSelect} />)
@@ -111,7 +111,7 @@ describe('PersonalizedRecommendations', () => {
   })
 
   it('toggles like when thumbs up button is clicked', () => {
-    const mockOnSelect = jest.fn()
+    const mockOnSelect = vi.fn()
     mockGetPersonalizedRecommendations.mockReturnValue(mockHistory)
 
     render(<PersonalizedRecommendations onSelectRecommendation={mockOnSelect} />)
@@ -127,7 +127,7 @@ describe('PersonalizedRecommendations', () => {
   })
 
   it('toggles dislike when thumbs down button is clicked', () => {
-    const mockOnSelect = jest.fn()
+    const mockOnSelect = vi.fn()
     mockGetPersonalizedRecommendations.mockReturnValue(mockHistory)
 
     render(<PersonalizedRecommendations onSelectRecommendation={mockOnSelect} />)

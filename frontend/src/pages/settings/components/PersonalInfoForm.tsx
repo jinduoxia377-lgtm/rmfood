@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Input } from '@/components/ui';
 import { FormField } from './FormField';
 import type { PersonalInfoFormData, FormValidationErrors } from '../types/user';
@@ -23,7 +23,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">
           基本信息
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -84,7 +84,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">
           个人简介
         </h3>
         <FormField label="简介" error={errors.bio}>
@@ -100,15 +100,15 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               rows={4}
               maxLength={500}
               className={`
-                w-full px-3 py-2 pr-12 rounded-lg border bg-white dark:bg-neutral-900
-                text-neutral-900 dark:text-white text-sm
+                w-full px-[var(--space-apple-sm)] py-2 pr-12 rounded-[var(--radius-Apple-sm)] border bg-[var(--bg-secondary)]
+                text-[var(--text-primary)] text-sm
                 placeholder:text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]
-                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]
                 disabled:opacity-50 disabled:cursor-not-allowed
                 resize-none
                 ${errors.bio
                   ? 'border-danger-400 focus:ring-danger-500'
-                  : 'border-neutral-200 dark:border-neutral-700'
+                  : 'border-[var(--border-color)]'
                 }
               `}
             />
@@ -120,7 +120,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">
           社交链接
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

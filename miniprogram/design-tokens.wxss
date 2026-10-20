@@ -1,7 +1,7 @@
 /**
  * RMFOOD 小程序 - 设计令牌 (Design Tokens)
- * Apple UI Design System - iOS 18 Human Interface Guidelines
- * 
+ * 对齐桌面端主题系统规范 DESIGN.md v2.0 (Apple HIG)
+ *
  * Apple Design Principles:
  * - Clarity: 界面元素清晰易懂，不喧宾夺主
  * - Deference: UI 服务于内容，不抢夺注意力
@@ -12,15 +12,15 @@ page {
   /* ============================================
      1. 字体家族 (System Font)
      ============================================ */
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", 
-               "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", 
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+               "Helvetica Neue", "PingFang SC", "Hiragino Sans GB",
                "Microsoft YaHei", sans-serif;
-  
+
   /* ============================================
      2. 系统颜色 (System Colors) - iOS 18
      ============================================ */
-   
-  /* 品牌色 */
+
+  /* 系统色 */
   --color-system-blue: #007AFF;
   --color-system-green: #34C759;
   --color-system-red: #FF3B30;
@@ -34,63 +34,72 @@ page {
   --color-system-mint: #1AC7B8;
   --color-system-seafoam: #40E8D6;
   --color-system-cyan: #40E8D6;
-  
-  /* 品牌色系 - 药食同源主题 */
-  --color-brand-50: #F0F7F4;
-  --color-brand-100: #D9ECE1;
-  --color-brand-200: #B3D9C3;
-  --color-brand-400: #4A7C5C;
-  --color-brand-500: #2D5A3D;
-  --color-brand-600: #1E4030;
-  --color-brand-700: #153024;
-  
-  /* 主色别名 */
-  --color-primary: var(--color-system-blue);
-  --color-primary-light: rgba(0, 122, 255, 0.12);
-  
+
+  /* 品牌色系 - 对齐桌面端实际落地 L0 令牌（base.css --color-primary=#047857）
+     说明：桌面 Web 实际运行为绿色系（非 DESIGN.md §2.1 的蓝色），小程序以桌面落地值为准 */
+  --color-brand-primary: #047857;          /* 桌面 --color-primary（亮色实底） */
+  --color-brand-primary-active: #059669;  /* 桌面 -600（按压态） */
+  --color-brand-primary-emphasis: #10b981; /* 桌面 -500（强调/图标） */
+  --color-brand-primary-weak: #d1fae5;    /* 桌面 -100（容器底） */
+
+  /* 药食同源品牌绿（桌面主色同族，用于导航/品牌背景） */
+  --color-brand-50: #F0FDF4;
+  --color-brand-100: #D1FAE5;
+  --color-brand-200: #A7F3D0;
+  --color-brand-400: #34D399;
+  --color-brand-500: #10B981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+
+  /* 主色别名（默认指向品牌主色，可通过主题覆盖） */
+  --color-primary: var(--color-brand-primary);
+  --color-primary-light: rgba(4, 120, 87, 0.12);
+
   /* ============================================
-     3. 文字颜色 (Text Colors)
+     3. 文字颜色 (Text Colors) - 对齐桌面规范
+     Light: label primary #1D1D1F / secondary #3A3A3C
+            tertiary #86868B / quaternary #AEAEB2
      ============================================ */
-  
-  --color-text-primary: #000000;
-  --color-text-secondary: #3C3C43;
-  --color-text-tertiary: #8E8E93;
+
+  --color-text-primary: #1D1D1F;
+  --color-text-secondary: #3A3A3C;
+  --color-text-tertiary: #86868B;
   --color-text-quaternary: #AEAEB2;
   --color-text-placeholder: #C7C7CC;
   --color-text-white: #FFFFFF;
   --color-text-disabled: #C7C7CC;
   --color-text-inverse: #FFFFFF;
-  --color-text-muted: #8E8E93;
-  
+  --color-text-muted: #86868B;
+
   /* ============================================
-     4. 背景颜色 (Background Colors) - iOS 18
+     4. 背景颜色 (Background Colors) - 对齐桌面规范
      ============================================ */
-  
-  --color-bg-page: #F2F2F7;           /* iOS 分组背景 */
-  --color-bg-card: #FFFFFF;           /* 卡片背景 */
-  --color-bg-secondary: #F2F2F7;      /* 次级背景 */
-  --color-bg-tertiary: #E5E5EA;       /* 三级背景 */
+
+  --color-bg-page: #F2F2F7;              /* iOS 分组背景 */
+  --color-bg-card: #FFFFFF;              /* 卡片背景 */
+  --color-bg-secondary: #F2F2F7;         /* 次级背景 */
+  --color-bg-tertiary: #E5E5EA;          /* 三级背景 */
   --color-bg-primary: #FFFFFF;
   --color-bg-hover: rgba(0, 0, 0, 0.04);
-  
+
   /* 分组背景 */
   --color-grouped-bg: #F2F2F7;
   --color-grouped-separator: #C6C6C8;
-  
+
   /* ============================================
      5. 边框颜色 (Border Colors)
      ============================================ */
-  
+
   --color-border: #E5E5EA;
   --color-border-light: #F2F2F7;
   --color-border-dark: #D1D1D6;
   --color-separator: rgba(60, 60, 67, 0.1);
   --color-divider: rgba(60, 60, 67, 0.2);
-  
+
   /* ============================================
      6. 状态颜色 (System Colors for States)
      ============================================ */
-  
+
   --color-success: var(--color-system-green);
   --color-success-light: #D1FAE5;
   --color-success-bg: #ECFDF5;
@@ -103,11 +112,18 @@ page {
   --color-info: var(--color-system-teal);
   --color-info-light: #E0F2FE;
   --color-info-bg: #F0F9FF;
-  
+
+  /* 状态文本色（NutritionLabel / 详情页使用） */
+  --color-success-text: #16A34A;
+  --color-warning-text: #B45309;
+  --color-danger-text: #DC2626;
+  --color-info-text: #0284C7;
+  --color-text-caption: var(--color-text-secondary);
+
   /* ============================================
      7. 中性灰度 (Neutral Grays)
      ============================================ */
-  
+
   --color-gray-50: #FAFAFA;
   --color-gray-100: #F5F5F5;
   --color-gray-200: #EEEEEE;
@@ -118,56 +134,76 @@ page {
   --color-gray-700: #616161;
   --color-gray-800: #424242;
   --color-gray-900: #212121;
-  
+
+  /* Accent 色阶（紫罗兰强调色，对齐桌面 --color-accent=#6d28d9，用于标签/渐变头像/合规徽标） */
+  --color-accent: #6D28D9;
+  --color-accent-300: #C4B5FD;
+  --color-accent-400: #A78BFA;
+  --color-accent-500: #8B5CF6;
+  --color-accent-600: #7C3AED;
+
   /* ============================================
-     8. 阴影系统 (Shadow System)
+     8. 阴影系统 (Shadow System) - 对齐桌面规范
+     Light: sm 0 1px 3px .06 / md 0 2px 8px .08
+            lg 0 4px 12px .10 / xl 0 8px 24px .12
      ============================================ */
-  
+
   --shadow-none: none;
-  --shadow-sm: 0 1rpx 3rpx rgba(0,0,0,0.04), 0 1rpx 2rpx rgba(0,0,0,0.06);
-  --shadow-md: 0 4rpx 12rpx rgba(0,0,0,0.06), 0 2rpx 4rpx rgba(0,0,0,0.04);
-  --shadow-lg: 0 12rpx 28rpx rgba(0,0,0,0.08), 0 4rpx 10rpx rgba(0,0,0,0.04);
-  --shadow-xl: 0 20rpx 40rpx rgba(0,0,0,0.12);
-  --shadow-brand: 0 4rpx 16rpx rgba(0, 122, 255, 0.2);
-  --shadow-inset: inset 0 1rpx 0 rgba(255,255,255,0.5);
-  
+  --shadow-sm: 0 2rpx 6rpx rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 16rpx 48rpx rgba(0, 0, 0, 0.12);
+  --shadow-brand: 0 4rpx 16rpx rgba(4, 120, 87, 0.2);
+  --shadow-inset: inset 0 1rpx 0 rgba(255, 255, 255, 0.5);
+
   /* ============================================
-     9. 圆角系统 (Corner Radius)
+     9. 圆角系统 (Corner Radius) - 对齐桌面规范
+     Desktop: xs 5px / sm 8px / md 11px / lg 18px
      ============================================ */
-  
+
   --radius-none: 0rpx;
-  --radius-xs: 4rpx;
-  --radius-sm: 8rpx;
-  --radius-md: 12rpx;
-  --radius-lg: 16rpx;
-  --radius-xl: 20rpx;
-  --radius-2xl: 24rpx;
-  --radius-full: 999rpx;
-  
-  /* iOS 按钮/卡片圆角 */
-  --radius-button: 12rpx;
-  --radius-card: 14rpx;
-  --radius-list: 12rpx;
-  --radius-input: 10rpx;
-  --radius-segment: 9rpx;
-  
+  --radius-xs: 8rpx;          /* 4px - 紧凑元素 */
+  --radius-sm: 16rpx;          /* 8px - 标准按钮/列表 */
+  --radius-md: 22rpx;           /* 11px - 输入框 */
+  --radius-lg: 36rpx;           /* 18px - 大卡片 */
+  --radius-xl: 44rpx;             /* 22px */
+  --radius-2xl: 48rpx;           /* 24px - 弹层/Sheet */
+  --radius-full: 999rpx;        /* 胶囊形/圆形 */
+
+  /* 组件专用圆角 */
+  --radius-button: 22rpx;        /* 11px - 按钮 */
+  --radius-card: 24rpx;          /* 12px - 移动端卡片 */
+  --radius-list: 16rpx;           /* 8px - 分组列表 */
+  --radius-input: 22rpx;          /* 11px - 输入框 */
+  --radius-segment: 18rpx;        /* 9px - 分段控件 */
+
   /* ============================================
-     10. 字号系统 (Typography) - 微信规范
+     10. 字号系统 (Typography) - 对齐桌面规范 (rpx)
+     微信设计稿 750rpx = 屏宽；标准 iPhone 1px = 2rpx
      ============================================ */
-  
-  /* SF Pro 标准字号 */
-  --font-size-display: 48rpx;
-  --font-size-large-title: 34rpx;
-  --font-size-title-1: 28rpx;
-  --font-size-title-2: 22rpx;
-  --font-size-title-3: 17rpx;
-  --font-size-body: 17rpx;
-  --font-size-callout: 16rpx;
-  --font-size-caption: 12rpx;
-  --font-size-caption-strong: 13rpx;
-  
-  /* 小程序专用字号 (rpx) */
-  --font-size-xs: 20rpx;      /* 辅助说明文字 */
+
+  /* Apple HIG 语义字号（rpx） */
+  --font-size-display: 56rpx;        /* 28px - Hero 数字/大标题 */
+  --font-size-large-title: 48rpx;    /* 24px - 页面大标题 */
+  --font-size-title-1: 40rpx;        /* 20px - 一级标题 */
+  --font-size-title-2: 36rpx;        /* 18px - 二级标题 */
+  --font-size-title-3: 32rpx;        /* 16px - 卡片标题 */
+  --font-size-subtitle: 30rpx;       /* 15px - 副标题 */
+  --font-size-body: 28rpx;           /* 14px - 默认正文 (微信标准) */
+  --font-size-callout: 26rpx;        /* 13px - 注释文字 */
+  --font-size-caption: 24rpx;        /* 12px - 说明文字 */
+  --font-size-caption-strong: 24rpx; /* 12px - 加粗说明 */
+  --font-size-title-4: 28rpx;         /* 14px - 小卡片标题 */
+  --font-size-fine-print: 20rpx;     /* 10px - 极细说明 */
+  --font-size-micro-legal: 16rpx;    /* 8px - 法律小字 */
+  /* 大号展示数字（统计/对比页 Hero） */
+  --font-size-stat: 64rpx;           /* 32px - 大号统计数字 */
+  --font-size-hero: 80rpx;           /* 40px - Hero 数字 */
+  --font-size-hero-xl: 96rpx;        /* 48px - 特大 Hero */
+  --font-size-hero-2xl: 120rpx;      /* 60px - 超大 Hero */
+
+  /* 小程序通用字号（rpx） */
+  --font-size-xs: 20rpx;      /* 辅助说明 */
   --font-size-sm: 24rpx;      /* 次要信息 */
   --font-size-md: 28rpx;      /* 正文基础 */
   --font-size-lg: 32rpx;      /* 小标题 */
@@ -175,34 +211,36 @@ page {
   --font-size-2xl: 44rpx;     /* 大标题 */
   --font-size-3xl: 56rpx;     /* 超大标题 */
   --font-size-base: 28rpx;    /* 默认正文 */
-  
-  /* 字重 */
+
+  /* 字重（避免 300 以下小字号使用） */
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* 行高 */
   --line-height-tight: 1.15;
   --line-height-normal: 1.47;
   --line-height-relaxed: 1.7;
   --line-height-loose: 2;
-  
+
   /* ============================================
-     11. 间距系统 (Spacing) - 8pt 基准网格
+     11. 间距系统 (Spacing) - 8pt 基准网格 (rpx)
+     8px = 16rpx（标准 iPhone 换算）
      ============================================ */
-  
-  --space-xxs: 4rpx;
-  --space-xs: 8rpx;
-  --space-sm: 12rpx;
-  --space-md: 16rpx;
-  --space-lg: 20rpx;
-  --space-xl: 24rpx;
-  --space-2xl: 32rpx;
-  --space-3xl: 40rpx;
-  --space-4xl: 48rpx;
-  
+
+  --space-xxs: 8rpx;        /* 4px - 特殊场景 */
+  --space-xs: 16rpx;        /* 8px - 最小间距 */
+  --space-sm: 24rpx;        /* 12px - 组件紧凑内边距 */
+  --space-md: 32rpx;        /* 16px - 组件内边距 */
+  --space-lg: 48rpx;        /* 24px - 区块间距 */
+  --space-xl: 64rpx;        /* 32px - 页面间距 */
+  --space-2xl: 96rpx;       /* 48px - 大区块 */
+  --space-3xl: 128rpx;      /* 64px - 页面分割 */
+  --space-4xl: 160rpx;     /* 80px - 产品瓦片垂直间距 */
+
+  /* 数字间距 */
   --space-1: 8rpx;
   --space-2: 16rpx;
   --space-3: 24rpx;
@@ -214,46 +252,60 @@ page {
   --space-12: 96rpx;
   --space-16: 128rpx;
   --space-20: 160rpx;
-  
+
   /* ============================================
-     12. 过渡动画 (Transitions)
+     12. 过渡动画 (Transitions) - 对齐桌面规范
      ============================================ */
-  
+
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
   --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition-ease-out: 0.3s cubic-bezier(0.0, 0.0, 0.2, 1);
-  
+
   /* ============================================
      13. Z-Index 层级 (Z-Index)
      ============================================ */
-  
+
   --z-index-dropdown: 100;
   --z-index-sticky: 200;
   --z-index-fixed: 300;
+  --z-index-overlay: 900;
   --z-index-modal: 1000;
   --z-index-toast: 9999;
   --z-index-popup: 1100;
   --z-index-sheet: 1200;
-  
+
   /* ============================================
      14. 毛玻璃效果 (Blur Effects)
      ============================================ */
-  
+
   --blur-bg: rgba(252, 252, 254, 0.94);
   --blur-bg-secondary: rgba(242, 242, 247, 0.94);
   --blur-strong: rgba(252, 252, 254, 0.85);
-  
+
+  /* ============================================
+     14.1 兼容别名令牌（页面通用）
+     ============================================ */
+
+  --bg-primary: var(--color-bg-card);
+  --primary: var(--color-brand-primary);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --border-color: var(--color-border);
+
   /* ============================================
      15. 全局默认值
      ============================================ */
-  
+
   color: var(--color-text-primary);
   background-color: var(--color-bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
 }
 
 /* ============================================
@@ -266,6 +318,7 @@ page {
 .text-title-1 { font-size: var(--font-size-title-1); }
 .text-title-2 { font-size: var(--font-size-title-2); }
 .text-title-3 { font-size: var(--font-size-title-3); }
+.text-subtitle { font-size: var(--font-size-subtitle); }
 .text-body { font-size: var(--font-size-body); }
 .text-callout { font-size: var(--font-size-callout); }
 .text-caption { font-size: var(--font-size-caption); }

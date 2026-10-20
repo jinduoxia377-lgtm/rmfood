@@ -1,0 +1,45 @@
+/**
+ * 用户对象字段规范化工具
+ *
+ * 后端（FastAPI/Pydantic）返回 snake_case 字段（full_name / avatar_url / last_login...），
+ * 前端类型体系使用 camelCase（fullName / avatarUrl / lastLoginAt）。
+ * 该工具在数据进入前端状态层时统一转换为 camelCase，
+ * 同时兼容已规范化（camelCase）或 Mock 数据，避免重复转换。
+ */
+import type { User, UserRole } from '@/types'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RawUser = Record<string, any>
+
+export function normalizeUser(raw: RawUser): User {
+  return {
+    id: raw.id,
+    username: raw.username ?? '',
+    email: raw.email ?? '',
+    fullName: raw.fullName ?? raw.full_name ?? undefined,
+    avatarUrl: raw.avatarUrl ?? raw.avatar_url ?? undefined,
+
+    role: (raw.role ?? 'guest') as UserRole,
+    isActive: raw.isActive ?? raw.is_active ?? true,
+    department: raw.department ?? undefined,
+    phone: raw.phone ?? undefined,
+
+    // 个人资料扩展字段
+    position: raw.position ?? undefined,
+    bio: raw.bio ?? undefined,
+    website: raw.website ?? undefined,
+    github: raw.github ?? undefined,
+    linkedin: raw.linkedin ?? undefined,
+
+    // 安全信息
+    lastLoginAt: raw.lastLoginAt ?? raw.last_login ?? undefined,
+    loginAttempts: raw.loginAttempts ?? raw.login_attempts ?? 0,
+    lockedUntil: raw.lockedUntil ?? raw.locked_until ?? null,
+
+    preferences: raw.preferences,
+
+    // 时间戳
+    createdAt: raw.createdAt ?? raw.created_at ?? '',
+    updatedAt: raw.updatedAt ?? raw.updated_at ?? '',
+  }
+}

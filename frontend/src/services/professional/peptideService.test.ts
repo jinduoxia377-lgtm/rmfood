@@ -16,8 +16,9 @@ describe('PeptideService', () => {
     });
 
     it('should throw error for invalid sequence', () => {
+      // 'INVALID' 恰好是合法氨基酸（I-N-V-A-L-I-D），必须用真正非法的字符
       expect(() => {
-        peptideService.calculateMolecularWeight('INVALID');
+        peptideService.calculateMolecularWeight('INVALIDX');
       }).toThrow('Invalid amino acid');
     });
   });
@@ -238,7 +239,7 @@ describe('PeptideService', () => {
       const composition = peptideService.getAminoAcidComposition(sequence);
       expect(typeof composition).toBe('object');
       expect(composition['L']).toBe(1);
-      expect(composition['V']).toBe(1);
+      expect(composition['V']).toBe(2); // 序列 LVGQDPVHPF 中 V 出现两次
     });
   });
 });

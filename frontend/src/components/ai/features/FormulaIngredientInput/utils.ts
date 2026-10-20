@@ -3,6 +3,7 @@
  */
 
 import type { FormulaIngredient, ValidationError, FormulaTemplate, IngredientParameter } from './types';
+import { DEFAULT_PARAMETERS } from './types';
 
 
 import { logger } from '@/utils/safeLogger';
@@ -215,7 +216,6 @@ export const deleteTemplate = (templateId: string): void => {
 
 // 创建新成分
 export const createNewIngredient = (): FormulaIngredient => {
-  const { DEFAULT_PARAMETERS } = require('./types');
   return {
     id: generateId(),
     name: '',

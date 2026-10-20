@@ -63,9 +63,8 @@ export function sanitizeFileName(name: string): string {
 
   let sanitized = name.trim()
 
-  sanitized = sanitized.replace(/[\\\/\?\*\|"<>]/g, '_')
-
-  const pathTraversalPattern = /\.\.[\\\/]|\.\.$/
+  // 先基于原始输入检测路径遍历（../ 或 ..\），恶意路径应被拒绝而非静默改名
+  const pathTraversalPattern = /\.\.[\\/]|\.\.$/
   if (pathTraversalPattern.test(sanitized)) {
     throw new FileSecurityError(
       'PATH_TRAVERSAL',
@@ -73,6 +72,8 @@ export function sanitizeFileName(name: string): string {
       '文件名包含非法路径字符，已拒绝处理',
     )
   }
+
+  sanitized = sanitized.replace(/[\\/?*|"<>]/g, '_')
 
   const nullBytesRemoved = sanitized.replace(/\0/g, '')
   if (nullBytesRemoved.length !== sanitized.length) {
@@ -84,6 +85,7 @@ export function sanitizeFileName(name: string): string {
   }
   sanitized = nullBytesRemoved
 
+  // eslint-disable-next-line no-control-regex -- 需要匹配/移除 ASCII 控制字符（安全清洗）
   const controlCharsRemoved = sanitized.replace(/[\x00-\x1F\x7F]/g, '')
   if (controlCharsRemoved.length < sanitized.length) {
     sanitized = controlCharsRemoved

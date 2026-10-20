@@ -254,7 +254,7 @@ export function CategoryTree({
                   top: `${startIndex * ITEM_HEIGHT}px`,
                   width: '100%',
                 }}>
-                  {visibleItems.map((node) => {
+                  {visibleItems.map((node, index) => {
                     const indent = getIndent(node)
                     const hasChildren = (node.children?.length ?? 0) > 0
                     const isSelected = value.includes(node.id)
@@ -262,7 +262,7 @@ export function CategoryTree({
 
                     return (
                       <div
-                        key={node.id}
+                        key={node.id ?? `cat-${index}-${node.name ?? ''}`}
                         className={cn(
                           'flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer',
                           'hover:bg-neutral-50 dark:hover:bg-neutral-800',

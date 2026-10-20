@@ -82,6 +82,24 @@ INGREDIENT_STABILITY: Dict[str, Dict[str, Any]] = {
     "薏苡仁": {"k_25": 0.001, "Ea": 73000, "light_factor": 1.0, "ph_window": (5.0, 8.0), "base_shelf_life": 36},
     "枸杞": {"k_25": 0.003, "Ea": 68000, "light_factor": 1.3, "ph_window": (4.5, 7.5), "base_shelf_life": 24},
     "红枣": {"k_25": 0.002, "Ea": 70000, "light_factor": 1.1, "ph_window": (4.5, 7.5), "base_shelf_life": 30},
+
+    # 常见药材（2026-10-13 扩展：此前这些药材走 unknown_ingredient 保守默认，
+    # 现按其活性成分类别录入独立参数，避免跨药材近似）
+    "黄芪": {"k_25": 0.006, "Ea": 70000, "light_factor": 1.3, "ph_window": (4.5, 7.5), "base_shelf_life": 24},
+    "当归": {"k_25": 0.005, "Ea": 68000, "light_factor": 1.5, "ph_window": (4.5, 7.0), "base_shelf_life": 18},
+    "党参": {"k_25": 0.004, "Ea": 66000, "light_factor": 1.2, "ph_window": (4.5, 8.0), "base_shelf_life": 24},
+    "白术": {"k_25": 0.005, "Ea": 69000, "light_factor": 1.5, "ph_window": (4.5, 7.0), "base_shelf_life": 18},
+    "菊花": {"k_25": 0.008, "Ea": 73000, "light_factor": 2.0, "ph_window": (3.5, 6.5), "base_shelf_life": 12},
+    "金银花": {"k_25": 0.007, "Ea": 72000, "light_factor": 1.8, "ph_window": (3.5, 7.0), "base_shelf_life": 15},
+    "连翘": {"k_25": 0.006, "Ea": 71000, "light_factor": 1.5, "ph_window": (4.0, 7.0), "base_shelf_life": 18},
+    "酸枣仁": {"k_25": 0.006, "Ea": 70000, "light_factor": 1.4, "ph_window": (4.0, 7.0), "base_shelf_life": 18},
+    "百合": {"k_25": 0.003, "Ea": 68000, "light_factor": 1.1, "ph_window": (4.5, 8.0), "base_shelf_life": 30},
+    "丹参": {"k_25": 0.009, "Ea": 75000, "light_factor": 2.2, "ph_window": (3.5, 6.5), "base_shelf_life": 12},
+    "川芎": {"k_25": 0.006, "Ea": 70000, "light_factor": 1.5, "ph_window": (4.0, 7.0), "base_shelf_life": 18},
+    "陈皮": {"k_25": 0.007, "Ea": 71000, "light_factor": 1.6, "ph_window": (3.5, 7.0), "base_shelf_life": 15},
+    "山楂": {"k_25": 0.006, "Ea": 70000, "light_factor": 1.4, "ph_window": (3.5, 7.0), "base_shelf_life": 18},
+    "决明子": {"k_25": 0.006, "Ea": 71000, "light_factor": 1.6, "ph_window": (3.5, 7.0), "base_shelf_life": 15},
+    "薄荷": {"k_25": 0.006, "Ea": 69000, "light_factor": 1.8, "ph_window": (4.0, 7.0), "base_shelf_life": 15},
 }
 
 # 已知成分名称的别名映射

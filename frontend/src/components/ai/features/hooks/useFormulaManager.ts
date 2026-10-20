@@ -231,7 +231,6 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   const {
     maxFormulas = DEFAULT_MAX_FORMULAS,
     autoSave = true,
-    storageKey: _storageKey,
     eventBusInstance,
   } = options
 
@@ -344,7 +343,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       unsubFormulasAdded()
       logger.info('[useFormulaManager] 🔌 EventBus 事件订阅已清理')
     }
-  }, [bus]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [bus])
 
   // ===== 挂载/卸载处理 =====
 

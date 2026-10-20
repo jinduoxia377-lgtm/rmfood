@@ -20,5 +20,5 @@
   justify-content: center;
   padding: 40rpx;
   color: var(--color-text-tertiary);
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }

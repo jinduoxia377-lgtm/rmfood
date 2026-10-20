@@ -129,7 +129,7 @@ interface UseBulkOperationsOptions {
 }
 
 export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
-  const { batchSize = 10, enableRollback = true, onProgress, onComplete, onError } = options;
+  const { batchSize = 10, enableRollback = true, onProgress, onComplete } = options;
 
   const [state, dispatch] = useReducer(bulkOperationReducer, initialState);
   const mountedRef = useRef(true);
@@ -205,7 +205,7 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentPerm.data },
               });
-            } catch {}
+            } catch { /* 获取回滚数据失败则跳过 */ }
           }
 
           await api.patch(`/organizations/permissions/${id}`, permissions);
@@ -272,10 +272,10 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentOrg.data },
               });
-            } catch {}
+            } catch { /* 获取回滚数据失败则跳过 */ }
           }
 
-          await api.patch(`/organizations/${id}/archive`, { isActive: false });
+          await api.put(`/organizations/${id}/archive`);
 
           return {
             id,
@@ -302,7 +302,7 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentOrg.data },
               });
-            } catch {}
+            } catch { /* 获取回滚数据失败则跳过 */ }
           }
 
           await api.delete(`/organizations/${id}`);

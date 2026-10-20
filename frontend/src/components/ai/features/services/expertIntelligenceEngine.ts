@@ -400,7 +400,7 @@ class ProSuggestionGenerator {
         if (dims.length > 0) {
           suggestions.push(...dims);
         }
-      } catch (e) {
+      } catch {
         // skip failed dimension
       }
     }
@@ -848,6 +848,7 @@ class ProSuggestionGenerator {
   }
 
   private applyQualityGate(suggestions: SmartSuggestion[], ctx: ParsedContext): SmartSuggestion[] {
+    void ctx;
     const TRULY_GENERIC_PATTERNS = [
       /^(请|建议|可以|需要|应该)(更多|进一步)?(信息|细节|内容)$/,
       /^(根据|按照)(具体情况|实际需要)?(具体)?分析$/,
@@ -973,6 +974,7 @@ class IntelligentPromptBuilder {
   }
 
   private compressPrompt(prompt: string, maxLength: number, _contextSummary: string): string {
+    void _contextSummary;
     let compressed = prompt;
 
     compressed = compressed.replace(

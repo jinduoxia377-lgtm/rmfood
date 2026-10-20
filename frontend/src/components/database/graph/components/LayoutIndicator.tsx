@@ -1,16 +1,6 @@
 import { LayoutType } from '../types'
-import { THEME_PRESETS, ThemeConfig } from '../types'
-import type { AnimationPreset } from './types'
-
-const ANIMATION_PRESETS: Record<AnimationPreset, { label: string; icon: string; duration: number }> = {
-  fadeIn:   { label: '淡入浮现', icon: '✨', duration: 800 },
-  expand:   { label: '从中心展开', icon: '🎯', duration: 1200 },
-  converge: { label: '散点聚合', icon: '🌀', duration: 1000 },
-  none:     { label: '无动画', icon: '⚡', duration: 0 },
-}
 
 export interface LayoutIndicatorProps {
-  [key: string]: any;
   localLayout: LayoutType
   showLayoutMenu: boolean
   onToggleLayoutMenu: () => void

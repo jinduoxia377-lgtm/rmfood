@@ -5,8 +5,6 @@
  * @version 1.0.0
  */
 
-import { STORAGE, API } from '@/constants/businessRules'
-
 // 药味角色常量
 export const HERB_ROLES = ['君药', '臣药', '佐药', '使药'] as const
 export type HerbRole = typeof HERB_ROLES[number]

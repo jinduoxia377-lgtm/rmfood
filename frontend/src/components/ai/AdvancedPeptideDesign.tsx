@@ -86,6 +86,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
   // 组件挂载时加载项目列表
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProjects()
   }, [loadProjects])
 
@@ -228,6 +229,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
   }, [])
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchServiceStatus()
   }, [fetchServiceStatus])
 
@@ -585,7 +587,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                       </div>
 
                       {/* 统计信息 */}
-                      <div className="grid grid-cols-2 gap-2 text-center text-sm mb-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center text-sm mb-3">
                         <div className="bg-neutral-50 dark:bg-neutral-800 rounded p-2">
                           <div className="font-bold text-accent-600">{project.total_candidates}</div>
                           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">候选方案</div>
@@ -675,7 +677,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
                 选择目标功效（可多选）
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {TARGET_EFFECTS.map(effect => (
                   <button
                     key={effect.id}
@@ -739,7 +741,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
                 优化目标及权重（总和应接近 1.0）
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {OPTIMIZATION_GOALS.map(goal => (
                   <div key={goal.id}>
                     <div className="flex justify-between text-sm mb-1">
@@ -788,7 +790,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
         {activeTab === 'sample' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   采样数量
@@ -903,7 +905,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             </div>
 
             {results.diversityMetrics && (
-              <div className="grid grid-cols-3 gap-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-accent-600">{((results.diversityMetrics.diversity_score ?? 0) * 100).toFixed(1)}%</div>
                   <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">多样性得分</div>
@@ -946,7 +948,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
                     {showDetails[`peptide-${idx}`] && (
                       <div className="px-4 pb-4 pt-2 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子量</span>
                             <div className="font-semibold">{('molecular_weight' in peptide ? peptide.molecular_weight : 0).toFixed(1)} Da</div>

@@ -401,8 +401,7 @@
 .animate-slide-down,
 .animate-pulse-soft,
 .animate-spin-slow {
-  will-change: opacity, transform;
-  transform: translateZ(0);
+  will-change: opacity;
 }
 
 /* Reduced motion support — D-28：全局块已移至 environment.css（唯一权威），此处删除冗余副本 */

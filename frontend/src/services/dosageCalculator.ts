@@ -1,5 +1,4 @@
-import type { Ingredient, DosageCalculationResult } from '@/types/ai.types'
-import { UNIT_CONVERSION_MAP } from '@/config/dosage.constants'
+import type { Ingredient } from '@/types/ai.types'
 
 
 import { logger } from '@/utils/safeLogger';
@@ -8,13 +7,6 @@ interface NormalizedDosage {
   unit: string
   originalValue?: number
   originalUnit?: string
-}
-
-interface PercentageResult {
-  ingredient: Ingredient
-  percentage: number | null
-  normalizedAmount: number | null
-  absoluteAmount: { value: number; unit: string }
 }
 
 interface DosageCalculationMeta {

@@ -1,13 +1,23 @@
 /**
  * Subagent 单元测试
  */
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SubagentManager, getSubagentManager } from '../subagent';
+import { fetchWithCsrf } from '@/utils/csrf';
+
+vi.mock('@/utils/csrf', () => ({
+  fetchWithCsrf: vi.fn(),
+}));
 
 describe('Subagent', () => {
   let manager: SubagentManager;
 
   beforeEach(() => {
     manager = new SubagentManager();
+    // 默认：子智能体 API 调用成功
+    (fetchWithCsrf as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { final_response_preview: '执行完成', steps: [] },
+    });
   });
 
   describe('spawn', () => {
@@ -57,6 +67,10 @@ describe('Subagent', () => {
     }, 10000);
 
     test('超时应抛出错误', async () => {
+      // 模拟 API 永不返回，使子智能体一直处于 running，等待超时
+      (fetchWithCsrf as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        () => new Promise(() => {}),
+      )
       const handle = manager.spawn({ name: '测试', prompt: 'Hello' });
       await expect(manager.waitFor(handle.id, 1)).rejects.toThrow();
     }, 5000);

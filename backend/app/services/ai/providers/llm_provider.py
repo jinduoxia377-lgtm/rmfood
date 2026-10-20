@@ -190,7 +190,7 @@ class OpenAIProvider(LLMProvider):
         **kwargs
     ) -> Dict[str, Any]:
         payload = {
-            "model": self.config.model,
+            "model": kwargs.get("model", self.config.model),
             "messages": messages,
             "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
             "temperature": kwargs.get("temperature", self.config.temperature),
@@ -421,7 +421,7 @@ class AnthropicProvider(LLMProvider):
         system_content, anthropic_messages = self._convert_messages(messages)
         
         payload = {
-            "model": self.config.model,
+            "model": kwargs.get("model", self.config.model),
             "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
             "temperature": kwargs.get("temperature", self.config.temperature),
             "top_p": kwargs.get("top_p", self.config.top_p),
@@ -467,7 +467,7 @@ class AnthropicProvider(LLMProvider):
         system_content, anthropic_messages = self._convert_messages(messages)
         
         payload = {
-            "model": self.config.model,
+            "model": kwargs.get("model", self.config.model),
             "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
             "stream": True,
             "messages": anthropic_messages,
@@ -574,7 +574,7 @@ class LocalLlamaProvider(LLMProvider):
         url = f"{self.config.base_url}/api/chat"
         
         payload = {
-            "model": self.config.model,
+            "model": kwargs.get("model", self.config.model),
             "messages": messages,
             "stream": False,
             "options": {
@@ -619,7 +619,7 @@ class LocalLlamaProvider(LLMProvider):
         url = f"{self.config.base_url}/api/chat"
         
         payload = {
-            "model": self.config.model,
+            "model": kwargs.get("model", self.config.model),
             "messages": messages,
             "stream": True,
             "options": {

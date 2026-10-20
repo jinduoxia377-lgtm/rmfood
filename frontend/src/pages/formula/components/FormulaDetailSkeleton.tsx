@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/Skeleton'
+﻿import { Skeleton } from '@/components/ui/Skeleton'
 
 interface FormulaDetailSkeletonProps {
   activeTab?: string
@@ -6,7 +6,7 @@ interface FormulaDetailSkeletonProps {
 
 export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkeletonProps) {
   return (
-    <div className="max-w-6xl mx-auto space-y-6 px-4 lg:px-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-6 px-[var(--space-apple-md)] lg:px-6 animate-fade-in">
       {/* Back Navigation */}
       <div className="flex items-center gap-2">
         <Skeleton width={24} height={24} radius={6} animationType="pulse" />
@@ -14,10 +14,10 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Header Section */}
-      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 space-y-4">
+      <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="flex-1 space-y-[var(--space-apple-sm)]">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
               <Skeleton width={250} height={32} animationType="pulse" />
               <Skeleton width={80} height={24} radius={12} animationType="pulse" />
               <Skeleton width={60} height={24} radius={12} animationType="pulse" />
@@ -37,7 +37,7 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-1.5">
               <Skeleton width={70} height={12} animationType="pulse" />
@@ -48,12 +48,12 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Tabs Navigation */}
-      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-2">
+      <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-2">
         <div className="flex items-center gap-1 overflow-x-auto">
           {['basic', 'ingredients', 'process', 'versions', 'recommendations'].map((tab) => (
             <div
               key={tab}
-              className={`px-4 py-2 rounded-lg ${tab === activeTab ? 'bg-neutral-100 dark:bg-neutral-800' : ''}`}
+              className={`px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] ${tab === activeTab ? 'bg-[var(--bg-tertiary)]' : ''}`}
             >
               <Skeleton
                 width={tab === 'basic' ? 70 : tab === 'ingredients' ? 80 : tab === 'process' ? 80 : tab === 'versions' ? 80 : 100}
@@ -66,7 +66,7 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Tab Content */}
-      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 min-h-[400px]">
+      <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-lg)] min-h-[400px]">
         {activeTab === 'basic' && <BasicInfoSkeleton />}
         {activeTab === 'ingredients' && <IngredientsSkeleton />}
         {activeTab === 'steps' && <ProcessSkeleton />}
@@ -92,7 +92,7 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* Description */}
-      <div className="space-y-2 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+      <div className="space-y-2 pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
         <Skeleton width={70} height={13} animationType="pulse" />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -102,7 +102,7 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* Meta Info */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-4 pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-1">
             <Skeleton width={60} height={11} animationType="pulse" />
@@ -112,11 +112,11 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* AI Analysis Section */}
-      <div className="space-y-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+      <div className="space-y-[var(--space-apple-md)] pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
         <Skeleton width={120} height={18} animationType="pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3">
+            <div key={i} className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
               <Skeleton width={100} height={16} animationType="pulse" />
               <Skeleton width="100%" height={12} animationType="pulse" />
               <Skeleton width="90%" height={12} animationType="pulse" />
@@ -131,7 +131,7 @@ function BasicInfoSkeleton() {
 
 function IngredientsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -143,12 +143,12 @@ function IngredientsSkeleton() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="overflow-x-auto rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
         <table className="w-full text-sm">
-          <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+          <thead className="bg-[var(--bg-tertiary)] border-b border-[var(--border-color)]">
             <tr>
               {['#', '成分名称', '用量(g)', '分类', '来源', '药食同源'].map((_, i) => (
-                <th key={i} className="p-3">
+                <th key={i} className="p-[var(--space-apple-sm)]">
                   <Skeleton width={[30, 80, 60, 60, 60, 70][i]} height={13} animationType="pulse" />
                 </th>
               ))}
@@ -156,9 +156,9 @@ function IngredientsSkeleton() {
           </thead>
           <tbody>
             {Array.from({ length: 6 }).map((_, i) => (
-              <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
+              <tr key={i} className="border-b border-[var(--border-color)] last:border-0">
                 {Array.from({ length: 6 }).map((_, j) => (
-                  <td key={j} className="p-3">
+                  <td key={j} className="p-[var(--space-apple-sm)]">
                     <Skeleton
                       width={[25, 80 + (j * 10), 45, 55, 55, 65][j]}
                       height={14}
@@ -173,7 +173,7 @@ function IngredientsSkeleton() {
       </div>
 
       {/* Chart Placeholder */}
-      <div className="pt-4">
+      <div className="pt-[var(--space-apple-md)]">
         <Skeleton width="100%" height={250} radius={12} animationType="pulse" />
       </div>
     </div>
@@ -182,15 +182,15 @@ function IngredientsSkeleton() {
 
 function ProcessSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex items-center gap-2">
         <Skeleton width={24} height={24} radius={6} animationType="pulse" />
         <Skeleton width={100} height={20} animationType="pulse" />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-[var(--space-apple-md)]">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex gap-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div key={i} className="flex gap-4 p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
             <Skeleton width={40} height={40} radius={20} circular animationType="pulse" />
             <div className="flex-1 space-y-2">
               <Skeleton width={120} height={16} animationType="pulse" />
@@ -210,7 +210,7 @@ function ProcessSkeleton() {
 
 function VersionsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Skeleton width={24} height={24} radius={6} animationType="pulse" />
@@ -221,16 +221,16 @@ function VersionsSkeleton() {
 
       <div className="relative pl-8">
         {/* Timeline Line */}
-        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+        <div className="absolute left-[19px] top-[var(--space-apple-md)] bottom-4 w-0.5 bg-[var(--border-color)]" />
 
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="relative flex gap-4">
               {/* Version Node */}
-              <div className="absolute left-[-28px] top-0 w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800" />
+              <div className="absolute left-[-28px] top-0 w-10 h-10 rounded-[var(--radius-pill)] bg-[var(--bg-tertiary)]" />
 
               {/* Content */}
-              <div className="flex-1 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3 ml-2">
+              <div className="flex-1 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)] ml-2">
                 <div className="flex items-center justify-between">
                   <Skeleton width={100} height={16} animationType="pulse" />
                   <Skeleton width={110} height={13} animationType="pulse" />
@@ -251,7 +251,7 @@ function VersionsSkeleton() {
 
 function RecommendationsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Skeleton width={24} height={24} radius={6} animationType="pulse" />
@@ -264,7 +264,7 @@ function RecommendationsSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3 hover:border-primary-300 transition-colors"
+            className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)] hover:border-[var(--color-primary-border)] transition-colors"
           >
             <div className="flex items-start justify-between">
               <Skeleton width={140} height={18} animationType="pulse" />
@@ -276,7 +276,7 @@ function RecommendationsSkeleton() {
                 <Skeleton key={j} width={50 + (j * 10)} height={22} radius={11} animationType="pulse" />
               ))}
             </div>
-            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="pt-2 border-t border-[var(--border-color)]">
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5">关键成分:</p>
               <div className="flex flex-wrap gap-1">
                 {Array.from({ length: 4 }).map((_, k) => (

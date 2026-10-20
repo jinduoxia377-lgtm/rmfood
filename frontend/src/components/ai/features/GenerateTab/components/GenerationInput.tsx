@@ -52,7 +52,6 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
   onInputModeChange,
   selectedEffects,
   onToggleEffect,
-  onClearEffects,
   effectLabels,
   canSelectMore,
   selectionCount,
@@ -64,7 +63,6 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
   onSetSelectedEffects,
   paramPanelExpanded,
   onToggleParamPanel,
-  onFullReset,
   useLlm,
 }) => {
   const isEffectSelected = useCallback((effectId: string) => {

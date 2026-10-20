@@ -15,7 +15,6 @@ import {
   Search,
   X,
   Clock,
-  Star,
   ArrowRight,
   FileText,
   FlaskConical,
@@ -24,13 +23,12 @@ import {
   TrendingUp,
   Filter,
   SlidersHorizontal,
-  ChevronDown,
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api/client';
-import { Input, Button, Badge, Modal } from '@/components/ui';
+import { Badge, Modal } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 
 interface SearchResultItem {
@@ -81,7 +79,9 @@ export function GlobalSearch() {
   // 搜索逻辑
   useEffect(() => {
     if (!query || query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults({});
+       
       setSuggestions([]);
       return;
     }
@@ -120,8 +120,9 @@ export function GlobalSearch() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHistory(parsed.slice(0, 10));
-      } catch {}
+      } catch { /* 历史数据损坏时忽略 */ }
     }
   }, []);
 

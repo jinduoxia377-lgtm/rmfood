@@ -423,6 +423,7 @@ function downloadFile(content: string, filename: string, format: ExportFormat): 
  * @param format - 文件格式
  */
 function downloadBlob(blob: Blob, filename: string, _format: ExportFormat): void {
+  void _format;
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

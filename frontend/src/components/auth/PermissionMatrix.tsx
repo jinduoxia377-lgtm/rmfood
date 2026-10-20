@@ -15,30 +15,18 @@ import {
   Shield,
   Check,
   X,
-  Settings,
   UserCheck,
   UserX,
   Download,
-  Upload,
   RefreshCw,
-  AlertTriangle,
   Eye,
   EyeOff,
   Lock,
-  Unlock,
-  ChevronDown,
-  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button, Card, Badge, Modal, Toast } from '@/components/ui';
+import { Button, Badge } from '@/components/ui';
 
 // ── 类型定义 ──
-
-interface Permission {
-  resource: string;
-  action: string;
-  description?: string;
-}
 
 type RolePermissions = Record<string, Record<string, string[]>>;
 
@@ -160,7 +148,6 @@ export function PermissionMatrix({
   const [permissions, setPermissions] = useState<RolePermissions>(value);
   const [selectedRole, setSelectedRole] = useState<string | null>('ADMIN');
   const [showLegend, setShowLegend] = useState(true);
-  const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set(RESOURCES.map((r) => r.id)));
 
   // 切换权限
   const togglePermission = (role: string, resource: string, action: string) => {
@@ -206,19 +193,6 @@ export function PermissionMatrix({
 
     return { total, granted, coverage: Math.round((granted / Math.max(total, 1)) * 100) };
   }, [permissions]);
-
-  // 资源展开/收起
-  const toggleResource = (resourceId: string) => {
-    setExpandedResources((prev) => {
-      const next = new Set(prev);
-      if (next.has(resourceId)) {
-        next.delete(resourceId);
-      } else {
-        next.add(resourceId);
-      }
-      return next;
-    });
-  };
 
   return (
     <div

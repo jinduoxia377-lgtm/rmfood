@@ -3,6 +3,7 @@
  */
 import type { FC } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowRight, ClipboardList } from 'lucide-react'
 import { Badge, Card, CardHeader, CardTitle, CardContent, Skeleton } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export const TodosList: FC<Props> = ({ items, loading }) => {
+  const { t } = useTranslation()
   if (loading) {
     return (
       <Card className="overflow-hidden">
@@ -57,18 +59,18 @@ export const TodosList: FC<Props> = ({ items, loading }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ClipboardList size={18} className="text-warning-500" />
-            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>待办事项</CardTitle>
+            <CardTitle as="h2" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t('pages.dashboard.cards.todos')}</CardTitle>
           </div>
           {/* C-05：统一「查看全部」入口 */}
           <Link to="/formulas?status=pending_review" className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 font-semibold flex items-center gap-1 transition-colors min-h-[44px] px-2 -mx-2 -my-3.5">
-            查看全部 <ArrowRight size={14} />
+            {t('pages.dashboard.cards.viewAll')} <ArrowRight size={14} />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y divide-neutral-100 dark:divide-neutral-800/40">
           {items.length === 0 ? (
-            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">暂无待办事项</div>
+            <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">{t('pages.dashboard.cards.noTodos')}</div>
           ) : (
             items.slice(0, 6).map((todo) => (
               <Link

@@ -1,11 +1,11 @@
-import { memo } from 'react'
+﻿import { memo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Plug,
   ShieldCheck,
   Webhook,
   KeyRound,
   Puzzle,
-  Clock,
   Bell,
   MessageSquare,
   Layers,
@@ -78,35 +78,36 @@ const INTEGRATIONS: IntegrationCard[] = [
 ]
 
 const STATUS_BADGE: Record<IntegrationCard['status'], { label: string; className: string }> = {
-  'coming-soon': { label: '即将推出', className: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
-  available: { label: '可用', className: 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-600' },
-  beta: { label: 'Beta', className: 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' },
+  'coming-soon': { label: '即将推出', className: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]' },
+  available: { label: '可用', className: 'bg-[var(--color-success-container)] text-[var(--color-success-text)] dark:bg-[var(--color-success-container)]/25 dark:text-[var(--color-success-text)]' },
+  beta: { label: 'Beta', className: 'bg-[var(--color-accent-container)] text-[var(--color-accent-text)] dark:bg-[var(--color-accent-container)]/25 dark:text-[var(--color-accent-text)]' },
 }
 
 const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
   const categories = [...new Set(INTEGRATIONS.map((i) => i.category))]
+  const navigate = useNavigate()
 
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">集成配置</h2>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">集成配置</h2>
+        <p className="text-sm text-[var(--text-muted)] mt-0.5">
           连接第三方服务以扩展组织功能
         </p>
       </div>
 
       {/* Info Banner */}
-      <div className="rounded-xl bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-secondary-200 dark:border-secondary-800 p-5">
+      <div className="rounded-[var(--radius-Apple-md)] bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)] p-5">
         <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-secondary-100 dark:bg-secondary-300/30 flex items-center justify-center shrink-0">
-            <Plug className="w-5 h-5 text-secondary-600 dark:text-secondary-700" />
+          <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/30 flex items-center justify-center shrink-0">
+            <Plug className="w-5 h-5 text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
           </div>
           <div>
-            <h3 className="font-semibold text-secondary-800 dark:text-secondary-200 mb-1">集成中心</h3>
-            <p className="text-sm text-secondary-700/80 dark:text-secondary-700/80 leading-relaxed">
+            <h3 className="font-semibold text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] mb-1">集成中心</h3>
+            <p className="text-sm text-[var(--color-secondary-text)]/80 dark:text-[var(--color-secondary-text)]/80 leading-relaxed">
               通过集成外部服务，您可以将 RMFOOD 配方平台与现有工作流无缝连接。
-              目前部分集成正在开发中，敬请期待。
+              API 密钥管理等集成已可用，更多企业级集成（SSO / Webhook / 协作平台）即将推出，升级企业版可优先体验。
             </p>
           </div>
         </div>
@@ -115,7 +116,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
       {/* Integration Cards by Category */}
       {categories.map((category) => (
         <section key={category} aria-label={category}>
-          <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-sm)] flex items-center gap-2">
             <Bell className="w-4 h-4" />
             {category}
           </h3>
@@ -130,25 +131,26 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
                 return (
                   <div
                     key={integration.id}
+                    onClick={isDisabled ? () => navigate(`/organizations?org=${organizationId}`) : undefined}
                     className={cn(
-                      'group relative rounded-xl border p-5 transition-all',
+                      'group relative rounded-[var(--radius-Apple-md)] border p-5 transition-all',
                       isDisabled
-                        ? 'border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 opacity-80'
-                        : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-secondary-300 dark:hover:border-secondary-700 hover:shadow-md cursor-pointer',
+                        ? 'border-[var(--border-color)] bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)]/50 opacity-80 cursor-pointer hover:border-[var(--color-secondary-border)] dark:hover:border-[var(--color-secondary)] hover:shadow-md'
+                        : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--color-secondary-border)] dark:hover:border-[var(--color-secondary)] hover:shadow-md cursor-pointer',
                     )}
                   >
                     {/* Status Badge */}
-                    <span className={cn('absolute top-4 right-4 px-2 py-0.5 rounded-full text-xs font-medium', badge.className)}>
+                    <span className={cn('absolute top-[var(--space-apple-md)] right-4 px-2 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium', badge.className)}>
                       {badge.label}
                     </span>
 
                     {/* Icon */}
                     <div
                       className={cn(
-                        'w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-colors',
+                        'w-11 h-11 rounded-[var(--radius-Apple-md)] flex items-center justify-center mb-[var(--space-apple-md)] transition-colors',
                         isDisabled
-                          ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-400'
-                          : 'bg-secondary-50 dark:bg-secondary-300/25 text-secondary-500 group-hover:bg-secondary-100 dark:group-hover:bg-secondary-900/50',
+                          ? 'bg-[var(--bg-tertiary)] text-[var(--text-muted)]'
+                          : 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25 text-[var(--color-secondary-text)]0 group-hover:bg-[var(--color-secondary-container)] dark:group-hover:bg-[var(--color-secondary-container)]/50',
                       )}
                     >
                       <Icon className="w-5.5 h-5.5" />
@@ -157,32 +159,35 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
                     {/* Content */}
                     <h4 className={cn(
                       'font-semibold pr-16',
-                      isDisabled ? 'text-neutral-600 dark:text-neutral-400' : 'text-neutral-900 dark:text-white',
+                      isDisabled ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]',
                     )}>
                       {integration.title}
                     </h4>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1.5 leading-relaxed line-clamp-2">
+                    <p className="text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed line-clamp-2">
                       {integration.description}
                     </p>
 
                     {/* Action */}
                     {!isDisabled && (
-                      <button className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-secondary-600 dark:text-secondary-700 group-hover:text-secondary-700 dark:group-hover:text-secondary-300 transition-colors">
+                      <button
+                        onClick={() => navigate('/settings?tab=api')}
+                        className="mt-[var(--space-apple-md)] inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] group-hover:text-[var(--color-secondary-text)] dark:group-hover:text-[var(--color-secondary-text)] transition-colors"
+                      >
                         {integration.status === 'available' ? '配置' : '申请体验'}
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     )}
 
                     {isDisabled && (
-                      <div className="mt-4 flex items-center gap-1.5 text-sm text-neutral-400 dark:text-neutral-400">
-                        <Clock className="w-3.5 h-3.5" />
-                        开发中...
+                      <div className="mt-[var(--space-apple-md)] flex items-center gap-1.5 text-sm text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                        企业版可用 · 点击升级
                       </div>
                     )}
 
                     {/* Disabled Overlay */}
                     {isDisabled && (
-                      <div className="absolute inset-0 rounded-xl pointer-events-none" aria-hidden="true" />
+                      <div className="absolute inset-0 rounded-[var(--radius-Apple-md)] pointer-events-none" aria-hidden="true" />
                     )}
                   </div>
                 )
@@ -192,10 +197,10 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
       ))}
 
       {/* Footer CTA */}
-      <div className="text-center pt-4 pb-2">
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+      <div className="text-center pt-[var(--space-apple-md)] pb-2">
+        <p className="text-sm text-[var(--text-muted)]">
           需要特定的集成方案？{' '}
-          <a href="#" className="text-secondary-600 dark:text-secondary-700 font-medium hover:underline">
+          <a href="mailto:support@rmfood.cn" className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] font-medium hover:underline">
             联系我们
           </a>{' '}
           定制开发

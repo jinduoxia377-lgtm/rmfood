@@ -9,10 +9,10 @@
  * - 其他页面使用懒加载 + 空闲预加载
  * - 大体积模块（图表/导出）延迟加载
  */
-import { createBrowserRouter, RouterProvider, Navigate, type LoaderFunction } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/utils/queryClient';
-import { useEffect, lazy, Suspense, type ReactNode } from 'react';
+import { useEffect, Suspense, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
 import LandingPage from '@/pages/landing/LandingPage';
@@ -44,8 +44,6 @@ import DashboardPage from '@/pages/dashboard/DashboardPage';
 import RadixDemoPage from '@/pages/radix-demo/RadixDemoPage';
 
 
-import { logger } from '@/utils/safeLogger';
-
 // 🔒 P3-1: 公开信息页面（无需认证）
 const DocsPage = lazyWithPreload(() => import('@/pages/public/DocsPage'));
 const ApiDocsPage = lazyWithPreload(() => import('@/pages/public/ApiDocsPage'));
@@ -54,6 +52,7 @@ const AboutPage = lazyWithPreload(() => import('@/pages/public/AboutPage'));
 const CareersPage = lazyWithPreload(() => import('@/pages/public/CareersPage'));
 const PrivacyPage = lazyWithPreload(() => import('@/pages/public/PrivacyPage'));
 const TermsPage = lazyWithPreload(() => import('@/pages/public/TermsPage'));
+const WhitelistApplyPage = lazyWithPreload(() => import('@/pages/whitelist/WhitelistApplyPage'));
 
 // 页面懒加载
 const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'));
@@ -221,6 +220,17 @@ const LoadingComponent = () => (
 );
 
 /**
+ * 白名单申请页预加载：登录页挂载时提前加载该页面资源，
+ * 用户点击「申请准入」跳转时无需等待网络加载。
+ */
+function WhitelistPreload() {
+  useEffect(() => {
+    WhitelistApplyPage.preload();
+  }, []);
+  return null;
+}
+
+/**
  * 根路径组件 — 未登录展示着陆页，已登录跳转仪表盘
  */
 function RootRoute() {
@@ -239,6 +249,7 @@ const router = createBrowserRouter([
     path: '/login',
     element: (
       <GuestGuard>
+        <WhitelistPreload />
         <LoginPage />
       </GuestGuard>
     ),
@@ -249,6 +260,17 @@ const router = createBrowserRouter([
     element: (
       <GuestGuard>
         <ForgotPasswordPage />
+      </GuestGuard>
+    ),
+  },
+  // 公开路由 — 白名单申请流程页（含倒计时，未登录访客专用）
+  {
+    path: '/whitelist-apply',
+    element: (
+      <GuestGuard>
+        <Suspense fallback={<LoadingComponent />}>
+          <WhitelistApplyPage />
+        </Suspense>
       </GuestGuard>
     ),
   },
@@ -732,18 +754,6 @@ export default function App() {
         });
     }
   }, []);
-
-  // 🔒 P2-4: 错误上报函数（生产环境可接入 Sentry）
-  const handleErrorReport = (error: Error, errorInfo: React.ErrorInfo) => {
-    // 开发环境输出到控制桌
-    logger.error('[App] Uncaught error: %s | %s', String(error), String(errorInfo));
-
-    // 生产环境上报（扩展点）
-    if (import.meta.env.PROD) {
-      // 例: fetch('/api/errors', { method: 'POST', body: JSON.stringify({...}) })
-      // 或: window.Sentry?.captureException(error, { contexts: { react: errorInfo } })
-    }
-  };
 
   return (
     <ErrorBoundary

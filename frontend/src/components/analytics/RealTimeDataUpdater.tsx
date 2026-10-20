@@ -87,6 +87,7 @@ function useWebSocket(config: RealtimeConfig) {
         setReconnectAttempt(0)
 
         // 启动心跳检测
+        // eslint-disable-next-line react-hooks/immutability
         startHeartbeat()
 
         config.onReconnect?.(reconnectAttempt)
@@ -98,6 +99,7 @@ function useWebSocket(config: RealtimeConfig) {
           const startTime = performance.now()
 
           // 处理消息
+          // eslint-disable-next-line react-hooks/immutability
           handleMessage(message)
 
           // 更新状态
@@ -112,10 +114,12 @@ function useWebSocket(config: RealtimeConfig) {
           config.onMessage?.(message)
 
           // 使相关查询失效以触发重新获取
+          // eslint-disable-next-line react-hooks/immutability
           invalidateRelatedQueries(message.type)
 
         } catch (error) {
           logger.error('[RealTimeDataUpdater] Failed to parse message:', error)
+          // eslint-disable-next-line react-hooks/immutability
           handleConnectionError(error as Error)
         }
       }
@@ -128,7 +132,9 @@ function useWebSocket(config: RealtimeConfig) {
       wsRef.current.onclose = () => {
         logger.info('[RealTimeDataUpdater] WebSocket disconnected')
         setStatus(prev => ({ ...prev, connected: false }))
+        // eslint-disable-next-line react-hooks/immutability
         stopHeartbeat()
+        // eslint-disable-next-line react-hooks/immutability
         scheduleReconnect()
       }
 
@@ -212,6 +218,7 @@ function useWebSocket(config: RealtimeConfig) {
   }, [config.heartbeatInterval])
 
   // 停止心跳
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const stopHeartbeat = useCallback(() => {
     if (heartbeatTimerRef.current) {
       clearInterval(heartbeatTimerRef.current)
@@ -267,6 +274,7 @@ function useWebSocket(config: RealtimeConfig) {
 
   // 初始化和清理
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     connect()
 
     return () => {
@@ -373,7 +381,7 @@ export const RealTimeDataUpdater: React.FC<{
           数据流状态
         </h4>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             <div>

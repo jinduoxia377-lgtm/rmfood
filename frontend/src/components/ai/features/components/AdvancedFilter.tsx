@@ -17,7 +17,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import type { AIRecognizedFormula, FormulaFilters } from '@/types/ai.types';
 import { Button } from '@/components/ui';
 
-import { Filter, RotateCcw, Check, Calendar, Tag, Star, TrendingUp, Hash } from 'lucide-react';
+import { Filter, RotateCcw, Calendar, Tag, Star, TrendingUp, Hash } from 'lucide-react';
 
 interface AdvancedFilterProps {
   /** 当前筛选条件 */

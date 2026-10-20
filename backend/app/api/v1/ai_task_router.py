@@ -25,7 +25,7 @@ from ...services.ai.shared.inference_queue import (
 
 logger = logging.getLogger("rmfood.api.ai.tasks")
 
-router = APIRouter(prefix="/tasks", tags=["AI推理任务队列"])
+router = APIRouter(prefix="/ai/tasks", tags=["AI推理任务队列"])
 
 
 # ── 请求/响应模型 ─────────────────────────────────────────────

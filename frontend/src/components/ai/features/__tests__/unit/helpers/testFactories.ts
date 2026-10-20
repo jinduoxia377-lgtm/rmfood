@@ -1,4 +1,3 @@
-// @ts-nocheck
 // 测试辅助工厂函数
 
 export const TEST_CONSTANTS = {

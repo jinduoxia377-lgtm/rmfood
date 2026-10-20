@@ -31,7 +31,6 @@ export function ChatEnhancedDemo({
 
   // ===== 1. 性能监控 =====
   const {
-    metrics,
     currentFPS,
     memoryUsageMB,
     isMonitoring,
@@ -54,7 +53,6 @@ export function ChatEnhancedDemo({
 
   // ===== 2. 离线管理 =====
   const {
-    status: offlineStatus,
     isOnline,
     queueSize,
     enqueueMessage,
@@ -140,6 +138,7 @@ export function ChatEnhancedDemo({
         // 模拟网络延迟
         await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
 
+        // eslint-disable-next-line react-hooks/immutability
         response = generateMockResponse(inputValue)
 
         // 写入缓存（TTL: 5 分钟）
@@ -244,7 +243,7 @@ export function ChatEnhancedDemo({
       </p>
 
       {/* 状态指示器栏 */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {/* 性能状态 */}
         <div className={`p-4 rounded-lg border ${
           memoryStatus === 'critical' ? 'bg-error-50 border-error-200' :
@@ -412,7 +411,7 @@ export function ChatEnhancedDemo({
               {getReport()}
             </pre>
 
-            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <strong>内存状态:</strong> {memoryStatus.toUpperCase()}
               </div>

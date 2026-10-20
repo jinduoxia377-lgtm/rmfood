@@ -1,4 +1,4 @@
-"""Models and tools module - /taste-predict, /stability, /peptide-score, /models/status, /models/config, /stats/summary"""
+"""Models and tools module - /taste-predict, /stability, /peptide-score, /models/status, /models/config, /models/list, /stats/summary"""
 import logging
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -33,6 +33,80 @@ class LLMTestRequest(BaseModel):
     base_url: str = Field("", description="API 基础 URL（留空使用提供商默认）")
     model: str = Field("", description="模型名称（留空使用提供商默认）")
     timeout: float = Field(10.0, ge=3, le=30, description="验活超时（秒），防止误选超长值")
+
+
+class LLMModelsListRequest(BaseModel):
+    """代理获取 LLM 可用模型列表请求（密钥仅本次请求使用，不落库）"""
+    provider: str = Field("openai", description="提供商: deepseek/openai/zhipu/qwen/anthropic/agnes")
+    api_key: str = Field("", description="待代理使用的 API Key（不出后端，不落库）")
+    base_url: str = Field("", description="API 基础 URL（留空使用提供商默认）")
+    timeout_ms: int = Field(8000, ge=2000, le=20000, description="请求超时（毫秒）")
+
+
+@sub_router.post("/models/list", summary="代理获取 LLM 可用模型列表（密钥不出后端）")
+async def list_llm_models(
+    req: LLMModelsListRequest,
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    用请求中的临时密钥与 base_url 代理调用 {base_url}/models，
+    返回该网关当前可用的模型 ID 列表。
+
+    - 密钥只存在于本次请求，不写库、不更新运行时 llm_service
+    - 支持 OpenAI 兼容网关（agnes-ai 等），避免浏览器直连第三方
+      导致 CORS 拦截与 API 密钥暴露
+    - 前端配置管理的「获取模型」按钮依赖此端点；此前该端点不存在，
+      前端调用 /models/models/list 得到 404 后降级直连失败，表现为「获取不到模型」
+    """
+    import httpx
+    from ...services.llm_service import PROVIDER_DEFAULTS
+
+    provider = (req.provider or "").strip() or "openai"
+    api_key = (req.api_key or "").strip()
+    base_url = (req.base_url or "").strip()
+    if not base_url:
+        base_url = PROVIDER_DEFAULTS.get(provider, {}).get("base_url") or ""
+
+    if not base_url:
+        raise HTTPException(status_code=400, detail="base_url 为空且无提供商默认值，请填写 API 地址")
+
+    timeout_s = max(min(req.timeout_ms / 1000.0, 20.0), 2.0)
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    url = base_url.rstrip("/") + "/models"
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout_s) as client:
+            resp = await client.get(url, headers=headers)
+    except httpx.HTTPError as e:
+        logger.warning(f"[models/list] 请求 {url} 失败: {e}")
+        raise HTTPException(status_code=502, detail=f"请求模型网关失败: {str(e)[:200]}")
+    except Exception as e:
+        logger.warning(f"[models/list] 未知异常: {e}")
+        raise HTTPException(status_code=502, detail=f"请求模型网关失败: {str(e)[:200]}")
+
+    if resp.status_code != 200:
+        logger.warning(f"[models/list] 网关返回 HTTP {resp.status_code}: {resp.text[:200]}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"模型网关返回 HTTP {resp.status_code}: {resp.text[:200]}",
+        )
+
+    try:
+        data = resp.json()
+    except Exception:
+        raise HTTPException(status_code=502, detail="模型网关返回了非 JSON 响应")
+
+    models_data = data.get("data") if isinstance(data, dict) else None
+    model_ids: list[str] = []
+    if isinstance(models_data, list):
+        model_ids = [
+            str(m.get("id")).strip()
+            for m in models_data
+            if isinstance(m, dict) and m.get("id")
+        ]
+
+    logger.info(f"[models/list] provider={provider} 获取到 {len(model_ids)} 个模型")
+    return {"models": model_ids, "provider": provider, "base_url": base_url, "count": len(model_ids)}
 
 
 @sub_router.post("/models/config/test", summary="LLM 密钥验活（不写库）")
@@ -135,7 +209,10 @@ async def taste_predict(
     预测配方口感特征：甜度，苦度、涩度，综合评分、风味描述。
     基于药材已知风味属性进行规则推理。
     """
-    from ...services.ai_models.taste_predictor import TastePredictorService
+    # 注意：别名 TastePredictorService 只定义在 ai_models/__init__.py（包级），
+    # 子模块里只有 MockTastePredictorService。从子模块直接 from-import 会抛
+    # ImportError，导致本端点启动后首次调用即 500，因此必须走包 __init__。
+    from ...services.ai_models import TastePredictorService
     service = TastePredictorService()
     return await service.predict(req.ingredients)
 
@@ -150,7 +227,9 @@ async def stability_predict(
     """
     预测配方稳定性：综合评分、预估保质期、风险因素、2月降解曲线。
     """
-    from ...services.ai_models.stability_model import StabilityModelService
+    # 同 taste_predict：StabilityModelService 别名只在 ai_models/__init__.py 定义，
+    # 走子模块 import 会 ImportError → 500。
+    from ...services.ai_models import StabilityModelService
     service = StabilityModelService()
     return await service.predict(req.ingredients, req.storage_temp)
 
@@ -234,11 +313,11 @@ async def model_status(
         return {
             "llm": llm_status_detail,
             "formula_gpt": {"status": "active", "provider": "local", "model": "rule_based", "mode": "rule_based", "note": "规则模拟，可升级为 LLM"},
-            "synergy_net": {"status": "active", "provider": "local", "model": "rule_based", "note": "基于已知配伍规则"},
+            "synergy_net": {"status": "active", "provider": "local", "model": "tcm_db", "note": "TCM 数据库协同分析（共享化合物/靶点/功效）"},
             "safety_checker": {"status": "active", "provider": "local", "model": "rule_engine", "mode": "rule_engine", "note": "完整规则引擎实现"},
-            "peptide_scorer": {"status": "active", "provider": "local", "model": "heuristic", "mode": "heuristic", "note": "启发式评分，待接入 ESM-2"},
-            "taste_predictor": {"status": "active", "provider": "local", "model": "rule_based", "mode": "rule_based", "note": "基于药材风味规则"},
-            "stability_model": {"status": "active", "provider": "local", "model": "simulation", "mode": "simulation", "note": "模拟预测，待接入 LSTM"},
+            "peptide_scorer": {"status": "active", "provider": "local", "model": "ml", "mode": "ml", "note": "真实 ML 推理（NumpyMLP，balanced_accuracy≈0.77）"},
+            "taste_predictor": {"status": "active", "provider": "local", "model": "tcm_flavor", "mode": "tcm_flavor", "note": "TCM 五味数据驱动口感预测"},
+            "stability_model": {"status": "active", "provider": "local", "model": "arrhenius", "mode": "arrhenius", "note": "Arrhenius 稳定性模型（真实物化计算，含 40+ 成分参数）"},
         }
     except Exception as e:
         logger.error(f"获取模型状态失败: {e}", exc_info=True)
@@ -253,11 +332,11 @@ async def model_status(
                 "suggestion": "请检查后端服务日志",
             },
             "formula_gpt": {"status": "active", "provider": "local", "model": "rule_based", "mode": "rule_based", "note": "规则模拟，可升级为 LLM"},
-            "synergy_net": {"status": "active", "provider": "local", "model": "rule_based", "mode": "rule_based", "note": "基于已知配伍规则"},
+            "synergy_net": {"status": "active", "provider": "local", "model": "tcm_db", "mode": "tcm_db", "note": "TCM 数据库协同分析（共享化合物/靶点/功效）"},
             "safety_checker": {"status": "active", "provider": "local", "model": "rule_engine", "mode": "rule_engine", "note": "完整规则引擎实现"},
-            "peptide_scorer": {"status": "active", "provider": "local", "model": "heuristic", "mode": "heuristic", "note": "启发式评分，待接入 ESM-2"},
-            "taste_predictor": {"status": "active", "provider": "local", "model": "rule_based", "mode": "rule_based", "note": "基于药材风味规则"},
-            "stability_model": {"status": "active", "provider": "local", "model": "simulation", "mode": "simulation", "note": "模拟预测，待接入 LSTM"},
+            "peptide_scorer": {"status": "active", "provider": "local", "model": "ml", "mode": "ml", "note": "真实 ML 推理（NumpyMLP，balanced_accuracy≈0.77）"},
+            "taste_predictor": {"status": "active", "provider": "local", "model": "tcm_flavor", "mode": "tcm_flavor", "note": "TCM 五味数据驱动口感预测"},
+            "stability_model": {"status": "active", "provider": "local", "model": "arrhenius", "mode": "arrhenius", "note": "Arrhenius 稳定性模型（真实物化计算，含 40+ 成分参数）"},
         }
 
 
@@ -346,21 +425,42 @@ class ModelHealthItem(BaseModel):
 @sub_router.get("/models/health", summary="模型健康指标列表")
 async def get_models_health() -> list[ModelHealthItem]:
     """
-    返回各 AI 模型的健康指标列表，供配置管理面板展示。
-    数据基于 observability 指标计算。
+    返回 LLM 调用健康指标，供配置管理面板展示。
+
+    数据源是 ai_observability 的聚合 "llm" 桶 —— 它不区分模型名，
+    也没有进程级 uptime 采样。此前这里用 gpt-4o / glm-4 的算术偏移量
+    （latency-30 / +80、success+0.5/-3.0）伪造了两个模型的健康数据，
+    面板因此会显示从未被调用过、甚至从未配置过的模型"健康度"。
+
+    现在只返回真实有采样的那一条；没有采样时返回空列表。
     """
     metrics = ai_observability.get_metrics()
     llm_m = metrics.get("llm", {})
-    latency = int(llm_m.get("avg_latency_ms", 200)) if llm_m.get("calls", 0) > 0 else 150
-    total_calls = llm_m.get("calls", 0)
-    errors = llm_m.get("errors", 0)
-    success_rate = round((total_calls - errors) / max(1, total_calls) * 100, 1) if total_calls > 0 else 99.0
-    uptime = 99.2 if success_rate >= 95.0 else 97.0
+    total_calls = int(llm_m.get("calls", 0))
+    errors = int(llm_m.get("errors", 0))
 
+    if total_calls <= 0:
+        return []
+
+    # 观测桶不分模型，标签用当前实际配置的模型名，避免张冠李戴
+    model_name = "llm"
+    try:
+        from ...services.llm_service import llm_service
+        model_name = str(getattr(getattr(llm_service, "config", None), "model", None) or "llm")
+    except Exception:
+        pass
+
+    latency = int(llm_m.get("avg_latency_ms", 0) or 0)
+    success_rate = round((total_calls - errors) / max(1, total_calls) * 100, 1)
+    # 只有调用级统计，没有进程级可用性采样；用成功率代表，不再编造 99.2/97.0
     return [
-        ModelHealthItem(model="deepseek-chat", latency_ms=latency, success_rate=success_rate, error_count=errors, uptime_percentage=uptime),
-        ModelHealthItem(model="gpt-4o",     latency_ms=max(100, latency - 30), success_rate=min(99.9, success_rate + 0.5), error_count=max(0, errors - 4), uptime_percentage=min(99.9, uptime + 0.6)),
-        ModelHealthItem(model="glm-4",      latency_ms=latency + 80, success_rate=max(90.0, success_rate - 3.0), error_count=errors + 30, uptime_percentage=max(95.0, uptime - 2.0)),
+        ModelHealthItem(
+            model=model_name,
+            latency_ms=latency,
+            success_rate=success_rate,
+            error_count=errors,
+            uptime_percentage=success_rate,
+        ),
     ]
 
 
@@ -400,6 +500,23 @@ async def get_ai_stats_summary(
     返回 AI 页面顶部统计卡片的聚合数据。
     每个计数基于当前用户的活跃记录，无数据时返回 0，不抛异常。
     """
+    # 匿名请求时 get_current_user 返回 None（见 deps.py），此时无法做
+    # "按用户聚合"。必须在使用 current_user.id 之前兜底，否则直接 AttributeError
+    # → 整个端点 500，而该接口前端是 /ai 页首屏必读。
+    if current_user is None:
+        return AISummaryStats(
+            chat_count=0,
+            generate_count=0,
+            safety_checks=0,
+            synergy_count=0,
+            taste_count=0,
+            stability_count=0,
+            peptide_analyze_count=0,
+            peptide_design_count=0,
+            knowledge_doc_count=0,
+            model_status={},
+        )
+
     uid = current_user.id
     result: dict[str, Any] = {
         "chat_count": 0, "generate_count": 0, "safety_checks": 0,
@@ -434,15 +551,20 @@ async def get_ai_stats_summary(
         except Exception:
             pass
 
-        # 5/6. 口感/稳定性预测（共享 effect_predictions 表）
-        try:
-            from ...models.formula_deep_integration import EffectPredictionRecord
-            formula_ids_subq = select(Formula.id).where(Formula.creator_id == uid)
-            result["taste_count"] = await _safe_count(db,
-                select(func.count(EffectPredictionRecord.id)).where(EffectPredictionRecord.formula_id.in_(formula_ids_subq)))
-            result["stability_count"] = result["taste_count"]
-        except Exception:
-            pass
+        # 5/6. 口感/稳定性预测次数
+        #
+        # 这里必须保持为 0：/ai/taste-predict 与 /ai/stability 两个端点都是
+        # 纯计算、不落库（见 models_and_tools.py 的 taste_predict / stability_predict），
+        # 数据库里没有任何持久化的口感或稳定性记录。
+        #
+        # 原先的实现把 EffectPredictionRecord（PopPK/PD 药代动力学表，
+        # 见 models/formula_deep_integration.py:189，既无 user_id 也无预测类型字段）
+        # 当作"口感预测数"，再直接复制给 stability_count —— 双重失真：
+        #   (a) 统计的是毫不相关的 PK 模拟记录；
+        #   (b) 稳定性数字是口感数字的复制品，纯编造。
+        # 宁可显示 0，也不给出没有数据来源的数字。
+        result["taste_count"] = 0
+        result["stability_count"] = 0
 
         # 7. 肽序列分析数
         try:

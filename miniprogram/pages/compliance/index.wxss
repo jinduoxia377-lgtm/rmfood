@@ -1,7 +1,7 @@
 /**
- * 闂備礁鎲￠懝楣冩偋閹板府缍栧鑸靛姇閸愨偓闂佹悶鍎滈崘鈺冨讲 - 闂備礁鎼粔鎾床閼碱剚顫? */
+ * 食品安全国家标准合规核查页面样式 - 基于 Apple HIG */
 
-/* 濠碉紕鍋戦崐妤呭极鐠囧樊鐒介柟娈垮枓閸嬫捇宕烽鐔锋畬濠?*/
+/* 页面容器 */
 .page-container {
   min-height: 100vh;
   background: var(--bg-primary, var(--color-gray-100));
@@ -11,7 +11,7 @@
   padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
  }
 
-/* 濠碉紕鍋戦崐鏇㈡偉婵傜纾块悗鐢电《閸嬫挻鎷呴崘顭戞闂?*/
+/* 头部 */
 .header {
   background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
   padding-bottom: 24rpx;
@@ -54,7 +54,7 @@
 
 .header-title .title-main {
   color: var(--color-text-inverse);
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
   font-weight: 600;
 }
 
@@ -64,10 +64,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
 }
 
-/* Tab 闂佽绨肩徊缁樼珶閸儱鏄?*/
+/* Tab 切换 */
 .tab-container {
   background: var(--color-text-inverse);
   border-bottom: 1rpx solid var(--border-color, var(--color-border));
@@ -100,12 +100,12 @@
 }
 
 .tab-icon {
-  font-size: 36rpx;
+  font-size: var(--font-size-title-2);
   margin-bottom: 8rpx;
 }
 
 .tab-name {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -114,7 +114,7 @@
   font-weight: 600;
 }
 
-/* 闂備礁鎲￠崝鏇㈠箠鎼搭煈鏁婇柟鐗堟緲缁€?*/
+/* 内容滚动区 */
 .content-scroll {
   flex: 1;
   height: calc(100vh - 280rpx);
@@ -126,7 +126,7 @@
   padding: 24rpx 32rpx;
 }
 
-/* 闂備礁鎲￠〃鎰閺囩喐娅犻柡宥庡幗閻掔粯鎱ㄥΟ鍧楀摵闁?*/
+/* 卡片容器 */
 .card {
   background: var(--color-text-inverse);
   border-radius: 16rpx;
@@ -143,19 +143,19 @@
 }
 
 .section-title {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
 }
 
 .add-btn {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--primary, var(--color-brand-500));
   font-weight: 500;
 }
 
 .subsection-title {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
   margin-bottom: 16rpx;
@@ -163,7 +163,7 @@
   border-bottom: 1rpx solid var(--border-color, var(--color-border));
 }
 
-/* 缂傚倷鐒︾粙鎺楁儎椤栫偛鐒垫い鎺嗗亾妞わ缚鍗抽幃?*/
+/* 筛选栏 */
 .filter-bar {
   display: flex;
   gap: 16rpx;
@@ -181,12 +181,12 @@
 }
 
 .filter-icon {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }
 
 .filter-input {
   flex: 1;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   background: transparent;
 }
 
@@ -197,15 +197,15 @@
   padding: 16rpx 20rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--text-secondary, #6B7280);
 }
 
 .select-arrow {
-  font-size: 20rpx;
+  font-size: var(--font-size-fine-print);
 }
 
-/* 闂備礁婀遍崕銈囨暜閹烘棁濮虫い鎾卞灩閸愨偓?*/
+/* 排序栏 */
 .sort-bar {
   display: flex;
   gap: 16rpx;
@@ -216,7 +216,7 @@
   padding: 10rpx 24rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 20rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -226,7 +226,7 @@
   font-weight: 600;
 }
 
-/* 闂備焦鎮堕崕鏉懳涢崟顖ｆ晩鐎广儱顦崘鈧梺鎼炲劀閸愨晝褰茬紓鍌氬€烽懗鍫曞窗閺囥埄鏁?*/
+/* 标准统计 */
 .std-stats .stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -240,7 +240,7 @@
 
 .std-stats .stat-num {
   display: block;
-  font-size: 40rpx;
+  font-size: var(--font-size-title-1);
   font-weight: 700;
   color: var(--primary, var(--color-brand-500));
   line-height: 1;
@@ -248,12 +248,12 @@
 
 .std-stats .stat-label {
   display: block;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
   margin-top: 8rpx;
 }
 
-/* 闂備礁鎼粔鏉懨洪妶澶婇棷妞ゆ牜鍋涚粈鍡樹繆閵堝懎顏ラ柍?*/
+/* 标准列表 */
 .standards-list {
   display: flex;
   flex-direction: column;
@@ -275,7 +275,7 @@
 }
 
 .std-code {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
   color: var(--primary, var(--color-brand-500));
   font-family: monospace;
@@ -284,7 +284,7 @@
 .std-priority {
   padding: 4rpx 16rpx;
   border-radius: 12rpx;
-  font-size: 20rpx;
+  font-size: var(--font-size-fine-print);
   font-weight: 600;
 }
 
@@ -304,7 +304,7 @@
 }
 
 .std-title {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
   margin-bottom: 12rpx;
@@ -314,11 +314,11 @@
 .std-meta {
   display: flex;
   gap: 24rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 婵犵數鍎戠紞鈧い鏇嗗嫭鍙忛柣鎰惈缁€鍫ユ煕鐏炴崘澹橀柣蹇旂懇閹?*/
+/* 添加剂列表 */
 .additive-list {
   display: flex;
   flex-direction: column;
@@ -340,7 +340,7 @@
 }
 
 .additive-name {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
   flex: 1;
@@ -350,7 +350,7 @@
   padding: 6rpx 16rpx;
   background: rgba(59, 130, 246, 0.1);
   border-radius: 20rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-info);
   white-space: nowrap;
   margin-left: 16rpx;
@@ -360,7 +360,7 @@
   display: flex;
   gap: 24rpx;
   margin-bottom: 12rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -375,12 +375,12 @@
 }
 
 .usage-label {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
 }
 
 .usage-value {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
   color: var(--color-info);
 }
@@ -395,7 +395,7 @@
   padding: 4rpx 12rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 8rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -404,7 +404,7 @@
   color: var(--color-accent-500);
 }
 
-/* 闂備浇鍋愰悺鏃堝垂閸泙澶愬Χ婢跺﹨袝闁诲繒鍋涙晶浠嬫偉闁秵鐓曢柟鐑樻惄濞堟瑩鏌?*/
+/* 药食同源列表 */
 .homology-list {
   display: flex;
   flex-direction: column;
@@ -429,11 +429,11 @@
 }
 
 .homology-icon {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }
 
 .homology-name {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--text-primary, var(--color-text-primary));
   font-weight: 500;
 }
@@ -445,16 +445,16 @@
 }
 
 .homology-dosage {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
 .homology-arrow {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 缂傚倷绀侀崐椋庣矆娴ｇ儤宕插鑸靛姇缁€鍡樹繆閵堝懎顏ラ柍?*/
+/* 禁用列表 */
 .prohibited-list {
   display: flex;
   flex-direction: column;
@@ -480,13 +480,13 @@
   padding: 6rpx 16rpx;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 20rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-danger);
   font-weight: 500;
 }
 
 .prohibited-rule {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -510,7 +510,7 @@
 }
 
 .material-name {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-danger);
 }
@@ -519,24 +519,24 @@
   padding: 4rpx 12rpx;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 8rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-danger);
 }
 
 .material-source {
   display: block;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
   margin-bottom: 8rpx;
 }
 
 .material-reason {
   display: block;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
-/* 闂備礁鎲￠懝楣冩偋閹板府缍栧璺好″☉銏犵劦妞ゆ帒瀚拑?*/
+/* 人群选择器 */
 .population-selector {
   display: flex;
   gap: 16rpx;
@@ -549,7 +549,7 @@
   padding: 20rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -575,7 +575,7 @@
   padding: 16rpx 20rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
 }
 
 .ingredient-dosage {
@@ -583,7 +583,7 @@
   padding: 16rpx 20rpx;
   background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   text-align: right;
 }
 
@@ -596,7 +596,7 @@
   background: rgba(239, 68, 68, 0.1);
   border-radius: 50%;
   color: var(--color-danger);
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
 }
 
 .check-btn {
@@ -605,7 +605,7 @@
   background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
   color: var(--color-text-inverse);
   border-radius: 16rpx;
-  font-size: 30rpx;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   border: none;
   margin-bottom: 24rpx;
@@ -615,7 +615,7 @@
   border: none;
 }
 
-/* 婵犵妲呴崑鈧柛瀣崌閺岋紕浠︾拠鎻掑Б缂備緡鍠撻崝鎴濐嚕?*/
+/* 检查结果 */
 .check-result {
   margin-bottom: 24rpx;
 }
@@ -636,20 +636,20 @@
 }
 
 .score-value {
-  font-size: 64rpx;
+  font-size: var(--font-size-stat);
   font-weight: 700;
   line-height: 1;
 }
 
 .score-label {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
 }
 
 .result-status {
   padding: 10rpx 24rpx;
   border-radius: 20rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
 }
 
@@ -668,7 +668,7 @@
   color: var(--color-danger);
 }
 
-/* 闂佸搫顦弲婊呮崲閸℃冻缍栧璺侯儍娴?*/
+/* 违规项 */
 .violations-section {
   margin-bottom: 20rpx;
 }
@@ -689,7 +689,7 @@
 }
 
 .violation-ingredient {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
 }
@@ -697,7 +697,7 @@
 .violation-type {
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
 }
 
 .violation-type.type-exceeds_limit { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
@@ -709,7 +709,7 @@
 .violation-type.type-prohibited_tcm { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
 
 .violation-message {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
   display: block;
   margin-bottom: 8rpx;
@@ -718,13 +718,13 @@
 .violation-dosage {
   display: flex;
   gap: 24rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
 }
 
 .dosage-label { color: var(--text-muted, #9CA3AF); }
 .dosage-actual { color: var(--color-danger); font-weight: 600; }
 
-/* 闂佽崵濮崑鎾绘煥閺囨浜鹃梺纭咁嚋缁绘繂鐣烽鍡曟勃闁伙絽鐬兼径鍕煟?*/
+/* 警示与建议 */
 .warnings-section, .suggestions-section {
   margin-bottom: 20rpx;
 }
@@ -734,7 +734,7 @@
   background: rgba(245, 158, 11, 0.05);
   border-radius: 8rpx;
   margin-bottom: 8rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
 }
 
@@ -742,7 +742,7 @@
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* 闂備胶鎳撻悘婵堢矓瀹曞洨绀婇柡鍐ㄧ墕缁犳澘顭块懜闈涘閻?*/
+/* 结果操作 */
 .result-actions {
   display: flex;
   gap: 16rpx;
@@ -755,7 +755,7 @@
   flex: 1;
   padding: 20rpx 0;
   border-radius: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   border: none;
 }
 
@@ -769,12 +769,12 @@
   color: var(--primary, var(--color-brand-500));
 }
 
-/* 闂備礁鎲″缁樻叏閹灐褰掑炊椤掆偓濡炵晫鈧厜鍋撻柍褜鍓熼崺鐐哄冀椤撶喎浜归梺鐓庢憸椤ｄ粙宕?*/
+/* 加载状态 */
 .loading-state {
   text-align: center;
   padding: 60rpx 0;
   color: var(--text-muted, #9CA3AF);
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
 }
 
 /* 闁诲孩顔栭崰鏍э耿闁秵鍋?*/
@@ -811,7 +811,7 @@
 }
 
 .modal-title {
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 600;
   flex: 1;
   margin-right: 16rpx;
@@ -829,7 +829,7 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   color: var(--color-text-inverse);
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
 }
 
 .modal-body {
@@ -838,7 +838,7 @@
   padding: 24rpx;
 }
 
-/* 闂佽崵濮村ù鍕⒔閸曨垰纾块煫鍥ㄧ☉缁€鍐煕濞戝崬寮鹃柛?*/
+/* 详情内容 */
 .detail-content {
   display: flex;
   flex-direction: column;
@@ -861,12 +861,12 @@
 }
 
 .detail-label {
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-muted, #9CA3AF);
 }
 
 .detail-value {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--text-primary, var(--color-text-primary));
   font-weight: 500;
 }
@@ -881,7 +881,7 @@
 }
 
 .detail-section-title {
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-muted, #9CA3AF);
   text-transform: uppercase;
@@ -889,7 +889,7 @@
 }
 
 .detail-section-content {
-  font-size: 26rpx;
+  font-size: var(--font-size-callout);
   color: var(--text-primary, var(--color-text-primary));
   line-height: 1.6;
   padding: 16rpx;
@@ -902,7 +902,7 @@
 }
 
 .detail-link {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--primary, var(--color-brand-500));
 }
 
@@ -915,24 +915,24 @@
 
 .hazard-title {
   display: block;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--color-danger);
   margin-bottom: 8rpx;
 }
 
 .hazard-content {
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #6B7280);
   line-height: 1.6;
 }
 
-/* 闁诲骸鐏氭竟鍡涘疾椤愶附鍋?*/
+/* 徽标 */
 .badge {
   display: inline-flex;
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
 }
 
 .badge.success { background: rgba(34, 197, 94, 0.1); color: var(--color-success); }
@@ -941,7 +941,7 @@
 .badge.purple { background: rgba(139, 92, 246, 0.1); color: var(--color-accent-500); }
 .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
 
-/* 闂備礁鎼粔鏉懨洪妸鈺婃晢闁绘垼妫勭粈鍡樹繆閵堝懎顏ラ柍?*/
+/* 标签列表 */
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -951,13 +951,13 @@
 .tag {
   padding: 6rpx 16rpx;
   border-radius: 20rpx;
-  font-size: 22rpx;
+  font-size: var(--font-size-caption);
 }
 
 .tag.info { background: rgba(59, 130, 246, 0.1); color: var(--color-info); }
 .tag.purple { background: rgba(139, 92, 246, 0.1); color: var(--color-accent-500); }
 
-/* 闂佸湱鍘ч悺銊ッ洪悢鐓庣？闁圭虎鍠楅埛鎺旂棯閹屽剳闁?*/
+/* 底部间距 */
 .bottom-spacing {
   height: 40rpx;
 }
@@ -966,7 +966,7 @@
 
 
 /* ============================================
-   閹煎瓨娲熼崕瀵糕偓鐟邦槸閸欏繘宕?   ============================================ */
+   底部安全区适配        ============================================ */
 .bottom-spacing {
   height: calc(40rpx + env(safe-area-inset-bottom));
 }

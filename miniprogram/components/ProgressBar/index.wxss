@@ -22,13 +22,13 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-text-tertiary);
 }
 
 .progress-text-line {
   text-align: center;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
   color: var(--color-text-tertiary);
   margin-top: 8rpx;
 }

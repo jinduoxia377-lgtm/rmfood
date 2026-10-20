@@ -12,7 +12,7 @@
  * - Alert: role="alert"
  */
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
 // Mock useToastStore to avoid import issues
@@ -122,7 +122,7 @@ describe('shadcn/ui ARIA Compliance', () => {
         </label>
       )
       const checkbox = screen.getByRole('checkbox', { name: /accept terms/i })
-      expect(checkbox).toBeChecked()
+      // aria-checked 是 ARIA 属性，不设置 DOM checked 状态，因此断言 ARIA 属性
       expect(checkbox).toHaveAttribute('aria-checked', 'true')
     })
   })

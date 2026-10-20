@@ -4,7 +4,7 @@
  * @description Clean layout following RMFOOD design system
  * @version 5.0.0 - Unified Layout
  */
-import React, { useCallback, useMemo, useState, Suspense, lazy } from 'react'
+import React, { useMemo, Suspense, lazy } from 'react'
 import {
   Filter, Lightbulb, Share2, TrendingUp, CheckCircle,
   ChevronDown, Download, RefreshCw, BookOpen, Sparkles, FlaskConical,
@@ -15,9 +15,7 @@ import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare'
 import { ResultsViewSwitcher } from './ResultsViewSwitcher'
 import { FormulaRecommendPanel } from './FormulaRecommendPanel'
 import { FormulaExplanationPanel } from './FormulaExplanationPanel'
-import { DEFAULTS } from '@/config'
 import { type FormulaCategory } from '../config/generateTabConfig'
-import { logger } from '@/utils/safeLogger'
 import type { AICandidate } from '@/api/ai'
 import type { GeneratorType, ViewMode } from '../config/generateTabConfig'
 import { FormulaExplanationModal } from './FormulaExplanationModal'
@@ -112,7 +110,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
     <div className={className}>
       {/* Stats panel */}
       {stats && showStats && (
-        <div className="grid grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-xl border border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-xl border border-border">
           <div className="text-center">
             <div className="text-display-sm font-bold text-primary">{stats.total}</div>
             <div className="text-caption text-muted-foreground mt-0.5">配方数</div>

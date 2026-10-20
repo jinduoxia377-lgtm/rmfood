@@ -6,7 +6,6 @@
 import type { AICandidate } from '@/types';
 import {
   ReportModuleType,
-  DEFAULT_REPORT_CONFIG,
   MODULE_TITLE_MAP,
 } from '@/types/academicReportModules';
 import type {
@@ -15,7 +14,7 @@ import type {
   ReportMetadata,
   ReportConfiguration,
 } from '@/types/academicReportModules';
-import { errorHandler, ErrorCategory, ErrorLevel } from './errorHandler';
+import { errorHandler, ErrorCategory } from './errorHandler';
 import { feedbackService } from './feedbackService';
 import { jsPDF } from 'jspdf';
 
@@ -1155,7 +1154,6 @@ ${formulaName} 配方组成如下（典型配方示例）：
     yPosition += lineHeight * 2;
 
     const enabledModules = this.getEnabledModules();
-    let moduleIndex = 0;
     for (const moduleType of enabledModules) {
       const moduleData = this.modules.get(moduleType);
       if (moduleData) {
@@ -1175,7 +1173,6 @@ ${formulaName} 配方组成如下（典型配方示例）：
           });
         }
       }
-      moduleIndex++;
 
       // 检查是否需要添加新页面
       if (yPosition > pageHeight - marginBottom - 30) {

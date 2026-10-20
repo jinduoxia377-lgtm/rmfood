@@ -697,6 +697,7 @@ export class UnifiedEntityExtractor {
    * 利用已提取实体推断关联信息（如给原料实体添加 dosage 属性）
    */
   private enhanceWithContext(entities: UnifiedEntity[], text: string): UnifiedEntity[] {
+    void text;
     const enhanced = [...entities]
 
     // 查找剂量实体
@@ -709,7 +710,7 @@ export class UnifiedEntityExtractor {
     for (const ingredient of ingredientEntities) {
       if (!ingredient.position) continue
 
-      const [ingStart, ingEnd] = ingredient.position
+      const [, ingEnd] = ingredient.position
       // 查找原料后 15 个字符内是否有剂量值
       const nearbyDosage = dosageEntities.find(d => {
         if (!d.position) return false
@@ -796,7 +797,6 @@ export class UnifiedEntityExtractor {
     const newResult = this.extract(newText)
     const now = Date.now()
     const updated: UnifiedEntity[] = [...existing]
-    const existingTextSet = new Set(updated.map(e => e.text.toLowerCase()))
 
     for (const newEntity of newResult.entities) {
       const key = newEntity.text.toLowerCase()

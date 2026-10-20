@@ -94,6 +94,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
 
   // 初始化报告
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     return initializeReport();
   }, [candidate, effects, initializeReport]);
 
@@ -331,6 +332,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
           </button>
           <button
             onClick={() => {
+              // eslint-disable-next-line react-hooks/refs
               if (reportRef.current) {
                 const report = reportRef.current;
                 report.updateMetadata(metadata);

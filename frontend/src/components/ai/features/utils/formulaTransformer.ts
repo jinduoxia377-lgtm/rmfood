@@ -823,6 +823,7 @@ function checkCompliance(formula: NormalizedFormula): ComplianceStatus {
 }
 
 function checkChinaCompliance(_formula: NormalizedFormula): ComplianceCheckResult {
+  void _formula;
   // 简化实现：实际项目中需要对接《化妆品安全技术规范》数据库
   return {
     isCompliant: true,
@@ -832,6 +833,7 @@ function checkChinaCompliance(_formula: NormalizedFormula): ComplianceCheckResul
 }
 
 function checkEUCompliance(_formula: NormalizedFormula): ComplianceCheckResult {
+  void _formula;
   return {
     isCompliant: true,
     violations: [],
@@ -840,6 +842,7 @@ function checkEUCompliance(_formula: NormalizedFormula): ComplianceCheckResult {
 }
 
 function checkUSACompliance(_formula: NormalizedFormula): ComplianceCheckResult {
+  void _formula;
   return {
     isCompliant: true,
     violations: [],

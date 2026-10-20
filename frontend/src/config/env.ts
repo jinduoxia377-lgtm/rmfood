@@ -63,7 +63,7 @@ const getBaseUrl = (): string => {
   return window.location.origin + '/api/v1'
 }
 
-const getBackendUrl = (): string => {
+export const getBackendUrl = (): string => {
   const envUrl = import.meta.env?.VITE_BACKEND_URL as string
   if (envUrl) return envUrl
 

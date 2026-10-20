@@ -1,6 +1,6 @@
 import { logger } from '@/utils/safeLogger'
 import { useState, useCallback, useRef } from 'react';
-import { ExportFormat, ExportScope } from '../types/export.types';
+import { ExportFormat } from '../types/export.types';
 import type {
   ExportOptions,
   ExportColumn,
@@ -44,7 +44,6 @@ export function useExport(): UseExportReturn {
     onProgress?: ExportCallback,
   ): Promise<ExportResult> => {
     abortRef.current = false;
-    const startTime = Date.now();
 
     try {
       updateProgress('准备导出数据...', 0, 4);
@@ -275,7 +274,7 @@ async function exportToExcel(
       fileSize: blob.size,
       timestamp: Date.now(),
     };
-  } catch (error) {
+  } catch {
     throw new Error('Excel导出失败，请检查exceljs库是否已安装');
   }
 }
@@ -321,7 +320,7 @@ async function exportToPDF(
 ): Promise<ExportResult> {
   try {
     const jsPDF = await import('jspdf');
-    const jspdfAutoTable = await import('jspdf-autotable');
+    await import('jspdf-autotable');
 
     const doc = new jsPDF.default({
       orientation: options.pdfConfig?.orientation || 'portrait',
@@ -401,7 +400,7 @@ async function exportToPDF(
     fileSize: pdfBlob.size,
     timestamp: Date.now(),
   };
-  } catch (error) {
+  } catch {
     throw new Error('PDF导出需要安装jspdf和jspdf-autotable库');
   }
 }

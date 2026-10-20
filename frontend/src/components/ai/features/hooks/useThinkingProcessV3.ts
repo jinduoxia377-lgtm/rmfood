@@ -12,16 +12,14 @@
  * @version 3.0.0
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import type {
   ThinkingStepV3,
   ThinkingStepType,
   ThinkingDimension,
-  DecomposedSubProblem,
   ThinkingSessionMetadata,
   ProblemDecompositionResult,
 } from '../types/thinkingTypes'
-import { STEP_TYPE_CONFIG, DIMENSION_CONFIG } from '../types/thinkingTypes'
 import { problemDecomposer } from '../services/problemDecomposer'
 import { eventBus } from '../services/eventBus'
 import type { ThinkingStep } from '../components/ThinkingVisualizer'
@@ -72,32 +70,6 @@ interface StepGeneratorConfig {
 
 function generateId(): string {
   return `step-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-}
-
-function createStep(config: StepGeneratorConfig): ThinkingStepV3 {
-  return {
-    id: config.parentId ? generateId() : generateId(),
-    type: config.type,
-    dimension: config.dimension,
-    title: config.title,
-    description: config.description,
-    confidence: config.confidence,
-    status: 'pending',
-    parentId: config.parentId ?? null,
-    childrenIds: [],
-    branchId: null,
-    details: config.details,
-    evidence: config.evidence,
-    relatedData: undefined,
-    metadata: {
-      timestamp: Date.now(),
-      durationMs: undefined,
-      retryCount: 0,
-      userFeedback: null,
-      revisionNote: undefined,
-      tags: config.tags || [],
-    },
-  }
 }
 
 function buildDomainSpecificSteps(question: string): StepGeneratorConfig[] {
@@ -466,6 +438,7 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
 
   // 加载后端返回的 thinking_steps
   const loadExternalSteps = useCallback((steps: BackendThinkingStep[], answer: string) => {
+    void answer;
     const stepTypeMap: Record<string, ThinkingStepType> = {
       '问题理解': 'analysis',
       '知识检索': 'retrieval',

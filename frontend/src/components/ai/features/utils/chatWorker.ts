@@ -31,12 +31,14 @@ interface ProcessTextTask {
 
 class ChatWorkerManager {
   private worker: Worker | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   private taskQueue = new Map<string, { resolve: Function; reject: Function }>();
   private isInitialized = false;
 
   async init(): Promise<void> {
     if (this.isInitialized) return;
 
+    // eslint-disable-next-line no-useless-catch
     try {
       const workerCode = this.getWorkerCode();
       const blob = new Blob([workerCode], { type: 'application/javascript' });
@@ -252,8 +254,8 @@ class ChatWorkerManager {
             var header = headers[j];
             var value = row[header];
             var stringValue = String(value !== void 0 && value !== null ? value : '');
-            if (stringValue.indexOf(delimiter) !== -1 || stringValue.indexOf('\"') !== -1) {
-              values.push('\"' + stringValue.replace(/\"/g, '\"\"') + '\"');
+            if (stringValue.indexOf(delimiter) !== -1 || stringValue.indexOf('"') !== -1) {
+              values.push('"' + stringValue.replace(/"/g, '""') + '"');
             } else {
               values.push(stringValue);
             }
@@ -397,7 +399,7 @@ export function useChatWorker(options: UseWorkerOptions = {}): UseWorkerReturn {
       workerRef.current = new ChatWorkerManager();
       await workerRef.current.init();
       setIsReady(true);
-    } catch (error) {
+    } catch {
       setIsReady(false);
     }
   }, []);

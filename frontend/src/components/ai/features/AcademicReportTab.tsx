@@ -328,7 +328,7 @@ export function AcademicReportTab({
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as typeof activeTab)}
       >
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-1 sm:grid-cols-3 mb-4">
           <TabsTrigger
             value="preview"
             icon={<FileText className="w-4 h-4" />}

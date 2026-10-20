@@ -13,7 +13,6 @@ import {
   Image as ImageIcon, Link2, Hash
 } from 'lucide-react'
 import FormulaCard from './FormulaCard'
-import type { FormulaData } from './FormulaCard'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -915,7 +914,9 @@ const MDStyles = `
 
 /* ===== Root Container ===== */
 .chat-md-root {
-  @apply space-y-1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 /* ===== Headings ===== */

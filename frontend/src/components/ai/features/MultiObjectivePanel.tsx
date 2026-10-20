@@ -19,7 +19,7 @@ import {
   PolarRadiusAxis,
 } from 'recharts';
 import { aiApi } from '@/api/ai';
-import type { MultiObjectiveResponse, MOObjective, MOPresetInfo, GAHistoryRecord, GADetailResponse } from '@/api/ai';
+import type { MultiObjectiveResponse, MOObjective, GAHistoryRecord } from '@/api/ai';
 import { EFFECT_OPTIONS } from '@/config/ai/effects';
 import { cn } from '@/lib/utils';
 import { getAuthToken } from '@/hooks/useSSEAuth';
@@ -68,13 +68,10 @@ import {
   Zap,
   FlaskConical,
   Shield,
-  DollarSign,
   Dna,
   TrendingUp,
   Wifi,
   WifiOff,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
   Table as TableIcon,
   LayoutGrid,
@@ -238,7 +235,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
   useEffect(() => {
     if (availableAxes.length >= 2 && !axisX) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAxisX(availableAxes[0]);
+       
       setAxisY(availableAxes[1]);
     }
   }, [availableAxes]);
@@ -255,18 +254,6 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         overall_fitness: cand.overall_fitness,
         objective_values: cand.objective_scores,
       }));
-  }, [result, axisX, axisY]);
-
-  // ── 全部候选点（用于热力图等需要全量数据的场景）──
-  const allCandidatesData = useMemo(() => {
-    if (!result?.candidates?.length || !axisX || !axisY) return [];
-    return result.candidates.map((cand) => ({
-      ...cand.objective_scores,
-      pareto_rank: cand.pareto_rank,
-      crowding_distance: cand.crowding_distance,
-      overall_fitness: cand.overall_fitness,
-      objective_values: cand.objective_scores,
-    }));
   }, [result, axisX, axisY]);
 
   // ── 排序后的候选方案 ──
@@ -437,10 +424,14 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           total_evaluations:
             detail.run.total_generations * ((detail.run.algorithm_params.population_size as number) ?? 60),
           execution_time_ms: detail.run.execution_time_ms,
-          convergence_generation:
-            detail.run.history.length > 0
-              ? Math.min(...detail.run.history.filter((h) => h.diversity < 0.3).map((h) => h.generation))
-              : detail.run.total_generations,
+          convergence_generation: (() => {
+            // Math.min(...[]) 返回 Infinity —— 种群从未收敛到多样性 < 0.3 时
+            // 此前会显示 "Infinity" 作为收敛代数。
+            const converged = detail.run.history.filter((h) => h.diversity < 0.3);
+            return converged.length > 0
+              ? Math.min(...converged.map((h) => h.generation))
+              : detail.run.total_generations;
+          })(),
           stop_reason: detail.run.stop_reason,
         };
         setResult(converted);
@@ -461,7 +452,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
       if (abortRef.current) {
         try {
           abortRef.current.abort();
-        } catch {}
+        } catch { /* 忽略中止异常 */ }
       }
 
       const controller = new AbortController();
@@ -522,10 +513,22 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
     if (maxCost !== null && maxCost > 0) constraints.max_cost = maxCost;
     return {
       target_effects: selectedEffects.length > 0 ? selectedEffects : ['免疫调节'],
-      objectives:
-        selectedPreset === 'custom'
+      objectives: (() => {
+        // "权重微调"滑块有改动时，用它覆盖 objectives 的 weight，让重新运行时
+        // 权重真正生效 —— 此前 adjustedWeights 只改 UI 显示、从不进请求体，
+        // 用户以为改了权重，后端仍按预设权重算。
+        if (Object.keys(adjustedWeights).length > 0 && currentObjectives.length > 0) {
+          return currentObjectives.map((o) => ({
+            key: o.key,
+            name: o.name,
+            direction: o.direction,
+            weight: adjustedWeights[o.key] ?? o.weight,
+          }));
+        }
+        return selectedPreset === 'custom'
           ? customObjectives.map((o) => ({ key: o.key, name: o.name, direction: o.direction, weight: o.weight }))
-          : null,
+          : null;
+      })(),
       preset: selectedPreset === 'custom' ? null : selectedPreset,
       mode,
       population_size: params.populationSize,
@@ -536,7 +539,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
       constraints: Object.keys(constraints).length > 0 ? constraints : null,
       count: params.count,
     };
-  }, [selectedEffects, customObjectives, selectedPreset, mode, params, excludeHerbs, includeHerbs, maxCost]);
+  }, [selectedEffects, customObjectives, selectedPreset, mode, params, excludeHerbs, includeHerbs, maxCost, adjustedWeights, currentObjectives]);
 
   // ── SSE 流式执行 ──
   const executeStreaming = useCallback(async () => {
@@ -544,7 +547,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
     if (abortRef.current) {
       try {
         abortRef.current.abort();
-      } catch {}
+      } catch { /* 忽略中止异常 */ }
       abortRef.current = null;
     }
 
@@ -606,6 +609,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           } else if (trimmed.startsWith('data:')) {
             try {
               const data = JSON.parse(trimmed.replace('data:', '').trim());
+              // eslint-disable-next-line react-hooks/immutability
               handleSSEEvent(currentEventType, data);
             } catch {
               // ignore parse errors
@@ -1433,7 +1437,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         <section aria-labelledby="mo-results-heading" className="space-y-6">
           {/* 统计摘要栏 + 导出 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 flex-1">
               <StatCard
                 icon={<Dna className="w-5 h-5" />}
                 label="总代数"

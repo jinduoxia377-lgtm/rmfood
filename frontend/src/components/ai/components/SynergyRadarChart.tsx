@@ -685,6 +685,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
               tickFormatter={(value: number) => `${value}`}
             />
 
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <Tooltip content={<CustomTooltip />} animationDuration={200} />
 
             {visibleData.map((dataset, index) => {
@@ -737,6 +738,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
       </div>
 
       {/* 自定义图例 */}
+      {/* eslint-disable-next-line react-hooks/static-components */}
       <CustomLegend />
 
       {/* 维度详情面板 */}
@@ -783,7 +785,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
               <h4 className="text-sm font-semibold mb-3" style={{ color: themeColors.textPrimary }}>
                 评分标准
               </h4>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {DIMENSION_CONFIG[selectedDimension].scoringCriteria.map((criteria, idx) => (
                   <div
                     key={idx}

@@ -64,6 +64,8 @@ class ExperimentResponse(ExperimentBase):
     results: Optional[dict] = None
     conclusions: Optional[str] = None
     recommendations: Optional[str] = None
+    share_code: Optional[str] = None
+    view_count: int = 0
     created_at: datetime
     updated_at: datetime
 

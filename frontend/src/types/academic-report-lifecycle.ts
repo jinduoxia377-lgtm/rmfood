@@ -229,9 +229,9 @@ export interface VersionSnapshot {
 
 // 评审相关类型
 
-export type ReviewStatus = 'pending' | 'in_progress' | 'needs_revision' | 'approved' | 'published';
+export type ReviewStatus = 'pending' | 'in_progress' | 'needs_revision' | 'approved' | 'published' | 'rejected';
 
-export type StageStatus = 'pending' | 'in_progress' | 'completed' | 'approved';
+export type StageStatus = 'pending' | 'in_progress' | 'completed' | 'approved' | 'rejected';
 
 export type CommentType = 'general' | 'section' | 'inline' | 'suggestion' | 'issue' | 'critical';
 

@@ -79,7 +79,7 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
     switch (block.type) {
       case 'header': {
         const h = block.data as { title?: string; description?: string }
-        if (h.title) formula.name = h.title.replace(/^[🧪💊🍵🥤]?\s*/, '')
+        if (h.title) formula.name = h.title.replace(/^[🧪💊🍵🥤]?\s*/u, '')
         if (h.description) formula.description = h.description
         break
       }
@@ -203,7 +203,7 @@ export function extractFormulaFromMarkdown(text: string): ExtractedFormula | nul
   // 提取配方名称（标题行）
   const titleMatch = text.match(/^#\s+(.+)$/m)
   if (titleMatch) {
-    formula.name = titleMatch[1].replace(/^[🧪💊🍵🥤]?\s*/, '').trim()
+    formula.name = titleMatch[1].replace(/^[🧪💊🍵🥤]?\s*/u, '').trim()
   }
 
   // 解析表格
@@ -237,12 +237,6 @@ export function extractFormulaFromMarkdown(text: string): ExtractedFormula | nul
  * 以便直接保存到 formulaIndex
  */
 export function toAIRecognizedFormula(extracted: ExtractedFormula): AIRecognizedFormula {
-  // 计算综合评分
-  const scoreItems = Object.values(extracted.scores ?? {})
-  const avgScore = scoreItems.length > 0
-    ? scoreItems.reduce((a, b) => a + b, 0) / scoreItems.length
-    : 0
-
   return {
     id: '',
     name: extracted.name || '未命名配方',

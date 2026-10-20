@@ -95,7 +95,7 @@ class AuthService:
             lockout_duration_minutes=getattr(settings, 'lockout_duration_minutes', 15)
         )
 
-    async def authenticate(self, username: str, password: str) -> Token:
+    async def authenticate(self, username: str, password: str, two_factor_code: Optional[str] = None) -> Token | dict:
         """
         用户登录验证（安全增强版）
 
@@ -103,17 +103,16 @@ class AuthService:
         1. 检查账号是否被锁定
         2. 验证用户名和密码
         3. 密码错误 → 记录失败尝试（可能触发锁定）
-        4. 密码正确 → 重置计数器，生成令牌
+        4. 密码正确 → 检查 2FA（若启用且未提供验证码则要求二次验证）
+        5. 重置计数器，生成令牌
 
         Args:
             username: 用户名
             password: 明文密码
+            two_factor_code: TOTP 动态验证码（启用 2FA 后必填）
 
         Returns:
-            Token: 包含 access_token 和 refresh_token
-
-        Raises:
-            HTTPException: 认证失败或账号被锁定
+            Token | dict: 包含 access_token 和 refresh_token；若需 2FA 二次验证则返回 {"requires_2fa": True}
         """
         # 获取客户端IP（用于安全日志）
         client_ip = None
@@ -191,16 +190,31 @@ class AuthService:
                 detail="账户已被禁用，请联系管理员",
             )
 
+        # ── Step 3c: 两步验证（2FA）检查 ──
+        if user.two_factor_enabled and user.two_factor_secret:
+            if not two_factor_code:
+                return {"requires_2fa": True, "username": user.username}
+            from ..core.security.totp import verify_totp
+            if not verify_totp(user.two_factor_secret, two_factor_code):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="2FA 验证码错误",
+                )
+
         # ── Step 4: 登录成功，重置计数器并生成令牌 ──
+        # 注意：reset_login_attempts 内部会 commit（expire_on_commit=True 会过期
+        # 除主键外的所有属性），若在 commit 后再访问 user.role 会触发异步懒加载
+        # MissingGreenlet（greenlet_spawn has not been called）。因此先读取角色标量值。
+        role_value = user.role.value
         await self.lockout.reset_login_attempts(self.db, user)
 
-        access_token = create_access_token(user.id, user.role.value)
-        refresh_token = create_refresh_token(user.id, user.role.value)
+        access_token = create_access_token(user.id, role_value)
+        refresh_token = create_refresh_token(user.id, role_value)
 
         logger.info(
             f"✅ 用户登录成功:\n"
             f"   用户: {user.username} (ID={user.id})\n"
-            f"   角色: {user.role.value}\n"
+            f"   角色: {role_value}\n"
             f"   IP: {client_ip}"
         )
 

@@ -78,13 +78,13 @@ class TCMHerbPD(Base):
     )
     herb_name_cn: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
-    # PD Sigmoid Emax 参数
-    E_max: Mapped[Optional[float]] = mapped_column(Float)        # 最大效应 [0,1]
+    # PD Sigmoid Emax 参数（列名显式映射小写，避免 PostgreSQL 大小写折叠与约束不匹配）
+    E_max: Mapped[Optional[float]] = mapped_column("e_max", Float)        # 最大效应 [0,1]
     E_max_source: Mapped[str] = mapped_column(
-        String(80), default="tcm_herbs.extra_knowledge.efficacy_scores"
+        "e_max_source", String(80), default="tcm_herbs.extra_knowledge.efficacy_scores"
     )
-    EC50: Mapped[Optional[float]] = mapped_column(Float)         # 半效浓度 (μg/mL)
-    Hill: Mapped[Optional[float]] = mapped_column(Float)         # 陡峭度
+    EC50: Mapped[Optional[float]] = mapped_column("ec50", Float)         # 半效浓度 (μg/mL)
+    Hill: Mapped[Optional[float]] = mapped_column("hill", Float)         # 陡峭度
 
     # 药效评分（DB 原始 dict，追溯用）
     efficacy_scores: Mapped[Optional[dict]] = mapped_column(JSON)
@@ -100,9 +100,9 @@ class TCMHerbPD(Base):
     )
 
     __table_args__ = (
-        CheckConstraint("E_max IS NULL OR (E_max >= 0 AND E_max <= 1)", name="ck_pd_emax_range"),
-        CheckConstraint("EC50 IS NULL OR EC50 > 0", name="ck_pd_ec50_positive"),
-        CheckConstraint("Hill IS NULL OR Hill > 0", name="ck_pd_hill_positive"),
+        CheckConstraint("e_max IS NULL OR (e_max >= 0 AND e_max <= 1)", name="ck_pd_emax_range"),
+        CheckConstraint("ec50 IS NULL OR ec50 > 0", name="ck_pd_ec50_positive"),
+        CheckConstraint("hill IS NULL OR hill > 0", name="ck_pd_hill_positive"),
     )
 
 

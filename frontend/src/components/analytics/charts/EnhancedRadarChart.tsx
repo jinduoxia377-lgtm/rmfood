@@ -17,7 +17,6 @@ import {
   PolarRadiusAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
 interface ChartData {
@@ -59,7 +58,6 @@ export function EnhancedRadarChart({
   data,
   themeColors,
   height = 320,
-  showLegend = true,
 }: EnhancedRadarChartProps) {
 
   const radarData = useMemo(() => {
@@ -140,6 +138,7 @@ export function EnhancedRadarChart({
           tickCount={5}
         />
 
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Tooltip content={<CustomTooltip />} animationDuration={200} />
 
         {(data.datasets || []).map((dataset, index) => (

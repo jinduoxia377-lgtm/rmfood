@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LineChart,
@@ -11,7 +11,6 @@ import {
   ReferenceLine,
   BarChart,
   Bar,
-  Cell,
   Legend,
 } from 'recharts'
 import {
@@ -19,12 +18,10 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  ChevronRight,
   CheckCircle2,
   Zap,
   Info,
   RotateCcw,
-  Copy,
 } from 'lucide-react'
 
 export interface SensitivityParameter {
@@ -362,7 +359,7 @@ export function SensitivityAnalysis({
           {/* 当前结果摘要 */}
           <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">实时计算结果</h5>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 4).map(metric => {
                 const diff = currentResults[metric] - baselineResults[metric]
                 const Icon = diff > 0.5 ? TrendingUp : diff < -0.5 ? TrendingDown : Minus

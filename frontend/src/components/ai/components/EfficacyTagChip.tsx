@@ -114,7 +114,7 @@ function EfficacyTagChip({
             {meta.description}
           </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-1.5 border-t border-neutral-600/50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 pt-1.5 border-t border-neutral-600/50">
             <div>
               <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分类：</span>
               <span className="text-neutral-200">

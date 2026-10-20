@@ -9,37 +9,16 @@
  * - 禁忌检测与警告系统
  */
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
-  BarChart3,
-  Network,
-  AlertTriangle,
-  CheckCircle,
-  TrendingUp,
   Microscope,
   Shield,
   Zap,
-  Target,
-  Plus,
-  Minus,
-  ArrowRight,
-  Info,
-  Lightbulb,
   Activity,
   Layers,
-  GitBranch,
-  Filter,
-  Search,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Star,
-  Heart,
-  Brain,
-  Scale,
   Thermometer
 } from 'lucide-react'
-import type { Ingredient, EfficacyTag, Precaution, IngredientSource } from '@/types/ai.types'
+import type { Ingredient, EfficacyTag, IngredientSource } from '@/types/ai.types'
 import { IngredientSource as SourceEnum } from '@/types/ai.types'
 
 // ==================== 类型定义 ====================
@@ -437,18 +416,20 @@ function generateDimensionDetails(ingredient: Ingredient, dimensionId: string): 
     case 'stability':
       details.push(`稳定性基础分: ${ingredient.source === SourceEnum.EXCIPIENT ? '优秀' : '良好'}`)
       break
-    case 'versatility':
+    case 'versatility': {
       const categories = new Set(
         (ingredient.efficacyTags || []).map(tag => EFFICACY_TAG_DETAILS[tag]?.category).filter(Boolean)
       )
       details.push(`覆盖领域: ${categories.size}个`)
       break
-    case 'researchDepth':
+    }
+    case 'researchDepth': {
       const strongCount = (ingredient.efficacyTags || []).filter(tag =>
         EFFICACY_TAG_DETAILS[tag]?.evidenceLevel === 'strong'
       ).length
       details.push(`强证据支持: ${strongCount}项`)
       break
+    }
   }
 
   return details

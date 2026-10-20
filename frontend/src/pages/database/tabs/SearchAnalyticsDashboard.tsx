@@ -12,16 +12,15 @@ import {
   EmptyState,
   Alert,
   StatCard,
-  Pagination,
   CardTitle,
 } from '@/components/ui';
 import {
-  Search, Flame, ArrowUp,
-  Eye, CheckCircle, Clock,
-  BarChart3, LineChart, PieChart,
+  Search,
+  Eye, CheckCircle,
+  BarChart3,
 } from 'lucide-react';
 import {
-  LineChart as ReLineChart, Line,
+  LineChart as ReLineChart,
   BarChart as ReBarChart, Bar,
   PieChart as RePieChart, Pie,
   Cell,
@@ -110,6 +109,7 @@ const SearchAnalyticsDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOverview();
   }, [loadOverview]);
 
@@ -351,19 +351,25 @@ const SearchAnalyticsDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-[var(--space-apple-lg)]">
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center justify-center py-16 gap-[var(--space-apple-sm)]">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-[var(--radius-pill)]" />
           <span className="text-sm text-muted-foreground">加载分析数据...</span>
         </div>
       ) : (
         <>
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <ZeroResultAlert />
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <OverviewCards />
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <HotSearchTable />
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <TrendChart />
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <CategoryPie />
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <SourceDistribution />
         </>
       )}

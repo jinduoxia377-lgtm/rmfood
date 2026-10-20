@@ -11,17 +11,11 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
-  FlaskConical,
-  TestTubes,
-  Brain,
   MoreHorizontal,
   X,
-  BarChart3,
-  Bell,
-  Settings,
 } from 'lucide-react';
 import {
   filterNavByRole,
@@ -32,8 +26,9 @@ import { useAuthStore } from '@/stores/auth';
 
 interface BottomNavItem {
   to: string;
+  key: string;
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<any>;
   badge?: number;
 }
 
@@ -42,6 +37,7 @@ const VISIBLE_COUNT = 4;
 
 export default function MobileBottomNav() {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const morePanelRef = useRef<HTMLDivElement>(null);
@@ -56,6 +52,7 @@ export default function MobileBottomNav() {
 
   const visibleItems: BottomNavItem[] = filteredItems.slice(0, VISIBLE_COUNT).map((i) => ({
     to: i.to,
+    key: i.key,
     label: i.label,
     icon: i.icon,
     badge: i.badge,
@@ -63,6 +60,7 @@ export default function MobileBottomNav() {
 
   const moreItems: BottomNavItem[] = filteredItems.slice(VISIBLE_COUNT).map((i) => ({
     to: i.to,
+    key: i.key,
     label: i.label,
     icon: i.icon,
     badge: i.badge,
@@ -104,13 +102,14 @@ export default function MobileBottomNav() {
           boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))',
           paddingBottom: 'var(--safe-area-inset-bottom, 0px)',
         }}
-        aria-label="移动端底部导航"
+        aria-label={t('nav.mobileBottomNav')}
       >
         <div className="flex items-stretch h-full">
           {/* 常驻导航项 */}
           {visibleItems.map((item) => {
             const Icon = item.icon;
             const active = isNavActive(item.to, location.pathname);
+            const label = t(`nav.items.${item.key}`);
             return (
               <NavLink
                 key={item.to}
@@ -120,7 +119,7 @@ export default function MobileBottomNav() {
                   'flex flex-col items-center justify-center gap-0.5 flex-1 transition-all duration-200 active:scale-95',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500',
                 )}
-                aria-label={item.label}
+                aria-label={label}
                 aria-current={active ? 'page' : undefined}
               >
                 {/* 图标容器 — 44×44（A-11：40→44，WCAG 2.5.5 最小触控尺寸）, radius-xl */}
@@ -153,7 +152,7 @@ export default function MobileBottomNav() {
                     letterSpacing: '0',
                   }}
                 >
-                  {item.label}
+                  {label}
                 </span>
                 {/* 徽章 */}
                 {item.badge && !active && (
@@ -173,7 +172,7 @@ export default function MobileBottomNav() {
             onClick={() => setMoreOpen(true)}
             className="flex flex-col items-center justify-center gap-0.5 flex-1 transition-all duration-200 focus:outline-none"
             style={{ color: 'var(--text-secondary, #64748b)' }}
-            aria-label="更多导航"
+            aria-label={t('nav.moreNav')}
           >
             <div
               className="flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-95"
@@ -189,7 +188,7 @@ export default function MobileBottomNav() {
                 lineHeight: '1.45',
               }}
             >
-              更多
+              {t('common.more')}
             </span>
           </button>
         </div>
@@ -218,7 +217,7 @@ export default function MobileBottomNav() {
             }}
             role="dialog"
             aria-modal="true"
-            aria-label="更多导航"
+            aria-label={t('nav.moreNav')}
           >
             {/* 拖拽手柄 */}
             <div className="flex justify-center pt-3 pb-2">
@@ -234,12 +233,12 @@ export default function MobileBottomNav() {
               style={{ borderColor: 'var(--border-color, #e2e8f0)' }}
             >
               <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary, #0f172a)', fontSize: '16px' }}>
-                更多功能
+                {t('nav.moreFunctions')}
               </h2>
               <button
                 onClick={() => setMoreOpen(false)}
                 className="p-2 rounded-xl transition-all duration-200 hover:bg-[var(--bg-surface-hover)] focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="关闭"
+                aria-label={t('common.close')}
                 style={{ color: 'var(--text-secondary, #64748b)', borderRadius: 'var(--radius-xl, 16px)' }}
               >
                 <X size={20} strokeWidth={2} />
@@ -278,7 +277,7 @@ export default function MobileBottomNav() {
                       <Icon size={20} strokeWidth={1.75} />
                     </div>
                     <span className="flex-1 font-medium" style={{ fontSize: '14px', fontFamily: 'var(--font-sans)' }}>
-                      {item.label}
+                      {t(`nav.items.${item.key}`)}
                     </span>
                     {item.badge && (
                       <span
@@ -295,7 +294,7 @@ export default function MobileBottomNav() {
                 );
               }) : (
                 <div className="px-4 py-6 text-center text-sm" style={{ color: 'var(--text-muted, #94a3b8)' }}>
-                  暂无更多功能
+                  {t('nav.noMoreFunctions')}
                 </div>
               )}
             </div>

@@ -462,6 +462,11 @@ class Settings(BaseSettings):
     app_env: Environment = Field(default=Environment.DEVELOPMENT, alias="ENV")
     debug: bool = Field(default=False, alias="DEBUG")
 
+    # ─── Cookie Secure 覆盖 ───
+    # 顶层字段，可从 .env 的 COOKIE_SECURE 读取（dotenv 源仅作用于顶层 Settings）。
+    # 初始化后同步到 security.cookie_secure，供 create_secure_cookie_settings 使用。
+    cookie_secure: Optional[bool] = Field(default=None, alias="COOKIE_SECURE")
+
     # ─── 初始管理员账号 ───
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME", description="初始管理员用户名")
     admin_password: str = Field(default="", alias="ADMIN_PASSWORD", description="初始管理员密码（生产环境必须通过环境变量设置）")
@@ -539,6 +544,15 @@ class Settings(BaseSettings):
                 self.security.cors_origins = json.loads(os.environ["SECURITY__CORS_ORIGINS"])
             except json.JSONDecodeError:
                 pass
+
+        # Cookie Secure 覆盖：纯 HTTP 部署（局域网 IP / 公网 IP 无 TLS）必须设为 false，
+        # 否则浏览器丢弃带 Secure 属性的 Set-Cookie，登录后无法维持会话。
+        # 优先级: 进程环境 SECURITY__COOKIE_SECURE > .env 顶层 COOKIE_SECURE（self.cookie_secure）
+        env_cookie_secure = os.environ.get("SECURITY__COOKIE_SECURE")
+        if env_cookie_secure is not None:
+            self.security.cookie_secure = env_cookie_secure.lower() in ("1", "true", "yes")
+        elif self.cookie_secure is not None:
+            self.security.cookie_secure = self.cookie_secure
 
     def _validate_config(self) -> None:
         """

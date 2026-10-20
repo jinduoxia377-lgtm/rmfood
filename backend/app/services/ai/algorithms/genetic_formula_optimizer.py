@@ -142,6 +142,10 @@ class GAConfig:
     seed: Optional[int] = None      # 随机种子（可重复性）
     early_stop_patience: int = 15   # 连续N代无改进则早停(0=不启用)
     early_stop_threshold: float = 0.95  # 达到此fitness阈值则停止(0=不启用)
+    # 自定义综合适应度权重（键：efficacy/safety/taste/cost/synergy/stability）。
+    # None 表示使用 Individual.DEFAULT_OBJECTIVE_WEIGHTS（与 NSGA-II 一致的内置权重）。
+    # 传入时会在优化器内做一次归一化，因此前端不必保证总和为 1。
+    objective_weights: Optional[Dict[str, float]] = None
 
     def __post_init__(self):
         if self.target_effects is None:
@@ -160,8 +164,22 @@ class GAConfig:
 class Individual:
     """遗传算法个体 = 配方候选方案"""
 
-    def __init__(self, genes: Dict[str, float]):
+    # 内置综合适应度权重（与 NSGA-II 默认 objectives 保持一致）。
+    # 优化器可通过 config.objective_weights 覆盖。
+    DEFAULT_OBJECTIVE_WEIGHTS: Dict[str, float] = {
+        "efficacy": 0.30,
+        "safety": 0.25,
+        "taste": 0.10,
+        "cost": 0.15,
+        "synergy": 0.10,
+        "stability": 0.10,
+    }
+
+    def __init__(self, genes: Dict[str, float], weights: Optional[Dict[str, float]] = None):
         self.genes = dict(genes)  # {herb_id: dosage}
+        # 每个个体持有自己那份权重的引用（由优化器工厂方法注入），
+        # 这样并发运行两个 GA 时不会互相覆盖权重。
+        self._weights: Dict[str, float] = dict(weights or self.DEFAULT_OBJECTIVE_WEIGHTS)
         self.fitness: float = 0.0
         self.efficacy: float = 0.0
         self.safety: float = 0.0
@@ -384,11 +402,24 @@ class Individual:
         # ── 君臣佐使结构合规度 ──
         self.structural_compliance = 0.7  # 默认合规度，由调用方（优化器）注入
 
-        # 综合适应度（扩展为 7 维，权重与 NSGA-II 一致）
+        # 综合适应度（7 维加权；权重可由 GAConfig.objective_weights 覆盖）
+        # 先归一化再加权，前端传来的权重不需要预先归一；
+        # 全零时回退内置默认，避免出现 0/0。
         # 结构合规度作为乘法因子惩罚不合规配方
-        self.fitness = (self.efficacy * 0.30 + self.safety * 0.25 +
-                        self.taste * 0.10 + self.cost * 0.15 +
-                        self.synergy * 0.10 + self.stability * 0.10) * (0.5 + 0.5 * self.structural_compliance)
+        w = self._weights
+        total_w = sum(w.values())
+        if total_w <= 0:
+            w = self.DEFAULT_OBJECTIVE_WEIGHTS
+            total_w = sum(w.values())
+        self.fitness = (
+            (self.efficacy * w.get("efficacy", 0.0)
+             + self.safety * w.get("safety", 0.0)
+             + self.taste * w.get("taste", 0.0)
+             + self.cost * w.get("cost", 0.0)
+             + self.synergy * w.get("synergy", 0.0)
+             + self.stability * w.get("stability", 0.0))
+            / total_w
+        ) * (0.5 + 0.5 * self.structural_compliance)
 
 
 class GeneticFormulaOptimizer:
@@ -406,6 +437,43 @@ class GeneticFormulaOptimizer:
         self._herbs = {}                              # 优先从数据库加载
         self._efficacy_index = {}
         self._herb_knowledge_loaded = False            # 标记是否已尝试加载 HerbKnowledgeService
+        # 归一化后的目标权重；None 表示用 Individual.DEFAULT_OBJECTIVE_WEIGHTS
+        self._weight_vector: Optional[Dict[str, float]] = (
+            self._normalize_objective_weights(self.config.objective_weights)
+        )
+
+    def _normalize_objective_weights(self, weights) -> Optional[Dict[str, float]]:
+        """把外部传来的目标权重归一化成和为 1 的字典。
+
+        键约定：efficacy / safety / taste / cost(=成本效率) / synergy / stability。
+        空、非法或全零时返回 None —— 此时 Individual 回退到内置默认权重，
+        保证 GA 在任何入参下都能正常跑起来。
+        """
+        if not weights or not isinstance(weights, dict):
+            return None
+        # 只保留已知目标键，未知键一律忽略 —— 否则 {"a": 1} 会把 total_w
+        # 算成 1.0 而所有真实目标权重都是 0，导致适应度恒为 0。
+        cleaned: Dict[str, float] = {}
+        for key, value in weights.items():
+            if key not in Individual.DEFAULT_OBJECTIVE_WEIGHTS:
+                continue
+            if value is None:
+                continue
+            try:
+                cleaned[str(key)] = max(0.0, float(value))
+            except (TypeError, ValueError):
+                continue
+        total = sum(cleaned.values())
+        if total <= 0:
+            return None
+        return {k: v / total for k, v in cleaned.items()}
+
+    def _new_individual(self, genes: Dict[str, float]) -> Individual:
+        """统一个体工厂：注入本次运行归一化后的目标权重。
+
+        避免散落的 Individual(genes) 直构造漏传权重，导致权重 UI 静默失效。
+        """
+        return Individual(genes, self._weight_vector)
 
     def _try_load_herb_knowledge(self) -> None:
         """惰性加载 HerbKnowledgeService — 在首次 optimize() 时重试，
@@ -593,7 +661,7 @@ class GeneticFormulaOptimizer:
                             dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                             genes[hid] = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     if len(genes) >= 3:
-                        ind = Individual(genes)
+                        ind = self._new_individual(genes)
                         ind.evaluate(target_effects)
                         new_population.append(ind)
 
@@ -620,7 +688,7 @@ class GeneticFormulaOptimizer:
                 if random.random() < self.config.crossover_rate:
                     child1, child2 = self._crossover(parent1, parent2)
                 else:
-                    child1, child2 = Individual(parent1.genes), Individual(parent2.genes)
+                    child1, child2 = self._new_individual(parent1.genes), self._new_individual(parent2.genes)
 
                 if random.random() < actual_mutation_rate:
                     self._mutate(child1, candidates)
@@ -833,7 +901,7 @@ class GeneticFormulaOptimizer:
                     clamped = round(clamped / herb.dosage_step) * herb.dosage_step
                     genes[hid] = max(herb.dosage_min, clamped)
             if len(genes) >= 3:
-                population.append(Individual(genes))
+                population.append(self._new_individual(genes))
 
         # ═══ 种子 2: 功效最佳药材 + 随机打乱 ═══
         for i in range(min(5, n)):
@@ -849,7 +917,7 @@ class GeneticFormulaOptimizer:
                     dosage = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     if dosage > 0:
                         genes[hid] = dosage
-            population.append(Individual(genes))
+            population.append(self._new_individual(genes))
 
         # ═══ 填充随机采样（确保多样性：随机选择3-8味药材）═══
         for _ in range(self.config.population_size - len(population)):
@@ -865,7 +933,7 @@ class GeneticFormulaOptimizer:
                     dosage = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     genes[hid] = dosage
             if len(genes) >= 3:
-                population.append(Individual(genes))
+                population.append(self._new_individual(genes))
 
         return population[:self.config.population_size]
 
@@ -901,7 +969,7 @@ class GeneticFormulaOptimizer:
                     g[hid] = max(herb.dosage_min, min(herb.dosage_max, g[hid]))
                     g[hid] = round(g[hid] / herb.dosage_step) * herb.dosage_step
 
-        return Individual(genes1), Individual(genes2)
+        return self._new_individual(genes1), self._new_individual(genes2)
 
     def _mutate(self, ind: Individual, candidates: List[str]):
         """高斯变异 + 添加/删除药材

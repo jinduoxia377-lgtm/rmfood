@@ -1,5 +1,4 @@
 export interface CommunityLegendProps {
-  [key: string]: any;
   generatedCommunityColors: Record<number, string>
   communities: Map<string, number>
 }

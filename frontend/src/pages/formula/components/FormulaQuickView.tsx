@@ -2,7 +2,7 @@
  * 配方快速预览组件
  * 在列表页弹窗显示配方核心信息，无需跳转到详情页
  */
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { X, ArrowRight, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -42,6 +42,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
     }));
   }, [formula?.composition]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const safetyPassed = useMemo(() => {
     if (!formula?.safety_check || typeof formula.safety_check !== 'object') return null;
     const sc = formula.safety_check as Record<string, unknown>;
@@ -57,22 +58,22 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
   if (!formulaId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--space-apple-md)]">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="quick-view-title"
-        className="relative w-full max-w-2xl max-h-[85vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl max-h-[85vh] bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center justify-between px-[var(--space-apple-md)] py-[var(--space-apple-md)] border-b border-[var(--border-color)]">
           <div className="flex items-center gap-2">
             {isLoading ? (
-              <Skeleton className="w-8 h-8 rounded-lg" />
+              <Skeleton className="w-8 h-8 rounded-[var(--radius-Apple-sm)]" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-300/20 flex items-center justify-center">
-                <Zap size={16} className="text-primary-500" />
+              <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                <Zap size={16} className="text-[var(--color-primary-text)]0" />
               </div>
             )}
             <div>
@@ -83,7 +84,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 </>
               ) : (
                 <>
-                  <h2 id="quick-view-title" className="text-base font-semibold text-neutral-900 dark:text-white">{formula?.name}</h2>
+                  <h2 id="quick-view-title" className="text-base font-semibold text-[var(--text-primary)]">{formula?.name}</h2>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formula?.code}</span>
                     <StatusBadge status={formula!.status} />
@@ -94,28 +95,28 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(85vh-120px)] p-4">
+        <div className="overflow-y-auto max-h-[calc(85vh-120px)] p-[var(--space-apple-md)]">
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-apple-sm)]">
               <Skeleton className="w-full h-20" />
               <Skeleton className="w-full h-40" />
               <Skeleton className="w-full h-28" />
             </div>
           ) : formula ? (
-            <div className="space-y-4">
+            <div className="space-y-[var(--space-apple-md)]">
               {formula.description && (
-                <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">{formula.description}</p>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{formula.description}</p>
               )}
 
               {formula.targetEffects && formula.targetEffects.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
                     目标功效
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
@@ -131,37 +132,37 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">安全检查</p>
                   <p
                     className={cn(
                       'text-base font-semibold',
                       safetyPassed === true
-                        ? 'text-success-600'
+                        ? 'text-[var(--color-success-text)]'
                         : safetyPassed === false
-                          ? 'text-error-600'
+                          ? 'text-[var(--color-error-text)]'
                           : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]',
                     )}
                   >
                     {safetyPassed === null ? '未检测' : safetyPassed ? '通过' : '未通过'}
                   </p>
                 </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                <div className="bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">协同评分</p>
-                  <p className="text-base font-semibold text-primary-700">
+                  <p className="text-base font-semibold text-[var(--color-primary-text)]">
                     {synergyScore !== null ? synergyScore : '-'}
                   </p>
                 </div>
-                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 text-center">
+                <div className="bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] p-2.5 text-center">
                   <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">成分数量</p>
-                  <p className="text-base font-semibold text-neutral-700 dark:text-neutral-300">{ingredientList.length}</p>
+                  <p className="text-base font-semibold text-[var(--text-primary)]">{ingredientList.length}</p>
                 </div>
               </div>
 
               {ingredientList.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
                     成分组成
                   </h4>
                   <CompositionChart ingredients={ingredientList} compact />
@@ -171,7 +172,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                         {ingredientList.map((ing, i) => (
                           <tr key={i}>
                             <td className="py-1.5">
-                              <span className="font-medium text-neutral-700 dark:text-neutral-300">{ing.name}</span>
+                              <span className="font-medium text-[var(--text-primary)]">{ing.name}</span>
                               {ing.role && (
                                 <Badge variant="info" size="sm" className="ml-1">
                                   {ing.role}
@@ -194,7 +195,7 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { label: '服用剂量', value: formula.dosage },
                   { label: '加工工艺', value: formula.processing_method },
@@ -203,19 +204,19 @@ export function FormulaQuickView({ formulaId, onClose, onNavigate }: FormulaQuic
                 ]
                   .filter((p) => p.value)
                   .map(({ label, value }) => (
-                    <div key={label} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2">
+                    <div key={label} className="bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] p-2">
                       <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{label}</p>
-                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mt-0.5">{value}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] mt-0.5">{value}</p>
                     </div>
                   ))}
               </div>
             </div>
           ) : (
-            <div className="text-center py-6 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方不存在</div>
+            <div className="text-center py-[var(--space-apple-lg)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配方不存在</div>
           )}
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50">
+        <div className="flex items-center justify-between px-[var(--space-apple-md)] py-[var(--space-apple-md)] border-t border-[var(--border-color)] bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)]/50">
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             {isLoading
               ? ''

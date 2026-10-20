@@ -8,7 +8,7 @@
  * - Markdown 兼容（逐块渲染）
  * - 跳跃完成（点击加速）
  */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import MarkdownRenderer from './MarkdownRenderer'
 
 interface TypewriterTextProps {
@@ -20,12 +20,15 @@ interface TypewriterTextProps {
 }
 
 export default function TypewriterText({
-  content,
+  content: rawContent,
   speed = 30,
   chunkSize = 3,
   onComplete,
   enabled = true,
 }: TypewriterTextProps) {
+  // 防御：上游（如 MessageBubble）在消息 content 字段缺失时会传入 null/undefined。
+  // 若不在此归一化，下方 :47 的 content.length 会抛 TypeError。
+  const content = rawContent ?? ''
   // Respect user's motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -64,6 +67,7 @@ export default function TypewriterText({
 
   useEffect(() => {
     if (!enabled || !content || isLongContent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayedLen(content.length)
       setIsComplete(true)
       return
@@ -76,7 +80,6 @@ export default function TypewriterText({
 
     // 动态速度: 内容越长速度越快
     const adaptiveChunkSize = content.length > 300 ? 8 : content.length > 100 ? 5 : chunkSize
-    const adaptiveSpeed = content.length > 500 ? 10 : speed
 
     timerRef.current = setInterval(() => {
       setDisplayedLen(prev => {

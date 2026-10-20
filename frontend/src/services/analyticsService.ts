@@ -108,8 +108,9 @@ export const cacheManager = new DataCacheManager();
 // ─── 核心数据服务类 ───
 class AnalyticsService {
   private baseUrl = `${envConfig.api.baseUrl}/analytics`;
-  private wsUrl = import.meta.env?.VITE_WS_ANALYTICS_URL || `ws://localhost:8000/api/v1/ws/analytics`;
+  private wsUrl = import.meta.env?.VITE_WS_ANALYTICS_URL || `ws://localhost:8000/api/v1/analytics/ws/dashboard`;
   private ws: WebSocket | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   private listeners = new Map<string, Set<Function>>();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
@@ -182,7 +183,7 @@ class AnalyticsService {
         ...(filters &&
           Object.fromEntries(
             Object.entries(filters)
-              .filter(([_, v]) => v != null)
+              .filter(([, v]) => v != null)
               .map(([k, v]) => [k, String(v)]),
           )),
       });
@@ -219,7 +220,7 @@ class AnalyticsService {
         ...(filters &&
           Object.fromEntries(
             Object.entries(filters)
-              .filter(([_, v]) => v != null)
+              .filter(([, v]) => v != null)
               .map(([k, v]) => [k, String(v)]),
           )),
       });
@@ -300,6 +301,7 @@ class AnalyticsService {
     this.listeners.clear();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   subscribe(eventType: string, callback: Function): () => void {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());

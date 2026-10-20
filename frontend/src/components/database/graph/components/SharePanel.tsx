@@ -5,7 +5,6 @@ export interface ShareLinkData {
 }
 
 export interface SharePanelProps {
-  [key: string]: any;
   showSharePanel: boolean
   shareLink: ShareLinkData | null
   onCopyLink: () => void
@@ -16,7 +15,7 @@ export default function SharePanel({ showSharePanel, shareLink, onCopyLink, onCl
   if (!showSharePanel || !shareLink) return null
 
   return (
-    <div className="absolute top-14 right-3 z-45 w-[340px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
+    <div className="absolute top-14 right-3 z-45 w-[min(340px,calc(100vw-1.5rem))] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 animate-fade-in">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50 rounded-t-2xl">
         <div className="flex items-center gap-2"><span>🔗</span><span className="text-sm font-bold text-accent-700 dark:text-accent-700">分享图谱</span></div>
         <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>
@@ -26,7 +25,7 @@ export default function SharePanel({ showSharePanel, shareLink, onCopyLink, onCl
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">分享链接</div>
           <code className="text-xs font-mono text-accent-600 dark:text-accent-700 block">{shareLink.url}</code>
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
           <div className="rounded-lg bg-accent-50 dark:bg-accent-950/20 p-2">
             <div className="text-lg font-bold text-accent-600">{shareLink.shortCode}</div>
             <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">短码</div>

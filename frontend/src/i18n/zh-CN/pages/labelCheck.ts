@@ -1,0 +1,35 @@
+/**
+ * 中文「配料表核查」模块翻译
+ */
+export default {
+  labelCheck: {
+    title: '配料表核查',
+    subtitle: '粘贴或扫描配料表文本，基于药食同源目录 / GB 2760 / GB 14880 等公开标准做信息比对',
+    inputTitle: '输入配料表',
+    placeholder: '例如：\n配料：水、白砂糖、植脂末（葡萄糖浆、氢化植物油）、山梨酸钾、小麦粉',
+    startCheck: '开始核查',
+    uploadImage: '上传图片识别',
+    uploadAria: '上传配料表图片',
+    clear: '清空',
+    ocrText: 'OCR 识别文本：',
+    resultTitle: '核查结果',
+    reportId: '报告编号：{{id}}',
+    categoryFoodHomology: '药食同源',
+    categoryNewFood: '新食品原料',
+    categoryAdditive: '添加剂',
+    categoryOrdinary: '常规原料',
+    categoryEnricher: '营养强化',
+    categoryProhibited: '禁用/风险',
+    categoryUnknown: '未收录',
+    ingredientDetails: '成分明细',
+    allergen: '过敏原：{{group}}',
+    levelInfo: '提示',
+    levelNote: '注意',
+    levelWarning: '警示',
+    toastInputRequired: '请输入配料表内容',
+    toastRecognized: '已识别 {{count}} 项配料',
+    toastFailed: '核查失败，请稍后重试',
+    toastOcrSuccess: 'OCR 识别成功，共 {{count}} 项配料',
+    toastOcrUnavailable: 'OCR 识别不可用，请粘贴文本',
+  },
+}

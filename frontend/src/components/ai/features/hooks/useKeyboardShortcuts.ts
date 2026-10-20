@@ -25,7 +25,7 @@
  * @lastUpdated 2026-05-12
  */
 
-import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import { logger } from '@/utils/safeLogger'
 import { eventBus } from '../services/eventBus'
 
@@ -217,7 +217,6 @@ interface UseKeyboardShortcutsReturn {
 const DEFAULT_SEQUENCE_TIMEOUT = 500
 const DEFAULT_HOLD_TIME = 500
 const DEFAULT_REPEAT_INTERVAL = 50
-const MAX_STATS_HISTORY = 1000
 
 // ===== 内置快捷键预设 =====
 

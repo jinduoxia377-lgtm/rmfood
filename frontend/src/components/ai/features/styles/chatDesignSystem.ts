@@ -137,6 +137,8 @@ export interface DesignSchemeConfig {
 
 // ===== 方案 A: Academic Minimal（学术极简）=====
 // 与项目品牌色对齐：翠绿 #10B981
+// 以下 A/B/C 三套草案为历史设计参考，当前统一方案见 DESIGN_SCHEMES，保留但不参与编译检查。
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 const academicColors: ColorTokens = {
   // 用户消息 — 翠绿深色
@@ -442,6 +444,7 @@ const proAnimations: AnimationTokens = {
   transitionNormal: '200ms ease',
   transitionSlow: '300ms ease',
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // ===== 完整方案配置（统一品牌主题）=====
 

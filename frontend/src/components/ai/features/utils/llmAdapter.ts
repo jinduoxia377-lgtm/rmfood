@@ -12,7 +12,6 @@ import type {
   LlmFailure,
   StreamChunk,
   ModelRequest,
-  FinishReason,
 } from '@/components/ai/shared/types';
 import { logger } from '@/utils/safeLogger';
 
@@ -57,12 +56,15 @@ export class DeepSeekAdapter implements LlmAdapter {
   }
 
   async *stream(request: ModelRequest, signal: AbortSignal): AsyncIterable<StreamChunk> {
+    void request;
+    void signal;
     // 模拟流式响应（实际实现需要调用真实 API）
     yield { type: 'text-delta', index: 0, text: 'Hello' };
     yield { type: 'finish', reason: 'stop' };
   }
 
   async complete(request: ModelRequest): Promise<string> {
+    void request;
     // 模拟完整响应
     return 'Hello World';
   }
@@ -127,11 +129,14 @@ export class OpenAIAdapter implements LlmAdapter {
   }
 
   async *stream(request: ModelRequest, signal: AbortSignal): AsyncIterable<StreamChunk> {
+    void request;
+    void signal;
     yield { type: 'text-delta', index: 0, text: 'Hello' };
     yield { type: 'finish', reason: 'stop' };
   }
 
   async complete(request: ModelRequest): Promise<string> {
+    void request;
     return 'Hello World';
   }
 

@@ -29,6 +29,8 @@ class ModuleContentGenerator implements IContentGenerator {
    * 生成摘要
    */
   generateAbstract(metadata: ReportMetadata, data: any): string {
+    void metadata;
+    void data;
     const formulaName = this.candidate.formula_name || 'AI智能配方';
     const effectsStr = this.effects.join('、');
 
@@ -43,6 +45,7 @@ class ModuleContentGenerator implements IContentGenerator {
    * 生成引言
    */
   generateIntroduction(background: any): string {
+    void background;
     const formulaName = this.candidate.formula_name || 'AI智能配方';
 
     return `### 1.1 研究背景与意义
@@ -80,6 +83,7 @@ class ModuleContentGenerator implements IContentGenerator {
    * 生成文献综述
    */
   generateLiteratureReview(herbs: any[]): string {
+    void herbs;
     const formulaName = this.candidate.formula_name || 'AI智能配方';
 
     const literatureContent = `### 2.1 药食同源食品研究进展
@@ -113,6 +117,8 @@ ${formulaName}的组成基于中医药经典理论与现代药理学研究成果
    * 生成研究方法
    */
   generateResearchMethod(materials: any, methods: any): string {
+    void materials;
+    void methods;
     return `### 3.1 实验材料
 
 #### 3.1.1 实验动物
@@ -185,6 +191,7 @@ ${formulaName}的组成基于中医药经典理论与现代药理学研究成果
    * 生成研究结果
    */
   generateResults(results: any): string {
+    void results;
     return `### 4.1 急性毒性试验结果
 
 急性毒性试验结果表明，受试样品的最大耐受量大于20g/kg体重，根据急性毒性分级标准，属于实际无毒级。试验期间动物活动正常，饮食、饮水正常，无异常行为和死亡情况。
@@ -240,6 +247,8 @@ ${formulaName}的组成基于中医药经典理论与现代药理学研究成果
    * 生成讨论
    */
   generateDiscussion(results: any, background: any): string {
+    void results;
+    void background;
     return `### 5.1 配方科学性分析
 
 本配方以中医药经典理论为指导，结合现代营养学研究成果，采用君臣佐使配伍原则，各成分协同作用明确，科学依据充分。
@@ -303,6 +312,7 @@ ${formulaName}的组成基于中医药经典理论与现代药理学研究成果
    * 生成结论
    */
   generateConclusion(summary: any): string {
+    void summary;
     const formulaName = this.candidate.formula_name || 'AI智能配方';
 
     return `### 6.1 结论
@@ -543,7 +553,6 @@ export class AcademicReportModuleGenerator {
    */
   private generateModuleContent(type: ReportModuleType): ModuleData {
     const config = this.getModuleConfig(type);
-    const formulaName = this.candidate.formula_name || 'AI智能配方';
 
     switch (type) {
       case ReportModuleType.ABSTRACT:

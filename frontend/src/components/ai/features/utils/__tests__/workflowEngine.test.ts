@@ -36,7 +36,8 @@ describe('WorkflowEngine', () => {
         id: 'test-workflow',
         name: '测试工作流',
         nodes: [
-          { id: 'node1', name: '节点1', type: 'tool', config: {} },
+          // 使用 condition（纯逻辑）节点验证执行链路，避免工具节点触发真实后端 API
+          { id: 'node1', name: '节点1', type: 'condition' as const, config: { condition: '' } },
         ],
         edges: [],
         entryNode: 'node1',
@@ -54,7 +55,7 @@ describe('WorkflowEngine', () => {
       const workflow = {
         id: 'status-test',
         name: '状态测试',
-        nodes: [{ id: 'n1', name: 'N1', type: 'tool', config: {} }],
+        nodes: [{ id: 'n1', name: 'N1', type: 'condition' as const, config: { condition: '' } }],
         edges: [],
         entryNode: 'n1',
       };

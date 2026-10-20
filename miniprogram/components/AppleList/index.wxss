@@ -49,7 +49,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 18rpx;
+  font-size: var(--font-size-fine-print);
 }
 
 .apple-list-item-icon.blue { background: var(--color-system-blue); }
@@ -115,7 +115,7 @@
   left: 2rpx;
   width: 28rpx;
   height: 28rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 50%;
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
   transition: transform var(--transition-spring);

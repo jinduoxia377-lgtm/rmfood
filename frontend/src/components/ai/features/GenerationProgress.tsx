@@ -11,7 +11,6 @@ import {
   Clock,
   CheckCircle2,
   Loader2,
-  AlertCircle,
   XCircle,
 } from 'lucide-react'
 
@@ -126,6 +125,7 @@ export function GenerationProgress({
 
   const elapsedTime = useMemo(() => {
     if (!progress.startTime) return 0
+    // eslint-disable-next-line react-hooks/purity
     return (Date.now() - progress.startTime) / 1000
   }, [progress.startTime, progress.stage])
 

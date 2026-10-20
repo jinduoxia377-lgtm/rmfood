@@ -46,7 +46,7 @@ export function PageSkeleton() {
       </div>
 
       {/* Stats skeleton */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="card p-5 space-y-3">
             <div className="h-4 w-16 bg-neutral-200 dark:bg-neutral-700 rounded" />

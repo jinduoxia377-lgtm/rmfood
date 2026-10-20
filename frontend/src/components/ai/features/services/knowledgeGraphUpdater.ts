@@ -195,7 +195,8 @@ class PubMedAPIClient implements LiteratureAPIClient {
   }
 
   async getRecentUpdates(since: Date, _categories?: string[]): Promise<LiteratureResult[]> {
-    const query = `("functional food"[MeSH] OR "dietary supplement"[MeSH] OR "nutraceutical"[Title/Abstract]) AND ("${since.toISOString().split('T')[0]}"[PDat] : 3000[PDat])`;
+    void _categories;
+    const query = (`"functional food"[MeSH] OR "dietary supplement"[MeSH] OR "nutraceutical"[Title/Abstract]) AND ("${since.toISOString().split('T')[0]}"[PDat] : 3000[PDat])`);
 
     return this.search(query, { maxResults: 200 });
   }
@@ -300,7 +301,7 @@ class KnowledgeExtractionEngine {
 
   private initializePatterns(): void {
     // 实体识别模式（基于正则表达式+词典）
-    ((this.entityPatterns = new Map([
+    this.entityPatterns = new Map([
       [
         'ingredient',
         [
@@ -344,15 +345,15 @@ class KnowledgeExtractionEngine {
         'quality',
         [/(?:含量测定|指纹图谱|重金属|微生物限度|溶出度|稳定性|有关物质)/g, /(?:HPLC|UV|GC|TLC|ICP|AAS|XRD)/g],
       ],
-    ])),
-      // 关系抽取模式
-      (this.relationPatterns = [
+    ]);
+    // 关系抽取模式
+    this.relationPatterns = [
         /(\S+)\s*(?:协同|配合|联合|结合|复配)\s*(?:使用|应用|服用|添加)\s*(\S+)/g, // synergistic_with
         /(\S+)\s*与\s*(\S+)\s*(?:存在|有|具有)\s*(?:配伍禁忌|相互作用|冲突)/g, // contraindicated_with
         /(\S+)\s*(?:可|能|能够|有助于|可以)\s*(?:增强|提升|改善|促进|加强)\s*(\S+)/g, // enhances
         /(\S+)\s*(?:抑制|降低|减少|阻断|拮抗)\s*(\S+)/g, // inhibits
         /(?:用于|适用于|应用于|针对)\s*(\S+)/g, // applies_to
-      ]));
+    ];
   }
 
   /**
@@ -459,7 +460,7 @@ class KnowledgeExtractionEngine {
     baseScore += Math.min(entityText.length / 10, 0.3);
 
     // 专业术语特征加分
-    if (/[（）\[\]()]/.test(entityText)) baseScore += 0.1;
+    if (/[（）[\]()]/.test(entityText)) baseScore += 0.1;
     if (/\d+%|\d+mg|\d+g/.test(entityText)) baseScore += 0.15;
     if (/[A-Z]{2,}/.test(entityText)) baseScore += 0.05;
 
@@ -812,7 +813,7 @@ export class KnowledgeGraphUpdater {
       entityGroups.get(key)!.push(ent);
     });
 
-    entityGroups.forEach((group, _key) => {
+    entityGroups.forEach((group) => {
       if (group.length > 1) {
         conflictsDetected++;
 

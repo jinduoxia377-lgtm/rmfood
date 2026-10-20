@@ -177,7 +177,7 @@ class TestV1Modules:
         assert "websocket_router" in V1_MODULES
 
     def test_expected_count(self):
-        assert len(V1_MODULES) == 8
+        assert len(V1_MODULES) == 9
 
 
 class TestRouterRegistryClass:

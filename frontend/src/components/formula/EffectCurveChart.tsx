@@ -94,7 +94,7 @@ export function EffectCurveChart({
           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Tmax: {peakTime.toFixed(1)}h</span>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
         <div className="p-2 rounded bg-accent-50 dark:bg-accent-300/20 text-center">
           <div className="text-accent-600 dark:text-accent-700">Cmax</div>
           <div className="font-bold text-accent-700 dark:text-accent-700">{peakConcentration.toFixed(1)}</div>

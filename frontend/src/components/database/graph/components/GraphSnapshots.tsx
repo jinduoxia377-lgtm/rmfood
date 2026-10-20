@@ -5,7 +5,6 @@ export interface GraphSnapshot {
 }
 
 export interface GraphSnapshotsProps {
-  [key: string]: any;
   graphSnapshots: GraphSnapshot[]
   onTakeSnapshot?: () => void
 }

@@ -158,7 +158,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
         )}
 
         {/* 统计信息 */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="p-2 rounded-lg bg-success-50 dark:bg-success-300/15 border border-success-100 dark:border-success-800/30">
             <div className="text-center">
               <p className="text-sm font-semibold text-success-800 dark:text-success-600">{users.filter(u => u.status === 'online').length}</p>

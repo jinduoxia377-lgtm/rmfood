@@ -17,7 +17,6 @@ import {
   Cell,
   Legend,
 } from 'recharts'
-import { cn } from '@/lib/utils'
 import { getParetoColor } from './MOPanelSubComponents'
 import type { MultiObjectiveResponse } from '@/api/ai'
 

@@ -10,7 +10,7 @@
  *
  * 目标代码覆盖率 ≥ 80%
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   exportFormulasEnhanced,
   generateImportTemplate,
@@ -62,8 +62,6 @@ Object.defineProperty(globalThis, 'URL', {
 
 // Mock document.createElement for download
 const mockClick = vi.fn()
-const mockAppendChild = vi.fn()
-const mockRemoveChild = vi.fn()
 
 const originalCreateElement = document.createElement.bind(document)
 document.createElement = function(tag: string) {

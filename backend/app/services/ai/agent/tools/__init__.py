@@ -78,6 +78,11 @@ class ToolRegistry:
         self._tools[tool.name] = tool
         logger.info("Agent tool registered: %s", tool.name)
 
+    def unregister(self, name: str) -> None:
+        if name in self._tools:
+            del self._tools[name]
+            logger.info("Agent tool unregistered: %s", name)
+
     def get(self, name: str) -> Optional[BaseAgentTool]:
         return self._tools.get(name)
 
@@ -127,3 +132,5 @@ from .literature_tool import LiteratureSearchTool  # noqa: F401
 from .compare_tool import FormulaCompareTool  # noqa: F401
 from .stability_tool import StabilityPredictTool  # noqa: F401
 from .taste_tool import TastePredictTool  # noqa: F401
+from .bot_admin_tools import CreateBotTool, UpdateBotTool, DeleteBotTool, ListBotsTool  # noqa: F401
+from .delegate_tool import DelegateTool  # noqa: F401

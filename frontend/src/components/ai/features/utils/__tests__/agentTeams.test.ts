@@ -2,7 +2,7 @@
  * Agent Teams 单元测试
  */
 import { TaskDAG, DurableMailbox, TeamManager, TeamStateRebuilder } from '../agentTeams';
-import type { TeamTaskSnapshot, TeamMessageSnapshot, TeamMemberSnapshot } from '../agentTeams';
+import type { TeamTaskSnapshot, TeamMessageSnapshot } from '../agentTeams';
 
 describe('TaskDAG', () => {
   let dag: TaskDAG;

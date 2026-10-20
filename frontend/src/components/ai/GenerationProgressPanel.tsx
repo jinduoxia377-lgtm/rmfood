@@ -78,10 +78,13 @@ export function GenerationProgressPanel({
   useEffect(() => {
     if (previousStage.current !== progress.stage) {
       if (progress.stage === 'complete') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAnnouncement('配方生成完成')
       } else if (progress.stage === 'error') {
+         
         setAnnouncement('配方生成失败')
       } else if (progress.stage === 'generating') {
+         
         setAnnouncement('正在生成配方')
       }
       previousStage.current = progress.stage

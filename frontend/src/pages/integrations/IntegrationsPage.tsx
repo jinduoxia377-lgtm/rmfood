@@ -5,11 +5,12 @@
  *   - 顶部主色横幅替代标题行，与 Dashboard 风格统一
  *   - 横排药丸 Tab 导航，桌面自动显示，移动端 overflow-x-auto
  *   - 宽卡片布局，去除紧凑限制，充分利用屏幕空间
- *   - 全页面间距宽松（space-y-6、card p-6、section gap-5）
+ *   - 全页面间距宽松（space-y-6、card p-[var(--space-apple-lg)]、section gap-5）
  *   - 使用 Button/Card 组件统一样式
  *   - 对接真实后端 /api/v1/integrations/api-keys
  */
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import {
@@ -43,13 +44,14 @@ interface WebhookItem {
   failureCount: number
 }
 
-const TABS: { id: 'api-keys' | 'webhooks' | 'third-party'; label: string; icon: typeof Key }[] = [
-  { id: 'api-keys',      label: 'API 密钥',   icon: Key   },
-  { id: 'webhooks',      label: 'Webhook',    icon: Webhook },
-  { id: 'third-party',   label: '第三方集成', icon: Plug  },
+const TABS: { id: 'api-keys' | 'webhooks' | 'third-party'; labelKey: string; icon: typeof Key }[] = [
+  { id: 'api-keys',      labelKey: 'pages.integrations.tabApiKeys',   icon: Key   },
+  { id: 'webhooks',      labelKey: 'pages.integrations.tabWebhooks',    icon: Webhook },
+  { id: 'third-party',   labelKey: 'pages.integrations.tabThirdParty', icon: Plug  },
 ]
 
 export default function IntegrationsPage() {
+  const { t, i18n } = useTranslation()
   const [activeTab, setActiveTab] = useState<'api-keys' | 'webhooks' | 'third-party'>('api-keys')
   const { addToast } = useToast()
   const qc = useQueryClient()
@@ -65,7 +67,7 @@ export default function IntegrationsPage() {
     mutationFn: revokeAPIKey,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
-      addToast({ type: 'success', message: 'API 密钥已删除' })
+      addToast({ type: 'success', message: t('pages.integrations.keyDeleted') })
     },
   })
 
@@ -86,7 +88,7 @@ export default function IntegrationsPage() {
   const webhooks: WebhookItem[] = [
     {
       id: '1',
-      name: '配方发布通知',
+      name: t('pages.integrations.webhookNames.formulaPublished'),
       url: 'https://hooks.slack.com/services/T00...',
       events: ['formula.published'],
       successCount: 156,
@@ -94,7 +96,7 @@ export default function IntegrationsPage() {
     },
     {
       id: '2',
-      name: '实验完成回调',
+      name: t('pages.integrations.webhookNames.experimentCompleted'),
       url: 'https://api.example.com/webhook/experiment',
       events: ['experiment.completed'],
       successCount: 89,
@@ -103,41 +105,41 @@ export default function IntegrationsPage() {
   ]
 
   const renderApiKeyRow = (key: APIKeyItem) => (
-    <div key={key.id} className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-700/60 bg-neutral-50/50 dark:bg-neutral-800/30">
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
-            <Key className="w-5 h-5 text-warning-600 dark:text-warning-700" />
+    <div key={key.id} className="p-5 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)]/60 bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)]/30">
+      <div className="flex items-start justify-between gap-4 mb-[var(--space-apple-sm)]">
+        <div className="flex items-center gap-[var(--space-apple-sm)] min-w-0">
+          <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]0/10 flex items-center justify-center shrink-0">
+            <Key className="w-5 h-5 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">{key.name}</span>
-              <Badge variant="success" size="sm">活跃</Badge>
+              <span className="text-sm font-medium text-[var(--text-primary)] truncate">{key.name}</span>
+              <Badge variant="success" size="sm">{t('pages.integrations.active')}</Badge>
             </div>
-            <code className="text-xs font-mono text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
+            <code className="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-tertiary)] px-2 py-0.5 rounded">
               {key.prefix}
             </code>
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="复制密钥"
-            onClick={() => { navigator.clipboard.writeText(key.prefix); addToast({ type: 'success', message: '密钥已复制到剪贴板' }) }}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" title={t('pages.integrations.copyKey')}
+            onClick={() => { navigator.clipboard.writeText(key.prefix); addToast({ type: 'success', message: t('pages.integrations.keyCopied') }) }}>
             <Copy className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-950/30" title="删除密钥"
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--text-muted)] hover:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-950/30" title={t('pages.integrations.deleteKey')}
             onClick={() => deleteKeyMutation.mutate(key.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400 ml-13">
-        <span>权限: <span className="text-neutral-700 dark:text-neutral-300">{key.scopes.join(', ')}</span></span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)] ml-13">
+        <span>{t('pages.integrations.scopes', { scopes: key.scopes.join(', ') })}</span>
         <span>•</span>
-        <span>创建: {key.created}</span>
+        <span>{t('pages.integrations.created', { date: key.created })}</span>
         {key.lastUsed && (
           <>
             <span>•</span>
-            <span>最后使用: {new Date(key.lastUsed).toLocaleString('zh-CN')}</span>
+            <span>{t('pages.integrations.lastUsed', { time: new Date(key.lastUsed).toLocaleString(i18n.language) })}</span>
           </>
         )}
       </div>
@@ -152,8 +154,8 @@ export default function IntegrationsPage() {
       <Card key={wh.id}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
+              <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
                 <Webhook className="w-5 h-5 text-info-600 dark:text-info-700" />
               </div>
               <div>
@@ -167,22 +169,22 @@ export default function IntegrationsPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-[var(--space-apple-sm)]">
             <div className="flex flex-wrap gap-2">
               {wh.events.map(event => (
-                <span key={event} className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-lg text-xs text-neutral-600 dark:text-neutral-400 font-mono">
+                <span key={event} className="px-2.5 py-1 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-sm)] text-xs text-[var(--text-secondary)] font-mono">
                   {event}
                 </span>
               ))}
             </div>
-            <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
+            <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-success-500" />
-                成功 {wh.successCount}
+                <span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-success-container)]0" />
+                {t('pages.integrations.success', { count: wh.successCount })}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-danger-500" />
-                失败 {wh.failureCount}
+                <span className="w-2 h-2 rounded-[var(--radius-pill)] bg-danger-500" />
+                {t('pages.integrations.failed', { count: wh.failureCount })}
               </span>
             </div>
           </div>
@@ -194,8 +196,8 @@ export default function IntegrationsPage() {
   const renderThirdPartyCard = (service: { name: string; icon: typeof Slack; desc: string; color: string; connected: boolean }) => (
     <Card key={service.name} className="flex flex-col">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
-          <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', service.color)}>
+        <div className="flex items-center gap-[var(--space-apple-sm)]">
+          <div className={cn('w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center shrink-0', service.color)}>
             <service.icon className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -206,9 +208,9 @@ export default function IntegrationsPage() {
       </CardHeader>
       <CardContent className="flex-1 pt-0">
         {service.connected && (
-          <div className="flex items-center gap-2 p-3 bg-success-50 dark:bg-success-500/10 rounded-xl border border-success-200 dark:border-success-500/20">
-            <CheckCircle2 className="w-4 h-4 text-success-600 dark:text-success-700 shrink-0" />
-            <span className="text-xs text-success-700 dark:text-success-700">已连接</span>
+          <div className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]0/10 rounded-[var(--radius-Apple-md)] border border-[var(--color-success-border)] dark:border-[var(--color-success)]/20">
+            <CheckCircle2 className="w-4 h-4 text-[var(--color-success-text)] dark:text-[var(--color-success-text)] shrink-0" />
+            <span className="text-xs text-[var(--color-success-text)] dark:text-[var(--color-success-text)]">{t('pages.integrations.connected')}</span>
           </div>
         )}
       </CardContent>
@@ -220,30 +222,30 @@ export default function IntegrationsPage() {
           icon={service.connected ? undefined : <Plug className="w-4 h-4" />}
           onClick={() => { /* connect handler */ }}
         >
-          {service.connected ? '已连接' : '连接服务'}
+          {service.connected ? t('pages.integrations.connected') : t('pages.integrations.connectService')}
         </Button>
       </CardFooter>
     </Card>
   )
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
+    <div className="space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-enter">
 
       {/* 顶部横幅 */}
-      <div className="surface-primary rounded-xl p-6 shadow-sm">
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl font-bold leading-snug">集成与 API</h1>
-            <p className="mt-1 text-white/90 text-sm">管理 API 密钥、Webhook 和第三方服务集成</p>
+            <h1 className="text-xl font-bold leading-snug">{t('pages.integrations.title')}</h1>
+            <p className="mt-1 text-white/90 text-sm">{t('pages.integrations.subtitle')}</p>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-[var(--space-apple-sm)] w-full sm:w-auto">
             <Button
               variant="secondary" size="sm"
               icon={<RefreshCw className="w-4 h-4" />}
               onClick={() => qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })}
               disabled={keysLoading}
             >
-              刷新密钥列表
+              {t('pages.integrations.refreshKeys')}
             </Button>
             <Button
               variant="glass" size="sm"
@@ -251,31 +253,31 @@ export default function IntegrationsPage() {
               onClick={() => setCreateOpen(true)}
               disabled={false}
             >
-              新建 API 密钥
+              {t('pages.integrations.newApiKey')}
             </Button>
           </div>
         </div>
       </div>
 
       {/* 横向药丸 Tab */}
-      <div className="overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <div className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl p-1 min-w-max">
-          {TABS.map(({ id, label, icon: Icon }) => {
+      <div className="overflow-x-auto pb-1 -mx-4 px-[var(--space-apple-md)] sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className="inline-flex items-center gap-1 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-md)] p-1 min-w-max">
+          {TABS.map(({ id, labelKey, icon: Icon }) => {
             const active = activeTab === id
             return (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                  'flex items-center gap-2 px-[var(--space-apple-md)] py-2 min-h-[44px] rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-all duration-150',
                   active
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50',
+                    ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]/60 dark:hover:bg-[var(--bg-secondary)]/50',
                 )}
                 aria-current={active ? 'true' : undefined}
               >
-                <Icon className={cn('w-4 h-4', active ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
-                {label}
+                <Icon className={cn('w-4 h-4', active ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-muted)]')} />
+                {t(labelKey)}
               </button>
             )
           })}
@@ -284,34 +286,34 @@ export default function IntegrationsPage() {
 
       {/* API 密钥 */}
       {activeTab === 'api-keys' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
-                    <Key className="w-5 h-5 text-warning-600 dark:text-warning-700" />
+                <div className="flex items-center gap-[var(--space-apple-sm)]">
+                  <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]0/10 flex items-center justify-center shrink-0">
+                    <Key className="w-5 h-5 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                   </div>
                   <div>
-                    <CardTitle as="h2" className="text-base font-semibold tracking-tight">API 密钥</CardTitle>
-                    <CardDescription>管理用于程序化访问系统的凭证</CardDescription>
+                    <CardTitle as="h2" className="text-base font-semibold tracking-tight">{t('pages.integrations.apiKeysTitle')}</CardTitle>
+                    <CardDescription>{t('pages.integrations.apiKeysDesc')}</CardDescription>
                   </div>
                 </div>
                 <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}
                   onClick={() => setCreateOpen(true)}
                   disabled={false}
                 >
-                  创建新密钥
+                  {t('pages.integrations.createNewKey')}
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-[var(--space-apple-sm)]">
               {apiKeys.map(renderApiKeyRow)}
             </CardContent>
             <CardFooter>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-[var(--text-muted)]">
                 <Info className="w-3.5 h-3.5 inline mr-1.5" />
-                密钥仅在创建时完整展示一次，请妥善保存。建议定期轮换密钥以提升安全性。
+                {t('pages.integrations.keySecurityHint')}
               </p>
             </CardFooter>
           </Card>
@@ -327,26 +329,26 @@ export default function IntegrationsPage() {
 
       {/* Webhook */}
       {activeTab === 'webhooks' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-[var(--space-apple-sm)]">
+                  <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-info-50 dark:bg-info-500/10 flex items-center justify-center shrink-0">
                     <Webhook className="w-5 h-5 text-info-600 dark:text-info-700" />
                   </div>
                   <div>
-                    <CardTitle as="h2" className="text-base font-semibold tracking-tight">Webhook 配置</CardTitle>
-                    <CardDescription>接收系统事件推送的回调地址管理</CardDescription>
+                    <CardTitle as="h2" className="text-base font-semibold tracking-tight">{t('pages.integrations.webhookConfig')}</CardTitle>
+                    <CardDescription>{t('pages.integrations.webhookDesc')}</CardDescription>
                   </div>
                 </div>
                 <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}>
-                  创建 Webhook
+                  {t('pages.integrations.createWebhook')}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-[var(--space-apple-sm)]">
                 {webhooks.map(renderWebhookCard)}
               </div>
             </CardContent>
@@ -356,26 +358,26 @@ export default function IntegrationsPage() {
 
       {/* 第三方集成 */}
       {activeTab === 'third-party' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
-                  <Plug className="w-5 h-5 text-accent-600 dark:text-accent-700" />
+              <div className="flex items-center gap-[var(--space-apple-sm)]">
+                <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]0/10 flex items-center justify-center shrink-0">
+                  <Plug className="w-5 h-5 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
                 </div>
                 <div>
-                  <CardTitle as="h2" className="text-base font-semibold tracking-tight">第三方服务集成</CardTitle>
-                  <CardDescription>连接常用协作工具与通讯平台</CardDescription>
+                  <CardTitle as="h2" className="text-base font-semibold tracking-tight">{t('pages.integrations.thirdPartyTitle')}</CardTitle>
+                  <CardDescription>{t('pages.integrations.thirdPartyDesc')}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { name: 'Slack',        icon: Slack,        desc: '消息通知与团队协作', color: 'bg-accent-600', connected: true  },
-                  { name: '钉钉',         icon: MessageCircle, desc: '阿里工作通知推送',   color: 'bg-info-600', connected: false },
-                  { name: '飞书',         icon: Bell,         desc: '文档与通讯集成',     color: 'bg-secondary-600', connected: false },
-                  { name: '企业微信',     icon: ExternalLink, desc: '企业通讯工具',       color: 'bg-success-600', connected: false },
+                  { name: t('pages.integrations.thirdPartyNames.slack'),        icon: Slack,        desc: t('pages.integrations.thirdPartyDescs.slack'), color: 'bg-[var(--color-accent)]', connected: true  },
+                  { name: t('pages.integrations.thirdPartyNames.dingtalk'),         icon: MessageCircle, desc: t('pages.integrations.thirdPartyDescs.dingtalk'),   color: 'bg-info-600', connected: false },
+                  { name: t('pages.integrations.thirdPartyNames.feishu'),         icon: Bell,         desc: t('pages.integrations.thirdPartyDescs.feishu'),     color: 'bg-[var(--color-secondary)]', connected: false },
+                  { name: t('pages.integrations.thirdPartyNames.wecom'),     icon: ExternalLink, desc: t('pages.integrations.thirdPartyDescs.wecom'),       color: 'bg-[var(--color-success)]', connected: false },
                 ].map(service => renderThirdPartyCard(service))}
               </div>
             </CardContent>

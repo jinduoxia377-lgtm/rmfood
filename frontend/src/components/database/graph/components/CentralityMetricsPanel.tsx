@@ -1,4 +1,4 @@
-import { GraphNode, TYPE_CONFIG } from '../types'
+import { GraphNode } from '../types'
 
 export interface CentralityMetricsData {
   pageRank: Record<string, number>
@@ -10,7 +10,6 @@ export interface CentralityMetricsData {
 export type CentralityMode = 'pageRank' | 'betweenness' | 'closeness' | 'degree'
 
 export interface CentralityMetricsPanelProps {
-  [key: string]: any;
   showCentralityPanel: boolean
   centralityMetrics: CentralityMetricsData | null
   centralityMode: CentralityMode
@@ -40,7 +39,7 @@ export default function CentralityMetricsPanel({
   const maxScore = Math.max(...Object.values(data))
 
   return (
-    <div className="absolute top-14 right-3 z-[60] w-[360px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-error-200/60 dark:border-error-700/40 animate-fade-in max-h-[65vh] overflow-auto custom-scrollbar">
+    <div className="absolute top-14 right-3 z-[60] w-[min(360px,calc(100vw-1.5rem))] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-error-200/60 dark:border-error-700/40 animate-fade-in max-h-[65vh] overflow-auto custom-scrollbar">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-error-50 to-warning-50 dark:from-error-950/50 dark:to-warning-950/50 border-b border-error-100/50 rounded-t-2xl sticky top-0">
         <div className="flex items-center gap-2">
           <span>🎯</span>

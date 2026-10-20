@@ -9,7 +9,7 @@
 
 import { logger } from '@/utils/safeLogger';
 import { EventSourcedSession } from './eventSourcing';
-import type { AgentMessage } from '@/components/ai/shared/types';
+import { tokenEstimator } from './tokenEstimator';
 
 export interface SessionInfo {
   id: string;
@@ -98,7 +98,6 @@ export class SessionManager {
     return Array.from(this.sessions.entries()).map(([id, session]) => {
       const meta = this.metaStore.get(id);
       const messages = session.deriveMessages();
-      const { tokenEstimator } = require('./tokenEstimator');
 
       return {
         id,
@@ -130,7 +129,6 @@ export class SessionManager {
   getStats(): { totalSessions: number; totalMessages: number; totalTokens: number } {
     let totalMessages = 0;
     let totalTokens = 0;
-    const { tokenEstimator } = require('./tokenEstimator');
 
     for (const session of this.sessions.values()) {
       const messages = session.deriveMessages();

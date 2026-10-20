@@ -4,7 +4,7 @@
  */
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronLeft, ChevronRight, Loader2, Database, Zap, MemoryStick } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2, MemoryStick } from 'lucide-react'
 
 // ─── 类型定义 ───
 export interface PaginationConfig {

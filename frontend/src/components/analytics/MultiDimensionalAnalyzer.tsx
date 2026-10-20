@@ -7,9 +7,9 @@ import { useQuery } from '@tanstack/react-query'
 import { logger } from '@/utils/safeLogger'
 import api from '@/api/client'
 import {
-  Filter, Download, RefreshCw, ChevronDown, ChevronRight,
-  Plus, Minus, RotateCcw, BarChart3, PieChart as PieIcon,
-  TrendingUp, Table2, Layers,
+  Download, RefreshCw, ChevronDown, ChevronRight,
+  Minus, RotateCcw, BarChart3,
+  Table2, Layers,
 } from 'lucide-react'
 
 // ─── 类型定义 ───
@@ -79,7 +79,7 @@ export const PREDEFINED_MEASURES: Measure[] = [
 export const MultiDimensionalAnalyzer: React.FC<{
   initialConfig?: Partial<AnalysisConfig>
   onDataAnalyzed?: (data: PivotCell[], config: AnalysisConfig) => void
-}> = ({ initialConfig, onDataAnalyzed }) => {
+}> = ({ initialConfig }) => {
   const [config, setConfig] = useState<AnalysisConfig>({
     dimensions: PREDEFINED_DIMENSIONS,
     measures: PREDEFINED_MEASURES,
@@ -578,11 +578,6 @@ function generatePivotData(config: AnalysisConfig): Promise<PivotCell[]> {
       resolve(data)
     }, 500) // 模拟网络延迟
   })
-}
-
-function getDimensionValue(dimensions: Dimension[], key: string): string[] {
-  const dim = dimensions.find(d => d.key === key)
-  return dim?.values || [`值${Math.floor(Math.random() * 10)}`]
 }
 
 function getDimensionValues(dimensions: Dimension[], keys: string[]): string[] {

@@ -9,7 +9,7 @@
  * @version 3.0.0
  */
 
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import type { HistorySession } from '../components/pro'
 import { logger } from '@/utils/safeLogger'
@@ -163,7 +163,7 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     // 清理被删除会话的消息存储（IndexedDB）
     try {
       await chatStorageService.deleteMessages(id)
-    } catch {}
+    } catch { /* 删除消息存储失败忽略 */ }
     // 如果删除的是当前活跃会话，清空消息
     if (id === activeSessionId) {
       handleClearChat()

@@ -1,5 +1,4 @@
 import { GraphNode, TYPE_CONFIG } from '../types'
-import type { PERF_THRESHOLD } from '../types'
 
 /** Sorting option for centrality panel */
 export type SortByOption = 'degree' | 'label' | 'type'
@@ -72,7 +71,7 @@ export default function CentralityPanel({
 
       {/* 图统计概览 */}
       <div className="p-2.5 space-y-2">
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
           {[
             { label: '节点', value: stats.totalNodes, color: 'text-secondary-500' },
             { label: '边', value: stats.totalEdges, color: 'text-primary-500' },
@@ -85,7 +84,7 @@ export default function CentralityPanel({
           ))}
         </div>
 
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
           {[
             { label: '平均度', value: stats.avgDegree },
             { label: '最大度', value: stats.maxDegree },

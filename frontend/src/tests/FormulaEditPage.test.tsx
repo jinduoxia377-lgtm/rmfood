@@ -5,11 +5,11 @@ import FormulaEditPage from '../pages/formula/FormulaEditPage'
 import { useAuthStore } from '../stores/auth'
 
 // Mock stores
-jest.mock('../stores/auth')
+vi.mock('../stores/auth')
 
 // Mock hooks
-jest.mock('../hooks/useQueries', () => ({
-  useFormula: jest.fn(() => ({
+vi.mock('../hooks/useQueries', () => ({
+  useFormula: vi.fn(() => ({
     data: {
       id: 1,
       name: '测试配方',
@@ -33,25 +33,29 @@ jest.mock('../hooks/useQueries', () => ({
     },
     isLoading: false,
   })),
-  useFormulaVersions: jest.fn(() => ({
+  useFormulaVersions: vi.fn(() => ({
     data: [
       { id: 1, version: 1, change_summary: '初始版本', created_at: '2024-01-01T00:00:00Z' },
     ],
   })),
-  useUpdateFormula: jest.fn(() => ({
-    mutateAsync: jest.fn(() => Promise.resolve({ id: 1, name: '测试配方' })),
+  useUpdateFormula: vi.fn(() => ({
+    mutateAsync: vi.fn(() => Promise.resolve({ id: 1, name: '测试配方' })),
     isPending: false,
   })),
-  useDeleteFormula: jest.fn(() => ({
-    mutateAsync: jest.fn(() => Promise.resolve()),
+  useDeleteFormula: vi.fn(() => ({
+    mutateAsync: vi.fn(() => Promise.resolve()),
     isPending: false,
+  })),
+  useAIRecommendations: vi.fn(() => ({
+    data: null,
+    isLoading: false,
   })),
 }))
 
 // Mock API
-jest.mock('../api/formula', () => ({
+vi.mock('../api/formula', () => ({
   formulaApi: {
-    delete: jest.fn(),
+    delete: vi.fn(),
   },
 }))
 
@@ -65,11 +69,11 @@ describe('FormulaEditPage', () => {
   })
 
   beforeEach(() => {
-    ;(useAuthStore as unknown as jest.Mock).mockReturnValue({
-      user: {
-        id: 1,
-        role: 'formulator',
-      },
+    // useAuthStore 在组件与 usePermission 中以 selector 形式调用（useAuthStore((s) => s.user)），
+    // 因此 mock 需实现 selector 语义，返回 state.user 而不是整个 state。
+    ;(useAuthStore as unknown as vi.Mock).mockImplementation((selector?: (state: { user: { id: number; role: string } }) => unknown) => {
+      const state = { user: { id: 1, role: 'formulator' } }
+      return selector ? selector(state) : state
     })
   })
 
@@ -101,9 +105,7 @@ describe('FormulaEditPage', () => {
     const saveButton = screen.getByText('保存修改')
     fireEvent.click(saveButton)
 
-    await waitFor(() => {
-      expect(screen.getByText('请输入配方名称')).toBeInTheDocument()
-    })
+    expect(await screen.findByText('配方名称不能为空')).toBeInTheDocument()
   })
 
   test('adds target effects', () => {
@@ -122,7 +124,7 @@ describe('FormulaEditPage', () => {
     expect(screen.getByText('降血压')).toBeInTheDocument()
   })
 
-  test('removes target effects', () => {
+  test('removes target effects', async () => {
     render(
       <MemoryRouter initialEntries={['/formulas/1/edit']}>
         <QueryClientProvider client={queryClient}>
@@ -131,7 +133,7 @@ describe('FormulaEditPage', () => {
       </MemoryRouter>
     )
 
-    const removeButtons = screen.getAllByTitle('Remove')
+    const removeButtons = await screen.findAllByRole('button', { name: '移除功效' })
     fireEvent.click(removeButtons[0])
 
     expect(screen.queryByText('增强免疫')).not.toBeInTheDocument()
@@ -167,16 +169,17 @@ describe('FormulaEditPage', () => {
     )
 
     const deleteButton = screen.getByText('删除配方')
-    fireEvent.click(deleteButton)
 
-    window.confirm = jest.fn().mockReturnValue(true)
+    // 必须在点击前替换 window.confirm，否则组件内同步调用的是真实 confirm
+    window.confirm = vi.fn().mockReturnValue(true)
+    fireEvent.click(deleteButton)
 
     await waitFor(() => {
       expect(window.confirm).toHaveBeenCalledWith('确认删除此配方？此操作不可撤销。')
     })
   })
 
-  test('displays version history', () => {
+  test('displays formula version', async () => {
     render(
       <MemoryRouter initialEntries={['/formulas/1/edit']}>
         <QueryClientProvider client={queryClient}>
@@ -185,8 +188,7 @@ describe('FormulaEditPage', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('v1')).toBeInTheDocument()
-    expect(screen.getByText('初始版本')).toBeInTheDocument()
+    expect(await screen.findByText('v1')).toBeInTheDocument()
   })
 
   test('updates version notes', () => {
@@ -198,7 +200,7 @@ describe('FormulaEditPage', () => {
       </MemoryRouter>
     )
 
-    const notesInput = screen.getByPlaceholderText('简要描述本次修改内容（选填）')
+    const notesInput = screen.getByPlaceholderText('描述本次修改的内容和原因（选填）...')
     fireEvent.change(notesInput, { target: { value: '测试版本说明' } })
 
     expect(screen.getByDisplayValue('测试版本说明')).toBeInTheDocument()

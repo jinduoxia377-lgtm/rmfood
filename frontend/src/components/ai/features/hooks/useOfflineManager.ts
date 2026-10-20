@@ -162,7 +162,6 @@ export function useOfflineManager(
     autoSyncOnOnline = true,
     enableCompression = false,
     compressionAlgorithm = 'gzip',
-    enableBackgroundSync = false,
     adaptiveSync = false,
     ...offlineConfig
   } = options
@@ -171,7 +170,7 @@ export function useOfflineManager(
   const [status, setStatus] = useState<SyncStatus>('online')
   const [isOnline, setIsOnline] = useState(true)
   const [queueSize, setQueueSize] = useState(0)
-  const [lastSyncResult, setLastSyncResult] = useState<{ success: number; failed: number } | null>(null)
+  const [, setLastSyncResult] = useState<{ success: number; failed: number } | null>(null)
 
   // v8.0 新增状态
   const cacheRef = useRef<Map<string, { data: any; timestamp: number; ttl?: number; version: number }>>(new Map())
@@ -345,7 +344,7 @@ export function useOfflineManager(
     data: any,
     options: CacheOptions = {},
   ): Promise<void> => {
-    const { ttl, compress = enableCompression, priority = 'medium', tags } = options
+    const { ttl, compress = enableCompression, priority = 'medium' } = options
 
     let dataToStore = data
     if (compress) {
@@ -665,7 +664,7 @@ export function useOfflineManager(
    * 批量删除
    */
   const batchRemove = useCallback((itemIds: string[]): void => {
-    itemIds.forEach(id => {
+    itemIds.forEach(() => {
       // 调用 manager 的删除方法
     })
     setQueueSize(managerRef.current?.getQueueSize() || 0)

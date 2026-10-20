@@ -345,6 +345,7 @@ class KEGGService extends ProfessionalBaseService {
   }
 
   public async getPathway(pathwayId: string, organism = 'hsa'): Promise<KEGGPathway | null> {
+    void organism;
     const cacheKey = `/kegg/pathway/${pathwayId}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -363,7 +364,7 @@ class KEGGService extends ProfessionalBaseService {
       const pathway = this.parseKEGGPathway(data);
       this.setCache(cacheKey, pathway);
       return pathway;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -499,7 +500,7 @@ class KEGGService extends ProfessionalBaseService {
       const gene = this.parseKEGGGene(data);
       this.setCache(cacheKey, gene);
       return gene;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -525,7 +526,7 @@ class KEGGService extends ProfessionalBaseService {
       const compound = this.parseKEGGCompound(data);
       this.setCache(cacheKey, compound);
       return compound;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -609,7 +610,7 @@ class KEGGService extends ProfessionalBaseService {
     try {
       const data = await this.get<any>(`/get/${moduleId}`);
       return this.parseKEGGModule(data);
-    } catch (error) {
+    } catch {
       return null;
     }
   }

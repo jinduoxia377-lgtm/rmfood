@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('导航栏诊断测试', () => {
   test('桌面端导航栏功能诊断', async ({ page }) => {

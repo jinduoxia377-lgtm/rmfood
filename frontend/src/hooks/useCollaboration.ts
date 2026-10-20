@@ -79,7 +79,6 @@ export function useCollaboration(): UseCollaborationReturn {
     allowComment: true,
   });
   const [accessStats, setAccessStats] = useState<AccessStatistics | null>(null);
-  const [realtimeEvents, setRealtimeEvents] = useState<RealtimeEvent[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const eventBufferRef = useRef<RealtimeEvent[]>([]);

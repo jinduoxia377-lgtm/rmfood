@@ -16,19 +16,23 @@ function Skeleton({
   variant = 'rect',
   width,
   height,
+  radius,
   animate = true,
+  circular,
+  animationType: _animationType,
   ...props
 }: SkeletonProps) {
   return (
     <div
       className={cn(
         'animate-pulse rounded-md bg-muted',
-        variant === 'circle' && 'rounded-full',
+        (variant === 'circle' || circular) && 'rounded-full',
         width && `w-[${width}]`,
         height && `h-[${height}]`,
         !animate && 'animate-none',
         className,
       )}
+      style={radius != null ? { borderRadius: radius } : undefined}
       {...props}
     />
   )

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sun, Moon, Monitor, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Sun, Moon, Monitor, ChevronDown } from 'lucide-react';
 import { useThemeStore, type ThemeMode } from '@/theme';
 
 interface ThemeSwitcherProps {
@@ -88,18 +88,17 @@ export function ThemeSwitcher({
           ${sizeClasses[size]}
           inline-flex items-center justify-center
           rounded-lg
-          bg-background-elevated hover:bg-background-hover
-          border border-border-default focus:border-primary-main
+          hover:bg-[var(--color-primary-50)] dark:hover:bg-[var(--color-primary)]/15 hover:text-[var(--color-primary)]
           text-text-primary
           cursor-pointer
           transition-all duration-150 ease-out
-          hover:shadow-md
-          focus:outline-none focus:ring-2 focus:ring-primary-main/30 focus:ring-offset-2
+          focus:outline-none
           active:scale-95
           min-w-[44px] min-h-[44px]
           ${variant === 'icon-only' ? '' : 'gap-2 px-3'}
         `}
         aria-label={`切换主题：当前${current.label}${accessibilityMode === 'high-contrast' ? '，已开启高对比度' : accessibilityMode === 'reading' ? '，已开启阅读模式' : ''}`}
+        title="切换主题"
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
@@ -157,15 +156,6 @@ export function ThemeSwitcher({
               );
             })}
           </div>
-
-          <a
-            href="/settings?tab=theme"
-            onClick={() => setIsOpen(false)}
-            className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-neutral-600 dark:text-neutral-400 hover:bg-background-hover hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/30"
-          >
-            <SlidersHorizontal size={14} aria-hidden />
-            配色 / 字号 / 无障碍 等完整主题设置
-          </a>
         </div>
       )}
     </div>

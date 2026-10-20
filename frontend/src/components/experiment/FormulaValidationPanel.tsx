@@ -8,20 +8,20 @@
  * - 预测值 vs 实验值对比表
  * - 验证报告与建议
  */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CheckCircle2, XCircle, AlertTriangle, Loader2,
   Play, RotateCcw, FlaskConical, ShieldCheck, Activity,
   Thermometer, Zap, Network, ChevronDown, ChevronUp,
-  TrendingUp, TrendingDown, Minus, FileText,
+  TrendingUp, Minus, FileText,
 } from 'lucide-react'
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { experimentApi, type FormulaValidationResult, type ValidationStageResult, type PredictionComparison } from '@/api/experiment'
-import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { experimentApi, type ValidationStageResult, type PredictionComparison } from '@/api/experiment'
+import { Button, Badge, Card, CardContent } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 
@@ -133,7 +133,6 @@ function StageCard({ result }: { result: ValidationStageResult }) {
     description: '',
     weight: 0,
   }
-  const Icon = config.icon
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -216,7 +215,7 @@ function StageCard({ result }: { result: ValidationStageResult }) {
             </div>
           )}
           {Object.keys(result.details).length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {Object.entries(result.details).slice(0, 6).map(([k, v]) => (
                 <div key={k} className="text-xs">
                   <span className="text-neutral-500 dark:text-neutral-400">{k}: </span>
@@ -302,7 +301,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
   })
 
   // 查询当前验证进度
-  const { data: progress, refetch: refetchProgress } = useQuery({
+  const { data: progress } = useQuery({
     queryKey: ['validation-progress', validationId],
     queryFn: () => validationId ? experimentApi.getValidationProgress(formulaId, validationId) : null,
     enabled: !!validationId && polling,
@@ -346,7 +345,9 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
   useEffect(() => {
     if (!progress) return
     if (progress.status === 'completed' || progress.status === 'failed') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPolling(false)
+       
       setIsRunning(false)
       qc.invalidateQueries({ queryKey: ['formula-validations', formulaId] })
     }
@@ -470,7 +471,7 @@ export function FormulaValidationPanel({ formulaId, formulaName, experimentId, o
             ))
           ) : isRunning && progress ? (
             // 运行中显示占位
-            Object.entries(STAGE_CONFIG).map(([key, cfg], i) => (
+            Object.entries(STAGE_CONFIG).map(([key, cfg]) => (
               <div
                 key={key}
                 className={cn(

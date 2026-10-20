@@ -30,6 +30,13 @@ export interface User {
   department?: string;
   phone?: string;
 
+  // 个人资料扩展字段（设置页「账户」模块）
+  position?: string;
+  bio?: string;
+  website?: string;
+  github?: string;
+  linkedin?: string;
+
   // 安全信息
   lastLoginAt?: string; // ISO 8601
   loginAttempts: number;
@@ -675,6 +682,7 @@ export interface LoginRequest {
   username: string;
   password: string;
   rememberMe?: boolean;
+  twoFactorCode?: string;
 }
 
 export interface RegisterRequest {
@@ -862,6 +870,8 @@ export interface Experiment {
   researcher_name?: string | null;
   created_at?: string;
   updated_at?: string;
+  share_code?: string;
+  view_count?: number;
 }
 
 export enum ExperimentType {

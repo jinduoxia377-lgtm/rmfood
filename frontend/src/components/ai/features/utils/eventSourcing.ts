@@ -14,8 +14,6 @@
 
 import { logger } from '@/utils/safeLogger';
 import {
-  tryAcquireCompactionLock,
-  releaseCompactionLock,
   canCompact,
 } from './compactionLock';
 import type {
@@ -34,7 +32,7 @@ import type {
 // ── IndexedDB 常量 ─────────────────────────────────────────
 
 const DB_NAME = 'rmfood-agent-session';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = 'events';
 const META_STORE_NAME = 'metadata';
 
@@ -56,7 +54,8 @@ export class SimpleTokenEstimator {
 
   estimateSingle(message: AgentMessage): number {
     const text = message.content;
-    if (!text || text.length === 0) return this.PER_MESSAGE_OVERHEAD;
+    // 空消息按 0 token 处理（无内容即无消耗）
+    if (!text || text.length === 0) return 0;
 
     let chineseCount = 0;
     let asciiCount = 0;
@@ -83,12 +82,17 @@ class IndexedDBAdapter {
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
 
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'seq', autoIncrement: true });
-          store.createIndex('timestamp', 'timestamp', { unique: false });
-          store.createIndex('type', 'type', { unique: false });
-          store.createIndex('turnId', 'data.turnId', { unique: false });
+        // v3：事件存储改为「唯一事件 ID」主键 + seq 索引。
+        // 旧版以 seq 为全局主键，React StrictMode 双挂载/多会话并发时会写入相同 seq
+        // 导致 ConstraintError: Key already exists。升级时删除旧结构重建。
+        if (db.objectStoreNames.contains(STORE_NAME)) {
+          db.deleteObjectStore(STORE_NAME);
         }
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        store.createIndex('seq', 'seq', { unique: false });
+        store.createIndex('timestamp', 'timestamp', { unique: false });
+        store.createIndex('type', 'type', { unique: false });
+        store.createIndex('turnId', 'data.turnId', { unique: false });
 
         if (!db.objectStoreNames.contains(META_STORE_NAME)) {
           db.createObjectStore(META_STORE_NAME, { keyPath: 'key' });
@@ -104,7 +108,12 @@ class IndexedDBAdapter {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       const store = tx.objectStore(STORE_NAME);
-      const request = store.add(event);
+      // 唯一事件 ID：同一 seq 在不同会话/挂载中也不会冲突
+      const record = {
+        ...event,
+        id: `${event.seq}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      };
+      const request = store.add(record);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -114,18 +123,22 @@ class IndexedDBAdapter {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const store = tx.objectStore(STORE_NAME);
+      const index = store.index('seq');
       let request: IDBRequest;
 
       if (fromSeq !== undefined) {
         const range = toSeq !== undefined
           ? IDBKeyRange.bound(fromSeq, toSeq)
           : IDBKeyRange.lowerBound(fromSeq);
-        request = store.getAll(range);
+        request = index.getAll(range);
       } else {
-        request = store.getAll();
+        request = index.getAll();
       }
 
-      request.onsuccess = () => resolve(request.result as SessionEvent[]);
+      request.onsuccess = () => {
+        const events = (request.result as SessionEvent[]).sort((a, b) => a.seq - b.seq);
+        resolve(events);
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -134,8 +147,9 @@ class IndexedDBAdapter {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const store = tx.objectStore(STORE_NAME);
-      const request = store.get(seq);
-      request.onsuccess = () => resolve(request.result);
+      const index = store.index('seq');
+      const request = index.get(seq);
+      request.onsuccess = () => resolve(request.result as SessionEvent | undefined);
       request.onerror = () => reject(request.error);
     });
   }
@@ -216,7 +230,8 @@ export class EventSourcedSession {
   /** 加载已有事件 */
   private async loadEvents(): Promise<void> {
     this.events = await this.adapter.getEvents(this.db!);
-    this._seq = this.events.length;
+    // 使用最大 seq + 1 作为下一个序号，避免与既有事件键冲突
+    this._seq = this.events.length > 0 ? Math.max(...this.events.map((e) => e.seq)) + 1 : 0;
   }
 
   /** 加载 Request Header */
@@ -286,7 +301,7 @@ export class EventSourcedSession {
       this.events.push(event);
     });
 
-    this._seq = this.events.length;
+    this._seq = this.events.length > 0 ? Math.max(...this.events.map(e => e.seq)) + 1 : 0;
 
     // 写回数据库
     await this.adapter.clear(this.db);

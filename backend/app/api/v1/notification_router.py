@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update, delete
 
 from ...core.database.session import get_db
-from ...models.notification import Notification
-from ...models.enums import NotificationType
+from ...models.notification import Notification, NotificationPreference as NotificationPreferenceModel
+from ...models.enums import NotificationType, NotificationStatus
 from ...schemas.notification_schemas import (
     NotificationItem,
     NotificationListResponse,
@@ -175,6 +175,7 @@ async def mark_as_read(
         )
     
     notification.is_read = True
+    notification.status = NotificationStatus.READ
     notification.read_at = _now()
     await db.commit()
     
@@ -202,7 +203,7 @@ async def mark_all_as_read(
     query = update(Notification).where(
         Notification.user_id == current_user.id,
         Notification.is_read == False,
-    ).values(is_read=True, read_at=_now())
+    ).values(is_read=True, status=NotificationStatus.READ, read_at=_now())
     
     if type_filter:
         try:
@@ -222,6 +223,48 @@ async def mark_all_as_read(
         marked_count=marked_count,
         timestamp=_now(),
     )
+
+
+@router.delete("/clear-all", summary="清空所有通知")
+async def clear_all_notifications(
+    db: DbSession,
+    current_user: CurrentUser,
+    type_filter: Optional[str] = Query(None, alias="type", description="可选，只清除特定类型"),
+    confirm: bool = Query(True, description="确认操作（必须为true）"),
+):
+    """
+    清空当前用户的所有通知（或指定类型）
+    
+    - **type**: 可选，只清除此类型
+    - **confirm**: 必须设置为true以确认操作
+    
+    ⚠️ 此操作不可逆，请谨慎使用。
+    """
+    if not confirm:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="请设置 confirm=true 以确认清空操作",
+        )
+
+    query = delete(Notification).where(Notification.user_id == current_user.id)
+
+    if type_filter:
+        try:
+            notif_type = NotificationType(type_filter)
+            query = query.where(Notification.type == notif_type)
+        except ValueError:
+            logger.warning("无效的通知类型过滤器，已忽略: %s", type_filter)
+
+    result = await db.execute(query)
+    await db.commit()
+
+    cleared_count = result.rowcount
+
+    return {
+        "success": True,
+        "message": f"已清空 {cleared_count} 条通知",
+        "cleared_count": cleared_count,
+    }
 
 
 @router.delete("/{notification_id}", response_model=DeleteNotificationResponse, summary="删除通知")
@@ -268,7 +311,7 @@ async def update_preferences(
     current_user: CurrentUser,
 ):
     """
-    更新通知偏好设置
+    更新通知偏好设置（持久化到 notification_preferences 表）
     
     - **email_enabled**: 启用邮件通知
     - **push_enabled**: 启用推送通知
@@ -286,7 +329,7 @@ async def update_preferences(
         "user_id": current_user.id,
         "updated_at": _now(),
     }
-    
+
     if request.email_enabled is not None:
         preferences_data["email_enabled"] = request.email_enabled
     if request.push_enabled is not None:
@@ -308,7 +351,45 @@ async def update_preferences(
             "start": request.quiet_hours_start,
             "end": request.quiet_hours_end,
         }
-    
+
+    # ── 持久化到 notification_preferences 表 ──
+    result = await db.execute(
+        select(NotificationPreferenceModel).where(
+            NotificationPreferenceModel.user_id == current_user.id
+        )
+    )
+    row = result.scalar_one_or_none()
+    if row is None:
+        row = NotificationPreferenceModel(user_id=current_user.id)
+        db.add(row)
+
+    if request.email_enabled is not None:
+        row.email_enabled = request.email_enabled
+    if request.push_enabled is not None:
+        row.webhook_enabled = request.push_enabled
+
+    # 扩展偏好（团队/同步/AI/系统/审核/实验）与免打扰时段存入 settings JSON
+    settings = dict(row.settings or {})
+    for key in (
+        "team_invite",
+        "sync_status",
+        "ai_task_complete",
+        "system_alert",
+        "formula_review",
+        "experiment_complete",
+    ):
+        val = getattr(request, key, None)
+        if val is not None:
+            settings[key] = val
+    if request.quiet_hours_start and request.quiet_hours_end:
+        settings["quiet_hours"] = {
+            "start": request.quiet_hours_start,
+            "end": request.quiet_hours_end,
+        }
+    row.settings = settings
+
+    await db.commit()
+
     return NotificationPreferencesResponse(
         user_id=current_user.id,
         preferences=preferences_data,
@@ -322,7 +403,7 @@ async def get_preferences(
     current_user: CurrentUser,
 ):
     """
-    获取当前用户的通知偏好设置
+    获取当前用户的通知偏好设置（从 notification_preferences 表读取）
     
     返回所有偏好设置项的当前值。
     """
@@ -337,54 +418,39 @@ async def get_preferences(
         "experiment_complete": True,
         "quiet_hours": None,
     }
-    
+
+    result = await db.execute(
+        select(NotificationPreferenceModel).where(
+            NotificationPreferenceModel.user_id == current_user.id
+        )
+    )
+    row = result.scalar_one_or_none()
+    if row is None:
+        return NotificationPreferencesResponse(
+            user_id=current_user.id,
+            preferences=default_preferences,
+            updated_at=None,
+        )
+
+    settings = row.settings or {}
+    quiet_hours = settings.get("quiet_hours") or {}
+    preferences = {
+        "email_enabled": row.email_enabled,
+        "push_enabled": row.webhook_enabled,
+        "team_invite": settings.get("team_invite", True),
+        "sync_status": settings.get("sync_status", True),
+        "ai_task_complete": settings.get("ai_task_complete", True),
+        "system_alert": settings.get("system_alert", True),
+        "formula_review": settings.get("formula_review", True),
+        "experiment_complete": settings.get("experiment_complete", True),
+        "quiet_hours": quiet_hours or None,
+    }
+
     return NotificationPreferencesResponse(
         user_id=current_user.id,
-        preferences=default_preferences,
-        updated_at=None,
+        preferences=preferences,
+        updated_at=row.updated_at,
     )
-
-
-@router.delete("/clear-all", summary="清空所有通知")
-async def clear_all_notifications(
-    db: DbSession,
-    current_user: CurrentUser,
-    type_filter: Optional[str] = Query(None, alias="type", description="可选，只清除特定类型"),
-    confirm: bool = Query(True, description="确认操作（必须为true）"),
-):
-    """
-    清空当前用户的所有通知（或指定类型）
-    
-    - **type**: 可选，只清除此类型
-    - **confirm**: 必须设置为true以确认操作
-    
-    ⚠️ 此操作不可逆，请谨慎使用。
-    """
-    if not confirm:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="请设置 confirm=true 以确认清空操作",
-        )
-    
-    query = delete(Notification).where(Notification.user_id == current_user.id)
-    
-    if type_filter:
-        try:
-            notif_type = NotificationType(type_filter)
-            query = query.where(Notification.type == notif_type)
-        except ValueError:
-            logger.warning("无效的通知类型过滤器，已忽略: %s", type_filter)
-    
-    result = await db.execute(query)
-    await db.commit()
-    
-    cleared_count = result.rowcount
-    
-    return {
-        "success": True,
-        "message": f"已清空 {cleared_count} 条通知",
-        "cleared_count": cleared_count,
-    }
 
 
 @router.get("/{notification_id}", response_model=NotificationItem, summary="获取通知详情")

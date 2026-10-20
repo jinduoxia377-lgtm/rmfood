@@ -261,7 +261,8 @@ class SimulatedAnnealingOptimizer:
                 candidates.append((overlap, hp))
 
         if candidates:
-            candidates.sort(reverse=True)
+            # 只按 overlap 数值排序，避免元组第二元素 HerbParameter 对象被比较时触发 TypeError
+            candidates.sort(key=lambda item: item[0], reverse=True)
             top_overlap = candidates[0][0]
             top_candidates = [c for c in candidates if c[0] == top_overlap]
             chosen = random.choice(top_candidates)[1]

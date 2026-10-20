@@ -1,0 +1,51 @@
+/**
+ * Deutsche "Integrationen & API"-Modulübersetzungen
+ */
+export default {
+  integrations: {
+    title: 'Integrationen & API',
+    subtitle: 'API-Schlüssel, Webhooks und Integrationen von Drittanbieter-Diensten verwalten',
+    refreshKeys: 'Schlüsselliste aktualisieren',
+    newApiKey: 'Neuer API-Schlüssel',
+    tabApiKeys: 'API-Schlüssel',
+    tabWebhooks: 'Webhooks',
+    tabThirdParty: 'Drittanbieter',
+    apiKeysTitle: 'API-Schlüssel',
+    apiKeysDesc: 'Anmeldedaten für den programmatischen Systemzugriff verwalten',
+    createNewKey: 'Neuen Schlüssel erstellen',
+    active: 'Aktiv',
+    copyKey: 'Schlüssel kopieren',
+    keyCopied: 'Schlüssel in Zwischenablage kopiert',
+    deleteKey: 'Schlüssel löschen',
+    keyDeleted: 'API-Schlüssel gelöscht',
+    scopes: 'Berechtigungen: {{scopes}}',
+    created: 'Erstellt: {{date}}',
+    lastUsed: 'Zuletzt verwendet: {{time}}',
+    keySecurityHint: 'Schlüssel werden nur einmal bei der Erstellung vollständig angezeigt. Bitte sicher aufbewahren und regelmäßig rotieren.',
+    webhookConfig: 'Webhook-Konfiguration',
+    webhookDesc: 'Callback-URLs verwalten, die Systemereignisse empfangen',
+    createWebhook: 'Webhook erstellen',
+    success: 'Erfolgreich {{count}}',
+    failed: 'Fehlgeschlagen {{count}}',
+    thirdPartyTitle: 'Drittanbieter-Integrationen',
+    thirdPartyDesc: 'Gängige Kollaborationstools und Kommunikationsplattformen verbinden',
+    connected: 'Verbunden',
+    connectService: 'Dienst verbinden',
+    webhookNames: {
+      formulaPublished: 'Formel veröffentlicht',
+      experimentCompleted: 'Experiment abgeschlossen',
+    },
+    thirdPartyNames: {
+      slack: 'Slack',
+      dingtalk: 'DingTalk',
+      feishu: 'Feishu',
+      wecom: 'WeCom',
+    },
+    thirdPartyDescs: {
+      slack: 'Nachrichten und Team-Kollaboration',
+      dingtalk: 'Alibaba-Arbeitsbenachrichtigungen',
+      feishu: 'Dokumente und Kommunikation',
+      wecom: 'Unternehmenskommunikation',
+    },
+  },
+}

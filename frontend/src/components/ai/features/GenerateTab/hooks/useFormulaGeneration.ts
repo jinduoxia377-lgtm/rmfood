@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useRef, useCallback } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { AICandidate } from '@/api/ai'
 import { useGenerationProgress } from '@/hooks/useGenerationProgress'
@@ -60,14 +60,11 @@ interface GenerationResult {
 }
 
 export function useFormulaGeneration({
-  effectLabels,
-  selectedEffects,
   onGenerateSuccess,
   algorithmConfig,
   constraints,
   useLlm = false,
 }: UseFormulaGenerationOptions) {
-  const queryClient = useQueryClient()
   const feedback = useOperationFeedback()
   const {
     progress,

@@ -10,7 +10,6 @@ import {
   Users,
   Loader2,
   X,
-  Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -41,7 +40,7 @@ function MiniAvatar({ name, size = 24 }: { name: string; size?: number }) {
   return (
     <div
       className={cn(
-        'rounded-full bg-gradient-to-br from-secondary-400 to-accent-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-neutral-800 shrink-0 -ml-1 first:ml-0',
+        'rounded-[var(--radius-pill)] bg-gradient-to-br from-secondary-400 to-accent-500 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-neutral-800 shrink-0 -ml-1 first:ml-0',
       )}
       style={{ width: size, height: size }}
       title={name}
@@ -78,11 +77,6 @@ const TeamTreeNode = memo(function TeamTreeNode({
   onDelete,
   onCreateChild,
 }: TeamTreeNodeProps) {
-  const children = useMemo(
-    () => allTeams.filter((t) => t.id === team.id ? false : t.slug.startsWith(team.slug + '-') || allTeams.some(parent => parent.id === team.id && t.name.includes(team.name))),
-    [allTeams, team],
-  )
-
   const childTeams = useMemo(() => allTeams.filter(t => t.slug.startsWith(team.slug + '/')), [allTeams, team.slug])
   const isExpanded = expandedTeams.has(team.id)
   const isSelected = selectedTeamId === team.id
@@ -93,10 +87,10 @@ const TeamTreeNode = memo(function TeamTreeNode({
     <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined}>
       <div
         className={cn(
-          'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer transition-all group',
+          'flex items-center gap-2 px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] cursor-pointer transition-all group',
           isSelected
-            ? 'bg-secondary-50 dark:bg-secondary-300/20 border border-secondary-200 dark:border-secondary-800'
-            : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/30 border border-transparent',
+            ? 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)]'
+            : 'hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/30 border border-transparent',
           depth > 0 && 'ml-6',
         )}
         style={{ paddingLeft: `${depth * 24 + 12}px` }}
@@ -110,26 +104,26 @@ const TeamTreeNode = memo(function TeamTreeNode({
           }}
           className={cn(
             'w-5 h-5 flex items-center justify-center rounded transition-colors shrink-0',
-            hasChildren ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600' : 'invisible',
+            hasChildren ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-secondary)]' : 'invisible',
           )}
           aria-label={isExpanded ? '收起' : '展开'}
         >
           {hasChildren ? (
             isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
           ) : (
-            <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+            <span className="w-1 h-1 rounded-[var(--radius-pill)] bg-neutral-300 dark:bg-[var(--border-color)]" />
           )}
         </button>
 
         {/* Icon */}
         {isExpanded || !hasChildren ? (
-          <FolderOpen className="w-4.5 h-4.5 text-secondary-500 shrink-0" />
+          <FolderOpen className="w-4.5 h-4.5 text-[var(--color-secondary-text)]0 shrink-0" />
         ) : (
           <Folder className="w-4.5 h-4.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" />
         )}
 
         {/* Name */}
-        <span className="flex-1 font-medium text-sm text-neutral-900 dark:text-white truncate min-w-0">
+        <span className="flex-1 font-medium text-sm text-[var(--text-primary)] truncate min-w-0">
           {team.name}
         </span>
 
@@ -141,7 +135,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
                 <MiniAvatar key={m.userId} name={m.displayName} size={22} />
               ))}
               {teamMembers.length > 4 && (
-                <span className="ml-1 text-xs text-neutral-400 w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center -ml-1 border-2 border-white dark:border-neutral-800">
+                <span className="ml-1 text-xs text-[var(--text-muted)] w-5 h-5 rounded-[var(--radius-pill)] bg-[var(--bg-tertiary)] flex items-center justify-center -ml-1 border-2 border-white dark:border-neutral-800">
                   +{teamMembers.length - 4}
                 </span>
               )}
@@ -156,7 +150,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
           <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
             <button
               onClick={(e) => { e.stopPropagation(); onCreateChild(team.id) }}
-              className="p-1 rounded text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20"
+              className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20"
               title="添加子团队"
               aria-label={`在 ${team.name} 下创建子团队`}
             >
@@ -164,7 +158,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(team) }}
-              className="p-1 rounded text-neutral-400 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+              className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20"
               title="编辑团队"
               aria-label={`编辑 ${team.name}`}
             >
@@ -172,7 +166,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(team) }}
-              className="p-1 rounded text-neutral-400 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20"
+              className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20"
               title="删除团队"
               aria-label={`删除 ${team.name}`}
             >
@@ -327,12 +321,12 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">团队管理</h2>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">共 {teamCount} 个团队</p>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">团队管理</h2>
+          <p className="text-sm text-[var(--text-muted)] mt-0.5">共 {teamCount} 个团队</p>
         </div>
         <button
           onClick={() => openCreateModal(null)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-secondary-500/25"
+          className="inline-flex items-center gap-2 px-[var(--space-apple-md)] py-2.5 bg-secondary-container text-secondary-main rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container transition-colors text-sm font-medium shadow-sm shadow-secondary-500/25"
         >
           <Plus className="w-4 h-4" />
           创建团队
@@ -342,12 +336,12 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
       {/* Main Layout: Tree + Detail Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Tree View */}
-        <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5" role="tree" aria-label="团队树形结构">
+        <div className="lg:col-span-3 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-5" role="tree" aria-label="团队树形结构">
           {rootTeams.length === 0 ? (
             <div className="py-12 text-center">
-              <Folder className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
-              <p className="text-neutral-500 dark:text-neutral-400 font-medium">暂无团队</p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-400 mt-1">点击上方按钮创建第一个团队</p>
+              <Folder className="w-12 h-12 mx-auto text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-[var(--space-apple-sm)]" />
+              <p className="text-[var(--text-muted)] font-medium">暂无团队</p>
+              <p className="text-sm text-[var(--text-muted)] mt-1">点击上方按钮创建第一个团队</p>
             </div>
           ) : (
             <div className="space-y-0.5">
@@ -372,22 +366,22 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         </div>
 
         {/* Detail Panel */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-[var(--space-apple-md)]">
           {/* Selected Team Info */}
           {selectedTeamId ? (
-            <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5 animate-fade-in">
-              <div className="flex items-start justify-between mb-4">
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-5 animate-fade-in">
+              <div className="flex items-start justify-between mb-[var(--space-apple-md)]">
                 <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
+                  <h3 className="font-semibold text-[var(--text-primary)]">
                     {teams.find((t) => t.id === selectedTeamId)?.name}
                   </h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  <p className="text-sm text-[var(--text-muted)] mt-0.5">
                     {teams.find((t) => t.id === selectedTeamId)?.description || '暂无描述'}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedTeamId(null)}
-                  className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
+                  className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--text-secondary)]"
                   aria-label="关闭详情面板"
                 >
                   <X className="w-4 h-4" />
@@ -396,35 +390,35 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
 
               {/* Members in Team */}
               <div>
-                <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-[var(--space-apple-sm)]">
                   团队成员 ({selectedTeamMembers.length})
                 </h4>
                 {selectedTeamMembers.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {selectedTeamMembers.map((m) => (
                       <div
                         key={m.userId}
-                        className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 dark:bg-neutral-700/50"
+                        className="flex items-center gap-2 p-2 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50"
                       >
                         <MiniAvatar name={m.displayName} size={28} />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">{m.displayName}</p>
+                          <p className="text-sm font-medium text-[var(--text-primary)] truncate">{m.displayName}</p>
                           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{m.email}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-neutral-400 dark:text-neutral-400 py-4 text-center">
+                  <p className="text-sm text-[var(--text-muted)] py-4 text-center">
                     该团队暂无成员
                   </p>
                 )}
               </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 text-center">
-              <Users className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-400 mb-3" />
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">选择一个团队查看详情</p>
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-8 text-center">
+              <Users className="w-10 h-10 mx-auto text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-[var(--space-apple-sm)]" />
+              <p className="text-sm text-[var(--text-muted)]">选择一个团队查看详情</p>
             </div>
           )}
         </div>
@@ -437,10 +431,10 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         title={parentTeamId ? '创建子团队' : '创建新团队'}
         size="md"
       >
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <div>
-            <label htmlFor="team-name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-              团队名称 <span className="text-error-500">*</span>
+            <label htmlFor="team-name" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+              团队名称 <span className="text-[var(--color-error-text)]0">*</span>
             </label>
             <input
               id="team-name"
@@ -448,12 +442,12 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="例如：研发部"
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
+              className="w-full px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-transparent"
               autoFocus
             />
           </div>
           <div>
-            <label htmlFor="team-desc" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label htmlFor="team-desc" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               描述（可选）
             </label>
             <textarea
@@ -462,13 +456,13 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               onChange={(e) => setFormDescription(e.target.value)}
               placeholder="简要描述团队的职责..."
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
+              className="w-full px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-transparent"
             />
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-[var(--space-apple-sm)] pt-2">
             <button
               onClick={() => { setShowCreateModal(false); setFormName('') }}
-              className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="px-[var(--space-apple-md)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] transition-colors"
             >
               取消
             </button>
@@ -476,9 +470,9 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               onClick={handleCreate}
               disabled={submitting || !formName.trim()}
               className={cn(
-                'inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors',
+                'inline-flex items-center gap-2 px-[var(--space-apple-md)] py-2 text-sm rounded-[var(--radius-Apple-sm)] transition-colors',
                 submitting || !formName.trim()
-                  ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                  ? 'bg-[var(--border-color)] text-[var(--text-muted)] cursor-not-allowed'
                   : 'bg-secondary-container text-secondary-main hover:bg-secondary-container',
               )}
             >
@@ -496,22 +490,22 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         title="编辑团队"
         size="md"
       >
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <div>
-            <label htmlFor="edit-team-name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-              团队名称 <span className="text-error-500">*</span>
+            <label htmlFor="edit-team-name" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+              团队名称 <span className="text-[var(--color-error-text)]0">*</span>
             </label>
             <input
               id="edit-team-name"
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
+              className="w-full px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-transparent"
               autoFocus
             />
           </div>
           <div>
-            <label htmlFor="edit-team-desc" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label htmlFor="edit-team-desc" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               描述（可选）
             </label>
             <textarea
@@ -519,13 +513,13 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-transparent"
+              className="w-full px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-transparent"
             />
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-[var(--space-apple-sm)] pt-2">
             <button
               onClick={() => { setShowEditModal(false); setEditingTeam(null) }}
-              className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="px-[var(--space-apple-md)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] transition-colors"
             >
               取消
             </button>
@@ -533,9 +527,9 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               onClick={handleUpdate}
               disabled={submitting || !formName.trim()}
               className={cn(
-                'inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors',
+                'inline-flex items-center gap-2 px-[var(--space-apple-md)] py-2 text-sm rounded-[var(--radius-Apple-sm)] transition-colors',
                 submitting || !formName.trim()
-                  ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                  ? 'bg-[var(--border-color)] text-[var(--text-muted)] cursor-not-allowed'
                   : 'bg-secondary-container text-secondary-main hover:bg-secondary-container',
               )}
             >
@@ -553,16 +547,16 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
         title="删除团队"
         size="sm"
       >
-        <div className="space-y-4">
-          <div className="rounded-lg bg-error-50 dark:bg-error-300/20 border border-error-200 dark:border-error-800 p-3">
-            <p className="text-sm text-error-800 dark:text-error-200">
+        <div className="space-y-[var(--space-apple-md)]">
+          <div className="rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] p-[var(--space-apple-sm)]">
+            <p className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">
               确定要删除团队 <strong>"{deletingTeam?.name}"</strong> 吗？此操作不可撤销。
             </p>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-[var(--space-apple-sm)] pt-2">
             <button
               onClick={() => { setShowDeleteModal(false); setDeletingTeam(null) }}
-              className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+              className="px-[var(--space-apple-md)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] transition-colors"
             >
               取消
             </button>
@@ -570,10 +564,10 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
               onClick={handleDelete}
               disabled={submitting}
               className={cn(
-                'px-4 py-2 text-sm rounded-lg transition-colors',
+                'px-[var(--space-apple-md)] py-2 text-sm rounded-[var(--radius-Apple-sm)] transition-colors',
                 submitting
-                  ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                  : 'bg-error-600 text-white hover:bg-error-700',
+                  ? 'bg-[var(--border-color)] text-[var(--text-muted)] cursor-not-allowed'
+                  : 'bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]',
               )}
             >
               {submitting ? <Loader2 className="w-4 h-4 inline animate-spin mr-1" /> : null}

@@ -15,7 +15,7 @@ interface Props {
   charts?: Record<string, { chart_type: string; title: string; labels: string[]; datasets: Array<{ label: string; data: number[]; backgroundColor?: string; borderColor?: string; fill?: boolean }> }> | null
 }
 
-const CHART_ICON_MAP: Record<string, React.ElementType> = {
+const CHART_ICON_MAP: Record<string, React.ComponentType<any>> = {
   pie: PieChart,
   bar: BarChart3,
   line: LineChart,

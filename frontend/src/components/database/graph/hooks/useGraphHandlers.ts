@@ -357,7 +357,6 @@ const createAIInsightHandlers = (
 
   // Node-level analysis
   const generateNodeAnalysis = useCallback((node: GraphNode): NodeAIAnalysis => {
-    const fNodes = filteredNodes
     const fEdges = filteredEdges
     const nodeId = node.id || node.label
 
@@ -912,7 +911,7 @@ const createAdvancedAnalysisHandlers = (
 
     let totalClustering = 0
     let clusteringNodes = 0
-    Object.entries(adjList).forEach(([id, neighbors]) => {
+    Object.entries(adjList).forEach(([, neighbors]) => {
       if (neighbors.length < 2) return
       const neighborSet = new Set(neighbors)
       let links = 0
@@ -1121,7 +1120,7 @@ const createAdvancedAnalysisHandlers = (
   const detectCommunitiesLouvain = useCallback(() => {
     const ns = filteredNodes
     const es = filteredEdges
-    const nodeIds = ns.map((nd, i) => ({ id: nd.id || nd.label, label: nd.label }))
+    const nodeIds = ns.map((nd) => ({ id: nd.id || nd.label, label: nd.label }))
     const n = nodeIds.length
     if (n === 0) return
 
@@ -1565,7 +1564,6 @@ const createPathHandlers = (
 
   const startPathAnimation = useCallback((
     sourceLabel: string, targetLabel: string,
-    nodes: GraphNode[],
   ) => {
     const sourceId = sourceLabel
     const targetId = targetLabel
@@ -1708,7 +1706,7 @@ export interface GraphHandlers {
 
   // Path
   findPathBFSLocal: (sourceId: string, targetId: string) => string[] | null
-  startPathAnimation: (sourceLabel: string, targetLabel: string, nodes: GraphNode[]) => void
+  startPathAnimation: (sourceLabel: string, targetLabel: string) => void
 
   // Zoom
   handleZoomIn: () => void

@@ -3,26 +3,26 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #F2F2F7;
+  background: var(--color-bg-page);
 }
 
 .chat-header {
   padding: 40rpx 32rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   text-align: center;
 }
 
 .title {
   display: block;
-  font-size: 40rpx;
+  font-size: var(--font-size-title-1);
   font-weight: 700;
-  color: #1D1D1F;
+  color: var(--color-text-primary);
 }
 
 .subtitle {
   display: block;
-  font-size: 26rpx;
-  color: #8E8E93;
+  font-size: var(--font-size-callout);
+  color: var(--color-text-tertiary);
   margin-top: 8rpx;
 }
 
@@ -32,17 +32,17 @@
 }
 
 .welcome {
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   border-radius: 16rpx;
   padding: 32rpx;
-  font-size: 28rpx;
-  color: #3A3A3C;
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 .chat-input {
   display: flex;
   padding: 24rpx;
-  background: #FFFFFF;
+  background: var(--color-bg-card);
   gap: 16rpx;
 }

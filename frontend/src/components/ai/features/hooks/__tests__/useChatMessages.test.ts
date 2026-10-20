@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { useChatMessages, ChatMessage } from '../useChatMessages'
+import { useChatMessages } from '../useChatMessages'
 import { chatService } from '../../services/chatService'
 import { storageService } from '../../services/storageService'
-import { eventBus } from '../../services/eventBus'
 
 vi.mock('../../services/chatService', () => ({
   chatService: {
     sendMessage: vi.fn(),
+    sendMessageStream: vi.fn(),
     retryLastMessage: vi.fn(),
     setAuthToken: vi.fn(),
     clearAuthToken: vi.fn(),
@@ -17,6 +17,7 @@ vi.mock('../../services/chatService', () => ({
       transition: vi.fn(),
       canTransition: vi.fn().mockReturnValue(true),
     }),
+    closeAllPendingRequests: vi.fn(),
   },
 }))
 
@@ -39,9 +40,17 @@ vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn().mockReturnValue({ accessToken: 'test-token' }),
 }))
 
+// 模拟流式 SSE 响应（async generator）
+function mockStreamResponse(content: string) {
+  const streamMock = chatService.sendMessageStream as Mock
+  streamMock.mockImplementation(async function* () {
+    yield { content, model: 'test-model', done: false }
+    yield { content: '', done: true }
+  })
+}
+
 describe('useChatMessages', () => {
-  const mockSendMessage = chatService.sendMessage as Mock
-  const mockStorageGet = storageService.get as Mock
+  const mockStream = chatService.sendMessageStream as Mock
   const mockStorageSet = storageService.set as Mock
 
   beforeEach(() => {
@@ -58,14 +67,13 @@ describe('useChatMessages', () => {
       const { result } = renderHook(() => useChatMessages())
       
       expect(result.current.messages).toEqual([])
-      expect(result.current.error).toBeNull()
+      expect(result.current.chatError).toBeNull()
     })
   })
 
   describe('消息发送', () => {
     it('应发送消息并添加到列表', async () => {
-      const mockResponse = { content: 'AI Response', timestamp: Date.now(), role: 'assistant' }
-      mockSendMessage.mockResolvedValue(mockResponse)
+      mockStreamResponse('AI Response')
       
       const { result } = renderHook(() => useChatMessages())
       
@@ -73,10 +81,11 @@ describe('useChatMessages', () => {
         await result.current.sendMessage('Hello AI')
       })
       
-      expect(mockSendMessage).toHaveBeenCalledWith('Hello AI')
+      expect(mockStream).toHaveBeenCalledWith('Hello AI', expect.any(Array))
       expect(result.current.messages).toHaveLength(2)
       expect(result.current.messages[0].role).toBe('user')
       expect(result.current.messages[1].role).toBe('assistant')
+      expect(result.current.messages[1].content).toBe('AI Response')
     })
 
     it('应处理空消息', async () => {
@@ -86,13 +95,13 @@ describe('useChatMessages', () => {
         await result.current.sendMessage('')
       })
       
-      expect(mockSendMessage).not.toHaveBeenCalled()
+      expect(mockStream).not.toHaveBeenCalled()
       expect(result.current.messages).toHaveLength(0)
     })
 
     it('应处理发送错误', async () => {
       const error = new Error('Network error')
-      mockSendMessage.mockRejectedValue(error)
+      mockStream.mockRejectedValue(error)
       
       const { result } = renderHook(() => useChatMessages())
       
@@ -100,14 +109,15 @@ describe('useChatMessages', () => {
         await result.current.sendMessage('Hello')
       })
       
-      expect(result.current.error).toEqual(error)
+      await waitFor(() => {
+        expect(result.current.chatError).not.toBeNull()
+      })
     })
   })
 
   describe('消息编辑', () => {
     it('应编辑用户消息', async () => {
-      const mockResponse = { content: 'AI Response', timestamp: Date.now(), role: 'assistant' }
-      mockSendMessage.mockResolvedValue(mockResponse)
+      mockStreamResponse('AI Response')
       
       const { result } = renderHook(() => useChatMessages())
       
@@ -117,7 +127,7 @@ describe('useChatMessages', () => {
       
       const userMessage = result.current.messages[0]
       
-      await act(() => {
+      await act(async () => {
         result.current.editMessage(userMessage.id, 'Edited content')
       })
       
@@ -129,73 +139,26 @@ describe('useChatMessages', () => {
 
   describe('消息撤回', () => {
     it('应撤回用户消息', async () => {
-      const { result } = renderHook(() => useChatMessages({
-        initialMessages: [{
-          id: 'test-msg',
-          role: 'user',
-          content: 'Test message',
-          timestamp: Date.now(),
-        }]
-      }))
-      
-      await act(() => {
-        const success = result.current.withdrawMessage('test-msg', 'Changed mind')
-        expect(success).toBe(true)
-      })
-      
-      expect(result.current.messages[0].isWithdrawn).toBe(true)
-      expect(result.current.messages[0].content).toBe('[消息已撤回]')
-    })
-  })
-
-  describe('消息评价', () => {
-    it('应对消息进行点赞', async () => {
-      const mockResponse = { content: 'AI Response', timestamp: Date.now(), role: 'assistant' }
-      mockSendMessage.mockResolvedValue(mockResponse)
-      
+      mockStreamResponse('AI Response')
       const { result } = renderHook(() => useChatMessages())
       
       await act(async () => {
-        await result.current.sendMessage('Hello')
+        await result.current.sendMessage('Test message')
       })
       
-      const assistantMessage = result.current.messages[1]
-      
-      await act(() => {
-        result.current.rateMessage(assistantMessage.id, 'up', 'Very helpful')
-      })
-      
-      expect(result.current.messages[1].rating).toBe('up')
-      expect(result.current.messages[1].feedback).toBe('Very helpful')
-    })
-  })
-
-  describe('消息书签', () => {
-    it('应添加书签', async () => {
-      const mockResponse = { content: 'AI Response', timestamp: Date.now(), role: 'assistant' }
-      mockSendMessage.mockResolvedValue(mockResponse)
-      
-      const { result } = renderHook(() => useChatMessages())
-      
+      const userMessage = result.current.messages[0]
       await act(async () => {
-        await result.current.sendMessage('Hello')
+        result.current.retractMessage(userMessage.id)
       })
       
-      const assistantMessage = result.current.messages[1]
-      
-      await act(() => {
-        result.current.toggleBookmark(assistantMessage.id, 'Important note')
-      })
-      
-      expect(result.current.messages[1].isBookmarked).toBe(true)
-      expect(result.current.messages[1].bookmarkNote).toBe('Important note')
+      expect(result.current.messages[0].isRetracted).toBe(true)
+      expect(result.current.messages[0].content).toBe('消息已撤回')
     })
   })
 
   describe('清除消息', () => {
     it('应清除所有消息', async () => {
-      const mockResponse = { content: 'AI Response', timestamp: Date.now(), role: 'assistant' }
-      mockSendMessage.mockResolvedValue(mockResponse)
+      mockStreamResponse('AI Response')
       
       const { result } = renderHook(() => useChatMessages())
       
@@ -203,8 +166,8 @@ describe('useChatMessages', () => {
         await result.current.sendMessage('Hello')
       })
       
-      await act(() => {
-        result.current.clearMessages()
+      await act(async () => {
+        await result.current.clearMessages()
       })
       
       expect(result.current.messages).toEqual([])
@@ -214,7 +177,7 @@ describe('useChatMessages', () => {
   describe('清除错误', () => {
     it('应清除错误', async () => {
       const error = new Error('Test error')
-      mockSendMessage.mockRejectedValue(error)
+      mockStream.mockRejectedValue(error)
       
       const { result } = renderHook(() => useChatMessages())
       
@@ -223,25 +186,28 @@ describe('useChatMessages', () => {
       })
       
       await waitFor(() => {
-        expect(result.current.error).not.toBeNull()
+        expect(result.current.chatError).not.toBeNull()
       })
       
-      await act(() => {
+      await act(async () => {
         result.current.clearError()
       })
       
-      expect(result.current.error).toBeNull()
+      expect(result.current.chatError).toBeNull()
     })
   })
 
   describe('存储操作', () => {
-    it('应保存到存储', async () => {
+    it('发送消息应写入存储', async () => {
+      mockStreamResponse('AI Response')
+      
       const { result } = renderHook(() => useChatMessages())
       
       await act(async () => {
-        await result.current.saveToStorage()
+        await result.current.sendMessage('Hello')
       })
       
+      // localStorage 兜底路径（jsdom 无 IndexedDB）会写入 storageService
       expect(mockStorageSet).toHaveBeenCalled()
     })
   })

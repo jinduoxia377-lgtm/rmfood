@@ -367,7 +367,7 @@ export function AcademicReportEditor() {
   }, [reportDoc]);
 
   if (!reportDoc) {
-    return (<div className="h-screen flex items-center justify-center">
+    return (<div className="h-screen flex items-center justify-center" style={{ height: '100dvh' }}>
       <div className="text-center">
         <div className="text-6xl mb-4">📄</div>
         <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">正在加载文档...</p>
@@ -375,7 +375,7 @@ export function AcademicReportEditor() {
     </div>);
   }
 
-  return (<div className="h-screen flex flex-col bg-neutral-100 dark:bg-neutral-900">
+  return (<div className="h-screen flex flex-col bg-neutral-100 dark:bg-neutral-900" style={{ height: '100dvh' }}>
     {showImportDialog && (
       <DocumentImport
         onImport={handleImport}

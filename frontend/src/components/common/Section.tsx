@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 interface SectionProps {
   id: string
   title: string
-  icon: React.ElementType
+  icon: React.ComponentType<any>
   children: React.ReactNode
   isExpanded: boolean
   onToggle: (id: string) => void

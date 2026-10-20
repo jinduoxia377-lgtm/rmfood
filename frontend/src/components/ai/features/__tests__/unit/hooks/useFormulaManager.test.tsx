@@ -1,253 +1,197 @@
-// @ts-nocheck
 import { renderHook, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useFormulaManager } from '../../../hooks/useFormulaManager'
-import { createMockEventBus } from '../../helpers/mockServices'
-import {
-  createMockFormula,
-  createMockFormulasArray
-} from '../../helpers/testFactories'
+
+// 当前 useFormulaManager 以模块单例方式依赖 eventBus / formulaStorage / formulaExporter
+vi.mock('@/components/ai/features/services/eventBus', () => ({
+  eventBus: {
+    emit: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+  },
+}))
+
+vi.mock('@/utils/formulaStorage', () => ({
+  saveFormulaIndex: vi.fn(),
+  loadFormulaIndex: vi.fn(() => new Map()),
+  clearFormulaStorage: vi.fn(),
+  isStorageAvailable: vi.fn(() => false),
+  importFormulaData: vi.fn((data: unknown[]) => data),
+}))
+
+vi.mock('@/utils/formulaExporter', () => ({
+  exportFormulas: vi.fn().mockResolvedValue(true),
+}))
+
+function makeFormula(id: string, name: string): { id: string; name: string; value: number; unit: string; confidence: number } {
+  return {
+    id,
+    name,
+    value: 10,
+    unit: 'g',
+    confidence: 0.9,
+  }
+}
+
+/** addFormulas 有 500ms 防抖批量添加，等待防抖结束 */
+async function flushUpdateDebounce(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 600))
+}
 
 describe('useFormulaManager', () => {
-  let mockEventBus: ReturnType<typeof createMockEventBus>
-
   beforeEach(() => {
-    mockEventBus = createMockEventBus()
+    vi.clearAllMocks()
   })
 
-  describe('初始化状态', () => {
-    it('应初始化为空配方列表', () => {
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
+  it('应初始化为空状态', () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      expect(result.current.formulas).toEqual([])
-      expect(result.current.selectedFormulas).toEqual([])
-      expect(result.current.isSelectMode).toBe(false)
-    })
+    expect(result.current.formulas).toEqual([])
+    expect(result.current.formulaCount).toBe(0)
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.searchQuery).toBe('')
+    expect(result.current.selectedIds.size).toBe(0)
   })
 
-  describe('事件驱动的配方添加', () => {
-    it('应在收到 FORMULA_RECOGNIZED 事件时添加配方', () => {
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
+  it('addFormula 应添加配方', () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      const newFormula = createMockFormula({
-        name: '新识别的配方',
-        category: '功能性成分'
-      })
+    const formula = makeFormula('f1', '补气配方')
 
-      act(() => {
-        const subscribers = mockEventBus.subscribe.mock.calls.find(
-          call => call[0] === 'FORMULA_RECOGNIZED'
-        )
-        if (subscribers) {
-          subscribers[1](newFormula)
-        }
-      })
-
-      expect(result.current.formulas).toContainEqual(newFormula)
-      expect(result.current.formulas).toHaveLength(1)
+    act(() => {
+      result.current.addFormula(formula)
     })
 
-    it('应避免重复添加相同配方的 ID', () => {
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      const formula = createMockFormula({ id: 'duplicate-id' })
-
-      act(() => {
-        const subscriber = mockEventBus.subscribe.mock.calls.find(
-          call => call[0] === 'FORMULA_RECOGNIZED'
-        )?.[1]
-        if (subscriber) {
-          subscriber(formula)
-          subscriber(formula)
-        }
-      })
-
-      const duplicates = result.current.formulas.filter(
-        f => f.id === 'duplicate-id'
-      )
-      expect(duplicates).toHaveLength(1)
-    })
+    expect(result.current.formulaCount).toBe(1)
+    expect(result.current.getFormulaById('f1')?.name).toBe('补气配方')
   })
 
-  describe('批量操作', () => {
-    it('应支持选择多个配方', () => {
-      const formulas = createMockFormulasArray(5)
+  it('addFormulas 应批量添加配方', async () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-        result.current.toggleSelectMode()
-        result.current.toggleFormulaSelection(formulas[0].id)
-        result.current.toggleFormulaSelection(formulas[2].id)
-        result.current.toggleFormulaSelection(formulas[4].id)
-      })
-
-      expect(result.current.selectedFormulas).toHaveLength(3)
-      expect(result.current.selectedFormulas).toContainEqual(
-        expect.objectContaining({ id: formulas[0].id })
-      )
+    await act(async () => {
+      result.current.addFormulas([makeFormula('f1', '配方A'), makeFormula('f2', '配方B')])
+      await flushUpdateDebounce()
     })
 
-    it('应支持全选/取消全选', () => {
-      const formulas = createMockFormulasArray(5)
-
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-        result.current.toggleSelectMode()
-        result.current.selectAllFormulas()
-      })
-
-      expect(result.current.selectedFormulas).toHaveLength(5)
-
-      act(() => {
-        result.current.deselectAllFormulas()
-      })
-
-      expect(result.current.selectedFormulas).toHaveLength(0)
-    })
-
-    it('应支持删除选中的配方', () => {
-      const formulas = createMockFormulasArray(5)
-
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-        result.current.toggleSelectMode()
-        result.current.selectAllFormulas()
-        result.current.deleteSelectedFormulas()
-      })
-
-      expect(result.current.formulas).toHaveLength(0)
-      expect(result.current.selectedFormulas).toHaveLength(0)
-      expect(mockEventBus.emit).toHaveBeenCalledWith(
-        'FORMULAS_DELETED',
-        expect.objectContaining({ deletedCount: 5 })
-      )
-    })
+    expect(result.current.formulaCount).toBe(2)
   })
 
-  describe('选择模式切换', () => {
-    it('应正确切换选择模式状态', () => {
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
+  it('removeFormula 应删除指定配方', () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      expect(result.current.isSelectMode).toBe(false)
-
-      act(() => {
-        result.current.toggleSelectMode()
-      })
-
-      expect(result.current.isSelectMode).toBe(true)
-
-      act(() => {
-        result.current.toggleSelectMode()
-      })
-
-      expect(result.current.isSelectMode).toBe(false)
+    act(() => {
+      result.current.addFormula(makeFormula('f1', '配方A'))
+    })
+    act(() => {
+      result.current.removeFormula('f1')
     })
 
-    it('退出选择模式时应清空选中列表', () => {
-      const formulas = createMockFormulasArray(3)
-
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-        result.current.toggleSelectMode()
-        result.current.selectAllFormulas()
-        result.current.toggleSelectMode()
-      })
-
-      expect(result.current.selectedFormulas).toHaveLength(0)
-    })
+    expect(result.current.formulaCount).toBe(0)
   })
 
-  describe('配方搜索和过滤', () => {
-    it('应根据关键词过滤配方', () => {
-      const formulas = [
-        createMockFormula({ name: '胶原蛋白肽' }),
-        createMockFormula({ name: '乳清蛋白肽' }),
-        createMockFormula({ name: '大豆肽' }),
-        createMockFormula({ name: '鱼胶原蛋白' })
-      ]
+  it('updateFormula 应更新配方字段', () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-      })
-
-      const filtered = result.current.filterFormulas('胶原')
-
-      expect(filtered).toHaveLength(2)
-      expect(filtered.every(f => f.name.includes('胶原'))).toBe(true)
+    act(() => {
+      result.current.addFormula(makeFormula('f1', '旧名称'))
+    })
+    act(() => {
+      result.current.updateFormula('f1', { name: '新名称' })
     })
 
-    it('应根据分类过滤配方', () => {
-      const formulas = [
-        createMockFormula({ category: '功能性成分' }),
-        createMockFormula({ category: '营养强化' }),
-        createMockFormula({ category: '功能性成分' }),
-        createMockFormula({ category: '防腐剂' })
-      ]
-
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-      })
-
-      const functional = result.current.getFormulasByCategory('功能性成分')
-
-      expect(functional).toHaveLength(2)
-    })
+    expect(result.current.getFormulaById('f1')?.name).toBe('新名称')
   })
 
-  describe('导出准备', () => {
-    it('应返回选中配方的完整数据用于导出', () => {
-      const formulas = createMockFormulasArray(5)
+  it('clearAllFormulas 应清空全部配方', () => {
+    const { result } = renderHook(() => useFormulaManager())
 
-      const { result } = renderHook(() =>
-        useFormulaManager(mockEventBus)
-      )
-
-      act(() => {
-        result.current.setFormulas(formulas)
-        result.current.toggleSelectMode()
-        result.current.toggleFormulaSelection(formulas[1].id)
-        result.current.toggleFormulaSelection(formulas[3].id)
-      })
-
-      const exportData = result.current.getSelectedFormulasForExport()
-
-      expect(exportData).toHaveLength(2)
-      expect(exportData).toContainEqual(
-        expect.objectContaining({ id: formulas[1].id })
-      )
+    act(() => {
+      result.current.addFormula(makeFormula('f1', '配方A'))
     })
+    act(() => {
+      result.current.clearAllFormulas()
+    })
+
+    expect(result.current.formulaCount).toBe(0)
+  })
+
+  it('toggleExpand / isExpanded 应切换展开状态', () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    act(() => {
+      result.current.toggleExpand('f1')
+    })
+    expect(result.current.isExpanded('f1')).toBe(true)
+
+    act(() => {
+      result.current.toggleExpand('f1')
+    })
+    expect(result.current.isExpanded('f1')).toBe(false)
+  })
+
+  it('searchFormulas 应按名称关键词过滤', async () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    await act(async () => {
+      result.current.addFormulas([
+        makeFormula('f1', '胶原蛋白肽'),
+        makeFormula('f2', '乳清蛋白肽'),
+      ])
+      await flushUpdateDebounce()
+    })
+
+    const filtered = result.current.searchFormulas('胶原')
+    expect(filtered).toHaveLength(1)
+    expect(filtered[0].id).toBe('f1')
+  })
+
+  it('filterFormulas 应支持自定义谓词过滤', async () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    await act(async () => {
+      result.current.addFormulas([makeFormula('f1', '配方A'), makeFormula('f2', '配方B')])
+      await flushUpdateDebounce()
+    })
+
+    const filtered = result.current.filterFormulas((f) => f.name === '配方A')
+    expect(filtered).toHaveLength(1)
+    expect(filtered[0].id).toBe('f1')
+  })
+
+  it('选择/全选/清空选择应正确维护选中集合', async () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    await act(async () => {
+      result.current.addFormulas([makeFormula('f1', '配方A'), makeFormula('f2', '配方B')])
+      await flushUpdateDebounce()
+    })
+
+    act(() => {
+      result.current.selectFormula('f1', true)
+    })
+    expect(result.current.getSelectedCount()).toBe(1)
+
+    act(() => {
+      result.current.selectAll()
+    })
+    expect(result.current.getSelectedCount()).toBe(2)
+
+    act(() => {
+      result.current.clearSelection()
+    })
+    expect(result.current.getSelectedCount()).toBe(0)
+  })
+
+  it('getStats 应返回配方统计', () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    act(() => {
+      result.current.addFormula(makeFormula('f1', '配方A'))
+    })
+
+    const stats = result.current.getStats()
+    expect(stats.totalCount).toBe(1)
+    expect(stats.expandedCount).toBe(0)
   })
 })

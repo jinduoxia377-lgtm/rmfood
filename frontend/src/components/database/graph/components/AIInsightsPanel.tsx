@@ -2,7 +2,6 @@ import { GraphNode } from '../types'
 import type { AIInsight } from './types'
 
 export interface AIInsightsPanelProps {
-  [key: string]: any;
   showAIPanel: boolean
   aiInsights: AIInsight[]
   isGeneratingInsight: boolean
@@ -28,15 +27,12 @@ export default function AIInsightsPanel({
   aiInsights,
   isGeneratingInsight,
   onRegenerateInsights,
-  onNodeClick,
-  onSetSelectedNode,
-  onSetNodeAIAnalysis,
   onClose,
 }: AIInsightsPanelProps) {
   if (!showAIPanel) return null
 
   return (
-    <div className="absolute top-14 left-3 z-50 w-[380px] max-h-[65vh] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 overflow-hidden animate-fade-in">
+    <div className="absolute top-14 left-3 z-50 w-[min(380px,calc(100vw-1.5rem))] max-h-[65vh] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-accent-200/60 dark:border-accent-700/40 overflow-hidden animate-fade-in">
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-accent-50 to-accent-50 dark:from-accent-950/50 dark:to-accent-950/50 border-b border-accent-100/50 dark:border-accent-800/30">
         <div className="flex items-center gap-2">
           <span className="text-base">🤖</span>

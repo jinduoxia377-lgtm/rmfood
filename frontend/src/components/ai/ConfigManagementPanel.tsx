@@ -36,7 +36,9 @@ import { ConfigManager, dispatchConfigSync, validateConfigSync, decryptKeyAsync 
 import type { ModelConfig } from '@/utils/configManager';
 import { useModelHealthPolling } from './features/hooks/useModelHealthSSE';
 import { compactionMonitor, getDashboardData } from './features/utils/compactionMonitor';
+import { chatEventLog } from './features/capabilities/storage/ChatEventLog';
 import { ErrorBoundary } from './features/components/ErrorBoundary';
+import { fetchWithCsrf } from '@/utils/csrf';
 
 // ════════════════════════════════════════════════════════════
 // 类型定义
@@ -229,20 +231,16 @@ function HealthDashboard() {
     }
   }, []);
 
-  // P1 模型列表走网关：优先走后端代理端点 /models/models/list（避免浏览器直连 LLM，
-  // 密钥不出后端；旧直连逻辑保留为 fallback，代理失败时降级）。
+  // P1 模型列表走网关：优先走后端代理端点 /models/list（避免浏览器直连 LLM，
+  // 密钥不出后端、无 CORS 问题；旧直连逻辑保留为 fallback，代理失败时降级）。
   const fetchLlmModelsViaProxy = useCallback(async (provider: string, apiKey: string, baseUrl: string) => {
     try {
       const targetUrl = baseUrl || LLM_PRESETS[provider]?.baseUrl || '';
-      const res = await fetch('/api/v1/ai/models/models/list', {
+      const data = await fetchWithCsrf<{ models?: string[] }>('/api/v1/ai/models/list', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ provider, api_key: apiKey, base_url: targetUrl, timeout_ms: 8000 }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as { models?: string[] };
-      setLlmModels(data.models && data.models.length > 0 ? data.models : [`(请手动输入模型名)`]);
+      setLlmModels(data.models && data.models.length > 0 ? data.models : ['(请手动输入模型名)']);
     } catch {
       // 代理不可用，降级到浏览器直连（旧路径）
       fetchLlmModels(provider, apiKey, baseUrl);
@@ -253,6 +251,7 @@ function HealthDashboard() {
   useEffect(() => {
     try {
       const cfg = ConfigManager.getModelConfig('llm');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLlmKey(cfg.apiKey || '');
       const storedProvider = localStorage.getItem('rmfood_llm_provider') || 'deepseek';
       setLlmProvider(storedProvider);
@@ -260,7 +259,7 @@ function HealthDashboard() {
       setLlmBaseUrl(preset?.baseUrl || '');
       const storedModel = localStorage.getItem('rmfood_llm_model') || '';
       if (storedModel) setLlmModel(storedModel);
-    } catch {}
+    } catch { /* 初始化失败时静默 */ }
   }, []);
 
   // 面板打开时：初始化 baseUrl / apiKey / 模型列表
@@ -268,10 +267,11 @@ function HealthDashboard() {
     if (showLlmQuick) {
       try {
         const cfg = ConfigManager.getModelConfig('llm');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLlmKey(cfg.apiKey || '');
         const preset = LLM_PRESETS[llmProvider];
         setLlmBaseUrl(preset?.baseUrl || '');
-      } catch {}
+      } catch { /* 初始化失败时静默 */ }
       fetchLlmModelsViaProxy(llmProvider, llmKey, llmBaseUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,6 +279,7 @@ function HealthDashboard() {
 
   useEffect(() => {
     if (showLlmQuick) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchLlmModelsViaProxy(llmProvider, llmKey, llmBaseUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -345,7 +346,7 @@ function HealthDashboard() {
       }
 
       dispatchConfigSync();
-    } catch (error) {
+    } catch {
       setLlmMsg({ type: 'error', text: '保存失败，请检查网络或后端服务' });
     } finally {
       setLlmSaving(false);
@@ -547,7 +548,7 @@ function HealthDashboard() {
             )}
 
             {/* 指标网格 */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { icon: <Server className="w-3.5 h-3.5" />, label: 'Provider', value: llmStatus?.provider || '—' },
                 { icon: <Cpu className="w-3.5 h-3.5" />, label: 'Model', value: llmStatus?.model || '—' },
@@ -779,6 +780,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
   useEffect(() => {
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConfigs(ConfigManager.getModelConfigs());
       const llmCfg = ConfigManager.getModelConfig('llm');
       if (llmCfg?.apiKey) {
@@ -787,7 +789,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
         const sm = localStorage.getItem('rmfood_llm_model');
         if (sm) setLlmModel(sm);
       }
-    } catch {}
+    } catch { /* 初始化失败时静默 */ }
   }, []);
 
   // P1 密钥存储升级消费：LLM 密钥可能为 RMF:2: AES-GCM 加密，同步读 getModelConfigs 解不开，
@@ -799,34 +801,35 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       const raw = JSON.parse(stored);
       const encKey = (raw?.llm?.apiKey as string) || '';
       if (!encKey.startsWith('RMF:2:')) return; // 非 AES 值，同步路径已可处理
-      const { raw: decrypted, legacyUnencrypted } = await decryptKeyAsync(encKey);
+      const { raw: decrypted } = await decryptKeyAsync(encKey);
       if (decrypted) {
         setConfigs(prev => ({ ...prev, llm: { ...(prev.llm || ConfigManager.getDefaultModelConfig()), apiKey: decrypted } }));
+        // eslint-disable-next-line react-hooks/immutability
         setLlmLegacyKey(false);
       } else {
         // 跨会话 DPAPI 密钥丢失：密钥不可用，强制重输
         setConfigs(prev => ({ ...prev, llm: { ...(prev.llm || ConfigManager.getDefaultModelConfig()), apiKey: '' } }));
         setLlmLegacyKey(true);
       }
-    } catch {}
+    } catch { /* 解密失败时静默 */ }
   }, []);
 
   // P1 legacyUnencrypted 消费：检测当前 LLM 密钥是否为历史明文（未经 base64 编码入库），
   // 若为明文则强制用户重新输入，避免把疑似明文当有效密钥继续使用
   const [llmLegacyKey, setLlmLegacyKey] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     hydrateLlmKeyAsync();
   }, [hydrateLlmKeyAsync]);
   const syncFromStorage = useCallback(() => {
     try {
       const latest = ConfigManager.getModelConfigs();
       setConfigs(latest);
-      const llmCfg = latest.llm;
       const sp = localStorage.getItem('rmfood_llm_provider');
       if (sp && LLM_PRESETS[sp]) setLlmProvider(sp);
       const sm = localStorage.getItem('rmfood_llm_model');
       if (sm) setLlmModel(sm);
-    } catch {}
+    } catch { /* 同步失败时静默 */ }
   }, []);
 
   useEffect(() => {
@@ -909,7 +912,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       ConfigManager.resetModelConfig(key);
       setConfigs(ConfigManager.getModelConfigs());
       setMsg({ type: 'success', text: '已重置本地缓存（后端全局配置不受影响）' });
-    } catch {}
+    } catch { /* 重置失败时静默 */ }
   };
 
   const isActive = status?.status === 'active';
@@ -1129,6 +1132,17 @@ function AdvancedConfigSection() {
   );
 }
 
+// 从本地事件日志单例采集真实统计（无后端端点可用）
+function collectLocalEventStats() {
+  const events = chatEventLog.length;
+  return {
+    session_count: 1,          // 当前前端只有一个活动会话日志
+    total_events: events,
+    db_size_kb: 0,             // 事件日志不持久化，无存储体积
+    persisted: false,
+  };
+}
+
 // ─── Compaction 与事件溯源 ────────────────────────────────
 function CompactionAndEventSourcing() {
   const [show, setShow] = useState(false);
@@ -1136,20 +1150,15 @@ function CompactionAndEventSourcing() {
     try { return getDashboardData(); } catch { return { metrics: { totalCompactions: 0, avgCompactionTime: 0, avgLockWaitTime: 0, lockTimeoutCount: 0 }, recentAlerts: [], health: { status: 'healthy' } }; }
   });
   useEffect(() => {
-    const unsub = compactionMonitor.onMetricsUpdate(() => { try { setMetrics(getDashboardData()); } catch {} });
+    const unsub = compactionMonitor.onMetricsUpdate(() => { try { setMetrics(getDashboardData()); } catch { /* 指标更新失败时静默 */ } });
     return unsub;
   }, []);
 
-  const [esData, setEsData] = useState({ session_count: 0, total_events: 0, db_size_kb: 0 });
-  const [esLoading, setEsLoading] = useState(false);
-  useEffect(() => {
-    setEsLoading(true);
-    fetch('/api/v1/agent/session/stats')
-      .then(r => r.ok ? r.json() : Promise.reject('加载失败'))
-      .then(data => setEsData(data as { session_count: number; total_events: number; db_size_kb: number }))
-      .catch(() => setEsData({ session_count: 0, total_events: 0, db_size_kb: 0 }))
-      .finally(() => setEsLoading(false));
-  }, []);
+  const [esData, setEsData] = useState(() => collectLocalEventStats());
+  // 后端没有 /agent/session/stats 端点。此前 fetch 该地址必然 404，catch 后静默
+  // 填 0，面板会显示"会话数 0 / 事件总数 0 / 存储 0.0 KB"并标注"IndexedDB 持久化"
+  // —— 三个数字全假。改为从本地事件日志单例采集真实值。
+  useEffect(() => chatEventLog.onChange(() => setEsData(collectLocalEventStats())), []);
 
   return (
     <div className="mt-4 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
@@ -1184,7 +1193,7 @@ function CompactionAndEventSourcing() {
                   {metrics.health.status === 'healthy' ? '正常' : '告警'}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { label: '总压缩次数', value: metrics.metrics.totalCompactions, color: 'text-primary-700 dark:text-primary-700' },
                   { label: '平均耗时', value: `${Math.round(metrics.metrics.avgCompactionTime)}ms`, color: 'text-success-700 dark:text-success-600' },
@@ -1218,28 +1227,27 @@ function CompactionAndEventSourcing() {
                 <Database className="w-3.5 h-3.5 text-secondary-500" />
                 <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>事件溯源统计</span>
               </div>
-              {esLoading ? (
-                <div className="text-sm text-[var(--text-muted)]">加载中…</div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: '会话数', value: esData?.session_count ?? 0, color: 'text-primary-700 dark:text-primary-700' },
-                      { label: '事件总数', value: esData?.total_events ?? 0, color: 'text-success-700 dark:text-success-600' },
-                      { label: '存储大小', value: `${(esData?.db_size_kb ?? 0).toFixed(1)} KB`, color: 'text-accent-600 dark:text-accent-700' },
-                    ].map(({ label, value, color }) => (
-                      <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
-                        <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>
-                        <div className="text-xs mt-1.5 leading-tight text-[var(--text-muted)]">{label}</div>
-                      </div>
-                    ))}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { label: '会话数', value: esData?.session_count ?? 0, color: 'text-primary-700 dark:text-primary-700' },
+                  { label: '事件总数', value: esData?.total_events ?? 0, color: 'text-success-700 dark:text-success-600' },
+                  { label: '存储大小', value: `${(esData?.db_size_kb ?? 0).toFixed(1)} KB`, color: 'text-accent-600 dark:text-accent-700' },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
+                    <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>
+                    <div className="text-xs mt-1.5 leading-tight text-[var(--text-muted)]">{label}</div>
                   </div>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-                    <Zap className="w-3 h-3" />
-                    <span>IndexedDB 持久化 · Turn/Step 驱动</span>
-                  </div>
-                </>
-              )}
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                <Zap className="w-3 h-3" />
+                <span>
+                  本会话内存统计 · Turn/Step 驱动
+                  {esData?.persisted === false && (
+                    <span className="ml-1 text-warning-600 dark:text-warning-700">（不持久化，刷新页面即重置）</span>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
         </div>

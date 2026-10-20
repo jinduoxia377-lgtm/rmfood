@@ -12,11 +12,12 @@ from io import StringIO
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, Path
 from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, func
 from sqlalchemy.orm import joinedload
 
-from ..api.deps import get_db_session, get_current_user
+from ..api.deps import get_db_session, get_current_active_user
 from ..models import User
 from ..models.chat import ChatSession, ChatMessage
 
@@ -33,7 +34,7 @@ async def get_sessions(
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     search: str = Query(None, description="搜索关键词（匹配标题）"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取当前用户的对话会话列表，支持分页和搜索"""
     try:
@@ -80,7 +81,7 @@ async def get_sessions(
 async def get_session(
     session_id: int = Path(..., description="会话ID"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取指定会话的详细信息和消息列表"""
     try:
@@ -91,7 +92,8 @@ async def get_session(
         )
         
         result = await db.execute(query)
-        session = result.scalar_one_or_none()
+        # joinedload 集合（messages）后必须调用 unique()，否则 scalar_one_or_none 抛 InvalidRequestError
+        session = result.unique().scalar_one_or_none()
         
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
@@ -112,7 +114,7 @@ async def create_session(
     title: str = Body(..., description="会话标题"),
     tags: list[str] = Body([], description="标签列表"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """创建一个新的对话会话"""
     try:
@@ -141,7 +143,7 @@ async def update_session(
     title: str = Body(None, description="新标题"),
     tags: list[str] = Body(None, description="新标签列表"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """更新会话信息（标题、标签）"""
     try:
@@ -177,7 +179,7 @@ async def update_session(
 async def delete_session(
     session_id: int = Path(..., description="会话ID"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """软删除会话（标记为非活跃）"""
     try:
@@ -213,7 +215,7 @@ async def get_session_messages(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取指定会话的消息列表，支持分页"""
     try:
@@ -263,7 +265,7 @@ async def get_message(
     session_id: int = Path(..., description="会话ID"),
     message_id: int = Path(..., description="消息ID"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取单条消息详情"""
     try:
@@ -303,7 +305,7 @@ async def add_message(
     content: str = Body(..., description="消息内容"),
     metadata: dict = Body({}, description="附加元数据"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """向会话添加一条新消息"""
     try:
@@ -349,12 +351,12 @@ async def add_message(
         raise HTTPException(status_code=500, detail="添加消息失败")
 
 
-@router.delete("/sessions/{session_id}/messages/{message_id}", summary="删除单条消息")
+@router.delete("/sessions/{session_id}/messages/{message_id:int}", summary="删除单条消息")
 async def delete_message(
     session_id: int = Path(..., description="会话ID"),
     message_id: int = Path(..., description="消息ID"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """删除单条消息"""
     try:
@@ -403,7 +405,7 @@ async def batch_delete_messages(
     session_id: int = Path(..., description="会话ID"),
     message_ids: list[int] = Body(..., description="要删除的消息ID列表"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """批量删除多条消息"""
     try:
@@ -456,7 +458,7 @@ async def export_session_json(
     session_id: int = Path(..., description="会话ID"),
     include_metadata: bool = Query(True, description="是否包含所有元数据"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """导出会话的所有消息为JSON格式，包含完整元数据"""
     try:
@@ -467,7 +469,7 @@ async def export_session_json(
         )
         
         result = await db.execute(query)
-        session = result.scalar_one_or_none()
+        session = result.unique().scalar_one_or_none()
         
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
@@ -499,7 +501,7 @@ async def export_session_csv(
     session_id: int = Path(..., description="会话ID"),
     include_metadata: bool = Query(True, description="是否包含所有元数据"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """导出会话的所有消息为CSV格式"""
     try:
@@ -510,7 +512,7 @@ async def export_session_csv(
         )
         
         result = await db.execute(query)
-        session = result.scalar_one_or_none()
+        session = result.unique().scalar_one_or_none()
         
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
@@ -580,7 +582,7 @@ async def export_session_csv(
 async def export_all_sessions_json(
     include_metadata: bool = Query(True, description="是否包含所有元数据"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """导出当前用户的所有会话为JSON格式"""
     try:
@@ -590,7 +592,8 @@ async def export_all_sessions_json(
         ).order_by(ChatSession.updated_at.desc())
         
         result = await db.execute(query)
-        sessions = result.scalars().all()
+        # joinedload 集合（messages）后必须调用 unique()，否则同一会话会按消息数重复返回
+        sessions = result.unique().scalars().all()
         
         export_data = {
             "user_id": current_user.id,
@@ -618,3 +621,97 @@ async def export_all_sessions_json(
     except Exception as e:
         logger.error(f"导出所有会话JSON失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="导出失败")
+
+
+# ===== 会话同步（前端本地会话快照）=====
+
+@router.get("/sync/restore", summary="恢复云端会话快照（跨设备）")
+async def restore_chat_sessions(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    """返回该用户的全部本地会话快照（含消息），供跨设备恢复。
+
+    与 POST /sync 配对：新设备登录同一账号后调用本端点，
+    即可拉回旧设备同步过的会话历史（快照级，非实时同步）。
+    """
+    from ..models.system import SystemConfig
+    from sqlalchemy import select
+    import json as _json
+
+    config_key = f"chat_sync_{current_user.id}"
+    try:
+        result = await db.execute(select(SystemConfig).where(SystemConfig.config_key == config_key))
+        row = result.scalar_one_or_none()
+        snapshot: list[dict] = []
+        if row and row.config_value:
+            try:
+                v = row.config_value
+                if isinstance(v, str):
+                    v = _json.loads(v)
+                if isinstance(v, list):
+                    snapshot = v
+            except Exception:
+                snapshot = []
+        logger.info(f"[ChatSync] 用户 {current_user.id} 恢复 {len(snapshot)} 个会话快照")
+        return {"success": True, "sessions": snapshot, "total": len(snapshot)}
+    except Exception as e:
+        logger.error(f"[ChatSync] 快照恢复失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="会话快照恢复失败")
+
+
+class ChatSyncRequest(BaseModel):
+    """前端本地会话快照同步请求"""
+    sessions: list[dict] = Field(default_factory=list, description="本地会话对象列表")
+
+
+@router.post("/sync", summary="同步本地会话快照到服务器")
+async def sync_chat_sessions(
+    req: ChatSyncRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    """接收前端 IndexedDB/localStorage 中的会话快照并持久化到 SystemConfig。
+
+    说明：这是快照级同步（JSON 存储，按 session id 去重合并），供备份/恢复使用；
+    完整的跨设备会话恢复需要 client_id 关联，属结构性改造，暂未实现。
+    """
+    from ..models.system import SystemConfig
+    from sqlalchemy import select
+    import json as _json
+
+    config_key = f"chat_sync_{current_user.id}"
+    try:
+        result = await db.execute(select(SystemConfig).where(SystemConfig.config_key == config_key))
+        row = result.scalar_one_or_none()
+        snapshot: list[dict] = []
+        if row and row.config_value:
+            try:
+                v = row.config_value
+                if isinstance(v, str):
+                    v = _json.loads(v)
+                if isinstance(v, list):
+                    snapshot = v
+            except Exception:
+                snapshot = []
+
+        by_id: dict[str, dict] = {}
+        for s in snapshot:
+            if isinstance(s, dict) and s.get("id"):
+                by_id[str(s["id"])] = s
+        for s in req.sessions:
+            if isinstance(s, dict) and s.get("id"):
+                by_id[str(s["id"])] = s
+        merged = list(by_id.values())[-200:]  # 最多保留 200 个会话快照
+
+        if row:
+            row.config_value = merged
+            row.updated_by = current_user.id
+        else:
+            db.add(SystemConfig(config_key=config_key, config_value=merged, updated_by=current_user.id))
+        await db.commit()
+        logger.info(f"[ChatSync] 用户 {current_user.id} 同步 {len(req.sessions)} 个会话快照，累计 {len(merged)} 个")
+        return {"success": True, "synced": len(req.sessions), "total": len(merged)}
+    except Exception as e:
+        logger.error(f"[ChatSync] 同步失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="会话同步失败")

@@ -8,7 +8,7 @@
  * - 显示匹配数量
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { Search, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, X, ChevronDown } from 'lucide-react'
 
 export interface SearchHighlight {
   text: string
@@ -97,7 +97,9 @@ export function ChatSearchOverlay({ messages, onGoToMessage, onClose }: ChatSear
   // 搜索
   useEffect(() => {
     if (!query.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([])
+       
       setCurrentResultIndex(-1)
       return
     }

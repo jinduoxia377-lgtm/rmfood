@@ -7,6 +7,7 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from ..schemas import (
     FormulaCreate, FormulaUpdate, FormulaResponse, FormulaListResponse,
@@ -22,12 +23,51 @@ from ..schemas.formula import (
 from ..services.formula import FormulaService
 from ..models.enums import UserRole, FormulaStatus
 from ..models.user_model import User
+from ..models.formula import Formula
 from ..services.auth import get_current_user as _required_get_current_user
 from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role, get_current_user as _optional_get_current_user
 from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
 logger = logging.getLogger(__name__)
+
+
+async def _get_formula_with_ingredients(db: AsyncSession, formula_id: int):
+    """按 ID 加载配方并 eager-load ingredients 关系。
+
+    db.get() 返回的 ORM 对象不会加载懒加载关系，在 async 上下文中访问
+    formula.ingredients 会触发 MissingGreenlet（greenlet_spawn has not been
+    called）。分析/优化类端点统一用本辅助函数加载。
+    """
+    result = await db.execute(
+        select(Formula)
+        .options(selectinload(Formula.ingredients))
+        .where(Formula.id == formula_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def _require_formula_access(tenant_org_id: Optional[int], current_user: Optional["User"], db: AsyncSession) -> None:
+    """配方访问权限开关：org 关闭 formula_access 时，仅 OWNER 可访问。"""
+    if current_user is None:
+        return
+    org_id = tenant_org_id
+    if not org_id:
+        from sqlalchemy import text as _text
+        row = (await db.execute(
+            _text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
+            {"uid": current_user.id},
+        )).fetchone()
+        org_id = row.organization_id if row else None
+    if not org_id:
+        return
+    from ..core.multi_tenant.multi_tenant_service import get_org_service
+    svc = get_org_service(db)
+    # 自定义角色授权（additive）：拥有 formula:read 的成员可访问
+    if await svc.member_has_custom_permission(org_id, current_user.id, "formula", "read"):
+        return
+    if not await svc.check_org_permission(org_id, current_user.id, "formula_access"):
+        raise HTTPException(status_code=403, detail="该组织已关闭「配方访问」权限，仅所有者可操作")
 
 
 @router.get("", summary="获取配方列表")
@@ -39,6 +79,7 @@ async def list_formulas(
     db: AsyncSession = Depends(get_db_session),
 ):
     """分页获取配方列表，支持状态筛选和关键词搜索"""
+    await _require_formula_access(tenant.org_id, current_user, db)
     service = FormulaService(db)
     formulas, total = await service.list_formulas(
         page=pagination.page,
@@ -254,6 +295,8 @@ async def create_formula(
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新配方（草稿状态）"""
+    # 组织权限开关：配方访问
+    await _require_formula_access(tenant.org_id, current_user, db)
     # 组织计划配额拦截：配方数超限时阻止创建
     if tenant.org_id:
         from ..core.multi_tenant.multi_tenant_service import get_org_service
@@ -418,7 +461,7 @@ async def get_formula_nutrition(
     from ..models.formula import Formula
     from ..services.formula.nutrition_service import FormulaNutritionService
 
-    result = await db.get(Formula, formula_id)
+    result = await _get_formula_with_ingredients(db, formula_id)
     if not result:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -491,7 +534,7 @@ async def validate_formula_nutrition(
     from ..models.formula import Formula
     from ..services.formula.nutrition_service import FormulaNutritionService
 
-    result = await db.get(Formula, formula_id)
+    result = await _get_formula_with_ingredients(db, formula_id)
     if not result:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -532,7 +575,7 @@ async def optimize_formula_lp(
     from ..services.formula.nutrition_database import HERB_NUTRITION_DB
 
     # 验证配方存在及租户归属
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
     if formula.organization_id is not None and formula.organization_id != current_user.organization_id:
@@ -617,7 +660,7 @@ async def analyze_formula_synergy(
     from ..models.formula import Formula
     from ..services.formula.synergy_engine import SynergyEngine
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -662,7 +705,7 @@ async def predict_formula_stability(
     from ..models.formula import Formula
     from ..services.formula.stability_predictor import StabilityPredictor
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -715,7 +758,7 @@ async def predict_formula_taste(
     from ..models.formula import Formula
     from ..services.formula.taste_predictor import TastePredictor
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -753,7 +796,7 @@ async def check_formula_safety(
     from ..models.formula import Formula
     from ..services.formula.safety_alert_system import SafetyAlertSystem
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -761,7 +804,8 @@ async def check_formula_safety(
 
     system = SafetyAlertSystem()
     result = system.check_formula_safety(
-        formula_data={"ingredients": ingredients_data, "daily_dosage_g": daily_dosage_g},
+        ingredients=ingredients_data,
+        daily_dosage_g=daily_dosage_g,
         target_group="adult",
     )
 
@@ -784,7 +828,7 @@ async def check_formula_compatibility(
     from ..models.formula import Formula
     from ..services.formula.compatibility_checker import CompatibilityChecker
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -818,7 +862,7 @@ async def predict_formula_effect(
     from ..models.formula import Formula
     from ..services.formula.effect_simulator import EffectSimulator
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -968,7 +1012,7 @@ async def copy_formula(
     from ..services.formula import FormulaService
     from sqlalchemy import select as sa_select
 
-    source = await db.get(Formula, formula_id)
+    source = await _get_formula_with_ingredients(db, formula_id)
     if not source:
         raise HTTPException(status_code=404, detail="源配方不存在")
 
@@ -1069,7 +1113,7 @@ async def export_formula(
     """导出单个配方的详细信息为 PDF 或 Excel"""
     from ..models.formula import Formula
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -1143,7 +1187,7 @@ async def apply_optimization_result(
     """将 MILP 或 RatioOptimizer 的结果应用到配方成分"""
     from ..models.formula import Formula
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -1184,7 +1228,7 @@ async def save_analysis_result(
     """保存深度分析结果到数据库，支持后续查看"""
     from ..models.formula import Formula
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 
@@ -1220,7 +1264,7 @@ async def get_analysis_history(
     """获取配方的分析历史记录"""
     from ..models.formula import Formula
 
-    formula = await db.get(Formula, formula_id)
+    formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
 

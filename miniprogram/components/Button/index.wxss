@@ -6,7 +6,7 @@
   gap: 8rpx;
   padding: 24rpx 48rpx;
   border-radius: 48rpx;
-  font-size: 28rpx;
+  font-size: var(--font-size-body);
   font-weight: 500;
   border: none;
   position: relative;
@@ -20,12 +20,12 @@
 
 .btn-small {
   padding: 16rpx 32rpx;
-  font-size: 24rpx;
+  font-size: var(--font-size-caption);
 }
 
 .btn-large {
   padding: 32rpx 64rpx;
-  font-size: 32rpx;
+  font-size: var(--font-size-title-3);
 }
 
 .btn-primary {

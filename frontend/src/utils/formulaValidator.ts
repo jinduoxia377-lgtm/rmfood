@@ -59,7 +59,7 @@ export function validateFormulaName(name: string): FieldValidationError[] {
     )
   }
 
-  const invalidCharPattern = /[<>\"\'\\\/]/
+  const invalidCharPattern = /[<>"'\\/]/
   if (invalidCharPattern.test(name)) {
     errors.push(
       createError(

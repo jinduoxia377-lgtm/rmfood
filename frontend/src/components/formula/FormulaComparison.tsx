@@ -22,7 +22,7 @@ export function FormulaComparison({ formulas }: FormulaComparisonProps) {
   
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {formulas.map((formula, idx) => (
           <div key={idx} className="p-4 rounded-lg border">
             <h3 className="font-semibold mb-2">{formula.name}</h3>

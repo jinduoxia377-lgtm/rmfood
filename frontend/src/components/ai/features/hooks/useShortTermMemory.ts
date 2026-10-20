@@ -1,5 +1,5 @@
 import { logger } from '@/utils/safeLogger'
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { sentimentEngine, EmotionResult } from '../services/sentimentEngine'
 
 interface DailySummary {

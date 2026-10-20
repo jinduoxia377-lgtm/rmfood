@@ -1,88 +1,123 @@
 /**
  * RMFOOD 小程序 - 深色模式适配样式
- * 基于 theme.json 配置
+ * 对齐桌面端主题系统规范 DESIGN.md §4（Apple HIG 深色模式）
+ *
+ * 核心原则：
+ * - 深色模式不是颜色反转，使用感知对比度
+ * - 标准深色背景 #1C1C1E（非纯黑，媒体场景除外）
+ * - 文字使用透明度层级而非纯白
  */
 
 /* ============================================
-   深色模式基础变量
+   深色模式基础变量（自动跟随系统）
    ============================================ */
 @media (prefers-color-scheme: dark) {
   page {
-    /* 深色背景 */
-    --color-bg-page: #0D1117;
-    --color-bg-card: #161B22;
-    --color-bg-secondary: #0D1117;
-    --color-bg-tertiary: #21262D;
-    --color-bg-hover: rgba(255, 255, 255, 0.06);
-    
-    /* 深文字颜色 */
-    --color-text-primary: #F0F6FC;
-    --color-text-secondary: #C9D1D9;
-    --color-text-tertiary: #8B949E;
-    --color-text-quaternary: #6E7681;
-    --color-text-placeholder: #484F58;
-    
+    /* 深色背景 - Apple 标准 */
+    --color-bg-page: #1C1C1E;
+    --color-bg-card: #2C2C2E;
+    --color-bg-secondary: #1C1C1E;
+    --color-bg-tertiary: #3A3A3C;
+    --color-bg-primary: #2C2C2E;
+    --color-bg-hover: rgba(255, 255, 255, 0.08);
+
+    /* 深色文字 - 透明度层级 */
+    --color-text-primary: rgba(255, 255, 255, 0.9);
+    --color-text-secondary: rgba(255, 255, 255, 0.6);
+    --color-text-tertiary: rgba(255, 255, 255, 0.4);
+    --color-text-quaternary: rgba(255, 255, 255, 0.3);
+    --color-text-placeholder: rgba(255, 255, 255, 0.25);
+    --color-text-white: #FFFFFF;
+    --color-text-disabled: rgba(255, 255, 255, 0.25);
+    --color-text-inverse: #000000;
+    --color-text-muted: rgba(255, 255, 255, 0.4);
+
     /* 深色边框 */
-    --color-border: #30363D;
-    --color-border-light: #21262D;
-    --color-border-dark: #484F58;
-    --color-separator: rgba(240, 246, 252, 0.08);
-    --color-divider: rgba(240, 246, 252, 0.12);
-    
+    --color-border: #3A3A3C;
+    --color-border-light: #2C2C2E;
+    --color-border-dark: #48484A;
+    --color-separator: rgba(255, 255, 255, 0.1);
+    --color-divider: rgba(255, 255, 255, 0.15);
+
     /* 深色分组背景 */
-    --color-grouped-bg: #0D1117;
-    --color-grouped-separator: #30363D;
-    
+    --color-grouped-bg: #1C1C1E;
+    --color-grouped-separator: #3A3A3C;
+
+    /* 品牌绿 - 深色变体（对齐桌面 dark.css --color-primary=#34d399） */
+    --color-brand-primary: #34D399;
+    --color-brand-primary-active: #6EE7B7;
+    --color-brand-primary-emphasis: #34D399;
+    --color-brand-secondary: #6EE7B7;
+    --color-brand-tertiary: #A7F3D0;
+    --color-accent: #A78BFA;
+    --color-primary: var(--color-brand-primary);
+    --color-primary-light: rgba(52, 211, 153, 0.16);
+
     /* 毛玻璃效果适配深色 */
-    --blur-bg: rgba(22, 27, 34, 0.94);
-    --blur-bg-secondary: rgba(13, 17, 23, 0.94);
-    --blur-strong: rgba(22, 27, 34, 0.85);
-    
+    --blur-bg: rgba(28, 28, 30, 0.94);
+    --blur-bg-secondary: rgba(28, 28, 30, 0.94);
+    --blur-strong: rgba(28, 28, 30, 0.85);
+
     /* 阴影适配深色 */
-    --shadow-sm: 0 1rpx 3rpx rgba(0,0,0,0.3), 0 1rpx 2rpx rgba(0,0,0,0.4);
-    --shadow-md: 0 4rpx 12rpx rgba(0,0,0,0.3), 0 2rpx 4rpx rgba(0,0,0,0.4);
-    --shadow-lg: 0 12rpx 28rpx rgba(0,0,0,0.4), 0 4rpx 10rpx rgba(0,0,0,0.4);
-    --shadow-xl: 0 20rpx 40rpx rgba(0,0,0,0.5);
+    --shadow-sm: 0 2rpx 6rpx rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16rpx 48rpx rgba(0, 0, 0, 0.6);
   }
-  
-  /* 深色模式品牌色微调 */
+
+  /* 深色模式品牌绿微调 */
   :root {
-    --color-brand-500: #4ADE80;
-    --color-brand-600: #22C55E;
+    --color-brand-500: #34D399;
+    --color-brand-600: #6EE7B7;
   }
 }
 
 /* ============================================
-   手动深色模式切换类
+   手动深色模式切换类（与自动模式一致）
    ============================================ */
 .dark-mode {
-  --color-bg-page: #0D1117;
-  --color-bg-card: #161B22;
-  --color-bg-secondary: #0D1117;
-  --color-bg-tertiary: #21262D;
-  --color-bg-hover: rgba(255, 255, 255, 0.06);
-  
-  --color-text-primary: #F0F6FC;
-  --color-text-secondary: #C9D1D9;
-  --color-text-tertiary: #8B949E;
-  --color-text-quaternary: #6E7681;
-  --color-text-placeholder: #484F58;
-  
-  --color-border: #30363D;
-  --color-border-light: #21262D;
-  --color-border-dark: #484F58;
-  --color-separator: rgba(240, 246, 252, 0.08);
-  --color-divider: rgba(240, 246, 252, 0.12);
-  
-  --color-grouped-bg: #0D1117;
-  --color-grouped-separator: #30363D;
-  
-  --blur-bg: rgba(22, 27, 34, 0.94);
-  --blur-bg-secondary: rgba(13, 17, 23, 0.94);
-  
-  --shadow-sm: 0 1rpx 3rpx rgba(0,0,0,0.3), 0 1rpx 2rpx rgba(0,0,0,0.4);
-  --shadow-md: 0 4rpx 12rpx rgba(0,0,0,0.3), 0 2rpx 4rpx rgba(0,0,0,0.4);
-  --shadow-lg: 0 12rpx 28rpx rgba(0,0,0,0.4), 0 4rpx 10rpx rgba(0,0,0,0.4);
+  --color-bg-page: #1C1C1E;
+  --color-bg-card: #2C2C2E;
+  --color-bg-secondary: #1C1C1E;
+  --color-bg-tertiary: #3A3A3C;
+  --color-bg-primary: #2C2C2E;
+  --color-bg-hover: rgba(255, 255, 255, 0.08);
+
+  --color-text-primary: rgba(255, 255, 255, 0.9);
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-tertiary: rgba(255, 255, 255, 0.4);
+  --color-text-quaternary: rgba(255, 255, 255, 0.3);
+  --color-text-placeholder: rgba(255, 255, 255, 0.25);
+  --color-text-white: #FFFFFF;
+  --color-text-disabled: rgba(255, 255, 255, 0.25);
+  --color-text-inverse: #000000;
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+
+  --color-border: #3A3A3C;
+  --color-border-light: #2C2C2E;
+  --color-border-dark: #48484A;
+  --color-separator: rgba(255, 255, 255, 0.1);
+  --color-divider: rgba(255, 255, 255, 0.15);
+
+  --color-grouped-bg: #1C1C1E;
+  --color-grouped-separator: #3A3A3C;
+
+  --color-brand-primary: #34D399;
+  --color-brand-primary-active: #6EE7B7;
+  --color-brand-secondary: #6EE7B7;
+  --color-brand-tertiary: #A7F3D0;
+  --color-accent: #A78BFA;
+  --color-primary: var(--color-brand-primary);
+  --color-primary-light: rgba(52, 211, 153, 0.16);
+
+  --blur-bg: rgba(28, 28, 30, 0.94);
+  --blur-bg-secondary: rgba(28, 28, 30, 0.94);
+  --blur-strong: rgba(28, 28, 30, 0.85);
+
+  --shadow-sm: 0 2rpx 6rpx rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16rpx 48rpx rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================
@@ -96,11 +131,13 @@
 }
 
 /* 输入框适配深色 */
-.dark-mode .form-input {
+.dark-mode .form-input,
+.dark-mode .apple-input {
   color: var(--color-text-primary);
 }
 
-.dark-mode .form-input::placeholder {
+.dark-mode .form-input::placeholder,
+.dark-mode .apple-input::placeholder {
   color: var(--color-text-placeholder);
 }
 
@@ -111,11 +148,28 @@
 }
 
 /* 导航栏适配 */
-.dark-mode .navbar {
+.dark-mode .navbar,
+.dark-mode .apple-navbar,
+.dark-mode .large-title-nav {
   background: var(--blur-bg);
 }
 
 /* TabBar 适配 */
-.dark-mode .tabbar {
+.dark-mode .tabbar,
+.dark-mode .apple-tabbar {
   background: var(--blur-bg);
+}
+
+/* 链接颜色适配深色品牌蓝 */
+.dark-mode .text-link,
+.dark-mode .apple-btn-link,
+.dark-mode .apple-btn-secondary {
+  color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+}
+
+/* 深色模式输入框聚焦环 */
+.dark-mode .apple-input-wrapper[class*="focus"] {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3rpx rgba(52, 211, 153, 0.2);
 }

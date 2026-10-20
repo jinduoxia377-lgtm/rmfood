@@ -6,13 +6,13 @@
 'use client';
 
 import React from 'react';
-import { useReportExport, type ExportOptions } from '@/api/reportExport';
+import { useReportExport } from '@/api/reportExport';
 import { type ExplainabilityResult } from '@/api/explainability';
 import { logger } from '@/utils/safeLogger';
 import { BarChart3, CheckCircle2, Clock } from 'lucide-react';
 
 interface Props {
-  report: ExplainabilityResult;
+  report?: ExplainabilityResult;
   formulaName: string;
   ingredients: Array<{ name: string; dosage_mg: number }>;
   targetEffects: string[];
@@ -26,14 +26,14 @@ const FORMAT_CONFIG: Record<Format, { label: string; icon: string; desc: string 
   markdown: { label: 'Markdown', icon: '', desc: '源代码格式' },
 };
 
-export function ReportExportPanel({ report, formulaName, ingredients, targetEffects }: Props) {
+export function ReportExportPanel({ formulaName, ingredients, targetEffects }: Props) {
   const { exportReport, exporting, error } = useReportExport();
   const [selectedFormat, setSelectedFormat] = React.useState<Format>('docx');
   const [exportedUrl, setExportedUrl] = React.useState<string | null>(null);
 
   const handleExport = async () => {
     try {
-      const result = await exportReport({
+      await exportReport({
         formula_name: formulaName,
         ingredients,
         target_effects: targetEffects,
@@ -74,7 +74,7 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
       </div>
 
       {/* 格式选择 */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         {(Object.keys(FORMAT_CONFIG) as Format[]).map((fmt) => (
           <button
             key={fmt}

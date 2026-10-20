@@ -839,6 +839,21 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
     CSRF_COOKIE_NAME = "csrf_token"
     CSRF_HEADER_NAME = "X-CSRF-Token"
 
+    @staticmethod
+    def _csrf_cookie_secure(request: Request) -> bool:
+        """判断 CSRF cookie 是否应带 Secure 属性。
+
+        修复：request.url.scheme 返回的是 "http"/"https"（不含 ://），
+        旧实现 `not scheme.startswith("http://")` 恒为 True，导致纯 HTTP
+        部署下 cookie 也带 Secure，浏览器拒绝保存/回传，CSRF 双提交失效。
+        支持 COOKIE_SECURE 环境变量覆盖（与登录 cookie 修复一致）。
+        """
+        import os
+        env = os.environ.get("COOKIE_SECURE")
+        if env is not None:
+            return env.lower() in ("1", "true", "yes")
+        return request.url.scheme == "https"
+
     async def dispatch(self, request: Request, call_next):
         # 只保护状态改变的方法
         if request.method in ("GET", "HEAD", "OPTIONS"):
@@ -851,7 +866,7 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
                     value=token,
                     httponly=False,  # 🔓 需要 JS 可读，用于 CSRF 双提交保护
                     samesite="strict",
-                    secure=not request.url.scheme.startswith("http://"),
+                    secure=self._csrf_cookie_secure(request),
                     max_age=86400,  # 24 hours
                 )
             return response
@@ -871,6 +886,21 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # Agent API 端点豁免 CSRF（已使用 JWT 认证，SPA 跨域场景下 CSRF cookie 不可靠）
         if request.url.path.startswith("/api/v1/agent"):
             return await call_next(request)
+        # 多智能体协作 Bot API 豁免 CSRF（JWT 认证 + SPA 场景，与 /agent 一致）
+        if request.url.path.startswith("/api/v1/bots"):
+            return await call_next(request)
+        # 群聊协作 API 豁免 CSRF（JWT 认证 + SPA 场景，与 /bots 一致）
+        if request.url.path.startswith("/api/v1/groups"):
+            return await call_next(request)
+        # 研发任务中心 API 豁免 CSRF（v3.3，JWT 认证 + SPA 场景）
+        if request.url.path.startswith("/api/v1/tasks"):
+            return await call_next(request)
+        # MCP 服务器管理 API 豁免 CSRF（v3.3，JWT 认证 + SPA 场景）
+        if request.url.path.startswith("/api/v1/admin/mcp-servers"):
+            return await call_next(request)
+        # 内置 GitHub MCP 代理端点豁免 CSRF（方案 A，由 McpBridge 以服务端身份调用）
+        if request.url.path.startswith("/api/v1/mcp/github"):
+            return await call_next(request)
         # FactEngine API 端点豁免 CSRF（确定性计算，JWT 认证保护）
         if request.url.path.startswith("/api/v1/facts"):
             return await call_next(request)
@@ -886,14 +916,36 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # AI 模型配置端点豁免 CSRF（JWT 认证 + SPA 场景）
         if request.url.path.startswith("/api/v1/ai/models/config"):
             return await call_next(request)
+        # AI 模型列表代理端点豁免 CSRF（JWT 认证 + SPA 场景，与 models/config 一致）
+        if request.url.path.startswith("/api/v1/ai/models/list"):
+            return await call_next(request)
+        # AI 工具端点豁免 CSRF（AIGenerator/PromptOptimizer/模板库/反馈/默认模型，
+        # JWT 认证 + SPA 场景，与 /ai/chat 一致）
+        if (
+            request.url.path.startswith("/api/v1/ai/generate/stream")
+            or request.url.path.startswith("/api/v1/ai/optimize")
+            or request.url.path.startswith("/api/v1/ai/templates")
+            or request.url.path.startswith("/api/v1/ai/feedback")
+            or request.url.path.startswith("/api/v1/ai/models/default")
+            or request.url.path.startswith("/api/v1/ai/recommendations")
+            or request.url.path.startswith("/api/v1/ai/taste-predict")
+            or request.url.path.startswith("/api/v1/ai/stability")
+        ):
+            return await call_next(request)
         # 用户级 LLM 密钥端点豁免 CSRF（JWT 认证 + SPA 场景，与 models/config 一致）
         if request.url.path.startswith("/api/v1/ai/models/user-key"):
             return await call_next(request)
         # AI 智能对话端点豁免 CSRF（JWT 认证 + SPA 场景，CSRF cookie 在跨端口代理下不可靠）
         if request.url.path.startswith("/api/v1/ai/chat"):
             return await call_next(request)
+        # 会话同步端点豁免 CSRF（前端使用 Bearer JWT 认证，无 CSRF cookie）
+        if request.url.path.startswith("/api/v1/chat/sync"):
+            return await call_next(request)
         # 预注册申请端点豁免 CSRF（SPA 场景，未登录访客提交 + 跨端口代理下 CSRF cookie 不可靠）
         if request.url.path.startswith("/api/v1/auth/pre-register"):
+            return await call_next(request)
+        # 白名单申请流程端点豁免 CSRF（未登录访客提交，与 pre-register 对称）
+        if request.url.path.startswith("/api/v1/auth/whitelist"):
             return await call_next(request)
         # 管理员审核账号申请端点豁免 CSRF（JWT 认证 + admin 专用，与 pre-register 对称）
         if request.url.path.startswith("/api/v1/admin/pre-register-requests"):

@@ -181,7 +181,10 @@ export function downloadBlob(
 
   setTimeout(() => {
     URL.revokeObjectURL(url)
-    document.body.removeChild(link)
+    // 在非 DOM 环境（如测试 teardown 后/worker）下安全跳过 DOM 清理
+    if (typeof document !== 'undefined') {
+      document.body.removeChild(link)
+    }
   }, 100)
 
   return finalFilename

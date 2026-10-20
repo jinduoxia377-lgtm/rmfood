@@ -1,6 +1,5 @@
 import { GraphNode, TYPE_CONFIG } from '../types'
 import { Badge } from '@/components/ui'
-import type { EdgeColors } from '../types'
 import { EDGE_COLORS, EDGE_TYPE_LABELS } from '../types'
 
 export interface ConnectionInfo {
@@ -78,7 +77,7 @@ export default function DetailPanel({
         </div>
 
         {/* 快速统计条 */}
-        <div className="grid grid-cols-3 gap-1.5 mt-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mt-3">
           <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
             <div className="text-[8px] text-neutral-400 dark:text-neutral-400">关联数</div>
@@ -192,7 +191,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
       )}
 
       {/* 操作工具栏 */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
         <button
           onClick={() => onNodeClick?.(selectedNode)}
           className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors group"

@@ -156,7 +156,7 @@ export function DetailSkeleton({ hasSidebar = false, className }: DetailSkeleton
  {/* 信息卡片 */}
  <div className="card p-5 space-y-4">
  <div className="skeleton h-5 w-32 rounded" />
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-4">
  {Array.from({ length: 6 }).map((_, i) => (
  <div key={i} className="space-y-1.5">
  <div className="skeleton h-3 w-16 rounded" />
@@ -216,7 +216,7 @@ interface CardSkeletonProps {
 
 export function CardSkeleton({ count = 4, className }: CardSkeletonProps) {
  return (
- <div className={cn('grid grid-cols-2 lg:grid-cols-4 gap-4', className)}>
+ <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4', className)}>
  {Array.from({ length: count }).map((_, i) => (
  <div key={i} className="card p-5 space-y-3">
  <div className="flex items-center justify-between">

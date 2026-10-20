@@ -28,8 +28,8 @@ from ..core.realtime.notification_center import (
     notify_mention,
     notify_comment,
     notify_approval_required,
-    notify_ai_generation_complete,
 )
+from ..models.enums import NotificationType
 
 
 router = APIRouter(prefix="/notifications/v2", tags=["notifications"])
@@ -184,6 +184,7 @@ async def mark_notifications_read(
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
     await service.mark_as_read(user_id, request.notification_ids)
+    await db.commit()
 
     return {"success": True, "marked_count": len(request.notification_ids)}
 
@@ -200,6 +201,7 @@ async def mark_all_read(
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
     await service.mark_all_as_read(user_id)
+    await db.commit()
 
     return {"success": True}
 
@@ -217,6 +219,7 @@ async def delete_notification(
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
     await service.delete_notification(user_id, notification_id)
+    await db.commit()
 
     return {"success": True}
 
@@ -280,6 +283,7 @@ async def update_preferences(
 
     new_preference = UserNotificationPreference(**{**existing.__dict__, **update_data})
     await service.update_user_preference(user_id, new_preference)
+    await db.commit()
 
     return {"success": True, "message": "偏好设置已更新"}
 
@@ -287,39 +291,43 @@ async def update_preferences(
 @router.post("/send", summary="发送测试通知（管理员）")
 async def send_test_notification(
     request: SendTestNotificationRequest,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
 ):
     """
     发送测试通知（仅管理员可用）
 
-    用于验证通知模板和渠道配置是否正确
+    立即创建一条站内通知并触发 WebSocket 实时推送，
+    用于验证通知中心功能是否正常。
     """
     if not current_user:
         raise HTTPException(status_code=401, detail="需要登录")
 
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
-    
+
     # 检查权限
     user_info = await service._get_user_info(user_id)
     if not user_info or user_info.get("role") != "admin":
         raise HTTPException(status_code=403, detail="仅管理员可执行此操作")
 
     try:
-        # 发送测试通知给当前用户
-        background_tasks.add_task(
-            notify_ai_generation_complete,
+        notification = await service.create_notification(
             user_id=user_id,
-            formula_name="测试配方",
-            formula_id=0,
+            type_=NotificationType.SYSTEM,
+            title="测试通知",
+            content="这是一条测试通知，用于验证通知中心的实时推送与展示功能。",
+            link="/notifications",
+            metadata={"template_id": request.template_id, "test": True},
             channel=NotificationChannel.IN_APP,
+            category=NotificationCategory.SYSTEM,
         )
+        await db.commit()
 
         return {
             "success": True,
-            "message": f"测试通知已发送至用户 {user_id}",
+            "message": "测试通知已发送",
+            "notification_id": notification.id,
             "template_id": request.template_id,
         }
     except Exception as e:
@@ -363,6 +371,7 @@ async def bulk_send_notifications(
             channels=request.channels,
             batch_size=request.batch_size,
         )
+        await db.commit()
 
         return {
             "success": True,
@@ -389,6 +398,7 @@ async def clear_all_notifications(
     service = NotificationService(db)
     
     deleted_count = await service.clear_all_user_notifications(user_id)
+    await db.commit()
 
     return {
         "success": True,

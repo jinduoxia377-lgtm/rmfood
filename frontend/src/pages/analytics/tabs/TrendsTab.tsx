@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 趋势分析 Tab — 参考 Dashboard 设计风格
  * 使用 Card+CardHeader+CardContent 统一卡片样式
  */
@@ -143,19 +143,19 @@ export default function TrendsTab({ filters }: Props) {
   }, [usersTrend.data])
 
   const pct = (v: number | null) => (v != null ? (v > 0 ? '+' : '') + v.toFixed(1) : '—')
-  const pctColor = (v: number | null) => (v == null ? 'text-text-muted' : v > 0 ? 'text-success-600' : 'text-error-600')
+  const pctColor = (v: number | null) => (v == null ? 'text-[var(--text-muted)]' : v > 0 ? 'text-[var(--color-success-text)]' : 'text-[var(--color-error-text)]')
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
 
       {/* 工具栏 */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg">
+      <div className="flex items-center justify-between flex-wrap gap-[var(--space-apple-sm)]">
+        <div className="flex items-center gap-1 bg-muted p-0.5 rounded-[var(--radius-Apple-sm)]">
           {TREND_VIEWS.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => setActiveView(key)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${
+              className={`px-[var(--space-apple-md)] py-1.5 text-sm font-medium rounded-[var(--radius-Apple-sm)] transition-all flex items-center gap-2 ${
                 activeView === key
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -171,7 +171,7 @@ export default function TrendsTab({ filters }: Props) {
           <select
             value={selectedDays}
             onChange={e => setSelectedDays(Number(e.target.value))}
-            className="px-3 py-1.5 text-sm input min-w-[100px]"
+            className="px-[var(--space-apple-sm)] py-1.5 text-sm input min-w-[100px]"
           >
             <option value={7}>近 7 天</option>
             <option value={30}>近 30 天</option>
@@ -182,12 +182,12 @@ export default function TrendsTab({ filters }: Props) {
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="px-3 py-1.5 text-sm bg-background border border-border rounded-lg hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+            className="px-[var(--space-apple-sm)] py-1.5 text-sm bg-background border border-border rounded-[var(--radius-Apple-sm)] hover:bg-surface-hover transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             刷新
           </button>
-          <button className="px-3 py-1.5 text-sm bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors flex items-center gap-1.5">
+          <button className="px-[var(--space-apple-sm)] py-1.5 text-sm bg-primary-container text-[var(--color-primary)] rounded-[var(--radius-Apple-sm)] hover:bg-primary-container transition-colors flex items-center gap-1.5">
             <Download className="w-4 h-4" />
             导出
           </button>
@@ -196,17 +196,17 @@ export default function TrendsTab({ filters }: Props) {
 
       {/* ─── 时间序列视图 ─── */}
       {activeView === 'time_series' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="space-y-[var(--space-apple-md)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-apple-sm)]">
             {[
               { title: '配方创建趋势', value: pct(formulaGrowthNum), color: pctColor(formulaGrowthNum) },
               { title: '实验完成率', value: pct(expGrowthNum), color: pctColor(expGrowthNum) },
               { title: '用户活跃度', value: pct(userGrowthNum), color: pctColor(userGrowthNum) },
             ].map(({ title, value, color }) => (
               <Card key={title} className="px-5 py-4">
-                <p className="text-xs text-text-muted mb-1">{title}</p>
+                <p className="text-xs text-[var(--text-muted)] mb-1">{title}</p>
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
-                <p className="text-xs text-text-muted mt-0.5">较前7天变化</p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">较前7天变化</p>
               </Card>
             ))}
           </div>
@@ -229,7 +229,7 @@ export default function TrendsTab({ filters }: Props) {
                   height={300}
                 />
               ) : (
-                <div className="flex items-center justify-center h-[300px] text-text-muted text-sm">
+                <div className="flex items-center justify-center h-[300px] text-[var(--text-muted)] text-sm">
                   {formulasTrend.loading ? '加载中…' : '暂无趋势数据'}
                 </div>
               )}
@@ -240,7 +240,7 @@ export default function TrendsTab({ filters }: Props) {
 
       {/* ─── 对比分析视图 ─── */}
       {activeView === 'comparison' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -259,7 +259,7 @@ export default function TrendsTab({ filters }: Props) {
                     height={280}
                   />
                 ) : (
-                  <div className="h-[280px] flex items-center justify-center text-text-muted text-sm">暂无数据</div>
+                  <div className="h-[280px] flex items-center justify-center text-[var(--text-muted)] text-sm">暂无数据</div>
                 )}
               </CardContent>
             </Card>
@@ -281,7 +281,7 @@ export default function TrendsTab({ filters }: Props) {
                     height={280}
                   />
                 ) : (
-                  <div className="h-[280px] flex items-center justify-center text-text-muted text-sm">暂无数据</div>
+                  <div className="h-[280px] flex items-center justify-center text-[var(--text-muted)] text-sm">暂无数据</div>
                 )}
               </CardContent>
             </Card>
@@ -291,11 +291,11 @@ export default function TrendsTab({ filters }: Props) {
 
       {/* ─── 预测视图 ─── */}
       {activeView === 'forecast' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
-                <TrendingUp className="w-4 h-4 text-primary-700" />
+                <TrendingUp className="w-4 h-4 text-[var(--color-primary-text)]" />
                 线性回归预测（未来 3 个月）
               </CardTitle>
             </CardHeader>
@@ -314,13 +314,13 @@ export default function TrendsTab({ filters }: Props) {
                   height={300}
                 />
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-text-muted text-sm">数据不足，无法进行预测</div>
+                <div className="h-[300px] flex items-center justify-center text-[var(--text-muted)] text-sm">数据不足，无法进行预测</div>
               )}
             </CardContent>
           </Card>
 
           {/* 预测说明 */}
-          <div className="p-4 rounded-lg bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
+          <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] bg-info-50 dark:bg-info-950/20 border border-info-200 dark:border-info-900/40 text-sm text-info-700 dark:text-info-600">
             <p className="font-medium mb-1">预测模型说明</p>
             <p className="text-xs text-info-600 dark:text-info-700">
               基于最近 {selectedDays} 天的历史数据，使用最小二乘法拟合线性趋势线，

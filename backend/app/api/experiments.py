@@ -3,23 +3,60 @@
 实验 CRUD、数据管理、状态流转
 """
 import logging
-from typing import Optional
+import secrets
+from typing import Optional, Union
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from ..schemas.experiment import (
     ExperimentCreate, ExperimentUpdate, ExperimentResponse,
     ExperimentDataResponse, ExperimentListResponse,
     CompleteExperimentRequest,
 )
+from ..models.experiment import Experiment, ExperimentData
 from ..services.experiment_service import ExperimentService
 from ..services.auth import require_role
 from ..models.models import User, UserRole, ExperimentStatus
 from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
+
+async def _require_experiment_access(current_user: Optional[User], db: AsyncSession) -> None:
+    """实验访问权限开关：用户所属组织的 experiment_access 关闭时，仅 OWNER 可访问。"""
+    if current_user is None:
+        return
+    from ..core.multi_tenant.multi_tenant_service import get_org_service
+    org_id = getattr(current_user, "organization_id", None)
+    if not org_id:
+        row = (await db.execute(
+            text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
+            {"uid": current_user.id},
+        )).fetchone()
+        org_id = row.organization_id if row else None
+    if not org_id:
+        return
+    svc = get_org_service(db)
+    # 自定义角色授权（additive）：拥有 experiment:read 的成员可访问
+    if await svc.member_has_custom_permission(org_id, current_user.id, "experiment", "read"):
+        return
+    if not await svc.check_org_permission(org_id, current_user.id, "experiment_access"):
+        raise HTTPException(status_code=403, detail="该组织已关闭「实验访问」权限，仅所有者可操作")
+
 router = APIRouter(prefix="/experiments", tags=["实验管理"])
+
+
+class ExperimentDataUpdate(BaseModel):
+    """数据点更新请求体 — 所有字段可选，仅覆盖传入项。"""
+    parameter: Optional[str] = Field(None, min_length=1, max_length=200)
+    value: Optional[Union[float, str]] = None
+    unit: Optional[str] = None
+    notes: Optional[str] = None
+    measurement_time: Optional[str] = None
 
 
 @router.get("", response_model=ExperimentListResponse, summary="获取实验列表")
@@ -36,6 +73,7 @@ async def list_experiments(
     → 500。改用专用响应模式 `ExperimentListResponse`，其 `from_attributes`
     会把 ORM 对象逐字段映射，稳定输出 JSON。
     """
+    await _require_experiment_access(current_user, db)
     service = ExperimentService(db)
     experiments, total = await service.list_experiments(
         page=pagination.page,
@@ -83,6 +121,7 @@ async def create_experiment(
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新实验"""
+    await _require_experiment_access(current_user, db)
     service = ExperimentService(db)
     return await service.create_experiment(data, researcher_id=current_user.id)
 
@@ -218,6 +257,64 @@ async def delete_data_point(
     await service.delete_data_point(data_point_id)
 
 
+@router.put("/data/{data_point_id}", response_model=ExperimentDataResponse, summary="更新数据点")
+async def update_data_point(
+    data_point_id: int,
+    payload: ExperimentDataUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """更新指定数据点的可编辑字段（parameter / value / unit / notes / measurement_time）。
+
+    未传入的字段保持原值不变。
+    必须注册在 DELETE /data/{data_point_id} 之后：FastAPI 按注册顺序匹配，
+    同路径形状的独立 router 若晚挂载会被 DELETE 路由遮蔽（405）。
+
+    权限：仅该实验的研究者或管理员可编辑。
+    """
+    result = await db.execute(
+        select(ExperimentData).where(ExperimentData.id == data_point_id).limit(1)
+    )
+    point = result.scalars().first()
+    if not point:
+        raise HTTPException(status_code=404, detail="数据点不存在")
+
+    # ── 归属校验：仅实验研究者或管理员可编辑 ──
+    exp = await db.get(Experiment, point.experiment_id)
+    if not exp:
+        raise HTTPException(status_code=404, detail="关联实验不存在")
+    if current_user.role != UserRole.ADMIN and exp.researcher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权编辑该实验的数据点")
+
+    if payload.parameter is not None:
+        point.data_type = payload.parameter
+    if payload.value is not None:
+        if isinstance(payload.value, (int, float)):
+            point.data_value = float(payload.value)
+        elif isinstance(payload.value, str):
+            try:
+                point.data_value = float(payload.value)
+            except ValueError:
+                point.data_text = payload.value
+                point.data_value = None
+        else:
+            point.data_value = None
+    if payload.unit is not None:
+        point.unit = payload.unit
+    if payload.notes is not None:
+        point.notes = payload.notes
+    if payload.measurement_time is not None:
+        from datetime import datetime
+        try:
+            point.measurement_time = datetime.fromisoformat(payload.measurement_time)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="measurement_time 格式无效（需 ISO 8601）")
+
+    await db.commit()
+    await db.refresh(point)
+    return ExperimentDataResponse.model_validate(point)
+
+
 # ═══════════════════════════════════════════
 # 实验结果回写配方
 # ═══════════════════════════════════════════
@@ -243,6 +340,10 @@ async def writeback_experiment_result(
     experiment = await service.get_experiment(experiment_id)
     if not experiment:
         raise HTTPException(status_code=404, detail="实验不存在")
+
+    # ── 归属校验：仅实验研究者或管理员可回写 ──
+    if current_user.role != UserRole.ADMIN and experiment.researcher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权回写该实验的结果到配方")
 
     if not experiment.formula_id:
         raise HTTPException(status_code=400, detail="实验未关联配方")
@@ -275,3 +376,75 @@ async def writeback_experiment_result(
         "code": formula.code,
         "updated_fields": [k for k, v in [("safety_score", safety_score), ("synergy_score", synergy_score)] if v is not None],
     }
+
+
+# ═══════════════════════════════════════════
+# 实验公开分享（免登录只读）
+# ═══════════════════════════════════════════
+
+@router.post("/{experiment_id}/share", summary="创建实验分享链接")
+async def create_experiment_share(
+    experiment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """生成（或复用已存在的）实验公开分享码。
+
+    已存在 share_code 时幂等返回，避免每次点击都生成新码。
+    """
+    experiment = await db.get(Experiment, experiment_id)
+    if not experiment:
+        raise HTTPException(status_code=404, detail="实验不存在")
+
+    # 归属校验：仅创建者可分享
+    if experiment.researcher_id is not None and experiment.researcher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="仅实验创建者可分享")
+
+    if not experiment.share_code:
+        experiment.share_code = secrets.token_urlsafe(16)
+        experiment.view_count = 0
+    await db.commit()
+
+    return {
+        "share_code": experiment.share_code,
+        "url": f"/experiments/share/{experiment.share_code}",
+        "experiment_id": experiment.id,
+        "title": experiment.title,
+    }
+
+
+@router.get("/share/{share_code}", summary="公开获取分享内容")
+async def get_shared_experiment(
+    share_code: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """公开只读访问：按 share_code 返回实验内容 + 数据点。
+
+    每次访问 view_count +1（best-effort）。
+    响应为 dict（ExperimentResponse 字段 + data_points / view_count）。
+    """
+    result = await db.execute(
+        select(Experiment)
+        .where(Experiment.share_code == share_code)
+        .options(selectinload(Experiment.formula), selectinload(Experiment.researcher))
+        .limit(1)
+    )
+    experiment = result.scalars().first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="分享链接不存在或已失效")
+
+    # 访问计数
+    experiment.view_count = (experiment.view_count or 0) + 1
+
+    # 拉取数据点
+    data_result = await db.execute(
+        select(ExperimentData).where(ExperimentData.experiment_id == experiment.id)
+    )
+    data_points = [ExperimentDataResponse.from_orm(d) for d in data_result.scalars().all()]
+
+    # 序列化 schema（从已预加载的属性取值，避免懒加载触发 MissingGreenlet）
+    resp_extra = ExperimentResponse.model_validate(experiment).model_dump()
+    resp_extra["data_points"] = [p.model_dump() for p in data_points]
+    resp_extra["view_count"] = experiment.view_count
+    await db.commit()
+    return resp_extra

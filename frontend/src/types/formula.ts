@@ -621,6 +621,7 @@ export interface FormulaCreatePayload {
     equipment?: string;
   }[];
   effects?: string[];
+  target_effects?: string[];
   dosage?: string;
   processing_method?: string;
   storage_conditions?: string;
@@ -628,6 +629,8 @@ export interface FormulaCreatePayload {
   composition?: Record<string, unknown>;
   category_ids?: number[];
   tag_ids?: number[];
+  ingredient_ids?: number[];
+  peptide_ids?: number[];
   version_notes?: string;
   original_updated_at?: string;
   force?: boolean;

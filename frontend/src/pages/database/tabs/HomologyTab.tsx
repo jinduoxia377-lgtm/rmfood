@@ -21,7 +21,7 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-warning-200 dark:bg-warning-800 rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
+      <mark className="bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)] rounded px-0.5">{text.slice(idx, idx + keyword.length)}</mark>
       {text.slice(idx + keyword.length)}
     </>
   );
@@ -30,15 +30,15 @@ function Highlight({ text, keyword }: { text: string; keyword: string }) {
 // ─── 骨架屏 ───
 function CardSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-[var(--space-apple-md)]">
       {[...Array(6)].map((_, i) => (
-        <div key={i} className="card p-4 animate-pulse">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-700 rounded-xl" />
+        <div key={i} className="card p-[var(--space-apple-md)] animate-pulse">
+          <div className="flex items-start gap-[var(--space-apple-sm)]">
+            <div className="w-10 h-10 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)]" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-700 rounded" />
-              <div className="h-3 w-32 bg-neutral-200 dark:bg-neutral-700 rounded" />
-              <div className="h-3 w-16 bg-neutral-200 dark:bg-neutral-700 rounded" />
+              <div className="h-4 w-24 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+              <div className="h-3 w-32 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
+              <div className="h-3 w-16 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded" />
             </div>
           </div>
         </div>
@@ -49,13 +49,13 @@ function CardSkeleton() {
 
 // ─── 功效分类颜色 ───
 const EFFECT_COLORS: Record<string, string> = {
-  补益类: 'bg-primary-50 dark:bg-success-950/30 border-success-200 dark:border-success-800',
-  清热类: 'bg-error-50 dark:bg-error-950/30 border-error-200 dark:border-error-800',
-  活血类: 'bg-warning-50 dark:bg-warning-950/30 border-warning-200 dark:border-warning-800',
-  理气类: 'bg-accent-50 dark:bg-accent-950/30 border-accent-200 dark:border-accent-800',
-  解表类: 'bg-secondary-50 dark:bg-secondary-950/30 border-secondary-200 dark:border-secondary-800',
+  补益类: 'bg-[var(--color-primary-container)] dark:bg-[var(--color-success-container)]/30 border-[var(--color-success-border)] dark:border-[var(--color-success)]',
+  清热类: 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/30 border-[var(--color-error-border)] dark:border-[var(--color-error)]',
+  活血类: 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 border-[var(--color-warning-border)] dark:border-[var(--color-warning)]',
+  理气类: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/30 border-[var(--color-accent-border)] dark:border-[var(--color-accent)]',
+  解表类: 'bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/30 border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)]',
   利水渗湿: 'bg-info-50 dark:bg-info-950/30 border-info-200 dark:border-info-800',
-  安神类: 'bg-accent-50 dark:bg-accent-950/30 border-accent-200 dark:border-accent-800',
+  安神类: 'bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/30 border-[var(--color-accent-border)] dark:border-[var(--color-accent)]',
 };
 
 export default function HomologyTab() {
@@ -140,14 +140,14 @@ export default function HomologyTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
       {/* 查询工具 */}
       <Card className="p-5">
         <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-2 flex items-center gap-2">
-          <Search className="w-4 h-4 text-primary-700" />
+          <Search className="w-4 h-4 text-[var(--color-primary-text)]" />
           药食同源快速查询
         </h3>
-        <p className="text-xs text-[var(--text-muted,#9A9A9F)] mb-3">输入药材名称，查询是否在药食同源目录中</p>
+        <p className="text-xs text-[var(--text-muted,#9A9A9F)] mb-[var(--space-apple-sm)]">输入药材名称，查询是否在药食同源目录中</p>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
@@ -169,14 +169,14 @@ export default function HomologyTab() {
         {/* 查询结果 */}
         {checkQuery.data && (
           <div
-            className={`mt-4 p-4 rounded-xl transition-all duration-300 ${checkQuery.data.is_food_homology ? 'bg-primary-50/60 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800' : 'bg-neutral-50/60 dark:bg-neutral-800/40 border border-[var(--border-subtle,rgba(0,0,0,0.06))]'}`}
+            className={`mt-[var(--space-apple-md)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] transition-all duration-300 ${checkQuery.data.is_food_homology ? 'bg-[var(--color-primary-container)]/60 dark:bg-[var(--color-primary-container)]/20 border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]' : 'bg-[var(--bg-tertiary)]/60 dark:bg-[var(--bg-tertiary)]/40 border border-[var(--border-subtle,rgba(0,0,0,0.06))]'}`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${checkQuery.data.is_food_homology ? 'bg-primary-100 dark:bg-primary-300/30' : 'bg-neutral-200 dark:bg-neutral-700'}`}
+                className={`w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center text-xl ${checkQuery.data.is_food_homology ? 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30' : 'bg-[var(--border-color)] dark:bg-[var(--bg-secondary)]'}`}
               >
                 {checkQuery.data.is_food_homology ? (
-                  <CheckCircle2 className="w-5 h-5 text-primary-700" />
+                  <CheckCircle2 className="w-5 h-5 text-[var(--color-primary-text)]" />
                 ) : (
                   <XCircle className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 )}
@@ -194,7 +194,7 @@ export default function HomologyTab() {
               </div>
             </div>
             {checkQuery.data.matched_catalog_entries?.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="mt-[var(--space-apple-sm)] flex flex-wrap gap-1.5">
                 {checkQuery.data.matched_catalog_entries.map((entry: string, i: number) => (
                   <Badge key={i} variant="primary" size="sm" className="font-mono">
                     {entry}
@@ -207,7 +207,7 @@ export default function HomologyTab() {
 
         {/* 查询历史 */}
         {queryHistory.length > 0 && (
-          <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <div className="mt-[var(--space-apple-sm)] flex items-center gap-2 flex-wrap">
             <span className="text-xs text-[var(--text-muted,#9A9A9F)] flex items-center gap-1">
               <Clock className="w-3 h-3" />
               历史
@@ -216,7 +216,7 @@ export default function HomologyTab() {
               <button
                 key={i}
                 onClick={() => setCheckName(h)}
-                className="text-xs px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                className="text-xs px-2 py-1 rounded-[var(--radius-pill)] bg-[var(--bg-tertiary)] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors"
               >
                 {h}
               </button>
@@ -226,7 +226,7 @@ export default function HomologyTab() {
       </Card>
 
       {/* 目录浏览 */}
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-[var(--space-apple-sm)] items-center">
         <Input
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
@@ -237,16 +237,16 @@ export default function HomologyTab() {
         <Button variant="primary" onClick={() => setPage(1)}>
           搜索
         </Button>
-        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-1">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
+            className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-[var(--bg-secondary)] shadow-sm' : 'hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)]'}`}
           >
             <Grid3X3 className="w-4 h-4 text-[var(--text-secondary,#6E6E73)]" />
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`p-1.5 rounded transition-all ${viewMode === 'table' ? 'bg-white dark:bg-neutral-700 shadow-sm' : 'hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
+            className={`p-1.5 rounded transition-all ${viewMode === 'table' ? 'bg-[var(--bg-secondary)] shadow-sm' : 'hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)]'}`}
           >
             <List className="w-4 h-4 text-[var(--text-secondary,#6E6E73)]" />
           </button>
@@ -258,7 +258,7 @@ export default function HomologyTab() {
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setEffectFilter(null)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${!effectFilter ? 'bg-primary-container text-primary-main border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
+            className={`px-2.5 py-1 min-h-[44px] inline-flex items-center rounded-[var(--radius-pill)] text-xs font-medium border transition-all ${!effectFilter ? 'bg-primary-container text-[var(--color-primary)] border-[var(--color-primary)]' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-[var(--color-primary-border)]'}`}
           >
             全部
           </button>
@@ -266,7 +266,7 @@ export default function HomologyTab() {
             <button
               key={effect}
               onClick={() => setEffectFilter(effectFilter === effect ? null : effect)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${effectFilter === effect ? 'bg-primary-container text-primary-main border-primary-500' : 'bg-white dark:bg-neutral-800 text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-primary-300'}`}
+              className={`px-2.5 py-1 min-h-[44px] inline-flex items-center rounded-[var(--radius-pill)] text-xs font-medium border transition-all ${effectFilter === effect ? 'bg-primary-container text-[var(--color-primary)] border-[var(--color-primary)]' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary,#6E6E73)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-[var(--color-primary-border)]'}`}
             >
               {effect}
             </button>
@@ -285,14 +285,14 @@ export default function HomologyTab() {
             return (
               <Card
                 key={item.id}
-                className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${effectClass}`}
+                className={`p-[var(--space-apple-md)] hover:shadow-md transition-shadow cursor-pointer ${effectClass}`}
                 onClick={() => {
                   /* 后续可打开详情 */
                 }}
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-300/30 flex items-center justify-center flex-shrink-0">
-                    <span className="text-primary-700 dark:text-primary-700 text-lg">🌿</span>
+                <div className="flex items-start gap-[var(--space-apple-sm)]">
+                  <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30 flex items-center justify-center flex-shrink-0">
+                    <span className="text-[var(--color-primary-text)] text-lg">🌿</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -314,7 +314,7 @@ export default function HomologyTab() {
                         <Highlight text={item.effects} keyword={keyword} />
                       </p>
                     )}
-                    <div className="flex gap-3 mt-2 text-xs text-[var(--text-muted,#9A9A9F)]">
+                    <div className="flex gap-[var(--space-apple-sm)] mt-2 text-xs text-[var(--text-muted,#9A9A9F)]">
                       <span>OB {item.ob_percent != null ? Number(item.ob_percent).toFixed(1) : '-'}</span>
                       <span>·</span>
                       <span>{item.compound_count} 化合物</span>
@@ -334,7 +334,7 @@ export default function HomologyTab() {
                   {['药材名称', '拉丁名', '分类', '功效', 'OB%', '化合物'].map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider"
+                      className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider"
                     >
                       {h}
                     </th>
@@ -345,27 +345,27 @@ export default function HomologyTab() {
                 {items.map((item: any) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors duration-150"
+                    className="hover:bg-[var(--color-primary-container)]/60 dark:hover:bg-[var(--color-primary-container)]/20 transition-colors duration-150"
                   >
-                    <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                       <Highlight text={item.name_cn} keyword={keyword} />
                       <Badge variant="success" size="sm" className="ml-1.5">
                         药食同源
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-[var(--text-secondary,#6E6E73)] text-xs italic font-mono">{item.name_latin || '-'}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-secondary,#6E6E73)] text-xs italic font-mono">{item.name_latin || '-'}</td>
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                       <Badge variant="info" size="sm">
                         {item.category || '-'}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-xs max-w-[200px] truncate text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-xs max-w-[200px] truncate text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
                       <Highlight text={item.effects || '-'} keyword={keyword} />
                     </td>
-                    <td className="px-4 py-3 text-center font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
                       {item.ob_percent != null ? Number(item.ob_percent).toFixed(1) : '-'}
                     </td>
-                    <td className="px-4 py-3 text-center font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
+                    <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-center font-mono text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">
                       {item.compound_count}
                     </td>
                   </tr>
@@ -378,12 +378,12 @@ export default function HomologyTab() {
 
       {listQuery.isError && (
         <div className="text-center py-12">
-          <div className="text-error-500 text-sm">❌ 数据加载失败，请刷新页面重试</div>
+          <div className="text-[var(--color-error-text)]0 text-sm">❌ 数据加载失败，请刷新页面重试</div>
         </div>
       )}
       {!listQuery.isError && items.length === 0 && !listQuery.isLoading && (
         <div className="text-center py-12">
-          <CheckCircle2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <CheckCircle2 className="w-10 h-10 mx-auto mb-[var(--space-apple-sm)] opacity-30" />
           <div className="text-[var(--text-muted,#9A9A9F)] text-sm">
             {keyword || effectFilter ? '未找到匹配结果' : '请先同步数据后浏览'}
           </div>

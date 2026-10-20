@@ -41,12 +41,9 @@ import {
   BarChart3,
   DollarSign,
   Filter,
-  Maximize2,
-  Minimize2,
   ThumbsUp,
   ThumbsDown,
   RotateCcw,
-  Eye,
   EyeOff,
   AlertTriangle,
   Network,
@@ -59,7 +56,6 @@ import type {
   ThinkingStepType,
   ThinkingDimension,
   ProblemDecompositionResult,
-  DecomposedSubProblem,
 } from '../types/thinkingTypes'
 import {
   STEP_TYPE_CONFIG,
@@ -672,7 +668,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
             <div className="relative">
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-accent-300 via-accent-300 to-danger-300 dark:from-accent-700 dark:via-accent-700 dark:to-danger-700" />
               <div className="space-y-1">
-                {steps && Array.isArray(steps) && [...steps].sort((a, b) => (a.metadata?.timestamp || 0) - (b.metadata?.timestamp || 0)).map((step, idx) => {
+                {steps && Array.isArray(steps) && [...steps].sort((a, b) => (a.metadata?.timestamp || 0) - (b.metadata?.timestamp || 0)).map((step) => {
                   const typeCfg = STEP_TYPE_CONFIG[step.type] || STEP_TYPE_CONFIG['analysis']
                   const TypeIcon = ICON_MAP[typeCfg?.icon] || Brain
                   return (
@@ -687,7 +683,10 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
                       <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/40 border border-transparent group-hover:border-neutral-200 dark:group-hover:border-neutral-700 transition-all">
                         <div className="flex items-center justify-between mb-0.5">
                           <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{step.title}</span>
-                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                          {/* eslint-disable-next-line react-hooks/purity */}
+                          {new Date(step.metadata?.timestamp || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
                         </div>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">{step.description}</p>
                       </div>

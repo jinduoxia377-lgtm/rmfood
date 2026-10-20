@@ -43,7 +43,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
     <div className="flex flex-col items-center gap-1">
       <div
         className={cn(
-          'w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold tabular-nums transition-all duration-200',
+          'w-12 h-12 sm:w-14 sm:h-14 rounded-[var(--radius-Apple-md)] flex items-center justify-center text-xl sm:text-2xl font-bold tabular-nums transition-all duration-200',
           flipped && 'lp-countdown-flip'
         )}
         style={{
@@ -71,8 +71,6 @@ function Separator() {
 
 // ── 主组件 ────────────────────────────────────────────────────────
 export function CountdownBanner() {
-  if (!LAUNCH_CONFIG.enabled) return null;
-
   const launchDate = LAUNCH_DATE;
   const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(launchDate));
   const [prevTime, setPrevTime] = useState(timeLeft);
@@ -100,6 +98,8 @@ export function CountdownBanner() {
     return () => clearInterval(id);
   }, [launchDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  if (!LAUNCH_CONFIG.enabled) return null;
+
   if (!timeLeft) return null;
 
   return (
@@ -110,21 +110,21 @@ export function CountdownBanner() {
         borderBottom: '1px solid var(--color-neutral-200, #e2e8f0)',
       }}
     >
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+      <div className="relative z-10 max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-4 sm:py-5">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 
           {/* 左侧：文案 + CTA */}
           <div className="flex items-center gap-4 min-w-0">
             {/* 徽章 */}
             <div
-              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full lp-label"
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-pill)] lp-label"
               style={{
                 background: 'color-mix(in srgb, var(--color-primary-700, #047857) 8%, transparent)',
                 border: '1px solid color-mix(in srgb, var(--color-primary-700, #047857) 25%, transparent)',
                 color: 'var(--color-primary-700, #047857)',
               }}
             >
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary-500" />
+              <span className="relative inline-flex rounded-[var(--radius-pill)] h-1.5 w-1.5 bg-[var(--color-primary-container)]0" />
               {LAUNCH_CONFIG.title}
             </div>
 
@@ -155,7 +155,7 @@ export function CountdownBanner() {
             {/* CTA（P0 触控热区修复：44px 最小高度） */}
             <Link
               to={LAUNCH_CONFIG.ctaHref}
-              className="shrink-0 inline-flex items-center gap-1.5 px-4 min-h-[44px] rounded-xl lp-label transition-all duration-200"
+              className="shrink-0 inline-flex items-center gap-1.5 px-[var(--space-apple-md)] min-h-[44px] rounded-[var(--radius-Apple-md)] lp-label transition-all duration-200"
               style={{
                 background: 'var(--color-neutral-900, #0f172a)',
                 color: '#ffffff',

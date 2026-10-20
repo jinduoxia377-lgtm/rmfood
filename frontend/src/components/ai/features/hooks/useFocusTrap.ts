@@ -100,14 +100,6 @@ export function useFocusTrap(options: UseFocusTrapOptions = {}): UseFocusTrapRet
   }, [getFocusableElements])
 
   /**
-   * 获取最后一个可聚焦元素
-   */
-  const getLastFocusable = useCallback((): HTMLElement | null => {
-    const elements = getFocusableElements()
-    return elements[elements.length - 1] || null
-  }, [getFocusableElements])
-
-  /**
    * 处理键盘事件
    */
   const handleKeyDown = useCallback(

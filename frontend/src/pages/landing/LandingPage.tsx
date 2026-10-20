@@ -31,7 +31,7 @@ import './LandingPage.css';
  */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen bg-grid" style={{ background: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
       <Navbar />
       <main>
         <Hero />

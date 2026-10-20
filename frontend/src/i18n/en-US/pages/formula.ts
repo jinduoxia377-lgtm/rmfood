@@ -1,0 +1,156 @@
+/**
+ * English "Formula Management" module translations (list page + shared)
+ */
+export default {
+  formula: {
+    // List page header
+    title: 'Formula Management',
+    listTitle: 'Formula List',
+    totalCount: '{{total}} items',
+    approvedCount: '{{count}} approved',
+    pendingReviewCount: '{{count}} pending review',
+    firstFormulaCta: 'Create your first medicinal food formula',
+    cardView: 'Card view',
+    tableView: 'Table view',
+    favoritesOnly: 'Favorites only',
+    showAll: 'Show all',
+    showAllFavorites: 'Show all formulas',
+    operationLog: 'Operation log',
+    log: 'Log',
+    newFormula: 'New Formula',
+
+    // Stat cards
+    totalFormulas: 'Total Formulas',
+    monthlyNew: '{{count}} new this month',
+    monthly: '{{count}} this month',
+    draft: 'Draft',
+    draftSubtitle: 'Awaiting submission',
+    pendingReview: 'Pending Review',
+    pendingReviewSubtitle: 'Needs approval',
+    approved: 'Approved',
+    approvedSubtitle: 'Ready to use',
+
+    // Search & filters
+    searchPlaceholder: 'Search formula name or code...',
+    searchAria: 'Search formula name or code',
+    nameSearch: 'Name search',
+    openFilter: 'Open filter panel',
+    filterConditions: 'Filters',
+    status: 'Status',
+    createdDate: 'Created Date',
+    dateStart: 'Created date (from)',
+    dateEnd: 'Created date (to)',
+    tags: 'Tags',
+    selectTagsPlaceholder: 'Select tags...',
+    effectCategory: 'Efficacy Category',
+    allCategories: 'All categories',
+    formulaCategory: 'Formula Category',
+    selectCategoryPlaceholder: 'Select category...',
+    creator: 'Creator',
+    allCreators: 'All creators',
+    pageSize: 'Page size',
+    pageSizeOptions: '{{size}} / page',
+    currentFilterResults: 'Current filter results',
+    total: 'Total',
+    favorites: 'Favorites',
+    currentFilters: 'Current filters:',
+    removeFilter: 'Remove filter: {{label}}',
+    clearAll: 'Clear all',
+    clearAllFilters: 'Clear all filters',
+    applyFilters: 'Apply filters',
+
+    // Batch actions
+    selectedCount: '{{count}} formulas selected',
+    selectedCountPrefix: 'Selected',
+    selectedCountSuffix: 'formulas',
+    exportSelected: 'Export selected',
+    batchDelete: 'Batch delete',
+    batchChangeStatus: 'Change status',
+    cancelSelect: 'Cancel selection',
+    loadFailed: 'Failed to load',
+    loadFailedDesc: 'Unable to fetch formula data. Please check your network and retry.',
+    retry: 'Retry',
+
+    // Empty states
+    noMatchingFormulas: 'No matching formulas',
+    noFormulas: 'No formulas yet',
+    noMatchingDesc: 'Try adjusting your keywords or filters to reveal data',
+    noFormulasDesc: 'Create your first formula and start your smart formula design journey',
+    clearFilters: 'Clear filters',
+
+    // Table
+    tableName: 'Name',
+    tableStatus: 'Status',
+    tableIngredients: 'Ingredients',
+    tableCreator: 'Creator',
+    tableExperiments: 'Experiments',
+    tableCreatedAt: 'Created At',
+    tableUpdatedAt: 'Updated At',
+    tableActions: 'Actions',
+    selectAll: 'Select all',
+    selectFormula: 'Select formula {{name}}',
+    favorite: 'Favorite',
+    unfavorite: 'Unfavorite',
+    experimentsCount: '{{count}} experiments',
+    actionMenu: 'Actions for {{name}}',
+    viewDetail: 'View Details',
+    edit: 'Edit',
+    duplicate: 'Duplicate',
+    exportSingle: 'Export',
+    linkExperiment: 'Link Experiment',
+    delete: 'Delete',
+
+    // Sorting
+    primarySort: 'Primary sort: {{dir}}',
+    secondarySort: 'Secondary sort: {{dir}}',
+    asc: 'ascending',
+    desc: 'descending',
+
+    // Pagination
+    prevPage: 'Previous',
+    nextPage: 'Next',
+    pageJump: 'Go to',
+    pageJumpAria: 'Jump to page',
+    mobilePage: 'Page {{page}}/{{totalPages}}',
+    showingRange: 'Showing {{from}}-{{to}} of {{total}}',
+
+    // Right panel
+    recentUpdates: 'Recent Updates',
+    all: 'All',
+    noRecentFormulas: 'No recent formulas',
+    importExport: 'Import / Export',
+    importFormulas: 'Import Formulas',
+    jsonCsvFormat: 'JSON / CSV format',
+    exportCSV: 'Export CSV',
+    selectedCountSmall: '{{count}} selected',
+    allData: 'All data',
+
+    // Delete confirmation
+    confirmDelete: 'Confirm Delete',
+    confirmDeleteDesc: 'Are you sure you want to delete this formula? This will permanently delete the formula and its related data. This action cannot be undone.',
+    confirmDeleteBtn: 'Confirm Delete',
+    cancel: 'Cancel',
+    confirmBatchDelete: 'Delete the {{count}} selected formulas? Undo is available within 5 seconds.',
+    confirmBatchStatusChange: 'Change the status of the {{count}} selected formulas to "{{status}}"?',
+
+    // Shortcuts
+    keyboardShortcuts: 'Keyboard shortcuts',
+    focusSearch: 'Focus search',
+    closeDialog: 'Close dialog',
+    noPermissionTitle: 'Access Denied',
+    noPermissionDesc: 'You do not have permission to view the formula list. Please contact an administrator.',
+
+    // CSV export
+    exportCsv: {
+      code: 'Code',
+      name: 'Name',
+      status: 'Status',
+      version: 'Version',
+      targetEffects: 'Target Effects',
+      description: 'Description',
+      createdAt: 'Created At',
+      updatedAt: 'Updated At',
+      fileName: 'formula-list',
+    },
+  },
+}

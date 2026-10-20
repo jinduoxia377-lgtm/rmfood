@@ -12,7 +12,7 @@
  *   npx vitest run src/__tests__/
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 
 // Mock timers
@@ -39,8 +39,8 @@ describe('Performance Monitoring', () => {
       const { startPerfTimer } = await import('../utils/performance');
 
       const endTimer = startPerfTimer('test_operation');
-      // 模拟操作耗时
-      await new Promise(resolve => setTimeout(resolve, 10));
+      // 模块级 vi.useFakeTimers() 已启用，需推进 fake timers 模拟操作耗时
+      await vi.advanceTimersByTimeAsync(10);
       const duration = endTimer();
 
       expect(typeof duration).toBe('number');
@@ -65,7 +65,9 @@ describe('Performance Monitoring', () => {
 
       expect(summary).toBeDefined();
       expect(Array.isArray(summary.metrics)).toBe(true);
-      expect(Array.isArray(summary.custom)).toBe(true);
+      // custom 是 Record<string, number>（自定义指标映射），不是数组
+      expect(typeof summary.custom).toBe('object');
+      expect(summary.custom).not.toBeNull();
     });
   });
 
@@ -212,7 +214,7 @@ describe('Error Handling & Edge Cases', () => {
     let didThrow = false;
     try {
       initPerformanceMonitoring({ enabled: true });
-    } catch (e) {
+    } catch {
       didThrow = true;
     }
 
@@ -228,7 +230,7 @@ describe('Error Handling & Edge Cases', () => {
     try {
       result = getPerformanceSummary();
       expect(result).toBeDefined();
-    } catch (e) {
+    } catch {
       // 某些环境中 API 缺失可能导致失败，这也是可接受的
       expect(true).toBe(true);
     }
@@ -278,7 +280,7 @@ describe('Performance Responsiveness', () => {
   it('should not block when preload is called', async () => {
     const { lazyWithPreload } = await import('../components/LazyLoad');
 
-    let executionOrder: string[] = [];
+    const executionOrder: string[] = [];
 
     const LazyComponent = lazyWithPreload(async () => {
       executionOrder.push('component_loaded');

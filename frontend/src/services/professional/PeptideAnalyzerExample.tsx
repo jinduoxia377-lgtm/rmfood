@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PeptideService, Peptide, PeptideAnalysis, BioactivityPrediction } from './peptideService';
+import { PeptideService, PeptideAnalysis, BioactivityPrediction } from './peptideService';
 
 interface PeptideAnalyzerProps {
   initialSequence?: string;
@@ -32,6 +32,7 @@ export const PeptideAnalyzer: React.FC<PeptideAnalyzerProps> = ({ initialSequenc
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     analyzePeptide();
   }, []);
 

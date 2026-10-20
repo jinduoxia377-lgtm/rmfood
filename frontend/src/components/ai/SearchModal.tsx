@@ -2,8 +2,12 @@
  * SearchModal — 全局搜索模态框
  *
  * 支持 Ctrl+K / Cmd+K 快捷键打开。
- * 搜索范围：配方、药材、分析结果。
- * 调用 GET /api/ai/search?q=... 后端 API（未实现时返回空结果）。
+ * 搜索范围：配方、实验、原料。
+ * 调用 GET /api/v1/search/global（真实端点，跨类型模糊搜索）。
+ *
+ * 此前指向 /api/v1/ai/search —— 该路由后端不存在，fetch 返回 404 后被
+ * catch 成空结果，用户看到的是"未找到匹配结果"，误以为搜索功能正常但库里
+ * 没有数据；实际是搜索根本没执行。
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
@@ -14,10 +18,34 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
+/** 后端 /search/global 返回 items[].description，前端类型字段叫 snippet */
+function normalizeSearchItems(data: unknown): SearchResult[] {
+  const payload = data as { types?: Record<string, { items?: unknown[] }> };
+  const out: SearchResult[] = [];
+  const seen = new Set<string>();
+  for (const bucket of Object.values(payload?.types ?? {})) {
+    for (const raw of (bucket?.items ?? []) as Array<Record<string, unknown>>) {
+      const id = String(raw.id ?? '');
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      const type = String(raw.type ?? '') as SearchResult['type'];
+      out.push({
+        id,
+        type: type === 'formula' || type === 'ingredient' || type === 'experiment' ? type : 'analysis',
+        title: String(raw.title ?? ''),
+        snippet: String(raw.description ?? ''),
+        score: typeof raw.score === 'number' ? raw.score : 0,
+      });
+    }
+  }
+  return out.sort((a, b) => b.score - a.score);
+}
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,19 +57,29 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // 防抖搜索
   useEffect(() => {
     if (!query.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
+       
+      setSearchError(null);
       return;
     }
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/v1/ai/search?q=${encodeURIComponent(query)}`);
+        const url = `/api/v1/search/global?q=${encodeURIComponent(query)}&types=formula,experiment,ingredient&page_size=20`;
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          setResults(data.results as SearchResult[]);
+          setResults(normalizeSearchItems(data));
         }
-      } catch (_error) {
+        // 非 200（鉴权/服务异常）不再静默降级成"无结果"，明确标记失败
+        else {
+          setResults([]);
+          setSearchError(`搜索服务异常（HTTP ${response.status}）`);
+        }
+      } catch {
         setResults([]);
+        setSearchError('搜索服务不可达');
       } finally {
         setIsSearching(false);
       }
@@ -59,7 +97,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4"
+      className="fixed inset-0 z-[500] flex items-start justify-center pt-24 px-4"
       role="dialog"
       aria-modal="true"
       aria-label="全局搜索"
@@ -68,9 +106,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"  role="button" tabIndex={0} onClick={handleClose} />
 
       {/* 搜索框 */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <div className="relative w-full max-w-2xl bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-2xl border border-[var(--border-color)] overflow-hidden">
         {/* 输入区 */}
-        <div className="flex items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center px-[var(--space-apple-md)] py-[var(--space-apple-sm)] border-b border-[var(--border-color)]">
           <Search className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" />
           <input
             ref={inputRef}
@@ -123,6 +161,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 </button>
               ))}
             </div>
+          ) : searchError ? (
+            <div className="px-4 py-8 text-center text-sm text-error-500">{searchError}</div>
           ) : query.trim() ? (
             <div className="px-4 py-8 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未找到匹配 "{query}" 的结果</div>
           ) : (

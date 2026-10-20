@@ -5,14 +5,14 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { complianceApi } from '@/api/compliance';
-import type { ComplianceResult, Ingredient } from '@/api/compliance';
+import type { ComplianceResult } from '@/api/compliance';
 import {
   Input, Button, Badge, Card, CardHeader, CardTitle, CardContent,
 } from '@/components/ui';
 import {
   ShieldCheck, ShieldAlert, AlertTriangle, CheckCircle2, XCircle,
   Search, Download, RefreshCw, ArrowUp, ArrowDown, Minus, FileText,
-  BookOpen, Pill, Beaker, TestTube, Scale, Eye, Filter,
+  BookOpen, Pill, Beaker, TestTube, Scale,
 } from 'lucide-react';
 
 type Population = 'adults' | 'children' | 'elderly';
@@ -21,13 +21,13 @@ type SortDir = 'asc' | 'desc';
 // ─── 合规状态徽标 ───
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    compliant: { color: 'text-success-600 dark:text-success-600', bg: 'bg-success-50 dark:bg-success-300/20', border: 'border-success-200 dark:border-success-800', label: '合规' },
-    warning: { color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800', label: '需注意' },
-    non_compliant: { color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800', label: '不合规' },
+    compliant: { color: 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]', bg: 'bg-[var(--color-success-container)]', border: 'border-[var(--color-success-border)] dark:border-[var(--color-success)]', label: '合规' },
+    warning: { color: 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]', bg: 'bg-[var(--color-warning-container)]', border: 'border-[var(--color-warning-border)] dark:border-[var(--color-warning)]', label: '需注意' },
+    non_compliant: { color: 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]', bg: 'bg-[var(--color-error-container)]', border: 'border-[var(--color-error-border)] dark:border-[var(--color-error)]', label: '不合规' },
   };
   const c = config[status] ?? config.compliant;
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${c.bg} ${c.border} ${c.color}`}>
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-pill)] text-xs font-semibold border ${c.bg} ${c.border} ${c.color}`}>
       {c.label}
     </span>
   );
@@ -36,13 +36,13 @@ function StatusBadge({ status }: { status: string }) {
 // ─── 违规类型标签 ───
 function ViolationTypeTag({ type }: { type: string }) {
   const config: Record<string, { label: string; color: string; bg: string; border: string }> = {
-    exceeds_limit: { label: '超限量', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
-    prohibited_combo: { label: '禁忌搭配', color: 'text-warning-600 dark:text-warning-700', bg: 'bg-warning-50 dark:bg-warning-300/20', border: 'border-warning-200 dark:border-warning-800' },
-    child_forbidden: { label: '儿童禁忌', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
-    not_in_directory: { label: '非目录', color: 'text-neutral-600 dark:text-neutral-400', bg: 'bg-neutral-50 dark:bg-neutral-800/50', border: 'border-neutral-200 dark:border-neutral-700' },
+    exceeds_limit: { label: '超限量', color: 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]', bg: 'bg-[var(--color-error-container)]', border: 'border-[var(--color-error-border)] dark:border-[var(--color-error)]' },
+    prohibited_combo: { label: '禁忌搭配', color: 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]', bg: 'bg-[var(--color-warning-container)]', border: 'border-[var(--color-warning-border)] dark:border-[var(--color-warning)]' },
+    child_forbidden: { label: '儿童禁忌', color: 'text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]', bg: 'bg-[var(--color-accent-container)]', border: 'border-[var(--color-accent-border)] dark:border-[var(--color-accent)]' },
+    not_in_directory: { label: '非目录', color: 'text-[var(--text-secondary)]', bg: 'bg-[var(--bg-tertiary)]/50', border: 'border-[var(--border-color)]' },
     gb2760: { label: 'GB 2760', color: 'text-info-600 dark:text-info-600', bg: 'bg-info-50 dark:bg-info-300/20', border: 'border-info-200 dark:border-info-800' },
-    gb14880: { label: 'GB 14880', color: 'text-accent-600 dark:text-accent-700', bg: 'bg-accent-50 dark:bg-accent-300/20', border: 'border-accent-200 dark:border-accent-800' },
-    prohibited_tcm: { label: '禁用品', color: 'text-error-600 dark:text-error-600', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' },
+    gb14880: { label: 'GB 14880', color: 'text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]', bg: 'bg-[var(--color-accent-container)]', border: 'border-[var(--color-accent-border)] dark:border-[var(--color-accent)]' },
+    prohibited_tcm: { label: '禁用品', color: 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]', bg: 'bg-[var(--color-error-container)]', border: 'border-[var(--color-error-border)] dark:border-[var(--color-error)]' },
   };
   const c = config[type] ?? config.not_in_directory;
   return (
@@ -56,8 +56,8 @@ function ViolationTypeTag({ type }: { type: string }) {
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return <Minus className="w-3 h-3 ml-0.5 opacity-20" />;
   return dir === 'asc'
-    ? <ArrowUp className="w-3 h-3 ml-0.5 text-primary-500" />
-    : <ArrowDown className="w-3 h-3 ml-0.5 text-primary-500" />;
+    ? <ArrowUp className="w-3 h-3 ml-0.5 text-[var(--color-primary-text)]0" />
+    : <ArrowDown className="w-3 h-3 ml-0.5 text-[var(--color-primary-text)]0" />;
 }
 
 // ─── CSV 导出辅助 ───
@@ -94,7 +94,7 @@ export default function ComplianceTab() {
   // 排序状态
   const [gb2760Sort, setGb2760Sort] = useState<{ field: 'name' | 'max_usage'; dir: SortDir }>({ field: 'name', dir: 'asc' });
   const [gb14880Sort, setGb14880Sort] = useState<{ field: 'name' | 'min' | 'max'; dir: SortDir }>({ field: 'name', dir: 'asc' });
-  const [homologySort, setHomologySort] = useState<{ field: 'name' | 'max_dosage'; dir: SortDir }>({ field: 'name', dir: 'asc' });
+  const [homologySort] = useState<{ field: 'name' | 'max_dosage'; dir: SortDir }>({ field: 'name', dir: 'asc' });
   const [standardsSort, setStandardsSort] = useState<{ field: 'standard_code' | 'publish_date' | 'category'; dir: SortDir }>({ field: 'publish_date', dir: 'desc' });
 
   // 法规分类筛选
@@ -183,11 +183,6 @@ export default function ComplianceTab() {
     .filter(a => !standardSearch || a.name.includes(standardSearch));
 
   // 药食同源排序
-  const toggleHomologySort = (field: 'name' | 'max_dosage') => {
-    setHomologySort(prev => prev.field === field
-      ? { field, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-      : { field, dir: 'asc' });
-  };
   const sortedHomology = [...foodHomologyMaterials]
     .sort((a: any, b: any) => {
       const av = homologySort.field === 'name' ? a.name : String(a.max_dosage || '');
@@ -261,24 +256,24 @@ export default function ComplianceTab() {
   return (
     <div className="space-y-5">
       {/* 导航栏 */}
-      <div className="flex flex-wrap gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+      <div className="flex flex-wrap gap-2 p-1 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-md)]">
         {tabs.map(({ key, label, icon: Icon, count }) => (
           <button
             key={key}
             onClick={() => setActiveSection(key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-Apple-sm)] text-sm font-semibold transition-all ${
               activeSection === key
-                ? 'bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-700 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
+                ? 'bg-[var(--bg-secondary)] text-[var(--color-primary-text)] shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
             {label}
             {count !== undefined && count > 0 && (
-              <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
+              <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-[var(--radius-pill)] ${
                 activeSection === key
-                  ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
-                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
+                  ? 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30 text-[var(--color-primary-text)]'
+                  : 'bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] text-[var(--text-muted)]'
               }`}>
                 {count}
               </span>
@@ -291,17 +286,17 @@ export default function ComplianceTab() {
       {/*  国家标准目录                          */}
       {/* ════════════════════════════════════ */}
       {activeSection === 'standards' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           {/* 说明卡 */}
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Scale className="w-5 h-5 text-primary-700 dark:text-primary-700 shrink-0 mt-0.5" />
+            <CardContent className="p-[var(--space-apple-md)]">
+              <div className="flex items-start gap-[var(--space-apple-sm)]">
+                <Scale className="w-5 h-5 text-[var(--color-primary-text)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-text-primary leading-relaxed">
+                  <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
                     食品安全国家标准目录（持续更新）
                   </p>
-                  <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                  <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
                     涵盖 GB 2760（食品添加剂）、GB 2763（农药残留）、GB 2762（污染物）等 P0 核心标准，
                     以及乳制品、饮料、调味品等品类标准。数据来源：国家卫生健康委员会 / FoodTalks。
                   </p>
@@ -311,7 +306,7 @@ export default function ComplianceTab() {
           </Card>
 
           {/* 筛选工具栏 */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-[var(--space-apple-sm)]">
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <Input
@@ -326,10 +321,10 @@ export default function ComplianceTab() {
                 <button
                   key={cat}
                   onClick={() => setStandardCategory(cat === standardCategory ? '' : cat)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                  className={`px-[var(--space-apple-sm)] py-1.5 text-xs font-medium rounded-[var(--radius-Apple-sm)] border transition-all ${
                     standardCategory === cat
-                      ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-700'
-                      : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300'
+                      ? 'bg-[var(--color-primary-container)] border-[var(--color-primary-border)] dark:border-[var(--color-primary)] text-[var(--color-primary-text)]'
+                      : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--border-color)]'
                   }`}
                 >
                   {cat}
@@ -342,8 +337,8 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary-700 dark:text-primary-700" />
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[var(--color-primary-text)]" />
                   国家标准列表（{filteredStandards.length} 项）
                 </CardTitle>
                 <Button
@@ -371,41 +366,41 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleStandardsSort('standard_code')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleStandardsSort('standard_code')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           标准号 <SortIcon active={standardsSort.field === 'standard_code'} dir={standardsSort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">标准名称</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">类别</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleStandardsSort('publish_date')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">标准名称</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">类别</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleStandardsSort('publish_date')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           实施日期 <SortIcon active={standardsSort.field === 'publish_date'} dir={standardsSort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">优先级</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">优先级</th>
                     </tr>
                   </thead>
                   <tbody>
                     {standardsLoading ? (
-                      <tr><td colSpan={5} className="px-4 py-12 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={5} className="px-[var(--space-apple-md)] py-12 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : filteredStandards.length === 0 ? (
-                      <tr><td colSpan={5} className="px-4 py-12 text-center text-text-muted text-sm">暂无匹配标准</td></tr>
+                      <tr><td colSpan={5} className="px-[var(--space-apple-md)] py-12 text-center text-[var(--text-muted)] text-sm">暂无匹配标准</td></tr>
                     ) : filteredStandards.map((s: any, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs font-semibold text-primary-700 dark:text-primary-700">{s.standard_code}</td>
-                        <td className="px-4 py-3 max-w-[320px]">
-                          <p className="font-medium text-text-primary text-sm leading-snug">{s.title}</p>
-                          <p className="text-xs text-text-muted mt-0.5 line-clamp-1">{s.summary}</p>
+                      <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] font-mono text-xs font-semibold text-[var(--color-primary-text)]">{s.standard_code}</td>
+                        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] max-w-[320px]">
+                          <p className="font-medium text-[var(--text-primary)] text-sm leading-snug">{s.title}</p>
+                          <p className="text-xs text-[var(--text-muted)] mt-0.5 line-clamp-1">{s.summary}</p>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
                             {s.category}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs text-text-muted tabular-nums">{s.implementation_date || '—'}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-xs text-[var(--text-muted)] tabular-nums">{s.implementation_date || '—'}</td>
+                        <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
                           <Badge
                             variant={s.priority?.startsWith('P0') ? 'default' : s.priority?.startsWith('P1') ? 'secondary' : 'outline'}
                             className="text-xs"
@@ -427,16 +422,16 @@ export default function ComplianceTab() {
       {/*  药食同源目录                          */}
       {/* ════════════════════════════════════ */}
       {activeSection === 'homology' && (
-        <div className="space-y-4">
+        <div className="space-y-[var(--space-apple-md)]">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <BookOpen className="w-5 h-5 text-success-600 dark:text-success-600 shrink-0 mt-0.5" />
+            <CardContent className="p-[var(--space-apple-md)]">
+              <div className="flex items-start gap-[var(--space-apple-sm)]">
+                <BookOpen className="w-5 h-5 text-[var(--color-success-text)] dark:text-[var(--color-success-text)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-text-primary leading-relaxed">
+                  <p className="text-sm font-semibold text-[var(--text-primary)] leading-relaxed">
                     药食同源物质目录（卫健委公告）
                   </p>
-                  <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                  <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
                     收录已获批用于普通食品的药食同源中药材，含拉丁学名、适用人群、每日限量、用法形式及禁忌事项。
                     数据来源于国家卫健委公告及 TCMSP 中药系统药理学数据库。
                   </p>
@@ -446,7 +441,7 @@ export default function ComplianceTab() {
           </Card>
 
           {/* 搜索框 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[var(--space-apple-sm)]">
             <div className="relative flex-1 min-w-[240px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
               <Input
@@ -468,7 +463,7 @@ export default function ComplianceTab() {
                 ['名称', '拉丁名', '类别', '限量', '禁用人群'],
                 `food_homology_${new Date().toISOString().slice(0, 10)}.csv`,
               )}
-              className="px-3 py-2 text-xs font-medium bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400"
+              className="px-[var(--space-apple-sm)] py-2 text-xs font-medium bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-1.5 text-[var(--text-secondary)]"
             >
               <Download className="w-3.5 h-3.5" /> 导出
             </button>
@@ -479,10 +474,10 @@ export default function ComplianceTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map(i => (
                 <Card key={i} className="animate-pulse">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2" />
-                    <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-3/4" />
-                    <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-1/2" />
+                  <CardContent className="p-5 space-y-[var(--space-apple-sm)]">
+                    <div className="h-4 bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded w-1/2" />
+                    <div className="h-3 bg-[var(--bg-tertiary)] rounded w-3/4" />
+                    <div className="h-3 bg-[var(--bg-tertiary)] rounded w-1/2" />
                   </CardContent>
                 </Card>
               ))}
@@ -490,7 +485,7 @@ export default function ComplianceTab() {
           ) : sortedHomology.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <p className="text-text-muted text-sm">暂无匹配药材</p>
+                <p className="text-[var(--text-muted)] text-sm">暂无匹配药材</p>
               </CardContent>
             </Card>
           ) : (
@@ -498,43 +493,43 @@ export default function ComplianceTab() {
               {sortedHomology.map((m: any, i: number) => (
                 <Card key={i} className="group hover:shadow-md transition-shadow">
                   <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
                       <div>
-                        <p className="font-bold text-text-primary text-base">{m.name}</p>
-                        <p className="text-xs text-text-muted italic mt-0.5">{m.latin_name}</p>
+                        <p className="font-bold text-[var(--text-primary)] text-base">{m.name}</p>
+                        <p className="text-xs text-[var(--text-muted)] italic mt-0.5">{m.latin_name}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      <span className={`px-2 py-0.5 rounded-[var(--radius-pill)] text-xs font-semibold ${
                         m.status === '允许用于普通食品'
-                          ? 'bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600'
+                          ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'
                           : m.status === '试点用于普通食品'
-                          ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                          ? 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25 text-[var(--color-warning-text)]'
+                          : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
                       }`}>
                         {m.status === '允许用于普通食品' ? '允许' : m.status === '试点用于普通食品' ? '试点' : '—'}
                       </span>
                     </div>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-text-muted">分类</span>
-                        <span className="font-medium text-text-primary">{m.category}</span>
+                        <span className="text-[var(--text-muted)]">分类</span>
+                        <span className="font-medium text-[var(--text-primary)]">{m.category}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-text-muted">日用量上限</span>
-                        <span className="font-semibold text-primary-700 dark:text-primary-700">{m.max_dosage || '无限制'}</span>
+                        <span className="text-[var(--text-muted)]">日用量上限</span>
+                        <span className="font-semibold text-[var(--color-primary-text)]">{m.max_dosage || '无限制'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-text-muted">批准日期</span>
-                        <span className="text-text-muted">{m.approval_date || '传统'}</span>
+                        <span className="text-[var(--text-muted)]">批准日期</span>
+                        <span className="text-[var(--text-muted)]">{m.approval_date || '传统'}</span>
                       </div>
                     </div>
                     {m.restrictions && m.restrictions.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                        <p className="text-xs font-semibold text-warning-600 dark:text-warning-700 mb-1.5 flex items-center gap-1">
+                      <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)]">
+                        <p className="text-xs font-semibold text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] mb-1.5 flex items-center gap-1">
                           <ShieldAlert className="w-3 h-3" /> 禁忌人群
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {m.restrictions.map((r: string, j: number) => (
-                            <span key={j} className="px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs border border-warning-200 dark:border-warning-800">
+                            <span key={j} className="px-2 py-0.5 rounded bg-[var(--color-warning-container)] text-[var(--color-warning-text)] text-xs border border-[var(--color-warning-border)] dark:border-[var(--color-warning)]">
                               {r}
                             </span>
                           ))}
@@ -567,7 +562,7 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
                   <Beaker className="w-4 h-4 text-info-600 dark:text-info-600" />
                   GB 2760-2024 食品添加剂使用标准
                   <Badge variant="default" className="text-xs">2025年2月8日实施</Badge>
@@ -587,7 +582,7 @@ export default function ComplianceTab() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="relative mb-3">
+              <div className="relative mb-[var(--space-apple-sm)]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <Input
                   value={standardSearch}
@@ -599,30 +594,30 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleGb2760Sort('name')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleGb2760Sort('name')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           添加剂名称 <SortIcon active={gb2760Sort.field === 'name'} dir={gb2760Sort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleGb2760Sort('max_usage')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleGb2760Sort('max_usage')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           最大使用量 <SortIcon active={gb2760Sort.field === 'max_usage'} dir={gb2760Sort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">适用食品类别</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">适用食品类别</th>
                     </tr>
                   </thead>
                   <tbody>
                     {gb2760Loading ? (
-                      <tr><td colSpan={3} className="px-4 py-8 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={3} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : sortedGb2760.length === 0 ? (
-                      <tr><td colSpan={3} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
+                      <tr><td colSpan={3} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">暂无数据</td></tr>
                     ) : sortedGb2760.map((a: any, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="px-4 py-2.5 font-medium text-text-primary">{a.name}</td>
-                        <td className="px-4 py-2.5 tabular-nums font-semibold text-info-600 dark:text-info-600">{a.max_usage}</td>
-                        <td className="px-4 py-2.5">
+                      <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                        <td className="px-[var(--space-apple-md)] py-2.5 font-medium text-[var(--text-primary)]">{a.name}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5 tabular-nums font-semibold text-info-600 dark:text-info-600">{a.max_usage}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5">
                           <div className="flex flex-wrap gap-1">
                             {a.categories.map((cat: string, j: number) => (
                               <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-info-50 dark:bg-info-300/20 text-info-700 dark:text-info-600 border border-info-200 dark:border-info-800">
@@ -643,8 +638,8 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <TestTube className="w-4 h-4 text-accent-600 dark:text-accent-700" />
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
+                  <TestTube className="w-4 h-4 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
                   GB 14880-2012 营养强化剂使用标准
                 </CardTitle>
                 <Button
@@ -662,7 +657,7 @@ export default function ComplianceTab() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="relative mb-3">
+              <div className="relative mb-[var(--space-apple-sm)]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <Input
                   value={standardSearch}
@@ -674,39 +669,39 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleGb14880Sort('name')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleGb14880Sort('name')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           强化剂名称 <SortIcon active={gb14880Sort.field === 'name'} dir={gb14880Sort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleGb14880Sort('min')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleGb14880Sort('min')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           最小用量 <SortIcon active={gb14880Sort.field === 'min'} dir={gb14880Sort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        <button onClick={() => toggleGb14880Sort('max')} className="flex items-center gap-1 hover:text-primary-700 transition-colors">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                        <button onClick={() => toggleGb14880Sort('max')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
                           最大用量 <SortIcon active={gb14880Sort.field === 'max'} dir={gb14880Sort.dir} />
                         </button>
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">适用食品类别</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">适用食品类别</th>
                     </tr>
                   </thead>
                   <tbody>
                     {gb14880Loading ? (
-                      <tr><td colSpan={4} className="px-4 py-8 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={4} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : sortedGb14880.length === 0 ? (
-                      <tr><td colSpan={4} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
+                      <tr><td colSpan={4} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">暂无数据</td></tr>
                     ) : sortedGb14880.map((e: any, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="px-4 py-2.5 font-medium text-text-primary">{e.name}</td>
-                        <td className="px-4 py-2.5 tabular-nums text-accent-600 dark:text-accent-700">{e.min}</td>
-                        <td className="px-4 py-2.5 tabular-nums font-semibold text-accent-600 dark:text-accent-700">{e.max}</td>
-                        <td className="px-4 py-2.5">
+                      <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                        <td className="px-[var(--space-apple-md)] py-2.5 font-medium text-[var(--text-primary)]">{e.name}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5 tabular-nums text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">{e.min}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5 tabular-nums font-semibold text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">{e.max}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5">
                           <div className="flex flex-wrap gap-1">
                             {e.categories.map((cat: string, j: number) => (
-                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 border border-accent-200 dark:border-accent-800">
+                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-accent-container)] text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)] border border-[var(--color-accent-border)] dark:border-[var(--color-accent)]">
                                 {cat}
                               </span>
                             ))}
@@ -724,8 +719,8 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <Pill className="w-4 h-4 text-success-600 dark:text-success-600" />
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
+                  <Pill className="w-4 h-4 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />
                   药食同源目录限量参考（2023版）
                 </CardTitle>
                 <Button
@@ -743,7 +738,7 @@ export default function ComplianceTab() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="relative mb-3">
+              <div className="relative mb-[var(--space-apple-sm)]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <Input
                   value={standardSearch}
@@ -755,25 +750,25 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">成分名称</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">日用量上限 (mg)</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">法规来源</th>
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">成分名称</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">日用量上限 (mg)</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">法规来源</th>
                     </tr>
                   </thead>
                   <tbody>
                     {limitsLoading ? (
-                      <tr><td colSpan={3} className="px-4 py-8 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={3} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : Object.entries(limits).length === 0 ? (
-                      <tr><td colSpan={3} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
+                      <tr><td colSpan={3} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">暂无数据</td></tr>
                     ) : Object.entries(limits)
                       .sort(([, a], [, b]) => Number(a) - Number(b))
                       .filter(([, mg]) => !standardSearch || String(mg).includes(standardSearch))
                       .map(([name, mg], i) => (
-                        <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                          <td className="px-4 py-2.5 font-medium text-text-primary">{name}</td>
-                          <td className="px-4 py-2.5 tabular-nums font-semibold text-success-600 dark:text-success-600">{Number(mg).toLocaleString()}</td>
-                          <td className="px-4 py-2.5 text-text-muted text-xs">卫健委药食同源目录（2023版）</td>
+                        <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                          <td className="px-[var(--space-apple-md)] py-2.5 font-medium text-[var(--text-primary)]">{name}</td>
+                          <td className="px-[var(--space-apple-md)] py-2.5 tabular-nums font-semibold text-[var(--color-success-text)] dark:text-[var(--color-success-text)]">{Number(mg).toLocaleString()}</td>
+                          <td className="px-[var(--space-apple-md)] py-2.5 text-[var(--text-muted)] text-xs">卫健委药食同源目录（2023版）</td>
                         </tr>
                       ))
                     }
@@ -794,8 +789,8 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-warning-600 dark:text-warning-700" />
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                   中药十八反十九畏禁忌搭配
                 </CardTitle>
                 <Button
@@ -813,7 +808,7 @@ export default function ComplianceTab() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="relative mb-3">
+              <div className="relative mb-[var(--space-apple-sm)]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                 <Input
                   value={prohibitedSearch}
@@ -825,29 +820,29 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">搭配成分</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">禁忌类型</th>
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">搭配成分</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">禁忌类型</th>
                     </tr>
                   </thead>
                   <tbody>
                     {prohibitedLoading ? (
-                      <tr><td colSpan={2} className="px-4 py-8 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={2} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : filteredProhibited.length === 0 ? (
-                      <tr><td colSpan={2} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
+                      <tr><td colSpan={2} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">暂无数据</td></tr>
                     ) : filteredProhibited.map((p: any, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="px-4 py-2.5">
+                      <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                        <td className="px-[var(--space-apple-md)] py-2.5">
                           <div className="flex flex-wrap gap-1.5">
                             {p.pair.map((n: string, j: number) => (
-                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 text-xs font-medium border border-warning-200 dark:border-warning-800">
+                              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded bg-[var(--color-warning-container)] text-[var(--color-warning-text)] text-xs font-medium border border-[var(--color-warning-border)] dark:border-[var(--color-warning)]">
                                 {n}
                               </span>
                             ))}
                           </div>
                         </td>
-                        <td className="px-4 py-2.5">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        <td className="px-[var(--space-apple-md)] py-2.5">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
                             {p.rule}
                           </span>
                         </td>
@@ -863,8 +858,8 @@ export default function ComplianceTab() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700 flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-error-600 dark:text-error-600" />
+                <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-2">
+                  <XCircle className="w-4 h-4 text-[var(--color-error-text)] dark:text-[var(--color-error-text)]" />
                   中国食品安全法规禁用品清单
                   <Badge variant="destructive" className="text-xs">{gbProhibitedItems.length} 项</Badge>
                 </CardTitle>
@@ -886,20 +881,20 @@ export default function ComplianceTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">禁用品名称</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">法规依据</th>
+                    <tr className="border-b border-[var(--border-color)] bg-[var(--bg-tertiary)]/50">
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">禁用品名称</th>
+                      <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">法规依据</th>
                     </tr>
                   </thead>
                   <tbody>
                     {gbProhibitedLoading ? (
-                      <tr><td colSpan={2} className="px-4 py-8 text-center text-text-muted text-sm">加载中...</td></tr>
+                      <tr><td colSpan={2} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">加载中...</td></tr>
                     ) : gbProhibitedItems.length === 0 ? (
-                      <tr><td colSpan={2} className="px-4 py-8 text-center text-text-muted text-sm">暂无数据</td></tr>
+                      <tr><td colSpan={2} className="px-[var(--space-apple-md)] py-8 text-center text-[var(--text-muted)] text-sm">暂无数据</td></tr>
                     ) : gbProhibitedItems.map((item: string, i: number) => (
-                      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="px-4 py-2.5 font-medium text-error-600 dark:text-error-600">{item}</td>
-                        <td className="px-4 py-2.5 text-text-muted text-xs">中国食品安全法规禁用品</td>
+                      <tr key={i} className="border-b border-[var(--border-color)]/50 hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
+                        <td className="px-[var(--space-apple-md)] py-2.5 font-medium text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{item}</td>
+                        <td className="px-[var(--space-apple-md)] py-2.5 text-[var(--text-muted)] text-xs">中国食品安全法规禁用品</td>
                       </tr>
                     ))}
                   </tbody>
@@ -914,20 +909,20 @@ export default function ComplianceTab() {
       {/*  合规检查                             */}
       {/* ════════════════════════════════════ */}
       {activeSection === 'check' && (
-        <div className="space-y-4">
-          <p className="text-sm text-text-muted">输入配方成分及日用量，对照国家标准（GB 2760/GB 14880/药食同源目录）检查合规性</p>
+        <div className="space-y-[var(--space-apple-md)]">
+          <p className="text-sm text-[var(--text-muted)]">输入配方成分及日用量，对照国家标准（GB 2760/GB 14880/药食同源目录）检查合规性</p>
 
           {/* 人群选择 */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-text-muted">目标人群：</span>
+            <span className="text-sm text-[var(--text-muted)]">目标人群：</span>
             {(['adults', 'children', 'elderly'] as Population[]).map(p => (
               <button
                 key={p}
                 onClick={() => setPopulation(p)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-[var(--space-apple-sm)] py-1.5 text-xs font-semibold rounded-[var(--radius-Apple-sm)] transition-all ${
                   population === p
-                    ? 'bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800'
-                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]'
+                    : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)]'
                 }`}
               >
                 {p === 'adults' ? '成人' : p === 'children' ? '儿童' : '老人'}
@@ -938,7 +933,7 @@ export default function ComplianceTab() {
           {/* 成分输入 */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">配方成分</CardTitle>
+              <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">配方成分</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -958,14 +953,14 @@ export default function ComplianceTab() {
                       className="w-28 h-9 text-sm"
                     />
                     {ingredients.length > 1 && (
-                      <button onClick={() => removeIngredient(idx)} className="p-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors">
+                      <button onClick={() => removeIngredient(idx)} className="p-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 transition-colors">
                         <XCircle className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-[var(--space-apple-sm)]">
                 <Button variant="outline" size="sm" onClick={addIngredient} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>添加成分</Button>
                 <Button variant="primary" size="sm" onClick={handleCheck} disabled={checking || !ingredients.some(i => i.name.trim())} icon={checking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}>
                   {checking ? '检查中...' : '开始合规检查'}
@@ -976,30 +971,30 @@ export default function ComplianceTab() {
 
           {/* 检查结果 */}
           {checkResult && (
-            <div className="space-y-4">
+            <div className="space-y-[var(--space-apple-md)]">
               {/* 总体评分 */}
               <Card className={`border-l-4 ${checkResult.status === 'compliant' ? 'border-l-success-500' : checkResult.status === 'warning' ? 'border-l-warning-500' : 'border-l-error-500'}`}>
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        checkResult.status === 'compliant' ? 'bg-success-100 dark:bg-success-300/25' :
-                        checkResult.status === 'warning' ? 'bg-warning-100 dark:bg-warning-300/25' : 'bg-error-100 dark:bg-error-300/25'
+                      <div className={`w-12 h-12 rounded-[var(--radius-pill)] flex items-center justify-center ${
+                        checkResult.status === 'compliant' ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/25' :
+                        checkResult.status === 'warning' ? 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25' : 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/25'
                       }`}>
-                        {checkResult.status === 'compliant' ? <CheckCircle2 className="w-6 h-6 text-success-600 dark:text-success-600" /> :
-                         checkResult.status === 'warning' ? <AlertTriangle className="w-6 h-6 text-warning-600 dark:text-warning-700" /> :
-                         <XCircle className="w-6 h-6 text-error-600 dark:text-error-600" />}
+                        {checkResult.status === 'compliant' ? <CheckCircle2 className="w-6 h-6 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" /> :
+                         checkResult.status === 'warning' ? <AlertTriangle className="w-6 h-6 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" /> :
+                         <XCircle className="w-6 h-6 text-[var(--color-error-text)] dark:text-[var(--color-error-text)]" />}
                       </div>
                       <div>
-                        <p className="text-lg font-bold text-text-primary">
-                          合规评分：<span className={checkResult.status === 'compliant' ? 'text-success-600' : checkResult.status === 'warning' ? 'text-warning-600' : 'text-error-600'}>{checkResult.score.toFixed(1)}</span>/100
+                        <p className="text-lg font-bold text-[var(--text-primary)]">
+                          合规评分：<span className={checkResult.status === 'compliant' ? 'text-[var(--color-success-text)]' : checkResult.status === 'warning' ? 'text-[var(--color-warning-text)]' : 'text-[var(--color-error-text)]'}>{checkResult.score.toFixed(1)}</span>/100
                         </p>
                         <div className="mt-1"><StatusBadge status={checkResult.status} /></div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-text-muted">违规数</p>
-                      <p className="text-2xl font-bold text-text-primary">{checkResult.violations.length}</p>
+                      <p className="text-xs text-[var(--text-muted)]">违规数</p>
+                      <p className="text-2xl font-bold text-[var(--text-primary)]">{checkResult.violations.length}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -1009,25 +1004,25 @@ export default function ComplianceTab() {
               {checkResult.violations.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">违规详情</CardTitle>
+                    <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">违规详情</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
                       {checkResult.violations.map((v, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-100 dark:border-error-900/30">
-                          <XCircle className="w-4 h-4 text-error-500 mt-0.5 shrink-0" />
+                        <div key={i} className="flex items-start gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/15 border border-[var(--color-error-border)] dark:border-error-900/30">
+                          <XCircle className="w-4 h-4 text-[var(--color-error-text)]0 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-text-primary text-sm">{v.ingredient}</span>
+                              <span className="font-medium text-[var(--text-primary)] text-sm">{v.ingredient}</span>
                               <ViolationTypeTag type={v.type} />
                             </div>
-                            <p className="text-xs text-text-muted mt-0.5">{v.message}</p>
+                            <p className="text-xs text-[var(--text-muted)] mt-0.5">{v.message}</p>
                           </div>
                           {v.max_allowed !== undefined && v.actual_value !== undefined && (
                             <div className="text-right shrink-0">
-                              <p className="text-xs text-text-muted">限量</p>
-                              <p className="text-sm font-semibold text-error-600 dark:text-error-600">{v.max_allowed}mg</p>
-                              <p className="text-xs text-text-muted">实际</p>
+                              <p className="text-xs text-[var(--text-muted)]">限量</p>
+                              <p className="text-sm font-semibold text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{v.max_allowed}mg</p>
+                              <p className="text-xs text-[var(--text-muted)]">实际</p>
                               <p className="text-sm font-semibold">{v.actual_value}mg</p>
                             </div>
                           )}
@@ -1042,12 +1037,12 @@ export default function ComplianceTab() {
               {checkResult.warnings.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">警告</CardTitle>
+                    <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">警告</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-1.5">
                       {checkResult.warnings.map((w, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-warning-700 dark:text-warning-700">
+                        <div key={i} className="flex items-center gap-2 text-sm text-[var(--color-warning-text)]">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
                           {w}
                         </div>
@@ -1061,13 +1056,13 @@ export default function ComplianceTab() {
               {checkResult.suggestions.length > 0 && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">建议</CardTitle>
+                    <CardTitle className="text-sm font-semibold tracking-tight text-[var(--text-primary)]">建议</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-1.5">
                       {checkResult.suggestions.map((s, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-text-primary">
-                          <CheckCircle2 className="w-4 h-4 text-success-500 shrink-0" />
+                        <div key={i} className="flex items-center gap-2 text-sm text-[var(--text-primary)]">
+                          <CheckCircle2 className="w-4 h-4 text-[var(--color-success-text)]0 shrink-0" />
                           {s}
                         </div>
                       ))}

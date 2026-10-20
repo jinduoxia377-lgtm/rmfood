@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { lazy, Suspense } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Dna, FlaskConical, Database, Activity,
   Zap, ShieldCheck, TrendingUp, ArrowRight,
@@ -39,11 +40,11 @@ function StatsCard({ icon, label, value, color }: StatsCardProps) {
     <div className="card card-hover">
       <div className="flex items-start justify-between">
         <div className="space-y-2">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+          <div className={`w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center ${color}`}>
             {icon}
           </div>
           <div>
-            <p className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">{value}</p>
+            <p className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
             <p className="text-sm text-[var(--text-muted,#6B7280)] dark:text-[var(--text-muted-dark,#9CA3AF)] mt-0.5">{label}</p>
           </div>
         </div>
@@ -69,33 +70,35 @@ function FeatureCard({ icon, title, description, onClick, color }: FeatureCardPr
       onClick={onClick}
       className="card card-hover flex items-start gap-4 p-5 group w-full text-left"
     >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color} group-hover:scale-105 transition-transform duration-200`}>
+      <div className={`w-12 h-12 rounded-[var(--radius-Apple-md)] flex items-center justify-center shrink-0 ${color} group-hover:scale-105 transition-transform duration-200`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--color-primary-text)] dark:group-hover:text-[var(--color-primary-text)] transition-colors">
           {title}
         </h2>
         <p className="text-xs text-[var(--text-muted,#6B7280)] dark:text-[var(--text-muted-dark,#9CA3AF)] mt-1 leading-relaxed">
           {description}
         </p>
       </div>
-      <ArrowRight size={16} className="text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
+      <ArrowRight size={16} className="text-[var(--text-muted)] group-hover:text-[var(--color-primary-text)] dark:group-hover:text-[var(--color-primary-text)] group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
     </button>
   )
 }
 
 // ─── 主页面组件 ────────────────────────────────────────────
 export default function PeptideStructurePage() {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [stats, setStats] = useState<DatabaseStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   const [initialTab, setInitialTab] = useState<FeatureTab>('analyze')
 
   // 从 URL 读取初始 tab
   useEffect(() => {
     const tab = searchParams.get('tab') as FeatureTab | null
     if (tab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy'].includes(tab)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitialTab(tab)
     }
   }, [searchParams])
@@ -118,24 +121,24 @@ export default function PeptideStructurePage() {
   }
 
   return (
-    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
-      <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen">
+      <div className="space-y-6 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)]">
 
         {/* 欢迎横幅 — 参照 Dashboard 设计 */}
-        <div className="surface-primary rounded-xl p-6 shadow-sm">
+        <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-900/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/20 flex items-center justify-center">
                   <Dna size={18} className="text-white" />
                 </div>
-                <span className="text-xs font-medium uppercase tracking-wider text-white/70">肽链结构分析工具</span>
+                <span className="text-xs font-medium uppercase tracking-wider text-white/70">{t('pages.peptide.toolBadge')}</span>
               </div>
               <h1 className="text-xl font-semibold leading-snug tracking-tight">
-                肽序列结构与活性预测分析
+                {t('pages.peptide.title')}
               </h1>
               <p className="mt-1 text-white/80 text-sm">
-                基于 PepLink 的完整肽链分析平台 — 结构预测、活性评估、安全分析一体化
+                {t('pages.peptide.subtitle')}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -145,7 +148,7 @@ export default function PeptideStructurePage() {
                 icon={<FlaskConical size={16} />}
                 onClick={() => handleNavigateToTab('analyze')}
               >
-                开始分析
+                {t('pages.peptide.startAnalyze')}
               </Button>
               <Button
                 variant="ghost"
@@ -153,7 +156,7 @@ export default function PeptideStructurePage() {
                 icon={<Database size={16} />}
                 onClick={() => handleNavigateToTab('database')}
               >
-                数据库查询
+                {t('pages.peptide.databaseQuery')}
               </Button>
             </div>
           </div>
@@ -161,82 +164,82 @@ export default function PeptideStructurePage() {
 
         {/* 统计概览 — 参照 Dashboard 卡片样式 */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <StatsCard
-              icon={<Database size={20} className="text-primary-700 dark:text-primary-700" />}
-              label="数据库肽数"
+              icon={<Database size={20} className="text-[var(--color-primary-text)]" />}
+              label={t('pages.peptide.statsPeptides')}
               value={stats.total_peptides}
-              color="bg-primary-50 dark:bg-primary-300/20"
+              color="bg-[var(--color-primary-container)]"
             />
             <StatsCard
-              icon={<Activity size={20} className="text-success-600 dark:text-success-600" />}
-              label="活性类型"
+              icon={<Activity size={20} className="text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />}
+              label={t('pages.peptide.statsActivities')}
               value={Object.keys(stats.activities).length}
-              color="bg-success-50 dark:bg-success-300/20"
+              color="bg-[var(--color-success-container)]"
             />
             <StatsCard
-              icon={<FlaskConical size={20} className="text-warning-600 dark:text-warning-700" />}
-              label="食物来源"
+              icon={<FlaskConical size={20} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />}
+              label={t('pages.peptide.statsFoodSources')}
               value={Object.keys(stats.food_sources).length}
-              color="bg-warning-50 dark:bg-warning-300/20"
+              color="bg-[var(--color-warning-container)]"
             />
             <StatsCard
-              icon={<ShieldCheck size={20} className="text-accent-600 dark:text-accent-700" />}
-              label="活跃序列"
+              icon={<ShieldCheck size={20} className="text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />}
+              label={t('pages.peptide.statsActiveSequences')}
               value={`${Object.keys(stats.activities).length}+`}
-              color="bg-accent-50 dark:bg-accent-300/20"
+              color="bg-[var(--color-accent-container)]"
             />
           </div>
         )}
 
         {/* 功能入口网格 — 快捷导航，每个卡片绑定独立的 tab */}
         <div>
-          <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">快捷功能</h2>
+          <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)]">{t('pages.peptide.quickFunctions')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FeatureCard
-              icon={<FlaskConical size={22} className="text-primary-700 dark:text-primary-700" />}
-              title="序列分析"
-              description="输入肽序列，分析分子量、等电点、疏水性及 ACE 抑制/抗氧化/抗菌活性评分"
+              icon={<FlaskConical size={22} className="text-[var(--color-primary-text)]" />}
+              title={t('pages.peptide.featureAnalyze')}
+              description={t('pages.peptide.featureAnalyzeDesc')}
               tab="analyze"
-              color="bg-primary-50 dark:bg-primary-300/20"
+              color="bg-[var(--color-primary-container)]"
               onClick={() => handleNavigateToTab('analyze')}
             />
             <FeatureCard
-              icon={<Dna size={22} className="text-success-600 dark:text-success-600" />}
-              title="序列转换"
-              description="FASTA → SMILES → SELFIES 格式互转，支持 N/C 端修饰"
+              icon={<Dna size={22} className="text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />}
+              title={t('pages.peptide.featureConvert')}
+              description={t('pages.peptide.featureConvertDesc')}
               tab="convert"
-              color="bg-success-50 dark:bg-success-300/20"
+              color="bg-[var(--color-success-container)]"
               onClick={() => handleNavigateToTab('convert')}
             />
             <FeatureCard
-              icon={<Database size={22} className="text-warning-600 dark:text-warning-700" />}
-              title="数据库查询"
-              description="搜索药食同源数据库中的活性肽，按来源、活性类型筛选"
+              icon={<Database size={22} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />}
+              title={t('pages.peptide.featureDatabase')}
+              description={t('pages.peptide.featureDatabaseDesc')}
               tab="database"
-              color="bg-warning-50 dark:bg-warning-300/20"
+              color="bg-[var(--color-warning-container)]"
               onClick={() => handleNavigateToTab('database')}
             />
             <FeatureCard
-              icon={<Zap size={22} className="text-accent-600 dark:text-accent-700" />}
-              title="协同效应分析"
-              description="预测肽-药材协同作用，推荐最佳配伍组合，输出协同评分与机制"
+              icon={<Zap size={22} className="text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />}
+              title={t('pages.peptide.featureSynergy')}
+              description={t('pages.peptide.featureSynergyDesc')}
               tab="synergy"
-              color="bg-accent-50 dark:bg-accent-300/20"
+              color="bg-[var(--color-accent-container)]"
               onClick={() => handleNavigateToTab('synergy')}
             />
             <FeatureCard
               icon={<TrendingUp size={22} className="text-info-600 dark:text-info-700" />}
-              title="Pareto 优化"
-              description="多目标优化候选序列，计算 Pareto 最优前沿，筛选综合评分最高的序列"
+              title={t('pages.peptide.featureOptimize')}
+              description={t('pages.peptide.featureOptimizeDesc')}
               tab="optimize"
               color="bg-info-50 dark:bg-info-300/20"
               onClick={() => handleNavigateToTab('optimize')}
             />
             <FeatureCard
               icon={<ShieldCheck size={22} className="text-danger-600 dark:text-danger-700" />}
-              title="深度分析"
-              description="二级结构预测（Chou-Fasman）、理化性质分析、食品安全评估、毒性预测"
+              title={t('pages.peptide.featureDeep')}
+              description={t('pages.peptide.featureDeepDesc')}
               tab="deep"
               color="bg-danger-50 dark:bg-danger-300/20"
               onClick={() => handleNavigateToTab('deep')}
@@ -247,10 +250,10 @@ export default function PeptideStructurePage() {
         {/* 主分析器 — 懒加载，支持通过 URL 参数跳转到指定 tab */}
         <div id="peptide-analyzer" className="pt-2">
           <Suspense fallback={
-            <div className="flex items-center justify-center py-20 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-              <div className="text-center space-y-3">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
-                <p className="text-sm text-[var(--text-muted,#6B7280)] dark:text-[var(--text-muted-dark,#9CA3AF)]">加载分析工具...</p>
+            <div className="flex items-center justify-center py-20 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)]">
+              <div className="text-center space-y-[var(--space-apple-sm)]">
+                <div className="inline-block animate-spin rounded-[var(--radius-pill)] h-8 w-8 border-2 border-[var(--color-primary)] border-t-transparent" />
+                <p className="text-sm text-[var(--text-muted,#6B7280)] dark:text-[var(--text-muted-dark,#9CA3AF)]">{t('pages.peptide.loadingTool')}</p>
               </div>
             </div>
           }>

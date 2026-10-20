@@ -25,6 +25,7 @@ export class ContextAwareSuggestionEngineV2 {
   private static readonly MAX_CACHE_SIZE = 100;
   private static readonly DEBOUNCE_MS = 200;
   private lastAnalysisTime = 0;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   private pendingAnalysis: { input: string; resolve: Function } | null = null;
 
   constructor(initialContext?: Partial<ContextProfile>) {
@@ -448,6 +449,7 @@ export class ContextAwareSuggestionEngineV2 {
     analysis: AnalysisResult,
     _input: string,
   ): number {
+    void _input;
     let score = 50;
 
     if (analysis.intent.confidence > 0.7) score += 20;
@@ -467,6 +469,7 @@ export class ContextAwareSuggestionEngineV2 {
     analysis: AnalysisResult,
     _input: string,
   ): { title: string; description: string; adaptScore: number; adaptedTerms: AdaptedTerm[] } {
+    void _input;
     const adaptedTerms: AdaptedTerm[] = [];
     let adaptScore = 50;
 
@@ -570,6 +573,7 @@ export class ContextAwareSuggestionEngineV2 {
   }
 
   private generateSemanticBasedSuggestions(analysis: AnalysisResult, _input: string): DynamicSuggestion[] {
+    void _input;
     const suggestions: DynamicSuggestion[] = [];
 
     if (analysis.keywords.primary.length > 0) {
@@ -618,6 +622,7 @@ export class ContextAwareSuggestionEngineV2 {
   }
 
   private enhanceWithContext(suggestions: DynamicSuggestion[], analysis: AnalysisResult): DynamicSuggestion[] {
+    void analysis;
     if (this.conversationHistory.length === 0) return suggestions;
 
     return suggestions.map((suggestion) => {

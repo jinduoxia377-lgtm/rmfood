@@ -1,5 +1,5 @@
 import { logger } from '@/utils/safeLogger';
-import type { StateKey, GlobalState, MiddlewareContext, MiddlewareFunction } from './types';
+import type { StateKey, GlobalState, MiddlewareFunction } from './types';
 import { stateCoordinator } from './StateCoordinator';
 
 interface LoggerOptions {
@@ -44,13 +44,6 @@ export function loggerMiddleware(options: LoggerOptions = {}): void {
     if (logEntries.length > config.maxLogEntries) {
       logEntries = logEntries.slice(-config.maxLogEntries);
     }
-
-    const logData = {
-      key: context.key,
-      ...(config.includeTimestamp && { timestamp: new Date(context.timestamp).toISOString() }),
-      oldValue: context.oldValue,
-      newValue: context.newValue,
-    };
 
     logger.log('[State Change] %s', context.key);
     logger.log('Previous:', context.oldValue);

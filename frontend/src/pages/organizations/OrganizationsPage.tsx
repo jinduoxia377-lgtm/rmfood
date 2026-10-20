@@ -1,4 +1,4 @@
-// @ts-nocheck
+ 
 /**
  * 组织管理页面 — v5.0 仪表盘风格重构版
  *
@@ -6,11 +6,12 @@
  *   - 顶部主色横幅替代标题行，与 Dashboard 风格统一
  *   - 横排药丸 Tab 导航（桌面自动显示，移动端自动折叠）
  *   - 宽卡片布局，去除紧凑限制，充分利用空间
- *   - 全页面间距宽松（space-y-6、card p-6、section gap-6）
+ *   - 全页面间距宽松（space-y-6、card p-[var(--space-apple-lg)]、section gap-6）
  *   - 去除侧边栏，内容全宽展开
  */
-import { useState, useMemo, useCallback, useRef, type RefObject } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useMemo, useCallback, useRef, useEffect, type RefObject } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   Building2,
@@ -23,13 +24,9 @@ import {
   LayoutGrid,
   List,
   Columns,
-  Archive,
   Trash2,
-  Download,
-  ShieldCheck,
   TrendingUp,
   TrendingDown,
-  X,
   RefreshCw,
   AlertCircle,
   BarChart3,
@@ -37,12 +34,9 @@ import {
 } from 'lucide-react'
 import {
   Button,
-  Tabs,
-  TabsContent,
   Card,
   CardContent,
   Input,
-  Badge,
   Progress,
   Skeleton,
   EmptyStateIllustration,
@@ -59,6 +53,7 @@ import { BulkOperationsPanel } from './components/BulkOperationsPanel'
 import { DataExportDialog } from './components/DataExportDialog'
 import { CloneOrgDialog } from './components/CloneOrgDialog'
 import { CreateOrgWizard } from './components/CreateOrgWizard'
+import { SubscriptionPanel } from './components/SubscriptionPanel'
 import { ShortcutHints, useKeyboardShortcuts } from '@/hooks/useOrgKeyboardShortcuts.tsx'
 import { useRecentOrganizations } from '@/hooks/useRecentOrganizations'
 import { logger } from '@/utils/safeLogger'
@@ -73,43 +68,44 @@ interface LocalFilters {
   sortBy: string
 }
 
-const TABS: { id: OrgTab; label: string; icon: typeof Building2 }[] = [
-  { id: 'overview',   label: '概览',     icon: LayoutGrid },
-  { id: 'analytics',  label: '数据分析', icon: BarChart3 },
-  { id: 'my-orgs',    label: '我的组织', icon: Building2 },
-  { id: 'all',        label: '全部',     icon: Users },
-  { id: 'trash',      label: '回收站',   icon: Trash2 },
+const TABS: { id: OrgTab; labelKey: string; icon: typeof Building2 }[] = [
+  { id: 'overview',   labelKey: 'pages.organizations.tabOverview',   icon: LayoutGrid },
+  { id: 'analytics',  labelKey: 'pages.organizations.tabAnalytics', icon: BarChart3 },
+  { id: 'my-orgs',    labelKey: 'pages.organizations.tabMyOrgs', icon: Building2 },
+  { id: 'all',        labelKey: 'pages.organizations.tabAll',     icon: Users },
+  { id: 'trash',      labelKey: 'pages.organizations.tabTrash',   icon: Trash2 },
 ]
 
 const PLAN_OPTIONS = [
-  { value: 'all', label: '全部计划' },
-  { value: 'free', label: '免费版' },
-  { value: 'pro', label: '专业版' },
-  { value: 'enterprise', label: '企业版' },
+  { value: 'all', labelKey: 'pages.organizations.allPlans' },
+  { value: 'free', labelKey: 'pages.organizations.planFree' },
+  { value: 'pro', labelKey: 'pages.organizations.planPro' },
+  { value: 'enterprise', labelKey: 'pages.organizations.planEnterprise' },
 ]
 
 const MEMBER_RANGE_OPTIONS = [
-  { value: 'all', label: '全部成员数' },
-  { value: 'small', label: '< 10 人' },
-  { value: 'medium', label: '10 - 50 人' },
-  { value: 'large', label: '> 50 人' },
+  { value: 'all', labelKey: 'pages.organizations.allMemberRanges' },
+  { value: 'small', labelKey: 'pages.organizations.smallRange' },
+  { value: 'medium', labelKey: 'pages.organizations.mediumRange' },
+  { value: 'large', labelKey: 'pages.organizations.largeRange' },
 ]
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: '全部状态' },
-  { value: 'active', label: '活跃' },
-  { value: 'paused', label: '已暂停' },
-  { value: 'archived', label: '已归档' },
+  { value: 'all', labelKey: 'pages.organizations.allStatuses' },
+  { value: 'active', labelKey: 'pages.organizations.statusActive' },
+  { value: 'paused', labelKey: 'pages.organizations.statusPaused' },
+  { value: 'archived', labelKey: 'pages.organizations.statusArchived' },
 ]
 
 const SORT_OPTIONS = [
-  { value: 'createdAt', label: '创建时间' },
-  { value: 'name', label: '名称' },
-  { value: 'memberCount', label: '成员数' },
-  { value: 'updatedAt', label: '最后活动' },
+  { value: 'createdAt', labelKey: 'pages.organizations.sortByCreatedAt' },
+  { value: 'name', labelKey: 'pages.organizations.sortByName' },
+  { value: 'memberCount', labelKey: 'pages.organizations.sortByMemberCount' },
+  { value: 'updatedAt', labelKey: 'pages.organizations.sortByUpdatedAt' },
 ]
 
 export default function OrganizationsPage() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<OrgTab>('overview')
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [localFilters, setLocalFilters] = useState<LocalFilters>({
@@ -126,6 +122,9 @@ export default function OrganizationsPage() {
   const navigate = useNavigate()
   const { recent, addRecent, clearRecent } = useRecentOrganizations()
   const [showCreateWizard, setShowCreateWizard] = useState(false)
+  const [searchParams] = useSearchParams()
+  const urlOrgId = searchParams.get('org')
+  const [manageOrgId, setManageOrgId] = useState<number | null>(urlOrgId ? Number(urlOrgId) : null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -183,12 +182,17 @@ export default function OrganizationsPage() {
     },
   })
 
+  // 切换回收站 Tab 时自动加载已归档组织
+  useEffect(() => {
+    if (activeTab === 'trash') {
+      fetchTrashedOrganizations()
+    }
+  }, [activeTab, fetchTrashedOrganizations])
+
   const filteredOrganizations = useMemo(() => {
     let result = [...organizations]
 
-    if (activeTab === 'my-orgs') {
-      result = result.filter((org) => org.myRole === 'owner' || org.myRole === 'admin')
-    }
+    // "我的组织"应显示当前用户加入的所有组织（含 member 角色），不做 owner/admin 过滤
 
     if (localFilters.plan !== 'all') {
       result = result.filter((org) => org.plan === localFilters.plan)
@@ -273,20 +277,6 @@ export default function OrganizationsPage() {
     setShowCloneDialog(true)
   }, [])
 
-  const handleCreateOrg = useCallback(async () => {
-    try {
-      await createOrganization({
-        name: '新组织',
-        slug: `new-org-${Date.now()}`,
-        description: '',
-        plan: 'free',
-      })
-      toast.success('组织创建成功!')
-    } catch (err) {
-      toast.error('创建组织失败，请重试')
-    }
-  }, [createOrganization, toast])
-
   const [isProcessing, setIsProcessing] = useState(false)
 
   const handleBulkAction = useCallback(
@@ -300,7 +290,7 @@ export default function OrganizationsPage() {
             setShowExportDialog(true)
             break
           case 'archive':
-            await Promise.all(ids.map(id => api.patch(`/organizations/${id}/archive`, { isActive: false })))
+            await Promise.all(ids.map(id => api.put(`/organizations/${id}/archive`)))
             toast.success(`已归档 ${count} 个组织`)
             clearSelection()
             refetch()
@@ -315,10 +305,11 @@ export default function OrganizationsPage() {
             }
             break
           case 'permission':
-            toast.info('权限批量修改功能开发中...')
+            // 批量修改计划已由 BulkOperationsPanel 的权限/计划弹窗处理
             break
           default:
-            toast.info(`批量${action}功能开发中...`)
+            // 未识别的批量操作：静默忽略（所有真实操作均由 BulkOperationsPanel 专用处理器完成）
+            logger.info(`[organizations] 未识别的批量操作: ${action}`)
         }
       } catch (err: any) {
         toast.error(err?.response?.data?.detail || '操作失败，请重试')
@@ -340,38 +331,38 @@ export default function OrganizationsPage() {
 
   return (
     <AnalyticsErrorBoundary>
-      <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-page-enter">
+      <div className="space-y-8 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-enter">
 
         {/* ── 顶部横幅 — 与 Dashboard 一致 ── */}
-        <div className="surface-primary rounded-xl p-6 shadow-sm">
+        <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-xl font-bold leading-snug">组织管理</h1>
-              <p className="mt-1 text-white/90 text-sm">管理您的组织、团队成员和资源配额</p>
+              <h1 className="text-xl font-bold leading-snug">{t('pages.organizations.title')}</h1>
+              <p className="mt-1 text-white/90 text-sm">{t('pages.organizations.subtitle')}</p>
             </div>
             <Button onClick={() => setShowCreateWizard(true)} variant="secondary" size="sm">
               <Plus className="w-4 h-4 mr-2" />
-              创建组织
+              {t('pages.organizations.createOrg')}
             </Button>
           </div>
         </div>
 
         {/* ── 横向药丸 Tab — 与 Settings / Dashboard 一致风格 ── */}
-        <div className="overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          <div className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl p-1.5 min-w-max">
-            {TABS.map(({ id, label, icon: Icon }) => (
+        <div className="overflow-x-auto pb-1 -mx-4 px-[var(--space-apple-md)] sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="inline-flex items-center gap-1.5 bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-md)] p-1.5 min-w-max">
+            {TABS.map(({ id, labelKey, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                  'flex min-h-[44px] items-center gap-2 px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-all duration-150',
                   isTabActive(id)
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50',
+                    ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]/60 dark:hover:bg-[var(--bg-secondary)]/50',
                 )}
               >
-                <Icon className={cn('w-4 h-4', isTabActive(id) ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-400 dark:text-neutral-400')} />
-                {label}
+                <Icon className={cn('w-4 h-4', isTabActive(id) ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-muted)]')} />
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -381,50 +372,50 @@ export default function OrganizationsPage() {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* KPI 统计卡片 */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Building2 className="w-8 h-8 text-secondary-600 dark:text-secondary-700" />
-                    <TrendingUp className="w-4 h-4 text-success-600" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-[var(--border-color)]">
+                <CardContent className="p-[var(--space-apple-lg)]">
+                  <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                    <Building2 className="w-8 h-8 text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
+                    <TrendingUp className="w-4 h-4 text-[var(--color-success-text)]" />
                   </div>
-                  <div className="text-3xl font-bold text-neutral-900 dark:text-white">{stats.totalOrgs}</div>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">总组织数</p>
+                  <div className="text-3xl font-bold text-[var(--text-primary)]">{stats.totalOrgs}</div>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">总组织数</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Users className="w-8 h-8 text-primary-700 dark:text-primary-700" />
-                    <TrendingUp className="w-4 h-4 text-success-600" />
+              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-[var(--border-color)]">
+                <CardContent className="p-[var(--space-apple-lg)]">
+                  <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                    <Users className="w-8 h-8 text-[var(--color-primary-text)]" />
+                    <TrendingUp className="w-4 h-4 text-[var(--color-success-text)]" />
                   </div>
-                  <div className="text-3xl font-bold text-neutral-900 dark:text-white">
+                  <div className="text-3xl font-bold text-[var(--text-primary)]">
                     {stats.totalMembers.toLocaleString()}
                   </div>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">总成员数</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">总成员数</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <HardDrive className="w-8 h-8 text-accent-600 dark:text-accent-700" />
-                    <span className="text-xs font-medium text-accent-700 dark:text-accent-700">
+              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-[var(--border-color)]">
+                <CardContent className="p-[var(--space-apple-lg)]">
+                  <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                    <HardDrive className="w-8 h-8 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
+                    <span className="text-xs font-medium text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">
                       {stats.avgStorageUsage.toFixed(1)}%
                     </span>
                   </div>
                   <Progress value={stats.avgStorageUsage} className="h-2 mt-2" />
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">平均存储使用率</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-2">平均存储使用率</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Zap className="w-8 h-8 text-warning-600 dark:text-warning-700" />
+              <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-[var(--border-color)]">
+                <CardContent className="p-[var(--space-apple-lg)]">
+                  <div className="flex items-center justify-between mb-[var(--space-apple-sm)]">
+                    <Zap className="w-8 h-8 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                     <span
-                      className={`flex items-center text-xs font-medium ${stats.apiTrend.startsWith('+') ? 'text-success-600' : 'text-error-600'}`}
+                      className={`flex items-center text-xs font-medium ${stats.apiTrend.startsWith('+') ? 'text-[var(--color-success-text)]' : 'text-[var(--color-error-text)]'}`}
                     >
                       {stats.apiTrend.startsWith('+') ? (
                         <TrendingUp className="w-3 h-3 mr-1" />
@@ -434,10 +425,10 @@ export default function OrganizationsPage() {
                       {stats.apiTrend}
                     </span>
                   </div>
-                  <div className="text-3xl font-bold text-neutral-900 dark:text-white">
+                  <div className="text-3xl font-bold text-[var(--text-primary)]">
                     {(stats.monthlyApiCalls / 1000).toFixed(1)}K
                   </div>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">本月 API 调用量</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">本月 API 调用量</p>
                 </CardContent>
               </Card>
             </div>
@@ -473,29 +464,29 @@ export default function OrganizationsPage() {
 
         {/* 最近访问 */}
         {recent.length > 0 && (
-          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                <svg className="w-4 h-4 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] p-[var(--space-apple-lg)]">
+            <div className="flex items-center justify-between mb-[var(--space-apple-md)]">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                <svg className="w-4 h-4 text-[var(--color-secondary-text)]0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 最近访问
               </h3>
-              <button onClick={clearRecent} className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+              <button onClick={clearRecent} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)] transition-colors">
                 清除
               </button>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-[var(--space-apple-sm)]">
               {recent.map((entry) => (
                 <a
                   key={`${entry.id}-${entry.visitedAt}`}
                   href={`/organizations/${entry.id}`}
-                  className="flex items-center gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-secondary-300 dark:hover:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-all group"
+                  className="flex items-center gap-2 px-[var(--space-apple-sm)] py-2 bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] hover:border-[var(--color-secondary-border)] dark:hover:border-[var(--color-secondary)] hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20 transition-all group"
                 >
-                  <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-white text-xs font-bold shrink-0">
                     {entry.name.charAt(0)}
                   </div>
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
+                  <span className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] dark:group-hover:text-white">
                     {entry.name}
                   </span>
                   <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{new Date(entry.visitedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
@@ -512,31 +503,56 @@ export default function OrganizationsPage() {
 
         {/* ── 我的组织 Tab ── */}
         {activeTab === 'my-orgs' && (
-          <OrganizationContent
-            organizations={filteredOrganizations}
-            loading={loading}
-            error={error}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            search={search}
-            setSearch={setSearch}
-            localFilters={localFilters}
-            setLocalFilters={setLocalFilters}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            selectedIds={selectedIds}
-            toggleSelect={toggleSelect}
-            selectAll={selectAll}
-            allSelected={allSelected}
-            clearSelection={clearSelection}
-            refetch={refetch}
-            searchInputRef={searchInputRef}
-            navigate={navigate}
-            addRecent={addRecent}
-            openCloneDialog={openCloneDialog}
-            toggleFavorite={toggleFavorite}
-            togglePin={togglePin}
-          />
+          <>
+            {organizations.length > 0 && (
+              <div className="space-y-[var(--space-apple-sm)]">
+                <div className="flex flex-wrap items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)]/60 border border-[var(--border-color)]">
+                  <label htmlFor="org-subscription-select" className="text-sm font-medium text-[var(--text-primary)]">
+                    订阅与用量管理：
+                  </label>
+                  <select
+                    id="org-subscription-select"
+                    value={manageOrgId ?? ''}
+                    onChange={(e) => setManageOrgId(e.target.value ? Number(e.target.value) : null)}
+                    className="min-h-[44px] rounded-[var(--radius-Apple-sm)] border border-input bg-transparent px-[var(--space-apple-sm)] py-2 text-sm"
+                  >
+                    <option value="">选择组织查看订阅/用量</option>
+                    {organizations.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}（{o.plan === 'pro' ? '专业版' : o.plan === 'enterprise' ? '企业版' : '免费版'}）
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {manageOrgId != null && <SubscriptionPanel organizationId={manageOrgId} />}
+              </div>
+            )}
+            <OrganizationContent
+              organizations={filteredOrganizations}
+              loading={loading}
+              error={error}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              search={search}
+              setSearch={setSearch}
+              localFilters={localFilters}
+              setLocalFilters={setLocalFilters}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+              selectedIds={selectedIds}
+              toggleSelect={toggleSelect}
+              selectAll={selectAll}
+              allSelected={allSelected}
+              clearSelection={clearSelection}
+              refetch={refetch}
+              searchInputRef={searchInputRef}
+              navigate={navigate}
+              addRecent={addRecent}
+              openCloneDialog={openCloneDialog}
+              toggleFavorite={toggleFavorite}
+              togglePin={togglePin}
+            />
+          </>
         )}
 
         {/* ── 全部 Tab ── */}
@@ -573,8 +589,8 @@ export default function OrganizationsPage() {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">回收站</h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">回收站</h2>
+                <p className="text-sm text-[var(--text-muted)] mt-1">
                   已删除的组织将在此保留 30 天，之后将被永久清除。
                 </p>
               </div>
@@ -587,24 +603,24 @@ export default function OrganizationsPage() {
             {trashLoading ? (
               <Card>
                 <CardContent className="p-12 text-center">
-                  <Loader2 className="w-8 h-8 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-spin mb-4" />
+                  <Loader2 className="w-8 h-8 mx-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] animate-spin mb-[var(--space-apple-md)]" />
                   <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载中...</p>
                 </CardContent>
               </Card>
             ) : trashedOrganizations.length === 0 ? (
               <Card>
                 <CardContent className="p-16 text-center">
-                  <Trash2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">回收站为空</h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  <Trash2 className="w-16 h-16 mx-auto text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-[var(--space-apple-md)]" />
+                  <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">回收站为空</h3>
+                  <p className="text-sm text-[var(--text-muted)]">
                     已删除的组织会显示在这里，您可以恢复或永久删除它们。
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+              <div className="bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50 dark:bg-neutral-800">
+                  <thead className="bg-[var(--bg-tertiary)]">
                     <tr>
                       <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">组织名称</th>
                       <th className="px-5 py-4 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">Slug</th>
@@ -615,21 +631,21 @@ export default function OrganizationsPage() {
                   </thead>
                   <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                     {trashedOrganizations.map((org: Organization) => (
-                      <tr key={org.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                      <tr key={org.id} className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50 transition-colors">
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-gradient-to-br from-neutral-400 to-neutral-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                          <div className="flex items-center gap-[var(--space-apple-sm)]">
+                            <div className="w-9 h-9 bg-gradient-to-br from-neutral-400 to-neutral-600 rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-white font-bold text-sm">
                               {org.name.charAt(0)}
                             </div>
-                            <span className="font-medium text-neutral-900 dark:text-white">{org.name}</span>
+                            <span className="font-medium text-[var(--text-primary)]">{org.name}</span>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">@{org.slug}</td>
                         <td className="px-5 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700' :
-                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700' :
-                            'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                          <span className={`px-2.5 py-1 rounded-[var(--radius-pill)] text-xs font-medium ${
+                            org.plan === 'pro' ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)] dark:bg-[var(--color-secondary-container)]/25 dark:text-[var(--color-secondary-text)]' :
+                            org.plan === 'enterprise' ? 'bg-[var(--color-accent-container)] text-[var(--color-accent-text)] dark:bg-[var(--color-accent-container)]/25 dark:text-[var(--color-accent-text)]' :
+                            'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]'
                           }`}>
                             {org.plan === 'free' ? '免费版' : org.plan === 'pro' ? '专业版' : '企业版'}
                           </span>
@@ -641,13 +657,13 @@ export default function OrganizationsPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => restoreOrganization(org.id)}
-                              className="px-3 py-1.5 text-sm font-medium text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded-lg transition-colors"
+                              className="px-[var(--space-apple-sm)] py-1.5 text-sm font-medium text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20 rounded-[var(--radius-Apple-sm)] transition-colors"
                             >
                               恢复
                             </button>
                             <button
                               onClick={() => permanentDeleteOrganization(org.id)}
-                              className="px-3 py-1.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-colors"
+                              className="px-[var(--space-apple-sm)] py-1.5 text-sm font-medium text-[var(--color-error-text)] hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 rounded-[var(--radius-Apple-sm)] transition-colors"
                             >
                               永久删除
                             </button>
@@ -672,8 +688,70 @@ export default function OrganizationsPage() {
           <BulkOperationsPanel
             selectedIds={selectedIds}
             onClearSelection={clearSelection}
-            onBulkChangePermissions={async () => { toast.info('批量修改权限功能开发中'); return undefined }}
-            onBulkExport={async () => { toast.info('请使用右侧导出按钮进行数据导出'); return undefined }}
+            onBulkChangePermissions={async (ids, plan) => {
+              try {
+                const { data } = await api.post('/organizations/batch-plan', { org_ids: ids, plan })
+                toast.success(`已将 ${data.updated || ids.length} 个组织的计划更新为「${plan}」`)
+                clearSelection()
+                refetch()
+              } catch (err: any) {
+                toast.error(err?.response?.data?.detail || '批量修改计划失败，请重试')
+              }
+            }}
+            onBulkExport={async (ids, format) => {
+              try {
+                if (ids.length === 0) return
+                // 逐组织调用真实导出接口，CSV 合并为一个文件下载
+                if (format === 'csv') {
+                  const parts: string[] = []
+                  for (let i = 0; i < ids.length; i++) {
+                    const res = await api.post(
+                      `/organizations/${ids[i]}/export?format_type=csv`,
+                      {},
+                      { responseType: 'blob' },
+                    )
+                    const text = await (res.data as Blob).text()
+                    const cleaned = text.replace(/^\ufeff/, '')
+                    // 去掉重复表头（仅保留首个文件表头）
+                    if (i > 0) {
+                      const lines = cleaned.split(/\r?\n/)
+                      lines.shift()
+                      parts.push(lines.join('\n'))
+                    } else {
+                      parts.push(cleaned)
+                    }
+                  }
+                  const blob = new Blob(['\ufeff' + parts.join('\n')], { type: 'text/csv;charset=utf-8' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `organizations_bulk_export.csv`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                  toast.success(`已导出 ${ids.length} 个组织数据（CSV）`)
+                } else {
+                  // excel/pdf：逐个下载
+                  for (const id of ids) {
+                    const res = await api.post(
+                      `/organizations/${id}/export?format_type=${format}`,
+                      {},
+                      { responseType: 'blob' },
+                    )
+                    const blob = res.data as Blob
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `organization_${id}_export.${format === 'excel' ? 'xlsx' : 'pdf'}`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }
+                  toast.success(`已导出 ${ids.length} 个组织文件`)
+                }
+                clearSelection()
+              } catch (err: any) {
+                toast.error(err?.response?.data?.detail || '批量导出失败，请重试')
+              }
+            }}
             onBulkArchive={handleBulkAction.bind(null, 'archive')}
             onBulkDelete={handleBulkAction.bind(null, 'delete')}
             isProcessing={isProcessing}
@@ -696,7 +774,7 @@ export default function OrganizationsPage() {
           onCreate={async (data) => {
             await createOrganization(data)
             toast.success('组织创建成功!')
-            setShowCreateWizard(false)
+            // 不在此处关闭弹窗：由向导内部进入 success 步骤，用户点击「完成」后关闭
           }}
         />
 
@@ -704,26 +782,8 @@ export default function OrganizationsPage() {
         <DataExportDialog
           isOpen={showExportDialog}
           onClose={() => setShowExportDialog(false)}
-          organizations={organizations.map((org) => ({
-            id: String(org.id),
-            name: org.name,
-            slug: org.slug,
-            description: org.description || '',
-            plan: org.plan,
-            avatar: null,
-            memberCount: org.memberCount,
-            teamCount: org.teamCount,
-            storageUsed: org.storageUsed * 1024 * 1024 * 1024,
-            storageLimit: org.storageLimit * 1024 * 1024 * 1024,
-            apiCalls: org.apiUsage,
-            createdAt: org.createdAt,
-            updatedAt: org.updatedAt || org.createdAt,
-            status: org.isActive ? 'active' : 'suspended',
-            isFavorite: false,
-            isPinned: false,
-            myRole: org.myRole,
-          }))}
-          selectedIds={selectedIds as unknown as Set<any> | undefined}
+          organizations={organizations}
+          selectedIds={selectedIds}
           onExportComplete={handleExportComplete}
         />
       </div>
@@ -781,6 +841,9 @@ function OrganizationContent({
   toggleFavorite: (id: number) => void
   togglePin: (id: number) => void
 }) {
+  const { t } = useTranslation()
+  void allSelected;
+  void clearSelection;
   // 认证错误（401）直接跳转登录页，不显示错误卡片
   const isAuthError = error?.message?.includes('401') || error?.message?.includes('Unauthorized')
   if (isAuthError) {
@@ -791,9 +854,9 @@ function OrganizationContent({
     return (
       <Card>
         <CardContent className="p-12 text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-error-400 mb-4" />
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">加载失败</h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{error.message}</p>
+          <AlertCircle className="w-16 h-16 mx-auto text-[var(--color-error-text)] mb-[var(--space-apple-md)]" />
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">加载失败</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-[var(--space-apple-md)]">{error.message}</p>
           <Button onClick={refetch} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             重试
@@ -814,26 +877,26 @@ function OrganizationContent({
             id="org-search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索组织名称或 Slug..."
+            placeholder={t('pages.organizations.searchPlaceholder')}
             className="pl-10"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-[var(--space-apple-sm)] w-full sm:w-auto">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              'px-3 py-2 rounded-lg border transition-all flex items-center gap-2 text-sm',
+              'px-[var(--space-apple-sm)] py-2 min-h-[44px] rounded-[var(--radius-Apple-sm)] border transition-all flex items-center gap-2 text-sm',
               showFilters
-                ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-700'
-                : 'border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800',
+                ? 'bg-[var(--color-primary-container)] dark:bg-primary-940/40 border-[var(--color-primary-border)] dark:border-[var(--color-primary)] text-[var(--color-primary-text)]'
+                : 'border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]',
             )}
           >
             <Filter className="w-4 h-4" />
             筛选
           </button>
 
-          <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1.5">
+          <div className="flex bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] p-1.5">
             {[
               { mode: 'card' as ViewMode, icon: LayoutGrid, label: '卡片' },
               { mode: 'table' as ViewMode, icon: List, label: '表格' },
@@ -843,14 +906,15 @@ function OrganizationContent({
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className={cn(
-                  'p-2 rounded-md transition-colors',
+                  'flex items-center gap-1 px-2.5 py-1.5 min-h-[44px] rounded-[var(--radius-Apple-sm)] transition-colors',
                   viewMode === mode
-                    ? 'bg-white dark:bg-neutral-700 shadow-sm text-primary-700'
-                    : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300',
+                    ? 'bg-[var(--bg-secondary)] dark:bg-[var(--bg-secondary)] shadow-sm text-[var(--color-primary-text)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]',
                 )}
                 title={label}
               >
                 <Icon className="w-4 h-4" />
+                <span className="text-xs font-medium">{label}</span>
               </button>
             ))}
           </div>
@@ -859,57 +923,57 @@ function OrganizationContent({
 
       {/* 筛选面板 */}
       {showFilters && (
-        <Card className="border-primary-200 dark:border-primary-800">
-          <CardContent className="p-6">
+        <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]">
+          <CardContent className="p-[var(--space-apple-lg)]">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">计划类型</label>
+                <label className="block text-xs font-medium text-[var(--text-muted)] mb-2">计划类型</label>
                 <select
                   value={localFilters.plan}
                   onChange={(e) => setLocalFilters({ ...localFilters, plan: e.target.value })}
-                  className="w-full px-3 py-2 input text-sm"
+                  className="w-full px-[var(--space-apple-sm)] py-2 input text-sm"
                 >
                   {PLAN_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">成员数量</label>
+                <label className="block text-xs font-medium text-[var(--text-muted)] mb-2">成员数量</label>
                 <select
                   value={localFilters.memberRange}
                   onChange={(e) => setLocalFilters({ ...localFilters, memberRange: e.target.value })}
-                  className="w-full px-3 py-2 input text-sm"
+                  className="w-full px-[var(--space-apple-sm)] py-2 input text-sm"
                 >
                   {MEMBER_RANGE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">状态</label>
+                <label className="block text-xs font-medium text-[var(--text-muted)] mb-2">状态</label>
                 <select
                   value={localFilters.status}
                   onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value })}
-                  className="w-full px-3 py-2 input text-sm"
+                  className="w-full px-[var(--space-apple-sm)] py-2 input text-sm"
                 >
                   {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">排序方式</label>
+                <label className="block text-xs font-medium text-[var(--text-muted)] mb-2">排序方式</label>
                 <select
                   value={localFilters.sortBy}
                   onChange={(e) => setLocalFilters({ ...localFilters, sortBy: e.target.value })}
-                  className="w-full px-3 py-2 input text-sm"
+                  className="w-full px-[var(--space-apple-sm)] py-2 input text-sm"
                 >
                   {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                   ))}
                 </select>
               </div>
@@ -925,39 +989,21 @@ function OrganizationContent({
         <Card>
           <CardContent className="p-12 text-center">
             <EmptyStateIllustration type="no-users" />
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mt-4 mb-2">暂无组织</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">创建您的第一个组织开始协作吧！</p>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mt-[var(--space-apple-md)] mb-2">{t('pages.organizations.noOrgs')}</h3>
+            <p className="text-sm text-[var(--text-muted)] mb-6">{t('pages.organizations.noOrgsDesc')}</p>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4 mr-2" />
-              创建组织
+              {t('pages.organizations.createOrg')}
             </Button>
           </CardContent>
         </Card>
       ) : (
         <OrganizationList
-          organizations={organizations.map((org) => ({
-            id: String(org.id),
-            name: org.name,
-            slug: org.slug,
-            description: org.description || '',
-            plan: org.plan,
-            avatar: null,
-            memberCount: org.memberCount,
-            teamCount: org.teamCount,
-            storageUsed: org.storageUsed * 1024 * 1024 * 1024,
-            storageLimit: org.storageLimit * 1024 * 1024 * 1024,
-            apiCalls: org.apiUsage,
-            createdAt: org.createdAt,
-            updatedAt: org.updatedAt || org.createdAt,
-            status: org.isActive ? 'active' : 'suspended',
-            isFavorite: false,
-            isPinned: false,
-            myRole: org.myRole,
-          }))}
+          organizations={organizations}
           loading={loading}
           viewMode={viewMode}
           search={search}
-          selectedIds={new Set(Array.from(selectedIds).map(String))}
+          selectedIds={selectedIds}
           onToggleSelect={(id) => toggleSelect(Number(id))}
           onSelectAll={selectAll}
           onNavigateToDetail={(id) => {
@@ -991,18 +1037,18 @@ function OrganizationSkeleton({ viewMode }: { viewMode: ViewMode }) {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {[...Array(6)].map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-start gap-3">
-                <Skeleton className="w-11 h-11 rounded-xl" />
+            <CardContent className="p-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
+              <div className="flex items-start gap-[var(--space-apple-sm)]">
+                <Skeleton className="w-11 h-11 rounded-[var(--radius-Apple-md)]" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
                 </div>
-                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-16 rounded-[var(--radius-pill)]" />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
                 {[...Array(3)].map((_, j) => (
-                  <Skeleton key={j} className="h-14 rounded-lg" />
+                  <Skeleton key={j} className="h-14 rounded-[var(--radius-Apple-sm)]" />
                 ))}
               </div>
               <Skeleton className="h-2 w-full" />
@@ -1016,7 +1062,7 @@ function OrganizationSkeleton({ viewMode }: { viewMode: ViewMode }) {
   if (viewMode === 'table') {
     return (
       <Card>
-        <div className="p-4 space-y-3">
+        <div className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
@@ -1029,11 +1075,11 @@ function OrganizationSkeleton({ viewMode }: { viewMode: ViewMode }) {
     <Card>
       <div className="divide-y divide-neutral-100">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="px-4 py-3 flex items-center gap-4">
+          <div key={i} className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] flex items-center gap-4">
             <Skeleton className="w-4 h-4 rounded" />
-            <Skeleton className="w-7 h-7 rounded-md" />
+            <Skeleton className="w-7 h-7 rounded-[var(--radius-Apple-sm)]" />
             <Skeleton className="h-4 flex-1" />
-            <Skeleton className="h-5 w-16 rounded-full hidden md:block" />
+            <Skeleton className="h-5 w-16 rounded-[var(--radius-pill)] hidden md:block" />
             <Skeleton className="h-4 w-12 hidden lg:block" />
           </div>
         ))}

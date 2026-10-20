@@ -33,7 +33,7 @@ const SCENARIOS: ScenarioOption[] = [
   { mode: 'concise_adv', icon: Zap, label: '精简顾问', activeColor: 'text-primary-700 dark:text-primary-700 active:bg-primary-100 dark:active:bg-primary-900/30' },
 ]
 
-export function ScenarioToolbar({ mode, onSwitch, t }: ScenarioToolbarProps) {
+export function ScenarioToolbar({ mode, onSwitch }: ScenarioToolbarProps) {
   return (
     <div
       role="radiogroup"

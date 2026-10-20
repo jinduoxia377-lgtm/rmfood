@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
@@ -57,7 +57,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro' | 'enterprise'>(organization?.plan || 'free');
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const canDowngrade = useCallback(() => {
     const target = PLAN_CONFIG.find(p => p.value === selectedPlan);
@@ -102,9 +102,9 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
     <Modal open={open} onClose={handleClose} title="升级/变更订阅计划" size="lg">
       <div className="space-y-6">
         {/* Current Plan */}
-        <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/30 rounded-xl border border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-md)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)]/30 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] dark:border-neutral-800">
           <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">当前计划:</span>
-          <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700">
+          <span className="px-[var(--space-apple-sm)] py-1 rounded-[var(--radius-pill)] text-sm font-medium bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)] dark:bg-[var(--color-secondary-container)]/25 dark:text-[var(--color-secondary-text)]">
             {PLAN_CONFIG.find(p => p.value === organization?.plan)?.label || organization?.plan}
           </span>
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">· {organization?.memberCount} 成员 · {organization?.teamCount} 团队</span>
@@ -117,37 +117,37 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
               key={plan.value}
               onClick={() => handleSelectPlan(plan.value)}
               className={cn(
-                'relative rounded-xl border-2 p-5 text-left transition-all',
+                'relative rounded-[var(--radius-Apple-md)] border-2 p-5 text-left transition-all',
                 selectedPlan === plan.value
-                  ? 'border-secondary-500 bg-secondary-50 dark:bg-secondary-300/20 shadow-md'
-                  : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:border-neutral-700',
-                plan.highlight && 'ring-2 ring-accent-500/30',
+                  ? 'border-[var(--color-secondary)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 shadow-md'
+                  : 'border-[var(--border-color)] hover:border-[var(--border-color)] dark:border-neutral-700',
+                plan.highlight && 'ring-2 ring-[var(--color-accent)]/30',
               )}
             >
               {plan.highlight && (
-                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-xs font-medium bg-accent-container text-accent-main rounded-full">
+                <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-xs font-medium bg-accent-container text-accent-main rounded-[var(--radius-pill)]">
                   推荐
                 </span>
               )}
               {plan.value === organization?.plan && (
-                <span className="absolute top-2 right-2 text-xs text-secondary-600">当前</span>
+                <span className="absolute top-2 right-2 text-xs text-[var(--color-secondary-text)]">当前</span>
               )}
-              <h3 className="font-semibold text-neutral-900 dark:text-white">{plan.label}</h3>
-              <p className={cn('text-2xl font-bold mt-2', plan.value === 'enterprise' ? 'text-neutral-900' : 'text-secondary-600')}>
+              <h3 className="font-semibold text-[var(--text-primary)]">{plan.label}</h3>
+              <p className={cn('text-2xl font-bold mt-2', plan.value === 'enterprise' ? 'text-neutral-900' : 'text-[var(--color-secondary-text)]')}>
                 {plan.price}
               </p>
               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{plan.desc}</p>
-              <div className="mt-4 space-y-1.5">
-                <p className="text-xs text-neutral-600 dark:text-neutral-400">
+              <div className="mt-[var(--space-apple-md)] space-y-1.5">
+                <p className="text-xs text-[var(--text-secondary)]">
                   成员: {plan.maxMembers > 0 ? `最多 ${plan.maxMembers} 人` : '不限'}
                 </p>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400">存储: {plan.maxStorage}</p>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400">团队: {plan.maxTeams > 0 ? `最多 ${plan.maxTeams} 个` : '不限'}</p>
+                <p className="text-xs text-[var(--text-secondary)]">存储: {plan.maxStorage}</p>
+                <p className="text-xs text-[var(--text-secondary)]">团队: {plan.maxTeams > 0 ? `最多 ${plan.maxTeams} 个` : '不限'}</p>
               </div>
-              <ul className="mt-4 space-y-1">
+              <ul className="mt-[var(--space-apple-md)] space-y-1">
                 {plan.features.map((f, i) => (
                   <li key={i} className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
-                    <CheckCircle className="w-3 h-3 text-success-500 shrink-0" />{f}
+                    <CheckCircle className="w-3 h-3 text-[var(--color-success-text)]0 shrink-0" />{f}
                   </li>
                 ))}
               </ul>
@@ -157,7 +157,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
 
         {/* DANGER: Downgrade warning */}
         {!canDowngrade() && (
-          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-600 bg-error-50 dark:bg-error-300/20 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] bg-[var(--color-error-container)] rounded-[var(--radius-Apple-sm)] px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
             <AlertCircle className="w-4 h-4 shrink-0" />
             当前成员数 ({organization?.memberCount}) 或团队数 ({organization?.teamCount}) 超过目标计划限制
           </div>
@@ -165,7 +165,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
 
         {/* Confirm Text Input */}
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
             确认操作
           </label>
           <input
@@ -173,19 +173,19 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder={`输入 "确认升级至 ${PLAN_CONFIG.find(p => p.value === selectedPlan)?.label}" 确认`}
-            className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 surface-card text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
+            className="w-full px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] dark:border-neutral-700 surface-card text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
-          <button onClick={handleClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 rounded-lg transition-colors">
+        <div className="flex justify-end gap-[var(--space-apple-sm)] pt-2">
+          <button onClick={handleClose} className="px-[var(--space-apple-md)] py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] transition-colors">
             取消
           </button>
           <button
             onClick={handleConfirm}
             disabled={confirming || !confirmText.trim() || confirmText !== `确认升级至 ${PLAN_CONFIG.find(p => p.value === selectedPlan)?.label}` || !canDowngrade()}
-            className="px-4 py-2 text-sm bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="px-[var(--space-apple-md)] py-2 text-sm bg-secondary-container text-secondary-main rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             {confirming && <Loader2 className="w-4 h-4 animate-spin" />}
             确认变更

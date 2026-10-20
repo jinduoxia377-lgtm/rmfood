@@ -36,7 +36,7 @@
 }
 
 .error-icon icon {
-  font-size: 80rpx;
+  font-size: var(--font-size-hero);
 }
 
 /* 错误标题 */

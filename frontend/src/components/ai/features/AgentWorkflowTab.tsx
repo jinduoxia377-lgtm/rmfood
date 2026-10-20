@@ -13,16 +13,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  Bot, Send, Sparkles, Brain, FlaskConical, FileText,
+  Bot, Send, Brain, FlaskConical, FileText,
   Loader2, Circle, CheckCircle2, XCircle, Activity, Trash2,
+  Maximize2, Minimize2,
 } from 'lucide-react';
 import { AgentMessageList, ToolCallDisplay } from '@/components/ai/shared';
 import { WorkflowNodeVisualizer } from './components/pro/WorkflowNodeVisualizer';
 import { useUnifiedAgent } from './hooks/useUnifiedAgent';
 import { useAgentSmartRouter } from './hooks/useAgentSmartRouter';
-import { tokenEstimator } from './utils/eventSourcing';
-import { logger } from '@/utils/safeLogger';
 
 // ── 默认工作流模板 ──────────────────────────────────────────
 
@@ -74,6 +74,8 @@ export function AgentWorkflowTab() {
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const [showCompactionInfo, setShowCompactionInfo] = useState(false);
+  // 放大/全屏状态：内容较多时铺满视口，减少上下翻动
+  const [expanded, setExpanded] = useState(false);
 
   // 智能路由
   const { route, previewMode } = useAgentSmartRouter();
@@ -118,9 +120,9 @@ export function AgentWorkflowTab() {
     }
   };
 
-  // 自动滚动
+  // 自动滚动（jsdom 无 scrollIntoView，用可选调用）
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
   }, [messages, tools, stages]);
 
   // 获取模板信息
@@ -134,7 +136,7 @@ export function AgentWorkflowTab() {
     setInput('');
   }, [clearMessages]);
 
-  return (
+  const content = (
     <div className="flex flex-col h-full bg-gradient-to-br from-neutral-50 to-secondary-50 dark:from-neutral-900 dark:to-neutral-800" data-testid="agent-workflow-tab">
       {/* Header */}
       <div className="flex items-center gap-4 px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm">
@@ -195,6 +197,16 @@ export function AgentWorkflowTab() {
             title="清空对话"
           >
             <Trash2 size={12} />
+          </button>
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
+            title={expanded ? '退出全屏' : '放大对话框'}
+            aria-label={expanded ? '退出全屏' : '放大对话框'}
+            data-testid="workflow-expand"
+          >
+            {expanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+            <span>{expanded ? '退出全屏' : '放大'}</span>
           </button>
         </div>
       </div>
@@ -340,4 +352,15 @@ export function AgentWorkflowTab() {
       </div>
     </div>
   );
+
+  // 放大/全屏：通过 Portal 渲染到 body，逃出 main 的堆叠上下文，覆盖整个视口
+  if (expanded) {
+    return createPortal(
+      <div className="fixed inset-0 z-[2000] flex flex-col bg-neutral-50 dark:bg-neutral-950" data-testid="workflow-expanded">
+        {content}
+      </div>,
+      document.body,
+    );
+  }
+  return content;
 }

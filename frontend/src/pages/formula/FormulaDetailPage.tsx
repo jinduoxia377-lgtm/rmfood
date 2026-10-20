@@ -3,7 +3,6 @@
  * 配方信息、AI分析、评论区、导出、版本历史、审核、活动时间线、成分可视化
  * 新增: 5个Tab布局、内联编辑、版本对比/回滚、相关推荐、增强删除确认
  */
-export interface ExplainabilityResult { explanation?: string; confidence?: number; method?: string; }
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -18,10 +17,7 @@ import {
   Leaf,
   MessageSquare,
   Download,
-  ChevronDown,
-  ChevronUp,
   Trash2,
-  Reply,
   Copy,
   Star,
   Zap,
@@ -29,12 +25,9 @@ import {
   Clock,
   BarChart3,
   Share2,
-  Heart,
   Save,
   X,
   RefreshCw,
-  AlertTriangle,
-  Check,
   Package,
   ListOrdered,
   GitBranch,
@@ -70,7 +63,6 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { commentApi, type Comment } from '@/api/comment';
 import { aiApi } from '@/api/ai';
-import { formulaApi } from '@/api/formula';
 import { calculateNutritionLabel } from '@/api/formula';
 import { experimentApi } from '@/api/experiment';
 import { validateFormulaName } from '@/utils/formulaValidator';
@@ -80,20 +72,12 @@ import { ActivityTimeline, generateMockTimeline } from './components/ActivityTim
 import { CommentItem } from './components/CommentItem';
 import { CompositionChart } from './components/CompositionChart';
 import { NutritionLabel, NutritionNRVChart, NutritionClaimBadges } from '@/components/nutrition';
-import { FormulaCostAnalysis } from './components/FormulaCostAnalysis';
 import { FormulaCompare } from './components/FormulaCompare';
 import { VersionDiffViewer } from './components/VersionDiffViewer';
 import { ShareFormula } from './components/ShareFormula';
-import { useOperationLogger } from '@/utils/operationLogger';
 import { usePermission, FormulaPermission } from '@/utils/permissions';
 import { FormulaDetailSkeleton } from './components/FormulaDetailSkeleton';
-import { ExplainabilityReport } from '@/components/report/ExplainabilityReport';
 import { ReportExportPanel } from '@/components/report/ReportExportPanel';
-import { EffectCurveChart } from '@/components/formula/EffectCurveChart';
-import { ParetoFrontierChart } from '@/components/formula/ParetoFrontierChart';
-import { TemplateEditor } from '@/components/formula/TemplateEditor';
-import { useComplianceCheck, complianceApi } from '@/api/compliance';
-import { explainabilityApi } from '@/api/explainability';
 import { renderSynergyResult, renderStabilityResult, renderTasteResult, renderEffectResult, renderCompatResult, renderSafetyResult, ComplianceCheckSection, ExplainabilityReportSection, AnalysisCard } from './FormulaDetailSubComponents'
 
 export default function FormulaDetailPage() {
@@ -102,10 +86,6 @@ export default function FormulaDetailPage() {
   const user = useAuthStore((s) => s.user);
   const { has } = usePermission();
   const formulaId = Number(id);
-
-  // ── 可解释性报告状态 ──
-  const [explainabilityResult, setExplainabilityResult] = useState<any>(null);
-  const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   // ── 所有 Hooks 必须放在这里（在 early return 之前）──
 
@@ -189,8 +169,6 @@ export default function FormulaDetailPage() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [analysisHistory, setAnalysisHistory] = useState<any>(null);
-  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
 
   // Tab 懒加载控制
   const [activeTab, setActiveTab] = useState('basic');
@@ -277,6 +255,7 @@ export default function FormulaDetailPage() {
   }, [formula?.safety_check]);
 
   // ── 解析协同分析结果 ──
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const synergyParsed = useMemo(() => {
     if (!formula?.synergy_analysis || typeof formula.synergy_analysis !== 'object') return null;
     const sa = formula.synergy_analysis as Record<string, unknown>;
@@ -290,6 +269,7 @@ export default function FormulaDetailPage() {
   }, [formula?.synergy_analysis]);
 
   // ── 解析成分列表（从 formula.ingredients API 响应）──
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const ingredientList = useMemo(() => {
     if (!formula?.ingredients || !Array.isArray(formula.ingredients)) return [];
     return formula.ingredients.map((ing: any) => ({
@@ -317,6 +297,7 @@ export default function FormulaDetailPage() {
   // 收藏功能 Effect
   useEffect(() => {
     const favs: number[] = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFavorite(favs.includes(formulaId));
   }, [formulaId]);
 
@@ -791,6 +772,7 @@ export default function FormulaDetailPage() {
   }, [ingredientList]);
 
   // 制作步骤数据（从 composition 中解析）
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const processSteps = useMemo(() => {
     if (!formula?.composition || typeof formula.composition !== 'object') return [];
     const comp = formula.composition as Record<string, unknown>;
@@ -830,7 +812,7 @@ export default function FormulaDetailPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <EmptyState
-          icon={<FlaskConical size={48} strokeWidth={1.5} />}
+          icon={<FlaskConical size={48} strokeWidth={1.5} aria-hidden="true" />}
           title="配方不存在"
           description="该配方可能已被删除或您没有访问权限"
           action={
@@ -846,14 +828,14 @@ export default function FormulaDetailPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0">
+    <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-[var(--space-apple-lg)] px-[var(--space-apple-md)] md:px-0">
       {/* 返回 + 操作栏（移动端优化） */}
-      <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 md:gap-[var(--space-apple-sm)]">
         <button
           onClick={() => navigate('/formulas')}
-          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors min-h-[44px] px-2"
+          className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors min-h-[44px] px-2"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
           <span className="hidden sm:inline">返回列表</span>
           <span className="sm:hidden">返回</span>
         </button>
@@ -862,24 +844,24 @@ export default function FormulaDetailPage() {
           <Button
             variant="ghost"
             size="sm"
-            icon={<Star size={14} className={isFavorite ? 'fill-warning-400 text-warning-400' : ''} />}
+            icon={<Star size={14} className={isFavorite ? 'fill-[var(--color-warning-text)] text-[var(--color-warning-text)]' : ''} aria-hidden="true" />}
             onClick={toggleFavorite}
           />
           {/* 编辑（切换内联编辑模式）*/}
           {canEdit && has(FormulaPermission.EDIT) && !isEditing && (
-            <Button variant="secondary" size="sm" icon={<Edit3 size={14} />} onClick={startEditing}>
+            <Button variant="secondary" size="sm" icon={<Edit3 size={14} aria-hidden="true" />} onClick={startEditing}>
               编辑
             </Button>
           )}
           {isEditing && (
             <>
-              <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={cancelEditing} disabled={isSaving}>
+              <Button variant="ghost" size="sm" icon={<X size={14} aria-hidden="true" />} onClick={cancelEditing} disabled={isSaving}>
                 取消
               </Button>
               <Button
                 variant="primary"
                 size="sm"
-                icon={<Save size={14} />}
+                icon={<Save size={14} aria-hidden="true" />}
                 onClick={saveEditedData}
                 loading={isSaving}
                 disabled={!hasChanges || isSaving}
@@ -893,7 +875,7 @@ export default function FormulaDetailPage() {
             <Button
               variant="ghost"
               size="sm"
-              icon={<Copy size={14} />}
+              icon={<Copy size={14} aria-hidden="true" />}
               onClick={handleCopyFormula}
               loading={copyLoading}
             >
@@ -906,7 +888,7 @@ export default function FormulaDetailPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                icon={<TestTubes size={14} />}
+                icon={<TestTubes size={14} aria-hidden="true" />}
               >
                 创建实验
               </Button>
@@ -917,7 +899,7 @@ export default function FormulaDetailPage() {
             <Button
               variant="secondary"
               size="sm"
-              icon={<Zap size={14} />}
+              icon={<Zap size={14} aria-hidden="true" />}
               loading={aiAnalyzing}
               onClick={handleRunAIAnalysis}
               disabled={ingredientList.length === 0}
@@ -928,10 +910,10 @@ export default function FormulaDetailPage() {
           {canSubmit && has(FormulaPermission.AUDIT) && (
             <Button
               size="sm"
-              icon={<Send size={14} />}
+              icon={<Send size={14} aria-hidden="true" />}
               onClick={() => submitMut.mutate(formula.id)}
               loading={submitMut.isPending}
-              className="bg-warning-500 hover:bg-warning-600 shadow-warning-600/25"
+              className="bg-[var(--color-warning-container)] shadow-[color:var(--color-warning-container)]/25"
             >
               提交审核
             </Button>
@@ -939,7 +921,7 @@ export default function FormulaDetailPage() {
           <Button
             variant="ghost"
             size="sm"
-            icon={<GitCompare size={14} />}
+            icon={<GitCompare size={14} aria-hidden="true" />}
             onClick={() => {
               setCompareId(formula.id);
               setShowCompare(true);
@@ -947,11 +929,11 @@ export default function FormulaDetailPage() {
           >
             对比
           </Button>
-          <Button variant="ghost" size="sm" icon={<Share2 size={14} />} onClick={() => setShowShare(true)}>
+          <Button variant="ghost" size="sm" icon={<Share2 size={14} aria-hidden="true" />} onClick={() => setShowShare(true)}>
             分享
           </Button>
           {has(FormulaPermission.EXPORT) && (
-            <Button variant="ghost" size="sm" icon={<Download size={14} />} onClick={handleExport}>
+            <Button variant="ghost" size="sm" icon={<Download size={14} aria-hidden="true" />} onClick={handleExport}>
               导出
             </Button>
           )}
@@ -960,7 +942,7 @@ export default function FormulaDetailPage() {
             <Button
               variant="danger"
               size="sm"
-              icon={<Trash2 size={14} />}
+              icon={<Trash2 size={14} aria-hidden="true" />}
               onClick={() => {
                 setShowDeleteConfirm(true);
                 setDeleteConfirmed(false);
@@ -978,8 +960,8 @@ export default function FormulaDetailPage() {
         <CardContent>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="h1 text-neutral-900 dark:text-white">{formula.name}</h1>
+              <div className="flex items-center gap-[var(--space-apple-sm)] mb-1">
+                <h1 className="h1 text-[var(--text-primary)]">{formula.name}</h1>
                 <StatusBadge status={formula.status} />
                 {isEditing && (
                   <Badge variant="neutral" size="sm">
@@ -987,7 +969,7 @@ export default function FormulaDetailPage() {
                   </Badge>
                 )}
               </div>
-              <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              <p className="text-xs md:text-sm text-[var(--text-muted)] leading-relaxed">
                 {formula.code} · 版本 v{formula.version} · 创建于{' '}
                 {new Date(formula.created_at || formula.createdAt).toLocaleDateString('zh-CN')}
               </p>
@@ -995,45 +977,45 @@ export default function FormulaDetailPage() {
           </div>
 
           {/* Tabs 布局（响应式） */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-4 md:mt-6">
-            <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0 pb-2">
-              <TabsList className="border-b border-neutral-200 dark:border-neutral-700 bg-transparent p-0 h-auto gap-0 min-w-max md:min-w-0">
-                <TabsTrigger value="basic" icon={<Package size={14} />}>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-[var(--space-apple-md)] md:mt-[var(--space-apple-lg)]">
+            <div className="overflow-x-auto -mx-4 md:mx-0 px-[var(--space-apple-md)] md:px-0 pb-2">
+              <TabsList className="border-b border-[var(--border-color)] bg-transparent p-0 h-auto gap-0 min-w-max md:min-w-0">
+                <TabsTrigger value="basic" icon={<Package size={14} aria-hidden="true" />}>
                   基本信息
                 </TabsTrigger>
-                <TabsTrigger value="ingredients" icon={<BarChart3 size={14} />}>
+                <TabsTrigger value="ingredients" icon={<BarChart3 size={14} aria-hidden="true" />}>
                   成分列表
                 </TabsTrigger>
-                <TabsTrigger value="steps" icon={<ListOrdered size={14} />}>
+                <TabsTrigger value="steps" icon={<ListOrdered size={14} aria-hidden="true" />}>
                   制作步骤
                 </TabsTrigger>
-                <TabsTrigger value="versions" icon={<GitBranch size={14} />}>
+                <TabsTrigger value="versions" icon={<GitBranch size={14} aria-hidden="true" />}>
                   版本历史
                 </TabsTrigger>
-                <TabsTrigger value="recommendations" icon={<Sparkles size={14} />}>
+                <TabsTrigger value="recommendations" icon={<Sparkles size={14} aria-hidden="true" />}>
                   相关推荐
                 </TabsTrigger>
-                <TabsTrigger value="explainability" icon={<FileText size={14} />}>
+                <TabsTrigger value="explainability" icon={<FileText size={14} aria-hidden="true" />}>
                   可解释性
                 </TabsTrigger>
-                <TabsTrigger value="analysis" icon={<FlaskConical size={14} />}>
+                <TabsTrigger value="analysis" icon={<FlaskConical size={14} aria-hidden="true" />}>
                   深度分析
                 </TabsTrigger>
-                <TabsTrigger value="nutrition" icon={<Leaf size={14} />}>
+                <TabsTrigger value="nutrition" icon={<Leaf size={14} aria-hidden="true" />}>
                   营养成分
                 </TabsTrigger>
               </TabsList>
 
               {/* ═══════════════ Tab 1: 基本信息 ═══════════════ */}
               <TabsContent value="basic">
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-[var(--space-apple-md)]">
                   {/* 配方名称 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">配方名称</label>
+                    <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">配方名称</label>
                     <div
                       className={cn(
                         'md:col-span-2',
-                        isEditing && isFieldChanged('name') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                        isEditing && isFieldChanged('name') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                       )}
                     >
                       {isEditing ? (
@@ -1044,21 +1026,21 @@ export default function FormulaDetailPage() {
                             error={editErrors.name}
                             placeholder="请输入配方名称"
                           />
-                          {editErrors.name && <p className="text-xs text-error-500">{editErrors.name}</p>}
+                          {editErrors.name && <p className="text-xs text-[var(--color-error-text)]">{editErrors.name}</p>}
                         </div>
                       ) : (
-                        <p className="text-neutral-900 dark:text-white font-medium">{formula.name}</p>
+                        <p className="text-[var(--text-primary)] font-medium">{formula.name}</p>
                       )}
                     </div>
                   </div>
 
                   {/* 描述 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">描述</label>
+                    <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">描述</label>
                     <div
                       className={cn(
                         'md:col-span-2',
-                        isEditing && isFieldChanged('description') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                        isEditing && isFieldChanged('description') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                       )}
                     >
                       {isEditing ? (
@@ -1069,7 +1051,7 @@ export default function FormulaDetailPage() {
                           rows={3}
                         />
                       ) : (
-                        <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                        <p className="text-[var(--text-secondary)] leading-relaxed">
                           {formula.description || '-'}
                         </p>
                       )}
@@ -1078,11 +1060,11 @@ export default function FormulaDetailPage() {
 
                   {/* 目标功效 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">目标功效</label>
+                    <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">目标功效</label>
                     <div
                       className={cn(
                         'md:col-span-2',
-                        isEditing && isFieldChanged('targetEffects') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                        isEditing && isFieldChanged('targetEffects') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                       )}
                     >
                       {isEditing ? (
@@ -1111,12 +1093,12 @@ export default function FormulaDetailPage() {
 
                   {/* 分类 & 标签 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid grid-cols-3 gap-4 items-start">
-                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">分类</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+                      <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">分类</label>
                       <div
                         className={cn(
                           'col-span-2',
-                          isEditing && isFieldChanged('category') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                          isEditing && isFieldChanged('category') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                         )}
                       >
                         {isEditing ? (
@@ -1126,16 +1108,16 @@ export default function FormulaDetailPage() {
                             placeholder="请输入分类"
                           />
                         ) : (
-                          <p className="text-neutral-600 dark:text-neutral-400">{formula.category || '-'}</p>
+                          <p className="text-[var(--text-secondary)]">{formula.category || '-'}</p>
                         )}
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 items-start">
-                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">标签</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+                      <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">标签</label>
                       <div
                         className={cn(
                           'col-span-2',
-                          isEditing && isFieldChanged('tags') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                          isEditing && isFieldChanged('tags') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                         )}
                       >
                         {isEditing ? (
@@ -1165,11 +1147,11 @@ export default function FormulaDetailPage() {
 
                   {/* 备注 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 pt-2">备注</label>
+                    <label className="text-sm font-medium text-[var(--text-primary)] pt-[var(--space-apple-sm)]">备注</label>
                     <div
                       className={cn(
                         'md:col-span-2',
-                        isEditing && isFieldChanged('notes') && 'border-l-3 border-primary-500 pl-3 -ml-3',
+                        isEditing && isFieldChanged('notes') && 'border-l-3 border-[var(--color-primary-border)] pl-3 -ml-3',
                       )}
                     >
                       {isEditing ? (
@@ -1180,13 +1162,13 @@ export default function FormulaDetailPage() {
                           rows={2}
                         />
                       ) : (
-                        <p className="text-neutral-600 dark:text-neutral-400">{formula.notes || '-'}</p>
+                        <p className="text-[var(--text-secondary)]">{formula.notes || '-'}</p>
                       )}
                     </div>
                   </div>
 
                   {/* 配方参数 */}
-                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                  <div className="mt-[var(--space-apple-lg)] grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)] sm:gap-4 pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
                     {[
                       { label: '服用剂量', value: formula.dosage },
                       { label: '加工工艺', value: formula.processing_method },
@@ -1194,27 +1176,27 @@ export default function FormulaDetailPage() {
                       { label: '保质期', value: formula.shelf_life ? `${formula.shelf_life} 天` : null },
                     ].map(({ label, value }) => (
                       <div key={label}>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">{label}</p>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-white">{value ?? '-'}</p>
+                        <p className="text-xs text-[var(--text-muted)] mb-0.5">{label}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{value ?? '-'}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* 元信息 */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-500">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-[var(--space-apple-sm)] sm:gap-4 pt-[var(--space-apple-md)] border-t border-[var(--border-color)] text-xs text-[var(--text-muted)]">
                     <div>
                       <p className="mb-0.5">创建者</p>
-                      <p className="font-medium text-neutral-700 dark:text-neutral-300">{formula.creator_name || '-'}</p>
+                      <p className="font-medium text-[var(--text-primary)]">{formula.creator_name || '-'}</p>
                     </div>
                     <div>
                       <p className="mb-0.5">创建时间</p>
-                      <p className="font-medium text-neutral-700 dark:text-neutral-300">
+                      <p className="font-medium text-[var(--text-primary)]">
                         {new Date(formula.created_at || formula.createdAt).toLocaleString('zh-CN')}
                       </p>
                     </div>
                     <div>
                       <p className="mb-0.5">更新时间</p>
-                      <p className="font-medium text-neutral-700 dark:text-neutral-300">
+                      <p className="font-medium text-[var(--text-primary)]">
                         {new Date(formula.updated_at || formula.updatedAt).toLocaleString('zh-CN')}
                       </p>
                     </div>
@@ -1222,13 +1204,13 @@ export default function FormulaDetailPage() {
 
                   {/* 编辑操作按钮 */}
                   {isEditing && (
-                    <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="flex justify-end gap-[var(--space-apple-sm)] pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
                       {!hasChanges && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] self-center mr-auto">没有修改</p>}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={cancelEditing}
-                        icon={<X size={14} />}
+                        icon={<X size={14} aria-hidden="true" />}
                         disabled={isSaving}
                       >
                         取消
@@ -1236,7 +1218,7 @@ export default function FormulaDetailPage() {
                       <Button
                         size="sm"
                         onClick={saveEditedData}
-                        icon={<Save size={14} />}
+                        icon={<Save size={14} aria-hidden="true" />}
                         loading={isSaving}
                         disabled={!hasChanges || isSaving}
                       >
@@ -1247,39 +1229,39 @@ export default function FormulaDetailPage() {
 
                   {/* AI 分析摘要区域（保留现有功能）*/}
                   {hasAnalysisData && !isEditing && (
-                    <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
-                        <Activity size={20} className="text-primary-500" />
+                    <div className="pt-[var(--space-apple-md)] border-t border-[var(--border-color)]">
+                      <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)] flex items-center gap-2">
+                        <Activity size={20} className="text-[var(--color-primary-text)]" aria-hidden="true" />
                         AI 分析摘要
                       </h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* 安全检查摘要 */}
                         {safetyParsed && (
                           <div
-                            className={`rounded-xl p-4 border ${
+                            className={`rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border ${
                               safetyParsed.passed
-                                ? 'border-success-200 bg-success-50/50 dark:border-success-800 dark:bg-success-300/15'
-                                : 'border-error-200 bg-error-50/50 dark:border-error-800 dark:bg-error-300/15'
+                                ? 'border-[var(--color-success-border)] bg-[var(--color-success-container)]'
+                                : 'border-[var(--color-error-border)] bg-[var(--color-error-container)]'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-2">
-                              <Shield size={16} className={safetyParsed.passed ? 'text-success-600' : 'text-error-600'} />
+                            <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
+                              <Shield size={16} className={safetyParsed.passed ? 'text-[var(--color-success-text)]' : 'text-[var(--color-error-text)]'} aria-hidden="true" />
                               <span className="font-semibold text-sm">安全检查</span>
                               <Badge variant={safetyParsed.passed ? 'success' : 'danger'} size="sm">
                                 {safetyParsed.passed ? '通过' : '未通过'}
                               </Badge>
                             </div>
                             {safetyParsed.summary && (
-                              <p className="text-sm text-neutral-600 dark:text-neutral-300">{safetyParsed.summary}</p>
+                              <p className="text-sm text-[var(--text-secondary)]">{safetyParsed.summary}</p>
                             )}
                           </div>
                         )}
 
                         {/* 协同分析摘要 */}
                         {synergyParsed && (
-                          <div className="rounded-xl p-4 border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-300/15">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Leaf size={16} className="text-primary-700" />
+                          <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border border-[var(--color-primary-border)] bg-[var(--color-primary-container)]">
+                            <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
+                              <Leaf size={16} className="text-[var(--color-primary-text)]" aria-hidden="true" />
                               <span className="font-semibold text-sm">协同分析</span>
                               {synergyParsed.score !== null && (
                                 <Badge variant="primary" size="sm">
@@ -1288,7 +1270,7 @@ export default function FormulaDetailPage() {
                               )}
                             </div>
                             {synergyParsed.summary && (
-                              <p className="text-sm text-neutral-600 dark:text-neutral-300">{synergyParsed.summary}</p>
+                              <p className="text-sm text-[var(--text-secondary)]">{synergyParsed.summary}</p>
                             )}
                           </div>
                         )}
@@ -1299,13 +1281,14 @@ export default function FormulaDetailPage() {
               </TabsContent>
 
               {/* ═══════════════ Tab 2: 成分列表 ═══════════════ */}
+              {/* eslint-disable-next-line react-hooks/refs */}
               {renderedTabs.current.has('ingredients') && (
                 <TabsContent value="ingredients">
-                  <div className="space-y-4 pt-4">
+                  <div className="space-y-4 pt-[var(--space-apple-md)]">
                     {/* 操作栏 */}
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                        <BarChart3 size={20} />
+                      <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                        <BarChart3 size={20} aria-hidden="true" />
                         成分列表
                         <Badge variant="neutral" size="sm">
                           {ingredientList.length} 种成分
@@ -1315,13 +1298,13 @@ export default function FormulaDetailPage() {
                         {totalDosage !== null && (
                           <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             总用量:{' '}
-                            <strong className="text-neutral-900 dark:text-white">{totalDosage.toFixed(2)}g</strong>
+                            <strong className="text-[var(--text-primary)]">{totalDosage.toFixed(2)}g</strong>
                           </span>
                         )}
                         <Button
                           variant="ghost"
                           size="sm"
-                          icon={<Copy size={14} />}
+                          icon={<Copy size={14} aria-hidden="true" />}
                           onClick={copyIngredientListToClipboard}
                           disabled={ingredientList.length === 0}
                         >
@@ -1333,17 +1316,17 @@ export default function FormulaDetailPage() {
                     {ingredientList.length > 0 ? (
                       <>
                         {/* 成分表格 */}
-                        <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
+                        <div className="overflow-x-auto rounded-[var(--radius-Apple-md)] border border-[var(--border-color)]">
                           <table className="w-full text-sm">
-                            <thead className="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+                            <thead className="bg-[var(--bg-tertiary)] border-b border-[var(--border-color)]">
                               <tr>
-                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-12">#</th>
-                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">成分名称</th>
-                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">用量(g)</th>
-                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">分类</th>
-                                <th className="text-left p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">来源</th>
-                                <th className="text-center p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-24">药食同源</th>
-                                <th className="text-center p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-20">操作</th>
+                                <th className="text-left p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-12">#</th>
+                                <th className="text-left p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">成分名称</th>
+                                <th className="text-left p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">用量(g)</th>
+                                <th className="text-left p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">分类</th>
+                                <th className="text-left p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">来源</th>
+                                <th className="text-center p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-24">药食同源</th>
+                                <th className="text-center p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium w-20">操作</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -1351,14 +1334,14 @@ export default function FormulaDetailPage() {
                                 <>
                                   <tr
                                     key={ing.name}
-                                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                                    className="hover:bg-[var(--bg-tertiary)]/50 transition-colors"
                                   >
-                                    <td className="p-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{i + 1}</td>
-                                    <td className="p-3 text-neutral-900 dark:text-white font-medium">{ing.name}</td>
-                                    <td className="p-3 text-neutral-600 dark:text-neutral-400">{ing.dosage}</td>
-                                    <td className="p-3 text-neutral-600 dark:text-neutral-400">{ing.category}</td>
-                                    <td className="p-3 text-neutral-600 dark:text-neutral-400">{ing.source}</td>
-                                    <td className="p-3 text-center">
+                                    <td className="p-[var(--space-apple-sm)] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{i + 1}</td>
+                                    <td className="p-[var(--space-apple-sm)] text-[var(--text-primary)] font-medium">{ing.name}</td>
+                                    <td className="p-[var(--space-apple-sm)] text-[var(--text-secondary)]">{ing.dosage}</td>
+                                    <td className="p-[var(--space-apple-sm)] text-[var(--text-secondary)]">{ing.category}</td>
+                                    <td className="p-[var(--space-apple-sm)] text-[var(--text-secondary)]">{ing.source}</td>
+                                    <td className="p-[var(--space-apple-sm)] text-center">
                                       {ing.is_food_homology ? (
                                         <Badge variant="success" size="sm">
                                           是
@@ -1369,10 +1352,10 @@ export default function FormulaDetailPage() {
                                         </Badge>
                                       )}
                                     </td>
-                                    <td className="p-3 text-center">
+                                    <td className="p-[var(--space-apple-sm)] text-center">
                                       <button
                                         onClick={() => toggleIngredientExpand(ing.name)}
-                                        className="text-xs text-primary-700 hover:text-primary-700 dark:text-primary-700 transition-colors"
+                                        className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] transition-colors"
                                       >
                                         {expandedIngredients.has(ing.name) ? '收起' : '详情'}
                                       </button>
@@ -1381,23 +1364,23 @@ export default function FormulaDetailPage() {
                                   {/* 展开详情行 */}
                                   {expandedIngredients.has(ing.name) && (
                                     <tr key={`${ing.name}-detail`}>
-                                      <td colSpan={7} className="p-4 bg-neutral-50/50 dark:bg-neutral-800/30">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                      <td colSpan={7} className="p-[var(--space-apple-md)] bg-[var(--bg-tertiary)]">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                                           <div>
                                             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">性味归经</p>
-                                            <p className="text-neutral-700 dark:text-neutral-300">-</p>
+                                            <p className="text-[var(--text-primary)]">-</p>
                                           </div>
                                           <div>
                                             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">化学成分</p>
-                                            <p className="text-neutral-700 dark:text-neutral-300">-</p>
+                                            <p className="text-[var(--text-primary)]">-</p>
                                           </div>
                                           <div>
                                             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">药理作用</p>
-                                            <p className="text-neutral-700 dark:text-neutral-300">-</p>
+                                            <p className="text-[var(--text-primary)]">-</p>
                                           </div>
                                           <div>
                                             <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">注意事项</p>
-                                            <p className="text-neutral-700 dark:text-neutral-300">-</p>
+                                            <p className="text-[var(--text-primary)]">-</p>
                                           </div>
                                         </div>
                                       </td>
@@ -1410,13 +1393,13 @@ export default function FormulaDetailPage() {
                         </div>
 
                         {/* 成分可视化图表 */}
-                        <div className="pt-4">
+                        <div className="pt-[var(--space-apple-md)]">
                           <CompositionChart ingredients={ingredientList} />
                         </div>
                       </>
                     ) : (
-                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        <BarChart3 size={48} className="mx-auto mb-3 opacity-50" />
+                      <div className="py-[var(--space-apple-xl)] text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        <BarChart3 size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" aria-hidden="true" />
                         <p>暂无成分数据</p>
                       </div>
                     )}
@@ -1425,18 +1408,19 @@ export default function FormulaDetailPage() {
               )}
 
               {/* ═══════════════ Tab: 营养成分 ═══════════════ */}
+              {/* eslint-disable-next-line react-hooks/refs */}
               {renderedTabs.current.has("nutrition") && (
                 <TabsContent value="nutrition">
-                  <div className="space-y-6 pt-4">
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <Leaf size={20} />
+                  <div className="space-y-[var(--space-apple-lg)] pt-[var(--space-apple-md)]">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                      <Leaf size={20} aria-hidden="true" />
                       营养成分表
                       <Badge variant="neutral" size="sm">GB 28050-2011</Badge>
                     </h2>
                     
                     {/* 营养标签 */}
                     {nutritionLoading ? (
-                      <div className="flex items-center justify-center py-12">
+                      <div className="flex items-center justify-center py-[var(--space-apple-xl)]">
                         <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">加载营养数据中...</span>
                       </div>
                     ) : nutritionLabelData ? (
@@ -1454,20 +1438,20 @@ export default function FormulaDetailPage() {
                                 unit: item.unit,
                               }))}
                             size={100}
-                            className="mt-6"
+                            className="mt-[var(--space-apple-lg)]"
                           />
                         )}
                         
                         {/* 营养声称 */}
                         {nutritionLabelData.claims && nutritionLabelData.claims.length > 0 && (
-                          <NutritionClaimBadges claims={nutritionLabelData.claims} className="mt-4" />
+                          <NutritionClaimBadges claims={nutritionLabelData.claims} className="mt-[var(--space-apple-md)]" />
                         )}
                         
                         {/* 合规提示 */}
                         {nutritionLabelData.warnings && nutritionLabelData.warnings.length > 0 && (
-                          <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-300/15 rounded-lg">
+                          <div className="mt-[var(--space-apple-md)] p-[var(--space-apple-sm)] bg-[var(--color-warning-container)] rounded-[var(--radius-Apple-sm)]">
                             {nutritionLabelData.warnings.map((w: string, i: number) => (
-                              <p key={i} className="text-sm text-warning-700 dark:text-warning-700">
+                              <p key={i} className="text-sm text-[var(--color-warning-text)]">
                                 ⚠ {w}
                               </p>
                             ))}
@@ -1475,8 +1459,8 @@ export default function FormulaDetailPage() {
                         )}
                       </>
                     ) : (
-                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        <Leaf size={48} className="mx-auto mb-3 opacity-50" />
+                      <div className="py-[var(--space-apple-xl)] text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        <Leaf size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" aria-hidden="true" />
                         <p>暂无营养数据</p>
                         <p className="text-xs mt-1">请确保配方包含已知药材</p>
                       </div>
@@ -1486,11 +1470,12 @@ export default function FormulaDetailPage() {
               )}
 
               {/* ═══════════════ Tab 3: 制作步骤 ═══════════════ */}
+              {/* eslint-disable-next-line react-hooks/refs */}
               {renderedTabs.current.has('steps') && (
                 <TabsContent value="steps">
-                  <div className="space-y-4 pt-4">
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <ListOrdered size={20} />
+                  <div className="space-y-4 pt-[var(--space-apple-md)]">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                      <ListOrdered size={20} aria-hidden="true" />
                       制作步骤
                       <Badge variant="neutral" size="sm">
                         {processSteps.length} 步
@@ -1500,33 +1485,33 @@ export default function FormulaDetailPage() {
                     {processSteps.length > 0 ? (
                       <div className="relative">
                         {/* 时间线连接线 */}
-                        <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                        <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-[var(--border-color)]" />
 
-                        <div className="space-y-6">
+                        <div className="space-y-[var(--space-apple-lg)]">
                           {processSteps.map((step, index) => (
-                            <div key={index} className="relative flex gap-4 pl-4">
+                            <div key={index} className="relative flex gap-4 pl-[var(--space-apple-md)]">
                               {/* 时间线节点 */}
-                              <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-300/25 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
-                                <span className="text-sm font-bold text-primary-700 dark:text-primary-700">
+                              <div className="relative z-10 flex-shrink-0 w-12 h-12 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] border-4 border-[var(--border-color)] flex items-center justify-center">
+                                <span className="text-sm font-bold text-[var(--color-primary-text)]">
                                   {step.step_number}
                                 </span>
                               </div>
 
                               {/* 步骤内容卡片 */}
-                              <div className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="font-semibold text-neutral-900 dark:text-white">
+                              <div className="flex-1 rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-md)] hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
+                                  <h4 className="font-semibold text-[var(--text-primary)]">
                                     步骤 {step.step_number}
                                   </h4>
                                   <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                     {step.temperature && (
-                                      <span className="px-2 py-1 rounded-full bg-warning-50 dark:bg-warning-300/20 text-warning-600 dark:text-warning-700">
-                                        <Thermometer className="w-3 h-3 inline mr-0.5" />{step.temperature.min}-{step.temperature.max}
+                                      <span className="px-2 py-1 rounded-[var(--radius-pill)] bg-[var(--color-warning-container)] text-[var(--color-warning-text)]">
+                                        <Thermometer className="w-3 h-3 inline mr-0.5" aria-hidden="true" />{step.temperature.min}-{step.temperature.max}
                                         {step.temperature.unit}
                                       </span>
                                     )}
                                     {step.duration && (
-                                      <span className="px-2 py-1 rounded-full bg-secondary-50 dark:bg-secondary-300/20 text-secondary-600 dark:text-secondary-700">
+                                      <span className="px-2 py-1 rounded-[var(--radius-pill)] bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)]">
                                         ⏱️ {step.duration.value}
                                         {step.duration.unit}
                                       </span>
@@ -1534,13 +1519,13 @@ export default function FormulaDetailPage() {
                                   </div>
                                 </div>
 
-                                <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3">
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-[var(--space-apple-sm)]">
                                   {step.description}
                                 </p>
 
                                 <div className="flex items-center gap-4 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                                  {step.equipment && <span><Wrench className="w-3 h-3 inline mr-0.5" />设备: {step.equipment}</span>}
-                                  {step.notes && <span><AlertOctagon className="w-3 h-3 inline mr-0.5" />{step.notes}</span>}
+                                  {step.equipment && <span><Wrench className="w-3 h-3 inline mr-0.5" aria-hidden="true" />设备: {step.equipment}</span>}
+                                  {step.notes && <span><AlertOctagon className="w-3 h-3 inline mr-0.5" aria-hidden="true" />{step.notes}</span>}
                                 </div>
                               </div>
                             </div>
@@ -1548,8 +1533,8 @@ export default function FormulaDetailPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        <ListOrdered size={48} className="mx-auto mb-3 opacity-50" />
+                      <div className="py-[var(--space-apple-xl)] text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        <ListOrdered size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" aria-hidden="true" />
                         <p>暂无制作步骤</p>
                       </div>
                     )}
@@ -1558,11 +1543,12 @@ export default function FormulaDetailPage() {
               )}
 
               {/* ═══════════════ Tab 4: 版本历史 ═══════════════ */}
+              {/* eslint-disable-next-line react-hooks/refs */}
               {renderedTabs.current.has('versions') && (
                 <TabsContent value="versions">
-                  <div className="space-y-4 pt-4">
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <GitBranch size={20} />
+                  <div className="space-y-4 pt-[var(--space-apple-md)]">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                      <GitBranch size={20} aria-hidden="true" />
                       版本历史
                       <Badge variant="neutral" size="sm">
                         {versions?.length || 0} 个版本
@@ -1572,35 +1558,35 @@ export default function FormulaDetailPage() {
                     {versions && versions.length > 0 ? (
                       <div className="relative">
                         {/* 时间线 */}
-                        <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                        <div className="absolute left-6 top-[var(--space-apple-lg)] bottom-6 w-0.5 bg-[var(--border-color)]" />
 
                         <div className="space-y-4">
-                          {versions.map((v, index) => (
-                            <div key={v.id} className="relative flex gap-4 pl-4">
+                          {versions.map((v) => (
+                            <div key={v.id} className="relative flex gap-4 pl-[var(--space-apple-md)]">
                               {/* 版本节点 */}
                               <div
                                 className={cn(
-                                  'relative z-10 flex-shrink-0 w-12 h-12 rounded-full border-4 border-white dark:border-neutral-900 flex items-center justify-center',
+                                  'relative z-10 flex-shrink-0 w-12 h-12 rounded-[var(--radius-pill)] border-4 border-[var(--border-color)] flex items-center justify-center',
                                   v.is_current
-                                    ? 'bg-primary-container text-primary-main'
-                                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500',
+                                    ? 'bg-primary-container text-[var(--color-primary)]'
+                                    : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)]',
                                 )}
                               >
-                                <GitBranch size={16} />
+                                <GitBranch size={16} aria-hidden="true" />
                               </div>
 
                               {/* 版本内容 */}
                               <div
                                 className={cn(
-                                  'flex-1 rounded-xl border p-4',
+                                  'flex-1 rounded-[var(--radius-Apple-md)] border p-[var(--space-apple-md)]',
                                   v.is_current
-                                    ? 'border-primary-200 bg-primary-50/50 dark:border-primary-800 dark:bg-primary-300/15'
-                                    : 'border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800',
+                                    ? 'border-[var(--color-primary-border)] bg-[var(--color-primary-container)]'
+                                    : 'border-[var(--border-color)] bg-[var(--bg-secondary)]',
                                 )}
                               >
-                                <div className="flex items-start justify-between mb-2">
-                                  <div className="flex items-center gap-3">
-                                    <span className="font-bold text-neutral-900 dark:text-white">
+                                <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
+                                  <div className="flex items-center gap-[var(--space-apple-sm)]">
+                                    <span className="font-bold text-[var(--text-primary)]">
                                       v{v.version_number || v.version_label}
                                     </span>
                                     {v.is_current && (
@@ -1620,7 +1606,7 @@ export default function FormulaDetailPage() {
                                 </div>
 
                                 {v.change_summary && (
-                                  <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-3">{v.change_summary}</p>
+                                  <p className="text-sm text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">{v.change_summary}</p>
                                 )}
 
                                 <div className="flex items-center gap-2">
@@ -1628,7 +1614,7 @@ export default function FormulaDetailPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    icon={<GitCompare size={12} />}
+                                    icon={<GitCompare size={12} aria-hidden="true" />}
                                     onClick={() => {
                                       setSelectingDiffSide('left');
                                       setDiffLeftVersion({
@@ -1649,7 +1635,7 @@ export default function FormulaDetailPage() {
                                     <Button
                                       variant="danger"
                                       size="sm"
-                                      icon={<History size={12} />}
+                                      icon={<History size={12} aria-hidden="true" />}
                                       onClick={async () => {
                                         if (
                                           !confirm(
@@ -1686,8 +1672,8 @@ export default function FormulaDetailPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        <GitBranch size={48} className="mx-auto mb-3 opacity-50" />
+                      <div className="py-[var(--space-apple-xl)] text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        <GitBranch size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" aria-hidden="true" />
                         <p>暂无版本记录</p>
                       </div>
                     )}
@@ -1696,12 +1682,13 @@ export default function FormulaDetailPage() {
               )}
 
               {/* ═══════════════ Tab 5: 相关推荐 ═══════════════ */}
+              {/* eslint-disable-next-line react-hooks/refs */}
               {renderedTabs.current.has('recommendations') && (
                 <TabsContent value="recommendations">
-                  <div className="space-y-4 pt-4">
+                  <div className="space-y-4 pt-[var(--space-apple-md)]">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                        <Sparkles size={20} />
+                      <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                        <Sparkles size={20} aria-hidden="true" />
                         相关推荐
                         {recommendations.length > 0 && (
                           <Badge variant="neutral" size="sm">
@@ -1712,7 +1699,7 @@ export default function FormulaDetailPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        icon={<RefreshCw size={14} />}
+                        icon={<RefreshCw size={14} aria-hidden="true" />}
                         onClick={loadRecommendations}
                         loading={loadingRecommendations}
                       >
@@ -1726,18 +1713,18 @@ export default function FormulaDetailPage() {
                           <Link
                             key={rec.id}
                             to={`/formulas/${rec.id}`}
-                            className="block rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-800 transition-all"
+                            className="block rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-md)] hover:shadow-lg hover:border-[var(--color-primary-border)] transition-all"
                           >
                             {/* 推荐头部 */}
-                            <div className="flex items-start justify-between mb-3">
-                              <h4 className="font-semibold text-neutral-900 dark:text-white line-clamp-2">{rec.name}</h4>
-                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 text-xs font-bold">
+                            <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
+                              <h4 className="font-semibold text-[var(--text-primary)] line-clamp-2">{rec.name}</h4>
+                              <div className="flex-shrink-0 ml-2 px-2 py-1 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] text-[var(--color-primary-text)] text-xs font-bold">
                                 {Math.round(rec.score * 100)}%
                               </div>
                             </div>
 
                             {/* 匹配点标签 */}
-                            <div className="flex flex-wrap gap-1 mb-3">
+                            <div className="flex flex-wrap gap-1 mb-[var(--space-apple-sm)]">
                               {rec.effects.slice(0, 3).map((effect) => (
                                 <Badge key={effect} variant="info" size="sm">
                                   {effect}
@@ -1752,10 +1739,10 @@ export default function FormulaDetailPage() {
 
                             {/* 关键成分预览 */}
                             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] space-y-1">
-                              <p className="font-medium text-neutral-600 dark:text-neutral-400">关键成分:</p>
+                              <p className="font-medium text-[var(--text-secondary)]">关键成分:</p>
                               <div className="flex flex-wrap gap-1">
                                 {rec.ingredients.slice(0, 4).map((ing) => (
-                                  <span key={ing.name} className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">
+                                  <span key={ing.name} className="px-1.5 py-0.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]">
                                     {ing.name}
                                   </span>
                                 ))}
@@ -1765,9 +1752,9 @@ export default function FormulaDetailPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="py-12 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        <Sparkles size={48} className="mx-auto mb-3 opacity-50" />
-                        <p className="mb-2">暂无推荐数据</p>
+                      <div className="py-[var(--space-apple-xl)] text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                        <Sparkles size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" aria-hidden="true" />
+                        <p className="mb-[var(--space-apple-sm)]">暂无推荐数据</p>
                         <p className="text-xs">点击"换一批"按钮加载相关推荐</p>
                       </div>
                     )}
@@ -1777,16 +1764,16 @@ export default function FormulaDetailPage() {
 
               {/* ═══════════════ Tab: 可解释性 ═══════════════ */}
               <TabsContent value="explainability">
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-[var(--space-apple-md)]">
                   <div className="flex items-center gap-2">
-                    <FileText size={20} className="text-accent-600" />
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                    <FileText size={20} className="text-[var(--color-accent-text)]" aria-hidden="true" />
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                       配方可解释性报告
                     </h2>
                   </div>
 
                   {!((formula.target_effects || formula.targetEffects) as string[])?.length ? (
-                    <div className="p-6 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-center text-neutral-500">
+                    <div className="p-[var(--space-apple-lg)] rounded-[var(--radius-Apple-md)] bg-[var(--bg-tertiary)] text-center text-[var(--text-muted)]">
                       请先设置目标功效以生成解释报告
                     </div>
                   ) : (
@@ -1812,7 +1799,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null as any}
+                        report={undefined}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,
@@ -1826,18 +1813,18 @@ export default function FormulaDetailPage() {
               </TabsContent>
               {/* ═══════════════ Tab: 深度分析 ═══════════════ */}
               <TabsContent value="analysis">
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-[var(--space-apple-md)]">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FlaskConical size={20} className="text-accent-600" />
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                      <FlaskConical size={20} className="text-[var(--color-accent-text)]" aria-hidden="true" />
+                      <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                         配方深度分析
                       </h2>
                     </div>
                     <Button
                       variant="primary"
                       size="sm"
-                      icon={<RefreshCw size={14} />}
+                      icon={<RefreshCw size={14} aria-hidden="true" />}
                       disabled={isAnalyzing || !ingredientList.length}
                       onClick={runAllAnalyses}
                     >
@@ -1846,7 +1833,7 @@ export default function FormulaDetailPage() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      icon={<Zap size={14} />}
+                      icon={<Zap size={14} aria-hidden="true" />}
                       disabled={isOptimizing || !ingredientList.length}
                       onClick={runOptimizeLP}
                     >
@@ -1855,7 +1842,7 @@ export default function FormulaDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      icon={<Download size={14} />}
+                      icon={<Download size={14} aria-hidden="true" />}
                       disabled={isExporting}
                       onClick={() => runExportFormula('pdf')}
                     >
@@ -1864,8 +1851,8 @@ export default function FormulaDetailPage() {
                   </div>
 
                   {!ingredientList.length && (
-                    <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/20 border border-warning-200 dark:border-warning-800">
-                      <p className="text-sm text-warning-700 dark:text-warning-700">
+                    <div className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] border border-[var(--color-warning-border)]">
+                      <p className="text-sm text-[var(--color-warning-text)]">
                         请先添加成分后运行深度分析
                       </p>
                     </div>
@@ -1874,7 +1861,7 @@ export default function FormulaDetailPage() {
                   {/* 协同效应 */}
                   <AnalysisCard
                     title="协同效应分析"
-                    icon={<TestTubes size={16} />}
+                    icon={<TestTubes size={16} aria-hidden="true" />}
                     result={analysisSynergy}
                     loading={isAnalyzing}
                     onRun={() => {
@@ -1887,7 +1874,7 @@ export default function FormulaDetailPage() {
                   {/* 稳定性预测 */}
                   <AnalysisCard
                     title="稳定性预测"
-                    icon={<Thermometer size={16} />}
+                    icon={<Thermometer size={16} aria-hidden="true" />}
                     result={analysisStability}
                     loading={isAnalyzing}
                     onRun={() => runAnalysis('stability')}
@@ -1898,7 +1885,7 @@ export default function FormulaDetailPage() {
                   {/* 风味预测 */}
                   <AnalysisCard
                     title="风味预测"
-                    icon={<Zap size={16} />}
+                    icon={<Zap size={16} aria-hidden="true" />}
                     result={analysisTaste}
                     loading={isAnalyzing}
                     onRun={() => runAnalysis('taste')}
@@ -1909,7 +1896,7 @@ export default function FormulaDetailPage() {
                   {/* 效果预测 */}
                   <AnalysisCard
                     title="效果预测 (PK/PD)"
-                    icon={<Activity size={16} />}
+                    icon={<Activity size={16} aria-hidden="true" />}
                     result={analysisEffect}
                     loading={isAnalyzing}
                     onRun={() => runAnalysis('effect')}
@@ -1920,7 +1907,7 @@ export default function FormulaDetailPage() {
                   {/* 兼容性检测 */}
                   <AnalysisCard
                     title="兼容性检测"
-                    icon={<CheckCircle2 size={16} />}
+                    icon={<CheckCircle2 size={16} aria-hidden="true" />}
                     result={analysisCompat}
                     loading={isAnalyzing}
                     onRun={() => runAnalysis('compat')}
@@ -1931,7 +1918,7 @@ export default function FormulaDetailPage() {
                   {/* 安全检查 */}
                   <AnalysisCard
                     title="安全检查"
-                    icon={<Shield size={16} />}
+                    icon={<Shield size={16} aria-hidden="true" />}
                     result={analysisSafety}
                     loading={isAnalyzing}
                     onRun={() => runAnalysis('safety')}
@@ -1941,47 +1928,47 @@ export default function FormulaDetailPage() {
 
                   {/* 配比优化结果 */}
                   {optimizationResult && (
-                    <div className="mt-4 p-4 rounded-xl bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800">
-                      <h3 className="text-sm font-medium text-accent-700 dark:text-accent-700 mb-3">
+                    <div className="mt-[var(--space-apple-md)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--color-accent-container)] border border-[var(--color-accent-border)]">
+                      <h3 className="text-sm font-medium text-[var(--color-accent-text)] mb-[var(--space-apple-sm)]">
                         配比优化结果
                       </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)] text-sm">
                         <div>
-                          <span className="text-accent-500">总成本:</span>
+                          <span className="text-[var(--color-accent-text)]">总成本:</span>
                           <span className="font-bold ml-1">{optimizationResult.min_cost?.toFixed(2)} 元</span>
                         </div>
                         <div>
-                          <span className="text-accent-500">求解时间:</span>
+                          <span className="text-[var(--color-accent-text)]">求解时间:</span>
                           <span className="font-bold ml-1">{optimizationResult.solve_time_ms?.toFixed(0)} ms</span>
                         </div>
                         <div>
-                          <span className="text-accent-500">可行解:</span>
-                          <span className={`font-bold ml-1 ${optimizationResult.feasible ? 'text-success-600' : 'text-error-600'}`}>
+                          <span className="text-[var(--color-accent-text)]">可行解:</span>
+                          <span className={`font-bold ml-1 ${optimizationResult.feasible ? 'text-[var(--color-success-text)]' : 'text-[var(--color-error-text)]'}`}>
                             {optimizationResult.feasible ? '是' : '否'}
                           </span>
                         </div>
                         <div>
-                          <span className="text-accent-500">成分数:</span>
+                          <span className="text-[var(--color-accent-text)]">成分数:</span>
                           <span className="font-bold ml-1">{optimizationResult.ratios?.length ?? 0}</span>
                         </div>
                       </div>
                       {optimizationResult.ratios?.length > 0 && (
-                        <div className="mt-3 space-y-1">
-                          <p className="text-xs text-accent-600 dark:text-accent-700">最优配比:</p>
+                        <div className="mt-[var(--space-apple-sm)] space-y-1">
+                          <p className="text-xs text-[var(--color-accent-text)]">最优配比:</p>
                           {optimizationResult.ratios.slice(0, 5).map((r: any, i: number) => (
                             <div key={i} className="flex items-center gap-2 text-xs">
                               <span className="w-24 truncate">{r.ingredient}</span>
-                              <span className="text-accent-600 dark:text-accent-700">{r.dosage_g?.toFixed(1)}g</span>
-                              <span className="text-accent-500">({r.percentage?.toFixed(1)}%)</span>
+                              <span className="text-[var(--color-accent-text)]">{r.dosage_g?.toFixed(1)}g</span>
+                              <span className="text-[var(--color-accent-text)]">({r.percentage?.toFixed(1)}%)</span>
                             </div>
                           ))}
                         </div>
                       )}
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-[var(--space-apple-sm)] flex gap-2">
                         <Button
                           variant="primary"
                           size="sm"
-                          icon={<CheckCircle2 size={14} />}
+                          icon={<CheckCircle2 size={14} aria-hidden="true" />}
                           disabled={isOptimizing}
                           onClick={runApplyOptimization}
                         >
@@ -1990,7 +1977,7 @@ export default function FormulaDetailPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          icon={<Save size={14} />}
+                          icon={<Save size={14} aria-hidden="true" />}
                           onClick={() => runSaveAnalysis('optimization', optimizationResult)}
                         >
                           保存结果
@@ -2007,11 +1994,11 @@ export default function FormulaDetailPage() {
 
       {/* 审核区域（保留原有功能，放在 Tabs 外面）*/}
       {canReview && (
-        <Card className="!border-warning-300 dark:!border-warning-800/50">
+        <Card className="!border-[var(--color-warning-border)]">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-300/20 flex items-center justify-center">
-                <MessageSquare size={20} className="text-warning-500" />
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
+              <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] flex items-center justify-center">
+                <MessageSquare size={20} className="text-[var(--color-warning-text)]" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle as="h2">配方审核</CardTitle>
@@ -2034,16 +2021,16 @@ export default function FormulaDetailPage() {
               }
             />
           </CardContent>
-          <CardFooter className="justify-end gap-3">
+          <CardFooter className="justify-end gap-[var(--space-apple-sm)]">
             <Button
               variant="danger"
-              icon={<XCircle size={16} />}
+              icon={<XCircle size={16} aria-hidden="true" />}
               onClick={() => handleReview(false)}
               loading={reviewMut.isPending}
             >
               驳回
             </Button>
-            <Button icon={<CheckCircle2 size={16} />} onClick={() => handleReview(true)} loading={reviewMut.isPending}>
+            <Button icon={<CheckCircle2 size={16} aria-hidden="true" />} onClick={() => handleReview(true)} loading={reviewMut.isPending}>
               通过
             </Button>
           </CardFooter>
@@ -2053,9 +2040,9 @@ export default function FormulaDetailPage() {
       {/* 评论区（保留原有功能）*/}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <MessageSquare size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+          <div className="flex items-center gap-[var(--space-apple-sm)]">
+            <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)] flex items-center justify-center">
+              <MessageSquare size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             </div>
             <CardTitle as="h2">评论</CardTitle>
             <Badge variant="neutral" size="sm">
@@ -2065,8 +2052,8 @@ export default function FormulaDetailPage() {
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
           {/* 发表评论 */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center text-primary-700 text-xs font-bold shrink-0 mt-0.5">
+          <div className="flex gap-[var(--space-apple-sm)]">
+            <div className="w-8 h-8 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] flex items-center justify-center text-[var(--color-primary-text)] text-xs font-bold shrink-0 mt-0.5">
               {user?.fullName?.[0] ?? user?.username?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1">
@@ -2077,11 +2064,11 @@ export default function FormulaDetailPage() {
                 rows={2}
                 className="!text-sm"
               />
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center justify-between mt-[var(--space-apple-sm)]">
                 {replyTo && (
                   <button
                     onClick={() => setReplyTo(null)}
-                    className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                   >
                     取消回复
                   </button>
@@ -2104,7 +2091,7 @@ export default function FormulaDetailPage() {
           {commentsLoading ? (
             <Skeleton className="h-24 w-full" />
           ) : commentsData?.items && commentsData.items.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-[var(--space-apple-sm)]">
               {commentsData.items.map((comment: Comment) => (
                 <CommentItem
                   key={comment.id}
@@ -2121,7 +2108,7 @@ export default function FormulaDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无评论，成为第一个评论者</div>
+            <div className="py-[var(--space-apple-lg)] text-center text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无评论，成为第一个评论者</div>
           )}
         </CardContent>
       </Card>
@@ -2129,9 +2116,9 @@ export default function FormulaDetailPage() {
       {/* 活动时间线（保留原有功能）*/}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-              <Clock size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+          <div className="flex items-center gap-[var(--space-apple-sm)]">
+            <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)] flex items-center justify-center">
+              <Clock size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             </div>
             <CardTitle as="h2">活动时间线</CardTitle>
           </div>
@@ -2145,9 +2132,9 @@ export default function FormulaDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-300/20 flex items-center justify-center">
-                <TestTubes size={16} className="text-accent-500" />
+            <div className="flex items-center gap-[var(--space-apple-sm)]">
+              <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-accent-container)] flex items-center justify-center">
+                <TestTubes size={16} className="text-[var(--color-accent-text)]" aria-hidden="true" />
               </div>
               <CardTitle as="h2">关联实验</CardTitle>
               {experiments.length > 0 && (
@@ -2155,7 +2142,7 @@ export default function FormulaDetailPage() {
               )}
             </div>
             <Link to={`/experiments/new?formula_id=${formulaId}`}>
-              <Button variant="ghost" size="sm" icon={<Plus size={14} />}>
+              <Button variant="ghost" size="sm" icon={<Plus size={14} aria-hidden="true" />}>
                 新建实验
               </Button>
             </Link>
@@ -2163,29 +2150,29 @@ export default function FormulaDetailPage() {
         </CardHeader>
         <CardContent className="pt-0">
           {experiments.length === 0 ? (
-            <div className="text-center py-8">
-              <TestTubes size={32} className="mx-auto text-neutral-300 dark:text-neutral-400 mb-2" />
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无关联实验</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-400 mt-1">创建实验来验证此配方的效果</p>
-              <Link to={`/experiments/new?formula_id=${formulaId}`} className="mt-3 inline-block">
-                <Button size="sm" variant="secondary" icon={<Plus size={12} />}>
+            <div className="text-center py-[var(--space-apple-xl)]">
+              <TestTubes size={32} className="mx-auto text-[var(--text-muted)] mb-[var(--space-apple-sm)]" aria-hidden="true" />
+              <p className="text-sm text-[var(--text-muted)]">暂无关联实验</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">创建实验来验证此配方的效果</p>
+              <Link to={`/experiments/new?formula_id=${formulaId}`} className="mt-[var(--space-apple-sm)] inline-block">
+                <Button size="sm" variant="secondary" icon={<Plus size={12} aria-hidden="true" />}>
                   从此配方创建实验
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-[var(--space-apple-sm)]">
               {experiments.map((exp: any) => (
                 <Link
                   key={exp.id}
                   to={`/experiments/${exp.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/10 transition-all group"
+                  className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:border-[var(--color-accent-text)] hover:bg-[var(--color-accent-container)] transition-all group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-accent-100 dark:bg-accent-300/25 flex items-center justify-center shrink-0">
-                    <TestTubes size={14} className="text-accent-500" />
+                  <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-accent-container)] flex items-center justify-center shrink-0">
+                    <TestTubes size={14} className="text-[var(--color-accent-text)]" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-accent-600 transition-colors truncate">
+                    <p className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--color-accent-text)] transition-colors truncate">
                       {exp.title}
                     </p>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{exp.code}</p>
@@ -2208,34 +2195,34 @@ export default function FormulaDetailPage() {
         <div className="space-y-4">
           <Alert variant="destructive">此操作不可撤销！删除后所有相关数据将被永久移除。</Alert>
 
-          <div className="rounded-lg bg-error-50 dark:bg-error-300/15 border border-error-200 dark:border-error-800 p-4">
-            <p className="font-semibold text-error-900 dark:text-error-100 mb-2">将要删除的配方：</p>
-            <p className="text-error-700 dark:text-error-600 font-mono text-sm bg-white dark:bg-neutral-800 rounded px-2 py-1">
+          <div className="rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] p-[var(--space-apple-md)]">
+            <p className="font-semibold text-[var(--color-error-text)] mb-[var(--space-apple-sm)]">将要删除的配方：</p>
+            <p className="text-[var(--color-error-text)] font-mono text-sm bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] px-2 py-1">
               {formula.name}
             </p>
           </div>
 
           {/* 关联影响提示 */}
-          <div className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
+          <div className="text-sm text-[var(--text-secondary)] space-y-1">
             <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-warning-500" />
+              <span className="w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-warning-container)]" />
               同时删除关联的 {commentsData?.total ?? 0} 条评论
             </p>
             <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-warning-500" />
+              <span className="w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-warning-container)]" />
               清除所有分析记录和版本历史
             </p>
           </div>
 
           {/* 确认方式：输入配方名称或勾选确认框 */}
-          <div className="space-y-3 pt-2 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="space-y-[var(--space-apple-sm)] pt-[var(--space-apple-sm)] border-t border-[var(--border-color)]">
             <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
               <Checkbox checked={deleteConfirmed} onCheckedChange={(checked) => setDeleteConfirmed(checked === true)} aria-label="我已了解此操作的后果，确认删除" />
-              <span className="text-sm text-neutral-700 dark:text-neutral-300">我已了解此操作的后果，确认删除</span>
+              <span className="text-sm text-[var(--text-primary)]">我已了解此操作的后果，确认删除</span>
             </label>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">请输入配方名称以确认：</label>
+              <label className="text-sm font-medium text-[var(--text-primary)]">请输入配方名称以确认：</label>
               <Input
                 value={deleteInputValue}
                 onChange={(e) => setDeleteInputValue(e.target.value)}
@@ -2245,13 +2232,13 @@ export default function FormulaDetailPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-[var(--space-apple-sm)] pt-[var(--space-apple-md)]">
             <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
               取消
             </Button>
             <Button
               variant="danger"
-              icon={<Trash2 size={16} />}
+              icon={<Trash2 size={16} aria-hidden="true" />}
               onClick={handleDelete}
               disabled={!deleteConfirmed || deleteInputValue !== formula.name}
             >
@@ -2305,7 +2292,7 @@ export default function FormulaDetailPage() {
                   : ''}
               ）
             </p>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-[var(--space-apple-sm)] max-h-64 overflow-y-auto">
               {versions
                 ?.filter(
                   (v) =>
@@ -2334,10 +2321,10 @@ export default function FormulaDetailPage() {
                       }
                       setSelectingDiffSide(null);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full text-left px-3 py-2 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-900 dark:text-white">
+                      <span className="font-medium text-[var(--text-primary)]">
                         v{v.version_number || v.version_label}
                       </span>
                       <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">

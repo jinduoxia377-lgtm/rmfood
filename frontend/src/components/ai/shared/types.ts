@@ -1,6 +1,5 @@
 /**
  * 鏇存柊 shared/types.ts - 娣诲姞缂哄け鐨勭被鍨嬪畾涔? */
-import { logger } from '@/utils/safeLogger';
 
 // 鈹€鈹€ 娑堟伅绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -165,13 +164,6 @@ export interface ToolCallData {
   tool: string;
   args: Record<string, unknown>;
   isConcurrencySafe: boolean;
-}
-
-export interface ToolResultData {
-  callId: string;
-  result: unknown;
-  error?: string;
-  latencyMs: number;
 }
 
 export interface RequestHeader {
@@ -385,11 +377,6 @@ export interface LlmAdapter {
 export type FinishReason = 'stop' | 'length' | 'tool_calls' | 'content_filter' | 'abort';
 
 // ── Stream Chunk 扩展类型 ──────────────────────────────────
-
-export interface BlockEndChunk {
-  type: 'block-end';
-  index: number;
-}
 
 export interface ToolCallDeltaChunkExtended {
   type: 'tool-call-delta';

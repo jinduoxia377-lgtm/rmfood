@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Textarea, Card, Badge } from '@/components/ui';
+import { Button, Textarea, Badge } from '@/components/ui';
 import {
   FileText,
   Save,
@@ -60,6 +60,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
     if (match) {
       const name = match[1].trim();
       if (name && !name.includes('请输入')) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormulaName(name);
       }
     }
@@ -68,8 +69,10 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
   // 实时验证
   useEffect(() => {
     if (!formulaContent || formulaContent.trim().length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValidationErrors(['配方内容不能为空']);
     } else {
+       
       setValidationErrors([]);
     }
   }, [formulaContent]);
@@ -345,7 +348,7 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-3 text-center">
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">协同评分</p>
               <p className="text-lg font-bold text-accent-600">

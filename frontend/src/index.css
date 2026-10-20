@@ -56,6 +56,7 @@
 @import './styles/utilities/micro-interactions.css';
 @import './styles/utilities/icons-selection.css';
 @import './styles/utilities/focus-scroll.css';
+@import './styles/utilities/mobile.css';
 
 /* ═══════════════════════════════════════════════════════════════
    5. 无障碍与环境适配 — 减少动效、高对比度、打印

@@ -33,7 +33,6 @@ import {
   Trash2,
   ChevronRight,
   ChevronDown,
-  Filter,
   TrendingUp,
   Clock,
   Zap,
@@ -46,8 +45,6 @@ import {
   BookOpen,
   Sparkles,
   AlertCircle,
-  CheckCircle2,
-  Loader2,
 } from 'lucide-react'
 
 interface PromptLibraryProps {
@@ -76,8 +73,6 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
   const [activeTab, setActiveTab] = useState<'library' | 'recommendations' | 'favorites'>('library')
   const [showImportExport, setShowImportExport] = useState(false)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['cat_formula', 'cat_nutrition']))
-
-  if (!visible) return null
 
   // ===== 分类导航 =====
 
@@ -136,6 +131,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
 
             {hasChildren && isExpanded && (
               <div className="ml-2">
+                {/* eslint-disable-next-line react-hooks/immutability */}
                 {renderCategoryTree(category.children || [], level + 1)}
               </div>
             )}
@@ -223,6 +219,8 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
     },
     [promptManager],
   )
+
+  if (!visible) return null
 
   return (
     <div
@@ -516,7 +514,9 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
               isFavorite: false,
               visibility: 'public',
               version: '1.0.0',
+              // eslint-disable-next-line react-hooks/purity
               createdAt: Date.now(),
+              // eslint-disable-next-line react-hooks/purity
               updatedAt: Date.now(),
               usageCount: 0,
             }}

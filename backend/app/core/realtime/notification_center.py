@@ -129,6 +129,12 @@ class NotificationService:
         channel: NotificationChannel = NotificationChannel.IN_APP,
     ) -> Notification:
         """Insert a new notification row."""
+        metadata = dict(metadata or {})
+        if category:
+            metadata.setdefault(
+                "category",
+                category.value if hasattr(category, 'value') else str(category),
+            )
         notification = Notification(
             user_id=user_id,
             type=type_,
@@ -137,10 +143,29 @@ class NotificationService:
             title=title,
             content=content,
             link=link,
-            metadata_=metadata or {},
+            metadata_=metadata,
         )
         self.db.add(notification)
         await self.db.flush()
+
+        # ── 实时推送：通过 WebSocket 通知在线用户（失败不影响主流程） ──
+        try:
+            from app.core.realtime.websocket import connection_manager
+            await connection_manager.broadcast_to_user(str(user_id), {
+                "type": "notification",
+                "data": {
+                    "id": notification.id,
+                    "title": title,
+                    "content": content,
+                    "link": link,
+                },
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+        except Exception as exc:
+            logger.warning("WebSocket 通知推送失败: %s", exc)
+        except Exception as exc:
+            logger.warning("WebSocket 通知推送失败: %s", exc)
+
         return notification
 
     async def get_user_notifications(

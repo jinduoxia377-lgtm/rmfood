@@ -11,7 +11,7 @@
  * @author RMFOOD Team
  */
 
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { logger } from '@/utils/safeLogger'
 
 export interface Attachment {

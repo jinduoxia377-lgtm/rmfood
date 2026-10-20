@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 报表中心 Tab — 参考 Dashboard 设计风格
  * 使用 Card+CardHeader+CardContent 统一卡片样式
  */
@@ -196,40 +196,40 @@ export default function ReportsTab({ filters }: Props) {
     custom: '自定义报表',
   }
 
-  const FORMAT_ICONS: Record<string, React.ElementType> = {
+  const FORMAT_ICONS: Record<string, React.ComponentType<any>> = {
     pdf: FileType,
     excel: Table,
     csv: FileText,
   }
 
   const FORMAT_COLORS: Record<string, string> = {
-    pdf: 'text-error-600 bg-error-50 dark:bg-error-950/40',
-    excel: 'text-success-600 bg-success-50 dark:bg-success-950/40',
-    csv: 'text-secondary-600 bg-secondary-50 dark:bg-secondary-950/40',
+    pdf: 'text-[var(--color-error-text)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/40',
+    excel: 'text-[var(--color-success-text)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/40',
+    csv: 'text-[var(--color-secondary-text)] bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/40',
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 text-primary-700 animate-spin" />
-          <span className="text-sm text-text-muted">正在加载报表模板…</span>
+        <div className="flex flex-col items-center gap-[var(--space-apple-sm)]">
+          <Loader2 className="w-6 h-6 text-[var(--color-primary-text)] animate-spin" />
+          <span className="text-sm text-[var(--text-muted)]">正在加载报表模板…</span>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[var(--space-apple-md)]">
 
       {/* 操作栏 */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-text-muted">
+        <div className="text-sm text-[var(--text-muted)]">
           共 {templates.length} 个报表模板
         </div>
         <button
           onClick={() => setShowGenerator(!showGenerator)}
-          className="px-3 py-1.5 bg-primary-container hover:bg-primary-container text-primary-main text-sm rounded-lg transition-colors flex items-center gap-1.5"
+          className="px-[var(--space-apple-sm)] py-1.5 bg-primary-container hover:bg-primary-container text-[var(--color-primary)] text-sm rounded-[var(--radius-Apple-sm)] transition-colors flex items-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
           创建自定义报表
@@ -238,10 +238,10 @@ export default function ReportsTab({ filters }: Props) {
 
       {/* 导出结果消息 */}
       {exportMsg && (
-        <div className={`p-3 rounded-lg border text-sm flex items-center gap-2 ${
+        <div className={`p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border text-sm flex items-center gap-2 ${
           exportMsg.startsWith('导出失败')
-            ? 'bg-error-50 dark:bg-error-950/20 border-error-200 dark:border-error-900/40 text-error-700 dark:text-error-600'
-            : 'bg-success-50 dark:bg-success-950/20 border-success-200 dark:border-success-900/40 text-success-700 dark:text-success-600'
+            ? 'bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/20 border-[var(--color-error-border)] dark:border-error-900/40 text-[var(--color-error-text)] dark:text-[var(--color-error-text)]'
+            : 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/20 border-[var(--color-success-border)] dark:border-success-900/40 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'
         }`}>
           {exportMsg.startsWith('导出失败') ? <Settings2 className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           <span>{exportMsg}</span>
@@ -262,26 +262,26 @@ export default function ReportsTab({ filters }: Props) {
                 key={template.id}
                 className={`cursor-pointer transition-all hover:shadow-md ${
                   selectedTemplate === template.id
-                    ? 'ring-2 ring-primary-500 border-primary-500'
+                    ? 'ring-2 ring-[var(--color-primary)] border-[var(--color-primary)]'
                     : ''
                 }`}
                 onClick={() => setSelectedTemplate(template.id)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className={`p-2 rounded-lg ${colorClass}`}>
+                    <div className={`p-2 rounded-[var(--radius-Apple-sm)] ${colorClass}`}>
                       {IconComponent ? React.createElement(IconComponent, { className: 'w-5 h-5' }) : null}
                     </div>
-                    <span className="text-xs px-2 py-0.5 bg-surface-hover text-text-muted rounded-full">
+                    <span className="text-xs px-2 py-0.5 bg-surface-hover text-[var(--text-muted)] rounded-[var(--radius-pill)]">
                       {CATEGORY_LABELS[template.category ?? 'summary'] ?? '汇总报表'}
                     </span>
                   </div>
-                  <CardTitle className="mt-3 text-base font-semibold">{template.name}</CardTitle>
+                  <CardTitle className="mt-[var(--space-apple-sm)] text-base font-semibold">{template.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-text-muted mb-4 line-clamp-2">{template.description}</p>
+                  <p className="text-sm text-[var(--text-muted)] mb-[var(--space-apple-md)] line-clamp-2">{template.description}</p>
                   <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{template.widgets.length} 个小部件</span>
                     </div>
@@ -291,7 +291,7 @@ export default function ReportsTab({ filters }: Props) {
                         handleGenerate(template.id)
                       }}
                       disabled={exporting}
-                      className="px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-700 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      className="px-[var(--space-apple-sm)] py-1.5 text-xs bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/40 text-[var(--color-primary-text)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/60 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                       {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
                       生成
@@ -303,10 +303,10 @@ export default function ReportsTab({ filters }: Props) {
           })}
         </div>
       ) : (
-        <div className="p-10 text-center rounded-lg bg-surface-hover">
-          <FileText className="w-10 h-10 text-text-muted mx-auto mb-3" />
-          <p className="text-text-muted text-sm">暂无报表模板</p>
-          <p className="text-xs text-text-muted mt-1">后端尚未配置报表模板</p>
+        <div className="p-10 text-center rounded-[var(--radius-Apple-sm)] bg-surface-hover">
+          <FileText className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-[var(--space-apple-sm)]" />
+          <p className="text-[var(--text-muted)] text-sm">暂无报表模板</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">后端尚未配置报表模板</p>
         </div>
       )}
 
@@ -316,12 +316,12 @@ export default function ReportsTab({ filters }: Props) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Settings2 className="w-4 h-4 text-primary-700" />
+                <Settings2 className="w-4 h-4 text-[var(--color-primary-text)]" />
                 自定义报表生成器
               </CardTitle>
               <button
                 onClick={() => setShowGenerator(false)}
-                className="text-text-muted hover:text-text-primary transition-colors text-lg leading-none"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-lg leading-none"
               >
                 ✕
               </button>
@@ -329,24 +329,24 @@ export default function ReportsTab({ filters }: Props) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+              <div className="space-y-[var(--space-apple-md)]">
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">报表名称</label>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">报表名称</label>
                   <input
                     type="text"
                     value={reportName}
                     onChange={(e) => setReportName(e.target.value)}
                     placeholder="输入报表名称…"
-                    className="w-full px-3 py-2 text-sm input"
+                    className="w-full px-[var(--space-apple-sm)] py-2 text-sm input"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">数据范围</label>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">数据范围</label>
                   <select
                     value={timeRange}
                     onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
-                    className="w-full px-3 py-2 text-sm input"
+                    className="w-full px-[var(--space-apple-sm)] py-2 text-sm input"
                   >
                     <option value="7d">近 7 天</option>
                     <option value="30d">近 30 天</option>
@@ -356,7 +356,7 @@ export default function ReportsTab({ filters }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">包含维度</label>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">包含维度</label>
                   <div className="space-y-1.5">
                     {[
                       { key: 'formulas', label: '配方数据' },
@@ -368,29 +368,29 @@ export default function ReportsTab({ filters }: Props) {
                           type="checkbox"
                           checked={selectedDimensions.includes(key)}
                           onChange={() => toggleDimension(key)}
-                          className="rounded border-border text-primary-700"
+                          className="rounded border-border text-[var(--color-primary-text)]"
                         />
-                        <span className="text-sm text-text-primary">{label}</span>
+                        <span className="text-sm text-[var(--text-primary)]">{label}</span>
                       </label>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-[var(--space-apple-md)]">
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">导出格式</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">导出格式</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
-                      { format: 'pdf' as const, icon: FileType, color: 'text-error-600 border-error-200 hover:bg-error-50' },
-                      { format: 'excel' as const, icon: Table, color: 'text-success-600 border-success-200 hover:bg-success-50' },
-                      { format: 'csv' as const, icon: FileText, color: 'text-secondary-600 border-secondary-200 hover:bg-secondary-50' },
+                      { format: 'pdf' as const, icon: FileType, color: 'text-[var(--color-error-text)] border-[var(--color-error-border)] hover:bg-[var(--color-error-container)]' },
+                      { format: 'excel' as const, icon: Table, color: 'text-[var(--color-success-text)] border-[var(--color-success-border)] hover:bg-[var(--color-success-container)]' },
+                      { format: 'csv' as const, icon: FileText, color: 'text-[var(--color-secondary-text)] border-[var(--color-secondary-border)] hover:bg-[var(--color-secondary-container)]' },
                     ].map(({ format, icon: Icon, color }) => (
                       <button
                         key={format}
                         onClick={() => setExportFormat(format)}
-                        className={`p-3 border rounded-lg transition-all flex flex-col items-center gap-1.5 ${
-                          exportFormat === format ? 'ring-2 ring-primary-500 ' + color : color
+                        className={`p-[var(--space-apple-sm)] border rounded-[var(--radius-Apple-sm)] transition-all flex flex-col items-center gap-1.5 ${
+                          exportFormat === format ? 'ring-2 ring-[var(--color-primary)] ' + color : color
                         }`}
                       >
                         <Icon className="w-6 h-6" />
@@ -403,7 +403,7 @@ export default function ReportsTab({ filters }: Props) {
                 <button
                   onClick={handleCustomGenerate}
                   disabled={exporting || !reportName.trim() || selectedDimensions.length === 0}
-                  className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed text-primary-main rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-primary-container hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed text-[var(--color-primary)] rounded-[var(--radius-Apple-sm)] text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                   生成并下载报表

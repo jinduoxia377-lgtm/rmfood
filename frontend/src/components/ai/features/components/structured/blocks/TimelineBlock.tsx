@@ -6,7 +6,7 @@
  */
 import React, { useState } from 'react'
 import { Clock, Calendar, Pill, AlertCircle, CheckCircle2 } from 'lucide-react'
-import type { TimelineData, TimelinePhase, TimelineItem } from '../types'
+import type { TimelineData, TimelinePhase } from '../types'
 
 interface TimelineBlockProps {
   data: TimelineData
@@ -50,9 +50,6 @@ function TimelineBlock({ data }: TimelineBlockProps) {
 
   // 按天数排序
   const sortedItems = [...items].sort((a, b) => a.day - b.day)
-
-  // 计算总天数覆盖范围
-  const maxDay = Math.max(...sortedItems.map(i => i.day), duration_days)
 
   if (items.length === 0) {
     return (

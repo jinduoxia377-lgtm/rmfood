@@ -11,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
   Badge,
-  Card,
-  CardContent,
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -25,7 +23,6 @@ import {
   AlertTriangle,
   Tags,
   ShoppingCart,
-  X,
 } from 'lucide-react'
 import type { RetailProductDetail } from '../../../api/searchNew'
 
@@ -80,7 +77,7 @@ const RetailProductDetailModal: React.FC<RetailProductDetailModalProps> = ({
     }))
 
     return (
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between border-b py-1">
             <span className="text-muted-foreground">{row.label}:</span>
@@ -99,7 +96,7 @@ const RetailProductDetailModal: React.FC<RetailProductDetailModalProps> = ({
         </DialogHeader>
 
         {/* 头部信息 */}
-        <div className="mb-4">
+        <div className="mb-[var(--space-apple-md)]">
           {product.image_urls && product.image_urls.length > 0 && (
             <img
               src={product.image_urls[0]}
@@ -193,7 +190,7 @@ const RetailProductDetailModal: React.FC<RetailProductDetailModalProps> = ({
               <span>食品安全</span>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-3">
+              <div className="space-y-[var(--space-apple-sm)]">
                 {product.allergens_tags && product.allergens_tags.length > 0 && (
                   <div>
                     <Text className="font-medium">过敏原：</Text>

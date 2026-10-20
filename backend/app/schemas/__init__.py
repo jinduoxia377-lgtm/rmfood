@@ -17,6 +17,7 @@ from .user import (
     TokenPayload,
     LoginRequest,
     PasswordChange,
+    DeleteAccountRequest,
 )
 from .formula import (
     FormulaBase,

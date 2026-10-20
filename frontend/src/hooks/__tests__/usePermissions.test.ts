@@ -1,180 +1,77 @@
 /**
  * usePermissions Hook - 单元测试
- * 测试覆盖：初始状态、权限检查、角色 CRUD、API 错误处理
+ * 覆盖：无用户、基于角色、自定义权限、can/canAny/canAll/isRole
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { usePermissions } from '../usePermissions';
-
-vi.mock('@/api/client', () => ({
-  default: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
-}));
-
-import api from '@/api/client';
-
-const mockPermissions = [
-  { id: 1, name: 'Create Formula', code: 'formula:create', resource: 'formula', actions: ['create', 'read'] },
-  { id: 2, name: 'Manage Org', code: 'org:manage', resource: 'organization', actions: ['read', 'update', 'manage'] },
-  {
-    id: 3,
-    name: 'Delete Member',
-    code: 'member:delete',
-    resource: 'member',
-    actions: ['invite', 'read', 'update', 'delete'],
-  },
-];
-
-const mockRoles = [
-  {
-    id: 1,
-    name: 'Admin',
-    code: 'admin',
-    description: 'Full access',
-    permissions: mockPermissions,
-    isSystem: true,
-    memberCount: 2,
-  },
-  {
-    id: 2,
-    name: 'Researcher',
-    code: 'researcher',
-    description: 'Research access',
-    permissions: [mockPermissions[0]],
-    isSystem: false,
-    memberCount: 5,
-  },
-];
+import { describe, it, expect } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { usePermissions, ROLE_PERMISSIONS } from '../usePermissions';
 
 describe('usePermissions', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  describe('initial state', () => {
-    it('should start with empty permissions when autoFetch disabled', () => {
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
+  describe('无用户', () => {
+    it('应返回空权限且未认证', () => {
+      const { result } = renderHook(() => usePermissions());
       expect(result.current.permissions).toEqual([]);
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.role).toBe('guest');
     });
-    it('should start with empty roles', () => {
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      expect(result.current.roles).toEqual([]);
-    });
-    it('should start with no error', () => {
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      expect(result.current.error).toBeNull();
+
+    it('can/canAny/canAll 均返回 false', () => {
+      const { result } = renderHook(() => usePermissions());
+      expect(result.current.can('formula:read')).toBe(false);
+      expect(result.current.canAny(['formula:read'])).toBe(false);
+      expect(result.current.canAll(['formula:read'])).toBe(false);
     });
   });
 
-  describe('hasPermission', () => {
-    it('should return true when permission exists', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasPermission('create', 'formula')).toBe(true);
+  describe('基于角色的用户', () => {
+    it('应按角色返回权限', () => {
+      const { result } = renderHook(() => usePermissions({ role: 'admin' }));
+      expect(result.current.permissions).toEqual(ROLE_PERMISSIONS.admin);
+      expect(result.current.isAdmin).toBe(true);
+      expect(result.current.can('formula:write')).toBe(true);
+      expect(result.current.canWriteFormula).toBe(true);
     });
-    it('should return false when permission does not exist', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasPermission('delete', 'formula')).toBe(false);
+
+    it('canAny 应正确判断', () => {
+      const { result } = renderHook(() => usePermissions({ role: 'researcher' }));
+      // researcher 有 formula:write，但没有 ai:advanced
+      expect(result.current.canAny(['formula:write', 'ai:advanced'])).toBe(true);
+      expect(result.current.canAny(['ai:advanced'])).toBe(false);
+    });
+
+    it('canAll 应正确判断', () => {
+      const { result } = renderHook(() => usePermissions({ role: 'researcher' }));
+      expect(result.current.canAll(['formula:read', 'formula:write'])).toBe(true);
+      expect(result.current.canAll(['formula:read', 'experiment:write', 'ai:advanced'])).toBe(false);
+    });
+
+    it('isRole 应正确判断', () => {
+      const { result } = renderHook(() => usePermissions({ role: 'viewer' }));
+      expect(result.current.isRole('viewer')).toBe(true);
+      expect(result.current.isRole(['admin', 'viewer'])).toBe(true);
+      expect(result.current.isRole('admin')).toBe(false);
     });
   });
 
-  describe('hasAnyPermission', () => {
-    it('should return true when at least one action is permitted', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasAnyPermission(['create', 'delete'], 'formula')).toBe(true);
+  describe('带自定义权限的用户', () => {
+    it('应优先使用 user.permissions', () => {
+      const { result } = renderHook(() => usePermissions({
+        role: 'guest',
+        permissions: ['custom:perm'],
+      }));
+      expect(result.current.permissions).toEqual(['custom:perm']);
+      expect(result.current.can('custom:perm')).toBe(true);
+      expect(result.current.can('formula:read')).toBe(false);
     });
-    it('should return false when no actions are permitted', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasAnyPermission(['archive', 'invite'], 'formula')).toBe(false);
-    });
-  });
 
-  describe('hasAllPermissions', () => {
-    it('should return true when all actions are permitted', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasAllPermissions(['create', 'read'], 'formula')).toBe(true);
-    });
-    it('should return false when one action is missing', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.hasAllPermissions(['create', 'read', 'delete'], 'formula')).toBe(false);
-    });
-  });
-
-  describe('fetchPermissions', () => {
-    it('should set permissions on success', async () => {
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.permissions).toEqual(mockPermissions);
-    });
-    it('should set error on failure', async () => {
-      vi.mocked(api.get).mockRejectedValue(new Error('Server down'));
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      expect(result.current.error).toBeInstanceOf(Error);
-    });
-  });
-
-  describe('Role CRUD', () => {
-    it('should add new role on createRole success', async () => {
-      const newRole = { id: 3, name: 'New', code: 'new', permissions: [], isSystem: false };
-      vi.mocked(api.get).mockResolvedValue({ data: { items: mockPermissions } });
-      vi.mocked(api.post).mockResolvedValue({ data: newRole });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      await act(async () => {
-        await result.current.createRole({ name: 'New', code: 'new', permissionIds: [1] });
-      });
-      expect(result.current.roles).toContainEqual(newRole);
-    });
-    it('should remove role on deleteRole', async () => {
-      vi.mocked(api.get)
-        .mockResolvedValueOnce({ data: { items: mockPermissions } })
-        .mockResolvedValueOnce({ data: { items: mockRoles } });
-      vi.mocked(api.delete).mockResolvedValue({ data: {} });
-      const { result } = renderHook(() => usePermissions({ autoFetch: false }));
-      await act(async () => {
-        await result.current.fetchPermissions(1);
-      });
-      await act(async () => {
-        await result.current.fetchRoles();
-      });
-      expect(result.current.roles).toHaveLength(2);
-      await act(async () => {
-        await result.current.deleteRole(2);
-      });
-      expect(result.current.roles).toHaveLength(1);
+    it('canAny/canAll 基于自定义权限判断', () => {
+      const { result } = renderHook(() => usePermissions({
+        role: 'guest',
+        permissions: ['a:1', 'b:2'],
+      }));
+      expect(result.current.canAny(['b:2', 'z:9'])).toBe(true);
+      expect(result.current.canAll(['a:1', 'b:2'])).toBe(true);
+      expect(result.current.canAll(['a:1', 'z:9'])).toBe(false);
     });
   });
 });

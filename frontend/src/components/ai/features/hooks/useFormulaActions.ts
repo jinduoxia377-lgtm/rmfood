@@ -10,7 +10,7 @@
  * @author RMFOOD Team
  */
 
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import { logger } from '@/utils/safeLogger'
 import type { AIRecognizedFormula } from '@/types/ai.types'
 import type { FormulaExportFormat } from '@/utils/formulaExporter'
@@ -39,9 +39,9 @@ interface UseFormulaActionsOptions {
 
 export function useFormulaActions(opts: UseFormulaActionsOptions) {
   const {
-    selectedIds, selectedForDetail, expandedIds,
-    onToggleExpand, onShowDetail, onCloseDetail,
-    onGenerateReport, onExport, onClearStorage,
+    selectedIds,
+    onToggleExpand, onShowDetail,
+    onGenerateReport, onExport,
     onBatchExport, onBatchDelete, onBatchTag,
     onSelectAll, onToggleSelect, onImport,
   } = opts

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方模板库页面 - 真实数据版
  * 模板数据来自后端 GET /api/v1/formulas/templates（真实数据库）
  * 支持搜索、分类筛选、收藏、一键使用模板（跳转新建配方页并预填）
@@ -7,7 +7,7 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { Plus, Search, FlaskConical, Sparkles, Star, ArrowRight, Copy, Clock, Zap, RefreshCw } from 'lucide-react'
-import { Button, Input, PageHeader, Badge, Card, CardContent } from '@/components/ui'
+import { Button, Input, Badge, Card, CardContent } from '@/components/ui'
 import { EmptyState, Skeleton } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
 import { formulaApi, getFormulaTemplates, type FormulaTemplateItem } from '@/api/formula'
@@ -114,19 +114,22 @@ export default function FormulaTemplatesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <PageHeader
-        title="配方模板库"
-        description="基于经典药食同源配伍原则设计的配方模板，一键创建您的专属配方"
-        actions={
-          <div className="flex items-center gap-2">
+    <div className="max-w-[1600px] mx-auto space-y-6 py-[var(--space-apple-lg)]">
+      {/* 欢迎横幅 */}
+      <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-apple-md)]">
+          <div>
+            <h1 className="text-xl font-semibold leading-snug tracking-tight">配方模板</h1>
+            <p className="mt-1 text-sm text-white/80">预设配方模板，快速创建标准化配方</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={() => setShowFavOnly(!showFavOnly)}
               className={cn(
-                'p-2 rounded-lg border transition-all',
+                'p-2 rounded-[var(--radius-Apple-sm)] border transition-all',
                 showFavOnly
-                  ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-600'
-                  : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600',
+                  ? 'bg-[var(--color-warning-container)] border-[var(--color-warning-border)] dark:border-[var(--color-warning)] text-[var(--color-warning-text)]'
+                  : 'border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]',
               )}
               title={showFavOnly ? '显示全部模板' : '仅显示收藏模板'}
             >
@@ -136,8 +139,8 @@ export default function FormulaTemplatesPage() {
               <Button icon={<Plus size={16} />} size="md">新建配方</Button>
             </Link>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* 搜索与分类 */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -154,10 +157,10 @@ export default function FormulaTemplatesPage() {
               key={cat.value}
               onClick={() => setCategory(cat.value)}
               className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                'px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all',
                 category === cat.value
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-300/30 dark:text-primary-700'
-                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                  ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:bg-[var(--color-primary-container)]/30 dark:text-[var(--color-primary-text)]'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--bg-secondary)]',
               )}
             >
               {cat.label}
@@ -171,7 +174,7 @@ export default function FormulaTemplatesPage() {
         <span>共 {filteredTemplates.length} 个模板</span>
         {favorites.size > 0 && (
           <span className="flex items-center gap-1">
-            <Star size={12} className="fill-warning-400 text-warning-400" />
+            <Star size={12} className="fill-warning-400 text-[var(--color-warning-text)]" />
             {favorites.size} 个收藏
           </span>
         )}
@@ -180,7 +183,7 @@ export default function FormulaTemplatesPage() {
           已使用 {totalUsage.toLocaleString()} 次
         </span>
         {isError && (
-          <button onClick={() => refetch()} className="flex items-center gap-1 text-error-600 hover:underline">
+          <button onClick={() => refetch()} className="flex items-center gap-1 text-[var(--color-error-text)] hover:underline">
             <RefreshCw size={12} /> 加载失败，点击重试
           </button>
         )}
@@ -191,8 +194,8 @@ export default function FormulaTemplatesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="overflow-hidden">
-              <div className="h-1.5 bg-neutral-200 dark:bg-neutral-700" />
-              <CardContent className="p-5 space-y-3">
+              <div className="h-1.5 bg-[var(--border-color)]" />
+              <CardContent className="p-5 space-y-[var(--space-apple-sm)]">
                 <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-3/4" />
@@ -236,35 +239,35 @@ export default function FormulaTemplatesPage() {
 
               <CardContent className="p-5">
                 {/* 头部 */}
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-[var(--space-apple-sm)]">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white group-hover:text-primary-700 transition-colors">
+                    <h3 className="text-base font-semibold text-[var(--text-primary)] group-hover:text-[var(--color-primary-text)] transition-colors">
                       {template.name}
                     </h3>
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 flex items-center gap-1">
-                      <Zap size={10} className="text-warning-500" />
+                      <Zap size={10} className="text-[var(--color-warning-text)]0" />
                       使用 {template.usage_count} 次
                     </p>
                   </div>
                   <button
                     onClick={() => toggleFavorite(template.id)}
-                    className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] transition-colors"
                   >
                     <Star
                       size={16}
-                      className={favorites.has(template.id) ? 'fill-warning-400 text-warning-400' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
+                      className={favorites.has(template.id) ? 'fill-warning-400 text-[var(--color-warning-text)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}
                     />
                   </button>
                 </div>
 
                 {/* 描述 */}
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-3">
+                <p className="text-sm text-[var(--text-muted)] line-clamp-2 mb-[var(--space-apple-sm)]">
                   {template.description}
                 </p>
 
                 {/* 功效标签 */}
                 {template.effects.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
+                  <div className="flex flex-wrap gap-1.5 mb-[var(--space-apple-sm)]">
                     {template.effects.map(effect => (
                       <Badge key={effect} variant="primary" size="sm">{effect}</Badge>
                     ))}
@@ -273,13 +276,13 @@ export default function FormulaTemplatesPage() {
 
                 {/* 成分预览 */}
                 {template.ingredients.length > 0 && (
-                  <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
+                  <div className="bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] p-2.5 mb-[var(--space-apple-sm)]">
                     <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">成分组成</p>
                     <div className="flex flex-wrap gap-1">
                       {template.ingredients.slice(0, 4).map(ing => (
-                        <span key={ing.name} className="text-xs text-neutral-600 dark:text-neutral-400">
+                        <span key={ing.name} className="text-xs text-[var(--text-secondary)]">
                           {ing.name}
-                          {ing.role && <span className="text-primary-500 ml-0.5">({ing.role})</span>}
+                          {ing.role && <span className="text-[var(--color-primary-text)]0 ml-0.5">({ing.role})</span>}
                           {ing.dosage && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{ing.dosage}</span>}
                         </span>
                       ))}
@@ -292,14 +295,14 @@ export default function FormulaTemplatesPage() {
 
                 {/* 服用方法 */}
                 {template.usage && (
-                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4 flex items-center gap-1">
+                  <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-[var(--space-apple-md)] flex items-center gap-1">
                     <Clock size={10} />
                     {template.usage}
                   </p>
                 )}
 
                 {/* 操作 */}
-                <div className="flex items-center gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2 pt-3 border-t border-[var(--border-color)]">
                   <Button
                     size="sm"
                     className="flex-1"
@@ -317,9 +320,9 @@ export default function FormulaTemplatesPage() {
       )}
 
       {/* 底部提示 */}
-      <div className="text-center py-6 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+      <div className="text-center py-[var(--space-apple-lg)] text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
         <p>没有找到合适的模板？</p>
-        <Link to="/formulas/new" className="text-primary-700 hover:text-primary-700 mt-1 inline-block">
+        <Link to="/formulas/new" className="text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] mt-1 inline-block">
           从空白配方开始创建
         </Link>
       </div>

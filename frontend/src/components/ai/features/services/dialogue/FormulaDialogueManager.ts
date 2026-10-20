@@ -102,6 +102,7 @@ export class FormulaDialogueManager {
   }
 
   private handleGenerate(_input: string): Array<{ type: string; data: any }> {
+    void _input;
     this.state = 'REVIEW'
     try {
       const request = { targetEffects: this.slots.effects, constraints: this.slots.constraints, userProfile: this.slots.preferences }
@@ -129,6 +130,7 @@ export class FormulaDialogueManager {
   }
 
   private handleOptimize(_input: string): Array<{ type: string; data: any }> {
+    void _input;
     this.state = 'REVIEW'
     if (!this.currentFormula) return [{ type: 'callout', data: { variant: 'warning', title: '无配方', content: '请先设计一个配方' } }]
     try {
@@ -142,6 +144,7 @@ export class FormulaDialogueManager {
   }
 
   private handleFinalize(_input: string): Array<{ type: string; data: any }> {
+    void _input;
     return [
       { type: 'header', data: { title: '配方已确认', description: '最终方案', level: 1 } },
       { type: 'callout', data: { variant: 'summary', title: '方案总结', content: '您的专属配方已设计完成。建议小试验证后再批量生产。' } },

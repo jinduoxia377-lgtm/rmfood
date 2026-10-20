@@ -6,7 +6,7 @@
 // ============ 枚举类型 ============
 
 /** 组织内角色 */
-export type Role = 'owner' | 'admin' | 'editor' | 'viewer' | 'custom';
+export type Role = 'owner' | 'admin' | 'member' | 'viewer' | 'custom';
 
 /** 订阅计划类型 */
 export type PlanType = 'free' | 'pro' | 'enterprise';

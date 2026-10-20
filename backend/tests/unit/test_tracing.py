@@ -10,7 +10,7 @@ import time
 
 import pytest
 
-from app.core.tracing import LightweightSpan, LightweightTracer, trace_function
+from app.core.observability.tracing import LightweightSpan, LightweightTracer, trace_function
 
 
 # ────────────────────────────────────────────

@@ -4,26 +4,22 @@
  * 对标 Potion AI VFT 的 Raw Material Search 界面。
  * 集成到 DatabasePage 的新 Tab 中。
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Card, CardHeader, CardContent,
+  Card,
   Button, Input,
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
   Badge,
   Accordion, AccordionItem, AccordionTrigger, AccordionContent,
-  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
-  Skeleton,
   EmptyState,
   Pagination,
 } from '@/components/ui';
 import {
-  Search, Filter, Star,
-  CheckCircle, AlertCircle,
+  Search, Filter,
   ShieldCheck,
 } from 'lucide-react';
 import {
   searchFoodMaterials,
-  listFoodMaterials,
   type FoodMaterialFilter,
   type FoodMaterialSearchResult,
   type FoodMaterialSearchResponse,
@@ -31,7 +27,6 @@ import {
   checkMaterialCompliance,
   type NormalizeResult,
 } from '../../../api/searchNew';
-import { databaseApi } from '@/api/database';
 import { logger } from '@/utils/safeLogger';
 
 interface FoodMaterialSearchPanelProps {
@@ -43,9 +38,7 @@ interface FoodMaterialSearchPanelProps {
  */
 const MaterialCard: React.FC<{
   result: FoodMaterialSearchResult;
-  onFavorite: (id: number) => void;
-  isFavorite: boolean;
-}> = ({ result, onFavorite, isFavorite }) => {
+}> = ({ result }) => {
   const [complianceChecked, setComplianceChecked] = useState(false);
   const [compliancePassed, setCompliancePassed] = useState<boolean | null>(null);
 
@@ -64,7 +57,7 @@ const MaterialCard: React.FC<{
 
   return (
     <div
-      className="card card-hover cursor-pointer mb-3 p-4 rounded-lg border border-border hover:shadow-md transition-shadow"
+      className="card card-hover cursor-pointer mb-[var(--space-apple-sm)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border border-border hover:shadow-md transition-shadow"
       style={{ marginBottom: 12 }}
     >
       <div className="flex justify-between items-start">
@@ -145,7 +138,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
   const [filters, setFilters] = useState<Partial<FoodMaterialFilter>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [searchModes, setSearchModes] = useState({ bm25: 0.4, vector: 0.3, rule: 0.3 });
+  const [searchModes] = useState({ bm25: 0.4, vector: 0.3, rule: 0.3 });
   const [normalized, setNormalized] = useState<NormalizeResult | null>(null);
 
   // 执行搜索
@@ -174,22 +167,10 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
     }
   }, [query, filters, currentPage, searchModes]);
 
-  // 添加到收藏
-  const handleFavorite = useCallback(async (id: number) => {
-    try {
-      await databaseApi.post(`/search/pantry/food-materials/${id}`);
-      logger.info('已添加到收藏:', id);
-    } catch (err) {
-      logger.error('添加收藏失败:', err);
-    }
-  }, []);
-
-  const totalPages = Math.ceil(total / 20);
-
   return (
     <div className={className}>
       {/* 搜索栏 */}
-      <Card className="mb-4">
+      <Card className="mb-[var(--space-apple-md)]">
         <div className="flex flex-col gap-4">
           {/* 搜索输入行 */}
           <div className="flex gap-2">
@@ -294,21 +275,19 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
 
       {/* 搜索结果 */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-10 gap-3">
-          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center justify-center py-10 gap-[var(--space-apple-sm)]">
+          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-[var(--radius-pill)]" />
           <span className="text-sm text-muted-foreground">搜索中...</span>
         </div>
       ) : results.length > 0 ? (
         <>
-          <div className="mb-3 text-xs text-muted-foreground">
+          <div className="mb-[var(--space-apple-sm)] text-xs text-muted-foreground">
             找到 {total} 条结果，耗时 {searchTime.toFixed(1)}ms
           </div>
           {results.map((result) => (
             <MaterialCard
               key={result.id}
               result={result}
-              onFavorite={handleFavorite}
-              isFavorite={false}
             />
           ))}
           {total > 20 && (
@@ -319,7 +298,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
               onPageChange={(page) => {
                 setCurrentPage(page);
               }}
-              className="mt-4"
+              className="mt-[var(--space-apple-md)]"
             />
           )}
         </>

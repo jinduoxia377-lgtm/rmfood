@@ -257,6 +257,35 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[Startup] 任务超时定时恢复循环启动失败（非致命）: {e}")
 
+    # 7d. 白名单申请审核超时自动过期任务（每 5 分钟扫描）
+    whitelist_expiry_task = None
+    try:
+        import asyncio as _asyncio
+        from .core.database.session import get_session_factory
+        from .services.whitelist import expire_overdue_applications
+
+        async def _whitelist_expiry_loop():
+            while True:
+                await _asyncio.sleep(300)
+                try:
+                    _factory = get_session_factory()
+                    async with _factory() as _session:
+                        await expire_overdue_applications(_session)
+                except Exception as e:
+                    logger.warning(f"[WhitelistExpiry] 白名单过期扫描失败（非致命）: {e}")
+
+        whitelist_expiry_task = _asyncio.create_task(_whitelist_expiry_loop())
+        logger.info("[Startup] 白名单审核超时自动过期任务已启动（每5分钟）")
+    except Exception as e:
+        logger.warning(f"[Startup] 白名单过期任务启动失败（非致命）: {e}")
+
+    # 7e. 白名单生产就绪性自检（SMTP/盐/开发模式提示，非致命）
+    try:
+        from .services.whitelist import log_readiness_warnings
+        log_readiness_warnings()
+    except Exception as e:
+        logger.warning(f"[Startup] 白名单就绪性自检失败（非致命）: {e}")
+
     yield
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
@@ -264,6 +293,12 @@ async def lifespan(app: FastAPI):
     if stale_loop_task is not None:
         try:
             stale_loop_task.cancel()
+        except Exception:
+            pass
+    # 5a2. 取消白名单过期扫描循环
+    if whitelist_expiry_task is not None:
+        try:
+            whitelist_expiry_task.cancel()
         except Exception:
             pass
     # 5b. 停止定时同步调度器
@@ -858,6 +893,13 @@ Authorization: Bearer <your_access_token>
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     else:
         logger.warning(f"[Static] 静态目录不存在: {static_dir}，跳过挂载")
+
+    # 药材图片静态目录（106FAM，用于 /herb-images/xxx.jpg 直接访问）
+    herb_images_dir = Path(__file__).resolve().parent.parent.parent / "data" / "106FAM"
+    if herb_images_dir.exists():
+        app.mount("/herb-images", StaticFiles(directory=str(herb_images_dir)), name="herb-images")
+    else:
+        logger.warning(f"[Static] 药材图片目录不存在: {herb_images_dir}，跳过挂载")
 # ── 根路径 ──
     @app.get("/", tags=["系统"])
     async def root():

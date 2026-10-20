@@ -2,11 +2,11 @@
  * 仪表盘可拖拽卡片组件
  * 支持拖放重排、尺寸调整、编辑配置
  */
-import { useState, useCallback, useContext, createContext, useEffect } from 'react'
+import { useState, useContext, createContext, useEffect } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card } from '@/components/ui'
-import { GripVertical, Settings, X, Eye, EyeOff, Maximize2, Minimize2, Plus, Maximize, Lock, Unlock, ChevronDown, Star, Copy, RotateCcw, Palette, Layers, Grid, AlignLeft, Zap, PieChart, Users, Brain, Search, BarChart3 } from 'lucide-react'
+import { GripVertical, Settings, X, Eye, EyeOff, Maximize2, Minimize2, Plus, Maximize, Lock, Unlock, ChevronDown, Star, Copy, Palette, Grid, AlignLeft, PieChart, Users, Brain, Search, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CardConfig } from '@/config/dashboard'
 
@@ -129,8 +129,8 @@ export function DraggableCard({
         ref={setNodeRef}
         style={style}
         className={cn(
-          'border border-dotted border-neutral-200 dark:border-neutral-700 rounded-lg flex items-center justify-center bg-neutral-50 dark:bg-neutral-800/30',
-          'transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/50',
+          'border border-dotted border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] flex items-center justify-center bg-[var(--bg-tertiary)]/30',
+          'transition-all duration-200 hover:bg-[var(--bg-secondary)]/50',
         )}
       >
         <div className="flex flex-col items-center gap-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
@@ -138,7 +138,7 @@ export function DraggableCard({
           <span className="text-xs">{card.title} - 已隐藏</span>
           <button
             onClick={handleToggleVisibility}
-            className="text-xs text-primary-700 hover:text-primary-700 font-medium"
+            className="text-xs text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] font-medium"
           >
             显示
           </button>
@@ -160,11 +160,11 @@ export function DraggableCard({
     >
       {/* 卡片操作栏 - 仅在编辑模式或悬停时显示 */}
       {isEditing && (
-        <div className="absolute -top-10 left-0 right-0 flex items-center justify-between bg-white dark:bg-neutral-800 rounded-t-xl border border-b-0 border-neutral-200 dark:border-neutral-700 px-3 py-2 z-20">
+        <div className="absolute -top-10 left-0 right-0 flex items-center justify-between bg-[var(--bg-secondary)] rounded-t-xl border border-b-0 border-[var(--border-color)] px-[var(--space-apple-sm)] py-2 z-20">
           <button
             {...attributes}
             {...listeners}
-            className="flex items-center gap-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-grab active:cursor-grabbing"
+            className="flex items-center gap-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-grab active:cursor-grabbing"
             aria-label={`拖拽卡片 ${card.title} 调整位置`}
             role="button"
           >
@@ -176,17 +176,17 @@ export function DraggableCard({
             <div className="flex items-center gap-1">
               <button
                 onClick={handleSizeDecrease}
-                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 title="缩小"
               >
                 <Minimize2 size={14} />
               </button>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              <span className="text-xs text-[var(--text-muted)]">
                 {card.size.w}×{card.size.h}
               </span>
               <button
                 onClick={handleSizeIncrease}
-                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 title="放大"
               >
                 <Maximize2 size={14} />
@@ -196,7 +196,7 @@ export function DraggableCard({
             {/* 高级设置 */}
             <button
               onClick={handleToggleAspectRatio}
-              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               title={aspectRatioLocked ? "比例锁定" : "比例解锁"}
             >
               {aspectRatioLocked ? <Lock size={14} /> : <Unlock size={14} />}
@@ -206,22 +206,22 @@ export function DraggableCard({
             <div className="relative group">
               <button
                 onClick={() => setShowThemeOptions(!showThemeOptions)}
-                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 title="主题设置"
               >
                 <Palette size={14} />
               </button>
               {showThemeOptions && (
-                <div className="absolute bottom-full right-0 mb-2 w-36 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 p-2">
+                <div className="absolute bottom-full right-0 mb-2 w-36 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] shadow-xl border border-[var(--border-color)] z-50 p-2">
                   <button
                     onClick={() => {
                       setCardTheme('light');
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'light' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'light' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-[var(--space-apple-sm)] py-2 rounded text-xs ${cardTheme === 'light' ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]' : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]'}`}
                   >
-                    <div className="w-3 h-3 rounded-full bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700"></div>
+                    <div className="w-3 h-3 rounded-[var(--radius-pill)] bg-[var(--bg-secondary)] border border-[var(--border-color)] dark:border-neutral-700"></div>
                     浅色主题
                   </button>
                   <button
@@ -230,9 +230,9 @@ export function DraggableCard({
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'dark' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'dark' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-[var(--space-apple-sm)] py-2 rounded text-xs ${cardTheme === 'dark' ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]' : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]'}`}
                   >
-                    <div className="w-3 h-3 rounded-full bg-neutral-900 border border-neutral-700"></div>
+                    <div className="w-3 h-3 rounded-[var(--radius-pill)] bg-neutral-900 border border-neutral-700"></div>
                     深色主题
                   </button>
                   <button
@@ -241,9 +241,9 @@ export function DraggableCard({
                       setShowThemeOptions(false);
                       onUpdate(card.id, { theme: 'system' });
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'system' ? 'bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'}`}
+                    className={`w-full flex items-center gap-2 px-[var(--space-apple-sm)] py-2 rounded text-xs ${cardTheme === 'system' ? 'bg-[var(--color-primary-container)] text-[var(--color-primary-text)]' : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]'}`}
                   >
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-white via-neutral-300 to-neutral-800 border border-neutral-400"></div>
+                    <div className="w-3 h-3 rounded-[var(--radius-pill)] bg-gradient-to-r from-white via-neutral-300 to-neutral-800 border border-neutral-400"></div>
                     跟随系统
                   </button>
                 </div>
@@ -254,7 +254,7 @@ export function DraggableCard({
             {onDuplicate && (
               <button
                 onClick={() => onDuplicate(card.id)}
-                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 title="复制卡片"
               >
                 <Copy size={14} />
@@ -264,7 +264,7 @@ export function DraggableCard({
             {onConfig && (
               <button
                 onClick={() => onConfig(card.id)}
-                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 title="配置"
               >
                 <Settings size={14} />
@@ -273,7 +273,7 @@ export function DraggableCard({
 
             <button
               onClick={handleToggleVisibility}
-              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               title="隐藏"
             >
               <EyeOff size={14} />
@@ -282,7 +282,7 @@ export function DraggableCard({
             {onRemove && (
               <button
                 onClick={() => onRemove(card.id)}
-                className="p-1 rounded hover:bg-error-100 dark:hover:bg-error-900/30 text-error-500 hover:text-error-700"
+                className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/30 text-[var(--color-error-text)]0 hover:text-[var(--color-error-text)]"
                 title="移除"
               >
                 <X size={14} />
@@ -297,7 +297,7 @@ export function DraggableCard({
         hoverable
         className={cn(
           'h-full shadow-sm hover:shadow-md transition-shadow duration-200',
-          isEditing && 'ring-2 ring-primary-500/30',
+          isEditing && 'ring-2 ring-[var(--color-primary)]/30',
         )}
       >
         {children}
@@ -307,7 +307,7 @@ export function DraggableCard({
       {!isEditing && externalEditing === undefined && (isHovered || isSorting) && (
         <button
           onClick={() => setIsEditing(true)}
-          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+          className="absolute top-2 right-2 p-1.5 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] shadow-sm border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--color-primary-text)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
         >
           <Settings size={16} />
         </button>
@@ -328,17 +328,21 @@ export function DashboardLayout({ children, columns = 4, gap = 16, responsive = 
   /* A-18：把响应式列数下发给 DraggableCard，供其 clamp 跨列。 */
   const cols = useResponsiveCols()
   const ColsCtx = DashColsContext
+  // 当 columns 为默认值 4 且 responsive=true 时使用响应式 CSS 类；
+  // 否则使用显式 gridTemplateColumns，支持 2/3/5/6 列等任意列数。
+  const useResponsiveCSS = responsive && columns === 4
+  const actualCols = useResponsiveCSS ? cols : Math.max(1, Math.min(columns, cols))
   return (
-    <ColsCtx.Provider value={responsive ? cols : Math.max(1, Math.min(columns, cols))}>
+    <ColsCtx.Provider value={actualCols}>
       <div className="w-full">
         {/* 网格布局 */}
         <div
           className={cn(
             'grid w-full',
-            responsive && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+            useResponsiveCSS && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
           )}
           style={{
-            gridTemplateColumns: responsive ? undefined : `repeat(${columns}, 1fr)`,
+            gridTemplateColumns: useResponsiveCSS ? undefined : `repeat(${columns}, 1fr)`,
             gap: `${gap}px`,
             gridAutoFlow: 'row dense',
           }}
@@ -428,8 +432,6 @@ const PRESET_LAYOUTS: PresetLayout[] = [
 ]
 
 export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApplyPreset }: LayoutEditorProps) {
-  if (!isOpen) return null
-
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -488,38 +490,40 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
     onClose()
   }
 
+  if (!isOpen) return null
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-end">
-      <div className="bg-white dark:bg-neutral-900 w-96 h-full shadow-2xl overflow-y-auto">
-        <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="bg-[var(--bg-secondary)] w-96 h-full shadow-2xl overflow-y-auto">
+        <div className="p-[var(--space-apple-lg)] border-b border-[var(--border-color)] dark:border-neutral-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">布局编辑器</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">布局编辑器</h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              className="p-2 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             >
               <X size={20} />
             </button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-[var(--space-apple-lg)] space-y-6">
           {/* 预设布局模板 */}
           <section>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">预设布局模板</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-md)]">预设布局模板</h3>
             <div className="space-y-2">
               {PRESET_LAYOUTS.map((preset) => (
                 <button
                   key={preset.id}
                   onClick={() => handleApplyPreset(preset)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all duration-200 text-left"
+                  className="w-full flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:border-[var(--color-primary-border)] dark:hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/10 transition-all duration-200 text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
-                    <Maximize size={18} className="text-primary-700 dark:text-primary-700" />
+                  <div className="w-10 h-10 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                    <Maximize size={18} className="text-[var(--color-primary-text)]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">{preset.name}</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{preset.description}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{preset.name}</p>
+                    <p className="text-xs text-[var(--text-muted)] truncate">{preset.description}</p>
                   </div>
                 </button>
               ))}
@@ -528,26 +532,26 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
 
           {/* 搜索和分类 */}
           <section>
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">添加卡片</h3>
-              <div className="relative mb-4">
+            <div className="mb-[var(--space-apple-md)]">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)]">添加卡片</h3>
+              <div className="relative mb-[var(--space-apple-md)]">
                 <input
                   type="text"
                   placeholder="搜索卡片..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-[var(--space-apple-md)] py-2 pl-10 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   <Search size={16} />
                 </div>
               </div>
-              <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
+              <div className="flex items-center gap-2 mb-[var(--space-apple-md)] overflow-x-auto pb-2">
                 {categories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${selectedCategory === category.id ? 'bg-primary-container text-primary-main' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
+                    className={`flex items-center gap-1 px-[var(--space-apple-sm)] py-1.5 min-h-[44px] rounded-[var(--radius-pill)] text-xs font-medium whitespace-nowrap ${selectedCategory === category.id ? 'bg-primary-container text-[var(--color-primary)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)]'}`}
                   >
                     <span className="w-4 h-4 flex items-center justify-center">
                       {category.icon === 'Grid' && <Grid size={12} />}
@@ -565,7 +569,7 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
               {filteredCards.length > 1 && (
                 <button
                   onClick={handleBatchAdd}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-primary-main text-sm font-medium hover:bg-primary-container transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-[var(--space-apple-md)] py-2 rounded-[var(--radius-Apple-sm)] bg-primary-container text-[var(--color-primary)] text-sm font-medium hover:bg-primary-container transition-colors"
                 >
                   <Grid size={16} />
                   批量添加 ({filteredCards.length} 个)
@@ -582,20 +586,20 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
                   <button
                     key={card.type}
                     onClick={() => onAddCard(card.type)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all duration-200 text-left"
+                    className="w-full flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] hover:border-[var(--color-primary-border)] dark:hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/10 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
-                      <Plus size={18} className="text-primary-700 dark:text-primary-700" />
+                    <div className="w-10 h-10 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
+                      <Plus size={18} className="text-[var(--color-primary-text)]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-white">{card.name}</p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{card.description}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{card.name}</p>
+                      <p className="text-xs text-[var(--text-muted)] truncate">{card.description}</p>
                     </div>
                   </button>
                 ))
               ) : (
-                <div className="p-6 text-center text-neutral-500 dark:text-neutral-400">
-                  <Brain size={48} className="mx-auto mb-3 opacity-50" />
+                <div className="p-[var(--space-apple-lg)] text-center text-[var(--text-muted)]">
+                  <Brain size={48} className="mx-auto mb-[var(--space-apple-sm)] opacity-50" />
                   <p className="text-sm">未找到匹配的卡片</p>
                 </div>
               )}
@@ -603,9 +607,9 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApp
           </section>
 
           {/* 布局提示 */}
-          <section className="p-4 rounded-xl bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/30">
-            <h4 className="text-sm font-medium text-warning-800 dark:text-warning-700 mb-2">布局提示</h4>
-            <ul className="text-xs text-warning-700 dark:text-warning-700 space-y-1">
+          <section className="p-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/15 border border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/30">
+            <h4 className="text-sm font-medium text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] mb-2">布局提示</h4>
+            <ul className="text-xs text-[var(--color-warning-text)] space-y-1">
               <li>• 拖拽卡片可改变位置</li>
               <li>• 点击放大/缩小调整尺寸</li>
               <li>• 点击眼睛图标隐藏卡片</li>
@@ -653,19 +657,19 @@ export function LayoutSwitcher({
   return (
     <div className="relative">
       {/* D-61：本下拉触发器在仪表盘被放在 .surface-primary 品牌实底横幅上，
-          但内部文字用浅色卡片配色 text-neutral-700（#334155），压在绿底
+          但内部文字用浅色卡片配色 text-[var(--text-primary)]（#334155），压在绿底
           #047857 上仅 1.89:1。补一层自身底色把控件托回浅色卡片语境。 */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        /* D-73：暗色下 dark:bg-white/10 是【浅色蒙版】，压在暗色品牌实底横幅
+        /* D-73：暗色下 dark:bg-[var(--bg-secondary)]/10 是【浅色蒙版】，压在暗色品牌实底横幅
            (--color-primary-surface ≈ rgb(6,95,69)) 上得到 rgb(31,111,88)，
-           而文字 dark:text-neutral-300 #cbd5e1 在其上只有 4.07:1。
+           而文字 dark:text-[var(--text-muted)] #cbd5e1 在其上只有 4.07:1。
            暗色改用【深色蒙版】bg-black/25 → rgb(5,71,52)，同一文字 7.21:1；
-           亮色 bg-white dark:bg-neutral-800 原本就达标，保持不动。
+           亮色 bg-[var(--bg-secondary)] 原本就达标，保持不动。
            A-10：实测 114×38 低于 WCAG 2.5.5 的 44×44，补 min-h-[44px]。 */
-        className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white dark:bg-black/25 border border-neutral-200 dark:border-white/20 hover:bg-neutral-100 dark:hover:bg-black/35 transition-colors"
+        className="flex items-center gap-2 px-[var(--space-apple-md)] py-2 min-h-[44px] rounded-[var(--radius-Apple-md)] bg-[var(--bg-secondary)] dark:bg-black/25 border border-[var(--border-color)] dark:border-white/20 hover:bg-[var(--bg-tertiary)] dark:hover:bg-black/35 transition-colors"
       >
-        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <span className="text-sm font-medium text-[var(--text-primary)]">
           {layouts.find(l => l.id === currentId)?.name || '视图'}
         </span>
         <ChevronDown size={16} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
@@ -674,9 +678,9 @@ export function LayoutSwitcher({
       {isOpen && (
         <>
           <div className="absolute inset-0 fixed z-40"  role="button" tabIndex={0} onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 overflow-hidden">
-            <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
-              <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">保存的视图</p>
+          <div className="absolute top-full right-0 mt-2 w-72 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-md)] shadow-xl border border-[var(--border-color)] z-50 overflow-hidden">
+            <div className="p-[var(--space-apple-sm)] border-b border-[var(--border-color)] dark:border-neutral-800">
+              <p className="text-xs font-medium text-[var(--text-muted)]">保存的视图</p>
             </div>
             <div className="max-h-64 overflow-y-auto">
               {layouts.map((layout) => (
@@ -684,8 +688,8 @@ export function LayoutSwitcher({
                   key={layout.id}
                   type="button"
                   className={cn(
-                    'w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
-                    currentId === layout.id && 'bg-primary-50 dark:bg-primary-300/15',
+                    'w-full flex items-center justify-between px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]',
+                    currentId === layout.id && 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/15',
                   )}
                   onClick={() => {
                     onSwitch(layout.id)
@@ -693,15 +697,15 @@ export function LayoutSwitcher({
                   }}
                   aria-selected={currentId === layout.id}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-[var(--space-apple-sm)]">
                     <span className={cn(
                       'text-sm font-medium',
-                      currentId === layout.id ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300',
+                      currentId === layout.id ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-primary)]',
                     )}>
                       {layout.name}
                     </span>
                     {layout.isDefault && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700">
+                      <span className="text-xs px-2 py-0.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] text-[var(--color-primary-text)]">
                         默认
                       </span>
                     )}
@@ -713,7 +717,7 @@ export function LayoutSwitcher({
                           e.stopPropagation()
                           onSetDefault(layout.id)
                         }}
-                        className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600"
+                        className="p-1 rounded hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                         title="设为默认"
                       >
                         <Star size={14} />
@@ -725,7 +729,7 @@ export function LayoutSwitcher({
                           e.stopPropagation()
                           onDelete(layout.id)
                         }}
-                        className="p-1 rounded hover:bg-error-100 dark:hover:bg-error-900/30 text-neutral-400 hover:text-error-600"
+                        className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/30 text-[var(--text-muted)] hover:text-[var(--color-error-text)]"
                         title="删除"
                       >
                         <X size={14} />
@@ -735,7 +739,7 @@ export function LayoutSwitcher({
                 </button>
               ))}
             </div>
-            <div className="p-3 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="p-[var(--space-apple-sm)] border-t border-[var(--border-color)] dark:border-neutral-800">
               {showCreate ? (
                 <div className="space-y-2">
                   <input
@@ -743,7 +747,7 @@ export function LayoutSwitcher({
                     value={newLayoutName}
                     onChange={(e) => setNewLayoutName(e.target.value)}
                     placeholder="视图名称"
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                     onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                     autoFocus
                   />
@@ -751,7 +755,7 @@ export function LayoutSwitcher({
                     <button
                       onClick={handleCreate}
                       disabled={!newLayoutName.trim()}
-                      className="flex-1 px-3 py-2 rounded-lg bg-primary-container text-primary-main text-sm font-medium hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] bg-primary-container text-[var(--color-primary)] text-sm font-medium hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       创建
                     </button>
@@ -760,7 +764,7 @@ export function LayoutSwitcher({
                         setShowCreate(false)
                         setNewLayoutName('')
                       }}
-                      className="px-3 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      className="px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-[var(--text-secondary)] text-sm font-medium hover:bg-[var(--bg-secondary)]"
                     >
                       取消
                     </button>
@@ -769,7 +773,7 @@ export function LayoutSwitcher({
               ) : (
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                  className="w-full flex items-center justify-center gap-2 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] border border-dashed border-[var(--border-color)] text-[var(--text-secondary)] text-sm font-medium hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]"
                 >
                   <Plus size={16} />
                   创建新视图

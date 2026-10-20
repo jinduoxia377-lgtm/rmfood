@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 /**
  * COA出厂检验报告查看组件
  *
@@ -114,7 +114,7 @@ const COATestResultTable: React.FC<{
 
       {/* 分类标签 */}
       {Object.entries(grouped).filter(([, v]) => v.length > 0).map(([category, categoryItems]) => (
-        <div key={category} className="mb-4">
+        <div key={category} className="mb-4 overflow-x-auto">
           <h4 className="text-sm font-semibold text-[var(--color-primary, #1a56db)] mb-2 px-1">
             {getCategoryLabel(category)}
           </h4>
@@ -195,7 +195,7 @@ const COAConclusion: React.FC<{
     </div>
 
     {/* 签名区 */}
-    <div className="grid grid-cols-3 gap-4 mt-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
       <div className="text-sm">
         <div className="text-[var(--text-muted, #64748b)] mb-1">检测 Tested By</div>
         <div className="font-semibold text-[var(--text-primary, #1e293b)]">{coa.tested_by || '-'}</div>
@@ -407,7 +407,7 @@ export const COACard: React.FC<{
       </span>
     </div>
 
-    <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-muted, #64748b)] mb-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[var(--text-muted, #64748b)] mb-3">
       <div>
         <span className="font-medium text-[var(--text-primary, #1e293b)]">批号：</span>
         {coa.batch_no}
@@ -441,7 +441,7 @@ export const COACard: React.FC<{
 
 export const COAStatsPanel: React.FC<{ stats: { total: number; qualified: number; unqualified: number; pending: number; qualified_rate: number; peptide_types?: number; total_batches?: number } }>
 = ({ stats }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6">
     <div className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4">
       <div className="text-2xl font-bold text-[var(--text-primary, #1e293b)]">{stats.total}</div>
       <div className="text-xs text-[var(--text-muted, #94a3b8)] mt-1">总批次</div>

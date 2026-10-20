@@ -132,7 +132,7 @@ function PresetSelector({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {options.map((opt) => (
         <button
           key={opt.value}
@@ -305,7 +305,7 @@ export function ConstraintPanel({
               <Utensils className="w-3.5 h-3.5" />
               烹饪方式
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {COOKING_METHOD_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

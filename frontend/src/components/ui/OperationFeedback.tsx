@@ -13,7 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from'react';
 import { CheckCircle, AlertCircle, AlertTriangle, Info, RefreshCw, X } from'lucide-react';
-import { getErrorInfo, getUserMessage, getSolution } from'@/constants/errorCodes';
+import { getUserMessage, getSolution } from'@/constants/errorCodes';
 
 export type FeedbackType ='success' |'error' |'warning' |'info';
 
@@ -83,7 +83,6 @@ export function OperationFeedback({
  const [isVisible, setIsVisible] = useState(false);
  const [isExiting, setIsExiting] = useState(false);
 
- const errorInfo = code ? getErrorInfo(code) : undefined;
  const userMessage = message || (code ? getUserMessage(code) :'');
  const solution = customSolution || (code ? getSolution(code) :'');
 
@@ -98,6 +97,7 @@ export function OperationFeedback({
  useEffect(() => {
  if (duration > 0 && !retryable) {
  const timer = setTimeout(() => {
+ // eslint-disable-next-line react-hooks/immutability
  handleClose();
  }, duration);
  return () => clearTimeout(timer);
@@ -105,6 +105,7 @@ export function OperationFeedback({
  return;
  }, [duration, retryable]);
 
+ // eslint-disable-next-line react-hooks/preserve-manual-memoization
  const handleClose = useCallback(() => {
  setIsExiting(true);
  setTimeout(() => {

@@ -70,7 +70,7 @@ export interface ErrorRecoveryDialogProps {
 }
 
 const ERROR_CONFIG: Record<ErrorType, {
-  icon: React.ElementType
+  icon: React.ComponentType<any>
   title: string
   colorClass: string
   bgClass: string
@@ -275,6 +275,7 @@ export function ErrorRecoveryDialog({
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCountdown(classifiedError.countdown)
     const timer = setInterval(() => {
       setCountdown(prev => {
