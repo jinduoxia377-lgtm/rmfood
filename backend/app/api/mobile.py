@@ -15,7 +15,7 @@ from ..models.user_model import User
 # 依赖注入：创建 MobileService 实例并注入到 Facade
 _mobile_service = MobileService()
 
-router = APIRouter(prefix="/api/mobile", tags=["移动端"])
+router = APIRouter(prefix="/mobile", tags=["移动端"])
 
 
 @router.get("/dashboard")

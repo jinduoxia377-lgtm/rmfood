@@ -324,6 +324,14 @@ async def send_test_notification(
         )
         await db.commit()
 
+        if notification is None:
+            return {
+                "success": True,
+                "message": "测试通知已跳过（用户当前的通知偏好禁用了该系统通知）",
+                "notification_id": None,
+                "template_id": request.template_id,
+            }
+
         return {
             "success": True,
             "message": "测试通知已发送",
