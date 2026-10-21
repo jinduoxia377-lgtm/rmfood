@@ -24,8 +24,7 @@ import {
   Clock,
   Zap,
 } from 'lucide-react'
-import { notificationApi } from '@/api/admin'
-import type { Notification } from '@/types'
+import { notificationApi, type Notification } from '@/api/notifications'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'

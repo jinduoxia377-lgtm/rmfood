@@ -20,8 +20,8 @@ import {
   Send,
 } from 'lucide-react'
 import api from '../../api/client'
+import { notificationApi, type Notification } from '@/api/notifications'
 import { logger } from '@/utils/safeLogger';
-import { normalizeNotificationList, type NormalizedNotification as Notification } from '@/utils/notification'
 import { useToast } from '@/components/ui/Toast'
 import { subscribeToChannel, onWebSocketMessage } from '@/services/websocket'
 import { useAuthStore } from '@/stores/auth'
@@ -122,24 +122,14 @@ export function NotificationCenter() {
   const fetchNotifications = useCallback(async () => {
     setLoading(true)
     try {
-      const params: Record<string, any> = {
+      const data = await notificationApi.list({
         page,
         page_size: 10,
-      }
-
-      // admin 路由支持 status 过滤（unread/read）
-      if (activeTab === 'unread') {
-        params.status = 'unread'
-      }
-
-      const response = await api.get<any>('/notifications', { params })
-
-      if (response.data) {
-        const data = normalizeNotificationList(response.data)
-        setNotifications(data.items)
-        setUnreadCount(data.unread_count)
-        setTotalPages(data.total_pages)
-      }
+        status: activeTab === 'unread' ? 'unread' : undefined,
+      })
+      setNotifications((data.items ?? []) as Notification[])
+      setUnreadCount(data.unread_count ?? 0)
+      setTotalPages(data.total_pages ?? 1)
     } catch (error: any) {
       if (error?.response?.status === 401) {
         logger.info('🔐 [NotificationCenter] 未登录，跳过通知加载')
@@ -202,9 +192,9 @@ export function NotificationCenter() {
   useEffect(() => {
     const timer = setInterval(() => {
       if (!isOpen) {
-        api.get<any>('/notifications/unread-count')
+        notificationApi.unreadCount()
           .then((res) => {
-            const count = res.data?.unread_count
+            const count = res?.unread_count
             if (typeof count === 'number') setUnreadCount(count)
           })
           .catch(() => { /* 静默 */ })
@@ -219,9 +209,9 @@ export function NotificationCenter() {
       if (isOpen) {
         fetchNotifications()
       } else {
-        api.get<any>('/notifications/unread-count')
+        notificationApi.unreadCount()
           .then((res) => {
-            const count = res.data?.unread_count
+            const count = res?.unread_count
             if (typeof count === 'number') setUnreadCount(count)
           })
           .catch(() => { /* 静默 */ })
@@ -240,9 +230,8 @@ export function NotificationCenter() {
 
   // 从服务端同步通知偏好（尽力而为；本地已由 useState 惰性初始化恢复）
   useEffect(() => {
-    api.get<any>('/notifications/preferences')
-      .then((res) => {
-        const p = res.data?.preferences
+    notificationApi.getPreferences()
+      .then((p) => {
         if (p) {
           setPrefs((prev) => ({
             ...prev,
@@ -261,8 +250,8 @@ export function NotificationCenter() {
     try {
       localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next))
     } catch { /* 存储不可用时忽略 */ }
-    // 尽力与服务端同步（v1 当前不落库，仅返回）
-    api.put('/notifications/preferences', {
+    // 与服务端同步（v1 落库到 notification_preferences 表）
+    notificationApi.updatePreferences({
       email_enabled: next.email_enabled,
       push_enabled: next.push_enabled,
       quiet_hours_start: next.quiet_hours_start,
@@ -273,7 +262,7 @@ export function NotificationCenter() {
   // 标记单条已读 —— 对齐后端 v1 路由：PUT /notifications/{id}/read
   const markAsRead = async (id: number) => {
     try {
-      await api.put(`/notifications/${id}/read`)
+      await notificationApi.markRead(id)
 
       setNotifications((prev) =>
         activeTab === 'unread'
@@ -289,7 +278,7 @@ export function NotificationCenter() {
 
   const markAllAsRead = async () => {
     try {
-      await api.put('/notifications/read-all')
+      await notificationApi.markAllRead()
 
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, isRead: true })))
       setUnreadCount(0)
@@ -302,7 +291,7 @@ export function NotificationCenter() {
 
   const deleteNotification = async (id: number, wasUnread: boolean) => {
     try {
-      await api.delete(`/notifications/${id}`)
+      await notificationApi.remove(id)
 
       setNotifications((prev) => prev.filter((n) => n.id !== id))
       if (wasUnread) {
@@ -661,7 +650,7 @@ export function NotificationCenter() {
                           </h4>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {notification.type && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+                              <span className="text-xs px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                                 {TYPE_LABELS[notification.type] || notification.type}
                               </span>
                             )}
@@ -678,7 +667,7 @@ export function NotificationCenter() {
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatTimeAgo(notification.created_at)}
+                            {formatTimeAgo(notification.created_at ?? '')}
                           </span>
 
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

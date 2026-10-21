@@ -1,9 +1,8 @@
 /**
- * 通知与用户管理 API
+ * 用户管理 API（管理员）
  */
 import api from './client'
 import type { User } from '@/types'
-import { normalizeNotificationList } from '@/utils/notification'
 
 // ═══════════════════════════════════════
 // 账号申请（预注册）队列类型
@@ -49,20 +48,8 @@ export interface PreRegisterApproveParams {
   note?: string
 }
 
-export const notificationApi = {
-  list: (params?: { page?: number; page_size?: number; status?: string }) =>
-    api.get<any>('/notifications', {
-      params: {
-        ...params,
-        // 对齐后端契约（v1 notification_router）：状态筛选参数名为 is_read
-        is_read: params?.status ? params.status === 'read' : undefined,
-      },
-    }).then((r) => normalizeNotificationList(r.data)),
-
-  markRead: (id: number) => api.put(`/notifications/${id}/read`).then((r) => r.data),
-
-  markAllRead: () => api.put('/notifications/read-all').then((r) => r.data),
-}
+// 通知相关 API 已统一到 ./notifications（后端 v1 notification_router）
+export { notificationApi } from './notifications'
 
 export const adminApi = {
   listUsers: (params?: { page?: number; page_size?: number; role?: string; search?: string; status?: string; organization_id?: number; sort_field?: string; sort_dir?: string }) =>
