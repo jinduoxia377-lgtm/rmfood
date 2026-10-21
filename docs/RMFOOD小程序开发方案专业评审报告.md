@@ -351,7 +351,7 @@ async def upload_file(
 
 **问题描述**：
 
-开发方案使用 `/api/v1/notifications`，但实际后端路径是 `/api/mobile/notifications`。
+开发方案使用 `/api/v1/notifications`，但实际后端路径是 `/api/v1/mobile/notifications`。
 
 **影响**：
 - 通知功能全部失效
@@ -362,7 +362,7 @@ async def upload_file(
 ```typescript
 // 修正前端API调用
 // 错误：/api/v1/notifications
-// 正确：/api/mobile/notifications
+// 正确：/api/v1/mobile/notifications
 
 // 或者创建v1兼容层
 @router.get("/v1/notifications")

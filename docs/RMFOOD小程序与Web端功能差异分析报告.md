@@ -193,7 +193,7 @@ backend/app/api/v1/
 | **AI对话** | /api/v1/ai/chat/stream | 直接复用 | 无需适配 |
 | **搜索** | /api/v1/search/* | 直接复用 | 无需适配 |
 | **通知** | /api/v1/notifications/* | 直接复用 | 无需适配 |
-| **移动端** | /api/mobile/* | 直接复用 | 已有精简接口 |
+| **移动端** | /api/v1/mobile/* | 直接复用 | 已有精简接口 |
 
 **后端API复用率：约80%**
 

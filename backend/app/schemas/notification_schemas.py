@@ -15,12 +15,19 @@ class NotificationItem(BaseModel):
     type: NotificationType
     title: str
     content: Optional[str]
-    metadata_: Optional[Dict[str, Any]] = Field(None, alias="metadata")
+    link: Optional[str] = Field(None, max_length=500)
+    # 注意：模型列名为 metadata_（避免与 SQLAlchemy MetaData 冲突），
+    # 校验时读 ORM 的 metadata_，序列化时输出 metadata。
+    metadata_: Optional[Dict[str, Any]] = Field(
+        None,
+        validation_alias="metadata_",
+        serialization_alias="metadata",
+    )
     is_read: bool
     read_at: Optional[datetime]
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 
 class NotificationListResponse(BaseModel):
@@ -69,13 +76,18 @@ class DeleteNotificationResponse(BaseModel):
 class NotificationPreferencesUpdate(BaseModel):
     """更新通知偏好请求"""
     email_enabled: Optional[bool] = Field(None, description="启用邮件通知")
-    push_enabled: Optional[bool] = Field(None, description="启用推送通知")
+    push_enabled: Optional[bool] = Field(None, description="启用推送通知（WebSocket）")
+    browser_push: Optional[bool] = Field(None, description="启用浏览器推送（与 push_enabled 同义）")
+    in_app_enabled: Optional[bool] = Field(None, description="启用站内信通知")
     team_invite: Optional[bool] = Field(None, description="团队邀请通知")
     sync_status: Optional[bool] = Field(None, description="同步状态通知")
     ai_task_complete: Optional[bool] = Field(None, description="AI任务完成通知")
     system_alert: Optional[bool] = Field(None, description="系统告警通知")
+    system_updates: Optional[bool] = Field(None, description="系统更新通知（与 system_alert 同义）")
     formula_review: Optional[bool] = Field(None, description="配方审核通知")
     experiment_complete: Optional[bool] = Field(None, description="实验完成通知")
+    notification_frequency: Optional[str] = Field(None, pattern="^(realtime|daily|weekly)$", description="发送频率")
+    notification_priority: Optional[str] = Field(None, pattern="^(high|medium|low)$", description="消息优先级")
     quiet_hours_start: Optional[str] = Field(None, pattern=r"^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$", description="免打扰开始时间 (HH:MM)")
     quiet_hours_end: Optional[str] = Field(None, pattern=r"^(0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$", description="免打扰结束时间 (HH:MM)")
 

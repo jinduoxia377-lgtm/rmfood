@@ -241,12 +241,12 @@
 
 | 接口 | 方法 | 说明 | 状态 |
 |------|------|------|------|
-| /api/mobile/dashboard | GET | 移动端仪表盘 | 已有 |
-| /api/mobile/notifications | GET | 通知列表 | 已有 |
-| /api/mobile/notifications/{id}/read | POST | 标记已读 | 已有 |
-| /api/mobile/trace/{batch_id} | GET | 溯源查询 | 已有 |
-| /api/mobile/formulas/pending-review | GET | 待审核配方 | 已有 |
-| /api/mobile/formulas/{id}/quick-approve | POST | 快速审批 | 已有 |
+| /api/v1/mobile/dashboard | GET | 移动端仪表盘 | 已有 |
+| /api/v1/mobile/notifications | GET | 通知列表 | 已有 |
+| /api/v1/mobile/notifications/{id}/read | POST | 标记已读 | 已有 |
+| /api/v1/mobile/trace/{batch_id} | GET | 溯源查询 | 已有 |
+| /api/v1/mobile/formulas/pending-review | GET | 待审核配方 | 已有 |
+| /api/v1/mobile/formulas/{id}/quick-approve | POST | 快速审批 | 已有 |
 
 ---
 

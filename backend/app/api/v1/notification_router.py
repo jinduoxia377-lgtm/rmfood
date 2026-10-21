@@ -334,6 +334,11 @@ async def update_preferences(
         preferences_data["email_enabled"] = request.email_enabled
     if request.push_enabled is not None:
         preferences_data["push_enabled"] = request.push_enabled
+    if request.browser_push is not None:
+        preferences_data["browser_push"] = request.browser_push
+        preferences_data["push_enabled"] = request.browser_push
+    if request.in_app_enabled is not None:
+        preferences_data["in_app_enabled"] = request.in_app_enabled
     if request.team_invite is not None:
         preferences_data["team_invite"] = request.team_invite
     if request.sync_status is not None:
@@ -342,10 +347,17 @@ async def update_preferences(
         preferences_data["ai_task_complete"] = request.ai_task_complete
     if request.system_alert is not None:
         preferences_data["system_alert"] = request.system_alert
+    if request.system_updates is not None:
+        preferences_data["system_updates"] = request.system_updates
+        preferences_data["system_alert"] = request.system_updates
     if request.formula_review is not None:
         preferences_data["formula_review"] = request.formula_review
     if request.experiment_complete is not None:
         preferences_data["experiment_complete"] = request.experiment_complete
+    if request.notification_frequency is not None:
+        preferences_data["notification_frequency"] = request.notification_frequency
+    if request.notification_priority is not None:
+        preferences_data["notification_priority"] = request.notification_priority
     if request.quiet_hours_start and request.quiet_hours_end:
         preferences_data["quiet_hours"] = {
             "start": request.quiet_hours_start,
@@ -367,8 +379,12 @@ async def update_preferences(
         row.email_enabled = request.email_enabled
     if request.push_enabled is not None:
         row.webhook_enabled = request.push_enabled
+    if request.browser_push is not None:
+        row.webhook_enabled = request.browser_push
+    if request.in_app_enabled is not None:
+        row.in_app_enabled = request.in_app_enabled
 
-    # 扩展偏好（团队/同步/AI/系统/审核/实验）与免打扰时段存入 settings JSON
+    # 扩展偏好（团队/同步/AI/系统/审核/实验/频率/优先级）与免打扰时段存入 settings JSON
     settings = dict(row.settings or {})
     for key in (
         "team_invite",
@@ -377,10 +393,14 @@ async def update_preferences(
         "system_alert",
         "formula_review",
         "experiment_complete",
+        "notification_frequency",
+        "notification_priority",
     ):
         val = getattr(request, key, None)
         if val is not None:
             settings[key] = val
+    if request.system_updates is not None:
+        settings["system_alert"] = request.system_updates
     if request.quiet_hours_start and request.quiet_hours_end:
         settings["quiet_hours"] = {
             "start": request.quiet_hours_start,
@@ -410,12 +430,17 @@ async def get_preferences(
     default_preferences = {
         "email_enabled": True,
         "push_enabled": True,
+        "browser_push": True,
+        "in_app_enabled": True,
         "team_invite": True,
         "sync_status": True,
         "ai_task_complete": True,
         "system_alert": True,
+        "system_updates": True,
         "formula_review": True,
         "experiment_complete": True,
+        "notification_frequency": "realtime",
+        "notification_priority": "high",
         "quiet_hours": None,
     }
 
@@ -437,12 +462,17 @@ async def get_preferences(
     preferences = {
         "email_enabled": row.email_enabled,
         "push_enabled": row.webhook_enabled,
+        "browser_push": row.webhook_enabled,
+        "in_app_enabled": row.in_app_enabled,
         "team_invite": settings.get("team_invite", True),
         "sync_status": settings.get("sync_status", True),
         "ai_task_complete": settings.get("ai_task_complete", True),
         "system_alert": settings.get("system_alert", True),
+        "system_updates": settings.get("system_alert", True),
         "formula_review": settings.get("formula_review", True),
         "experiment_complete": settings.get("experiment_complete", True),
+        "notification_frequency": settings.get("notification_frequency", "realtime"),
+        "notification_priority": settings.get("notification_priority", "high"),
         "quiet_hours": quiet_hours or None,
     }
 

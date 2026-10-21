@@ -6,8 +6,8 @@ import sys
 import os
 import random
 
-# Add backend root to path
-backend_root = os.path.join(os.path.dirname(__file__), "backend")
+# Add backend root to path（本文件位于 backend/tests/ 下，真实后端根目录是上一级）
+backend_root = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, backend_root)
 sys.path.insert(0, os.path.dirname(backend_root))
 
@@ -21,7 +21,7 @@ os.environ["ENV"] = "development"
 # ── Helpers ───────────────────────────────────────────────
 
 def get_herb_db():
-    from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS
+    from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
     return _BUILTIN_HERBS
 
 
@@ -311,14 +311,22 @@ def test_dead_code_removed():
                       "notification_service.py"),
         os.path.join(backend_root, "app", "services", "notification",
                       "__init__.py"),
-        os.path.join(backend_root, "app", "core", "notification_center.py"),
         os.path.join(backend_root, "app", "core", "database_and_bi_engine.py"),
     ]
 
     for fp in dead_files:
         assert not os.path.exists(fp), f"Dead code not removed: {fp}"
 
-    print(f"  ✅ Dead code: all 4 files removed")
+    # 兼容层：app/core/notification_center.py 现在是 realtime.notification_center 的
+    # re-export（保留旧导入路径），不再是死代码，应存在且可导入。
+    compat_layer = os.path.join(backend_root, "app", "core", "notification_center.py")
+    assert os.path.exists(compat_layer), (
+        "Compatibility re-export app/core/notification_center.py should exist"
+    )
+    from app.core.notification_center import NotificationService  # noqa: F401
+
+    print(f"  ✅ Dead code: all {len(dead_files)} dead files removed; "
+          f"notification_center compat layer present")
 
 
 # ── Run all tests ─────────────────────────────────────────

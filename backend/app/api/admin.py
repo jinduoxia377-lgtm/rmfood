@@ -1,121 +1,23 @@
 """
-通知与用户管理 API
-Phase 2: 通知列表/已读/删除，用户管理（管理员）
+用户管理 API（管理员）
 P1-2: 账号安全管理（防暴力破解）
+说明：通知相关接口已统一收敛到 v1 notification_router（/api/v1/notifications），
+本文件不再重复定义，避免路由遮蔽。
 """
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, update, distinct, cast, String, text, bindparam
+from sqlalchemy import select, func, distinct, cast, String, text, bindparam
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_active_user, require_role
 from ..models.models import (
-    User, UserRole, Notification, NotificationStatus,
+    User, UserRole,
 )
 from ..schemas.user import UserResponse
 from ..core.rbac.permission import PermissionChecker, Permission
 
 router = APIRouter(tags=["通知与用户管理"])
-
-
-# ═══════════════════════════════════════
-# 通知接口
-# ═══════════════════════════════════════
-
-@router.get("/notifications", summary="获取通知列表")
-async def list_notifications(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    status: str | None = Query(None, description="通知状态过滤"),
-    db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
-):
-    """获取当前用户的通知列表"""
-    query = select(Notification).where(Notification.user_id == current_user.id)
-    count_query = select(func.count()).select_from(Notification).where(
-        Notification.user_id == current_user.id
-    )
-
-    if status:
-        query = query.where(Notification.status == status)
-        count_query = count_query.where(Notification.status == status)
-
-    total = (await db.execute(count_query)).scalar() or 0
-    items = (await db.execute(
-        query.order_by(Notification.created_at.desc())
-        .offset((page - 1) * page_size).limit(page_size)
-    )).scalars().all()
-
-    # 统计未读数
-    unread_count = (await db.execute(
-        select(func.count()).select_from(Notification).where(
-            Notification.user_id == current_user.id,
-            Notification.status == NotificationStatus.UNREAD,
-        )
-    )).scalar() or 0
-
-    return {
-        "items": [
-            {
-                "id": n.id,
-                "type": n.type.value if hasattr(n.type, "value") else str(n.type),
-                "status": n.status.value if hasattr(n.status, "value") else str(n.status),
-                "title": n.title,
-                "content": n.content,
-                "link": n.link,
-                "metadata": n.metadata_,
-                "read_at": n.read_at.isoformat() if n.read_at else None,
-                "created_at": n.created_at.isoformat() if n.created_at else None,
-            }
-            for n in items
-        ],
-        "total": total,
-        "unread_count": unread_count,
-        "page": page,
-        "page_size": page_size,
-    }
-
-
-@router.post("/notifications/{notification_id}/read", summary="标记通知已读")
-async def mark_notification_read(
-    notification_id: int,
-    db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
-):
-    """将通知标记为已读"""
-    notification = (await db.execute(
-        select(Notification).where(
-            Notification.id == notification_id,
-            Notification.user_id == current_user.id,
-        )
-    )).scalar_one_or_none()
-    if not notification:
-        raise HTTPException(404, detail="通知不存在")
-    
-    notification.status = NotificationStatus.READ
-    notification.is_read = True
-    notification.read_at = func.datetime('now')
-    await db.commit()
-    return {"detail": "已标记为已读"}
-
-
-@router.post("/notifications/read-all", summary="全部标记已读")
-async def mark_all_read(
-    db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
-):
-    """将当前用户所有未读通知标记为已读"""
-    await db.execute(
-        update(Notification)
-        .where(
-            Notification.user_id == current_user.id,
-            Notification.status == NotificationStatus.UNREAD,
-        )
-        .values(status=NotificationStatus.READ, is_read=True, read_at=func.datetime('now'))
-    )
-    await db.commit()
-    return {"detail": "已全部标记为已读"}
 
 
 # ═══════════════════════════════════════

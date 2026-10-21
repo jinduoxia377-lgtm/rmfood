@@ -50,6 +50,22 @@ class NotificationCategory(enum.Enum):
     AI = "ai"
 
 
+class NotificationPriority(enum.Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+# 通知类型 → 用户偏好设置中的事件开关键（notification_preferences.settings）
+TYPE_PREF_KEY: dict[str, str] = {
+    NotificationType.FORMULA_REVIEW.value: "formula_review",
+    NotificationType.EXPERIMENT_COMPLETE.value: "experiment_complete",
+    NotificationType.AI_TASK_DONE.value: "ai_task_complete",
+    NotificationType.SYSTEM.value: "system_alert",
+}
+
+
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
@@ -67,6 +83,7 @@ class UserNotificationPreference:
         "quiet_hours_end",
         "digest_mode",
         "digest_frequency",
+        "settings",
     )
 
     def __init__(
@@ -79,6 +96,7 @@ class UserNotificationPreference:
         quiet_hours_end: Optional[str] = None,
         digest_mode: bool = False,
         digest_frequency: str = "daily",
+        settings: Optional[dict] = None,
     ):
         self.user_id = user_id
         self.enabled = enabled
@@ -88,6 +106,7 @@ class UserNotificationPreference:
         self.quiet_hours_end = quiet_hours_end
         self.digest_mode = digest_mode
         self.digest_frequency = digest_frequency
+        self.settings = settings or {}
 
     @property
     def __dict__(self) -> dict[str, Any]:
@@ -100,6 +119,7 @@ class UserNotificationPreference:
             "quiet_hours_end": self.quiet_hours_end,
             "digest_mode": self.digest_mode,
             "digest_frequency": self.digest_frequency,
+            "settings": self.settings,
         }
 
 
@@ -113,6 +133,12 @@ class NotificationService:
 
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+        # 渠道发送器注册表（供外部/测试检查可用渠道；真实发送见 create_notification）
+        self.senders = [
+            {"channel": NotificationChannel.IN_APP.value, "enabled": True},
+            {"channel": NotificationChannel.EMAIL.value, "enabled": False},
+            {"channel": NotificationChannel.WEBSOCKET.value, "enabled": True},
+        ]
 
     # -- CRUD ----------------------------------------------------------
 
@@ -127,14 +153,47 @@ class NotificationService:
         metadata: Optional[dict] = None,
         category: Optional[NotificationCategory] = None,
         channel: NotificationChannel = NotificationChannel.IN_APP,
-    ) -> Notification:
-        """Insert a new notification row."""
+        priority: NotificationPriority = NotificationPriority.NORMAL,
+    ) -> Optional[Notification]:
+        """Insert a new notification row.
+
+        尊重用户通知偏好：
+        - enabled=False 时跳过（用户整体关闭通知）
+        - category_enabled 显式关闭对应分类时跳过
+        - 免打扰时段 / websocket 渠道关闭时仍落站内信，但跳过实时 WebSocket 推送
+        """
         metadata = dict(metadata or {})
         if category:
             metadata.setdefault(
                 "category",
                 category.value if hasattr(category, 'value') else str(category),
             )
+        metadata.setdefault(
+            "priority",
+            priority.value if hasattr(priority, 'value') else str(priority),
+        )
+
+        # ── 偏好过滤 ──
+        try:
+            pref = await self._get_user_preference(user_id)
+        except Exception as exc:  # pragma: no cover - 偏好读取失败不阻塞通知创建
+            logger.warning("读取用户通知偏好失败，按默认放行: %s", exc)
+            pref = UserNotificationPreference(user_id=user_id)
+
+        if pref is not None and not pref.enabled:
+            return None
+
+        if category is not None and pref.category_enabled:
+            cat_key = category.value if hasattr(category, 'value') else str(category)
+            if pref.category_enabled.get(cat_key) is False:
+                return None
+
+        # 事件开关（设置页「触发事件」直接落库到 settings 的平铺键）
+        type_value = type_.value if hasattr(type_, "value") else str(type_)
+        pref_key = TYPE_PREF_KEY.get(type_value)
+        if pref_key and pref.settings.get(pref_key) is False:
+            return None
+
         notification = Notification(
             user_id=user_id,
             type=type_,
@@ -148,25 +207,56 @@ class NotificationService:
         self.db.add(notification)
         await self.db.flush()
 
-        # ── 实时推送：通过 WebSocket 通知在线用户（失败不影响主流程） ──
-        try:
-            from app.core.realtime.websocket import connection_manager
-            await connection_manager.broadcast_to_user(str(user_id), {
-                "type": "notification",
-                "data": {
-                    "id": notification.id,
-                    "title": title,
-                    "content": content,
-                    "link": link,
-                },
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
-        except Exception as exc:
-            logger.warning("WebSocket 通知推送失败: %s", exc)
-        except Exception as exc:
-            logger.warning("WebSocket 通知推送失败: %s", exc)
+        # ── 实时推送：WebSocket 通知在线用户（受渠道开关/免打扰约束，失败不影响主流程） ──
+        in_quiet_hours = self._is_in_quiet_hours(pref)
+        websocket_enabled = pref.channel_preferences.get("websocket", True)
+        if not in_quiet_hours and websocket_enabled:
+            try:
+                from app.core.realtime.websocket import connection_manager
+                await connection_manager.broadcast_to_user(str(user_id), {
+                    "type": "notification",
+                    "data": {
+                        "id": notification.id,
+                        "title": title,
+                        "content": content,
+                        "link": link,
+                    },
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                })
+            except Exception as exc:
+                logger.warning("WebSocket 通知推送失败: %s", exc)
 
         return notification
+
+    @staticmethod
+    def _render_template(template: str, variables: Optional[dict]) -> str:
+        """把模板中的 ``{{key}}`` 占位符替换为变量值。"""
+        result = template or ""
+        for key, value in (variables or {}).items():
+            result = result.replace("{{%s}}" % key, str(value))
+        return result
+
+    @staticmethod
+    def _is_in_quiet_hours(pref: "UserNotificationPreference") -> bool:
+        """判断当前时间是否处于用户的免打扰时段（支持跨夜，如 22:00-08:00）。"""
+        start = getattr(pref, "quiet_hours_start", None)
+        end = getattr(pref, "quiet_hours_end", None)
+        if not start or not end:
+            return False
+        try:
+            def _to_minutes(hhmm: str) -> int:
+                h, m = str(hhmm).split(":")
+                return int(h) * 60 + int(m)
+
+            start_min = _to_minutes(start)
+            end_min = _to_minutes(end)
+            now_min = datetime.now().hour * 60 + datetime.now().minute
+            if start_min < end_min:
+                return start_min <= now_min < end_min
+            # 跨夜时段
+            return now_min >= start_min or now_min < end_min
+        except Exception:
+            return False
 
     async def get_user_notifications(
         self,
@@ -304,6 +394,7 @@ class NotificationService:
             quiet_hours_end=row.settings.get("quiet_hours", {}).get("end"),
             digest_mode=row.settings.get("digest_mode", False),
             digest_frequency=row.settings.get("digest_frequency", "daily"),
+            settings=row.settings or {},
         )
 
     async def update_user_preference(

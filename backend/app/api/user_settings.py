@@ -195,15 +195,18 @@ async def update_preferences(
     db: AsyncSession = Depends(get_db_session),
 ):
     """更新用户偏好设置"""
-    if not current_user.preferences:
-        current_user.preferences = {}
-    current_user.preferences.update(preferences)
+    # 修复：preferences 是普通 JSON 列，SQLAlchemy 不追踪原地 dict.update() 的嵌套变更，
+    # 必须整体重新赋值（或 flag_modified）才能触发 UPDATE，否则接口返回成功但数据不落库。
+    prefs = dict(current_user.preferences or {})
+    prefs.update(preferences)
+    current_user.preferences = prefs
     await db.commit()
 
     return {
-        "language": current_user.preferences.get("language", "zh-CN"),
-        "timezone": current_user.preferences.get("timezone", "Asia/Shanghai"),
-        "theme": current_user.preferences.get("theme", "light"),
+        "language": prefs.get("language", "zh-CN"),
+        "timezone": prefs.get("timezone", "Asia/Shanghai"),
+        "theme": prefs.get("theme", "light"),
+        "notifications": prefs.get("notifications", {}),
         "message": "偏好设置已更新",
     }
 
