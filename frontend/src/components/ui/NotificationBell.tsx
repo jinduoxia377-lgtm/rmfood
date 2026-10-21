@@ -8,8 +8,7 @@ import { useState, useRef, useEffect } from'react';
 import { useNavigate } from'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from'@tanstack/react-query';
 import { Bell, CheckCheck, ExternalLink } from'lucide-react';
-import { notificationApi } from'@/api/admin';
-import type { Notification } from'@/types';
+import { notificationApi, type Notification } from'@/api/notifications';
 import { cn } from'@/lib/utils';
 import { format } from'date-fns';
 import { zhCN } from'date-fns/locale';
@@ -71,7 +70,7 @@ export default function NotificationBell() {
  markReadMutation.mutate(notif.id);
  }
  if (notif.actionUrl) {
- window.location.href = notif.actionUrl;
+ window.location.assign(notif.actionUrl);
  }
  setOpen(false);
  };

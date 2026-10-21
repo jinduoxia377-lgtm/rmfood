@@ -17,10 +17,10 @@ import { authApi } from '@/api/auth'
 import { cn } from '@/lib/utils'
 import {
   User, KeyRound, Shield, CheckCircle, AlertCircle,
-  Mail, Bell, Clock, Smartphone,
+  Bell, Clock, Smartphone,
   ShieldAlert, RefreshCw, Key, Copy, Plus, Download, Upload,
   Globe, MapPin, CheckCircle2,
-  QrCode, Info, ShieldCheck, BellRing,
+  QrCode, Info, ShieldCheck,
   SmartphoneIcon, Trash, Palette,
   Brain, Server, Loader2,
 } from 'lucide-react'
@@ -44,6 +44,7 @@ import i18n from '@/i18n'
 import { PersonalInfoSection } from './components/PersonalInfoSection'
 import { AccountDeactivationSection } from './components/AccountDeactivationSection'
 import { McpServersPanel } from './components/McpServersPanel'
+import NotificationSettingsPanel from './components/NotificationSettingsPanel'
 import { ConfigManager } from '@/utils/configManager'
 import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager'
 import ModelClient from '@/api/modelClient'
@@ -805,34 +806,8 @@ export default function SettingsPage() {
   const [selectedTimezone, setSelectedTimezone] = useState('Asia/Shanghai')
   const [loadingLocale, setLoadingLocale] = useState(false)
 
-  const [notifPrefs, setNotifPrefs] = useState<{
-    formula_review: boolean; experiment_complete: boolean; ai_task_done: boolean;
-    system_updates: boolean; email_notifications: boolean; browser_push: boolean;
-    notification_frequency: 'realtime' | 'daily' | 'weekly';
-    notification_priority: 'high' | 'medium' | 'low';
-  }>(() => {
-    const saved = localStorage.getItem('notif-prefs')
-    return saved ? JSON.parse(saved) : {
-      formula_review: true, experiment_complete: true,
-      ai_task_done: false, system_updates: false,
-      email_notifications: false, browser_push: true,
-      notification_frequency: 'realtime' as 'realtime' | 'daily' | 'weekly',
-      notification_priority: 'high' as 'high' | 'medium' | 'low',
-    }
-  })
-
-  // 从后端加载已保存的通知偏好（优先于 localStorage）
-   
-  useEffect(() => {
-    if (preferencesData?.notifications && typeof preferencesData.notifications === 'object') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 从后端合并通知偏好，属数据同步意图
-      setNotifPrefs(prev => {
-        const merged = { ...prev, ...preferencesData.notifications }
-        localStorage.setItem('notif-prefs', JSON.stringify(merged))
-        return merged
-      })
-    }
-  }, [preferencesData])
+  // 通知偏好已迁移到独立组件 NotificationSettingsPanel，
+  // 直连 /notifications/preferences（notification_preferences 表），不再使用 localStorage 假同步。
 
   // 从后端已保存的偏好恢复语言/时区（跨设备同步），并真实应用到全局 i18n
    
@@ -867,15 +842,7 @@ export default function SettingsPage() {
   }, [])
 
   // ── Handlers ──────────────────────────────────────────────────
-  const saveNotifPrefs = (prefs: typeof notifPrefs) => {
-    setNotifPrefs(prefs)
-    localStorage.setItem('notif-prefs', JSON.stringify(prefs))
-    // 落库到后端用户偏好（跨设备同步）
-    updatePrefsMutation.mutate({ notifications: prefs })
-    addToast({ type: 'success', message: '通知偏好已保存（已同步到云端）' })
-  }
-  const toggleNotifPref = (key: keyof typeof notifPrefs) =>
-    saveNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] })
+  // 通知偏好保存逻辑已迁移到 NotificationSettingsPanel（直连 /notifications/preferences）
 
   // P1-5: 强度判定与提交校验使用同一套规则，视觉条与提交结果严格一致。
   // 规则（共 6 项）：长度≥8、长度≥12、大写、小写、数字、特殊字符
@@ -1621,101 +1588,7 @@ export default function SettingsPage() {
     <ThemePanel />
   )
 
-  const renderNotificationsPanel = () => (
-    <div className="space-y-[var(--space-apple-lg)]">
-      <Card>
-        <CardHeader className="pb-[var(--space-apple-md)]">
-          <div className="flex items-center gap-[var(--space-apple-sm)]">
-            <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/10 flex items-center justify-center shrink-0">
-              <BellRing className="w-5 h-5 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" aria-hidden="true" />
-            </div>
-            <div>
-              <CardTitle as="h2" className="text-base font-semibold tracking-tight">通知偏好</CardTitle>
-              <CardDescription>管理消息推送渠道与触发规则</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-[var(--space-apple-lg)]">
-          {/* 触发事件 */}
-          <div>
-            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-md)]">触发事件</p>
-            <div className="space-y-[var(--space-apple-sm)]">
-              {([
-                { key: 'formula_review' as const, label: '配方审核', desc: '配方提交审核、审核通过或驳回时' },
-                { key: 'experiment_complete' as const, label: '实验完成', desc: '关联实验完成或失败时' },
-                { key: 'ai_task_done' as const, label: 'AI 任务完成', desc: '配方生成、分析任务结束时' },
-                { key: 'system_updates' as const, label: '系统更新', desc: '维护公告、版本发布等' },
-              ]).map(item => (
-                <div key={item.key} className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-[var(--space-apple-sm)]">
-                    <Bell className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{item.desc}</p>
-                    </div>
-                  </div>
-                  <Switch checked={notifPrefs[item.key]} onCheckedChange={() => toggleNotifPref(item.key)} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--border-color)]/60 pt-6">
-            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-md)]">推送渠道</p>
-            <div className="space-y-[var(--space-apple-sm)]">
-              {([
-                { key: 'browser_push' as const, label: '浏览器推送', desc: '在浏览器中接收实时通知', icon: BellRing },
-                { key: 'email_notifications' as const, label: '邮件通知', desc: '将重要消息发送到邮箱', icon: Mail },
-              ]).map(item => (
-                <div key={item.key} className="flex items-center justify-between py-1">
-                  <div className="flex items-center gap-[var(--space-apple-sm)]">
-                    <item.icon className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{item.desc}</p>
-                    </div>
-                  </div>
-                  <Switch checked={notifPrefs[item.key]} onCheckedChange={() => toggleNotifPref(item.key)} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--border-color)]/60 pt-6">
-            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-[var(--space-apple-md)]">频率与优先级</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-2">发送频率</p>
-                <Select value={notifPrefs.notification_frequency} onValueChange={(v: any) => saveNotifPrefs({ ...notifPrefs, notification_frequency: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="realtime">实时推送</SelectItem>
-                    <SelectItem value="daily">每日摘要</SelectItem>
-                    <SelectItem value="weekly">每周摘要</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-2">消息优先级</p>
-                <Select value={notifPrefs.notification_priority} onValueChange={(v: any) => saveNotifPrefs({ ...notifPrefs, notification_priority: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">高 — 全部显示</SelectItem>
-                    <SelectItem value="medium">中 — 仅重要消息</SelectItem>
-                    <SelectItem value="low">低 — 仅紧急消息</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  const renderNotificationsPanel = () => <NotificationSettingsPanel />
 
   // ── Dialogs ───────────────────────────────────────────────────
   // 2FA 真实二维码：用项目已装的 qrcode 库把 otpauth:// URI 渲染成 canvas，
