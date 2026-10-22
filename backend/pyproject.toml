@@ -65,7 +65,10 @@ omit = [
 branch = true
 
 [tool.coverage.report]
-fail_under = 80  # 🔒 低于 80% 覆盖率则 CI 失败
+# 2026-10-22 统一：与 pytest.ini [coverage:report] fail_under=75 保持一致。
+# 注意：CI 实际门槛由 workflow 的 --cov-fail-under 显式控制（当前 0，计划阶梯提升 40→75），
+# 此处值仅在本机未显式传 --cov-fail-under 时生效。
+fail_under = 75
 show_missing = true
 precision = 2
 skip_covered = false
