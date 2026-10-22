@@ -87,15 +87,16 @@ CHECKS = [
         "深度分析 Tab：净电荷必须读 physicochemical_profile.net_charge_at_ph7",
     ),
     # P0-3：3D 四元数（球棍模型 + 管线模型两处都必须有）
+    # 2026-10-22 放宽：兼容两种等效写法（解构导入 与 THREE.Quaternion 命名空间写法）
     (
         "frontend/src/components/molecule/MoleculeViewer3D.tsx",
-        r"import \{ Quaternion, Vector3 \} from 'three'",
-        "3D 模型：必须 import Quaternion/Vector3",
+        r"import \* as THREE from 'three'|import \{ Quaternion, Vector3 \} from 'three'",
+        "3D 模型：必须 import Quaternion/Vector3（允许 THREE.* 命名空间写法）",
     ),
     (
         "frontend/src/components/molecule/MoleculeViewer3D.tsx",
-        r"new Quaternion\(\)\.setFromUnitVectors",
-        "3D 模型：圆柱体必须用 Quaternion 对齐键方向",
+        r"new (?:THREE\.)?Quaternion\(\)\.setFromUnitVectors",
+        "3D 模型：圆柱体必须用 Quaternion 对齐键方向（允许 THREE.* 命名空间写法）",
     ),
     (
         "frontend/src/components/molecule/MoleculeViewer3D.tsx",
