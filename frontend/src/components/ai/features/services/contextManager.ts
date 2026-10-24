@@ -15,6 +15,14 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import {
+  TOPIC_CONTINUITY_BOOST,
+  TOPIC_CONTINUITY_DECAY,
+  ENTITY_CONFIDENCE_STEP,
+  ENTITY_CONFIDENCE_MAX,
+  MAX_RECENT_INTENTS,
+  MAX_RECENT_TOPICS,
+} from '@/config/ai/constants';
 import { eventBus } from './eventBus';
 
 export interface ContextEntity {
@@ -271,9 +279,9 @@ export class ContextManager {
 
   private updateTopicContinuity(newTopic: string): void {
     if (newTopic === this.currentTopic) {
-      this.topicContinuity = Math.min(100, this.topicContinuity + 10);
+      this.topicContinuity = Math.min(100, this.topicContinuity + TOPIC_CONTINUITY_BOOST);
     } else {
-      this.topicContinuity = Math.max(0, this.topicContinuity - 20);
+      this.topicContinuity = Math.max(0, this.topicContinuity - TOPIC_CONTINUITY_DECAY);
       this.currentTopic = newTopic;
     }
   }
@@ -291,7 +299,7 @@ export class ContextManager {
       if (existingIndex >= 0) {
         this.entities[existingIndex].occurrences++;
         this.entities[existingIndex].lastMentioned = Date.now();
-        this.entities[existingIndex].confidence = Math.min(0.99, this.entities[existingIndex].confidence + 0.02);
+        this.entities[existingIndex].confidence = Math.min(ENTITY_CONFIDENCE_MAX, this.entities[existingIndex].confidence + ENTITY_CONFIDENCE_STEP);
       } else {
         this.entities.push(entity);
       }
@@ -302,13 +310,13 @@ export class ContextManager {
 
     // 更新意图历史
     this.intents.push(intent);
-    if (this.intents.length > 5) {
+    if (this.intents.length > MAX_RECENT_INTENTS) {
       this.intents.shift();
     }
 
     // 更新话题
     this.topics.push(topic);
-    if (this.topics.length > 5) {
+    if (this.topics.length > MAX_RECENT_TOPICS) {
       this.topics.shift();
     }
 

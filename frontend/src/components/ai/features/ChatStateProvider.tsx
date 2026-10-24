@@ -143,16 +143,6 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
         setHistorySessions(mapped)
         if (mapped.length > 0) {
           setActiveSessionIdState(mapped[0].id)
-          // 自动恢复最近会话内容：刷新后对话区直接显示历史消息，无需手动点击历史入口
-          try {
-            const msgs = await chatStorageService.loadMessages(mapped[0].id)
-            if (msgs.length > 0) {
-              chatMessages.replaceMessages(msgs)
-              logger.info(`[ChatStateProvider] 已自动恢复最近会话 ${mapped[0].id}（${msgs.length} 条消息）`)
-            }
-          } catch (loadErr) {
-            logger.warn('[ChatStateProvider] 自动恢复会话消息失败（不影响后续对话）:', loadErr)
-          }
           return
         }
         // 无历史会话：自动创建一个新会话，确保首次对话也能持久化恢复（修复「刷新后历史消失」）
@@ -174,6 +164,22 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   useEffect(() => {
     setActiveSessionId(activeSessionId)
   }, [activeSessionId, setActiveSessionId])
+
+  // ── 专项：刷新后自动恢复最近会话内容 ──
+  // activeSessionId 就绪且当前消息区为空时，从存储自动加载，无需用户手动点击历史入口。
+  useEffect(() => {
+    if (!activeSessionId) return
+    if (messages.length > 0) return
+    let cancelled = false
+    chatStorageService.loadMessages(activeSessionId)
+      .then(msgs => {
+        if (cancelled || msgs.length === 0) return
+        chatMessages.replaceMessages(msgs)
+        logger.info(`[ChatStateProvider] 已自动恢复最近会话 ${activeSessionId}（${msgs.length} 条消息）`)
+      })
+      .catch(err => logger.warn('[ChatStateProvider] 自动恢复会话消息失败（不影响后续对话）:', err))
+    return () => { cancelled = true }
+  }, [activeSessionId, messages.length, chatMessages])
 
   const handleForkMessage = useCallback(async (messageId: string) => {
     if (!activeSessionId) return
