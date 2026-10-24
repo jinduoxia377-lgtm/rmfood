@@ -13,6 +13,19 @@
 
 import { API_ENDPOINTS } from '@/config/apiEndpoints';
 import { logger } from '@/utils/safeLogger';
+import {
+  DTS_BASE_SCORE,
+  DTS_ENTITY_TYPE_BONUS,
+  DTS_ENTITY_TYPE_MAX,
+  DTS_INGREDIENT_BONUS,
+  DTS_DOSAGE_FORM_BONUS,
+  DTS_REGULATION_BONUS,
+  DTS_PROCESS_BONUS,
+  DTS_LENGTH_THRESHOLD_1,
+  DTS_LENGTH_THRESHOLD_2,
+  DTS_LENGTH_30_BONUS,
+  DTS_LENGTH_50_BONUS,
+} from '@/config/ai/constants';
 import { eventBus } from './eventBus';
 
 export interface SemanticAnalysis {
@@ -348,18 +361,18 @@ class DeepThinkingServiceV2 {
     _keywords: string[],
     questionLength: number,
   ): number {
-    let score = 0.3;
+    let score = DTS_BASE_SCORE;
 
     const entityTypes = new Set(entities.map((e) => e.type));
-    score += Math.min(entityTypes.size * 0.1, 0.3);
+    score += Math.min(entityTypes.size * DTS_ENTITY_TYPE_BONUS, DTS_ENTITY_TYPE_MAX);
 
-    if (entities.some((e) => e.type === 'ingredient')) score += 0.12;
-    if (entities.some((e) => e.type === 'dosage_form')) score += 0.08;
-    if (entities.some((e) => e.type === 'regulation')) score += 0.1;
-    if (entities.some((e) => e.type === 'process')) score += 0.1;
+    if (entities.some((e) => e.type === 'ingredient')) score += DTS_INGREDIENT_BONUS;
+    if (entities.some((e) => e.type === 'dosage_form')) score += DTS_DOSAGE_FORM_BONUS;
+    if (entities.some((e) => e.type === 'regulation')) score += DTS_REGULATION_BONUS;
+    if (entities.some((e) => e.type === 'process')) score += DTS_PROCESS_BONUS;
 
-    if (questionLength > 30) score += 0.08;
-    if (questionLength > 50) score += 0.07;
+    if (questionLength > DTS_LENGTH_THRESHOLD_1) score += DTS_LENGTH_30_BONUS;
+    if (questionLength > DTS_LENGTH_THRESHOLD_2) score += DTS_LENGTH_50_BONUS;
 
     return Math.min(score, 1.0);
   }

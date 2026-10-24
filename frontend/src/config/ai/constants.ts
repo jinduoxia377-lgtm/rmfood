@@ -26,3 +26,16 @@ export const ENTITY_CONFIDENCE_STEP = 0.02
 export const ENTITY_CONFIDENCE_MAX = 0.99
 export const MAX_RECENT_INTENTS = 5
 export const MAX_RECENT_TOPICS = 5
+
+// ===== deepThinkingService：深度思考置信度评分 =====
+export const DTS_BASE_SCORE = 0.3
+export const DTS_ENTITY_TYPE_BONUS = 0.1
+export const DTS_ENTITY_TYPE_MAX = 0.3
+export const DTS_INGREDIENT_BONUS = 0.12
+export const DTS_DOSAGE_FORM_BONUS = 0.08
+export const DTS_REGULATION_BONUS = 0.1
+export const DTS_PROCESS_BONUS = 0.1
+export const DTS_LENGTH_THRESHOLD_1 = 30
+export const DTS_LENGTH_THRESHOLD_2 = 50
+export const DTS_LENGTH_30_BONUS = 0.08
+export const DTS_LENGTH_50_BONUS = 0.07
