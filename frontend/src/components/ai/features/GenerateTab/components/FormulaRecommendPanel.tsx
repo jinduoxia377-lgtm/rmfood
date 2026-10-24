@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react'
 import { Loader2, Sparkles, CheckCircle2 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { aiApi } from '@/api/ai'
 import { Card, Button } from '@/components/ui'
 
@@ -24,6 +25,7 @@ interface Recommendation {
 }
 
 export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecommendPanelProps) {
+  const { t } = useTranslation()
   const [recs, setRecs] = useState<Recommendation[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -33,7 +35,7 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
       setRecs((data.recommendations || []) as unknown as Recommendation[])
     },
     onError: (e: unknown) => {
-      setError(e instanceof Error ? e.message : '推荐服务暂不可用')
+      setError(e instanceof Error ? e.message : t('ai.formula.ui.recommendServiceUnavailable'))
     },
   })
 
@@ -48,31 +50,31 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
       <div className="flex items-center justify-between">
         <h3 className="text-title-sm font-semibold flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-primary" />
-          智能配方推荐
+          {t('ai.formula.generateTab.smartFormulaRecommend')}
         </h3>
-        <button onClick={onClose} className="text-caption text-muted-foreground hover:text-foreground">关闭</button>
+        <button onClick={onClose} className="text-caption text-muted-foreground hover:text-foreground">{t('ai.formula.generateTab.close')}</button>
       </div>
 
       <p className="text-caption text-muted-foreground">
-        基于数据库：您的历史配方 + 药材功效评分 + 协同配伍网络，针对「{targetEffects.join('、')}」生成推荐。
+        {t('ai.formula.generateTab.recommendBasedOn', { effects: targetEffects.join('、') })}
       </p>
 
       {mutation.isPending && (
         <div className="flex items-center gap-2 text-caption text-muted-foreground py-4">
-          <Loader2 className="w-4 h-4 animate-spin" /> 正在检索数据库推荐…
+          <Loader2 className="w-4 h-4 animate-spin" /> {t('ai.formula.generateTab.searchingRecommendations')}
         </div>
       )}
 
       {error && (
         <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-caption text-danger">
           {error}
-          <button onClick={retry} className="ml-2 underline">重试</button>
+          <button onClick={retry} className="ml-2 underline">{t('ai.formula.generateTab.retry')}</button>
         </div>
       )}
 
       {!mutation.isPending && !error && recs.length === 0 && (
         <div className="text-center py-4 text-caption text-muted-foreground">
-          暂无推荐数据（数据库历史/协同配伍信息不足）
+          {t('ai.formula.generateTab.noRecommendData')}
         </div>
       )}
 
@@ -85,7 +87,7 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
                   <CheckCircle2 className="w-3.5 h-3.5 text-success" />
                   {r.formula_name}
                 </span>
-                <span className="text-caption text-muted-foreground">置信度 {Math.round(r.confidence * 100)}%</span>
+                <span className="text-caption text-muted-foreground">{t('ai.formula.ui.confidencePercent', { percent: Math.round(r.confidence * 100) })}</span>
               </div>
               <p className="text-caption text-muted-foreground mb-1.5">{r.reason}</p>
               <div className="flex flex-wrap gap-1">
@@ -101,7 +103,7 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
       )}
 
       <div className="flex justify-end">
-        <Button size="sm" onClick={retry} disabled={mutation.isPending}>重新推荐</Button>
+        <Button size="sm" onClick={retry} disabled={mutation.isPending}>{t('ai.formula.generateTab.reRecommend')}</Button>
       </div>
     </Card>
   )

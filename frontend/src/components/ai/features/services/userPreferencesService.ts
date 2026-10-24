@@ -95,7 +95,6 @@ export interface UserPreferences {
 }
 
 const STORAGE_KEY = 'user-preferences'
-const CURRENT_VERSION = 1
 
 const DEFAULT_HOTKEYS: Partial<Record<HotkeyAction, HotkeyConfig>> = {
   sendMessage: { key: 'Enter' },

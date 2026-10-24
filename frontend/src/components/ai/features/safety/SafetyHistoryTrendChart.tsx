@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { SafetyHistoryEntry } from '../SafetyTab'
@@ -9,6 +10,7 @@ interface SafetyHistoryTrendChartProps {
 }
 
 export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHistoryTrendChartProps) {
+  const { t } = useTranslation()
   const [, setHoveredIndex] = useState<number | null>(null)
 
   const chartData = React.useMemo(() => {
@@ -52,7 +54,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
       <div className={`rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 ${className}`}>
         <div className="flex items-center gap-2 mb-3">
           <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">安全趋势</span>
+          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">{t('ai.safety.trend.title')}</span>
         </div>
         <p className="text-sm text-neutral-400 dark:text-neutral-400 py-8 text-center">
           至少需要 2 条历史记录才能显示趋势
@@ -66,13 +68,13 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">安全合规趋势</span>
+          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">{t('ai.safety.trend.complianceTitle')}</span>
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-neutral-500">平均: <strong className="text-neutral-700 dark:text-neutral-200">{avgRate}%</strong></span>
+          <span className="text-neutral-500">{t('ai.safety.trend.avg', { value: avgRate })}</span>
           <span className={`flex items-center gap-1 ${getTrendColor()}`}>
             {getTrendIcon()}
-            <span>最新: {latestRate}%</span>
+            <span>{t('ai.safety.trend.latest', { value: latestRate })}</span>
           </span>
         </div>
       </div>

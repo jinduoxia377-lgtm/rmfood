@@ -6,7 +6,10 @@
  * ✅ 后端回退：本地无数据时尝试从后端加载
  * ✅ 会话隔离：每个会话独立存储，切换安全
  *
- * @version 3.0.0
+ * v12 决策 (2026-06-26)：工作记忆 / 短期记忆已从主聊天链路移除（原为纯内存/无反馈闭环），
+ * 对应回调一并删除。如需恢复用户级三级记忆，需产品决策后重新设计（含后端持久化）。
+ *
+ * @version 3.1.0
  */
 
 import { useCallback } from 'react'
@@ -26,9 +29,7 @@ export interface UseChatCallbacksOptions {
   setHistoryVisible: Dispatch<SetStateAction<boolean>>
   clearMessages: () => void
   clearAllFormulas: () => void
-  clearWorkingMemory: () => void
   clearMultiTurnDialogue: () => void
-  clearShortTermMemory: () => void
   /** 当前消息列表（用于会话切换时保存/恢复） */
   messages: ChatMessage[]
   /** 替换当前消息列表（用于从目标会话恢复） */
@@ -51,18 +52,15 @@ export interface UseChatCallbacksReturn {
 export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallbacksReturn {
   const {
     historySessions, setHistorySessions, setActiveSessionId,
-    clearMessages, clearAllFormulas,
-    clearWorkingMemory, clearMultiTurnDialogue, clearShortTermMemory,
+    clearMessages, clearAllFormulas, clearMultiTurnDialogue,
     messages, setMessages, activeSessionId,
   } = options
 
   const handleClearChat = useCallback(() => {
     clearMessages()
     clearAllFormulas()
-    clearWorkingMemory()
     clearMultiTurnDialogue()
-    clearShortTermMemory()
-  }, [clearMessages, clearAllFormulas, clearWorkingMemory, clearMultiTurnDialogue, clearShortTermMemory])
+  }, [clearMessages, clearAllFormulas, clearMultiTurnDialogue])
 
   /** 更新指定会话的元数据（消息数、最后消息） */
   const updateSessionMetadata = useCallback(async (sessionId: string, msgs: ChatMessage[]) => {

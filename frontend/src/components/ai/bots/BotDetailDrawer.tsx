@@ -265,8 +265,8 @@ export function BotDetailDrawer({ bot, open, onOpenChange, onUpdated, onDeleted 
                       <div key={m.id} className="flex items-start justify-between gap-2 rounded bg-muted/40 p-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-[10px]">{m.memory_type}</Badge>
-                            <span className="text-[10px] text-muted-foreground">重要度 {m.importance}</span>
+                            <Badge variant="secondary" className="text-xs">{m.memory_type}</Badge>
+                            <span className="text-xs text-muted-foreground">重要度 {m.importance}</span>
                           </div>
                           <p className="mt-1 text-xs text-foreground">{m.content}</p>
                         </div>

@@ -61,6 +61,13 @@ export interface ChatState {
   assistantCount: number
   elapsedSeconds: number
 
+  // ===== RAG 知识库状态 =====
+  ragEnabled: boolean
+  ragIsSeeded: boolean
+  ragIsSeeding: boolean
+  onToggleRAG: () => void
+  onTriggerSeed: () => Promise<boolean>
+
   // ===== 配方状态 =====
   formulaCount: number
   expandedIds: Set<string>

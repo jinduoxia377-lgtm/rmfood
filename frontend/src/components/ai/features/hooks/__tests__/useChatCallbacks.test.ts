@@ -20,9 +20,7 @@ describe('useChatCallbacks', () => {
     setHistoryVisible: vi.fn(),
     clearMessages: vi.fn(),
     clearAllFormulas: vi.fn(),
-    clearWorkingMemory: vi.fn(),
     clearMultiTurnDialogue: vi.fn(),
-    clearShortTermMemory: vi.fn(),
     ...overrides,
   })
 
@@ -44,9 +42,7 @@ describe('useChatCallbacks', () => {
 
     expect(options.clearMessages).toHaveBeenCalledOnce()
     expect(options.clearAllFormulas).toHaveBeenCalledOnce()
-    expect(options.clearWorkingMemory).toHaveBeenCalledOnce()
     expect(options.clearMultiTurnDialogue).toHaveBeenCalledOnce()
-    expect(options.clearShortTermMemory).toHaveBeenCalledOnce()
   })
 
   it('handleDeleteSession should filter and save', async () => {

@@ -10,6 +10,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import MarkdownRenderer from './MarkdownRenderer'
+import { TYPEWRITER_SPEED_MS, TYPEWRITER_CHUNK_SIZE } from '@/config/ai/constants'
 
 interface TypewriterTextProps {
   content: string
@@ -21,8 +22,8 @@ interface TypewriterTextProps {
 
 export default function TypewriterText({
   content: rawContent,
-  speed = 30,
-  chunkSize = 3,
+  speed = TYPEWRITER_SPEED_MS,
+  chunkSize = TYPEWRITER_CHUNK_SIZE,
   onComplete,
   enabled = true,
 }: TypewriterTextProps) {

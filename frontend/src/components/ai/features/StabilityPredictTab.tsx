@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
 import { logger } from '@/utils/safeLogger';
@@ -34,6 +35,7 @@ import { stabilityPredictor } from '@/services/stabilityPredictor';
 import type { StabilityAssessment, StorageCondition } from '@/types/stability.types';
 
 export function StabilityPredictTab() {
+  const { t } = useTranslation();
   const [stabilityInput, setStabilityInput] = useState('');
   const [stabilityResult, setStabilityResult] = useState<StabilityAssessment | null>(null);
   const [stabilityError, setStabilityError] = useState<string | null>(null);
@@ -45,14 +47,14 @@ export function StabilityPredictTab() {
 
   /** 后端 risk_factors.type → 可读降解机理名 */
   const DEGRADATION_TYPE_LABELS: Record<string, string> = {
-    oxidation: '氧化降解',
-    hydrolysis: '水解',
-    light_sensitivity: '光敏降解',
-    ph_sensitivity: 'pH 敏感',
-    high_humidity: '高湿水解',
-    unknown_ingredient: '成分参数缺失',
-    thermal: '热敏降解',
-    microbial: '微生物风险',
+    oxidation: t('ai.stability.tab.degradation.oxidation'),
+    hydrolysis: t('ai.stability.tab.degradation.hydrolysis'),
+    light_sensitivity: t('ai.stability.tab.degradation.light_sensitivity'),
+    ph_sensitivity: t('ai.stability.tab.degradation.ph_sensitivity'),
+    high_humidity: t('ai.stability.tab.degradation.high_humidity'),
+    unknown_ingredient: t('ai.stability.tab.degradation.unknown_ingredient'),
+    thermal: t('ai.stability.tab.degradation.thermal'),
+    microbial: t('ai.stability.tab.degradation.microbial'),
   };
 
   const mutation = useMutation({
@@ -162,11 +164,11 @@ export function StabilityPredictTab() {
 
   const formatShelfLife = (days: number): string => {
     if (days >= 365) {
-      return `${(days / 365).toFixed(1)} 年`;
+      return t('ai.stability.tab.shelfLife.years', { count: (days / 365).toFixed(1) });
     } else if (days >= 30) {
-      return `${(days / 30).toFixed(1)} 个月`;
+      return t('ai.stability.tab.shelfLife.months', { count: (days / 30).toFixed(1) });
     } else {
-      return `${Math.round(days)} 天`;
+      return t('ai.stability.tab.shelfLife.days', { count: Math.round(days) });
     }
   };
 
@@ -184,10 +186,10 @@ export function StabilityPredictTab() {
               </div>
               <div className="flex-1">
                 <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                  稳定性评估
+                  {t('ai.stability.tab.title')}
                 </h2>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
-                  预测配方的化学稳定性和保质期。基于 Arrhenius 方程和 Q10 法则。
+                  {t('ai.stability.tab.subtitle')}
                 </p>
               </div>
             </div>
@@ -195,12 +197,12 @@ export function StabilityPredictTab() {
             {/* 输入框 */}
             <div>
               <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
-                配方成分
+                {t('ai.stability.tab.formulaLabel')}
               </label>
               <textarea
                 value={stabilityInput}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStabilityInput(e.target.value)}
-                placeholder={`如：\n黄芪、党参、枸杞子、甘草`}
+                placeholder={t('ai.stability.tab.placeholder')}
                 rows={4}
                 className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
                            rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
@@ -216,14 +218,14 @@ export function StabilityPredictTab() {
                   <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-700" />
                 </div>
                 <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
-                  储存条件配置
+                  {t('ai.stability.tab.configTitle')}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
-                    温度 (°C)
+                    {t('ai.stability.tab.temperature')}
                   </label>
                   <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))} className="rounded-lg">
                     {[4, 15, 25, 30, 37].map((t) => (
@@ -233,7 +235,7 @@ export function StabilityPredictTab() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
-                    湿度 (%)
+                    {t('ai.stability.tab.humidity')}
                   </label>
                   <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))} className="rounded-lg">
                     {[30, 45, 60, 75, 90].map((h) => (
@@ -246,22 +248,22 @@ export function StabilityPredictTab() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
-                    光照条件
+                    {t('ai.stability.tab.light')}
                   </label>
                   <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')} className="rounded-lg">
-                    <option value="dark">☀️ 避光</option>
-                    <option value="ambient">💡 正常</option>
-                    <option value="bright">🔆 强光</option>
+                    <option value="dark">☀️ {t('ai.stability.tab.lightDark')}</option>
+                    <option value="ambient">💡 {t('ai.stability.tab.lightAmbient')}</option>
+                    <option value="bright">🔆 {t('ai.stability.tab.lightBright')}</option>
                   </Select>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
-                    包装类型
+                    {t('ai.stability.tab.packaging')}
                   </label>
                   <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')} className="rounded-lg">
-                    <option value="sealed">📦 密封</option>
-                    <option value="semi-permeable">🧪 半透膜</option>
-                    <option value="open">🌬️ 开放</option>
+                    <option value="sealed">📦 {t('ai.stability.tab.packagingSealed')}</option>
+                    <option value="semi-permeable">🧪 {t('ai.stability.tab.packagingSemi')}</option>
+                    <option value="open">🌬️ {t('ai.stability.tab.packagingOpen')}</option>
                   </Select>
                 </div>
               </div>
@@ -276,7 +278,7 @@ export function StabilityPredictTab() {
                 variant="outline"
                 className="flex-1 rounded-xl font-medium border-neutral-200 dark:border-neutral-700"
               >
-                本地计算
+                {t('ai.stability.tab.localCompute')}
               </Button>
               <Button
                 onClick={handlePredict}
@@ -285,7 +287,7 @@ export function StabilityPredictTab() {
                 icon={<TrendingDown className="w-4 h-4" />}
                 className="flex-1 rounded-md font-medium transition-colors duration-150"
               >
-                AI 分析
+                {t('ai.stability.tab.aiAnalyze')}
               </Button>
             </div>
 
@@ -296,7 +298,7 @@ export function StabilityPredictTab() {
               icon={<RotateCcw className="w-4 h-4" />}
               className="w-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
-              清空重置
+              {t('ai.stability.tab.clearReset')}
             </Button>
           </Card>
         </div>
@@ -304,11 +306,11 @@ export function StabilityPredictTab() {
         {/* 条件摘要卡片 */}
         {(parsedIngredients.length > 0 || stabilityResult) && (
           <Card className="p-4 rounded-lg">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">当前评估条件</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">{t('ai.stability.tab.currentConditions')}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-neutral-600">
-                  <Thermometer className="w-4 h-4" /> 温度
+                  <Thermometer className="w-4 h-4" /> {t('ai.stability.tab.tempShort')}
                 </span>
                 <Badge variant={temperature > 30 ? 'danger' : temperature > 25 ? 'warning' : 'success'}>
                   {temperature}°C
@@ -316,26 +318,26 @@ export function StabilityPredictTab() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-neutral-600">
-                  <Droplets className="w-4 h-4" /> 湿度
+                  <Droplets className="w-4 h-4" /> {t('ai.stability.tab.humidityShort')}
                 </span>
                 <Badge variant={humidity > 70 ? 'danger' : humidity > 60 ? 'warning' : 'success'}>{humidity}%</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-neutral-600">
-                  <Sun className="w-4 h-4" /> 光照
+                  <Sun className="w-4 h-4" /> {t('ai.stability.tab.lightShort')}
                 </span>
                 <Badge variant={lightExposure === 'bright' ? 'warning' : 'success'}>
-                  {lightExposure === 'dark' ? '避光' : lightExposure === 'ambient' ? '正常' : '强光'}
+                  {lightExposure === 'dark' ? t('ai.stability.tab.lightDark') : lightExposure === 'ambient' ? t('ai.stability.tab.lightAmbient') : t('ai.stability.tab.lightBright')}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-neutral-600">
-                  <Package className="w-4 h-4" /> 包装
+                  <Package className="w-4 h-4" /> {t('ai.stability.tab.packagingShort')}
                 </span>
                 <Badge
                   variant={packaging === 'open' ? 'danger' : packaging === 'semi-permeable' ? 'warning' : 'success'}
                 >
-                  {packaging === 'sealed' ? '密封' : packaging === 'semi-permeable' ? '半透膜' : '开放'}
+                  {packaging === 'sealed' ? t('ai.stability.tab.packagingSealed') : packaging === 'semi-permeable' ? t('ai.stability.tab.packagingSemi') : t('ai.stability.tab.packagingOpen')}
                 </Badge>
               </div>
             </div>
@@ -350,12 +352,12 @@ export function StabilityPredictTab() {
             <div className="flex items-start gap-3 p-4">
               <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-destructive">AI 稳定性预测不可用</p>
+                <p className="text-sm font-medium text-destructive">{t('ai.stability.tab.errorTitle')}</p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 break-all">
                   {stabilityError}
                 </p>
                 <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
-                  可先使用"本地计算"获得启发式结果，或检查后端稳定性服务是否正常运行。
+                  {t('ai.stability.tab.errorHint')}
                 </p>
               </div>
             </div>
@@ -368,10 +370,9 @@ export function StabilityPredictTab() {
           >
             <div className="text-center space-y-3 p-8">
               <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-700" />
-              <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">等待输入配方...</h3>
+              <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">{t('ai.stability.tab.emptyTitle')}</h3>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
-                在左侧输入成分名称并配置储存条件后，点击"本地计算"或"AI 分析"按钮，
-                此处将显示稳定性评分、保质期预测和时间序列分析。
+                {t('ai.stability.tab.emptyDesc')}
               </p>
             </div>
           </Card>
@@ -379,16 +380,16 @@ export function StabilityPredictTab() {
           <Tabs defaultValue="overview" className="h-full">
             <TabsList className="mb-4">
               <TabsTrigger value="overview" icon={<Info className="w-4 h-4" />}>
-                总览
+                {t('ai.stability.tab.tabs.overview')}
               </TabsTrigger>
               <TabsTrigger value="timeseries" icon={<TrendingDown className="w-4 h-4" />}>
-                时间序列
+                {t('ai.stability.tab.tabs.timeseries')}
               </TabsTrigger>
               <TabsTrigger value="factors" icon={<AlertTriangle className="w-4 h-4" />}>
-                因素分析
+                {t('ai.stability.tab.tabs.factors')}
               </TabsTrigger>
               <TabsTrigger value="recommendations" icon={<CheckCircle2 className="w-4 h-4" />}>
-                建议
+                {t('ai.stability.tab.tabs.recommendations')}
               </TabsTrigger>
             </TabsList>
 
@@ -398,7 +399,7 @@ export function StabilityPredictTab() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* 稳定性评分 */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-lg">稳定性评分</h3>
+                    <h3 className="font-semibold text-lg">{t('ai.stability.tab.overview.score')}</h3>
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-bold text-secondary-600">{stabilityResult.score.toFixed(0)}</span>
                       <span className="text-xl text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/100</span>
@@ -417,10 +418,10 @@ export function StabilityPredictTab() {
                     </div>
                     <p className="text-sm text-neutral-600">
                       {stabilityResult.score >= 80
-                        ? '✅ 稳定性良好，适合长期储存'
+                        ? t('ai.stability.tab.overview.good')
                         : stabilityResult.score >= 60
-                          ? '⚠️ 稳定性一般，建议优化储存条件'
-                          : '❌ 稳定性较差，需立即改善储存环境'}
+                          ? t('ai.stability.tab.overview.medium')
+                          : t('ai.stability.tab.overview.poor')}
                     </p>
                   </div>
 
@@ -428,18 +429,18 @@ export function StabilityPredictTab() {
                   <div className="space-y-3">
                     <h3 className="font-semibold text-lg flex items-center gap-2">
                       <Clock className="w-5 h-5" />
-                      预测保质期
+                      {t('ai.stability.tab.overview.shelfLife')}
                     </h3>
                     <div className="text-4xl font-bold text-accent-600">
                       {formatShelfLife(stabilityResult.shelfLifeDays)}
                     </div>
-                    <p className="text-sm text-neutral-600">基于当前储存条件和 Arrhenius 动力学模型计算</p>
+                    <p className="text-sm text-neutral-600">{t('ai.stability.tab.overview.shelfLifeHint')}</p>
                   </div>
                 </div>
 
                 {/* 关键影响因素 */}
                 <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
-                  <h4 className="font-semibold mb-3">关键影响因素</h4>
+                  <h4 className="font-semibold mb-3">{t('ai.stability.tab.overview.criticalFactors')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {stabilityResult.criticalFactors.map((factor, idx) => (
                       <Badge
@@ -463,14 +464,14 @@ export function StabilityPredictTab() {
             {/* 因素分析视图 */}
             <TabsContent value="factors" className="mt-0">
               <Card className="p-6">
-                <h3 className="font-semibold mb-4">各因素贡献度分析</h3>
+                <h3 className="font-semibold mb-4">{t('ai.stability.tab.factors.title')}</h3>
                 <div className="space-y-4">
                   {stabilityResult.factorContributions.map((contrib, idx) => (
                     <div key={idx} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{contrib.factor}</span>
                         <Badge variant={contrib.impact > 2 ? 'danger' : contrib.impact > 1.2 ? 'warning' : 'success'}>
-                          影响系数: {contrib.impact.toFixed(2)}x
+                          {t('ai.stability.tab.factors.impact', { value: contrib.impact.toFixed(2) })}
                         </Badge>
                       </div>
                       <div className="w-full bg-neutral-200 rounded-full h-2 overflow-hidden">
@@ -495,7 +496,7 @@ export function StabilityPredictTab() {
               <Card className="p-6 space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-success-500" />
-                  储存优化建议
+                  {t('ai.stability.tab.recommendations.title')}
                 </h3>
 
                 <div className="space-y-3">
@@ -518,7 +519,7 @@ export function StabilityPredictTab() {
                 </div>
 
                 <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <h4 className="font-semibold text-sm mb-2">降解途径说明</h4>
+                  <h4 className="font-semibold text-sm mb-2">{t('ai.stability.tab.recommendations.degradationPathway')}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {stabilityResult.degradationPathway.map((pathway, idx) => (
                       <div key={idx} className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded">

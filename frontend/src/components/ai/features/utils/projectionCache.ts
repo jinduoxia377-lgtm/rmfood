@@ -6,7 +6,7 @@
  * - 基于内容 hash 失效
  */
 
-import { useRef, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { AgentMessage } from '@/components/ai/shared/types';
 
 // ── Hash 计算 ──────────────────────────────────────────────
@@ -50,8 +50,6 @@ function evictOldest(): void {
 // ── 投影缓存 Hook ──────────────────────────────────────────
 
 export function useProjectionCache() {
-  const invalidateRef = useRef<(() => void)[]>([]);
-
   /**
    * 获取或计算派生消息 (带缓存)
    */

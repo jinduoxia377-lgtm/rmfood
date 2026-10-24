@@ -141,7 +141,7 @@ export function BotChatView({ bot, onOpenDetail }: BotChatViewProps) {
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               {bot.name}
               {bot.is_chief && (
-                <Badge className="gap-1 bg-primary-600 text-[10px]">
+                <Badge className="gap-1 bg-primary-600 text-xs">
                   <Sparkles className="h-3 w-3" /> Chief
                 </Badge>
               )}

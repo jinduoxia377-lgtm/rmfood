@@ -4,6 +4,7 @@
  * 在右下角展示引导横幅，并提供「去升级」按钮跳转到组织订阅页。
  */
 import React, { useState, useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Zap, X, ArrowRight } from 'lucide-react'
 
 interface QuotaNoticeState {
@@ -14,6 +15,7 @@ interface QuotaNoticeState {
 }
 
 export const AiQuotaNotice: React.FC = () => {
+  const { t } = useTranslation()
   const [notice, setNotice] = useState<QuotaNoticeState>({ message: '', visible: false })
 
   const dismiss = useCallback(() => setNotice((p) => ({ ...p, visible: false })), [])
@@ -22,7 +24,7 @@ export const AiQuotaNotice: React.FC = () => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as { message?: string; url?: string; org_id?: number } | undefined
       setNotice({
-        message: detail?.message || 'AI 配额已达上限，请升级组织计划后继续使用。',
+        message: detail?.message || t('ai.config.quotaExceeded'),
         url: detail?.url,
         orgId: detail?.org_id,
         visible: true,
@@ -41,7 +43,7 @@ export const AiQuotaNotice: React.FC = () => {
           <Zap className="w-5 h-5 text-warning-600 dark:text-warning-700" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-900 dark:text-white">配额超限</p>
+          <p className="text-sm font-semibold text-neutral-900 dark:text-white">{t('ai.config.quotaExceeded')}</p>
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 break-words">
             {notice.message}
           </p>

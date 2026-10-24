@@ -6,7 +6,9 @@ import { logger } from '@/utils/safeLogger'
 interface EffectOption {
   id: string
   label: string
+  labelKey: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 

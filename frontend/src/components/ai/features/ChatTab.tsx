@@ -16,6 +16,7 @@
  */
 
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useChatContext } from './ChatStateContext'
 import { logger } from '@/utils/safeLogger'
 
@@ -44,17 +45,20 @@ import { ChatSearchOverlay } from './components/ChatSearchOverlay'
 import { detectStructuredContent } from './components/structured/utils'
 import * as formulaExtractorService from './services/formulaExtractorService'
 import { createFormula } from '@/api/formula'
+import { validateAiFormula, repairStructuredFormula, type AiFormulaValidationResponse } from '@/api/ai'
 import { FormulaStatus } from '@/types'
 import type { FormulaCreatePayload } from '@/types/formula'
+import { FeedbackModal } from './components/FeedbackModal'
 
 // ===== 图标库 =====
-import { AlertTriangle, Pause, Leaf } from 'lucide-react'
+import { AlertTriangle, Pause, Leaf, Wand2 } from 'lucide-react'
 
 // ===== 配置 =====
 import { QUICK_QUESTIONS } from '@/config/ai'
 
 // ===== RAG / UI =====
 import { RAGKnowledgePanel } from './components/RAGKnowledgePanel'
+import { FormulaValidationModal } from './components/FormulaValidationModal'
 
 interface ChatTabProps {
   onBatchExport?: (ids: string[], format: 'json' | 'csv' | 'excel' | 'pdf') => void
@@ -69,8 +73,27 @@ interface ChatTabProps {
  * ChatTab - 纯布局组装组件 (v13.0)
  * 所有业务逻辑已提取至 ChatStateProvider
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 兼容既有 Props 契约，当前实现未使用这些 props
+ 
+/**
+ * 将 AI 校验响应中的阻断性错误汇总为提示文本（含超限/违禁成分与建议）。
+ * showNotice 是轻量提示条，文本需保持简短可读。
+ */
+export function buildValidationErrorSummary(validation: AiFormulaValidationResponse): string {
+  const criticalAlerts = validation.alerts.filter(a => a.level === 'critical' || a.blocking)
+  const parts = criticalAlerts.map(a => {
+    const ingredient = a.ingredient ? `「${a.ingredient}」` : ''
+    const detail = a.message || a.parameter || ''
+    const suggestion = a.recommendation ? `（建议：${a.recommendation}）` : ''
+    return `${ingredient}${detail}${suggestion}`
+  })
+  if (validation.errors?.length) parts.push(...validation.errors)
+  if (validation.recommendations?.length) parts.push(`建议：${validation.recommendations.join('；')}`)
+  const summary = parts.filter(Boolean).join('；')
+  return summary ? `校验未通过：${summary}` : '配方存在安全性问题，已阻止保存'
+}
+
 export function ChatTab(_props: ChatTabProps) {
+  const { t } = useTranslation()
   // ===== 从 Context 获取所有状态 =====
   const ctx = useChatContext()
   const {
@@ -86,6 +109,9 @@ export function ChatTab(_props: ChatTabProps) {
     // 引擎
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
+    // RAG
+    ragEnabled, ragIsSeeded, ragIsSeeding,
+    onToggleRAG, onTriggerSeed,
     // 配方
     formulaCount,
     // 报告
@@ -106,15 +132,36 @@ export function ChatTab(_props: ChatTabProps) {
   const [showUserProfileSettings, setShowUserProfileSettings] = React.useState(false)
   const [shareModalContent, setShareModalContent] = React.useState<{ messageId: string; content: string } | null>(null)
   const [searchOpen, setSearchOpen] = React.useState(false)
-  // 轻量提示条：后端未提供端点的按钮点下去必须给出明确反馈，不能静默无响应
-  const [notice, setNotice] = React.useState<{ kind: 'success' | 'warning' | 'error'; text: string } | null>(null)
+  // 轻量提示条：后端未提供端点的按钮点下去必须给出明确反馈，不能静默无响应。
+  // 成功提示可附带一个动作按钮（如「提交效果反馈」），通过 onAction 触发。
+  const [notice, setNotice] = React.useState<{
+    kind: 'success' | 'warning' | 'error'
+    text: string
+    actionLabel?: string
+    onAction?: () => void
+  } | null>(null)
   const noticeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-  const showNotice = React.useCallback((kind: 'success' | 'warning' | 'error', text: string) => {
-    setNotice({ kind, text })
+  const showNotice = React.useCallback((
+    kind: 'success' | 'warning' | 'error',
+    text: string,
+    actionLabel?: string,
+    onAction?: () => void,
+  ) => {
+    setNotice({ kind, text, actionLabel, onAction })
     if (noticeTimer.current) clearTimeout(noticeTimer.current)
-    noticeTimer.current = setTimeout(() => setNotice(null), 4000)
+    noticeTimer.current = setTimeout(() => setNotice(null), actionLabel ? 8000 : 4000)
   }, [])
   React.useEffect(() => () => { if (noticeTimer.current) clearTimeout(noticeTimer.current) }, [])
+
+  // ── 反馈闭环：保存成功后记录配方 ID，供「提交效果反馈」打开模态框 ──
+  const [feedbackTarget, setFeedbackTarget] = React.useState<{ formulaId: number; formulaName?: string } | null>(null)
+
+  // ── 成分级配方校验报告弹窗：有校验结果时先展示，用户确认后才 createFormula ──
+  const [validationModal, setValidationModal] = React.useState<{
+    result: AiFormulaValidationResponse
+    formulaName: string
+    payload: FormulaCreatePayload
+  } | null>(null)
 
   // ── 同步 Context 状态到本地（用于回调）──
   React.useEffect(() => {
@@ -131,7 +178,11 @@ export function ChatTab(_props: ChatTabProps) {
   }, [showKBPanel])
 
   // ── 从结构化内容提取配方并真正保存到后端 /formulas ──
-  // 此前只生成本地 id 就弹"✓ 配方已保存到配方库"，实际没有落库。
+  // 保存前调用 AI 配方校验（/ai/formula/validate）：
+  // - 有校验结果时弹出 FormulaValidationModal（成分级报告），用户确认后才 createFormula
+  // - CRITICAL 阻断时弹窗内「确认保存」禁用，只能取消
+  // - 有 warnings 未阻断 → 弹窗确认后保存，并把校验建议追加到 notes（【AI校验】前缀）
+  // - 校验接口异常 → 不阻断保存但提示（诚实降级）
   const handleStructureSave = React.useCallback(async (messageId: string, content: string) => {
     const structured = detectStructuredContent(content)
     if (!structured) {
@@ -164,29 +215,96 @@ export function ChatTab(_props: ChatTabProps) {
       }
     })
 
+    // 机理摘要（专业配方设计卡：由各成分 mechanism 汇总）
+    const mechanismSummary = extracted.ingredients
+      .filter(i => i.mechanism)
+      .map(i => `${i.name}：${i.mechanism}`)
+      .join('；')
+    // 监测与迭代建议 + 参考文献
+    const professionalNotes = [
+      extracted.monitoringAdvice ? `【监测与迭代】${extracted.monitoringAdvice}` : undefined,
+      extracted.references?.length ? `【参考文献】${extracted.references.join('；')}` : undefined,
+    ].filter(Boolean).join('\n\n')
+
     const payload: FormulaCreatePayload = {
       name: extracted.name,
-      description: [extracted.description, extracted.rationale && `【配伍思路】${extracted.rationale}`]
-        .filter(Boolean)
-        .join('\n\n'),
+      description: [
+        extracted.description,
+        extracted.rationale && `【配伍思路】${extracted.rationale}`,
+        mechanismSummary && `【作用机理】${mechanismSummary}`,
+      ].filter(Boolean).join('\n\n'),
       status: FormulaStatus.DRAFT,
       ingredients,
       effects: extracted.expectedEffects ?? [],
       target_effects: extracted.expectedEffects ?? [],
       dosage: extracted.dosageAdvice,
       processing_method: extracted.productionSteps?.length ? extracted.productionSteps.join('；') : undefined,
-      notes: extracted.precautions?.length ? `【注意事项】${extracted.precautions.join('；')}` : undefined,
+      notes: [
+        extracted.precautions?.length ? `【注意事项】${extracted.precautions.join('；')}` : undefined,
+        professionalNotes,
+      ].filter(Boolean).join('\n\n'),
       composition: extracted.scores,
       version_notes: '由 AI 对话结构化内容导入',
     }
 
+    // ── 保存前 AI 校验 ──
+    let validation: AiFormulaValidationResponse | null = null
+    let validationSkipped = false
+    try {
+      validation = await validateAiFormula({
+        formula_name: extracted.name,
+        ingredients: extracted.ingredients.map(i => ({ name: i.name, dosage_g: parseDosage(i.dosage) })),
+        target_effects: extracted.expectedEffects ?? [],
+      })
+    } catch (e) {
+      // 校验接口异常 → 不阻断保存，但明确提示校验服务不可用（诚实降级）
+      validationSkipped = true
+      logger.warn('[ChatTab] AI 配方校验服务调用失败，已跳过校验直接保存:', e)
+    }
+
+    if (validation) {
+      // 有 warnings 但未阻断 → 先把校验建议追加到 payload.notes（【AI校验】前缀）
+      const warnings = validation.warnings?.length
+        ? validation.warnings
+        : validation.alerts
+            .filter(a => a.level === 'warning' || !a.blocking)
+            .map(a => a.message)
+      const suggestions = validation.suggestions?.length
+        ? validation.suggestions
+        : (validation.recommendations ?? [])
+      if (warnings.length > 0 || suggestions.length > 0) {
+        const aiNotes = [
+          ...warnings.filter(Boolean),
+          ...suggestions.map(s => `建议：${s}`),
+        ].join('；')
+        payload.notes = [payload.notes, `【AI校验】${aiNotes}`].filter(Boolean).join('\n\n')
+      }
+
+      // 弹出成分级校验报告，用户确认后才真正保存（CRITICAL 时确认按钮禁用）
+      setValidationModal({ result: validation, formulaName: extracted.name, payload })
+      return
+    }
+
+    // 校验接口异常 → 诚实降级：不阻断保存，直接落库
     try {
       const created = await createFormula(payload)
-      showNotice('success', `配方「${created.name ?? extracted.name}」已保存到配方库`)
+      if (validationSkipped) {
+        // 诚实降级：保存成功但校验未执行，提示中明确说明
+        showNotice('warning', `配方「${created.name ?? extracted.name}」已保存（校验服务暂不可用，已跳过校验）`)
+      } else {
+        // 保存成功通知：附带「提交效果反馈」入口，打开 FeedbackModal
+        showNotice(
+          'success',
+          `配方「${created.name ?? extracted.name}」已保存到配方库`,
+          '提交效果反馈',
+          () => setFeedbackTarget({ formulaId: created.id, formulaName: created.name ?? extracted.name }),
+        )
+      }
       logger.info('[ChatTab] 配方已保存到配方库:', {
         formulaId: created.id,
         name: created.name,
         ingredients: ingredients.length,
+        validationSkipped,
       })
     } catch (e) {
       logger.error('[ChatTab] 配方保存失败:', e)
@@ -194,9 +312,84 @@ export function ChatTab(_props: ChatTabProps) {
     }
   }, [showNotice])
 
+  // 用户在校验报告弹窗中点击「确认保存」后真正落库
+  const handleValidationConfirm = React.useCallback(async () => {
+    if (!validationModal) return
+    const { payload } = validationModal
+    const formulaName = payload.name
+    setValidationModal(null)
+    try {
+      const created = await createFormula(payload)
+      // 保存成功通知：附带「提交效果反馈」入口，打开 FeedbackModal
+      showNotice(
+        'success',
+        `配方「${created.name ?? formulaName}」已保存到配方库`,
+        '提交效果反馈',
+        () => setFeedbackTarget({ formulaId: created.id, formulaName: created.name ?? formulaName }),
+      )
+      logger.info('[ChatTab] 校验确认后配方已保存到配方库:', {
+        formulaId: created.id,
+        name: created.name,
+        validationSkipped: false,
+      })
+    } catch (e) {
+      logger.error('[ChatTab] 配方保存失败:', e)
+      showNotice('error', '配方保存失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+    }
+  }, [validationModal, showNotice])
+
   const handleStructureShare = React.useCallback((messageId: string, content: string) => {
     setShareModalContent({ messageId, content })
   }, [])
+
+  // ── 结构化输出兜底：消息不是结构化 JSON 但看起来像配方时 ──
+  // 调用后端 /ai/formula/repair-structured 修复为 blocks 结构化内容，
+  // 成功后把修复结果转成结构化消息 JSON，复用 handleStructureSave 的提取+校验+保存流程。
+  const handleStructureRepair = React.useCallback(async (messageId: string, content: string) => {
+    showNotice('warning', '正在调用 AI 修复为结构化配方…')
+    try {
+      const result = await repairStructuredFormula(content)
+      if (result.success && result.structured && Array.isArray(result.structured.blocks) && result.structured.blocks.length > 0) {
+        // 转成与一期 detectStructuredContent 兼容的消息 JSON（含 blocks）
+        const structuredJson = JSON.stringify({
+          responseType: 'formula',
+          blocks: result.structured.blocks,
+        })
+        showNotice('success', '结构化修复成功，正在保存配方…')
+        await handleStructureSave(messageId, structuredJson)
+      } else {
+        // 后端返回 success=false（LLM 不可用 / 解析失败）
+        showNotice('error', result.message || '结构化修复失败，请稍后重试')
+      }
+    } catch (e) {
+      logger.error('[ChatTab] 结构化修复调用失败:', e)
+      showNotice('error', '结构化修复失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+    }
+  }, [handleStructureSave, showNotice])
+
+  // ── RAG 知识库：接入真实后端 /rag/*（不再硬编码禁用）──
+  const handleTriggerSeed = React.useCallback(async () => {
+    showNotice('warning', t('ai.chat.notice.ragSeeding'))
+    try {
+      const ok = await onTriggerSeed()
+      if (ok) {
+        showNotice('success', t('ai.chat.notice.ragSeedComplete'))
+      } else {
+        showNotice('warning', t('ai.chat.notice.ragSeedFailed'))
+      }
+    } catch {
+      showNotice('error', t('ai.chat.notice.ragSeedFailed'))
+    }
+  }, [onTriggerSeed, showNotice, t])
+
+  const handleToggleRAG = React.useCallback(() => {
+    // 未 seed 时点击开关 → 先触发种子注入；已 seed 才切换 RAG 开关
+    if (!ragIsSeeded) {
+      void handleTriggerSeed()
+      return
+    }
+    onToggleRAG()
+  }, [ragIsSeeded, onToggleRAG, handleTriggerSeed])
 
   return (
     <div className={`flex h-full relative chat-unified chat-area`}>
@@ -234,22 +427,18 @@ export function ChatTab(_props: ChatTabProps) {
             // 后端没有"按对话切换模型"的端点，聊天始终走 /models/status 的默认模型。
             // 此前这里只打日志，用户以为切换生效了。
             logger.debug('[ChatTab] Model changed:', model)
-            showNotice('warning', '模型切换暂不可用：后端未提供按对话指定模型的接口，当前仍使用默认模型')
+            showNotice('warning', t('ai.chat.notice.modelSwitchUnavailable'))
           }}
           scenarioMode={scenarioMode}
           onScenarioSwitch={(mode) => scenarioSwitcher.switchTo(mode, 'user_selected')}
           historyVisible={historyVisible}
           historySessions={historySessions}
           onToggleHistory={toggleHistory}
-          ragEnabled={false}
-          ragIsSeeded={false}
-          ragIsSeeding={false}
-          onToggleRAG={() =>
-            showNotice('warning', '知识库检索暂不可用：后端未提供 RAG 索引与检索端点')
-          }
-          onTriggerSeed={() =>
-            showNotice('warning', '知识库初始化暂不可用：后端未提供 RAG 端点')
-          }
+          ragEnabled={ragEnabled}
+          ragIsSeeded={ragIsSeeded}
+          ragIsSeeding={ragIsSeeding}
+          onToggleRAG={handleToggleRAG}
+          onTriggerSeed={handleTriggerSeed}
           formulaCount={formulaCount}
           onShowFormulaList={() => setShowKBPanelLocal(true)}
           messageCount={messages.length}
@@ -258,8 +447,8 @@ export function ChatTab(_props: ChatTabProps) {
           onOpenUserProfile={() => setShowUserProfileSettings(true)}
           onToggleSearch={() => setSearchOpen(v => !v)}
           searchOpen={searchOpen}
-          // 此前是 t={() => ''}，把 TopBar 标题清空了
-          t={(_key, fallback) => fallback ?? _key}
+          // 传入真实翻译函数，确保 TopBar 文案随全局语言切换
+          t={t}
         />
 
         {/* ② 消息滚动区 */}
@@ -271,13 +460,13 @@ export function ChatTab(_props: ChatTabProps) {
                 <div className="flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-error-800 dark:text-error-700">对话出错</p>
+                    <p className="text-sm font-medium text-error-800 dark:text-error-700">{t('ai.chat.chatTab.chatError')}</p>
                     <p className="text-xs text-error-600 dark:text-error-700 mt-0.5 truncate">
                       {chatError instanceof Error ? chatError.message : String(chatError)}
                     </p>
                     <div className="flex gap-2 mt-2">
-                      <Button variant="outline" size="sm" onClick={handleRetry}>重试</Button>
-                      <Button variant="ghost" size="sm" onClick={clearError}>关闭</Button>
+                      <Button variant="outline" size="sm" onClick={handleRetry}>{t('ai.chat.chatTab.retry')}</Button>
+                      <Button variant="ghost" size="sm" onClick={clearError}>{t('ai.chat.chatTab.close')}</Button>
                     </div>
                   </div>
                 </div>
@@ -287,8 +476,8 @@ export function ChatTab(_props: ChatTabProps) {
             {/* 空状态 */}
             {messages.length === 0 && (
               <EmptyStateCard
-                welcomeTitle="欢迎使用智能配方助手"
-                welcomeSubtitle="选择下方问题快速开始，或直接输入您的配方需求"
+                welcomeTitle={t('ai.chat.chatTab.welcomeTitle')}
+                welcomeSubtitle={t('ai.chat.chatTab.welcomeSubtitle')}
                 questions={QUICK_QUESTIONS}
                 onAsk={handleSend}
               />
@@ -302,18 +491,18 @@ export function ChatTab(_props: ChatTabProps) {
               onRetry={handleRetry}
               onGenerateReport={() => {
                 if (isGeneratingReport) {
-                  showNotice('warning', '报告正在生成中，请稍候')
+                  showNotice('warning', t('ai.chat.notice.reportGenerating'))
                   return
                 }
                 if (formulaCount === 0) {
-                  showNotice('warning', '还没有配方数据，请先在对话中描述配方需求或导入配方')
+                  showNotice('warning', t('ai.chat.notice.noFormulaData'))
                   return
                 }
-                showNotice('success', '开始生成配方报告…')
+                showNotice('success', t('ai.chat.notice.reportStarted'))
                 // 汇总当前会话识别出的全部配方；useReportGenerator 内部会做缓存与版本记录
                 handleGenerateReport().catch((err) => {
-                  const msg = err instanceof Error ? err.message : String(err ?? '未知错误')
-                  showNotice('error', `报告生成失败：${msg}`)
+                  const msg = err instanceof Error ? err.message : String(err ?? t('ai.chat.notice.unknownError'))
+                  showNotice('error', t('ai.chat.notice.reportFailed', { error: msg }))
                 })
               }}
               showReportButton={formulaCount > 0}
@@ -333,6 +522,7 @@ export function ChatTab(_props: ChatTabProps) {
               thinkingSteps={[]}
               onStructureSave={handleStructureSave}
               onStructureShare={handleStructureShare}
+              onStructureRepair={handleStructureRepair}
             />
 
             {/* 追问建议栏 */}
@@ -365,19 +555,19 @@ export function ChatTab(_props: ChatTabProps) {
           </div>
         </div>
 
-        {/* ③ 输入区 */}
-        <div className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex-shrink-0">
+        {/* ③ 输入区：主题令牌（--bg-secondary/--border-color） */}
+        <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0">
           {/* 暂停条 */}
           {isStreaming && (
-            <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50/50 dark:bg-neutral-900/50">
+            <div className="flex items-center justify-between px-4 py-1.5 bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)]/40">
               <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
-                生成中
+                {t('ai.chat.chatTab.generating')}
               </span>
               <button onClick={pauseStreaming}
-                className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-neutral-200 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+                className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[var(--bg-tertiary)] dark:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                 <Pause className="w-2.5 h-2.5" />
-                暂停
+                {t('ai.chat.chatTab.pause')}
               </button>
             </div>
           )}
@@ -388,7 +578,7 @@ export function ChatTab(_props: ChatTabProps) {
             onStop={() => pauseStreaming()}
             isStreaming={isStreaming}
             maxLength={2000}
-            placeholder="描述您的配方需求..."
+            placeholder={t('ai.chat.input.placeholder')}
             modelName={llmModel || 'deepseek-chat'}
             modelColor="text-success-500"
             attachments={attachments as DraftAttachment[]}
@@ -410,7 +600,7 @@ export function ChatTab(_props: ChatTabProps) {
 
         {/* Details 面板 — 移动端为全屏抽屉，sm+ 恢复为右侧内嵌列 */}
         {detailsOpenLocal && detailsCallLocal && (
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[320px] flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 overflow-hidden sm:static sm:z-auto sm:w-[320px] sm:max-w-none">
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[320px] flex-shrink-0 border-l border-[var(--border-color)] overflow-hidden sm:static sm:z-auto sm:w-[320px] sm:max-w-none">
             <DetailsPanel
               selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as any}
               onClose={() => setDetailsOpen(false)}
@@ -467,12 +657,30 @@ export function ChatTab(_props: ChatTabProps) {
           />
         )}
 
+        {/* 配方效果反馈模态框 */}
+        {feedbackTarget && (
+          <FeedbackModal
+            formulaId={feedbackTarget.formulaId}
+            formulaName={feedbackTarget.formulaName}
+            onClose={() => setFeedbackTarget(null)}
+          />
+        )}
+
+        {/* 成分级配方校验报告弹窗：用户确认后才真正保存 */}
+        <FormulaValidationModal
+          open={!!validationModal}
+          result={validationModal?.result ?? null}
+          formulaName={validationModal?.formulaName}
+          onConfirm={() => void handleValidationConfirm()}
+          onCancel={() => setValidationModal(null)}
+        />
+
         {/* 操作反馈提示：成功 / 后端未提供端点 / 失败 */}
         {notice && (
           <div
             role="status"
             className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
-              text-xs font-medium shadow-lg animate-fade-in text-white ${
+              text-xs font-medium shadow-lg animate-fade-in text-white flex items-center gap-3 ${
                 notice.kind === 'success'
                   ? 'bg-success-500'
                   : notice.kind === 'error'
@@ -480,8 +688,17 @@ export function ChatTab(_props: ChatTabProps) {
                     : 'bg-warning-500'
               }`}
           >
-            {notice.kind === 'success' ? '✓ ' : '⚠ '}
-            {notice.text}
+            <span>{notice.kind === 'success' ? '✓ ' : '⚠ '}{notice.text}</span>
+            {notice.actionLabel && notice.onAction && (
+              <button
+                type="button"
+                onClick={notice.onAction}
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold transition-colors"
+              >
+                <Wand2 className="w-3 h-3" />
+                {notice.actionLabel}
+              </button>
+            )}
           </div>
         )}
       </div>

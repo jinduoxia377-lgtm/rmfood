@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Shield, AlertTriangle, Users, Utensils } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, Input, Badge } from '@/components/ui'
@@ -40,18 +41,18 @@ export interface ConstraintPanelProps {
 // ─── 常量定义 ───
 
 const AGE_GROUP_OPTIONS = [
-  { value: 'children', label: '儿童(3-12岁)', icon: '👶' },
-  { value: 'adult', label: '成人', icon: '🧑' },
-  { value: 'elderly', label: '老人(60岁+)', icon: '👴' },
-  { value: 'pregnant', label: '孕妇', icon: '🤰' },
+  { value: 'children', labelKey: 'ageChildren', icon: '👶' },
+  { value: 'adult', labelKey: 'ageAdult', icon: '🧑' },
+  { value: 'elderly', labelKey: 'ageElderly', icon: '👴' },
+  { value: 'pregnant', labelKey: 'agePregnant', icon: '🤰' },
 ]
 
 const COOKING_METHOD_OPTIONS = [
-  { value: 'decoction', label: '煎煮', desc: '传统水煎' },
-  { value: 'tea', label: '代茶饮', desc: '冲泡饮用' },
-  { value: 'soup', label: '汤剂', desc: '炖汤食用' },
-  { value: 'paste', label: '膏方', desc: '浓缩膏滋' },
-  { value: 'powder', label: '粉剂', desc: '研磨冲服' },
+  { value: 'decoction', labelKey: 'cookingDecoction', descKey: 'cookingDecoctionDesc' },
+  { value: 'tea', labelKey: 'cookingTea', descKey: 'cookingTeaDesc' },
+  { value: 'soup', labelKey: 'cookingSoup', descKey: 'cookingSoupDesc' },
+  { value: 'paste', labelKey: 'cookingPaste', descKey: 'cookingPasteDesc' },
+  { value: 'powder', labelKey: 'cookingPowder', descKey: 'cookingPowderDesc' },
 ]
 
 const ALLERGY_PRESETS = [
@@ -74,6 +75,7 @@ function TagInput({
   onChange: (tags: string[]) => void
   placeholder: string
 }) {
+  const { t } = useTranslation()
   const [input, setInput] = useState('')
 
   const addTag = useCallback(() => {
@@ -115,7 +117,7 @@ function TagInput({
           className="h-7 text-xs"
         />
         <Button size="sm" className="h-7 px-2 text-xs" onClick={addTag}>
-          添加
+          {t('ai.formula.generateTab.add')}
         </Button>
       </div>
     </div>
@@ -127,10 +129,11 @@ function PresetSelector({
   selected,
   onChange,
 }: {
-  options: Array<{ value: string; label: string; icon?: string }>
+  options: Array<{ value: string; labelKey: string; icon?: string }>
   selected: string
   onChange: (v: string) => void
 }) {
+  const { t } = useTranslation()
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {options.map((opt) => (
@@ -152,7 +155,7 @@ function PresetSelector({
                 selected === opt.value ? 'text-primary' : 'text-foreground',
               )}
             >
-              {opt.label}
+              {t(`ai.formula.generateTab.${opt.labelKey}`)}
             </span>
           </div>
         </button>
@@ -168,6 +171,7 @@ export function ConstraintPanel({
   onChange,
   className,
 }: ConstraintPanelProps) {
+  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const updateConstraint = useCallback(
@@ -190,9 +194,9 @@ export function ConstraintPanel({
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold">个性化约束</h3>
+            <h3 className="text-sm font-semibold">{t('ai.formula.generateTab.personalizedConstraints')}</h3>
             <p className="text-xs text-muted-foreground">
-              {hasActiveConstraints ? '已设置约束条件' : '设置个人禁忌与偏好'}
+              {hasActiveConstraints ? t('ai.formula.generateTab.constraintsSet') : t('ai.formula.generateTab.setConstraintsHint')}
             </p>
           </div>
         </div>
@@ -203,7 +207,7 @@ export function ConstraintPanel({
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <Users className="w-3.5 h-3.5 mr-1" />
-          {isExpanded ? '收起' : '设置'}
+          {isExpanded ? t('ai.formula.generateTab.collapse') : t('ai.formula.generateTab.settings')}
         </Button>
       </div>
 
@@ -211,7 +215,7 @@ export function ConstraintPanel({
       <div className="space-y-2">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
           <Users className="w-3.5 h-3.5" />
-          目标人群
+          {t('ai.formula.generateTab.targetPopulation')}
         </label>
         <PresetSelector
           options={AGE_GROUP_OPTIONS}
@@ -226,7 +230,7 @@ export function ConstraintPanel({
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-              过敏原（点击标签快速添加）
+              {t('ai.formula.generateTab.allergies')}
             </label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {ALLERGY_PRESETS.map((allergy) => (
@@ -257,14 +261,14 @@ export function ConstraintPanel({
             <TagInput
               tags={constraints.allergies || []}
               onChange={(v) => updateConstraint('allergies', v)}
-              placeholder="添加其他过敏原..."
+              placeholder={t('ai.formula.generateTab.addOtherAllergies')}
             />
           </div>
 
           {/* 健康状况 */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">
-              健康状况
+              {t('ai.formula.generateTab.healthConditions')}
             </label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {CONDITION_PRESETS.map((condition) => (
@@ -295,7 +299,7 @@ export function ConstraintPanel({
             <TagInput
               tags={constraints.conditions || []}
               onChange={(v) => updateConstraint('conditions', v)}
-              placeholder="添加其他健康状况..."
+              placeholder={t('ai.formula.generateTab.addOtherConditions')}
             />
           </div>
 
@@ -303,7 +307,7 @@ export function ConstraintPanel({
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <Utensils className="w-3.5 h-3.5" />
-              烹饪方式
+              {t('ai.formula.generateTab.cookingMethod')}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {COOKING_METHOD_OPTIONS.map((opt) => (
@@ -325,9 +329,9 @@ export function ConstraintPanel({
                         : 'text-foreground',
                     )}
                   >
-                    {opt.label}
+                    {t(`ai.formula.generateTab.${opt.labelKey}`)}
                   </div>
-                  <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                  <div className="text-xs text-muted-foreground">{t(`ai.formula.generateTab.${opt.descKey}`)}</div>
                 </button>
               ))}
             </div>
@@ -336,12 +340,12 @@ export function ConstraintPanel({
           {/* 禁用药材 */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">
-              禁用药材（手动输入）
+              {t('ai.formula.generateTab.contraindicatedHerbs')}
             </label>
             <TagInput
               tags={constraints.contraindications || []}
               onChange={(v) => updateConstraint('contraindications', v)}
-              placeholder="如：附子、藜芦..."
+              placeholder={t('ai.formula.generateTab.contraindicatedHerbsPlaceholder')}
             />
           </div>
 
@@ -363,7 +367,7 @@ export function ConstraintPanel({
                 })
               }
             >
-              重置约束
+              {t('ai.formula.generateTab.resetConstraints')}
             </Button>
             <Button
               variant="outline"
@@ -381,7 +385,7 @@ export function ConstraintPanel({
                 })
               }
             >
-              儿童模式
+              {t('ai.formula.generateTab.childrenMode')}
             </Button>
           </div>
         </div>

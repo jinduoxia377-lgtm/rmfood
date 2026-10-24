@@ -182,7 +182,6 @@ function calculateSafetyScore(ingredients: Ingredient[]): number {
           safetyScore -= 25
         } else if (prec.severity === 'medium') {
           safetyScore -= 10
-          warningCount++
         } else {
           safetyScore -= 3
         }

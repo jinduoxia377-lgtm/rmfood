@@ -6,7 +6,8 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react'
-import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { uploadDocument, type DocumentInfo } from '@/api/rag'
 import { clsx } from 'clsx'
 
@@ -19,6 +20,7 @@ const ACCEPTED_TYPES = '.pdf,.txt,.csv,.md'
 const ACCEPTED_TYPES_LABEL = 'PDF, TXT, CSV, MD'
 
 export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUploaderProps) {
+  const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -96,7 +98,7 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
         {isUploading ? (
           <div className="space-y-2">
             <Loader2 className="w-8 h-8 mx-auto text-primary-500 animate-spin" />
-            <p className="text-sm text-[var(--text-secondary)]">正在上传并解析...</p>
+            <p className="text-sm text-[var(--text-secondary)]">{t('ai.knowledge.uploading')}</p>
             <div className="w-full max-w-xs mx-auto bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5">
               <div
                 className="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
@@ -109,10 +111,10 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
           <div className="space-y-2">
             <Upload className="w-8 h-8 mx-auto text-[var(--text-muted)]" />
             <p className="text-sm text-[var(--text-secondary)]">
-              拖拽文件到此处，或 <span className="text-primary-500">点击选择</span>
+              {t('ai.knowledge.dropHint')} <span className="text-primary-500">{t('ai.knowledge.clickSelect')}</span>
             </p>
             <p className="text-xs text-[var(--text-muted)]">
-              支持 {ACCEPTED_TYPES_LABEL} 格式，单文件最大 {maxSizeMB}MB
+              {t('ai.knowledge.formatHint', { types: ACCEPTED_TYPES_LABEL, maxSize: maxSizeMB })}
             </p>
           </div>
         )}

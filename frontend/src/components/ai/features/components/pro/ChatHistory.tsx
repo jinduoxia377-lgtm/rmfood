@@ -5,7 +5,9 @@
  * 数据持久化到 localStorage
  */
 import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MessageSquare, Plus, Trash2, Edit2, Check, X, Clock, GitBranch } from 'lucide-react'
+import i18n from '@/i18n'
 
 export interface HistorySession {
   id: string
@@ -43,10 +45,10 @@ export function loadSessions(): HistorySession[] {
 
 export function formatTime(ts: number): string {
   const diff = Date.now() - ts
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
+  if (diff < 60000) return i18n.t('ai.chat.history.justNow')
+  if (diff < 3600000) return i18n.t('ai.chat.history.minutesAgo', { count: Math.floor(diff / 60000) })
+  if (diff < 86400000) return i18n.t('ai.chat.history.hoursAgo', { count: Math.floor(diff / 3600000) })
+  if (diff < 604800000) return i18n.t('ai.chat.history.daysAgo', { count: Math.floor(diff / 86400000) })
   return new Date(ts).toLocaleDateString('zh-CN')
 }
 
@@ -54,6 +56,7 @@ export default function ChatHistory({
   sessions, activeSessionId, onNewChat, onSelectSession,
   onDeleteSession, onRenameSession, isVisible, onForkSession,
 }: ChatHistoryProps) {
+  const { t } = useTranslation()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   // Task 8: Fork 确认对话框状态
@@ -99,11 +102,11 @@ export default function ChatHistory({
       <div className="p-3 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-            对话历史
+            {t('ai.chat.history.title')}
           </h3>
           <button onClick={onNewChat}
             className="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600 transition-colors"
-            title="新建对话"
+            title={t('ai.chat.history.newChat')}
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -115,7 +118,7 @@ export default function ChatHistory({
         {sortedSessions.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="w-6 h-6 text-neutral-300 dark:text-neutral-400 mx-auto mb-2" />
-            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">暂无历史对话</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.chat.history.noHistory')}</p>
           </div>
         ) : (
           sortedSessions.map(session => {
@@ -140,7 +143,7 @@ export default function ChatHistory({
                       onKeyDown={e => { if (e.key === 'Enter') confirmRename(session.id); if (e.key === 'Escape') setEditingId(null) }}
                       className="flex-1 text-xs bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded px-1.5 py-1 outline-none focus:ring-1 focus:ring-primary-400"
                       autoFocus
-        aria-label="会话标题"
+        aria-label={t('ai.chat.history.title')}
       />
                     <button onClick={() => confirmRename(session.id)} className="p-0.5 text-success-500 hover:text-success-600"><Check className="w-3.5 h-3.5" /></button>
                     <button onClick={() => setEditingId(null)} className="p-0.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300"><X className="w-3.5 h-3.5" /></button>
@@ -155,13 +158,13 @@ export default function ChatHistory({
                       <MessageSquare className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${isActive ? 'text-primary-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
-                          {session.title || '新对话'}
+                          {session.title || t('ai.chat.history.newConversation')}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Clock className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
                           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formatTime(session.timestamp)}</span>
                           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
-                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{session.messageCount}条</span>
+                          <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.chat.history.messagesCount', { count: session.messageCount })}</span>
                         </div>
                       </div>
                     </div>
@@ -173,20 +176,20 @@ export default function ChatHistory({
                   <div className={`absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity${'ontouchstart' in window ? ' !opacity-100' : ''}`}>
                     <button onClick={() => startRename(session.id, session.title)}
                       className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600"
-                      title="重命名"
+                      title={t('ai.chat.history.rename')}
                     ><Edit2 className="w-3 h-3" /></button>
                     {onForkSession && (
                       <button
                         onClick={() => {
                           setForkingId(session.id)
-                          setForkTitle(`分支-${session.title || '对话'}`)
+                          setForkTitle(t('ai.chat.history.forkTitle', { title: session.title || t('ai.chat.history.newConversation') }))
                         }}
                         className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-primary-500"
-                        title="创建分支"
+                        title={t('ai.chat.history.fork')}
                       ><GitBranch className="w-3 h-3" /></button>
                     )}
                     <button onClick={() => onDeleteSession(session.id)}
-                      aria-label="删除对话"
+                      aria-label={t('ai.chat.history.delete')}
                       className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-error-500"
                     ><Trash2 className="w-3 h-3" /></button>
                   </div>
@@ -201,9 +204,9 @@ export default function ChatHistory({
       {forkingId && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-[90%] p-4">
-            <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-3">创建会话分支</h4>
+            <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-3">{t('ai.chat.history.createForkTitle')}</h4>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-              将为当前会话创建一个分支，从最新消息处截断。请输入分支名称：
+              {t('ai.chat.history.forkDesc')}
             </p>
             <input
               type="text"
@@ -212,18 +215,18 @@ export default function ChatHistory({
               onKeyDown={e => { if (e.key === 'Enter') handleForkConfirm() }}
               autoFocus
               className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 outline-none focus:ring-1 focus:ring-primary-500 mb-3"
-              placeholder="分支名称（如：配方对比版）"
+              placeholder={t('ai.chat.history.forkPlaceholder')}
             />
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => { setForkingId(null); setForkTitle('') }}
                 className="px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-              >取消</button>
+              >{t('ai.chat.topbar.cancel')}</button>
               <button
                 onClick={handleForkConfirm}
                 disabled={forking || !forkTitle.trim()}
                 className="px-3 py-1.5 text-xs bg-primary-container text-primary-main rounded-lg hover:bg-primary-container disabled:opacity-50"
-              >{forking ? '创建中...' : '确认创建'}</button>
+              >{forking ? t('ai.chat.history.creating') : t('ai.chat.history.confirmCreate')}</button>
             </div>
           </div>
         </div>

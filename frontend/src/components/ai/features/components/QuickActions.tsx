@@ -16,6 +16,7 @@
 
 import React, { memo } from 'react'
 import { FileText, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { QuickQuestion } from '@/config/ai/questions'
 import { QUICK_QUESTIONS } from '@/config/ai/questions'
 
@@ -36,6 +37,7 @@ const QuickActions = memo(({
   showQuestions = true,
   maxQuestionCount = 4,
 }: QuickActionsProps) => {
+  const { t } = useTranslation()
   const displayQuestions: QuickQuestion[] = showQuestions
     ? QUICK_QUESTIONS.slice(0, maxQuestionCount)
     : []
@@ -47,31 +49,34 @@ const QuickActions = memo(({
   }
 
   return (
-    <div className="quick-actions-container" role="region" aria-label="快捷操作">
+    <div className="quick-actions-container" role="region" aria-label={t('ai.chat.quick.actionsRegionAria')}>
       {displayQuestions.length > 0 && (
         <div className="quick-questions-section mb-4">
           <div className="flex flex-wrap gap-2 sm:gap-3 max-w-2xl justify-center">
-            {displayQuestions.map((q) => (
-              <button
-                key={q.id}
-                onClick={() => handleQuestionClick(q.question)}
-                className="
-                  text-xs sm:text-sm px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl
-                  border border-neutral-200 dark:border-neutral-700
-                  hover:bg-primary-50 dark:hover:bg-primary-900/20
-                  hover:border-primary-300 dark:hover:border-primary-700
-                  hover:text-primary-700 dark:hover:text-primary-700
-                  transition-all duration-200 shadow-sm hover:shadow-md
-                  active:scale-[0.98]
-                  focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-                "
-                style={{ color: 'var(--text-secondary)' }}
-                aria-label={`快捷问题: ${q.question}`}
-                title={q.question}
-              >
-                <span className="truncate block max-w-[180px]">{q.question}</span>
-              </button>
-            ))}
+            {displayQuestions.map((q) => {
+              const questionText = t(`ai.chat.quick.questions.${q.questionKey}`, { defaultValue: q.question })
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => handleQuestionClick(q.question)}
+                  className="
+                    text-xs sm:text-sm px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl
+                    border border-neutral-200 dark:border-neutral-700
+                    hover:bg-primary-50 dark:hover:bg-primary-900/20
+                    hover:border-primary-300 dark:hover:border-primary-700
+                    hover:text-primary-700 dark:hover:text-primary-700
+                    transition-all duration-200 shadow-sm hover:shadow-md
+                    active:scale-[0.98]
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                  "
+                  style={{ color: 'var(--text-secondary)' }}
+                  aria-label={t('ai.chat.quick.questionAria', { question: questionText })}
+                  title={questionText}
+                >
+                  <span className="truncate block max-w-[180px]">{questionText}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
@@ -101,19 +106,19 @@ const QuickActions = memo(({
             `}
             aria-label={
               isGeneratingReport
-                ? '正在生成综合报告'
-                : `生成综合报告 (${formulaCount}个配方)`
+                ? t('ai.chat.quick.reportGenerating')
+                : t('ai.chat.quick.reportGeneratingLabel', { count: formulaCount })
             }
           >
             {isGeneratingReport ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                <span>生成中...</span>
+                <span>{t('ai.chat.quick.generating')}</span>
               </>
             ) : (
               <>
                 <FileText className="w-4 h-4" aria-hidden="true" />
-                <span>生成综合报告</span>
+                <span>{t('ai.chat.quick.generateReport')}</span>
                 {formulaCount > 1 && (
                   <span className="px-2 py-0.5 bg-white dark:bg-neutral-900/20 rounded-full text-xs font-mono">
                     {formulaCount}

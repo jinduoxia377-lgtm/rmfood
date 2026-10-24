@@ -13,10 +13,12 @@
  */
 
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ChatMessage } from '../../hooks/useChatMessages'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { MessageBubble } from './MessageBubble'
+import { VIRTUALIZE_THRESHOLD } from '@/config/ai/constants'
 import {
 	Bot, Sparkles, ChevronDown, Leaf, Handshake, Dna, Shield, RefreshCw,
 } from 'lucide-react'
@@ -42,16 +44,16 @@ export interface MessageListProps {
 	onDetailsMessage?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
 	onStructureSave?: (messageId: string, content: string) => void
 	onStructureShare?: (messageId: string, content: string) => void
+	/** 结构化兜底：将非结构化配方文本修复为结构化 JSON 后保存 */
+	onStructureRepair?: (messageId: string, content: string) => void
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 }
 
-const VIRTUALIZE_THRESHOLD = 40
-
 const QUICK_ACTIONS = [
-	{ Icon: Leaf, title: '补气药材', desc: '药食同源目录里有哪些常用的补气药材？', color: 'text-primary-500' },
-	{ Icon: Handshake, title: '配伍协同', desc: '黄芪和党参配伍有什么协同作用？', color: 'text-secondary-500' },
-	{ Icon: Dna, title: '活性肽', desc: '功能性食品中常用的活性肽有哪些来源？', color: 'text-accent-500' },
-	{ Icon: Shield, title: '抗氧化', desc: '设计一款抗氧化保健食品需要注意什么？', color: 'text-danger-500' },
+	{ Icon: Leaf, titleKey: 'ai.chat.quick.actions.qiTonics.title', descKey: 'ai.chat.quick.questions.herb_list', color: 'text-primary-500' },
+	{ Icon: Handshake, titleKey: 'ai.chat.quick.actions.synergy.title', descKey: 'ai.chat.quick.questions.herb_synergy', color: 'text-secondary-500' },
+	{ Icon: Dna, titleKey: 'ai.chat.quick.actions.peptides.title', descKey: 'ai.chat.quick.questions.peptide_sources', color: 'text-accent-500' },
+	{ Icon: Shield, titleKey: 'ai.chat.quick.actions.antioxidant.title', descKey: 'ai.chat.quick.questions.antioxidant_design', color: 'text-danger-500' },
 ]
 
 export function MessageList({
@@ -60,9 +62,10 @@ export function MessageList({
 	showReportButton,
 	highlightedMessageId, selectedMessageIds, onReferenceMessage,
 	onRetractMessage, onForkMessage, onDetailsMessage,
-	onStructureSave, onStructureShare,
+	onStructureSave, onStructureShare, onStructureRepair,
 	thinkingSteps,
 }: MessageListProps) {
+	const { t } = useTranslation()
 	// 防御：上游在初始加载态可能传入 undefined（类型声明虽为必填）。
 	// 若不归一化，下方 :78 的 messages.length 会抛 TypeError 导致整个列表崩溃。
 	const messages = rawMessages ?? []
@@ -200,11 +203,12 @@ export function MessageList({
 			onDetails={onDetailsMessage}
 			onStructureSave={onStructureSave}
 			onStructureShare={onStructureShare}
+			onStructureRepair={onStructureRepair}
 			thinkingSteps={(i === messages.length - 1 && msg.role === 'assistant' && thinkingSteps) ? thinkingSteps : undefined}
 			isHighlighted={isHL(msg.id)}
 			isSelected={isSel(msg.id)}
 		/>
-	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, onForkMessage, onDetailsMessage, onStructureSave, onStructureShare, startEdit])
+	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, onForkMessage, onDetailsMessage, onStructureSave, onStructureShare, onStructureRepair, startEdit])
 
 	// 骨架屏
 	if (messages.length === 0 && isLoading && !chatError) {
@@ -244,8 +248,8 @@ export function MessageList({
 						<div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 shadow-lg shadow-primary-300/40 dark:shadow-primary-900/30 flex items-center justify-center animate-pulse-slow">
 							<Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
 						</div>
-						<h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">开始新对话</h3>
-						<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
+						<h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">{t('ai.chat.chatTab.startNewChat')}</h3>
+						<p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">{t('ai.chat.chatTab.chatDescription')}</p>
 					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
 						{QUICK_ACTIONS.map((action, i) => (
@@ -254,8 +258,8 @@ export function MessageList({
 									<action.Icon className="w-4 h-4" />
 								</div>
 								<div>
-									<div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{action.title}</div>
-									<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{action.desc}</div>
+									<div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t(action.titleKey)}</div>
+									<div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{t(action.descKey)}</div>
 								</div>
 							</button>
 						))}

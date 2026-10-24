@@ -11,6 +11,7 @@
 
 import type { ChatMessage } from '../../types'
 import { logger } from '@/utils/safeLogger'
+import { COMPACT_TRIGGER_THRESHOLD } from '@/config/ai/constants'
 
 export interface CompactionResult {
   /** 压缩后的消息列表 */
@@ -25,7 +26,7 @@ export interface CompactionResult {
 
 export class ContextCompactionEngine {
   /** 压缩触发阈值：token 使用率超过此值时触发 */
-  private readonly TRIGGER_THRESHOLD = 0.85
+  private readonly TRIGGER_THRESHOLD = COMPACT_TRIGGER_THRESHOLD
   /** 压缩后保留的最大 token 数 */
   private readonly TARGET_TOKENS = 3000
   /** 始终保留的首条用户消息（对话起点） */

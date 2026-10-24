@@ -381,7 +381,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
           {taskStatus && TASK_STATUS_LABEL[taskStatus] && (
             <Badge
               variant={taskStatus === 'failed' ? 'destructive' : 'secondary'}
-              className="text-[9px]"
+              className="text-xs"
             >
               {TASK_STATUS_LABEL[taskStatus]}
             </Badge>
@@ -413,14 +413,14 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       {/* 派单进度条（深度开发 D-1） */}
       {progress && (taskStatus === 'recruiting' || taskStatus === 'dispatching') && (
         <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-1.5">
-          <span className="text-[10px] text-muted-foreground">子任务进度</span>
+          <span className="text-xs text-muted-foreground">子任务进度</span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary-500 transition-all"
               style={{ width: `${(progress.done / progress.total) * 100}%` }}
             />
           </div>
-          <span className="text-[10px] font-medium text-foreground">
+          <span className="text-xs font-medium text-foreground">
             {progress.done}/{progress.total}
           </span>
         </div>
@@ -467,10 +467,10 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                   <div className={`mb-0.5 flex items-center gap-1 text-xs text-muted-foreground ${isUser ? 'justify-end' : ''}`}>
                     <span>{senderName(msg)}</span>
                     {typeBadge && (
-                      <span className={`rounded px-1 py-0.5 text-[9px] font-medium ${typeBadge.cls}`}>{typeBadge.label}</span>
+                      <span className={`rounded px-1 py-0.5 text-xs font-medium ${typeBadge.cls}`}>{typeBadge.label}</span>
                     )}
                     {!isUser && msg.task_execution_id && (
-                      <Badge variant="secondary" className="text-[9px]">已派单</Badge>
+                      <Badge variant="secondary" className="text-xs">已派单</Badge>
                     )}
                     {/* 查看专家详情（深度开发 D-2） */}
                     {!isUser && msg.sender_bot_id && (
@@ -593,7 +593,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                     <div className="flex items-center gap-2 text-sm">
                       <BotAvatar bot={b} size="sm" />
                       <span>{resolveMemberName(m.bot_id)}</span>
-                      {m.role === 'admin' && <Badge variant="secondary" className="text-[10px]">管理员</Badge>}
+                      {m.role === 'admin' && <Badge variant="secondary" className="text-xs">管理员</Badge>}
                     </div>
                     {m.role !== 'admin' && (
                       <button className="text-xs text-muted-foreground hover:text-destructive" onClick={() => void handleRemoveMember(m.bot_id)}>

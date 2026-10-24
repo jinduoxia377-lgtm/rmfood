@@ -155,8 +155,14 @@ export class WorkflowEngine {
     try {
       // 根据工具名称路由到真实存在的后端 API（2026-10-12 修复：此前指向不存在的端点导致 404）
       if (toolName.includes('rag') || toolName.includes('search') || toolName.includes('knowledge')) {
-        // RAG 知识检索端点尚未接入后端，明确报错而非调用不存在的路径
-        throw new Error('RAG 知识检索工具暂未接入后端，请使用 /ai 页面的搜索功能替代');
+        // 真实 RAG 检索端点：POST /api/v1/rag/search
+        const question = typeof args?.question === 'string' ? args.question
+          : typeof args?.query === 'string' ? args.query
+          : '';
+        if (!question?.trim()) {
+          throw new Error('RAG 检索缺少查询词（args.question/query）');
+        }
+        return await this.callApi(`/api/v1/rag/search?question=${encodeURIComponent(question.trim())}&top_k=${typeof args?.top_k === 'number' ? args.top_k : 5}`, {});
       }
       if (toolName.includes('formula') || toolName.includes('generate') || toolName.includes('design')) {
         // 指向真实 GA 配方生成端点（/api/v1/ai/generate），需要 target_effects

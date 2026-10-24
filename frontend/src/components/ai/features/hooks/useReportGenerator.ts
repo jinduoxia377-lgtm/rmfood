@@ -28,6 +28,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { logger } from '@/utils/safeLogger'
+import api from '@/api/client'
 import type { ProfessionalReport, AIRecognizedFormula, FormulaIndex } from '@/types/ai.types'
 import {
   generateSingleFormulaReport,
@@ -281,6 +282,179 @@ const BUILTIN_TEMPLATES: ReportTemplate[] = [
     },
   },
 ]
+
+// ===== 报告导出辅助函数（真实后端端点 /reports/explainability/*）=====
+
+/** 导出用成分项（后端 expect dosage_mg） */
+export interface ReportExportIngredient {
+  name: string
+  dosage_mg: number
+}
+
+/** 导出格式（对应后端端点） */
+type ReportExportFormat = 'pdf' | 'docx' | 'markdown'
+
+/**
+ * 从 AI 识别配方的 dosage 字符串中解析克数（"10g" / "10-15g" / "约15克" → 15）。
+ * 区间取上限，与 ChatTab 的 parseDosage 保持一致。
+ */
+export function parseDosageGrams(raw: string): number {
+  if (!raw) return 0
+  const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
+  const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
+  return Number.isFinite(val) ? val : 0
+}
+
+/** 从单个文本行尽力解析成分（"- 枸杞 10g" / "枸杞：10g" / "| 枸杞 | 10 |"） */
+function parseIngredientLine(line: string): ReportExportIngredient | null {
+  // 去掉表格竖线与列表前缀（-、*、•、序号等）
+  const trimmed = line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .replace(/^[-*•\d.、\s]+/, '')
+    .trim()
+  const match = trimmed.match(/^([\u4e00-\u9fa5A-Za-z][\u4e00-\u9fa5A-Za-z0-9（）()·\s]{0,24}?)\s*[:：]?\s*([\d.]+)\s*(克|g|G|mg|毫克)?/)
+  if (!match) return null
+  const name = match[1].trim()
+  const value = parseFloat(match[2])
+  if (!name || !Number.isFinite(value) || value <= 0) return null
+  // 单位是 mg/毫克 时直接作为 mg，否则视为克并换算为 mg
+  const isMg = !!match[3] && /mg|毫克/i.test(match[3])
+  return { name, dosage_mg: Math.round(isMg ? value : value * 1000) }
+}
+
+/**
+ * 从报告数据中提取导出用成分列表：
+ * 优先 currentFormula.ingredients（name + dosage → dosage_mg），
+ * 其次扫描 reportData.sections 中的成分/配方章节（尽力解析），
+ * 缺省返回空数组，由后端兜底。
+ */
+export function extractReportIngredients(
+  report: ProfessionalReport | null,
+  formula: AIRecognizedFormula | null,
+): ReportExportIngredient[] {
+  if (formula?.ingredients?.length) {
+    const items = formula.ingredients
+      .map(ing => ({
+        name: ing.name,
+        dosage_mg: Math.round(parseDosageGrams(ing.dosage) * 1000),
+      }))
+      .filter(item => item.name && item.dosage_mg > 0)
+    if (items.length > 0) return items
+  }
+
+  if (report?.sections?.length) {
+    const items: ReportExportIngredient[] = []
+    for (const section of report.sections) {
+      if (!/成分|配方|ingredient/i.test(section.title)) continue
+      // 章节 content 可能是对象（表格/图表数据），只有字符串才做行级尽力解析
+      if (typeof section.content !== 'string') continue
+      for (const line of section.content.split('\n')) {
+        const parsed = parseIngredientLine(line)
+        if (parsed) items.push(parsed)
+      }
+    }
+    if (items.length > 0) return items
+  }
+
+  return []
+}
+
+/**
+ * 从报告数据中提取目标功效列表：
+ * 优先 currentFormula.tags / efficacy，
+ * 其次扫描 reportData.sections 中的功效/目标章节（尽力解析），
+ * 缺省返回空数组，由后端兜底。
+ */
+export function extractReportTargetEffects(
+  report: ProfessionalReport | null,
+  formula: AIRecognizedFormula | null,
+): string[] {
+  if (formula?.tags?.length) return formula.tags
+  if (formula?.efficacy) return [formula.efficacy]
+
+  if (report?.sections?.length) {
+    const effects: string[] = []
+    for (const section of report.sections) {
+      if (!/功效|目标|efficacy|target/i.test(section.title)) continue
+      for (const line of section.content.split('\n')) {
+        const clean = line.replace(/^[-*•\d.、\s]+/, '').trim()
+        if (clean && clean.length <= 20 && !clean.includes('：') && !clean.includes(':')) {
+          effects.push(clean)
+        }
+      }
+      if (effects.length > 0) break
+    }
+    return effects
+  }
+
+  return []
+}
+
+/** 清洗导出文件名（去掉路径非法字符） */
+function sanitizeFilename(name: string): string {
+  return name.replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80) || '配方报告'
+}
+
+/** 触发浏览器下载 Blob */
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+/** 各导出格式的下载文件名后缀与 MIME 类型 */
+const EXPORT_MEDIA_TYPES: Record<ReportExportFormat, { ext: string; mime: string }> = {
+  pdf: { ext: '.pdf', mime: 'application/pdf' },
+  docx: { ext: '.docx', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+  markdown: { ext: '.md', mime: 'text/markdown;charset=utf-8' },
+}
+
+/**
+ * 调用真实后端报告导出端点。
+ * 后端接口是 query/form 风格参数（FastAPI 函数参数），因此用 URLSearchParams 编码 POST。
+ * pdf/docx 返回文件 Blob；markdown 返回 JSON（{ data: { markdown } }），转为 .md 文本 Blob。
+ */
+async function requestReportExport(
+  format: ReportExportFormat,
+  report: ProfessionalReport,
+  formula: AIRecognizedFormula | null,
+): Promise<Blob> {
+  const formulaName = formula?.name || report.title || '未命名配方'
+  const ingredients = extractReportIngredients(report, formula)
+  const targetEffects = extractReportTargetEffects(report, formula)
+
+  const params = new URLSearchParams()
+  params.set('formula_name', formulaName)
+  params.set('ingredients', JSON.stringify(ingredients))
+  params.set('target_effects', JSON.stringify(targetEffects))
+
+  if (format === 'markdown') {
+    const response = await api.post<{ success: boolean; data: { markdown: string } }>(
+      '/reports/explainability/markdown',
+      params,
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+    )
+    const markdown = response.data?.data?.markdown ?? ''
+    return new Blob([markdown], { type: EXPORT_MEDIA_TYPES.markdown.mime })
+  }
+
+  const response = await api.post<Blob>(
+    `/reports/explainability/${format}`,
+    params,
+    {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      responseType: 'blob',
+    },
+  )
+  return response.data
+}
 
 // ===== 主 Hook 实现 =====
 
@@ -847,37 +1021,47 @@ export function useReportGenerator(
     return true
   }, [versions])
 
-  // ===== 导出增强 =====
+  // ===== 导出增强（真实后端端点 /reports/explainability/*）=====
 
   const exportToPDF = useCallback(async (): Promise<Blob> => {
     if (!reportData) throw new Error('没有可导出的报告')
 
-    const htmlContent = generateReportHTML(reportData, selectedTemplate, scores, riskAssessment ?? null)
-    const blob = new Blob([htmlContent], { type: 'application/pdf' })
+    const blob = await requestReportExport('pdf', reportData, currentFormula)
+    downloadBlob(blob, sanitizeFilename(currentFormula?.name || reportData.title) + EXPORT_MEDIA_TYPES.pdf.ext)
 
-    logger.info('[ReportGenerator] 📄 PDF 导出完成')
+    logger.info('[ReportGenerator] 📄 PDF 导出完成:', {
+      formula: currentFormula?.name || reportData.title,
+      size: blob.size,
+    })
     return blob
-  }, [reportData, selectedTemplate, scores, riskAssessment])
+  }, [reportData, currentFormula])
 
   const exportToWord = useCallback(async (): Promise<Blob> => {
     if (!reportData) throw new Error('没有可导出的报告')
 
-    const content = JSON.stringify(reportData, null, 2)
-    const blob = new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+    const blob = await requestReportExport('docx', reportData, currentFormula)
+    downloadBlob(blob, sanitizeFilename(currentFormula?.name || reportData.title) + EXPORT_MEDIA_TYPES.docx.ext)
 
-    logger.info('[ReportGenerator] 📄 Word 导出完成')
+    logger.info('[ReportGenerator] 📄 Word 导出完成:', {
+      formula: currentFormula?.name || reportData.title,
+      size: blob.size,
+    })
     return blob
-  }, [reportData])
+  }, [reportData, currentFormula])
 
+  // 后端未提供 Excel 端点，这里调用 markdown 可解释性报告并下载 .md（内容为完整报告）
   const exportToExcel = useCallback(async (): Promise<Blob> => {
     if (!reportData) throw new Error('没有可导出的报告')
 
-    const csvContent = generateCSVFromReport(reportData)
-    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' })
+    const blob = await requestReportExport('markdown', reportData, currentFormula)
+    downloadBlob(blob, sanitizeFilename(currentFormula?.name || reportData.title) + EXPORT_MEDIA_TYPES.markdown.ext)
 
-    logger.info('[ReportGenerator] 📊 Excel 导出完成')
+    logger.info('[ReportGenerator] 📄 Markdown 导出完成（原 Excel 入口）:', {
+      formula: currentFormula?.name || reportData.title,
+      size: blob.size,
+    })
     return blob
-  }, [reportData])
+  }, [reportData, currentFormula])
 
   const printReport = useCallback((): void => {
     if (!reportData) return
@@ -970,15 +1154,6 @@ export function useReportGenerator(
     htmlContent.push('</html>')
 
     return htmlContent.join('\n')
-  }
-
-  function generateCSVFromReport(report: ProfessionalReport): string {
-    const rows = [['报告标题', report.title]]
-    report.sections.forEach(section => {
-      rows.push(['章节', section.title])
-      rows.push(['内容', section.content.replace(/<[^>]+>/g, '').substring(0, 200)])
-    })
-    return rows.map(row => row.join(',')).join('\n')
   }
 
   // ===== 数字签名（简化版）=====

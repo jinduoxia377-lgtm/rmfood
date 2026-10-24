@@ -31,7 +31,6 @@ export interface CompactionLockOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
-const LOCK_SUFFIX = '-lock';
 
 let _activeLock: CompactionLock | null = null;
 let _lockCounter = 0;

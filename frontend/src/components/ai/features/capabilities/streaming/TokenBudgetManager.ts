@@ -10,6 +10,7 @@
  */
 
 import type { ChatMessage } from '../../types'
+import { DEFAULT_MAX_TOKENS as DEFAULT_MAX_TOKENS_CONST, COMPACT_TRIGGER_THRESHOLD } from '@/config/ai/constants'
 
 export interface TokenEstimate {
   content: string
@@ -45,9 +46,9 @@ export interface ModelPricing {
 
 export class TokenBudgetManager {
   /** 默认最大历史 token 数（留给 system prompt + 工具调用预留空间） */
-  private readonly DEFAULT_MAX_TOKENS = 6000
+  private readonly DEFAULT_MAX_TOKENS = DEFAULT_MAX_TOKENS_CONST
   /** 安全边际：超过此比例时触发压缩检查 */
-  private readonly COMPACTION_THRESHOLD = 0.85
+  private readonly COMPACTION_THRESHOLD = COMPACT_TRIGGER_THRESHOLD
   /** 每次保留的最少消息数（保证对话连贯性） */
   private readonly MIN_KEEP_MESSAGES = 4
 

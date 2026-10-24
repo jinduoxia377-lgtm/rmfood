@@ -16,6 +16,7 @@ vi.mock('@/components/ai/features/services/chatService', () => ({
     clearAuthToken: vi.fn(),
     closeAllPendingRequests: vi.fn(),
     retryLastMessage: vi.fn(),
+    getStateMachine: vi.fn(() => ({ addStateListener: () => () => {} })),
   },
 }))
 

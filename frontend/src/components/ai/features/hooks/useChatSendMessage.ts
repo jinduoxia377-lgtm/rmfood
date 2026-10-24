@@ -121,29 +121,14 @@ export function useChatSendMessage(
           // Step 4: 配方意图检测 → 注入结构化输出指令
           const formulaIntent = formulaIntelligenceService.detectIntent(trimmed);
           if (formulaIntent !== 'general_chat') {
+            // 修复：移除超长 JSON 示例模板（后端 system prompt 已含完整专业配方设计卡协议与字段规范），
+            // 仅保留一句简短指令，避免 question 超过后端 2000 字符上限导致 422。
             finalContent =
               finalContent +
               `
 
 【结构化输出要求】
-请以下面格式输出配方方案，使用 JSON 代码块包裹：
-\`\`\`json
-{
-  "blocks": [
-    {"type":"header","data":{"title":"配方名称","description":"一句话描述","level":1}},
-    {"type":"metrics","data":{"title":"多维评分","items":[{"label":"功效","value":85,"unit":"分"},{"label":"安全性","value":90,"unit":"分"}]}},
-    {"type":"data-table","data":{"title":"配方组成","columns":[{"key":"name","label":"成分"},{"key":"dosage","label":"用量(g)"}],"rows":[{"name":"成分A","dosage":10}]}},
-    {"type":"callout","data":{"variant":"info","title":"配伍思路","content":"文字说明"}},
-    {"type":"callout","data":{"variant":"warning","title":"注意事项","content":"禁忌说明"}},
-    {"type":"list","data":{"variant":"bullet","title":"生产工艺","items":["要点一","要点二"]}}
-  ]
-}
-\`\`\`
-
-重要字段命名规范：
-- callout 区块必须用 "variant" 而非 "style"，取值：info / success / warning / summary
-- list 区块必须有 "variant" 字段，取值：bullet / number / analysis / checklist
-- list 的 items 可以是字符串数组（自动转换）或 [{label, description}] 对象数组`;
+请以「专业配方设计卡」格式输出配方方案，使用 JSON 代码块包裹。JSON 之后只允许 1-2 句简短说明，禁止长篇 Markdown 报告。`;
           }
         }
         // llmAvailable=false: finalContent = trimmed（原始输入，不做任何污染）

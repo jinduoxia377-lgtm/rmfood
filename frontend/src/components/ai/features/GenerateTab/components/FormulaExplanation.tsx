@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import type { AICandidate } from '@/api/ai'
@@ -82,6 +83,7 @@ function HerbRoleBadge({ role }: { role: string }) {
 // ─── 主组件 ───
 
 export function FormulaExplanation({ candidate, className }: FormulaExplanationProps) {
+  const { t } = useTranslation()
   const explanation = candidate.explanation
   if (!explanation) {
     return (
@@ -89,11 +91,11 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
-            配方解释
+            {t('ai.formula.ui.formulaInterpretation')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">暂无配方解释数据</p>
+          <p className="text-sm text-muted-foreground">{t('ai.formula.ui.noExplanationData')}</p>
         </CardContent>
       </Card>
     )
@@ -111,7 +113,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
             </CardTitle>
             {candidate.algorithm_info && (
               <span className="text-xs text-muted-foreground">
-                {candidate.algorithm_info.strategy === 'ga' ? '遗传算法' :
+                {candidate.algorithm_info.strategy === 'ga' ? t('ai.formula.ui.geneticAlgorithm') :
                  candidate.algorithm_info.strategy === 'nsga2' ? 'NSGA-II' :
                  candidate.algorithm_info.strategy.toUpperCase()}
               </span>
@@ -122,28 +124,28 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
           {/* 结构分析 */}
           <Section
             icon={<Activity className="w-4 h-4" />}
-            title="君臣佐使结构分析"
+            title={t('ai.formula.generateTab.structureAnalysis')}
             content={explanation.structure_analysis}
           />
 
           {/* 机理说明 */}
           <Section
             icon={<ShieldCheck className="w-4 h-4" />}
-            title="现代药理机制"
+            title={t('ai.formula.generateTab.modernMechanism')}
             content={explanation.mechanism_explanation}
           />
 
           {/* 协同分析 */}
           <Section
             icon={<Users className="w-4 h-4" />}
-            title="配伍协同原理"
+            title={t('ai.formula.generateTab.synergyPrinciple')}
             content={explanation.synergistic_analysis}
           />
 
           {/* 适用人群 */}
           <Section
             icon={<Users className="w-4 h-4" />}
-            title="适用人群"
+            title={t('ai.formula.generateTab.suitablePopulation')}
             content={explanation.suitable_population}
             defaultOpen={false}
           />
@@ -151,7 +153,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
           {/* 禁忌 */}
           <Section
             icon={<AlertCircle className="w-4 h-4 text-warning" />}
-            title="禁忌与注意"
+            title={t('ai.formula.generateTab.contraindications')}
             content={explanation.contraindications}
             defaultOpen={false}
           />
@@ -159,7 +161,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
           {/* 使用说明 */}
           <Section
             icon={<Clock className="w-4 h-4" />}
-            title="服用建议"
+            title={t('ai.formula.generateTab.usageAdvice')}
             content={explanation.usage_instructions}
             defaultOpen={false}
           />
@@ -167,7 +169,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
           {/* 监测建议 */}
           <Section
             icon={<Activity className="w-4 h-4" />}
-            title="监测与迭代"
+            title={t('ai.formula.generateTab.monitoringIteration')}
             content={explanation.monitoring_suggestions}
             defaultOpen={false}
           />
@@ -178,7 +180,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
       {candidate.herb_combination && candidate.herb_combination.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">配方组成</CardTitle>
+            <CardTitle className="text-sm">{t('ai.formula.ui.formulaCompositionShort')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -188,7 +190,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
                   className="flex items-center justify-between py-2 border-b last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <HerbRoleBadge role={herb.role || '佐药'} />
+                    <HerbRoleBadge role={herb.role || t('ai.formula.ui.herbRoleAssistant')} />
                     <span className="text-sm font-medium">{herb.name}</span>
                   </div>
                   <span className="text-sm text-muted-foreground">
@@ -203,8 +205,7 @@ export function FormulaExplanation({ candidate, className }: FormulaExplanationP
 
       {/* 免责声明 */}
       <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-        <strong>免责声明：</strong>本配方建议为辅助调理参考，不能替代医师诊断与治疗。
-        如有不适，请及时就医。孕妇、儿童、老年人及特殊体质人群请在医师指导下使用。
+        <strong>{t('ai.formula.generateTab.disclaimer')}</strong>{t('ai.formula.generateTab.disclaimerText')}
       </div>
     </div>
   )

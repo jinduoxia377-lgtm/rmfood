@@ -141,12 +141,12 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
 
   const getGeneratorBadgeLabel = useMemo(() => {
     switch (generator) {
-      case 'llm': return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_AI_MODEL;
-      case 'neural_network': return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_NEURAL_NETWORK;
-      case 'ga': return '遗传算法优化';
-      default: return DEFAULTS.PLACEHOLDER_TEXTS.BADGE_RULE_ENGINE;
+      case 'llm': return t('ai.formula.generateTab.generatorLlm');
+      case 'neural_network': return t('ai.formula.generateTab.generatorNeural');
+      case 'ga': return t('ai.formula.generateTab.generatorGa');
+      default: return t('ai.formula.generateTab.generatorRule');
     }
-  }, [generator]);
+  }, [generator, t]);
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -155,26 +155,26 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/10 dark:to-accent-900/10 rounded-xl border border-primary-100 dark:border-primary-800/30">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">{stats.total}</div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">生成配方数</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.formula.ui.generatedFormulaCount')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-success-600 dark:text-success-600">{stats.avgScore.toFixed(1)}</div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">平均得分</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.formula.ui.avgScoreFull')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-warning-600 dark:text-warning-700">{stats.maxScore.toFixed(1)}</div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">最高得分</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.formula.ui.maxScoreFull')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-info-600 dark:text-info-600">{stats.passedSafety}/{stats.total}</div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">安全通过</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.formula.generateTab.safetyPassed')}</div>
           </div>
           <button
             onClick={() => setShowStats(false)}
             className="col-span-2 sm:col-span-1 self-center text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
           >
             <ChevronDown className="w-4 h-4 inline mr-1" />
-            收起
+            {t('ai.formula.generateTab.collapse')}
           </button>
         </div>
       )}
@@ -184,14 +184,14 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold" style={{ color: 'var(--color-primary-600)' }}>
-              {`${DEFAULTS.PLACEHOLDER_TEXTS.RESULT_COUNT_PREFIX} ${generateResult?.length || 0} ${DEFAULTS.PLACEHOLDER_TEXTS.RESULT_COUNT_SUFFIX}`}
+              {t('ai.formula.generateTab.formulaCount', { count: generateResult?.length || 0 })}
             </h3>
             <Badge variant={getGeneratorBadgeVariant} className="text-xs">
               {getGeneratorBadgeLabel}
             </Badge>
           </div>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            {DEFAULTS.PLACEHOLDER_TEXTS.RESULT_SUBTITLE}
+            {t('ai.formula.ui.resultSubtitle')}
           </p>
         </div>
 
@@ -262,7 +262,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
             }`}
           >
             <Lightbulb className="w-3.5 h-3.5" />
-            {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_OPTIMIZATION_ADVICE}
+            {t('ai.formula.generateTab.optimizationAdvice')}
           </button>
 
           {/* 分享 */}
@@ -275,7 +275,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
-            {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SHARE_FORMULA}
+            {t('ai.formula.generateTab.share')}
           </button>
 
           {/* 导出 */}
@@ -317,7 +317,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
         <div className="animate-slide-up">
           <Suspense fallback={
             <div className="animate-pulse p-6 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
-              {DEFAULTS.PLACEHOLDER_TEXTS.LOADING_TEXT}
+              {t('ai.formula.generateTab.loading')}
             </div>
           }>
             {(() => {
@@ -343,7 +343,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
         <div className="animate-slide-up">
           <Suspense fallback={
             <div className="animate-pulse p-6 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
-              {DEFAULTS.PLACEHOLDER_TEXTS.LOADING_TEXT}
+              {t('ai.formula.generateTab.loading')}
             </div>
           }>
             {(() => {
@@ -377,10 +377,10 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
         <div className="text-center py-16 bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-700">
           <Filter className="w-12 h-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-400" />
           <h3 className="text-lg font-medium text-neutral-600 dark:text-neutral-400 mb-2">
-            暂无匹配的配方
+            {t('ai.formula.ui.noMatchingFormula')}
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            尝试调整筛选条件或重新生成配方
+            {t('ai.formula.ui.noMatchingFormulaHint')}
           </p>
         </div>
       ) : viewMode === 'card' ? (
@@ -410,7 +410,7 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
           <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
             <span className="flex items-center gap-1">
               <CheckCircle className="w-4 h-4 text-success-500" />
-              {filteredResults.filter(c => c.safety_passed).length} 个配方通过安全检查
+              {t('ai.formula.ui.passedSafetyCheck', { count: filteredResults.filter(c => c.safety_passed).length })}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -418,14 +418,14 @@ export const FormulaResultsEnhanced: React.FC<FormulaResultsEnhancedProps> = ({
               onClick={() => setShowStats(true)}
               className="px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
             >
-              显示统计
+              {t('ai.formula.generateTab.showStats')}
             </button>
             {onSaveAll && (
               <button
                 onClick={onSaveAll}
                 className="px-4 py-2 text-sm font-medium text-primary-main bg-primary-container hover:bg-primary-container rounded-lg transition-colors"
               >
-                保存全部
+                {t('ai.formula.ui.saveAllFormulas')}
               </button>
             )}
           </div>

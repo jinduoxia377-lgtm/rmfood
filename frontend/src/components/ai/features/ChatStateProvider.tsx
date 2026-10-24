@@ -29,6 +29,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 
 // ===== Services =====
 import { sessionCapability } from './capabilities/session/SessionCapability'
+import { chatStorageService } from './capabilities/storage/ChatStorageService'
 import type { HistorySession } from './components/pro'
 import type { BackendThinkingStep } from './hooks/useThinkingProcessV3'
 
@@ -135,12 +136,36 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     if (initializedRef.current) return
     initializedRef.current = true
     sessionCapability.listSessions()
-      .then(sessions => {
+      .then(async sessions => {
         const mapped: HistorySession[] = sessions.map(s => ({
           id: s.id, title: s.title, messageCount: s.messageCount, lastMessage: '', timestamp: s.updatedAt,
         }))
         setHistorySessions(mapped)
-        if (mapped.length > 0) setActiveSessionIdState(mapped[0].id)
+        if (mapped.length > 0) {
+          setActiveSessionIdState(mapped[0].id)
+          // 自动恢复最近会话内容：刷新后对话区直接显示历史消息，无需手动点击历史入口
+          try {
+            const msgs = await chatStorageService.loadMessages(mapped[0].id)
+            if (msgs.length > 0) {
+              chatMessages.replaceMessages(msgs)
+              logger.info(`[ChatStateProvider] 已自动恢复最近会话 ${mapped[0].id}（${msgs.length} 条消息）`)
+            }
+          } catch (loadErr) {
+            logger.warn('[ChatStateProvider] 自动恢复会话消息失败（不影响后续对话）:', loadErr)
+          }
+          return
+        }
+        // 无历史会话：自动创建一个新会话，确保首次对话也能持久化恢复（修复「刷新后历史消失」）
+        try {
+          const newId = await sessionCapability.createSession('新对话')
+          setActiveSessionIdState(newId)
+          setHistorySessions(prev => [{
+            id: newId, title: '新对话', messageCount: 0, lastMessage: '', timestamp: Date.now(),
+          }, ...prev])
+          logger.info('[ChatStateProvider] 无历史会话，已自动创建新会话:', newId)
+        } catch (createErr) {
+          logger.warn('[ChatStateProvider] 自动创建会话失败（对话将仅在内存中）:', createErr)
+        }
       })
       .catch(err => logger.warn('[ChatStateProvider] 加载会话列表失败:', err))
   }, [])
@@ -188,9 +213,9 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   const callbacks = useChatCallbacks({
     historySessions, setHistorySessions, setActiveSessionId: setActiveSessionIdState,
     historyVisible, setHistoryVisible, clearMessages, clearAllFormulas,
-    clearWorkingMemory: () => {},
+    // 工作记忆/短期记忆已按 v12 决策从主聊天链路移除（无持久化/无反馈闭环），不再传入空实现。
+    // 如需恢复用户级三级记忆，需产品决策后重新设计（含后端持久化）。
     clearMultiTurnDialogue: orchestrator.multiTurnDialogue.clearDialogue,
-    clearShortTermMemory: () => {},
     messages, setMessages: chatMessages.replaceMessages, activeSessionId,
   })
 
@@ -265,6 +290,13 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
 
+    // RAG
+    ragEnabled: rag.isEnabled,
+    ragIsSeeded: rag.isSeeded,
+    ragIsSeeding: rag.isSeeding,
+    onToggleRAG: rag.toggleRAG,
+    onTriggerSeed: rag.triggerSeed,
+
     // 配方
     formulaCount, expandedIds, selectedIds, formulas,
 
@@ -288,7 +320,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   }), [
     messages, input, isStreaming, chatError, assistantCount, elapsedSeconds,
     historySessions, activeSessionId, historyVisible,
-    llmAvailable, llmModel, scenarioMode,
+    llmAvailable, llmModel, scenarioMode, rag,
     formulaCount, expandedIds, selectedIds, formulas,
     showReportModal, setShowReportModal, reportData, isGeneratingReport,
     handleGenerateReport,

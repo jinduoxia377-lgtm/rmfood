@@ -11,6 +11,7 @@
  * @version 8.0.0
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Send, Square, Check, Bot, Paperclip, X } from 'lucide-react'
 
 export interface DraftAttachment {
@@ -46,18 +47,20 @@ const MODELS: { id: string; label: string; color: string }[] = [
 ]
 
 const SLASH_COMMANDS = [
-  { command: 'clear', desc: '清空当前会话' },
-  { command: 'compact', desc: '压缩上下文' },
-  { command: 'help', desc: '显示帮助' },
+  { command: 'clear', descKey: 'slashClear' },
+  { command: 'compact', descKey: 'slashCompact' },
+  { command: 'help', descKey: 'slashHelp' },
 ] as const
 
 export default function ChatInputPro({
   value, onChange, onSend, onStop, isStreaming, disabled,
-  maxLength = 2000, placeholder = '描述您的配方需求...',
+  maxLength = 2000, placeholder,
   modelName, modelColor,
   attachments = [], onAddAttachment, onRemoveAttachment,
   onSlashSelect,
 }: ChatInputProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t('ai.chat.input.placeholder')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isFocused, setIsFocused] = useState(false)
@@ -154,7 +157,7 @@ export default function ChatInputPro({
                 </button>
               </div>
             ))}
-            <span className="text-xs text-neutral-400 dark:text-neutral-400">{attachments.length} 张图片</span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-400">{t('ai.chat.input.imageCount', { count: attachments.length })}</span>
           </div>
         )}
 
@@ -174,7 +177,7 @@ export default function ChatInputPro({
                 <div className="relative">
                   <button
                     onClick={() => { setShowModelMenu(!showModelMenu); setShowSlashMenu(false) }}
-                    title="切换模型"
+                    title={t('ai.chat.topbar.switchModel')}
                     className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[12px] font-medium bg-transparent hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors"
                   >
                     <span className={modelColor || currentModel.color}><Bot className="w-3.5 h-3.5" /></span>
@@ -205,7 +208,7 @@ export default function ChatInputPro({
                 {/* 图片附件 */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  title="添加图片"
+                  title={t('ai.chat.input.addImage')}
                   className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[12px] font-medium bg-transparent hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors"
                 >
                   <Paperclip className="w-3.5 h-3.5" />
@@ -227,13 +230,13 @@ export default function ChatInputPro({
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 maxLength={maxLength}
                 disabled={disabled || isStreaming}
                 rows={1}
                 className="flex-1 resize-none bg-transparent border-0 px-3 py-2.5 text-[14px] leading-[22px] placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 disabled:opacity-50"
                 style={{ minHeight: `${MIN_HEIGHT - 20}px`, maxHeight: `${MAX_HEIGHT - 20}px` }}
-                aria-label="消息输入"
+                aria-label={t('ai.chat.input.messageInput')}
               />
             </div>
 
@@ -250,7 +253,7 @@ export default function ChatInputPro({
                       ? 'bg-success-500 text-white hover:bg-success-600 active:scale-95 shadow-md hover:shadow-lg'
                       : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
               }`}
-              aria-label={isStreaming ? '停止生成' : '发送'}
+              aria-label={isStreaming ? t('ai.chat.stopGenerating') : t('ai.chat.send')}
             >
               {sendSuccess ? <Check className="w-4 h-4" /> : isStreaming ? <Square className="w-3.5 h-3.5" /> : <Send className="w-4 h-4" />}
             </button>
@@ -260,7 +263,7 @@ export default function ChatInputPro({
           {showSlashMenu && (
             <div className="absolute bottom-full left-0 mb-2 w-52 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-50 overflow-hidden">
               <div className="px-3 py-1.5 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-700">
-                <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">指令</span>
+                <span className="text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">{t('ai.chat.input.commands')}</span>
               </div>
               <div className="py-1">
                 {SLASH_COMMANDS.map(cmd => (
@@ -269,7 +272,7 @@ export default function ChatInputPro({
                     className="w-full px-3 py-2 text-left text-sm hover:bg-success-50 dark:hover:bg-success-900/20 flex items-center justify-between gap-2 transition-colors"
                   >
                     <span className="font-mono text-success-700 dark:text-success-600 text-xs">/{cmd.command}</span>
-                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{cmd.desc}</span>
+                    <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs">{t(`ai.chat.input.${cmd.descKey}`)}</span>
                   </button>
                 ))}
               </div>
@@ -280,7 +283,7 @@ export default function ChatInputPro({
         {/* 提示文本 */}
         <div className="mt-1.5 px-1">
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-            Enter 发送 · Shift+Enter 换行 · Esc 清空 · 拖拽图片上传
+            {t('ai.chat.input.hint')}
           </span>
         </div>
       </div>

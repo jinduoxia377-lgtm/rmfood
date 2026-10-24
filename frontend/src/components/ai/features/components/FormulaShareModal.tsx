@@ -42,7 +42,7 @@ function ShareQRCode({ url }: { url?: string }) {
     <div className="w-32 h-32 mx-auto bg-white rounded-lg border border-neutral-200 dark:border-neutral-700
       flex items-center justify-center overflow-hidden">
       <QrCode className="w-16 h-16 text-neutral-300 dark:text-neutral-400" />
-      <div className="absolute text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">扫码查看配方</div>
+      <div className="absolute text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">扫码查看配方</div>
     </div>
   )
 }

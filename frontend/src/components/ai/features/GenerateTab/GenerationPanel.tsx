@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Wand2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
@@ -11,7 +12,9 @@ import type { GenerationProgress } from '@/hooks/useGenerationProgress'
 interface EffectOption {
   id: string
   label: string
+  labelKey: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 
@@ -48,6 +51,7 @@ export function GenerationPanel({
   isGenerating,
   llmAvailable,
 }: GenerationPanelProps) {
+  const { t } = useTranslation()
   const [useLlm] = usePersistentState<boolean>(
     'generate_use_llm',
     false,
@@ -106,10 +110,10 @@ export function GenerationPanel({
                         : 'none',
                     }}
                   >
-                    {effect.label}
+                    {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                     {effect.popular && !isSelected && (
                       <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-warning-500/12 dark:bg-warning-500/20 text-warning-600 dark:text-warning-700">
-                        {DEFAULTS.PLACEHOLDER_TEXTS.BADGE_POPULAR}
+                        {t('ai.formula.generateTab.popular')}
                       </span>
                     )}
                   </button>

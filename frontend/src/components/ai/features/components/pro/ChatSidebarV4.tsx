@@ -79,7 +79,7 @@ function AlgorithmBadge({ algorithm, confidence, compact }: {
   if (!cfg) return null
   return (
     <span className={`inline-flex items-center gap-0.5 rounded font-medium ${cfg.color} ${cfg.bgColor} ${
-      compact ? 'text-[9px] px-1 py-0' : 'text-xs px-1.5 py-0.5'
+      compact ? 'text-xs px-1 py-0' : 'text-xs px-1.5 py-0.5'
     }`}>
       <span>{cfg.label}</span>
       {confidence !== undefined && !compact && (
@@ -160,7 +160,7 @@ function StepCard({
             </button>
             <AlgorithmBadge algorithm={algorithm} confidence={step.confidence} compact={compact} />
             {isProcessing && (
-              <span className="text-[9px] text-warning-500 font-medium animate-pulse">思考中...</span>
+              <span className="text-xs text-warning-500 font-medium animate-pulse">思考中...</span>
             )}
             {step.detail && (
               <button onClick={onToggle} className="ml-auto flex-shrink-0">
@@ -266,7 +266,7 @@ export default function ChatSidebarV4({
           title="显示 AI 思考过程"
         >
           <Cpu className="w-4 h-4 group-hover:animate-pulse" />
-          <span className="text-[9px] font-medium"
+          <span className="text-xs font-medium"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
             思考过程
           </span>
@@ -295,7 +295,7 @@ export default function ChatSidebarV4({
             {isThinking && <Loader2 className="w-3 h-3 text-primary-500 animate-spin flex-shrink-0" />}
           </button>
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            <span className="text-[9px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">
+            <span className="text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded font-mono">
               {stepCounts.complete}/{stepCounts.total}
             </span>
             <button
@@ -320,7 +320,7 @@ export default function ChatSidebarV4({
             ] as const).map(a => (
               <button key={a.key}
                 onClick={() => setFilterAlgorithm(a.key)}
-                className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors
+                className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors
                   ${filterAlgorithm === a.key
                     ? 'bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
@@ -377,7 +377,7 @@ export default function ChatSidebarV4({
                 if (count === 0) return null
                 return (
                   <span key={key}
-                    className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] ${cfg.color} ${cfg.bgColor}`}
+                    className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-xs ${cfg.color} ${cfg.bgColor}`}
                   >
                     <span>{cfg.label}</span>
                     <span className="font-mono opacity-70">{count}</span>

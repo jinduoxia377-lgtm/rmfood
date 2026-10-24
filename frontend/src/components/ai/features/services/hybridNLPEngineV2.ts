@@ -41,8 +41,6 @@ type SubIntent =
   | 'standard_lookup' | 'system_certification' | 'explanation_request'
   | 'dosage_inquiry'
 
-type ConfidenceLevel = 'high' | 'medium' | 'low' | 'unknown'
-
 interface IntentDetectionResult {
   primaryIntent: IntentType
   confidence: number

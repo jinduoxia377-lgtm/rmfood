@@ -5,6 +5,7 @@
  * @version 2.0.0
  */
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Target, FileText, MessageSquare, Sparkles, Send,
   X, ChevronDown, ChevronUp, Zap, Loader2,
@@ -14,23 +15,25 @@ import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
 import { FormulaInputWindow } from '@/components/ai/FormulaInputWindow'
 import { EFFECT_OPTIONS, EFFECT_CATEGORIES, getEffectsByCategory } from '@/config/ai/effects'
-import { DEFAULTS, VALIDATION } from '@/config'
+import { VALIDATION } from '@/config'
 import { CheckCircle } from 'lucide-react'
 import { logger } from '@/utils/safeLogger'
 
 const QUICK_TEMPLATES = [
-  { id: 'immune', name: '增强免疫', effects: ['增强免疫', '提高抵抗力'], icon: '🛡️' },
-  { id: 'fatigue', name: '抗疲劳', effects: ['抗疲劳', '提升精力'], icon: '⚡' },
-  { id: 'sleep', name: '改善睡眠', effects: ['改善睡眠', '安神定志'], icon: '😴' },
-  { id: 'digestion', name: '健脾养胃', effects: ['健脾养胃', '促进消化'], icon: '🍵' },
-  { id: 'beauty', name: '美容养颜', effects: ['美容养颜', '延缓衰老'], icon: '✨' },
-  { id: 'cardio', name: '心血管健康', effects: ['降血脂', '保护血管'], icon: '❤️' },
+  { id: 'immune', nameKey: 'ai.formula.generateTab.templateImmune', effects: ['增强免疫', '提高抵抗力'], icon: '🛡️' },
+  { id: 'fatigue', nameKey: 'ai.formula.generateTab.templateAntiFatigue', effects: ['抗疲劳', '提升精力'], icon: '⚡' },
+  { id: 'sleep', nameKey: 'ai.formula.generateTab.templateSleep', effects: ['改善睡眠', '安神定志'], icon: '😴' },
+  { id: 'digestion', nameKey: 'ai.formula.generateTab.templateDigestion', effects: ['健脾养胃', '促进消化'], icon: '🍵' },
+  { id: 'beauty', nameKey: 'ai.formula.generateTab.templateBeauty', effects: ['美容养颜', '延缓衰老'], icon: '✨' },
+  { id: 'cardio', nameKey: 'ai.formula.generateTab.templateCardio', effects: ['降血脂', '保护血管'], icon: '❤️' },
 ]
 
 interface EffectOption {
   id: string
   label: string
+  labelKey: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 
@@ -77,6 +80,14 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
   useLlm,
   llmAvailable,
 }) => {
+  const { t } = useTranslation()
+  const categoryKeyMap = React.useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const e of EFFECT_OPTIONS) {
+      if (!map[e.category]) map[e.category] = e.categoryKey
+    }
+    return map
+  }, [])
   const [chatInput, setChatInput] = useState('')
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'assistant'; content: string}[]>([])
   const [isChatProcessing, setIsChatProcessing] = useState(false)
@@ -154,7 +165,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">
-            {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_INPUT_MODE}
+            {t('ai.formula.ui.inputModeLabel')}
           </span>
           <div className="flex bg-neutral-100 dark:bg-neutral-800/80 rounded-xl p-1 shadow-inner">
             <button
@@ -166,7 +177,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               }`}
             >
               <MessageSquare className="w-4 h-4" />
-              对话模式
+              {t('ai.formula.generateTab.chatMode')}
             </button>
             <button
               onClick={() => onInputModeChange('effects')}
@@ -177,7 +188,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               }`}
             >
               <Target className="w-4 h-4" />
-              功效选择
+              {t('ai.formula.ui.effectsSelect')}
             </button>
             <button
               onClick={() => onInputModeChange('manual')}
@@ -188,7 +199,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               }`}
             >
               <FileText className="w-4 h-4" />
-              手动输入
+              {t('ai.formula.generateTab.manualMode')}
             </button>
           </div>
         </div>
@@ -198,7 +209,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-300/20 rounded-full border border-primary-200 dark:border-primary-800">
             <CheckCircle className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
             <span className="text-xs font-medium text-primary-700 dark:text-primary-700">
-              已选 {selectionCount}/{VALIDATION.maxEffectSelection} 个功效
+              {t('ai.formula.ui.selectedEffectsCount', { count: selectionCount, max: VALIDATION.maxEffectSelection })}
             </span>
           </div>
         )}
@@ -212,7 +223,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-50 dark:from-warning-900/10 dark:to-warning-900/10 rounded-xl border border-warning-200 dark:border-warning-800/30">
               <div className="flex items-center gap-2 mb-3">
                 <Lightbulb className="w-4 h-4 text-warning-600 dark:text-warning-700" />
-                <span className="text-sm font-medium text-warning-800 dark:text-warning-700">快捷模板</span>
+                <span className="text-sm font-medium text-warning-800 dark:text-warning-700">{t('ai.formula.ui.quickTemplate')}</span>
                 <button 
                   onClick={() => setShowQuickTemplates(false)}
                   className="ml-auto text-warning-500 hover:text-warning-700"
@@ -228,7 +239,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                     className="flex flex-col items-center gap-1 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-warning-400 dark:hover:border-warning-600 hover:shadow-md transition-all duration-200"
                   >
                     <span className="text-xl">{template.icon}</span>
-                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{template.name}</span>
+                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{t(template.nameKey)}</span>
                   </button>
                 ))}
               </div>
@@ -242,8 +253,8 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               {chatHistory.length === 0 ? (
                 <div className="text-center py-8 text-neutral-400 dark:text-neutral-400">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">描述您的健康需求，AI将为您生成个性化配方</p>
-                  <p className="text-xs mt-1">例如："我最近经常熬夜，容易疲劳，想调理身体"</p>
+                  <p className="text-sm">{t('ai.formula.ui.healthNeedAIDesc')}</p>
+                  <p className="text-xs mt-1">{t('ai.formula.ui.healthNeedAIExample')}</p>
                 </div>
               ) : (
                 chatHistory.map((msg, idx) => (
@@ -282,7 +293,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="描述您的健康需求，如：改善睡眠、增强免疫..."
+                placeholder={t('ai.formula.ui.healthNeedAIPlaceholder')}
                 rows={2}
                 className="flex-1 resize-none bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none"
                 disabled={isChatProcessing}
@@ -302,14 +313,14 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             <div className="flex flex-wrap gap-2 p-3 bg-success-50 dark:bg-success-300/15 rounded-xl border border-success-200 dark:border-success-800/30">
               <span className="text-xs font-medium text-success-700 dark:text-success-600 flex items-center gap-1">
                 <CheckCircle className="w-3.5 h-3.5" />
-                AI已为您选择：
+                {t('ai.formula.ui.aiSelectedForYou')}
               </span>
               {selectedEffects.map((effect) => (
                 <span
                   key={effect.id}
                   className="text-xs px-2 py-1 bg-success-100 dark:bg-success-300/25 text-success-700 dark:text-success-600 rounded-full"
                 >
-                  {effect.label}
+                  {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                 </span>
               ))}
             </div>
@@ -334,7 +345,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                   }`}
                 >
-                  {category}
+                  {t(`ai.formula.effects.categories.${categoryKeyMap[category]}`, { defaultValue: category })}
                   {hasSelected && <span className="ml-1 text-xs">✓</span>}
                 </button>
               )
@@ -348,7 +359,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                 <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
                   <Target className="w-3.5 h-3.5 text-primary-700 dark:text-primary-700" />
                 </div>
-                {DEFAULTS.PLACEHOLDER_TEXTS.TITLE_SELECT_EFFECTS}
+                {t('ai.formula.generateTab.selectEffects')}
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[var(--color-primary-surface)] to-[var(--color-accent-surface-deep)] text-white shadow-sm">
                   {selectionCount}/{VALIDATION.maxEffectSelection}
                 </span>
@@ -358,7 +369,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                   onClick={onClearEffects}
                   className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 transition-colors"
                 >
-                  清空选择
+                  {t('ai.formula.ui.clearSelection')}
                 </button>
               )}
             </div>
@@ -397,10 +408,10 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-50" />
                     )}
                     <span className="relative flex items-center gap-1.5">
-                      {effect.label}
+                      {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                       {effect.popular && !isSelected && (
                         <span className="text-xs px-1 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-700 font-semibold">
-                          热
+                          {t('ai.formula.ui.hot')}
                         </span>
                       )}
                       {isSelected && (
@@ -420,14 +431,14 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
               className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
             >
               <Settings className="w-4 h-4" />
-              高级参数配置
+              {t('ai.formula.ui.advancedParamConfig')}
               {paramPanelExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             
             {paramPanelExpanded && (
               <div className="mt-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl animate-fade-in">
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">
-                  参数配置功能开发中...
+                  {t('ai.formula.ui.paramConfigDeveloping')}
                 </p>
               </div>
             )}
@@ -466,14 +477,14 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             className="min-w-[180px] rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary-500 via-accent-500 to-accent-500 hover:from-primary-600 hover:via-accent-600 hover:to-accent-600"
           >
             {useLlm && llmAvailable
-              ? DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_AI_GENERATE
-              : DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_START_GENERATE
+              ? t('ai.formula.ui.aiSmartGenerate')
+              : t('ai.formula.wizard.startGeneration')
             }
           </Button>
 
           {selectedEffects.length > 0 && (
             <span className="text-xs text-neutral-400 dark:text-neutral-400 hidden sm:inline">
-              ✓ {selectedEffects.length} 个功效已选择
+              ✓ {t('ai.formula.ui.effectsSelected', { count: selectedEffects.length })}
             </span>
           )}
         </div>
@@ -483,7 +494,7 @@ export const GenerationInputEnhanced: React.FC<GenerationInputEnhancedProps> = (
             onClick={onFullReset}
             className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
           >
-            重置
+            {t('ai.formula.generateTab.reset')}
           </button>
         </div>
       </div>

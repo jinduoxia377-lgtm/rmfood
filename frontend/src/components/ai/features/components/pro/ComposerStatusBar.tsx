@@ -9,6 +9,7 @@
  * @version 2.0.0
  */
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Cpu, Clock, Zap, Activity } from 'lucide-react'
 
 interface ComposerStatusBarProps {
@@ -44,6 +45,7 @@ export default function ComposerStatusBar({
   contextTokens,
   contextLimit,
 }: ComposerStatusBarProps) {
+  const { t } = useTranslation()
   // 仅在有实质性内容时显示
   if (messageCount === 0 && !elapsedSeconds && !ttftMs) return null
 
@@ -57,7 +59,7 @@ export default function ComposerStatusBar({
       {assistantCount > 0 && (
         <span className="flex items-center gap-1">
           <Cpu className="w-3 h-3" />
-          <span>{assistantCount} 轮</span>
+          <span>{t('ai.chat.composer.rounds', { count: assistantCount })}</span>
         </span>
       )}
 
@@ -89,7 +91,7 @@ export default function ComposerStatusBar({
       {messageCount > 0 && (
         <span className="flex items-center gap-1">
           <span>·</span>
-          <span>{messageCount} 条</span>
+          <span>{t('ai.chat.composer.messages', { count: messageCount })}</span>
         </span>
       )}
 
@@ -117,7 +119,7 @@ export default function ComposerStatusBar({
       {ragStatus && (
         <>
           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">·</span>
-          <span className={ragStatus === '知识库就绪' ? 'text-success-500/70' : 'text-warning-500/70'}>
+          <span className={ragStatus === t('ai.chat.composer.ragReady') ? 'text-success-500/70' : 'text-warning-500/70'}>
             {ragStatus}
           </span>
         </>

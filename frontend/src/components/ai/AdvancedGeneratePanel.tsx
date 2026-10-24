@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
 import type { AICandidate, AdvancedGenerateResponse } from '@/api/ai';
@@ -6,8 +7,11 @@ import { useGenerationProgress } from '@/hooks/useGenerationProgress';
 import { GenerationProgressPanel } from './GenerationProgressPanel';
 import { Card, Input, Button, Slider, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { Sparkles, Sliders, Tag, Shield, Cherry, AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { EFFECT_OPTIONS as ALL_EFFECT_OPTIONS } from '@/config/ai/effects';
 
-const EFFECT_OPTIONS = ['降血压', '抗氧化', '降血糖', '补气养阴', '抗疲劳', '改善睡眠', '增强免疫'];
+const EFFECT_OPTIONS = ALL_EFFECT_OPTIONS.filter(e =>
+  ['blood_pressure', 'antioxidant', 'blood_sugar', 'qi_nourishing', 'anti_fatigue', 'sleep_improvement', 'immune_enhancement'].includes(e.id),
+);
 
 const INGREDIENT_TYPE_OPTIONS = ['药食同源', '活性肽'];
 
@@ -29,6 +33,7 @@ interface AdvancedGeneratePanelProps {
 }
 
 export function AdvancedGeneratePanel({ onCandidatesGenerated, className }: AdvancedGeneratePanelProps) {
+  const { t } = useTranslation();
   const [inputMode, setInputMode] = useState<'direct' | 'tag'>('tag');
   const [directInput, setDirectInput] = useState('');
   const [selectedEffects, setSelectedEffects] = useState<string[]>([]);
@@ -210,25 +215,25 @@ export function AdvancedGeneratePanel({ onCandidatesGenerated, className }: Adva
           <div className="space-y-5">
             <div>
               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">
-                功效标签（可多选）
+                {t('ai.formula.generateTab.selectEffects')}（可多选）
               </label>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="功效标签选择">
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t('ai.formula.effects.objectiveEfficacyMulti')}>
                 {EFFECT_OPTIONS.map((effect) => (
                   <button
-                    key={effect}
-                    onClick={() => toggleEffect(effect)}
-                    onKeyDown={(e) => handleEffectKeyDown(e, effect)}
+                    key={effect.id}
+                    onClick={() => toggleEffect(effect.label)}
+                    onKeyDown={(e) => handleEffectKeyDown(e, effect.label)}
                     role="checkbox"
-                    aria-checked={selectedEffects.includes(effect)}
-                    aria-label={`功效: ${effect}`}
+                    aria-checked={selectedEffects.includes(effect.label)}
+                    aria-label={t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                     tabIndex={0}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                      selectedEffects.includes(effect)
+                      selectedEffects.includes(effect.label)
                         ? 'bg-primary-container text-primary-main shadow-sm shadow-primary-500/20'
                         : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
-                    {effect}
+                    {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                   </button>
                 ))}
               </div>

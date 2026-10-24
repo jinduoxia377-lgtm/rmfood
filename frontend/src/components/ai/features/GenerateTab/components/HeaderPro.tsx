@@ -5,9 +5,9 @@
  * @version 4.0.0 - UI/UX Optimized
  */
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, History, Info } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
-import { DEFAULTS } from '@/config'
 import type { GeneratorType } from '../config/generateTabConfig'
 
 interface HeaderProProps {
@@ -39,13 +39,15 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
   generator,
   className = '',
 }) => {
+  const { t } = useTranslation()
+
   // Get generator label
   const getGeneratorLabel = (gen: GeneratorType | undefined): string => {
     switch (gen) {
-      case 'llm': return 'AI 大模型'
-      case 'neural_network': return '神经网络'
-      case 'ga': return '遗传算法优化'
-      default: return '规则引擎'
+      case 'llm': return t('ai.formula.generateTab.generatorLlm')
+      case 'neural_network': return t('ai.formula.generateTab.generatorNeural')
+      case 'ga': return t('ai.formula.generateTab.generatorGa')
+      default: return t('ai.formula.generateTab.generatorRule')
     }
   }
 
@@ -78,16 +80,16 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           <div>
             <div className="flex items-center gap-2.5">
               <h2 className="text-headline-sm font-semibold text-foreground">
-                {DEFAULTS.PLACEHOLDER_TEXTS.PAGE_TITLE_GENERATE}
+                {t('ai.formula.title')}
               </h2>
               {llmAvailable && (
                 <Badge variant="success" className="text-label-sm font-semibold">
-                  AI就绪
+                  {t('ai.formula.generateTab.aiReady')}
                 </Badge>
               )}
             </div>
             <p className="text-body-sm text-muted-foreground mt-1">
-              {DEFAULTS.PLACEHOLDER_TEXTS.PAGE_SUBTITLE_GENERATE}
+              {t('ai.formula.ui.subtitle')}
             </p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {/* Generator status */}
           {generator && (
             <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 rounded-xl border border-border">
-              <span className="text-caption text-muted-foreground font-medium">生成引擎:</span>
+              <span className="text-caption text-muted-foreground font-medium">{t('ai.formula.generateTab.generationEngine')}:</span>
               <Badge variant={getGeneratorColor(generator) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"} className="text-label-sm font-semibold">
                 {getGeneratorLabel(generator)}
               </Badge>
@@ -111,7 +113,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-fast"
             >
               <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">对话模式</span>
+              <span className="hidden sm:inline">{t('ai.formula.generateTab.chatMode')}</span>
             </button>
           )}
 
@@ -119,7 +121,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {historyCount > 0 && (
             <button
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-body-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              title="查看历史"
+              title={t('ai.formula.generateTab.viewHistory')}
             >
               <History className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">{historyCount}</span>
@@ -140,7 +142,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
                 <div className="w-10 h-5 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer dark:bg-border peer-checked:bg-primary after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-background after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-primary-foreground" />
               </div>
               <span className="text-muted-foreground group-hover:text-foreground transition-colors font-medium">
-                AI增强
+                {t('ai.formula.generateTab.aiEnhanced')}
               </span>
               <Badge variant="neutral" className="text-label-sm font-semibold">
                 {modelStatus?.llm?.provider || 'local'}
@@ -159,8 +161,8 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           >
             <Brain className="w-4 h-4" />
             {advancedMode
-              ? DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SIMPLE_MODE
-              : DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_ADVANCED_MODE
+              ? t('ai.formula.generateTab.simpleMode')
+              : t('ai.formula.generateTab.advancedMode')
             }
           </button>
 
@@ -173,7 +175,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
               onClick={onFullReset}
               className="rounded-xl font-semibold"
             >
-              {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_REGENERATE}
+              {t('ai.formula.generateTab.regenerate')}
             </Button>
           )}
         </div>
@@ -183,19 +185,19 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
       <div className="flex items-center gap-4 text-caption text-muted-foreground px-6 py-3 border-t border-border/50 bg-muted/20">
         <span className="flex items-center gap-1.5">
           <kbd className="px-2 py-1 bg-muted rounded-md border border-border font-mono">Ctrl+Enter</kbd>
-          <span>生成配方</span>
+          <span>{t('ai.formula.generateTab.generateFormula')}</span>
         </span>
         <span className="flex items-center gap-1.5">
           <kbd className="px-2 py-1 bg-muted rounded-md border border-border font-mono">Esc</kbd>
-          <span>取消</span>
+          <span>{t('ai.formula.generateTab.cancel')}</span>
         </span>
         <span className="flex items-center gap-1.5">
           <kbd className="px-2 py-1 bg-muted rounded-md border border-border font-mono">Ctrl+K</kbd>
-          <span>对话</span>
+          <span>{t('ai.formula.generateTab.chat')}</span>
         </span>
         <span className="ml-auto flex items-center gap-1.5 text-muted-foreground/60">
           <Info className="w-3.5 h-3.5" />
-          <span>按快捷键提升操作效率</span>
+          <span>{t('ai.formula.generateTab.shortcutHint')}</span>
         </span>
       </div>
     </div>

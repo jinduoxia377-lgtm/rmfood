@@ -109,7 +109,7 @@ export function BotChatMessageList({ bot, messages, isStreaming, onCopyMessage }
                   {/* 时间戳（气泡内右下角小字） */}
                   {time && (
                     <div
-                      className={`mt-1 text-right text-[10px] leading-none ${
+                      className={`mt-1 text-right text-xs leading-none ${
                         isUser ? 'text-white/80' : 'text-muted-foreground'
                       }`}
                     >

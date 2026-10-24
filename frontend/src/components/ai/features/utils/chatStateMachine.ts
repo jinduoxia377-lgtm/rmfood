@@ -315,6 +315,16 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
   public onTransitionError?: (from: ChatState, to: ChatState, error: Error) => void;
   public onContextUpdate?: (stats: ContextStats) => void;
   public onContextCompressed?: (result: CompressedContext) => void;
+  private _listeners: Array<(from: ChatState, to: ChatState) => void> = [];
+
+  /** 注册状态变化监听器，返回取消订阅函数（支持多监听者） */
+  addStateListener(listener: (from: ChatState, to: ChatState) => void): () => void {
+    this._listeners.push(listener)
+    return () => {
+      const idx = this._listeners.indexOf(listener)
+      if (idx >= 0) this._listeners.splice(idx, 1)
+    }
+  }
 
   constructor(initialState: ChatState = ChatState.Idle, config: StateMachineConfig = {}) {
     this._state = initialState;
@@ -444,6 +454,17 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
         this.onStateChange(previousState, to);
       } catch (callbackError) {
         logger.error(`[ChatStateMachine] onStateChange 回调执行失败:`, callbackError);
+      }
+    }
+
+    // 多监听者分发
+    if (this._listeners.length > 0) {
+      for (const listener of this._listeners) {
+        try {
+          listener(previousState, to)
+        } catch (callbackError) {
+          logger.error(`[ChatStateMachine] 状态监听器执行失败:`, callbackError)
+        }
       }
     }
 

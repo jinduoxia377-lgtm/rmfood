@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LineChart,
@@ -124,6 +125,7 @@ export function SensitivityAnalysis({
   onScenarioApply,
   className = '',
 }: SensitivityAnalysisProps) {
+  const { t } = useTranslation()
   const [parameters, setParameters] = useState<SensitivityParameter[]>(
     baseParameters.map(p => ({ ...p })),
   )
@@ -312,7 +314,7 @@ export function SensitivityAnalysis({
           animate={{ opacity: 1, x: 0 }}
           className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
         >
-          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">参数调整</h4>
+          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">{t('ai.stability.tab.sensitivity.paramsTitle')}</h4>
 
           <div className="space-y-5">
             {parameters.map(param => {
@@ -348,7 +350,7 @@ export function SensitivityAnalysis({
 
                   <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>{param.minValue}{param.unit}</span>
-                    <span className="font-medium text-accent-600">基准: {param.baseValue}{param.unit}</span>
+                    <span className="font-medium text-accent-600">{t('ai.stability.tab.sensitivity.baseline', { value: param.baseValue, unit: param.unit })}</span>
                     <span>{param.maxValue}{param.unit}</span>
                   </div>
                 </div>
@@ -358,7 +360,7 @@ export function SensitivityAnalysis({
 
           {/* 当前结果摘要 */}
           <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">实时计算结果</h5>
+            <h5 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">{t('ai.stability.tab.sensitivity.realtimeResults')}</h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 4).map(metric => {
                 const diff = currentResults[metric] - baselineResults[metric]
@@ -456,13 +458,13 @@ export function SensitivityAnalysis({
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
       >
-        <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">参数影响热力图</h4>
+        <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">{t('ai.stability.tab.sensitivity.heatmapTitle')}</h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr>
-                <th className="py-2 px-3 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">参数 \\ 指标</th>
+                <th className="py-2 px-3 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.stability.tab.sensitivity.headerParamMetric')}</th>
                 {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).map(metric => (
                   <th key={metric} className="py-2 px-3 text-center font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     {METRIC_LABELS[metric]}
@@ -503,15 +505,15 @@ export function SensitivityAnalysis({
         <div className="mt-3 flex items-center justify-center gap-6 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-success-500/70 rounded" />
-            <span>正向影响</span>
+            <span>{t('ai.stability.tab.sensitivity.positive')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-neutral-300 dark:bg-neutral-600 rounded" />
-            <span>无影响</span>
+            <span>{t('ai.stability.tab.sensitivity.none')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-4 bg-error-500/70 rounded" />
-            <span>负向影响</span>
+            <span>{t('ai.stability.tab.sensitivity.negative')}</span>
           </div>
         </div>
       </motion.div>
@@ -586,7 +588,7 @@ export function SensitivityAnalysis({
         </div>
 
         {scenarios.length === 0 ? (
-          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">暂无对比场景</p>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center py-4">{t('ai.stability.tab.sensitivity.noComparison')}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {scenarios.map((scenario, idx) => {
@@ -624,7 +626,7 @@ export function SensitivityAnalysis({
                         <span className="text-2xl font-bold text-neutral-900 dark:text-white">
                           {scenario.results.overall}
                         </span>
-                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">分</span>
+                        <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">{t('ai.stability.tab.sensitivity.scoreUnit')}</span>
                       </div>
 
                       {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[])

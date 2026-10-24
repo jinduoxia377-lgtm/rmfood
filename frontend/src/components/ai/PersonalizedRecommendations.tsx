@@ -17,7 +17,7 @@ export function PersonalizedRecommendations({
   onSelectRecommendation,
   maxDisplay = 3,
 }: PersonalizedRecommendationsProps) {
-  const { getPersonalizedRecommendations, toggleHistoryLike, addRecommendationFeedback, preferences } =
+  const { getPersonalizedRecommendations, toggleHistoryLike: _toggleHistoryLike, addRecommendationFeedback, preferences } =
     useUserPreferenceStore()
 
   const recommendations = useMemo(() => {

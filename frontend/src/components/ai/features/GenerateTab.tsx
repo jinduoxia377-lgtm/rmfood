@@ -6,6 +6,10 @@ import { STORAGE_KEYS } from '@/config';
 import { Card } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 import type { AICandidate } from '@/api/ai';
+import { validateAiFormula, type AiFormulaValidationRequest, type AiFormulaValidationResponse } from '@/api/ai';
+import { formulaApi } from '@/api/formula';
+import type { FormulaCreatePayload } from '@/types/formula';
+import { FormulaValidationModal } from './components/FormulaValidationModal';
 import type { InputMode, ViewMode } from './GenerateTab/config/generateTabConfig';
 import { AcademicReportEnhanced } from '@/components/ai/AcademicReportEnhanced';
 import { VersionComparePanel } from '@/components/ai/FormulaVersionManager';
@@ -33,6 +37,136 @@ import { FormulaComparePanel } from './GenerateTab/components/FormulaComparePane
 
 // Lazy components
 const AdvancedGeneratePanel = lazy(() => import('@/components/ai/AdvancedGeneratePanel'));
+
+// ===== 批量保存辅助函数（可独立测试）=====
+
+/** 从剂量字符串解析克数（"1.0-3.0g" / "10g" / "约15克"）。区间取上限。 */
+export function parseDosageGrams(raw: string): number {
+  if (!raw) return 0
+  const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
+  const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
+  return Number.isFinite(val) ? val : 0
+}
+
+/** 将候选配方组装为校验请求 payload（含 formula_name + 成分 name + dosage_g） */
+export function buildCandidateValidationPayload(
+  candidate: AICandidate,
+  targetEffects: string[],
+): AiFormulaValidationRequest {
+  return {
+    formula_name: candidate.formula_name || candidate.name || '未知配方',
+    ingredients: (candidate.herb_combination ?? [])
+      .map(h => ({ name: h.name ? String(h.name) : '', dosage_g: parseDosageGrams(h.dosage ?? '') }))
+      .filter(item => item.name.length > 0),
+    target_effects: targetEffects,
+  }
+}
+
+/** 将候选配方组装为保存到配方库的 payload */
+export function buildCandidateSavePayload(
+  candidate: AICandidate,
+  targetEffects: string[],
+  notes?: string,
+): FormulaCreatePayload {
+  return {
+    name: candidate.formula_name || candidate.name || '未知配方',
+    description: candidate.description || '',
+    target_effects: targetEffects,
+    composition: {
+      ingredients: (candidate.herb_combination ?? []).map(h => ({
+        name: h.name ? String(h.name) : '',
+        role: h.role || '佐药',
+        dosage: '1.0-3.0g',
+      })),
+      peptides: candidate.peptide_candidates,
+    },
+    safety_check: candidate.safety_details,
+    synergy_analysis: { score: candidate.synergy_score },
+    notes,
+  }
+}
+
+export interface SaveAllCandidatesParams {
+  candidates: AICandidate[]
+  targetEffects: string[]
+  validate: (payload: AiFormulaValidationRequest) => Promise<AiFormulaValidationResponse>
+  create: (payload: FormulaCreatePayload) => Promise<{ id: number }>
+  getCandidateId: (candidate: AICandidate, index: number) => string
+  onCandidateSaved: (formulaId: number, candidateId: string) => void
+  onBlocked: (result: AiFormulaValidationResponse, candidate: AICandidate) => void
+}
+
+export interface SaveAllCandidatesResult {
+  savedCount: number
+  blocked: boolean
+  degraded: boolean
+}
+
+/**
+ * 批量保存候选配方（保存前逐候选调用 AI 校验）：
+ * - 任一候选 blocked_by_critical → 停止批量保存并回调 onBlocked（弹窗展示成分级报告）
+ * - warnings 未阻断 → 保存并把校验建议追加到 notes（【AI校验】前缀）
+ * - 校验接口异常 → 诚实降级：跳过该校验继续保存，返回 degraded=true
+ */
+export async function saveAllCandidatesWithValidation(
+  params: SaveAllCandidatesParams,
+): Promise<SaveAllCandidatesResult> {
+  const { candidates, targetEffects, validate, create, getCandidateId, onCandidateSaved, onBlocked } = params
+  let savedCount = 0
+  let blocked = false
+  let degraded = false
+
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index]
+    const validationPayload = buildCandidateValidationPayload(candidate, targetEffects)
+    let validation: AiFormulaValidationResponse | null = null
+    try {
+      validation = await validate(validationPayload)
+    } catch (e) {
+      // 接口异常 → 诚实降级：跳过校验继续保存
+      degraded = true
+      logger.warn('[GenerateTab] AI 配方校验服务调用失败，已跳过校验继续保存:', e)
+    }
+
+    if (validation) {
+      if (validation.blocked_by_critical) {
+        // CRITICAL：停止批量保存并弹出该候选的成分级校验报告
+        blocked = true
+        onBlocked(validation, candidate)
+        return { savedCount, blocked, degraded }
+      }
+
+      // warnings 未阻断 → 保存并把校验建议追加到 notes（【AI校验】前缀）
+      const warnings = validation.warnings?.length
+        ? validation.warnings
+        : (validation.alerts ?? [])
+            .filter(a => a.level === 'warning' || !a.blocking)
+            .map(a => a.message)
+      const suggestions = validation.suggestions?.length
+        ? validation.suggestions
+        : (validation.recommendations ?? [])
+      const notes = warnings.length > 0 || suggestions.length > 0
+        ? `【AI校验】${[
+            ...warnings.filter(Boolean),
+            ...suggestions.map(s => `建议：${s}`),
+          ].join('；')}`
+        : undefined
+
+      const payload = buildCandidateSavePayload(candidate, targetEffects, notes)
+      const result = await create(payload)
+      savedCount++
+      onCandidateSaved(result.id, getCandidateId(candidate, index))
+    } else {
+      // 校验被跳过（接口异常）→ 直接保存
+      const payload = buildCandidateSavePayload(candidate, targetEffects, undefined)
+      const result = await create(payload)
+      savedCount++
+      onCandidateSaved(result.id, getCandidateId(candidate, index))
+    }
+  }
+
+  return { savedCount, blocked, degraded }
+}
 
 interface ModelStatus {
   llm?: { provider: string; model: string; available: boolean };
@@ -91,6 +225,13 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const [compareVersionsEnhanced, setCompareVersionsEnhanced] = useState(false);
   const [paramPanelExpanded, setParamPanelExpanded] = useState(false);
   const [showCacheInfo, setShowCacheInfo] = useState(false);
+  // ── 批量保存：成分级校验报告弹窗 + 诚实降级提示 ──
+  const [batchValidation, setBatchValidation] = useState<{
+    result: AiFormulaValidationResponse
+    formulaName: string
+    candidate: AICandidate
+  } | null>(null)
+  const [batchNotice, setBatchNotice] = useState<string | null>(null)
 
   // Process result once
   const processedResultRef = useRef<string | null>(null);
@@ -215,6 +356,39 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const handleSwitchToChat = useCallback(() => {
     setInputMode('chat');
   }, []);
+
+  // ── 保存全部：逐候选过 AI 校验，CRITICAL 弹窗停止、warnings 追加【AI校验】备注、接口异常诚实降级 ──
+  const handleSaveAllCandidates = useCallback(async () => {
+    const candidates = generationHook.generateResult
+    if (!candidates || candidates.length === 0) return
+    setBatchNotice(null)
+    try {
+      const outcome = await saveAllCandidatesWithValidation({
+        candidates,
+        targetEffects: effectsHook.effectLabels,
+        validate: validateAiFormula,
+        create: (payload) => formulaApi.create(payload),
+        getCandidateId: savedHook.getCandidateId,
+        onCandidateSaved: (formulaId, candidateId) =>
+          savedHook.handleSaveSuccess(formulaId, candidateId, candidates),
+        onBlocked: (result, candidate) => {
+          const formulaName =
+            typeof candidate.formula_name === 'string' && candidate.formula_name.trim()
+              ? candidate.formula_name
+              : (typeof candidate.name === 'string' ? candidate.name : '候选配方')
+          setBatchValidation({ result, formulaName, candidate })
+        },
+      })
+      if (outcome.degraded) {
+        setBatchNotice('部分候选的配方校验服务暂不可用，已跳过校验继续保存（诚实降级）')
+      } else if (!outcome.blocked && outcome.savedCount > 0) {
+        setBatchNotice(`已保存 ${outcome.savedCount} 个候选配方`)
+      }
+    } catch (e) {
+      logger.error('[GenerateTab] 批量保存失败:', e)
+      setBatchNotice('批量保存失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+    }
+  }, [generationHook.generateResult, effectsHook.effectLabels, savedHook])
 
   const filteredResults = filtersHook.filteredAndSortedResults(generationHook.generateResult);
 
@@ -377,6 +551,10 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 }}
                 onExportFormula={handleExportFormula}
                 effectLabels={effectsHook.effectLabels}
+                onSaveAll={handleSaveAllCandidates}
+                onSaveSuccess={(formulaId, candidateId) =>
+                  savedHook.handleSaveSuccess(formulaId, candidateId, generationHook.generateResult)
+                }
               />
             )}
           </>
@@ -448,6 +626,26 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           </div>
         </div>
       )}
+
+      {/* 批量保存提示条（降级/结果/失败） */}
+      {batchNotice && (
+        <div
+          role="status"
+          className="mx-6 mb-4 px-3 py-2 rounded-lg text-xs font-medium bg-info/10 text-info-foreground border border-info/20 flex items-center justify-between"
+        >
+          <span>{batchNotice}</span>
+          <button onClick={() => setBatchNotice(null)} className="ml-3 text-info-foreground/70 hover:text-info-foreground" aria-label="关闭提示">✕</button>
+        </div>
+      )}
+
+      {/* 批量保存：成分级校验报告弹窗（CRITICAL 候选被阻断时展示） */}
+      <FormulaValidationModal
+        open={!!batchValidation}
+        result={batchValidation?.result ?? null}
+        formulaName={batchValidation?.formulaName}
+        onConfirm={() => setBatchValidation(null)}
+        onCancel={() => setBatchValidation(null)}
+      />
     </Card>
   );
 }

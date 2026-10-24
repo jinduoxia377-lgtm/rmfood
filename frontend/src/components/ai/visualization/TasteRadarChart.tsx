@@ -6,6 +6,7 @@
  */
 
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Radar,
   RadarChart as RechartsRadarChart,
@@ -66,6 +67,7 @@ export function TasteRadarChart({
   showGrid = true,
   className = '',
 }: TasteRadarChartProps) {
+  const { t } = useTranslation()
   const chartData = useMemo<RadarDataPoint[]>(() => {
     const tasteKeys = Object.values(FiveTastes) as FiveTastes[]
 
@@ -147,7 +149,7 @@ export function TasteRadarChart({
 
           {/* 主数据 */}
           <Radar
-            name="当前配方"
+            name={t('ai.taste.radar.currentFormula')}
             dataKey="primary"
             stroke="var(--color-secondary-500)"
             fill="var(--color-secondary-500)"
@@ -159,7 +161,7 @@ export function TasteRadarChart({
           {/* 对比数据 1 */}
           {comparisonData.length > 0 && (
             <Radar
-              name={comparisonData[0].label || '对比 1'}
+              name={comparisonData[0].label || t('ai.taste.radar.comparison1')}
               dataKey="comparison1"
               stroke={comparisonData[0].color || DEFAULT_COLORS[1]}
               fill={comparisonData[0].color || DEFAULT_COLORS[1]}
@@ -173,7 +175,7 @@ export function TasteRadarChart({
           {/* 对比数据 2 */}
           {comparisonData.length > 1 && (
             <Radar
-              name={comparisonData[1].label || '对比 2'}
+              name={comparisonData[1].label || t('ai.taste.radar.comparison2')}
               dataKey="comparison2"
               stroke={comparisonData[1].color || DEFAULT_COLORS[2]}
               fill={comparisonData[1].color || DEFAULT_COLORS[2]}

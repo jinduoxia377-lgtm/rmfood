@@ -238,15 +238,15 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                     {t.task_content.length > 18 ? `${t.task_content.slice(0, 18)}…` : t.task_content}
                   </div>
                   <div className="mt-1 flex items-center justify-between">
-                    <Badge variant={t.status === 'failed' ? 'destructive' : 'secondary'} className="text-[9px]">
+                    <Badge variant={t.status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
                       {STATUS_LABEL[t.status] || t.status}
                     </Badge>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {t.created_at ? new Date(t.created_at).toLocaleString().slice(0, 16) : ''}
                     </span>
                   </div>
                   {t.status === 'failed' && t.error_message && (
-                    <div className="mt-1 line-clamp-2 text-[10px] leading-tight text-destructive">
+                    <div className="mt-1 line-clamp-2 text-xs leading-tight text-destructive">
                       {t.error_message.slice(0, 80)}
                     </div>
                   )}
@@ -279,7 +279,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                 <div className="flex items-center justify-between border-b border-border px-3 py-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-xs font-semibold text-foreground">{activeTask.task_content}</span>
-                    <Badge className="text-[9px]">{STATUS_LABEL[activeTask.status] || activeTask.status}</Badge>
+                    <Badge className="text-xs">{STATUS_LABEL[activeTask.status] || activeTask.status}</Badge>
                     <Button variant="ghost" size="sm" onClick={() => setAddExpertOpen(true)}>
                       <UserPlus className="mr-1 h-3.5 w-3.5" /> 追加专家
                     </Button>
@@ -378,7 +378,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                   <div className="flex items-center gap-2 text-sm">
                     <BotAvatar bot={b} size="sm" />
                     <span className="text-foreground">{b.name}</span>
-                    <span className="text-[10px] text-muted-foreground">{(b.capabilities || []).slice(0, 3).join(', ')}</span>
+                    <span className="text-xs text-muted-foreground">{(b.capabilities || []).slice(0, 3).join(', ')}</span>
                   </div>
                   <Button size="sm" onClick={() => void handleAddExpert(b.id)}>
                     添加

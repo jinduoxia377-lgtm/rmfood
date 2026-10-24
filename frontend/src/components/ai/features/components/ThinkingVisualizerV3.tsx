@@ -292,7 +292,7 @@ const StepCardV3: React.FC<{
                       <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{ev?.title || '未知证据'}</p>
                       {ev?.snippet && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5 line-clamp-1">{ev.snippet}</p>}
                     </div>
-                    <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{Math.round((ev?.relevance ?? 0) * 100)}%</span>
+                    <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{Math.round((ev?.relevance ?? 0) * 100)}%</span>
                   </div>
                 ))}
               </div>
@@ -301,7 +301,7 @@ const StepCardV3: React.FC<{
             {isExpanded && step.metadata?.userFeedback == null && step.status !== 'processing' && (
               <div className="mt-2.5 pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">反馈:</span>
+                  <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">反馈:</span>
                   <button onClick={() => onAction('approve')} className="p-1 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded transition-colors" title="批准此步骤">
                     <ThumbsUp className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-primary-500" />
                   </button>
@@ -408,7 +408,7 @@ function DecompositionView({ decomposition }: { decomposition: ProblemDecomposit
                           <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded bg-neutral-50 dark:bg-neutral-800/50">
                             <ArrowRight className={`w-3 h-3 ${d.relation === 'requires' ? 'text-error-400' : 'text-secondary-400'}`} />
                             <span className="text-neutral-600 dark:text-neutral-400">{targetSp?.title || d.to}</span>
-                            <span className={`text-[9px] ml-auto ${d.relation === 'requires' ? 'text-error-400' : 'text-secondary-400'}`}>
+                            <span className={`text-xs ml-auto ${d.relation === 'requires' ? 'text-error-400' : 'text-secondary-400'}`}>
                               {d.relation === 'requires' ? '必须完成' : '参考信息'}
                             </span>
                           </div>
@@ -730,13 +730,13 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
               style={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }} />
           </div>
           <div className="flex items-center justify-between mt-1.5">
-            <div className="flex items-center gap-2 text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+            <div className="flex items-center gap-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               {stats.dimensions.slice(0, 5).map(d => {
                 const cfg = DIMENSION_CONFIG[d as keyof typeof DIMENSION_CONFIG]
                 return <span key={d} className={`${cfg.color}`}>{cfg.label}</span>
               })}
             </div>
-            <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 展开 · Tab 切换视图</span>
+            <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 展开 · Tab 切换视图</span>
           </div>
         </div>
       )}

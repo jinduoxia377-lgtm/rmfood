@@ -570,4 +570,38 @@ describe('i18n AI 模块合并', () => {
 
     await i18n.changeLanguage('zh-CN')
   })
+
+  it('provides AI page feature-area and chat chrome translations in all languages', async () => {
+    // 中文
+    await i18n.changeLanguage('zh-CN')
+    expect(i18n.t('ai.page.tabs.chat')).toBe('智能对话')
+    expect(i18n.t('ai.page.tabGroups.core')).toBe('核心功能')
+    expect(i18n.t('ai.page.modelStatus.online')).toBe('模型在线')
+    expect(i18n.t('ai.page.stats.chatSubtitle', { count: 319 })).toBe('累计 319 次对话')
+    expect(i18n.t('ai.chat.topbar.scenarioAcademician')).toBe('学者顾问')
+    expect(i18n.t('ai.chat.quick.categories.herbKnowledge')).toBe('药材知识')
+    expect(i18n.t('ai.chat.input.hint')).toBe('Enter 发送 · Shift+Enter 换行 · Esc 清空 · 拖拽图片上传')
+
+    // 英文
+    await i18n.changeLanguage('en-US')
+    expect(i18n.t('ai.page.tabs.chat')).toBe('Smart Chat')
+    expect(i18n.t('ai.page.tabGroups.core')).toBe('Core Features')
+    expect(i18n.t('ai.page.modelStatus.online')).toBe('Model Online')
+    expect(i18n.t('ai.page.stats.chatSubtitle', { count: 319 })).toBe('319 total conversations')
+    expect(i18n.t('ai.chat.topbar.scenarioAcademician')).toBe('Academic Advisor')
+    expect(i18n.t('ai.chat.quick.categories.herbKnowledge')).toBe('Herb Knowledge')
+    expect(i18n.t('ai.chat.input.hint')).toBe('Enter to send · Shift+Enter for newline · Esc to clear · Drag & drop image upload')
+
+    // 德语
+    await i18n.changeLanguage('de-DE')
+    expect(i18n.t('ai.page.tabs.chat')).toBe('Intelligenter Chat')
+    expect(i18n.t('ai.page.tabGroups.core')).toBe('Kernfunktionen')
+    expect(i18n.t('ai.page.modelStatus.online')).toBe('Modell online')
+    expect(i18n.t('ai.page.stats.chatSubtitle', { count: 319 })).toBe('319 Gespräche insgesamt')
+    expect(i18n.t('ai.chat.topbar.scenarioAcademician')).toBe('Akademischer Berater')
+    expect(i18n.t('ai.chat.quick.categories.herbKnowledge')).toBe('Kräuterwissen')
+
+    // 切回默认中文
+    await i18n.changeLanguage('zh-CN')
+  })
 })

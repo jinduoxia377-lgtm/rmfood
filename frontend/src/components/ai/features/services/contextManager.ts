@@ -135,7 +135,7 @@ export class ContextManager {
   private extractEntities(text: string): ContextEntity[] {
     const entities: ContextEntity[] = [];
 
-    for (const [category, info] of Object.entries(DOMAIN_ENTITIES)) {
+    for (const [_category, info] of Object.entries(DOMAIN_ENTITIES)) {
       for (const keyword of info.keywords) {
         const regex = new RegExp(keyword, 'gi');
         const matches = text.match(regex);

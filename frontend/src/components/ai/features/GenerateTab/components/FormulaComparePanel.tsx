@@ -5,6 +5,7 @@
  * @version 1.0.0
  */
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui'
 
 interface AICandidateLike {
@@ -64,20 +65,23 @@ const extractMetrics = (c: AICandidateLike): CompareMetrics => ({
 export function FormulaComparePanel({
   version1,
   version2,
-  label1 = '当前版本',
-  label2 = '对比版本',
+  label1,
+  label2,
 }: FormulaComparePanelProps) {
+  const { t } = useTranslation()
+  const resolvedLabel1 = label1 || t('ai.formula.ui.currentVersion')
+  const resolvedLabel2 = label2 || t('ai.formula.ui.compareVersion')
   const metrics1: CompareMetrics = useMemo(() => extractMetrics(version1), [version1])
   const metrics2: CompareMetrics = useMemo(() => extractMetrics(version2), [version2])
 
   const diffs: Array<{ key: keyof CompareMetrics; label: string; diff: number }> = useMemo(() => [
-    { key: 'efficacy', label: '综合功效', diff: metrics1.efficacy - metrics2.efficacy },
-    { key: 'safety', label: '安全性', diff: metrics1.safety - metrics2.safety },
-    { key: 'taste', label: '口感', diff: metrics1.taste - metrics2.taste },
-    { key: 'cost', label: '成本效率', diff: metrics1.cost - metrics2.cost },
-    { key: 'synergy', label: '协同效应', diff: metrics1.synergy - metrics2.synergy },
-    { key: 'stability', label: '稳定性', diff: metrics1.stability - metrics2.stability },
-  ], [metrics1, metrics2])
+    { key: 'efficacy', label: t('ai.formula.ui.efficacy'), diff: metrics1.efficacy - metrics2.efficacy },
+    { key: 'safety', label: t('ai.formula.ui.safety'), diff: metrics1.safety - metrics2.safety },
+    { key: 'taste', label: t('ai.formula.ui.taste'), diff: metrics1.taste - metrics2.taste },
+    { key: 'cost', label: t('ai.formula.ui.costEfficiency'), diff: metrics1.cost - metrics2.cost },
+    { key: 'synergy', label: t('ai.formula.ui.synergyEffect'), diff: metrics1.synergy - metrics2.synergy },
+    { key: 'stability', label: t('ai.formula.ui.stability'), diff: metrics1.stability - metrics2.stability },
+  ], [metrics1, metrics2, t])
 
   const herbs1 = version1.herb_combination || []
   const herbs2 = version2.herb_combination || []
@@ -90,9 +94,9 @@ export function FormulaComparePanel({
     <div className="space-y-4">
       {/* 版本信息 */}
       <div className="flex items-center justify-between text-caption text-muted-foreground">
-        <span>{version1.formula_name || version1.name || label1}</span>
+        <span>{version1.formula_name || version1.name || resolvedLabel1}</span>
         <Badge variant="neutral">VS</Badge>
-        <span>{version2.formula_name || version2.name || label2}</span>
+        <span>{version2.formula_name || version2.name || resolvedLabel2}</span>
       </div>
 
       {/* 六维评分条对比 */}
@@ -100,10 +104,10 @@ export function FormulaComparePanel({
         {/* 图例 */}
         <div className="flex items-center gap-4 text-caption text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-1.5 rounded-full bg-primary" /> {label1}
+            <span className="inline-block w-3 h-1.5 rounded-full bg-primary" /> {resolvedLabel1}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-1.5 rounded-full bg-info" /> {label2}
+            <span className="inline-block w-3 h-1.5 rounded-full bg-info" /> {resolvedLabel2}
           </span>
         </div>
         {diffs.map(d => {
@@ -133,7 +137,7 @@ export function FormulaComparePanel({
       {(added.length > 0 || removed.length > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-lg border border-success/20 bg-success/5 p-3">
-            <h4 className="text-caption font-semibold text-success mb-1.5">新增药材</h4>
+            <h4 className="text-caption font-semibold text-success mb-1.5">{t('ai.formula.ui.addedHerbs')}</h4>
             <ul className="space-y-1">
               {added.map((h, i) => (
                 <li key={i} className="text-caption">{h.name} {h.dosage_g ? `${h.dosage_g}g` : ''}</li>
@@ -141,7 +145,7 @@ export function FormulaComparePanel({
             </ul>
           </div>
           <div className="rounded-lg border border-danger/20 bg-danger/5 p-3">
-            <h4 className="text-caption font-semibold text-danger mb-1.5">移除药材</h4>
+            <h4 className="text-caption font-semibold text-danger mb-1.5">{t('ai.formula.ui.removedHerbs')}</h4>
             <ul className="space-y-1">
               {removed.map((h, i) => (
                 <li key={i} className="text-caption">{h.name} {h.dosage_g ? `${h.dosage_g}g` : ''}</li>
@@ -152,7 +156,7 @@ export function FormulaComparePanel({
       )}
 
       {added.length === 0 && removed.length === 0 && (
-        <p className="text-caption text-muted-foreground">两个版本的药材组成完全相同，差异体现在剂量或评分上。</p>
+        <p className="text-caption text-muted-foreground">{t('ai.formula.ui.identicalComposition')}</p>
       )}
     </div>
   )

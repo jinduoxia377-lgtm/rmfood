@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import * as d3 from 'd3'
 import { Tooltip } from '@/components/ui'
 
@@ -57,6 +58,7 @@ export function RiskMatrix({
   onCellClick,
   className = '',
 }: RiskMatrixProps) {
+  const { t } = useTranslation()
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 })
@@ -123,31 +125,31 @@ export function RiskMatrix({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">风险等级:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.safety.matrix.riskLevel')}</span>
             <span className={`ml-2 font-medium`} style={{ color: colorConfig.text }}>
               {hazard.level === 'low' ? '低' : hazard.level === 'medium' ? '中' : hazard.level === 'high' ? '高' : '未检测'}
             </span>
           </div>
           <div>
-            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">评分:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.safety.matrix.score')}</span>
             <span className="ml-2 font-bold">{hazard.score}</span>
           </div>
         </div>
         {hazard.regulation && (
           <div className="text-sm">
-            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">法规依据:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.safety.matrix.regulationBasis')}</span>
             <span className="ml-2">{hazard.regulation}</span>
           </div>
         )}
         {hazard.limit !== undefined && hazard.actual !== undefined && (
           <div className="text-sm">
-            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">限值/实测:</span>
+            <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.safety.matrix.limitActual')}</span>
             <span className="ml-2">{hazard.limit} / {hazard.actual}</span>
           </div>
         )}
         {hazard.suggestion && (
           <div className="mt-2 p-2 bg-secondary-50 dark:bg-secondary-300/20 rounded text-sm text-secondary-800 dark:text-secondary-200">
-            <span className="font-medium">建议: </span>{hazard.suggestion}
+            <span className="font-medium">{t('ai.safety.matrix.suggestion')}</span>{hazard.suggestion}
           </div>
         )}
       </div>

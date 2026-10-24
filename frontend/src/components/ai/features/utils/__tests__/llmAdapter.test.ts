@@ -9,7 +9,6 @@ import {
   listAdapters,
   streamResponse,
 } from '../llmAdapter';
-import type { ModelRequest } from '@/components/ai/shared/types';
 
 describe('LLM Adapter', () => {
   describe('DeepSeekAdapter', () => {
@@ -80,11 +79,6 @@ describe('LLM Adapter', () => {
 
   describe('streamResponse', () => {
     test('应返回完整内容', async () => {
-      const request: ModelRequest = {
-        model: 'deepseek-chat',
-        messages: [{ role: 'user', content: 'Hello' }],
-      };
-      
       // 由于需要真实 API，这里只测试基础逻辑
       expect(typeof streamResponse).toBe('function');
     });

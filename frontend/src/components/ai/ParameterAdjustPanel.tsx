@@ -7,17 +7,6 @@ import { Card } from '@/components/ui'
 import { Sliders, Save, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react'
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore'
 
-interface ParameterConfig {
-  id: string
-  name: string
-  value: number
-  min: number
-  max: number
-  step: number
-  unit: string
-  description: string
-}
-
 interface TasteProfile {
   sweetness: number
   bitterness: number

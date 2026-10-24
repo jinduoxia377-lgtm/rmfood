@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { SafetyCheckResult } from '@/types'
@@ -165,6 +166,7 @@ function useSafetyCheckInput() {
 function useSafetyCheckMutation(
   onSafetyComplete?: (result: SafetyCheckResult) => void
 ) {
+  const { t } = useTranslation()
   const feedback = useOperationFeedback()
 
   const [safetyResult, setSafetyResult] = useState<SafetyCheckResult | null>(null)
@@ -202,9 +204,9 @@ function useSafetyCheckMutation(
       setSafetyResult(data)
 
       feedback.showSuccess(
-        DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_CHECK_COMPLETE_TITLE || '安全检查完成',
+        t('ai.safety.checkComplete'),
         data.passed
-          ? (data.summary || DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_PASSED_MESSAGE || '配方通过安全检查')
+          ? (data.summary || t('ai.safety.passedMessage'))
           : (data.summary || DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_FAILED_MESSAGE || '发现安全问题'),
       )
 
@@ -216,7 +218,7 @@ function useSafetyCheckMutation(
       const errorMsg: string = error instanceof Error ? error.message : (ERROR_MESSAGES.SAFETY_CHECK_FAILED || '安全检查失败')
 
       feedback.showError(
-        DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_ERROR_TITLE || '安全检查失败',
+        t('ai.safety.errorTitle'),
         errorMsg,
       )
 
@@ -471,6 +473,7 @@ export function SafetyTab({
   onSafetyComplete,
   selectedIngredients: externalSelectedIngredients,
 }: SafetyTabProps) {
+  const { t } = useTranslation()
   const config = getAIConfig()
   const feedback = useOperationFeedback()
 
@@ -571,12 +574,10 @@ export function SafetyTab({
       <div>
         <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <Shield className="w-5 h-5" style={{ color: 'var(--color-primary-500)' }} />
-          {DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_CHECK_TITLE || '安全合规检查'}
+          {t('ai.safety.checkTitle')}
         </h2>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          {DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_CHECK_SUBTITLE ||
-            '输入成分名称，用逗号分隔。检查药食同源目录、配伍禁忌、过敏原等'
-          }
+          {t('ai.safety.checkSubtitle')}
         </p>
       </div>
 
@@ -587,10 +588,7 @@ export function SafetyTab({
           <Input
             value={safetyInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={
-              DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_INPUT_PLACEHOLDER ||
-              '例如：人参、黄芪、山楂、枸杞'
-            }
+            placeholder={t('ai.safety.inputPlaceholder')}
             onKeyDown={handleKeyDown}
             className="flex-1"
             maxLength={LIMITS.MAX_INPUT_LENGTH}
@@ -601,7 +599,7 @@ export function SafetyTab({
             loading={isChecking}
             icon={<Shield className="w-4 h-4" />}
           >
-            {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SAFETY_CHECK || '开始检查'}
+            {t('ai.safety.checkButton')}
           </Button>
         </div>
 
@@ -647,7 +645,7 @@ export function SafetyTab({
             {safetyResult.passed ? (
               <>
                 <CheckCircle className="w-5 h-5" />
-                {safetyResult.summary || DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_PASSED_MESSAGE}
+                {safetyResult.summary || t('ai.safety.passedMessage')}
               </>
             ) : (
               <>
@@ -719,7 +717,7 @@ export function SafetyTab({
               icon={<RefreshCw className="w-4 h-4" />}
               onClick={handleFullReset}
             >
-              {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_RECHECK || '重新检查'}
+              {t('ai.safety.recheckButton')}
             </Button>
 
             <Button
@@ -728,7 +726,7 @@ export function SafetyTab({
               icon={<Download className="w-4 h-4" />}
               onClick={() => {
                 if (!safetyResult || !lastCheckedIngredients.length) {
-                  feedback.showWarning('提示', '请先完成安全检查后再导出报告')
+                  feedback.showWarning(t('ai.safety.notice'), t('ai.safety.reportFirst'))
                   return
                 }
                 exportSafetyReport({

@@ -10,6 +10,7 @@
  * @version 4.0.0
  */
 import React, { useState, useRef, useEffect } from 'react'
+import type { TFunction } from 'i18next'
 import {
   Leaf,
   MessageSquare,
@@ -30,18 +31,18 @@ import type { ScenarioMode } from '../services/scenarioSwitcher'
 import type { HistorySession } from './pro'
 
 // ─── 模型配置 ──────────────────────────────────────────────────────
-const MODELS: { id: string; label: string; desc: string; color: string }[] = [
-  { id: 'deepseek-chat', label: 'DeepSeek', desc: '深度推理', color: 'text-success-500' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', desc: '快速响应', color: 'text-secondary-500' },
-  { id: 'glm-4-flash', label: 'GLM-4 Flash', desc: '本地优化', color: 'text-accent-500' },
+const MODELS: { id: string; label: string; descKey: string; color: string }[] = [
+  { id: 'deepseek-chat', label: 'DeepSeek', descKey: 'modelDeepDesc', color: 'text-success-500' },
+  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', descKey: 'modelGptDesc', color: 'text-secondary-500' },
+  { id: 'glm-4-flash', label: 'GLM-4 Flash', descKey: 'modelGlmDesc', color: 'text-accent-500' },
 ]
 
 // ─── 场景模式配置 ──────────────────────────────────────────────────
-const SCENARIO_OPTIONS: Array<{ mode: ScenarioMode; icon: LucideIcon; label: string }> = [
-  { mode: 'academician', icon: GraduationCap, label: '学者顾问' },
-  { mode: 'safety_off', icon: Shield, label: '安全专员' },
-  { mode: 'process_eng', icon: Wrench, label: '工艺工程师' },
-  { mode: 'concise_adv', icon: Zap, label: '精简顾问' },
+const SCENARIO_OPTIONS: Array<{ mode: ScenarioMode; icon: LucideIcon; labelKey: string }> = [
+  { mode: 'academician', icon: GraduationCap, labelKey: 'scenarioAcademician' },
+  { mode: 'safety_off', icon: Shield, labelKey: 'scenarioSafety' },
+  { mode: 'process_eng', icon: Wrench, labelKey: 'scenarioProcess' },
+  { mode: 'concise_adv', icon: Zap, labelKey: 'scenarioConcise' },
 ]
 
 function getScenarioIcon(mode: ScenarioMode): LucideIcon {
@@ -72,7 +73,7 @@ export interface TopBarProps {
   onOpenUserProfile?: () => void
   onToggleSearch?: () => void
   searchOpen?: boolean
-  t: (key: string, fallback?: string) => string
+  t: TFunction
 }
 
 // ─── Dropdown 组件 ─────────────────────────────────────────────────
@@ -111,19 +112,20 @@ function Dropdown({ trigger, children, className = '' }: {
 // ─── Settings Menu（仅保留配方面板 + 清除）──────────────────────────
 function SettingsMenu({
   formulaCount, onShowFormulaList,
-  messageCount, onClearChat,
+  messageCount, onClearChat, t,
 }: {
   formulaCount: number
   onShowFormulaList: () => void
   messageCount: number
   onClearChat: () => void
+  t: TFunction
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
   return (
     <Dropdown trigger={
       <button
-        className="p-1.5 rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-        aria-label="设置" title="设置"
+        className="p-1.5 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        aria-label={t('ai.chat.topbar.settings')} title={t('ai.chat.topbar.settings')}
       >
         <Settings className="w-4 h-4" />
       </button>
@@ -133,8 +135,8 @@ function SettingsMenu({
         className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors">
         <FileText className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
         <div className="flex-1 min-w-0">
-          <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">配方面板</div>
-          {formulaCount > 0 && <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{formulaCount} 条配方</div>}
+          <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">{t('ai.chat.topbar.formulaPanel')}</div>
+          {formulaCount > 0 && <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.chat.topbar.formulaCount', { count: formulaCount })}</div>}
         </div>
       </button>
       {/* 分隔 */}
@@ -142,21 +144,21 @@ function SettingsMenu({
       {/* 清除 */}
       {showConfirm ? (
         <div className="px-3 py-2">
-          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">清空 {messageCount} 条对话？</p>
+          <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-2">{t('ai.chat.topbar.clearChatConfirm', { count: messageCount })}</p>
           <div className="flex gap-1.5">
             <button onClick={() => { onClearChat(); setShowConfirm(false) }}
-              className="flex-1 px-2 py-1 text-xs bg-error-500 text-white rounded hover:bg-error-600 transition-colors">确认</button>
+              className="flex-1 px-2 py-1 text-xs bg-error-500 text-white rounded hover:bg-error-600 transition-colors">{t('ai.chat.topbar.confirm')}</button>
             <button onClick={() => setShowConfirm(false)}
-              className="flex-1 px-2 py-1 text-xs bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded hover:bg-neutral-200 transition-colors">取消</button>
+              className="flex-1 px-2 py-1 text-xs bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded hover:bg-neutral-200 transition-colors">{t('ai.chat.topbar.cancel')}</button>
           </div>
         </div>
       ) : (
         <button onClick={() => setShowConfirm(true)}
           className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors">
           <Trash2 className="w-3.5 h-3.5" />
-          <span>清除对话</span>
+          <span>{t('ai.chat.topbar.clearChat')}</span>
           {messageCount > 0 && (
-            <span className="ml-auto text-[9px] bg-error-100 dark:bg-error-300/30 px-1 py-0.5 rounded-full">{messageCount}</span>
+            <span className="ml-auto text-xs bg-error-100 dark:bg-error-300/30 px-1 py-0.5 rounded-full">{messageCount}</span>
           )}
         </button>
       )}
@@ -196,11 +198,11 @@ export function TopBar({
               ? 'text-success-700 dark:text-success-600 bg-success-50 dark:bg-success-300/20'
               : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
           }`}
-          title="对话历史"
+          title={t('ai.chat.topbar.chatHistory')}
         >
           <MessageSquare className="w-3.5 h-3.5" />
           {historySessions.length > 0 && (
-            <span className="min-w-[14px] h-4 px-1 flex items-center justify-center text-[9px] font-semibold bg-success-100 dark:bg-success-300/30 text-success-700 dark:text-success-700 rounded-full">
+            <span className="min-w-[14px] h-4 px-1 flex items-center justify-center text-xs font-semibold bg-success-100 dark:bg-success-300/30 text-success-700 dark:text-success-700 rounded-full">
               {historySessions.length}
             </span>
           )}
@@ -211,8 +213,8 @@ export function TopBar({
       <div className="flex items-center gap-1">
         {/* ① 模型选择（下拉） */}
         <Dropdown trigger={
-          <button title="切换模型"
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
+          <button title={t('ai.chat.topbar.switchModel')}
+            className="flex items-center gap-1.5 px-2 py-1 min-h-[36px] rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
             <span className={currentModel.color}><Leaf className="w-3 h-3" /></span>
             <span className="hidden md:inline">{currentModel.label}</span>
             <ChevronDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
@@ -224,7 +226,7 @@ export function TopBar({
               <span className={m.color}><Leaf className="w-3.5 h-3.5" /></span>
               <div>
                 <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">{m.label}</div>
-                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.desc}</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t(`ai.chat.topbar.${m.descKey}`)}</div>
               </div>
             </button>
           ))}
@@ -240,12 +242,12 @@ export function TopBar({
             const next = SCENARIO_OPTIONS[(idx + 1) % SCENARIO_OPTIONS.length]
             onScenarioSwitch(next.mode)
           }}
-          title={`切换角色：${currentScenario.label}`}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+          title={t('ai.chat.topbar.switchRole', { label: t(`ai.chat.topbar.${currentScenario.labelKey}`) })}
+          className="flex items-center gap-1 px-2 py-1 min-h-[36px] rounded-md text-xs font-medium bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
         >
           {/* eslint-disable-next-line react-hooks/static-components */}
           <ScenarioIcon className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-          <span className="hidden sm:inline">{currentScenario.label}</span>
+          <span className="hidden sm:inline">{t(`ai.chat.topbar.${currentScenario.labelKey}`)}</span>
         </button>
 
         {/* 分隔 */}
@@ -253,7 +255,7 @@ export function TopBar({
 
         {/* ③ RAG知识库 — 常驻开关 + 管理（外层用 div，避免按钮嵌套） */}
         <div
-          className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
+          className={`flex items-center gap-1 px-2 py-1 min-h-[36px] rounded-md text-xs font-medium border transition-colors ${
             ragEnabled && ragIsSeeded
               ? 'bg-success-50 dark:bg-success-300/20 border-success-200 dark:border-success-800 text-success-700 dark:text-success-700 hover:bg-success-100 dark:hover:bg-success-900/30'
               : ragEnabled && ragIsSeeding
@@ -269,22 +271,22 @@ export function TopBar({
             }}
             disabled={ragIsSeeding}
             title={
-              !ragEnabled ? '启用知识库检索' :
-              ragIsSeeding ? '知识库初始化中…' :
-              ragIsSeeded ? '关闭知识库检索' :
-              '知识库初始化中'
+              !ragEnabled ? t('ai.chat.topbar.ragEnable') :
+              ragIsSeeding ? t('ai.chat.topbar.ragSeeding') :
+              ragIsSeeded ? t('ai.chat.topbar.ragDisable') :
+              t('ai.chat.topbar.ragSeeding')
             }
             className="flex items-center gap-1"
           >
             <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-success-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
             <span className="hidden sm:inline">
-              {ragIsSeeding ? '初始化…' : ragEnabled && ragIsSeeded ? '知识库ON' : !ragEnabled ? '知识库OFF' : '准备中'}
+              {ragIsSeeding ? t('ai.chat.topbar.ragInitializing') : ragEnabled && ragIsSeeded ? t('ai.chat.topbar.ragOn') : !ragEnabled ? t('ai.chat.topbar.ragOff') : t('ai.chat.topbar.ragReady')}
             </span>
           </button>
           {ragEnabled && ragIsSeeded && (
             <button onClick={onOpenKBPanel}
-              className="ml-1 px-1.5 py-0.5 text-[9px] bg-success-200/60 dark:bg-success-800/40 text-success-700 dark:text-success-700 rounded hover:bg-success-200 transition-colors">
-              管理
+              className="ml-1 px-1.5 py-0.5 text-xs bg-success-200/60 dark:bg-success-800/40 text-success-700 dark:text-success-700 rounded hover:bg-success-200 transition-colors">
+              {t('ai.chat.topbar.ragManage')}
             </button>
           )}
         </div>
@@ -296,8 +298,8 @@ export function TopBar({
         {onOpenUserProfile && (
           <button
             onClick={onOpenUserProfile}
-            title="健康画像"
-            className="p-1.5 rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            title={t('ai.chat.topbar.healthProfile')}
+            className="p-1.5 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <UserCircle className="w-4 h-4" />
           </button>
@@ -307,8 +309,8 @@ export function TopBar({
         {onToggleSearch && (
           <button
             onClick={onToggleSearch}
-            title={searchOpen ? '关闭搜索' : '搜索消息'}
-            className={`p-1.5 rounded-md transition-colors ${
+            title={searchOpen ? t('ai.chat.topbar.closeSearch') : t('ai.chat.topbar.searchMessages')}
+            className={`p-1.5 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md transition-colors ${
               searchOpen
                 ? 'text-primary-500 bg-primary-50 dark:bg-primary-300/20'
                 : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:bg-neutral-100 dark:hover:bg-neutral-800'
@@ -324,6 +326,7 @@ export function TopBar({
           onShowFormulaList={onShowFormulaList}
           messageCount={messageCount}
           onClearChat={onClearChat}
+          t={t}
         />
       </div>
     </div>

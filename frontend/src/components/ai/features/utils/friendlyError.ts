@@ -41,6 +41,11 @@ export function toFriendlyErrorMessage(raw: unknown): string {
     return '登录会话已过期，请重新登录后继续。'
   }
 
+  // 未登录（登录态尚未就绪）
+  if (text.includes('未登录') || text.includes('请先登录')) {
+    return '登录状态尚未就绪，请稍候片刻后重试；若持续出现请重新登录。'
+  }
+
   // 权限不足（403）
   if (text.includes('403') || text.includes('forbidden') || text.includes('权限')) {
     return '权限不足，请重新登录后重试。'
@@ -49,6 +54,21 @@ export function toFriendlyErrorMessage(raw: unknown): string {
   // 限流
   if (text.includes('429') || text.includes('请求过于频繁')) {
     return '请求过于频繁，请稍等片刻后再发送。'
+  }
+
+  // 422 参数校验失败（如用户画像超长等，前端已自动重试仍失败）
+  if (text.includes('422')) {
+    const idx = text.indexOf('422')
+    const detail = text.slice(idx + 3).replace(/^[:：\s]+/, '').trim().slice(0, 200)
+    return `请求参数异常（422）${detail ? '：' + detail : ''}，已自动重试仍失败，请刷新页面后重试。`
+  }
+
+  // 502/503 AI 服务暂时不可用
+  if (text.includes('502')) {
+    return 'AI 服务暂时不可用（502），已自动重试仍失败，请稍后重试。'
+  }
+  if (text.includes('503')) {
+    return 'AI 服务繁忙（503），已自动重试仍失败，请稍后重试。'
   }
 
   // 服务器错误
@@ -61,5 +81,5 @@ export function toFriendlyErrorMessage(raw: unknown): string {
     return 'AI 响应在传输过程中被中断，请重新生成。'
   }
 
-  return '对话服务暂时不可用，请稍后重试。'
+  return '对话服务暂时不可用（未知错误），请稍后重试。'
 }

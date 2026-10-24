@@ -18,6 +18,7 @@
  * 间距: gap-3 (12px) / p-4 (16px) / 卡片 p-5  — 紧凑 SaaS 仪表盘
  */
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Settings, Activity, ShieldAlert, RefreshCw,
@@ -74,36 +75,37 @@ const LLM_PRESETS: Record<string, LlmPreset> = {
 // ════════════════════════════════════════════════════════════
 // 模型数据定义
 // ════════════════════════════════════════════════════════════
-const BUSINESS_MODELS: { value: ModelType; label: string; desc: string; icon: React.ReactNode }[] = [
-  { value: 'formula_gpt',   label: 'FormulaGPT',  desc: '基于药食同源规则的配方推荐', icon: <Zap className="w-[18px] h-[18px]" /> },
-  { value: 'synergy_net',   label: 'SynergyNet',  desc: '药材配伍协同效应分析',       icon: <Activity className="w-[18px] h-[18px]" /> },
-  { value: 'safety_checker',label: 'SafetyChecker',desc: '配方安全性自动审查',        icon: <ShieldAlert className="w-[18px] h-[18px]" /> },
-  { value: 'taste_predictor',label: 'TastePredictor',desc: '风味特征智能预测',         icon: <TrendingUp className="w-[18px] h-[18px]" /> },
+const BUSINESS_MODELS: { value: ModelType; label: string; descKey: string; icon: React.ReactNode }[] = [
+  { value: 'formula_gpt',   label: 'FormulaGPT',  descKey: 'descFormulaRule', icon: <Zap className="w-[18px] h-[18px]" /> },
+  { value: 'synergy_net',   label: 'SynergyNet',  descKey: 'descSynergy',       icon: <Activity className="w-[18px] h-[18px]" /> },
+  { value: 'safety_checker',label: 'SafetyChecker',descKey: 'descSafetyAuto',        icon: <ShieldAlert className="w-[18px] h-[18px]" /> },
+  { value: 'taste_predictor',label: 'TastePredictor',descKey: 'descTaste',         icon: <TrendingUp className="w-[18px] h-[18px]" /> },
 ];
 
-const ADVANCED_MODELS: { key: ModelType; label: string; desc: string; icon: React.ReactNode }[] = [
-  { key: 'llm',           label: 'LLM',            desc: '大语言模型 API',           icon: <Zap className="w-[18px] h-[18px]" /> },
-  { key: 'formula_gpt',   label: 'FormulaGPT',     desc: '配方生成引擎',             icon: <Cpu className="w-[18px] h-[18px]" /> },
-  { key: 'synergy_net',   label: 'SynergyNet',     desc: '协同分析模型',             icon: <Database className="w-[18px] h-[18px]" /> },
-  { key: 'safety_checker',label: 'SafetyChecker',  desc: '安全检测规则',             icon: <ShieldAlert className="w-[18px] h-[18px]" /> },
-  { key: 'taste_predictor',label: 'TastePredictor',desc: '口感预测器',               icon: <TrendingUp className="w-[18px] h-[18px]" /> },
-  { key: 'stability_model',label: 'StabilityModel',desc: '稳定性模拟',               icon: <Lock className="w-[18px] h-[18px]" /> },
-  { key: 'peptide_scorer', label: 'PeptideScorer', desc: '肽序列评分',               icon: <FileText className="w-[18px] h-[18px]" /> },
+const ADVANCED_MODELS: { key: ModelType; label: string; descKey: string; icon: React.ReactNode }[] = [
+  { key: 'llm',           label: 'LLM',            descKey: 'descLlmApi',           icon: <Zap className="w-[18px] h-[18px]" /> },
+  { key: 'formula_gpt',   label: 'FormulaGPT',     descKey: 'descFormulaEngine',             icon: <Cpu className="w-[18px] h-[18px]" /> },
+  { key: 'synergy_net',   label: 'SynergyNet',     descKey: 'descSynergyModel',             icon: <Database className="w-[18px] h-[18px]" /> },
+  { key: 'safety_checker',label: 'SafetyChecker',  descKey: 'descSafetyRule',             icon: <ShieldAlert className="w-[18px] h-[18px]" /> },
+  { key: 'taste_predictor',label: 'TastePredictor',descKey: 'descTastePredictor',               icon: <TrendingUp className="w-[18px] h-[18px]" /> },
+  { key: 'stability_model',label: 'StabilityModel',descKey: 'descStabilitySim',               icon: <Lock className="w-[18px] h-[18px]" /> },
+  { key: 'peptide_scorer', label: 'PeptideScorer', descKey: 'descPeptideScore',               icon: <FileText className="w-[18px] h-[18px]" /> },
 ];
 
 const SUB_MODELS = [
-  { key: 'formula_gpt',   label: 'FormulaGPT',  desc: '配方生成' },
-  { key: 'synergy_net',   label: 'SynergyNet',  desc: '协同分析' },
-  { key: 'safety_checker',label: 'SafetyChecker',desc: '安全检查' },
-  { key: 'taste_predictor',label: 'TastePredictor',desc: '口感预测' },
-  { key: 'stability_model',label: 'StabilityModel',desc: '稳定性预测' },
-  { key: 'peptide_scorer', label: 'PeptideScorer',desc: '肽序列评分' },
+  { key: 'formula_gpt',   label: 'FormulaGPT',  descKey: 'subFormula' },
+  { key: 'synergy_net',   label: 'SynergyNet',  descKey: 'subSynergy' },
+  { key: 'safety_checker',label: 'SafetyChecker',descKey: 'subSafety' },
+  { key: 'taste_predictor',label: 'TastePredictor',descKey: 'subTaste' },
+  { key: 'stability_model',label: 'StabilityModel',descKey: 'subStability' },
+  { key: 'peptide_scorer', label: 'PeptideScorer',descKey: 'subPeptide' },
 ];
 
 // ════════════════════════════════════════════════════════════
 // 页面标题区（与 AIAssistantPage banner h2 风格一致: text-xl font-semibold）
 // ════════════════════════════════════════════════════════════
 function PageHeader() {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3 pb-3 mb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
       <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center flex-shrink-0">
@@ -111,10 +113,10 @@ function PageHeader() {
       </div>
       <div>
         <h1 className="text-base font-bold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
-          配置管理
+          {t('ai.config.title')}
         </h1>
         <p className="text-xs font-normal mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          管理 AI 模型连接、参数和技术指标
+          {t('ai.config.subtitle')}
         </p>
       </div>
     </div>
@@ -152,6 +154,7 @@ function SectionHeader({
 // 第 1 层：模型健康监控
 // ════════════════════════════════════════════════════════════
 function HealthDashboard() {
+  const { t } = useTranslation();
   const { healthData, isConnected, lastUpdated } = useModelHealthPolling(15_000);
   const queryClient = useQueryClient();
   const { data: statusesRaw } = useQuery<Record<string, ModelStatus | undefined>>({
@@ -355,18 +358,18 @@ function HealthDashboard() {
 
 
   return (
-    <section aria-label="模型健康监控" className="mb-4">
+    <section aria-label={t('ai.config.modelHealth')} className="mb-4">
       <SectionHeader
         icon={<Activity className="w-5 h-5" />}
         iconBg="bg-success-100 dark:bg-success-300/25"
         iconColor="text-success-700 dark:text-success-600"
-        title="模型健康监控"
-        subtitle={`实时状态 · 每 15s 刷新 · ${isConnected ? '轮询正常' : '轮询失败'}`}
+        title={t('ai.config.modelHealth')}
+        subtitle={`${t('ai.config.realtimeStatus')} · ${isConnected ? t('ai.config.pollingNormal') : t('ai.config.pollingFailed')}`}
         action={
           <>
             {lastUpdated && (
               <span className="text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>
-                更新于 {lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                {t('ai.config.updatedAt')} {lastUpdated.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
             <button
@@ -401,9 +404,9 @@ function HealthDashboard() {
                   }
                 </div>
                 <div>
-                  <div className="text-sm font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>LLM 大语言模型</div>
+                  <div className="text-sm font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{t('ai.config.llm')}</div>
                   <div className="text-sm font-normal mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>
-                    {llmStatus?.provider || '未配置'} · {llmStatus?.model || '—'}
+                    {llmStatus?.provider || t('ai.config.notConfigured')} · {llmStatus?.model || '—'}
                   </div>
                 </div>
               </div>
@@ -414,7 +417,7 @@ function HealthDashboard() {
                     : 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${isLlmActive ? 'bg-success-500 animate-pulse' : 'bg-warning-500'}`} />
-                  {isLlmActive ? '运行中' : '未配置'}
+                  {isLlmActive ? t('ai.config.modelStatusRunning') : t('ai.config.notConfigured')}
                 </span>
                 <button
                   onClick={() => setShowLlmQuick(!showLlmQuick)}
@@ -476,7 +479,7 @@ function HealthDashboard() {
                       {llmModels.map((m) => (
                         <option key={m} value={m}>{m}</option>
                       ))}
-                      <option value="__custom__">自定义输入（手动填写模型名）</option>
+                      <option value="__custom__">{t('ai.config.customInput')}</option>
                     </select>
                     {(!llmModels.includes(llmModel) || llmModel === '') && !llmFetching && (
                       <Input
@@ -490,7 +493,7 @@ function HealthDashboard() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-[var(--text-secondary)] block">请求地址</label>
+                  <label className="text-sm font-semibold text-[var(--text-secondary)] block">{t('ai.config.requestUrl')}</label>
                   <Input
                     type="text"
                     value={llmBaseUrl}
@@ -584,7 +587,7 @@ function HealthDashboard() {
 
         {/* ── 子模型状态列表 ── */}
         <div className="space-y-2">
-          {SUB_MODELS.map(({ key, label, desc }) => {
+          {SUB_MODELS.map(({ key, label, descKey }) => {
             const s = statuses?.[key] as BackendModelStatus | undefined;
             const isActive = s?.status === 'active';
             return (
@@ -592,10 +595,10 @@ function HealthDashboard() {
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-success-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>{label}</div>
-                  <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{desc}</div>
+                  <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{t(`ai.config.${descKey}`)}</div>
                 </div>
                 <span className="text-xs font-semibold flex-shrink-0" style={{ color: isActive ? 'var(--color-success)' : 'var(--text-muted)' }}>
-                  {isActive ? '在线' : '规则模式'}
+                  {isActive ? t('ai.config.online') : t('ai.config.ruleMode')}
                 </span>
               </div>
             );
@@ -607,11 +610,11 @@ function HealthDashboard() {
       {healthData?.length > 0 && (
         <div className="p-5 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>模型响应质量</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>{t('ai.config.modelQuality')}</span>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
               {isConnected
-                ? <><Wifi className="w-3.5 h-3.5 text-success-500" /><span>轮询中</span></>
-                : <><WifiOff className="w-3.5 h-3.5" /><span>连接失败</span></>
+                ? <><Wifi className="w-3.5 h-3.5 text-success-500" /><span>{t('ai.config.polling')}</span></>
+                : <><WifiOff className="w-3.5 h-3.5" /><span>{t('ai.config.connectionFailed')}</span></>
               }
             </div>
           </div>
@@ -639,7 +642,7 @@ function HealthDashboard() {
                 <div className="flex items-center justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                   <span>{m.latency_ms}ms</span>
                   <span>{m.error_count} 次错误</span>
-                  <span>{m.uptime_percentage}% 在线</span>
+                  <span>{m.uptime_percentage}% {t('ai.config.online')}</span>
                 </div>
               </div>
             ))}
@@ -654,6 +657,7 @@ function HealthDashboard() {
 // 第 2 层：默认模型选择
 // ════════════════════════════════════════════════════════════
 function DefaultModelSection() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedModel, setSelectedModel] = useState<ModelType>(() => {
     try { return (localStorage.getItem('rmfood_default_model') as ModelType) || 'formula_gpt'; } catch { return 'formula_gpt'; }
@@ -687,12 +691,12 @@ function DefaultModelSection() {
   };
 
   return (
-    <section aria-label="默认模型选择" className="mb-4">
+    <section aria-label={t('ai.config.defaultModel')} className="mb-4">
       <SectionHeader
         icon={<Settings className="w-5 h-5" />}
         iconBg="bg-secondary-100 dark:bg-secondary-300/25"
         iconColor="text-secondary-700 dark:text-secondary-700"
-        title="默认模型"
+        title={t('ai.config.defaultModel')}
         subtitle="选择各业务场景使用的默认 AI 模型"
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -702,12 +706,12 @@ function DefaultModelSection() {
             <div className="mt-3 px-3 py-2 rounded-lg text-sm font-semibold bg-success-50 dark:bg-success-300/20 text-success-700 dark:text-success-700 border border-success-200 dark:border-success-800/40 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               {saveMsg}
-              {backendSync === 'fail' && <span className="ml-auto text-xs font-normal text-warning-600 dark:text-warning-700">（未同步至后端，仅本地缓存）</span>}
+              {backendSync === 'fail' && <span className="ml-auto text-xs font-normal text-warning-600 dark:text-warning-700">{t('ai.config.notSyncedBackend')}</span>}
             </div>
           )}
         </div>
         <div className="space-y-2">
-          {BUSINESS_MODELS.map(({ value, label, desc, icon }: typeof BUSINESS_MODELS[0]) => {
+          {BUSINESS_MODELS.map(({ value, label, descKey, icon }: typeof BUSINESS_MODELS[0]) => {
             const isSelected = selectedModel === value;
             return (
               <button key={value} onClick={() => handleModelSelect(value)} disabled={saving}
@@ -724,7 +728,7 @@ function DefaultModelSection() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className={`text-sm font-semibold leading-none ${isSelected ? 'text-primary-700 dark:text-primary-700' : ''}`} style={{ color: isSelected ? 'var(--color-primary-700)' : 'var(--text-primary)' }}>{label}</div>
-                    <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{desc}</div>
+                    <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{t(`ai.config.${descKey}`)}</div>
                   </div>
                   {isSelected && <CheckCircle2 className="w-4 h-4 text-primary-500 flex-shrink-0" />}
                 </div>
@@ -741,6 +745,7 @@ function DefaultModelSection() {
 // 单模型配置行
 // ════════════════════════════════════════════════════════════
 function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: BackendModelStatus }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [configs, setConfigs] = useState<Record<ModelType, ModelConfig>>({} as Record<ModelType, ModelConfig>);
   const [llmProvider, setLlmProvider] = useState('deepseek');
@@ -895,7 +900,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
         setMsg({ type: 'success', text: '配置已保存到服务器和本地缓存' });
       } else if (backendForbidden) {
         // P0 功能 #1：非管理员调用全局配置端点会被 403 拒绝，引导走个人密钥通道
-        setMsg({ type: 'error', text: '无权限修改全局 LLM 配置（仅管理员）。您可改用上方"配置管理"快捷面板保存个人密钥，或联系管理员。' });
+        setMsg({ type: 'error', text: t('ai.config.noPermissionGlobal') });
       } else {
         setMsg({ type: 'error', text: '配置已保存到本地缓存，服务器保存失败' });
       }
@@ -939,12 +944,12 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>{modelInfo.label}</div>
-            <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{modelInfo.desc}</div>
+            <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{t(`ai.config.${modelInfo.descKey}`)}</div>
           </div>
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {modelKey === 'llm' && (
               <span className="text-xs flex items-center gap-1" style={{ color: hasKey ? 'var(--color-success)' : 'var(--text-muted)' }}>
-                <Key className="w-3 h-3" />{hasKey ? '已配置' : '未配置'}
+                <Key className="w-3 h-3" />{hasKey ? t('ai.config.configured') : t('ai.config.notConfigured')}
               </span>
             )}
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
@@ -952,7 +957,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 : isUnconfigured ? 'bg-warning-100 dark:bg-warning-300/25 text-warning-700 dark:text-warning-700'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary)] dark:text-[var(--text-muted)]'
             }`}>
-              {isActive ? '活跃' : isUnconfigured ? '未配置' : '规则模式'}
+              {isActive ? t('ai.config.active') : isUnconfigured ? t('ai.config.notConfigured') : t('ai.config.ruleMode')}
             </span>
             {configs[modelKey]?.baseUrl && (
               <span className="text-xs font-mono hidden lg:inline" style={{ color: 'var(--text-muted)' }}>
@@ -988,7 +993,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 >
                   <option value="" disabled>{llmFetching ? '加载中...' : '选择模型'}</option>
                   {llmModels.map((m) => <option key={m} value={m}>{m}</option>)}
-                  <option value="__custom__">自定义输入（手动填写模型名）</option>
+                  <option value="__custom__">{t('ai.config.customInput')}</option>
                 </select>
                 {(!llmModels.includes(llmModel) || llmModel === '') && !llmFetching && (
                   <Input
@@ -1052,14 +1057,14 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-[var(--text-secondary)] block">超时 (ms)</label>
+              <label className="text-sm font-semibold text-[var(--text-secondary)] block">{t('ai.config.timeout')}</label>
               <Input type="number" value={configs[modelKey]?.timeout || 30000}
                 onChange={(e) => setConfigs(prev => ({ ...prev, [modelKey]: { ...(prev[modelKey] || ConfigManager.getDefaultModelConfig()), timeout: parseInt(e.target.value) || 30000 } }))}
                 min={5000} max={60000} step={1000}
                 className="h-10 font-mono text-xs" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-[var(--text-secondary)] block">最大重试</label>
+              <label className="text-sm font-semibold text-[var(--text-secondary)] block">{t('ai.config.maxRetries')}</label>
               <Input type="number" value={configs[modelKey]?.maxRetries ?? 3}
                 onChange={(e) => setConfigs(prev => ({ ...prev, [modelKey]: { ...(prev[modelKey] || ConfigManager.getDefaultModelConfig()), maxRetries: parseInt(e.target.value) || 3 } }))}
                 min={0} max={10}
@@ -1082,7 +1087,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
             </button>
             <button onClick={() => handleReset(modelKey)}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-normal border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150">
-              <Trash2 className="w-3.5 h-3.5" />重置
+              <Trash2 className="w-3.5 h-3.5" />{t('ai.config.reset')}
             </button>
             {msg && (
               <span className={`text-sm ${msg.type === 'success' ? 'text-success-700 dark:text-success-600' : 'text-error-600 dark:text-error-700'}`}>
@@ -1100,6 +1105,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 // 第 3 层：高级配置
 // ════════════════════════════════════════════════════════════
 function AdvancedConfigSection() {
+  const { t } = useTranslation()
   const { data: statusesRaw } = useQuery<Record<string, ModelStatus | undefined>>({
     queryKey: ['ai-model-status'],
     queryFn: () => ModelClient.getModelStatus(),
@@ -1114,8 +1120,8 @@ function AdvancedConfigSection() {
         icon={<ShieldAlert className="w-5 h-5" />}
         iconBg="bg-warning-100 dark:bg-warning-300/25"
         iconColor="text-warning-600 dark:text-warning-700"
-        title="高级配置"
-        subtitle="API 密钥、连接参数和技术指标"
+        title={t('ai.config.advancedConfig')}
+        subtitle={t('ai.config.advancedConfigDesc')}
       />
 
       {/* Accordion 容器 — 与 StatCard 风格一致 */}
@@ -1145,6 +1151,7 @@ function collectLocalEventStats() {
 
 // ─── Compaction 与事件溯源 ────────────────────────────────
 function CompactionAndEventSourcing() {
+  const { t } = useTranslation();
   const [show, setShow] = useState(false);
   const [metrics, setMetrics] = useState<{ metrics: { totalCompactions: number; avgCompactionTime: number; avgLockWaitTime: number; lockTimeoutCount: number }; recentAlerts: { message: string; timestamp: number }[]; health: { status: string } }>(() => {
     try { return getDashboardData(); } catch { return { metrics: { totalCompactions: 0, avgCompactionTime: 0, avgLockWaitTime: 0, lockTimeoutCount: 0 }, recentAlerts: [], health: { status: 'healthy' } }; }
@@ -1167,8 +1174,8 @@ function CompactionAndEventSourcing() {
       >
         <div className="flex items-center gap-2.5">
           <Lock className="w-4 h-4 text-accent-500" />
-          <span>Compaction 与事件溯源</span>
-          <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted)]">高级</span>
+          <span>{t('ai.config.compactionTitle')}</span>
+          <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted)]">{t('ai.config.advanced')}</span>
         </div>
         {show ? <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />}
       </button>
@@ -1183,7 +1190,7 @@ function CompactionAndEventSourcing() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5 text-accent-500" />
-                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Compaction 指标</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t('ai.config.compactionMetrics')}</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   metrics.health.status === 'healthy'
@@ -1195,8 +1202,8 @@ function CompactionAndEventSourcing() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { label: '总压缩次数', value: metrics.metrics.totalCompactions, color: 'text-primary-700 dark:text-primary-700' },
-                  { label: '平均耗时', value: `${Math.round(metrics.metrics.avgCompactionTime)}ms`, color: 'text-success-700 dark:text-success-600' },
+                  { label: t('ai.config.totalCompactions'), value: metrics.metrics.totalCompactions, color: 'text-primary-700 dark:text-primary-700' },
+                  { label: t('ai.config.avgCompactionTime'), value: `${Math.round(metrics.metrics.avgCompactionTime)}ms`, color: 'text-success-700 dark:text-success-600' },
                   { label: '锁等待', value: `${Math.round(metrics.metrics.avgLockWaitTime)}ms`, color: metrics.metrics.avgLockWaitTime > 500 ? 'text-error-600 dark:text-error-700' : 'text-warning-600 dark:text-warning-700' },
                   { label: '超时次数', value: metrics.metrics.lockTimeoutCount, color: metrics.metrics.lockTimeoutCount > 0 ? 'text-error-600 dark:text-error-700' : 'text-success-700 dark:text-success-600' },
                 ].map(({ label, value, color }) => (
@@ -1207,7 +1214,7 @@ function CompactionAndEventSourcing() {
               </div>
               {metrics.recentAlerts.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] dark:text-[var(--text-muted)]">最近告警</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] dark:text-[var(--text-muted)]">{t('ai.config.recentAlerts')}</div>
                   {metrics.recentAlerts.slice(0, 3).map((alert, idx) => (
                     <div key={idx} className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800/40 text-warning-700 dark:text-warning-700">
                       <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
@@ -1225,7 +1232,7 @@ function CompactionAndEventSourcing() {
             <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="w-3.5 h-3.5 text-secondary-500" />
-                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>事件溯源统计</span>
+                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t('ai.config.eventSourceStats')}</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[

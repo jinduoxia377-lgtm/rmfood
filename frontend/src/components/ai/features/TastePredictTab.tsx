@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
 import { Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
@@ -33,6 +34,16 @@ interface IngredientInput {
   processingMethod?: string;
 }
 
+/** 炮制方法中文名 → i18n key（ai.taste.processing.methods.*）映射 */
+const PROCESSING_METHOD_KEYS: Record<string, string> = {
+  '蜜炙': 'honey',
+  '酒炒': 'wine',
+  '醋制': 'vinegar',
+  '盐炒': 'salt',
+  '麸炒': 'bran',
+  '土炒': 'earth',
+};
+
 function computeAvgSour(names: string[]): number {
   let total = 0, count = 0;
   for (const name of names) {
@@ -43,6 +54,7 @@ function computeAvgSour(names: string[]): number {
 }
 
 export function TastePredictTab() {
+  const { t } = useTranslation();
   const [tasteInput, setTasteInput] = useState('');
   const [, setIngredients] = useState<IngredientInput[]>([]);
   const [processingMethod, setProcessingMethod] = useState<string>('');
@@ -163,10 +175,10 @@ export function TastePredictTab() {
               </div>
               <div className="flex-1">
                 <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                  口感预测
+                  {t('ai.taste.title')}
                 </h2>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
-                  输入药材名称，支持本地快速预测和 AI 深度分析
+                  {t('ai.taste.subtitle')}
                 </p>
               </div>
             </div>
@@ -174,12 +186,12 @@ export function TastePredictTab() {
             {/* 输入框 */}
             <div>
               <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
-                药材配方
+                {t('ai.taste.formulaLabel')}
               </label>
               <textarea
                 value={tasteInput}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTasteInput(e.target.value)}
-                placeholder={`如：\n黄芪、党参、枸杞子、山药、甘草`}
+                placeholder={t('ai.taste.placeholder')}
                 rows={4}
                 className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
                            rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
@@ -192,26 +204,29 @@ export function TastePredictTab() {
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
-                  炮制方法（可选）
+                  {t('ai.taste.processing.label')}
                 </label>
                 <Select
                   value={processingMethod}
                   onChange={(v) => setProcessingMethod(v)}
-                  placeholder="选择炮制方法..."
+                  placeholder={t('ai.taste.processing.placeholder')}
                   className="rounded-xl"
                 >
-                  <option value="">无</option>
-                  {PROCESSING_METHODS.map((method) => (
-                    <option key={method.name} value={method.name}>
-                      {method.name} - {method.description}
-                    </option>
-                  ))}
+                  <option value="">{t('ai.taste.processing.none')}</option>
+                  {PROCESSING_METHODS.map((method) => {
+                    const methodKey = PROCESSING_METHOD_KEYS[method.name] || method.name;
+                    return (
+                      <option key={method.name} value={method.name}>
+                        {t(`ai.taste.processing.methods.${methodKey}.name`)} - {t(`ai.taste.processing.methods.${methodKey}.description`)}
+                      </option>
+                    );
+                  })}
                 </Select>
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
-                  算法模式
+                  {t('ai.taste.algorithm.label')}
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -222,8 +237,8 @@ export function TastePredictTab() {
                         : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
                     }`}
                   >
-                    <div className="font-semibold">加权平均</div>
-                    <div className="text-xs opacity-70 mt-0.5">快速计算</div>
+                    <div className="font-semibold">{t('ai.taste.algorithm.weighted.title')}</div>
+                    <div className="text-xs opacity-70 mt-0.5">{t('ai.taste.algorithm.weighted.subtitle')}</div>
                   </button>
                   <button
                     onClick={() => setAlgorithmMode('synergy')}
@@ -233,8 +248,8 @@ export function TastePredictTab() {
                         : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
                     }`}
                   >
-                    <div className="font-semibold">协同分析</div>
-                    <div className="text-xs opacity-70 mt-0.5">精确预测</div>
+                    <div className="font-semibold">{t('ai.taste.algorithm.synergy.title')}</div>
+                    <div className="text-xs opacity-70 mt-0.5">{t('ai.taste.algorithm.synergy.subtitle')}</div>
                   </button>
                 </div>
               </div>
@@ -249,7 +264,7 @@ export function TastePredictTab() {
                 variant="outline"
                 className="flex-1 rounded-xl font-medium border-neutral-200 dark:border-neutral-700"
               >
-                本地预测
+                {t('ai.taste.buttons.localPredict')}
               </Button>
               <Button
                 onClick={handlePredict}
@@ -258,7 +273,7 @@ export function TastePredictTab() {
                 icon={<Cherry className="w-4 h-4" />}
                 className="flex-1 rounded-md font-medium transition-colors duration-150"
               >
-                AI 分析
+                {t('ai.taste.buttons.aiAnalyze')}
               </Button>
             </div>
 
@@ -269,7 +284,7 @@ export function TastePredictTab() {
               icon={<RotateCcw className="w-4 h-4" />}
               className="w-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
-              清空重置
+              {t('ai.taste.buttons.clearReset')}
             </Button>
           </Card>
         </div>
@@ -282,7 +297,7 @@ export function TastePredictTab() {
                 <div className="w-6 h-6 rounded-lg bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
                   <Table2 className="w-3.5 h-3.5 text-warning-600 dark:text-warning-700" />
                 </div>
-                成分列表
+                {t('ai.taste.ingredients.title')}
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700">
                   {ingredientProfiles.length}
                 </span>
@@ -296,7 +311,7 @@ export function TastePredictTab() {
                 >
                   <span className="font-medium text-neutral-700 dark:text-neutral-300">{item.name}</span>
                   <Badge variant={item.hasData ? 'success' : 'warning'} size="sm" className="rounded-full px-2.5 py-0.5">
-                    {item.hasData ? '✓ 有数据' : '○ 待补充'}
+                    {item.hasData ? t('ai.taste.ingredients.hasData') : t('ai.taste.ingredients.pending')}
                   </Badge>
                 </div>
               ))}
@@ -314,9 +329,9 @@ export function TastePredictTab() {
           >
             <div className="text-center space-y-3 p-8">
               <Cherry className="w-16 h-16 mx-auto text-error-300 dark:text-error-600" />
-              <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">等待输入配方...</h3>
+              <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">{t('ai.taste.emptyState.title')}</h3>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
-                在左侧输入药材名称后，点击"本地预测"或"AI 分析"按钮， 此处将显示五味分布、口感评分和优化建议。
+                {t('ai.taste.emptyState.description')}
               </p>
             </div>
           </Card>
@@ -324,7 +339,7 @@ export function TastePredictTab() {
           <Tabs defaultValue="wheel" className="h-full">
             <TabsList className="mb-4">
               <TabsTrigger value="wheel" icon={<BarChart3 className="w-4 h-4" />}>
-                风味轮
+                {t('ai.taste.tabs.flavorWheel')}
               </TabsTrigger>
               <TabsTrigger value="radar" icon={<BarChart3 className="w-4 h-4" />}>
                 雷达图
@@ -333,7 +348,7 @@ export function TastePredictTab() {
                 详细数据
               </TabsTrigger>
               <TabsTrigger value="suggestions" icon={<Lightbulb className="w-4 h-4" />}>
-                优化建议
+                {t('ai.taste.tabs.suggestions')}
               </TabsTrigger>
             </TabsList>
 
@@ -345,7 +360,7 @@ export function TastePredictTab() {
 
                   <div className="flex-1 space-y-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">综合评分</h3>
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('ai.taste.result.overallScore')}</h3>
                       <div className="flex items-baseline gap-2 mt-1">
                         <span className="text-4xl font-bold text-secondary-600">{(tasteResult.score * 100).toFixed(0)}</span>
                         <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/ 100</span>
@@ -354,7 +369,7 @@ export function TastePredictTab() {
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">主导口味</h4>
+                      <h4 className="font-semibold text-sm mb-2">{t('ai.taste.result.dominantTaste')}</h4>
                       <div className="flex items-center gap-2">
                         <div
                           className="w-4 h-4 rounded-full"
@@ -368,7 +383,7 @@ export function TastePredictTab() {
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">口感特征</h4>
+                      <h4 className="font-semibold text-sm mb-2">{t('ai.taste.result.tasteFeatures')}</h4>
                       <div className="flex flex-wrap gap-2">
                         {tasteResult.features.map((feature, i) => (
                           <Badge key={i} variant="neutral" size="sm">
@@ -391,7 +406,7 @@ export function TastePredictTab() {
                     historyResults.length > 0
                       ? [
                           {
-                            label: '历史记录 #1',
+                            label: t('ai.taste.history.label', { index: 1 }),
                             data: historyResults[0].profile,
                             color: 'var(--color-primary-400)',
                           },
@@ -406,19 +421,19 @@ export function TastePredictTab() {
             {/* 详细数据视图 */}
             <TabsContent value="details" className="mt-0">
               <Card className="p-6">
-                <h3 className="font-semibold mb-4">成分贡献分析</h3>
+                <h3 className="font-semibold mb-4">{t('ai.taste.details.title')}</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                        <th className="text-left py-2 px-3">成分</th>
-                        <th className="text-center py-2 px-2">甘</th>
-                        <th className="text-center py-2 px-2">酸</th>
-                        <th className="text-center py-2 px-2">苦</th>
-                        <th className="text-center py-2 px-2">辛</th>
-                        <th className="text-center py-2 px-2">咸</th>
-                        <th className="text-center py-2 px-2">淡</th>
-                        <th className="text-right py-2 px-3">权重</th>
+                        <th className="text-left py-2 px-3">{t('ai.taste.details.ingredient')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.sweet')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.sour')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.bitter')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.pungent')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.salty')}</th>
+                        <th className="text-center py-2 px-2">{t('ai.taste.tastes.bland')}</th>
+                        <th className="text-right py-2 px-3">{t('ai.taste.details.weight')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -446,7 +461,7 @@ export function TastePredictTab() {
               <Card className="p-6 space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
                   <Lightbulb className="w-5 h-5 text-warning-500" />
-                  优化建议
+                  {t('ai.taste.suggestions.title')}
                 </h3>
 
                 <div className="space-y-3">
@@ -472,7 +487,7 @@ export function TastePredictTab() {
                   <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                     <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                       <History className="w-4 h-4" />
-                      历史记录
+                      {t('ai.taste.history.title')}
                     </h4>
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {historyResults.slice(0, 5).map((result, idx) => (
@@ -483,7 +498,7 @@ export function TastePredictTab() {
                                      hover:bg-neutral-200 dark:hover:bg-neutral-700
                                      text-xs whitespace-nowrap transition-colors"
                         >
-                          #{idx + 1} 分数:{(result.score * 100).toFixed(0)}
+                          {t('ai.taste.history.score', { index: idx + 1, score: (result.score * 100).toFixed(0) })}
                         </button>
                       ))}
                     </div>
