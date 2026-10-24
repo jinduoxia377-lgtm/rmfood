@@ -280,7 +280,7 @@ export function SynergyTab() {
         {/* 推荐药材快捷添加 */}
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
-            <Star className="w-3 h-3" /> 快速添加：
+            <Star className="w-3 h-3" /> {t('ai.synergy.synergyTab.quickAdd')}
           </span>
           {SUGGESTED_HERBS.flat().slice(0, 8).map((herb) => (
             <button
@@ -324,19 +324,19 @@ export function SynergyTab() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-300/15">
               <div className="text-2xl font-bold text-primary-700">{synergyResult.score ?? 0}</div>
-              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">综合协同评分</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.overallScore')}</div>
             </div>
             <div className="border border-success-200 dark:border-success-800 rounded-xl p-4 bg-success-50/50 dark:bg-success-300/15">
               <div className="text-2xl font-bold text-success-600">
                 {synergyResult.synergy_pairs?.length ?? 0}
               </div>
-              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同配对</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.synergyPairs')}</div>
             </div>
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-4 bg-danger-50/50 dark:bg-danger-500/10">
               <div className="text-2xl font-bold text-danger-600">
                 {synergyResult.antagonism_warnings?.length ?? 0}
               </div>
-              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">配伍禁忌</div>
+              <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.tabooPairs')}</div>
             </div>
           </div>
 
@@ -483,12 +483,12 @@ export function SynergyTab() {
           icon={<History className="w-4 h-4" />}
           className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
         >
-          分析历史 ({history.length})
+          {t('ai.synergy.synergyTab.history', { count: history.length })}
         </Button>
         {showHistory && history.length > 0 && (
           <div className="absolute z-10 top-full left-0 mt-2 w-80 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">最近分析</span>
+              <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{t('ai.synergy.synergyTab.recentAnalysis')}</span>
               <button
                 onClick={handleClearHistory}
                 className="text-xs text-danger-500 hover:text-danger-700 flex items-center gap-1"
@@ -508,7 +508,7 @@ export function SynergyTab() {
                     {entry.herbs.length > 3 && <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">…(+{entry.herbs.length - 3})</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                    <span>评分 {entry.score.toFixed(2)}</span>
+                    <span>{t('ai.synergy.synergyTab.score', { value: entry.score.toFixed(2) })}</span>
                     <span className="text-success-500">{entry.synergyCount} 协同</span>
                     {entry.antagonismCount > 0 && (
                       <span className="text-danger-500">{entry.antagonismCount} 禁忌</span>

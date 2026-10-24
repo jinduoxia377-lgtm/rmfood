@@ -8,10 +8,14 @@ import { toFriendlyErrorMessage } from '../utils/friendlyError'
 import type { ChatMessage } from '../types'
 import { tokenBudgetManager } from '../capabilities/streaming/TokenBudgetManager'
 import { contextCompactionEngine } from '../capabilities/streaming/ContextCompaction'
+import { ChatState } from '../utils/chatStateMachine'
 import { chatEventLog } from '../capabilities/storage/ChatEventLog'
 import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 import { offlineManager } from '../utils/offlineManager'
 import { userPreferencesService } from '../services/userPreferencesService'
+import { MAX_MESSAGES } from '@/config/ai/constants'
+import { detectStructuredContent } from '../components/structured/utils'
+import { extractFormulaFromContent } from '../services/formulaExtractorService'
 export type { ChatMessage } from '../types'
 
 interface UseChatMessagesReturn {
@@ -46,7 +50,6 @@ interface UseChatMessagesReturn {
 }
 
 const STORAGE_KEY = 'chat_messages'
-const MAX_MESSAGES = 100
 const MAX_RETRY = 3 // 最大重试次数
 
 export function useChatMessages(): UseChatMessagesReturn {
@@ -119,6 +122,16 @@ export function useChatMessages(): UseChatMessagesReturn {
       logger.info('[useChatMessages] Unmount cleanup: aborting all pending SSE requests')
       chatService.closeAllPendingRequests()
     }
+  }, [])
+
+  // ── P0-3: 订阅 chatService 状态机，统一 isStreaming 来源，消除 UI 状态漂移 ──
+  useEffect(() => {
+    const machine = chatService.getStateMachine()
+    const listener = (_from: ChatState, to: ChatState) => {
+      setIsStreaming(to === ChatState.Streaming || to === ChatState.Paused)
+    }
+    const off = machine.addStateListener(listener)
+    return off
   }, [])
 
   // ADR-029 P1-3: 统一存储策略 - IndexedDB 作为主存储，localStorage 仅作降级兜底
@@ -207,7 +220,6 @@ export function useChatMessages(): UseChatMessagesReturn {
   }, [])
 
   const sendMessage = useCallback(async (content: string, displayContent?: string, scenarioMode?: string) => {
-    void scenarioMode;
     if (!content?.trim()) {
       logger.warn('[useChatMessages] ⚠️ Empty message content, ignoring send request')
       return
@@ -268,7 +280,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // ── 尝试 1: 流式 SSE ──
       try {
-        for await (const chunk of chatService.sendMessageStream(content.trim(), history)) {
+        for await (const chunk of chatService.sendMessageStream(content.trim(), history, true, { scenarioMode })) {
           if (chunk.done) break
           // 思考步骤事件不追加到对话内容（仅转发到侧栏）
           if (!chunk.step) {
@@ -306,7 +318,7 @@ export function useChatMessages(): UseChatMessagesReturn {
         const streamErrMsg = streamError instanceof Error ? streamError.message : String(streamError)
 
         // ── 如果是认证错误，跳过降级（非流式也会遇到同样的认证问题）──
-        const isStreamAuthError = streamErrMsg.includes('401') || streamErrMsg.includes('认证') || streamErrMsg.includes('Token') || streamErrMsg.includes('未授权')
+        const isStreamAuthError = streamErrMsg.includes('401') || streamErrMsg.includes('认证') || streamErrMsg.includes('Token') || streamErrMsg.includes('未授权') || streamErrMsg.includes('未登录') || streamErrMsg.includes('请先登录')
         if (isStreamAuthError) {
           logger.warn('[useChatMessages] Stream failed with auth error, skipping fallback (would also fail)')
           updateMessage(userMessage.id, { sendStatus: 'failed' })
@@ -318,7 +330,7 @@ export function useChatMessages(): UseChatMessagesReturn {
         // 保留流式已收到的内容，追加而非替换
         logger.warn('[useChatMessages] Stream failed, falling back to non-streaming:', streamErrMsg)
         try {
-          const response = await chatService.sendMessage(content.trim(), history)
+          const response = await chatService.sendMessage(content.trim(), history, { scenarioMode })
           // 追加到已收到的流式内容后面
           fullContent = fullContent + (fullContent ? '\n\n' : '') + response.content
           updateMessage(assistantMessageId, {
@@ -334,7 +346,7 @@ export function useChatMessages(): UseChatMessagesReturn {
           logger.error('[useChatMessages] Both streaming and fallback failed:', errMsg)
 
           // 认证错误不显示气泡（auth:required 事件已在 ChatService 中触发重新登录）
-          const isAuthError = errMsg.includes('401') || errMsg.includes('认证') || errMsg.includes('Token') || errMsg.includes('未授权')
+          const isAuthError = errMsg.includes('401') || errMsg.includes('认证') || errMsg.includes('Token') || errMsg.includes('未授权') || errMsg.includes('未登录') || errMsg.includes('请先登录')
           if (!isAuthError) {
             hasError = true
             errorMessage = errMsg
@@ -349,9 +361,21 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // 统一处理结果
       if (!hasError) {
+        // P1-c: 流式结束后用「完整结构化解析」生成最终配方，与 handleStructureSave 保存链路一致，
+        // 避免用户看到轻量片段（{name,value}）与最终保存配方不一致。
+        let finalFormulas = accumulatedFormulas
+        try {
+          const structured = detectStructuredContent(fullContent)
+          if (structured) {
+            const extracted = extractFormulaFromContent(structured)
+            if (extracted) finalFormulas = [extracted]
+          }
+        } catch (parseError) {
+          logger.warn('[useChatMessages] 流式配方完整解析失败，保留轻量片段:', parseError)
+        }
         updateMessage(assistantMessageId, {
           isLoading: false,
-          formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined,
+          formulas: finalFormulas.length > 0 ? finalFormulas : undefined,
         })
         updateMessage(userMessage.id, { sendStatus: 'sent' })
 
@@ -441,9 +465,11 @@ export function useChatMessages(): UseChatMessagesReturn {
   }, [addMessage, isPaused])
 
   const pauseStreaming = useCallback(() => {
+    // 真正中止 SSE 连接（不再只改标志位），停止消耗 LLM quota 与带宽
+    chatService.abortCurrentStream()
     setIsPaused(true)
     setIsStreaming(false)
-    logger.info('[useChatMessages] ⏸️ Streaming paused')
+    logger.info('[useChatMessages] ⏸️ Streaming paused (SSE aborted)')
   }, [])
 
   const resumeStreaming = useCallback(() => {
@@ -451,7 +477,7 @@ export function useChatMessages(): UseChatMessagesReturn {
     setIsPaused(false)
     const lastQuestion = lastQuestionRef.current
     if (lastQuestion) {
-      logger.info('[useChatMessages] ▶️ Resuming streaming with last question:', { lastQuestionPreview: lastQuestion.substring(0, 50) })
+      logger.info('[useChatMessages] ▶️ Resuming: re-generating with last question:', { lastQuestionPreview: lastQuestion.substring(0, 50) })
       sendMessage(lastQuestion)
     } else {
       logger.warn('[useChatMessages] ⚠️ No last question to resume')

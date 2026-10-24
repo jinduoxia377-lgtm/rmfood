@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   LineChart,
@@ -164,6 +165,7 @@ const DEFAULT_MO_PARAMS: MOAlgorithmParams = {
 // ─── 主组件 ───
 
 export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
+  const { t } = useTranslation();
   // ── 模式与预设 ──
   const [selectedPreset, setSelectedPreset] = useState<PresetKey | 'custom'>('balanced');
   const [mode, setMode] = useState<'pareto' | 'weighted' | 'epsilon'>('pareto');
@@ -881,8 +883,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <GitBranch className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">多目标优化 (NSGA-II)</h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">基于 Pareto 最优前沿搜索多维度最优配方组合</p>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('ai.genetic.moTitle')}</h2>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('ai.genetic.moSubtitle')}</p>
           </div>
         </div>
 
@@ -903,7 +905,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   {PRESET_LABELS[k]}
                 </option>
               ))}
-              <option value="custom">自定义目标...</option>
+              <option value="custom">{t('ai.genetic.customObjective')}</option>
             </Select>
           </div>
 
@@ -948,7 +950,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   className="flex flex-wrap items-end gap-3 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700"
                 >
                   <div className="flex-1 min-w-[140px]">
-                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">目标名称</label>
+                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">{t('ai.genetic.objectiveName')}</label>
                     <Select
                       value={obj.key}
                       onChange={(v) => {
@@ -959,7 +961,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       }}
                       className="w-full"
                     >
-                      <option value="">选择目标...</option>
+                      <option value="">{t('ai.genetic.selectObjective')}</option>
                       {OBJECTIVE_OPTIONS.map((o) => (
                         <option key={o.key} value={o.key}>
                           {o.name} ({o.description})
@@ -968,14 +970,14 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     </Select>
                   </div>
                   <div className="w-28">
-                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">方向</label>
+                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">{t('ai.genetic.direction')}</label>
                     <Select
                       value={obj.direction}
                       onChange={(v) => updateObjective(obj.id, 'direction', v)}
                       className="w-full"
                     >
-                      <option value="maximize">最大化 ↑</option>
-                      <option value="minimize">最小化 ↓</option>
+                      <option value="maximize">{t('ai.genetic.maximize')}</option>
+                      <option value="minimize">{t('ai.genetic.minimize')}</option>
                     </Select>
                   </div>
                   <div className="flex-1 min-w-[160px]">
@@ -1010,7 +1012,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 <Button variant="outline" size="sm" icon={<Plus className="w-4 h-4" />} onClick={addObjective}>
                   添加目标
                 </Button>
-                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">快速添加:</span>
+                <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.genetic.quickAdd')}</span>
                 {OBJECTIVE_OPTIONS.filter((opt) => !customObjectives.some((o) => o.key === opt.key)).map((opt) => (
                   <button
                     key={opt.key}
@@ -1073,13 +1075,13 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3"
           >
             <Target className="w-4 h-4 text-accent-500" />
-            目标功效
+            {t('ai.formula.effects.objectiveEfficacy')}
             <Badge variant="neutral" size="sm">
-              {selectedEffects.length} 已选
+              {t('ai.formula.effects.selectedCount', { count: selectedEffects.length })}
             </Badge>
-            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.formula.effects.optional')}</span>
           </h3>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="目标功效多选">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('ai.formula.effects.objectiveEfficacyMulti')}>
             {EFFECT_OPTIONS.map((effect) => (
               <button
                 key={effect.id}
@@ -1092,7 +1094,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 }}
                 role="checkbox"
                 aria-checked={selectedEffects.includes(effect.id)}
-                aria-label={`功效: ${effect.label}`}
+                aria-label={t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                 tabIndex={0}
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800',
@@ -1101,7 +1103,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700',
                 )}
               >
-                {effect.label}
+                {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
               </button>
             ))}
           </div>
@@ -1114,7 +1116,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
           >
             <Settings2 className="w-4 h-4 text-accent-500" />
-            算法参数
+            {t('ai.formula.generateTab.algorithmParams')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
             <MOParamSlider
@@ -1189,7 +1191,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">排除药材</label>
+              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">{t('ai.genetic.excludedHerbs')}</label>
               <div className="flex gap-2">
                 <Input
                   value={excludedInput}
@@ -1319,7 +1321,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             ) : (
               <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">实时流式模式</span>
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('ai.genetic.realtimeStreaming')}</span>
           </div>
           <Switch
             checked={isStreamingMode}
@@ -1388,7 +1390,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         {mutation.isError && !isRunning && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
-            <AlertTitle>运行失败</AlertTitle>
+            <AlertTitle>{t('ai.genetic.runFailed')}</AlertTitle>
             <AlertDescription>
               {(mutation.error as Error)?.message || '多目标优化执行过程中发生错误，请检查参数后重试。'}
             </AlertDescription>
@@ -1406,7 +1408,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           {logs.length === 0 ? (
             <div className="text-neutral-400 dark:text-neutral-400 flex items-center gap-2 h-full justify-center">
               <Info className="w-4 h-4" aria-hidden="true" />
-              <span>日志将在运行时显示...</span>
+              <span>{t('ai.genetic.logsPlaceholder')}</span>
             </div>
           ) : (
             logs.map((log, i) => (
@@ -1769,13 +1771,13 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     )}
                   </svg>
                   <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                    <span>低密度</span>
+                    <span>{t('ai.genetic.lowDensity')}</span>
                     <div className="flex items-center gap-0.5">
                       <span className="w-3 h-2 rounded-sm bg-secondary-100" />
                       <span className="w-3 h-2 rounded-sm bg-accent-200" />
                       <span className="w-3 h-2 rounded-sm bg-error-300" />
                     </div>
-                    <span>高密度</span>
+                    <span>{t('ai.genetic.highDensity')}</span>
                   </div>
                 </div>
               )}
@@ -1808,7 +1810,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       selectedIdx={selectedCandidateIdx}
                     />
                   ) : (
-                    <div className="flex items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">目标维度不足</div>
+                    <div className="flex items-center justify-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.genetic.insufficientDims')}</div>
                   )}
                 </Card>
 
@@ -1876,7 +1878,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <details className="group rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
               <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
                 <SlidersHorizontal className="w-4 h-4 text-accent-500 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">权重微调</span>
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('ai.genetic.weightTuning')}</span>
                 <span className="ml-auto text-xs text-muted-foreground group-open:rotate-180 transition-transform duration-200">
                   ▼
                 </span>
@@ -2090,7 +2092,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             <summary className="flex items-center justify-between cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2">
                 <History className="w-4 h-4 text-accent-500" aria-hidden="true" />
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">运行历史记录</span>
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('ai.genetic.runHistory')}</span>
               </span>
               <div className="flex items-center gap-2">
                 <Badge variant="neutral" size="sm">
@@ -2105,7 +2107,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               {historyLoading ? (
                 <Skeleton className="h-40 w-full mt-1" />
               ) : historyRecords.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">暂无运行记录</div>
+                <div className="text-center py-8 text-muted-foreground text-sm">{t('ai.genetic.noRunRecords')}</div>
               ) : (
                 <div className="space-y-2">
                   {historyRecords.map((record) => (

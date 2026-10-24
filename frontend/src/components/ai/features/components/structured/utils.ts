@@ -159,6 +159,70 @@ export function detectStructuredContent(content: string): StructuredContent | nu
 }
 
 /**
+ * 兜底提取结构化 JSON（当 detectStructuredContent 因格式差异返回 null 时使用）。
+ *
+ * 与 detectStructuredContent 的区别：
+ * - 不要求 JSON 位于内容最开头（允许前后有少量说明文字）；
+ * - 对 block type 做「白名单过滤」而非「整体拒绝」——未知类型块被丢弃，
+ *   只要剩余合法块非空就返回结构化内容，避免在对话中裸显示 JSON。
+ */
+export function extractStructuredFallback(content: string): StructuredContent | null {
+  if (!content) return null
+  const trimmed = content.trim()
+  if (trimmed.length < 10 || !trimmed.includes('"blocks"')) return null
+
+  let jsonStr: string | null = null
+  // 1) ```json 代码块
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*\n([\s\S]*?)\n?\s*```/)
+  if (codeBlockMatch) {
+    const candidate = codeBlockMatch[1].trim()
+    const lastBrace = candidate.lastIndexOf('}')
+    if (lastBrace >= 0 && candidate.startsWith('{')) {
+      jsonStr = candidate.slice(0, lastBrace + 1)
+    }
+  }
+  // 2) 扫描第一个 { 到最后一个 }
+  if (!jsonStr) {
+    const firstBrace = trimmed.indexOf('{')
+    const lastBrace = trimmed.lastIndexOf('}')
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      jsonStr = trimmed.slice(firstBrace, lastBrace + 1)
+    }
+  }
+  if (!jsonStr) return null
+
+  try {
+    const parsed = JSON.parse(jsonStr) as Record<string, unknown>
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.blocks)) return null
+
+    const validTypes = new Set<BlockType>([
+      'header', 'data-table', 'chart', 'list',
+      'callout', 'metrics', 'divider',
+      'ingredient-detail', 'synergy-chart', 'timeline',
+    ])
+    const blocks = (parsed.blocks as Array<Record<string, unknown>>).filter(
+      (b): b is Record<string, unknown> & { type: BlockType; data: unknown } =>
+        !!b && typeof b === 'object' && typeof b.type === 'string' && validTypes.has(b.type as BlockType),
+    )
+    if (blocks.length === 0) return null
+
+    // 复用现有归一化，保证渲染层读取一致
+    const normalizedBlocks = blocks.map((block) => {
+      const n = normalizeCallout(block as { type: string; data: unknown })
+      return normalizeList(n)
+    })
+
+    return {
+      responseType: (parsed.responseType as StructuredContent['responseType']) ?? 'recommendation',
+      title: (parsed.title as string) || undefined,
+      blocks: normalizedBlocks as any,
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
  * 安全获取 block 数据，避免空指针
  */
 export function safeBlockData<T>(data: T | undefined | null, fallback: T): T {

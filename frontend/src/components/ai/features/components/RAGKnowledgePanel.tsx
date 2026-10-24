@@ -5,13 +5,14 @@
  *支持一键初始化种子数据和上传自定义文档。
  */
 import React, { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Database, Plus, Trash2, RefreshCw, CheckCircle, AlertCircle,
   FileText, ChevronDown, ChevronUp, X, Upload, Search, Loader2,
 } from 'lucide-react'
 import {
   getSeedStatus, seedKnowledgeBase, listDocuments, deleteDocument,
-  uploadDocument, getRAGStats, type RAGStats,
+  uploadDocument, getRAGStats, type RAGStats, type RAGDocument,
 } from '@/api/rag'
 import { Card } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
@@ -21,13 +22,10 @@ interface KBPanelProps {
   onSeedComplete?: (chunks: number, files: string[]) => void
 }
 
-interface KBDoc {
-  filename: string
-  chunks: number
-  created_at: string
-}
+type KBDoc = RAGDocument
 
 export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
+  const { t } = useTranslation()
   const [isSeeded, setIsSeeded] = useState(false)
   const [totalChunks, setTotalChunks] = useState(0)
   const [isSeeding, setIsSeeding] = useState(false)
@@ -44,7 +42,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
   const loadStatus = useCallback(async () => {
     try {
       setIsLoading(true)
-      const [status, , ragStats] = await Promise.all([
+      const [status, serverDocs, ragStats] = await Promise.all([
         getSeedStatus(),
         listDocuments().catch(() => []),
         getRAGStats().catch(() => null),
@@ -52,6 +50,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
       setIsSeeded(status.is_seeded)
       setTotalChunks(status.total_chunks ?? 0)
       setStats(ragStats)
+      setDocs(serverDocs)
       setError(null)
     } catch (e) {
       logger.warn('[RAGKnowledgePanel] 加载状态失败:', e)
@@ -95,6 +94,8 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
       const info = await uploadDocument(file, (p) => setUploadProgress(p))
       setDocs(prev => [...prev, {
         filename: info.filename,
+        latest_version: 1,
+        total_versions: 1,
         chunks: info.chunk_count,
         created_at: info.created_at,
       }])
@@ -250,7 +251,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-1">
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                文档列表 ({filteredDocs.length})
+                {t('ai.knowledge.docList')} ({filteredDocs.length})
               </span>
               {/* 上传按钮 */}
               <label className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-success-50 hover:text-success-600 dark:hover:bg-success-900/20 dark:hover:text-success-400 transition-colors cursor-pointer">
@@ -287,7 +288,7 @@ export function RAGKnowledgePanel({ onClose, onSeedComplete }: KBPanelProps) {
                         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{doc.filename}</p>
                         <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{doc.chunks} 个片段</p>
                       </div>
-                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0">{new Date(doc.created_at).toLocaleDateString('zh-CN')}</span>
+                      <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0">{new Date(doc.created_at ?? '').toLocaleDateString('zh-CN')}</span>
                       {expanded ? <ChevronUp className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />}
                     </button>
                     {expanded && (

@@ -12,6 +12,12 @@ vi.mock('@/api/client', () => ({
   },
 }))
 
+// buildRagContext → searchChunks 也会走 api.post；mock 掉 RAG 检索，
+// 避免它消耗测试对 api.post 设置的 Once mock 序列（导致「成功请求后应清除错误状态」等失败）。
+vi.mock('@/api/rag', () => ({
+  searchChunks: vi.fn().mockResolvedValue([]),
+}))
+
 // 服务流式路径依赖登录态
 vi.mock('@/stores/auth', () => ({
   useAuthStore: {
@@ -119,7 +125,7 @@ describe('ChatService', () => {
       global.fetch = mockFetch as any
 
       const receivedChunks: string[] = []
-      const gen = chatService.sendMessageStream('stream test', undefined, { signal: null as any })
+      const gen = chatService.sendMessageStream('stream test', undefined, true)
       for await (const chunk of gen) {
         if (chunk && chunk.content) receivedChunks.push(chunk.content)
       }

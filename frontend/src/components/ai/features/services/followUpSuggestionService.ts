@@ -6,14 +6,18 @@
  */
 import { logger } from '@/utils/safeLogger'
 import type { QuickQuestion } from '@/config/ai/questions'
-import { QUICK_QUESTIONS, getQuestionsByCategory } from '@/config/ai/questions'
+import { QUICK_QUESTIONS } from '@/config/ai/questions'
 
 /**
  * 追问建议接口
  */
 export interface FollowUpSuggestion {
   id: string
+  /** i18n key（ai.chat.quick.questions.*），用于在切换语言时翻译追问文本 */
+  questionKey: string
   question: string
+  /** i18n key（ai.chat.quick.categories.*），用于在切换语言时翻译分类标签 */
+  categoryKey: string
   category: string
   confidence: number
   relatedEntities?: string[]
@@ -66,7 +70,9 @@ export class FollowUpSuggestionEngine {
     const candidates = this.getCandidateQuestions()
     const scored = candidates.map(q => ({
       id: q.id,
+      questionKey: q.questionKey,
       question: q.question,
+      categoryKey: q.categoryKey,
       category: q.category,
       confidence: this.scoreQuestion(q),
       relatedEntities: this.extractRelatedEntities(q),

@@ -16,7 +16,7 @@
  * - ✅ prefers-reduced-motion 支持
  */
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 // AIContext 已移除（2026-07-22）：经确认，AIProvider 包裹内无任何子组件使用 useAIContext()。
@@ -194,8 +194,8 @@ export default function AIAssistantPage() {
 
   // ===== 统一全局快捷键注册 =====
   useGlobalShortcuts([
-    { key: 'k', ctrl: true, meta: true, action: toggleSearch, scope: 'global', description: '全局搜索', priority: 10 },
-    { key: 'Escape', action: closeSearch, scope: 'global', description: '关闭弹窗' },
+    { key: 'k', ctrl: true, meta: true, action: toggleSearch, scope: 'global', description: t('ai.page.announce.globalSearch'), priority: 10 },
+    { key: 'Escape', action: closeSearch, scope: 'global', description: t('ai.page.announce.closeDialog') },
   ]);
 
   // ===== 移动端侧栏 =====
@@ -224,9 +224,9 @@ export default function AIAssistantPage() {
   useEffect(() => {
     if (isModelStatusError && modelStatusError) {
       logger.error('获取模型状态失败:', modelStatusError);
-      showError('模型状态加载失败', '请检查网络连接后重试');
+      showError(t('ai.page.announce.modelStatusLoadFailed'), t('ai.page.announce.modelStatusLoadFailedDesc'));
     }
-  }, [isModelStatusError, modelStatusError, showError]);
+  }, [isModelStatusError, modelStatusError, showError, t]);
 
   // 安全访问 modelStatus.llm 属性，添加类型守卫
   const llmAvailable = modelStatus?.llm ? modelStatus.llm.status === 'active' : false;
@@ -247,82 +247,81 @@ export default function AIAssistantPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    announceToScreenReader('AI智能助手中心页面已加载');
-  }, [announceToScreenReader]);
+    announceToScreenReader(t('ai.page.announce.pageLoaded'));
+  }, [announceToScreenReader, t]);
+
+  const getTabLabel = useCallback((tab: AITab): string => {
+    const labels: Record<AITab, string> = {
+      chat: t('ai.page.tabs.chat'),
+      generate: t('ai.page.tabs.generate'),
+      genetic: t('ai.page.tabs.genetic'),
+      safety: t('ai.page.tabs.safety'),
+      synergy: t('ai.page.tabs.synergy'),
+      taste: t('ai.page.tabs.taste'),
+      stability: t('ai.page.tabs.stability'),
+      'peptide-analyze': t('ai.page.tabs.peptideAnalyze'),
+      'peptide-design': t('ai.page.tabs.peptideDesign'),
+      knowledge: t('ai.page.tabs.knowledge'),
+      config: t('ai.page.tabs.config'),
+    };
+    return labels[tab];
+  }, [t]);
 
   const handleTabChange = useCallback(
     (newTab: AITab) => {
       setTab(newTab);
-      // eslint-disable-next-line react-hooks/immutability
-      announceToScreenReader(`切换到${getTabLabel(newTab)}标签页`);
+      announceToScreenReader(t('ai.page.announce.tabSwitched', { label: getTabLabel(newTab) }));
     },
-    [announceToScreenReader],
+    [announceToScreenReader, t, getTabLabel],
   );
 
   const handleStatCardClick = useCallback(
     (tabTarget: AITab, label: string) => {
       setTab(tabTarget);
-      announceToScreenReader(`打开${label}模块`);
+      announceToScreenReader(t('ai.page.announce.moduleOpened', { label }));
     },
-    [announceToScreenReader],
+    [announceToScreenReader, t],
   );
-
-  const getTabLabel = (tab: AITab): string => {
-    const labels: Record<AITab, string> = {
-      chat: '智能对话',
-      generate: '配方生成',
-      genetic: '遗传优化',
-      safety: '安全检查',
-      synergy: '协同分析',
-      taste: '口感预测',
-      stability: '稳定性评估',
-      'peptide-analyze': '肽序列分析',
-      'peptide-design': '肽设计优化',
-      knowledge: '知识库',
-      config: '配置管理',
-    };
-    return labels[tab];
-  };
 
   const handleError = useCallback(
     (error: Error, errorInfo: React.ErrorInfo) => {
       logger.error('[AIAssistantPage] 发生错误:', { error: error.message, errorInfo });
-      showError('页面发生错误', error.message);
+      showError(t('ai.page.announce.pageError'), error.message);
     },
-    [showError],
+    [showError, t],
   );
 
   // Tab 分组定义 — 遵循 nav-hierarchy 规范：核心/高级/管理 分层
-  const tabGroups = [
+  const tabGroups = useMemo(() => [
     {
       key: 'core',
-      label: '核心功能',
+      label: t('ai.page.tabGroups.core'),
       icon: Zap,
       tabs: [
         {
           value: 'chat' as AITab,
-          label: '智能对话',
+          label: t('ai.page.tabs.chat'),
           icon: MessageSquare,
           badge: chatCount,
           badgeVariant: 'primary' as const,
         },
         {
           value: 'generate' as AITab,
-          label: '配方生成',
+          label: t('ai.page.tabs.generate'),
           icon: Sparkles,
           badge: generateCount,
           badgeVariant: 'info' as const,
         },
         {
           value: 'safety' as AITab,
-          label: '安全检查',
+          label: t('ai.page.tabs.safety'),
           icon: Shield,
           badge: safetyChecks,
           badgeVariant: 'warning' as const,
         },
         {
           value: 'synergy' as AITab,
-          label: '协同分析',
+          label: t('ai.page.tabs.synergy'),
           icon: GitMerge,
           badge: synergyCount,
           badgeVariant: 'success' as const,
@@ -331,28 +330,28 @@ export default function AIAssistantPage() {
     },
     {
       key: 'advanced',
-      label: '高级分析',
+      label: t('ai.page.tabGroups.advanced'),
       icon: Beaker,
       tabs: [
         {
           value: 'taste' as AITab,
-          label: '口感预测',
+          label: t('ai.page.tabs.taste'),
           icon: FlaskConical,
           badge: tasteCount,
           badgeVariant: 'neutral' as const,
         },
-        { value: 'stability' as AITab, label: '稳定性评估', icon: Activity },
-        { value: 'genetic' as AITab, label: '遗传优化', icon: Dna },
+        { value: 'stability' as AITab, label: t('ai.page.tabs.stability'), icon: Activity },
+        { value: 'genetic' as AITab, label: t('ai.page.tabs.genetic'), icon: Dna },
         {
           value: 'peptide-analyze' as AITab,
-          label: '肽序列分析',
+          label: t('ai.page.tabs.peptideAnalyze'),
           icon: Cpu,
           badge: peptideAnalyzeCount,
           badgeVariant: 'info' as const,
         },
         {
           value: 'peptide-design' as AITab,
-          label: '肽设计优化',
+          label: t('ai.page.tabs.peptideDesign'),
           icon: Dna,
           badge: peptideDesignCount,
           badgeVariant: 'success' as const,
@@ -361,14 +360,14 @@ export default function AIAssistantPage() {
     },
     {
       key: 'manage',
-      label: '管理',
+      label: t('ai.page.tabGroups.manage'),
       icon: Wrench,
       tabs: [
-        { value: 'knowledge' as AITab, label: '知识库', icon: Database },
-        { value: 'config' as AITab, label: '配置管理', icon: Settings },
+        { value: 'knowledge' as AITab, label: t('ai.page.tabs.knowledge'), icon: Database },
+        { value: 'config' as AITab, label: t('ai.page.tabs.config'), icon: Settings },
       ],
     },
-  ];
+  ], [t, chatCount, generateCount, safetyChecks, synergyCount, tasteCount, peptideAnalyzeCount, peptideDesignCount]);
 
   // Tab 激活后自动滚动到可见区域（桌面端）
   const tabGroupRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
@@ -415,7 +414,7 @@ export default function AIAssistantPage() {
               <button
                 onClick={closeMobileMenu}
                 className="p-1.5 min-w-[44px] min-h-[44px] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] transition-all duration-200 hover:rotate-90"
-                aria-label="{t('ai.page.closeMenu')}"
+                aria-label={t('ai.page.closeMenu')}
               >
                 <X className="w-5 h-5 text-[var(--text-muted)]" />
               </button>
@@ -497,15 +496,15 @@ export default function AIAssistantPage() {
                     <span className={`animate-ping absolute inline-flex h-full w-full rounded-[var(--radius-pill)] opacity-75 ${llmAvailable ? 'bg-[var(--color-success-container)]' : 'bg-[var(--color-error-container)]'}`}></span>
                     <span className={`relative inline-flex rounded-[var(--radius-pill)] h-2 w-2 ${llmAvailable ? 'bg-[var(--color-success)]' : 'bg-[var(--color-error)]'}`}></span>
                   </span>
-                  {llmAvailable ? '模型在线' : '模型离线'}
+                  {llmAvailable ? t('ai.page.modelStatus.online') : t('ai.page.modelStatus.offline')}
                 </div>
                 {/* 快速操作 */}
                 <button
-                  onClick={() => handleStatCardClick('chat', '智能对话')}
+                  onClick={() => handleStatCardClick('chat', t('ai.page.tabs.chat'))}
                   className="flex min-h-[44px] items-center gap-2 px-[var(--space-apple-md)] py-1.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-secondary)]/90 dark:bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)] dark:hover:bg-[var(--bg-tertiary)]/20 text-[var(--color-primary-text)] dark:text-white transition-colors duration-150 text-sm font-medium"
                 >
                   <MessageSquare className="w-4 h-4" aria-hidden="true" />
-                  开始对话
+                  {t('ai.page.actions.startChat')}
                 </button>
               </div>
             </div>
@@ -591,81 +590,81 @@ export default function AIAssistantPage() {
           <section aria-label={t('ai.page.moduleStats')} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {/* 主卡（large） */}
             <StatCard
-              label="智能对话"
+              label={t('ai.page.stats.chatLabel')}
               value={chatCount}
               icon={MessageSquare}
               variant="primary"
               size="large"
-              subtitle={`累计 ${chatCount > 0 ? chatCount.toLocaleString() : '0'} 次对话`}
+              subtitle={t('ai.page.stats.chatSubtitle', { count: chatCount > 0 ? chatCount.toLocaleString() : '0' })}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('chat', '智能对话')}
+              onClick={() => handleStatCardClick('chat', t('ai.page.tabs.chat'))}
             />
             <StatCard
-              label="配方生成"
+              label={t('ai.page.stats.generateLabel')}
               value={generateCount}
               icon={Sparkles}
               variant="secondary"
               size="large"
-              subtitle={`累计生成 ${generateCount > 0 ? generateCount.toLocaleString() : '0'} 个配方`}
+              subtitle={t('ai.page.stats.generateSubtitle', { count: generateCount > 0 ? generateCount.toLocaleString() : '0' })}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('generate', '配方生成')}
+              onClick={() => handleStatCardClick('generate', t('ai.page.tabs.generate'))}
             />
             <StatCard
-              label="安全检查"
+              label={t('ai.page.stats.safetyLabel')}
               value={safetyChecks}
               icon={Shield}
               variant="warning"
               size="large"
-              subtitle={`累计检查 ${safetyChecks > 0 ? safetyChecks.toLocaleString() : '0'} 次`}
+              subtitle={t('ai.page.stats.safetySubtitle', { count: safetyChecks > 0 ? safetyChecks.toLocaleString() : '0' })}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('safety', '安全检查')}
+              onClick={() => handleStatCardClick('safety', t('ai.page.tabs.safety'))}
             />
             <StatCard
-              label="协同分析"
+              label={t('ai.page.stats.synergyLabel')}
               value={synergyCount}
               icon={GitMerge}
               variant="success"
               size="large"
-              subtitle={`累计分析 ${synergyCount > 0 ? synergyCount.toLocaleString() : '0'} 次`}
+              subtitle={t('ai.page.stats.synergySubtitle', { count: synergyCount > 0 ? synergyCount.toLocaleString() : '0' })}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('synergy', '协同分析')}
+              onClick={() => handleStatCardClick('synergy', t('ai.page.tabs.synergy'))}
             />
             {/* 辅卡（default） */}
             <StatCard
-              label="肽序列分析"
+              label={t('ai.page.stats.peptideAnalyzeLabel')}
               value={peptideAnalyzeCount}
               icon={Dna}
               variant="info"
-              subtitle="{t('ai.page.peptideSeqSubtitle')}"
+              subtitle={t('ai.page.peptideSeqSubtitle')}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('peptide-analyze', '肽序列分析')}
+              onClick={() => handleStatCardClick('peptide-analyze', t('ai.page.tabs.peptideAnalyze'))}
             />
             <StatCard
-              label="肽设计优化"
+              label={t('ai.page.stats.peptideDesignLabel')}
               value={peptideDesignCount}
               icon={Dna}
               variant="success"
-              subtitle="{t('ai.page.peptideDesignSubtitle')}"
+              subtitle={t('ai.page.peptideDesignSubtitle')}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('peptide-design', '肽设计优化')}
+              onClick={() => handleStatCardClick('peptide-design', t('ai.page.tabs.peptideDesign'))}
             />
             <StatCard
-              label="模型状态"
-              value={llmAvailable ? '在线' : '离线'}
+              label={t('ai.page.stats.modelLabel')}
+              value={llmAvailable ? t('ai.page.stats.modelValueOnline') : t('ai.page.stats.modelValueOffline')}
               icon={Bot}
               variant={llmAvailable ? 'success' : 'warning'}
-              subtitle={llmAvailable ? 'LLM 服务正常' : '请检查模型配置'}
+              subtitle={llmAvailable ? t('ai.page.stats.modelSubtitleOk') : t('ai.page.stats.modelSubtitleCheck')}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('config', '模型状态')}
+              onClick={() => handleStatCardClick('config', t('ai.page.tabs.config'))}
             />
             <StatCard
-              label="知识库"
+              label={t('ai.page.stats.knowledgeLabel')}
               value={knowledgeDocCount}
               icon={Database}
               variant="secondary"
-              subtitle={`${knowledgeDocCount} 篇文档`}
+              subtitle={t('ai.page.stats.knowledgeSubtitle', { count: knowledgeDocCount })}
               className="cursor-pointer"
-              onClick={() => handleStatCardClick('knowledge', '知识库')}
+              onClick={() => handleStatCardClick('knowledge', t('ai.page.tabs.knowledge'))}
             />
           </section>
 
@@ -677,7 +676,7 @@ export default function AIAssistantPage() {
             >
               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
               <span>
-                统计数据加载失败（{statsErrorMessage}），上方数字为 0，不代表从未使用。
+                {t('ai.page.announce.statsLoadFailed', { error: statsErrorMessage })}
               </span>
             </div>
           )}
@@ -722,13 +721,13 @@ export default function AIAssistantPage() {
                             isActive ? c.textActive : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
                           }`}>{group.label}</span>
                           <span className={`text-xs transition-colors duration-150 ${isActive ? c.subtext : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>
-                            {group.tabs.length} 个功能
+                            {t('ai.page.tabGroups.featureCount', { count: group.tabs.length })}
                           </span>
                         </div>
                         {isActive && (
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium bg-transparent ${c.textActive}`}>
                             <span className={`w-1.5 h-1.5 rounded-[var(--radius-pill)] ${c.bar}`} />
-                            活跃
+                            {t('ai.page.tabGroups.active')}
                           </span>
                         )}
                       </div>
@@ -799,12 +798,12 @@ export default function AIAssistantPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className={`text-xs font-semibold uppercase tracking-[0.08em] block ${isActive ? c.textActive : 'text-[var(--text-muted)]'}`}>{group.label}</span>
-                          <span className={`text-xs ${isActive ? c.subtext : 'text-[var(--text-muted)]'}`}>{group.tabs.length} 个功能</span>
+                          <span className={`text-xs ${isActive ? c.subtext : 'text-[var(--text-muted)]'}`}>{t('ai.page.tabGroups.featureCount', { count: group.tabs.length })}</span>
                         </div>
                         {isActive && (
                           <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium bg-transparent ${c.textActive}`}>
                             <span className={`w-1.5 h-1.5 rounded-[var(--radius-pill)] ${c.bar}`} />
-                            活跃
+                            {t('ai.page.tabGroups.active')}
                           </span>
                         )}
                       </div>
@@ -844,7 +843,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-chat" aria-label={t('ai.page.panelChat')}>
-                    <ErrorBoundary moduleName="智能对话">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.chat')}>
                       <ChatStateProvider>
                         <ChatTab />
                       </ChatStateProvider>
@@ -856,7 +855,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-generate" aria-label={t('ai.page.panelGenerate')}>
-                    <ErrorBoundary moduleName="配方生成">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.generate')}>
                     <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
                   </ErrorBoundary>
 
@@ -873,24 +872,24 @@ export default function AIAssistantPage() {
                       onValueChange={(v) => {
                         setGeneticMode(v as 'single' | 'multi' | 'formula');
                         if (v === 'formula') {
-                          announceToScreenReader('切换到配方优化模式');
+                          announceToScreenReader(t('ai.page.genetic.announceFormula'));
                         } else {
-                          announceToScreenReader(v === 'multi' ? '切换到多目标优化模式' : '切换到单目标遗传算法模式');
+                          announceToScreenReader(v === 'multi' ? t('ai.page.genetic.announceMulti') : t('ai.page.genetic.announceSingle'));
                         }
                       }}
                     >
                       <TabsList className="mb-[var(--space-apple-md)]" role="tablist" aria-label={t('ai.page.geneticModeSwitch')}>
                         <TabsTrigger value="single" role="tab" aria-selected={geneticMode === 'single'}>
                           <Dna className="w-3.5 h-3.5 mr-1.5 text-[var(--color-accent-text)]" aria-hidden="true" />
-                          单目标 (GA)
+                          {t('ai.page.genetic.modeSingle')}
                         </TabsTrigger>
                         <TabsTrigger value="multi" role="tab" aria-selected={geneticMode === 'multi'}>
                           <GitBranch className="w-3.5 h-3.5 mr-1.5 text-[var(--color-accent-text)]" aria-hidden="true" />
-                          多目标 (NSGA-II)
+                          {t('ai.page.genetic.modeMulti')}
                         </TabsTrigger>
                         <TabsTrigger value="formula" role="tab" aria-selected={geneticMode === 'formula'}>
                           <FileText className="w-3.5 h-3.5 mr-1.5 text-[var(--color-primary-text)]" aria-hidden="true" />
-                          配方优化
+                          {t('ai.page.genetic.modeFormula')}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="single">
@@ -913,7 +912,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-safety" aria-label={t('ai.page.panelSafety')}>
-                    <ErrorBoundary moduleName="安全检查">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.safety')}>
                     <SafetyTab />
                   </ErrorBoundary>
 
@@ -924,7 +923,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-synergy" aria-label={t('ai.page.panelSynergy')}>
-                    <ErrorBoundary moduleName="协同分析">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.synergy')}>
                     <SynergyTab />
                   </ErrorBoundary>
 
@@ -935,7 +934,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-taste" aria-label={t('ai.page.panelTaste')}>
-                    <ErrorBoundary moduleName="口感预测">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.taste')}>
                     <TastePredictTab />
                   </ErrorBoundary>
 
@@ -946,7 +945,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-stability" aria-label={t('ai.page.panelStability')}>
-                    <ErrorBoundary moduleName="稳定性评估">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.stability')}>
                     <StabilityPredictTab />
                   </ErrorBoundary>
 
@@ -957,7 +956,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-peptide-analyze" aria-label={t('ai.page.panelPeptideAnalyze')}>
-                    <ErrorBoundary moduleName="肽序列分析">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.peptideAnalyze')}>
                     <AdvancedPeptideAnalyzer />
                   </ErrorBoundary>
 
@@ -968,7 +967,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-peptide-design" aria-label={t('ai.page.panelPeptideDesign')}>
-                    <ErrorBoundary moduleName="肽设计优化">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.peptideDesign')}>
                     <AdvancedPeptideDesign />
                   </ErrorBoundary>
 
@@ -979,7 +978,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-knowledge" aria-label={t('ai.page.panelKnowledge')}>
-                    <ErrorBoundary moduleName="知识库">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.knowledge')}>
                     <KnowledgeBasePanel isEmbedded />
                   </ErrorBoundary>
 
@@ -990,7 +989,7 @@ export default function AIAssistantPage() {
                 <Suspense fallback={<TabLoadingSkeleton />}>
 
                   <div role="tabpanel" id="panel-config" aria-label={t('ai.page.panelConfig')}>
-                    <ErrorBoundary moduleName="配置管理">
+                    <ErrorBoundary moduleName={t('ai.page.tabs.config')}>
                     <ConfigManagementPanel />
                   </ErrorBoundary>
 

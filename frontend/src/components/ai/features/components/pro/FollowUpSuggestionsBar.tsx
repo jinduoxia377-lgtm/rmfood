@@ -5,6 +5,7 @@
  * 支持点击直接发送，支持关闭
  */
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X, Sparkles, Send } from 'lucide-react'
 import { followUpSuggestionEngine, type FollowUpSuggestion } from '../../services/followUpSuggestionService'
 
@@ -15,6 +16,7 @@ interface FollowUpSuggestionsBarProps {
 }
 
 function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: FollowUpSuggestionsBarProps) {
+  const { t } = useTranslation()
   const [suggestions, setSuggestions] = useState<FollowUpSuggestion[]>([])
   const [isVisibleLocal, setIsVisibleLocal] = useState(false)
 
@@ -63,7 +65,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
         <div className="flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-primary-500" />
           <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            可以继续追问
+            {t('ai.chat.quick.followUpTitle')}
           </span>
         </div>
         <button
@@ -88,10 +90,10 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
               text-left"
           >
             <span className="text-xs px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-300/25 text-primary-700 dark:text-primary-700 font-medium flex-shrink-0">
-              {sug.category}
+              {t(`ai.chat.quick.categories.${sug.categoryKey}`, { defaultValue: sug.category })}
             </span>
             <span className="text-xs text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200 truncate max-w-[200px]">
-              {sug.question}
+              {t(`ai.chat.quick.questions.${sug.questionKey}`, { defaultValue: sug.question })}
             </span>
             <Send className="w-3 h-3 text-neutral-300 dark:text-neutral-400 group-hover:text-primary-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
@@ -100,7 +102,7 @@ function FollowUpSuggestionsBar({ onSendSuggestion, messages, isVisible }: Follo
 
       {/* 手动输入提示 */}
       <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-400">
-        或直接输入您的问题...
+        {t('ai.chat.quick.followUpHint')}
       </div>
     </div>
   )

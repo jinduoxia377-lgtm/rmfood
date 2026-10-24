@@ -8,7 +8,7 @@
  */
 
 import { logger } from '@/utils/safeLogger';
-import type { SessionId, ContentBlock } from '@/components/ai/shared/types';
+import type { ContentBlock } from '@/components/ai/shared/types';
 
 // ── 类型定义 ────────────────────────────────────────────────
 

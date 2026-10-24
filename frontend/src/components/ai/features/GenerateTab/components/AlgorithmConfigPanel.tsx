@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Settings, SlidersHorizontal, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
+import i18n from '@/i18n'
 
 // ─── 类型定义 ───
 
@@ -34,25 +36,25 @@ export interface AlgorithmConfigPanelProps {
 // ─── 常量定义 ───
 
 const STRATEGY_LABELS: Record<AlgorithmStrategy, string> = {
-  auto: '智能选择',
-  ga: '遗传算法(GA)',
-  nsga2: 'NSGA-II多目标',
-  hybrid: '混合优化',
+  auto: 'strategyAuto',
+  ga: 'strategyGa',
+  nsga2: 'strategyNsga2',
+  hybrid: 'strategyHybrid',
 }
 
 const PRESET_OPTIONS = [
-  { value: 'balanced' as PresetMode, label: '均衡型', desc: '各维度均衡考量' },
-  { value: 'cost_first' as PresetMode, label: '成本优先', desc: '严格控制预算' },
-  { value: 'efficacy_first' as PresetMode, label: '功效优先', desc: '最大化功效输出' },
-  { value: 'safety_first' as PresetMode, label: '安全优先', desc: '适用于敏感人群' },
-  { value: 'synergy_focused' as PresetMode, label: '协同优化', desc: '强化配伍协同效应' },
+  { value: 'balanced' as PresetMode, labelKey: 'presetBalanced', descKey: 'presetBalancedDesc' },
+  { value: 'cost_first' as PresetMode, labelKey: 'presetCostFirst', descKey: 'presetCostFirstDesc' },
+  { value: 'efficacy_first' as PresetMode, labelKey: 'presetEfficacyFirst', descKey: 'presetEfficacyFirstDesc' },
+  { value: 'safety_first' as PresetMode, labelKey: 'presetSafetyFirst', descKey: 'presetSafetyFirstDesc' },
+  { value: 'synergy_focused' as PresetMode, labelKey: 'presetSynergyFocused', descKey: 'presetSynergyFocusedDesc' },
 ]
 
 const TASTE_PREFERENCES = [
-  { value: 'balanced' as const, label: '均衡五味' },
-  { value: 'sweet_enhanced' as const, label: '甘甜为主' },
-  { value: 'bitter_reduced' as const, label: '降低苦味' },
-  { value: 'custom' as const, label: '自定义' },
+  { value: 'balanced' as const, labelKey: 'tasteBalanced' },
+  { value: 'sweet_enhanced' as const, labelKey: 'tasteSweetEnhanced' },
+  { value: 'bitter_reduced' as const, labelKey: 'tasteBitterReduced' },
+  { value: 'custom' as const, labelKey: 'tasteCustom' },
 ]
 
 const DEFAULT_CONFIG: AlgorithmConfig = {
@@ -99,7 +101,7 @@ function SliderField({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 bg-border rounded-full appearance-none cursor-pointer accent-primary" aria-label="滑块" />
+        className="w-full h-1.5 bg-border rounded-full appearance-none cursor-pointer accent-primary" aria-label={i18n.t('ai.formula.generateTab.sliderAria')} />
     </div>
   )
 }
@@ -124,7 +126,7 @@ function StrategySelector({
               : 'bg-muted text-muted-foreground hover:bg-muted/80',
           )}
         >
-          {STRATEGY_LABELS[s]}
+          {i18n.t(`ai.formula.generateTab.${STRATEGY_LABELS[s]}`)}
         </button>
       ))}
     </div>
@@ -155,9 +157,9 @@ function PresetSelector({
             'text-xs font-medium',
             value === opt.value ? 'text-primary' : 'text-foreground',
           )}>
-            {opt.label}
+            {i18n.t(`ai.formula.generateTab.${opt.labelKey}`)}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{i18n.t(`ai.formula.generateTab.${opt.descKey}`)}</div>
         </button>
       ))}
     </div>
@@ -174,6 +176,7 @@ export function AlgorithmConfigPanel({
   isGenerating,
   className,
 }: AlgorithmConfigPanelProps) {
+  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const updateConfig = useCallback(
@@ -196,8 +199,8 @@ export function AlgorithmConfigPanel({
             <Settings className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold">算法配置</h3>
-            <p className="text-xs text-muted-foreground">调整优化参数以定制配方生成</p>
+            <h3 className="text-sm font-semibold">{t('ai.formula.generateTab.algorithmConfig')}</h3>
+            <p className="text-xs text-muted-foreground">{t('ai.formula.generateTab.algorithmConfigHint')}</p>
           </div>
         </div>
         <Button
@@ -207,13 +210,13 @@ export function AlgorithmConfigPanel({
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <SlidersHorizontal className="w-3.5 h-3.5 mr-1" />
-          {isExpanded ? '收起' : '高级'}
+          {isExpanded ? t('ai.formula.generateTab.collapse') : t('ai.formula.generateTab.advanced')}
         </Button>
       </div>
 
       {/* 策略选择 */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">生成策略</label>
+        <label className="text-xs font-medium text-muted-foreground">{t('ai.formula.generateTab.generationStrategy')}</label>
         <StrategySelector
           value={config.strategy}
           onChange={(v) => updateConfig({ strategy: v, preset: null })}
@@ -222,7 +225,7 @@ export function AlgorithmConfigPanel({
 
       {/* 预设场景 */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">优化场景</label>
+        <label className="text-xs font-medium text-muted-foreground">{t('ai.formula.generateTab.optimizationScenario')}</label>
         <PresetSelector
           value={config.preset}
           onChange={(v) => updateConfig({ preset: v })}
@@ -231,7 +234,7 @@ export function AlgorithmConfigPanel({
 
       {/* 口感偏好 */}
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">口感偏好</label>
+        <label className="text-xs font-medium text-muted-foreground">{t('ai.formula.generateTab.tastePreference')}</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {TASTE_PREFERENCES.map((opt) => (
             <button
@@ -244,7 +247,7 @@ export function AlgorithmConfigPanel({
                   : 'bg-muted border-2 border-transparent hover:border-muted-foreground/30',
               )}
             >
-              {opt.label}
+              {t(`ai.formula.generateTab.${opt.labelKey}`)}
             </button>
           ))}
         </div>
@@ -255,11 +258,11 @@ export function AlgorithmConfigPanel({
         <div className="space-y-4 pt-4 border-t">
           <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <Zap className="w-3.5 h-3.5" />
-            <span>进化参数</span>
+            <span>{t('ai.formula.generateTab.evolutionParams')}</span>
           </div>
 
           <SliderField
-            label="种群大小"
+            label={t('ai.formula.generateTab.populationSize')}
             value={config.populationSize}
             min={20}
             max={200}
@@ -268,7 +271,7 @@ export function AlgorithmConfigPanel({
           />
 
           <SliderField
-            label="进化代数"
+            label={t('ai.formula.generateTab.generations')}
             value={config.generations}
             min={10}
             max={100}
@@ -277,7 +280,7 @@ export function AlgorithmConfigPanel({
           />
 
           <SliderField
-            label="变异率"
+            label={t('ai.formula.generateTab.mutationRate')}
             value={config.mutationRate}
             min={0.01}
             max={0.5}
@@ -287,7 +290,7 @@ export function AlgorithmConfigPanel({
           />
 
           <SliderField
-            label="交叉率"
+            label={t('ai.formula.generateTab.crossoverRate')}
             value={config.crossoverRate}
             min={0.1}
             max={1.0}
@@ -297,7 +300,7 @@ export function AlgorithmConfigPanel({
           />
 
           <SliderField
-            label="精英比例"
+            label={t('ai.formula.generateTab.eliteRatio')}
             value={config.eliteRatio}
             min={0.01}
             max={0.5}
@@ -307,7 +310,7 @@ export function AlgorithmConfigPanel({
           />
 
           <SliderField
-            label="锦标赛规模"
+            label={t('ai.formula.generateTab.tournamentSize')}
             value={config.tournamentSize}
             min={2}
             max={20}
@@ -324,7 +327,7 @@ export function AlgorithmConfigPanel({
           disabled={isGenerating}
           onClick={() => onGenerate(config)}
         >
-          {isGenerating ? '生成中...' : '应用配置并生成'}
+          {isGenerating ? t('ai.formula.generateTab.generating') : t('ai.formula.generateTab.applyAndGenerate')}
         </Button>
       )}
     </div>

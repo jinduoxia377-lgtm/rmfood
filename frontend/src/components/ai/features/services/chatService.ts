@@ -8,6 +8,8 @@ import { logger } from '@/utils/safeLogger';
 import { ErrorType } from '../components/ErrorRecoveryDialog';
 import { contextManager } from './contextManager';
 import api from '@/api/client';
+import { useAuthStore } from '@/stores/auth';
+import { searchChunks } from '@/api/rag';
 
 // ── CSRF Token 管理（与 agent.ts 保持一致） ──
 // CsrfProtectMiddleware 只在 GET 请求时设置 csrf_token cookie，POST 需要读取并回传
@@ -149,7 +151,7 @@ export interface RateLimitInfo {
 
 export interface IChatService {
   sendMessage(question: string, history?: Array<{ role: string; content: string }>, options?: SendMessageOptions): Promise<AIResponse>;
-  sendMessageStream(question: string, history?: Array<{ role: string; content: string }>): AsyncGenerator<StreamChunk>;
+  sendMessageStream(question: string, history?: Array<{ role: string; content: string }>, allowRetry?: boolean, options?: SendMessageOptions): AsyncGenerator<StreamChunk>;
   setAuthToken(token: string): void;
   clearAuthToken(): void;
   retryLastMessage(): Promise<AIResponse>;
@@ -159,11 +161,13 @@ export interface IChatService {
   getStateMachine(): ChatStateMachine;
 }
 
-/** 发送消息的可选参数：允许调用方临时指定模型与温度（如摘要压缩场景） */
+/** 发送消息的可选参数：允许调用方临时指定模型、温度、采样上限与场景模式 */
 export interface SendMessageOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  /** 场景模式（formula_design/academician/safety_off/process_eng/concursive_adv 等），透传到后端 system prompt 注入 */
+  scenarioMode?: string;
 }
 
 class TimeoutError extends Error {
@@ -248,6 +252,8 @@ export class ChatService implements IChatService {
   async *sendMessageStream(
     question: string,
     history?: Array<{ role: string; content: string }>,
+    _allowRetry = true,
+    options?: SendMessageOptions,
   ): AsyncGenerator<StreamChunk> {
     const requestId = this.generateRequestId(question);
 
@@ -263,6 +269,15 @@ export class ChatService implements IChatService {
 
     // ── 认证预检（SSE 流式请求使用 fetch，依赖浏览器自动携带 HttpOnly Cookie）──
     if (!this.isAuthenticated()) {
+      // 页面刚加载时 auth store 可能尚未从 Cookie 恢复（首次发送常见）。
+      // 允许重试时等待 1 秒让登录态就绪后再试一次，避免误报「对话服务暂时不可用」。
+      if (_allowRetry) {
+        logger.warn('[ChatService] 流式请求预检未认证，等待 1 秒后重试:', { requestId });
+        this.stateMachine.transition(ChatState.Idle);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        yield* this.sendMessageStream(question, history, false, options);
+        return;
+      }
       logger.warn('[ChatService] 流式请求预检：用户未认证');
       this.stateMachine.transition(ChatState.Error);
       const noAuthError = new Error('未登录，请先登录后再使用 AI 对话');
@@ -272,6 +287,7 @@ export class ChatService implements IChatService {
 
     const controller = new AbortController();
     this.pendingRequest.set(requestId, controller);
+    // 自动重试由 _allowRetry 控制（递归重试时传 false 防止无限循环）
 
     try {
       // 流式请求使用 STREAM_TIMEOUT_MS（180s），普通请求更长以覆盖复杂分析
@@ -282,11 +298,23 @@ export class ChatService implements IChatService {
       if (history && history.length > 0) {
         bodyData.history = history.slice(-10);
       }
-      // ── Task 3: 注入用户画像上下文（跨会话个性化） ──
+      // 场景模式透传：后端据此注入对应 system prompt
+      if (options?.scenarioMode) {
+        bodyData.scenario_mode = options.scenarioMode;
+      }
+      // ── Task 3: 注入用户画像上下文（跨会话个性化）──
       try {
         const { userProfileManager } = await import('./userProfileService')
-        bodyData.user_profile_context = userProfileManager.generatePromptSummary()
+        const profileSummary = userProfileManager.generatePromptSummary()
+        // 后端 ChatRequest.user_profile_context 上限 2000 字符；超长会导致 422
+        //（真实用户画像较长时会触发「对话服务暂时不可用」误报），此处截断对齐。
+        bodyData.user_profile_context = profileSummary ? profileSummary.slice(0, 2000) : '' // 与后端 schema 对齐
       } catch { /* 画像服务不可用时静默降级 */ }
+      // ── P0-1: 注入用户知识库（RAG）检索上下文，回答可引用用户上传的文档 ──
+      const ragContext = await this.buildRagContext(question)
+      if (ragContext.length > 0) {
+        bodyData.rag_context = ragContext
+      }
       // 🔒 CSRF token 初始化：确保 cookie 已设置后再发 POST
       const csrfToken = await ensureCsrfToken()
       const response = await fetch(API_ENDPOINTS.AI.CHAT_STREAM, {
@@ -303,6 +331,18 @@ export class ChatService implements IChatService {
       clearTimeout(timeoutId); // 收到响应后立即清除超时（避免正常完成后的误杀）
 
       if (!response.ok) {
+        // HTTP 非 2xx：可恢复状态码（500/502/503/429/422）且允许重试 → 自动重试一次。
+        // 422 通常是 user_profile_context 超长等可自愈的参数问题，重试时会以截断后的画像重发。
+        if (_allowRetry && [500, 502, 503, 429, 422].includes(response.status)) {
+          logger.warn('[ChatService] 流式请求返回可恢复状态码，600ms 后自动重试:', {
+            status: response.status,
+            requestId,
+          });
+          this.stateMachine.transition(ChatState.Idle);
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          yield* this.sendMessageStream(question, history, false, options);
+          return;
+        }
         await this.handleStreamError(response);
         return;
       }
@@ -348,7 +388,9 @@ export class ChatService implements IChatService {
 
               // type=error: 抛出错误让外层 catch 走标准错误处理流程
               if (eventType === 'error') {
-                throw new Error(`[SSE] ${parsed.content || '生成失败'}`);
+                const sseErr: any = new Error(`[SSE] ${parsed.content || '生成失败'}`);
+                sseErr.retryable = parsed.retryable === true; // 后端标记可重试（如 503 服务繁忙）
+                throw sseErr;
               }
 
               // type=formula: 后端发送 {name, value}，映射为 formula 对象
@@ -428,11 +470,44 @@ export class ChatService implements IChatService {
         return;
       }
 
+      // ── 单次自动重试：可恢复错误（网络/超时/5xx/后端 retryable）时自动重试一次 ──
+      if (_allowRetry && this._isRecoverableStreamError(error, errMsg)) {
+        logger.warn('[ChatService] 流式请求遇可恢复错误，600ms 后自动重试:', {
+          reason: errMsg.substring(0, 120),
+          requestId,
+        });
+        this.stateMachine.transition(ChatState.Idle);
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        // 递归重新发起流式请求（新的 requestId/controller），成功后正常 yield；若再次失败则走下方错误处理
+        yield* this.sendMessageStream(question, history, false, options);
+        return;
+      }
+
       this.handleError(error as Error, question);
       throw error;
     } finally {
       this.pendingRequest.delete(requestId);
     }
+  }
+
+  /** 判断流式错误是否「可恢复」（可自动重试一次）。401/认证错误与用户取消不重试。 */
+  private _isRecoverableStreamError(error: any, errMsg: string): boolean {
+    // 用户主动取消/认证错误不重试
+    if (error?.name === 'AbortError' || errMsg.includes('aborted') || errMsg.includes('ERR_ABORTED')) return false;
+    if (errMsg.includes('401') || errMsg.includes('认证') || errMsg.includes('Token') || errMsg.includes('未授权')) return false;
+
+    // 后端 SSE error 事件显式标记 retryable（如 503 服务繁忙）
+    if (error && error.retryable === true) return true;
+    if (errMsg.includes('[SSE]')) {
+      try {
+        const parsed = JSON.parse(errMsg.replace('[SSE] ', ''));
+        if (parsed && parsed.retryable === true) return true;
+      } catch { /* 非 JSON，忽略 */ }
+      return false;
+    }
+
+    // 网络中断/超时/连接失败/5xx（502/503/500）视为可恢复
+    return /network|fetch|ECONN|ERR_|timeout|超时|无法连接|响应中断|502|503|500/.test(errMsg);
   }
 
   setAuthToken(token: string): void {
@@ -449,6 +524,43 @@ export class ChatService implements IChatService {
       logger.info('[ChatService] Unmount cleanup: aborting pending request:', requestId);
       controller.abort();
       this.pendingRequest.delete(requestId);
+    }
+  }
+
+  /** 中止当前所有流式请求（暂停/停止生成时调用，真正断开 SSE 连接） */
+  abortCurrentStream(): void {
+    for (const [requestId, controller] of this.pendingRequest.entries()) {
+      logger.info('[ChatService] 暂停生成：aborting SSE request:', requestId);
+      controller.abort();
+      this.pendingRequest.delete(requestId);
+    }
+  }
+
+  /**
+   * 检索用户知识库（RAG）并构造注入上下文。
+   * 返回字符串数组（每条截断、总量预算内）；检索失败/无知识库时静默返回空数组，不阻塞对话。
+   */
+  private async buildRagContext(question: string): Promise<string[]> {
+    try {
+      const chunks = await searchChunks(question, 5)
+      if (!chunks || chunks.length === 0) return []
+      const MAX_CHARS = 3000
+      const PER_CHUNK = 600
+      const parts: string[] = []
+      let used = 0
+      for (const c of chunks) {
+        const text = (c.content || '').trim()
+        if (!text) continue
+        const src = c.doc_filename || '知识库'
+        const item = `[来源:${src}] ${text.slice(0, PER_CHUNK)}`
+        if (used + item.length > MAX_CHARS) break
+        parts.push(item)
+        used += item.length
+      }
+      return parts
+    } catch (e) {
+      logger.warn('[ChatService] RAG 检索失败，静默降级:', e)
+      return []
     }
   }
 
@@ -501,11 +613,19 @@ export class ChatService implements IChatService {
     if (options?.model) requestBody.model = options.model;
     if (options?.temperature !== undefined) requestBody.temperature = options.temperature;
     if (options?.maxTokens !== undefined) requestBody.max_tokens = options.maxTokens;
+    // 场景模式透传：后端据此注入对应 system prompt（formula_design/academician/safety_off 等）
+    if (options?.scenarioMode) requestBody.scenario_mode = options.scenarioMode;
     // ── Task 3: 注入用户画像上下文 ──
     try {
       const { userProfileManager } = await import('./userProfileService')
-      requestBody.user_profile_context = userProfileManager.generatePromptSummary()
+      const profileSummary = userProfileManager.generatePromptSummary()
+      requestBody.user_profile_context = profileSummary ? profileSummary.slice(0, 2000) : ''
     } catch { /* 画像服务不可用时静默降级 */ }
+    // ── P0-1: 注入用户知识库（RAG）检索上下文（非流式降级路径同样生效）──
+    const ragContext = await this.buildRagContext(question)
+    if (ragContext.length > 0) {
+      requestBody.rag_context = ragContext
+    }
 
     try {
       // ── 使用 axios api 客户端（走认证拦截器，自动处理 401/Token 刷新）──
@@ -655,8 +775,13 @@ export class ChatService implements IChatService {
       }
 
       case 400:
-      case 422:
-        throw new Error(`客户端错误 (${response.status}): ${errorText}`);
+      case 422: {
+        // 直接展示后端 422 原始响应体（通常为 {"success":false,"detail":[{loc,msg},...]}），
+        // 避免前端解析坏（如 [object object]），便于用户反馈与定位。
+        const rawBody = errorText || ''
+        const snippet = rawBody.length > 400 ? rawBody.slice(0, 400) + '…' : rawBody
+        throw new Error(`请求参数异常 (422): ${snippet}`);
+      }
 
       case 403: {
         // 区分 CSRF token 缺失 vs 真正的权限不足
@@ -852,11 +977,8 @@ export class ChatService implements IChatService {
    * 实际请求依赖浏览器自动携带 HttpOnly Cookie
    */
   private isAuthenticated(): boolean {
-    // 从 auth store 读取认证状态
+    // 从 auth store 读取认证状态（静态导入，避免 Vite ESM 下 require 不可用导致恒为 false）
     try {
-      // 动态导入避免循环依赖
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { useAuthStore } = require('@/stores/auth')
       return useAuthStore.getState().isAuthenticated
     } catch {
       // 如果 auth store 不可用，回退到 authToken 检查

@@ -24,6 +24,12 @@ export interface ExtractedIngredient {
   dosage: string
   function: string
   role?: '君' | '臣' | '佐' | '使'
+  /** 性味归经（专业配方设计卡 data-table 列） */
+  natureFlavor?: string
+  /** 功效成分（活性物质） */
+  activeCompound?: string
+  /** 作用机理 */
+  mechanism?: string
 }
 
 /** 从结构化内容提取的完整配方 */
@@ -41,8 +47,12 @@ export interface ExtractedFormula {
   productionSteps?: string[]
   /** 预期功效 */
   expectedEffects?: string[]
-  /** 服用建议 */
+  /** 服用建议（含周期） */
   dosageAdvice?: string
+  /** 监测与迭代建议 */
+  monitoringAdvice?: string
+  /** 参考文献 */
+  references?: string[]
   /** 来源 block 的原始数据 */
   rawContent?: StructuredContent
 }
@@ -72,6 +82,8 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
     productionSteps: [],
     expectedEffects: [],
     dosageAdvice: '',
+    monitoringAdvice: '',
+    references: [],
     rawContent: content,
   }
 
@@ -94,6 +106,9 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
           const dosageKey = dt.columns.find(c => c.key === 'dosage')?.key || 'dosage'
           const funcKey = dt.columns.find(c => c.key === 'function')?.key || 'function'
           const roleKey = dt.columns.find(c => c.key === 'role')?.key || 'role'
+          const natureFlavorKey = dt.columns.find(c => c.key === 'nature_flavor')?.key || 'nature_flavor'
+          const activeCompoundKey = dt.columns.find(c => c.key === 'active_compound')?.key || 'active_compound'
+          const mechanismKey = dt.columns.find(c => c.key === 'mechanism')?.key || 'mechanism'
 
           formula.ingredients = dt.rows
             .filter(row => row[nameKey])
@@ -102,6 +117,9 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
               dosage: String(row[dosageKey] ?? ''),
               function: String(row[funcKey] ?? ''),
               role: row[roleKey] as ExtractedIngredient['role'],
+              natureFlavor: row[natureFlavorKey] ? String(row[natureFlavorKey]) : undefined,
+              activeCompound: row[activeCompoundKey] ? String(row[activeCompoundKey]) : undefined,
+              mechanism: row[mechanismKey] ? String(row[mechanismKey]) : undefined,
             }))
         }
         break
@@ -129,6 +147,9 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
           // 解析注意事项为数组
           const lines = c.content.split(/(?=\d+[.、])/).filter(s => s.trim())
           formula.precautions = lines.map(l => l.trim()).filter(Boolean)
+        } else if (lowerTitle.includes('监测') || lowerTitle.includes('迭代') || lowerTitle.includes('复查')) {
+          // 监测与迭代建议
+          formula.monitoringAdvice = c.content
         } else if (lowerTitle.includes('预期') || lowerTitle.includes('功效')) {
           const lines = c.content.split(/[；;。]/).filter(s => s.trim().length > 5)
           formula.expectedEffects = lines.map(l => l.trim()).filter(Boolean)
@@ -140,13 +161,46 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
       }
 
       case 'list': {
-        const l = block.data as { variant?: string; items?: Array<{ label: string; description?: string }> }
+        const l = block.data as { variant?: string; title?: string; items?: Array<{ label: string; description?: string }> }
         if (l.items && l.items.length > 0) {
+          const lowerTitle = (l.title || '').toLowerCase()
+          const lowerVariant = (l.variant || '').toLowerCase()
           const firstLabel = l.items[0].label
-          if (firstLabel.includes('原料') || firstLabel.includes('水处理') || firstLabel.includes('溶解')) {
-            // 生产工艺
+
+          // 制备工艺 SOP（variant=number 或标题含「工艺/SOP」）
+          if (lowerTitle.includes('工艺') || lowerTitle.includes('sop') || lowerVariant === 'number' && !lowerTitle.includes('参考')) {
+            formula.productionSteps = l.items.map(i => `${i.label}${i.description ? '：' + i.description : ''}`)
+          } else if (lowerTitle.includes('参考') || lowerVariant === 'analysis' || firstLabel.includes('药典') || firstLabel.includes('文献')) {
+            // 参考文献
+            formula.references = l.items.map(i => (i.description ? `${i.label}：${i.description}` : i.label)).filter(Boolean)
+          } else if (firstLabel.includes('原料') || firstLabel.includes('水处理') || firstLabel.includes('溶解')) {
+            // 兼容旧协议：生产工艺
             formula.productionSteps = l.items.map(i => `${i.label}${i.description ? '：' + i.description : ''}`)
           }
+        }
+        break
+      }
+
+      case 'timeline': {
+        const t = block.data as {
+          title?: string
+          duration_days?: number
+          phases?: Array<{ key: string; label: string; days: number[] }>
+          items?: Array<{ day?: number; phase?: string; title?: string; description?: string; dosage?: string }>
+        }
+        if (t) {
+          const parts: string[] = []
+          if (t.title) parts.push(t.title)
+          if (t.duration_days) parts.push(`周期 ${t.duration_days} 天`)
+          if (t.phases?.length) {
+            parts.push(
+              t.phases.map(p => `${p.label}(${p.days?.[0] ?? '-'}-${p.days?.[1] ?? ''}天)`).join(' / ')
+            )
+          }
+          if (t.items?.length) {
+            parts.push(t.items.map(i => [i.day ? `第${i.day}天` : '', i.title, i.dosage].filter(Boolean).join('：')).join('；'))
+          }
+          formula.dosageAdvice = parts.join('。')
         }
         break
       }

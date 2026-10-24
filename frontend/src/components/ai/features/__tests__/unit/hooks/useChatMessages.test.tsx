@@ -13,6 +13,7 @@ vi.mock('../../../services/chatService', () => ({
     clearAuthToken: vi.fn(),
     closeAllPendingRequests: vi.fn(),
     retryLastMessage: vi.fn().mockResolvedValue({ content: '重试回复', role: 'assistant', formulas: [], timestamp: 0 }),
+    getStateMachine: vi.fn(() => ({ addStateListener: () => () => {} })),
   },
 }))
 

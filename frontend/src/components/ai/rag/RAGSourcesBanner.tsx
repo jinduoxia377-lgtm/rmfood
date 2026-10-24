@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Database, FileText, ChevronDown, ChevronUp, X } from 'lucide-react'
 import type { RAGChunkResult } from '@/api/rag'
 import { clsx } from 'clsx'
@@ -27,6 +28,7 @@ export function RAGSourcesBanner({
   sources,
   onDismiss,
 }: RAGSourcesBannerProps) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
 
   // RAG 未启用或无数据时不显示
@@ -60,7 +62,7 @@ export function RAGSourcesBanner({
               <button
                 onClick={() => setExpanded(v => !v)}
                 className="p-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
-                title={expanded ? '收起详情' : '查看来源'}
+                title={expanded ? t('ai.knowledge.collapseDetails') : t('ai.knowledge.viewSource')}
               >
                 {expanded
                   ? <ChevronUp className="w-3.5 h-3.5 text-primary-500" />
@@ -72,7 +74,7 @@ export function RAGSourcesBanner({
               <button
                 onClick={onDismiss}
                 className="p-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
-                title="关闭"
+                title={t('ai.knowledge.close')}
               >
                 <X className="w-3.5 h-3.5 text-primary-400" />
               </button>

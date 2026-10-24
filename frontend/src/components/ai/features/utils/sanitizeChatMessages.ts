@@ -1,4 +1,4 @@
-﻿import type { ChatMessage } from '../types'
+import type { ChatMessage } from '../types'
 
 /**
  * 历史消息一次性清理：过滤 v12 精简前遗留在 localStorage 的"脚手架污染"消息。
@@ -94,18 +94,5 @@ function stripJsonWrapper(content: string): string {
     return match[1].trim()
   }
   return content
-}
-
-/**
- * 检测消息是否为旧版 thinking_engine 输出的原始 Markdown（非结构化）
- * 这类消息会被渲染为普通文本，不会显示结构化 block
- */
-function isOldFormatMessage(msg: ChatMessage): boolean {
-  if (msg.role !== 'assistant') return false
-  const content = msg.content ?? ''
-  // 旧格式特征：包含 thinking_engine 输出标记或纯 Markdown 无 JSON 包装
-  const hasThinkingMarkers = /\[思考步骤\]|\[Step \d+\]/.test(content)
-  const hasRawMarkdown = content.startsWith('#') && !content.includes('```json')
-  return hasThinkingMarkers || hasRawMarkdown
 }
 

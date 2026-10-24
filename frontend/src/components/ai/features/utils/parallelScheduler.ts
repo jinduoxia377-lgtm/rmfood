@@ -108,13 +108,23 @@ async function callToolApi(call: ToolCall): Promise<unknown> {
 /**
  * RAG 检索执行
  *
- * 后端目前没有任何 RAG 索引/检索端点（全库 grep 确认），此前这里指向
- * /api/v1/ai/rag/search，调用必然 404。改为显式失败，让上层拿到可读错误
- * 而不是一个 404 的 HTTP 状态码。
+ * 真实端点：POST /api/v1/rag/search（rag_router.py），查询词走 query param。
  */
 async function executeRagSearch(call: ToolCall): Promise<unknown> {
-  void call;
-  throw new Error('工具暂不可用：后端未提供 RAG 检索端点（/ai/rag/search 不存在）');
+  const input = call.input ?? {};
+  const question = typeof input.question === 'string' ? input.question
+    : typeof input.query === 'string' ? input.query
+    : typeof input.q === 'string' ? input.q
+    : '';
+  if (!question.trim()) {
+    throw new Error('RAG 检索缺少查询词（input.question/query）');
+  }
+  const topK = typeof input.top_k === 'number' ? input.top_k : 5;
+  const params = new URLSearchParams({ question: question.trim(), top_k: String(topK) });
+  return fetchWithCsrf(`/api/v1/rag/search?${params.toString()}`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
 }
 
 /**

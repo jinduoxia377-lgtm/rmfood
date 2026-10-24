@@ -8,6 +8,7 @@ import {
 import { peptideAnalysisApi, type PeptideAnalysisData } from '@/api/ai'
 import { logger } from '@/utils/safeLogger'
 import { useToast } from '@/components/ui'
+import { useTranslation } from 'react-i18next'
 
 
 interface PeptideAnalysisResult {
@@ -47,6 +48,7 @@ interface DeepAnalysisProps {
 }
 
 export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComplete }: DeepAnalysisProps) {
+  const { t } = useTranslation()
   const { addToast } = useToast()
   const [activeMode, setActiveMode] = useState<'single' | 'batch' | 'pareto' | 'synergy' | 'solubility'>('single')
   const [sequence, setSequence] = useState(initialSequence)
@@ -289,10 +291,10 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
             <Microscope className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">高级肽分析引擎</h2>
+            <h2 className="text-2xl font-bold text-white">{t('ai.peptideAnalyze.title')}</h2>
             <p className="text-white/80 text-sm">
-              二级结构预测 · 理化性质 · 安全性评分
-              <span className="text-white/50">（批量 / Pareto / 协同 / 溶解度模式后端未实现，已禁用）</span>
+              {t('ai.peptideAnalyze.subtitle')}
+              <span className="text-white/50">{t('ai.peptideAnalyze.subtitleDisabled')}</span>
             </p>
           </div>
         </div>
@@ -302,17 +304,17 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
             否则用户点进去只看到"即将上线"，误以为功能已完成。 */}
         <div className="flex gap-2 mt-5 flex-wrap">
           {[
-            { id: 'single', icon: Microscope, label: '深度分析', ready: true },
-            { id: 'batch', icon: Layers, label: '批量分析', ready: false },
-            { id: 'pareto', icon: Target, label: 'Pareto 优化', ready: false },
-            { id: 'synergy', icon: Dna, label: '协同分析', ready: false },
-            { id: 'solubility', icon: FlaskConical, label: '溶解度曲线', ready: false },
+            { id: 'single', icon: Microscope, label: t('ai.peptideAnalyze.modes.single'), ready: true },
+            { id: 'batch', icon: Layers, label: t('ai.peptideAnalyze.modes.batch'), ready: false },
+            { id: 'pareto', icon: Target, label: t('ai.peptideAnalyze.modes.pareto'), ready: false },
+            { id: 'synergy', icon: Dna, label: t('ai.peptideAnalyze.modes.synergy'), ready: false },
+            { id: 'solubility', icon: FlaskConical, label: t('ai.peptideAnalyze.modes.solubility'), ready: false },
           ].map(({ id, icon: Icon, label, ready }) => (
             <button
               key={id}
               onClick={() => setActiveMode(id as 'single' | 'batch' | 'pareto' | 'synergy' | 'solubility')}
               disabled={!ready}
-              title={ready ? undefined : '该模式后端端点尚未实现，暂不可用'}
+              title={ready ? undefined : t('ai.peptideAnalyze.modeUnavailable')}
               aria-disabled={!ready}
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeMode === id
@@ -325,7 +327,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
               <Icon className="w-4 h-4" />
               {label}
               {!ready && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50">规划中</span>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-white/50">{t('ai.peptideAnalyze.planned')}</span>
               )}
             </button>
           ))}
@@ -342,7 +344,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                 type="text"
                 value={sequence}
                 onChange={(e) => setSequence(e.target.value.toUpperCase())}
-                placeholder="输入肽序列，如 VLGYT 或 LRPFFY..."
+                placeholder={t('ai.peptideAnalyze.sequencePlaceholder')}
                 className="flex-1 px-4 py-3 border-2 border-neutral-300 dark:border-neutral-600 rounded-lg
                          bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-mono text-lg
                          focus:border-accent-500 focus:ring-2 focus:ring-accent-200 transition-all"
@@ -354,7 +356,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                          font-semibold hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Microscope className="w-5 h-5" />}
-                深度分析
+                {t('ai.peptideAnalyze.analyze')}
               </button>
             </div>
 
@@ -382,7 +384,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     ) : (
                       <>
                         <Save className="w-5 h-5 text-warning-600" />
-                        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分析完成，可保存到数据库</span>
+                        <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.peptideAnalyze.analysisCompleteHint')}</span>
                       </>
                     )}
                   </div>
@@ -396,7 +398,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                         className="px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 disabled:opacity-50 flex items-center gap-2 text-sm"
                       >
                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        保存到数据库
+                        {t('ai.peptideAnalyze.saveToDatabase')}
                       </button>
                     )}
 
@@ -426,7 +428,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       className="px-3 py-2 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-1.5 text-sm"
                     >
                       <History className="w-4 h-4" />
-                      历史记录 ({historyTotal})
+                      {t('ai.peptideAnalyze.historyCount', { count: historyTotal })}
                     </button>
                   </div>
                 </div>
@@ -516,12 +518,12 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       {historyLoading ? (
                         <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                          加载中...
+                          {t('ai.peptideAnalyze.loading')}
                         </div>
                       ) : historyList.length === 0 ? (
                         <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                           <Database className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                          暂无历史记录
+                          {t('ai.peptideAnalyze.noHistory')}
                         </div>
                       ) : (
                         <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -615,7 +617,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                 {/* Secondary Structure */}
                 <SectionCard
-                  title="二级结构预测 (Chou-Fasman)"
+                  title={t('ai.peptideAnalyze.secondaryStructure')}
                   icon={<Dna className="w-5 h-5" />}
                   expanded={expandedSections.structure ?? false}
                   onToggle={() => toggleSection('structure')}

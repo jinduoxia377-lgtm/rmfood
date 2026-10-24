@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { GeneticGenerateResponse } from '@/api/ai'
@@ -77,7 +78,7 @@ interface GenerationRecord {
 
 interface AlgorithmPreset {
   name: string
-  label: string
+  labelKey: string
   params: {
     populationSize: number
     generations: number
@@ -92,22 +93,22 @@ interface AlgorithmPreset {
 const PRESETS: AlgorithmPreset[] = [
   {
     name: 'default',
-    label: '默认',
+    labelKey: 'presetDefault',
     params: { populationSize: 50, generations: 40, mutationRate: 0.15, crossoverRate: 0.85, eliteRatio: 0.15, tournamentSize: 5, count: 5 },
   },
   {
     name: 'quick',
-    label: '快速探索',
+    labelKey: 'presetQuickExplore',
     params: { populationSize: 30, generations: 15, mutationRate: 0.2, crossoverRate: 0.8, eliteRatio: 0.1, tournamentSize: 3, count: 3 },
   },
   {
     name: 'deep',
-    label: '深度优化',
+    labelKey: 'presetDeepOptimize',
     params: { populationSize: 100, generations: 100, mutationRate: 0.1, crossoverRate: 0.9, eliteRatio: 0.2, tournamentSize: 7, count: 8 },
   },
   {
     name: 'global',
-    label: '全局搜索',
+    labelKey: 'presetGlobalSearch',
     params: { populationSize: 200, generations: 150, mutationRate: 0.3, crossoverRate: 0.7, eliteRatio: 0.05, tournamentSize: 10, count: 10 },
   },
 ]
@@ -133,6 +134,7 @@ interface GeneticAlgorithmPanelProps {
 }
 
 export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps) {
+  const { t } = useTranslation()
   // ── 功效选择 ──
   const [selectedEffects, setSelectedEffects] = useState<string[]>([])
 
@@ -429,7 +431,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
   // ── 预设应用 ──
   const applyPreset = useCallback((preset: AlgorithmPreset) => {
     setParams({ ...preset.params })
-    addLog(`⚙️ 已应用预设「${preset.label}」`, 'info')
+    addLog(`⚙️ 已应用预设「${t(`ai.genetic.${preset.labelKey}`)}」`, 'info')
   }, [addLog])
 
   // ── 排除药材管理 ──
@@ -571,7 +573,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
   const canRun = !mutation.isPending && !isStreaming
   const isRunning = mutation.isPending || isStreaming
   const effectsHint = selectedEffects.length === 0
-    ? '未选择功效，将使用默认值（免疫调节）'
+    ? t('ai.genetic.noEffectWarning')
     : `已选择 ${selectedEffects.length} 个功效`
 
   // ── 图表数据准备（流式模式使用 liveHistory，非流式使用 result.history）──
@@ -581,7 +583,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     <div className={`space-y-6 ${className ?? ''}`} role="region" aria-label="遗传算法配方生成面板">
       {/* 无障碍公告 */}
       <div aria-live="polite" className="sr-only">
-        {isRunning ? '遗传算法正在运行' : result ? `进化完成，生成 ${result.candidates.length} 个方案` : '等待开始'}
+        {isRunning ? t('ai.genetic.runningText') : result ? t('ai.genetic.evolutionComplete', { count: result.candidates.length }) : t('ai.genetic.waitingStart')}
       </div>
 
       {/* ══════════════════════════════
@@ -593,8 +595,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <Dna className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">遗传算法配方生成</h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">基于进化计算智能搜索最优配方组合</p>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('ai.genetic.title')}</h2>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('ai.genetic.subtitle')}</p>
           </div>
         </div>
 
@@ -602,13 +604,13 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-effects-heading" className="mb-6">
           <h3 id="ga-effects-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
             <Target className="w-4 h-4 text-accent-500" />
-            目标功效
-            <Badge variant="neutral" size="sm">{selectedEffects.length} 已选</Badge>
+            {t('ai.formula.effects.objectiveEfficacy')}
+            <Badge variant="neutral" size="sm">{t('ai.formula.effects.selectedCount', { count: selectedEffects.length })}</Badge>
           </h3>
           <div
             className="flex flex-wrap gap-2"
             role="group"
-            aria-label="目标功效多选"
+            aria-label={t('ai.formula.effects.objectiveEfficacyMulti')}
           >
             {EFFECT_OPTIONS.map(effect => (
               <button
@@ -617,7 +619,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleEffect(effect.id) } }}
                 role="checkbox"
                 aria-checked={selectedEffects.includes(effect.id)}
-                aria-label={`功效: ${effect.label}`}
+                aria-label={t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                 tabIndex={0}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 ${
                   selectedEffects.includes(effect.id)
@@ -625,21 +627,21 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
-                {effect.label}
+                {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
               </button>
             ))}
           </div>
           {selectedEffects.length === 0 && (
             <p className="text-xs text-warning-600 dark:text-warning-700 mt-2 flex items-center gap-1">
               <Info className="w-3 h-3" />
-              未选择功效时将使用默认值（免疫调节），建议至少选择一个目标
+              {t('ai.genetic.noEffectWarning')}
             </p>
           )}
         </section>
 
         {/* --- 预设按钮 --- */}
         <div className="mb-5">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">快速预设</span>
+          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{t('ai.genetic.quickPresets')}</span>
           <div className="flex flex-wrap gap-2 mt-2" role="group" aria-label="算法参数预设">
             {PRESETS.map(preset => (
               <Button
@@ -647,9 +649,9 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 variant="secondary"
                 size="sm"
                 onClick={() => applyPreset(preset)}
-                aria-label={`应用${preset.label}预设`}
+                aria-label={t('ai.genetic.applyPreset', { preset: t(`ai.genetic.${preset.labelKey}`) })}
               >
-                {preset.label}
+                {t(`ai.genetic.${preset.labelKey}`)}
               </Button>
             ))}
           </div>
@@ -659,81 +661,81 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-params-heading" className="mb-6">
           <h3 id="ga-params-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <Settings2 className="w-4 h-4 text-accent-500" />
-            算法参数
+            {t('ai.genetic.algorithmParams')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
             {/* 种群大小 */}
             <ParamSlider
-              label="种群大小"
+              label={t('ai.genetic.populationSize')}
               value={params.populationSize}
               min={10}
               max={200}
               step={1}
               onChange={(v) => updateParam('populationSize', v)}
-              description="每代个体数量"
+              description={t('ai.genetic.populationDesc')}
             />
             {/* 进化代数 */}
             <ParamSlider
-              label="进化代数"
+              label={t('ai.genetic.generations')}
               value={params.generations}
               min={5}
               max={200}
               step={1}
               onChange={(v) => updateParam('generations', v)}
-              description="最大迭代次数"
+              description={t('ai.genetic.generationsDesc')}
             />
             {/* 变异率 */}
             <ParamSlider
-              label="变异率"
+              label={t('ai.genetic.mutationRate')}
               value={params.mutationRate}
               min={0.01}
               max={0.5}
               step={0.01}
               onChange={(v) => updateParam('mutationRate', v)}
               displayFormat={(v) => `${(v * 100).toFixed(0)}%`}
-              description="基因变异概率"
+              description={t('ai.genetic.mutationDesc')}
             />
             {/* 交叉率 */}
             <ParamSlider
-              label="交叉率"
+              label={t('ai.genetic.crossoverRate')}
               value={params.crossoverRate}
               min={0.1}
               max={1.0}
               step={0.01}
               onChange={(v) => updateParam('crossoverRate', v)}
               displayFormat={(v) => `${(v * 100).toFixed(0)}%`}
-              description="个体交叉概率"
+              description={t('ai.genetic.crossoverDesc')}
             />
             {/* 精英保留比例 */}
             <ParamSlider
-              label="精英保留比例"
+              label={t('ai.genetic.eliteRatio')}
               value={params.eliteRatio}
               min={0.05}
               max={0.4}
               step={0.01}
               onChange={(v) => updateParam('eliteRatio', v)}
               displayFormat={(v) => `${(v * 100).toFixed(0)}%`}
-              description="最优个体直接保留比例"
+              description={t('ai.genetic.eliteDesc')}
             />
             {/* 锦标赛规模 */}
             <ParamSlider
-              label="锦标赛规模"
+              label={t('ai.genetic.tournamentSize')}
               value={params.tournamentSize}
               min={2}
               max={20}
               step={1}
               onChange={(v) => updateParam('tournamentSize', v)}
-              description="选择时的竞争数量"
+              description={t('ai.genetic.tournamentDesc')}
             />
             {/* 候选方案数量 */}
             <ParamSlider
-              label="候选方案数量"
+              label={t('ai.genetic.candidateCount')}
               value={params.count}
               min={1}
               max={20}
               step={1}
               onChange={(v) => updateParam('count', v)}
-              description="输出的 Top-N 方案数"
+              description={t('ai.genetic.candidateDesc')}
             />
           </div>
         </section>
@@ -742,7 +744,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-hybrid-heading" className="mb-6">
           <h3 id="ga-hybrid-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
             <Dna className="w-4 h-4 text-accent-500" />
-            混合优化模式
+            {t('ai.genetic.mixedMode')}
             <Badge variant={hybridMode ? "success" : "neutral"} size="sm">
               {hybridMode ? 'BinaryGA+MILP' : '标准GA'}
             </Badge>
@@ -751,13 +753,13 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <Switch
               checked={hybridMode}
               onCheckedChange={setHybridMode}
-              label={hybridMode ? '已开启' : '已关闭'}
+              label={hybridMode ? t('ai.genetic.enabledText') : t('ai.genetic.disabledText')}
               disabled={isRunning}
             />
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {hybridMode
-                ? '外层BinaryGA选择药材 + 内层MILP精确配比'
-                : '标准实数编码遗传算法'}
+                ? t('ai.genetic.hybridDesc')
+                : t('ai.genetic.standardGa')}
             </span>
           </div>
 
@@ -766,7 +768,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               {/* 总剂量 */}
               <div>
                 <label htmlFor="ga-total-dosage" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">
-                  总剂量 (g)
+                  {t('ai.genetic.totalDose')}
                 </label>
                 <Input
                   id="ga-total-dosage"
@@ -790,7 +792,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                     disabled={isRunning}
                     className="rounded border-neutral-300 dark:border-neutral-700"
                   />
-                  启用Warm Start (上代最优配比初值)
+                  {t('ai.genetic.warmStart')}
                 </label>
               </div>
             </div>
@@ -802,8 +804,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           <section aria-labelledby="ga-nutrition-heading" className="mb-6">
             <h3 id="ga-nutrition-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
               <FlaskConical className="w-4 h-4 text-success-500" />
-              营养约束
-              <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(每100g)</span>
+              {t('ai.genetic.nutritionConstraints')}
+              <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.genetic.per100g')}</span>
             </h3>
             <div className="space-y-2">
               {nutritionConstraints.map((constraint, idx) => (
@@ -847,13 +849,13 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-constraints-heading">
           <h3 id="ga-constraints-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <Shield className="w-4 h-4 text-accent-500" />
-            约束条件
-            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选)</span>
+            {t('ai.genetic.constraints')}
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.genetic.optional')}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 排除药材 */}
             <div>
-              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">排除药材</label>
+              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">{t('ai.genetic.excludedHerbs')}</label>
               <div className="flex gap-2">
                 <Input
                   value={excludedInput}
@@ -863,7 +865,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExcludedIngredient() } }}
                   aria-label="排除药材输入"
                 />
-                <Button variant="secondary" size="sm" onClick={addExcludedIngredient}>添加</Button>
+                <Button variant="secondary" size="sm" onClick={addExcludedIngredient}>{t('ai.genetic.add')}</Button>
               </div>
               {excludeHerbs.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2" role="list" aria-label="已排除的药材列表">
@@ -884,7 +886,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             </div>
             {/* 最大成本 */}
             <div>
-              <label htmlFor="ga-max-cost" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">最大成本（元）</label>
+              <label htmlFor="ga-max-cost" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">{t('ai.genetic.maxCost')}</label>
               <Input
                 id="ga-max-cost"
                 type="number"
@@ -905,25 +907,25 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-included-heading">
           <h3 id="ga-included-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <FlaskConical className="w-4 h-4 text-success-500" />
-            基础配方
-            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">(可选，强制包含)</span>
+            {t('ai.genetic.baseFormula')}
+            <span className="text-xs font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.genetic.forceInclude')}</span>
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-            指定药材将作为固定基础，优化器将在其基础上添加更多药材。若留空则由算法自动选择。
+            {t('ai.genetic.baseFormulaDesc')}
           </p>
           <div className="flex gap-2 mb-3">
             <Input
               value={includedInput}
               onChange={(e) => setIncludedInput(e.target.value)}
-              placeholder="输入药材名称，逗号分隔（如：黄芪,党参,甘草）"
+              placeholder={t('ai.genetic.baseFormulaPlaceholder')}
               className="flex-1"
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addIncludedIngredient() } }}
-              aria-label="基础配方输入"
+              aria-label={t('ai.genetic.baseFormulaInputAria')}
             />
-            <Button variant="outline" size="sm" onClick={addIncludedIngredient}>添加</Button>
+            <Button variant="outline" size="sm" onClick={addIncludedIngredient}>{t('ai.genetic.add')}</Button>
           </div>
           {includeHerbs.length > 0 && (
-            <div className="flex flex-wrap gap-1.5" role="list" aria-label="基础配方药材列表">
+            <div className="flex flex-wrap gap-1.5" role="list" aria-label={t('ai.genetic.baseFormulaListAria')}>
               {includeHerbs.map(item => (
                 <Badge key={item} variant="success" size="sm" className="flex items-center gap-1 cursor-pointer" role="listitem">
                   <FlaskConical className="w-3 h-3" />
@@ -945,7 +947,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <details className="group rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden mt-4">
           <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
             <SlidersHorizontal className="w-4 h-4 text-accent-500 flex-shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">权重微调</span>
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('ai.genetic.weightTuning')}</span>
             <span className="ml-auto text-xs text-muted-foreground group-open:rotate-180 transition-transform duration-200">▼</span>
           </summary>
           <div className="px-5 pb-5 space-y-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
@@ -995,12 +997,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             ) : (
               <WifiOff className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" aria-hidden="true" />
             )}
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">实时流式模式</span>
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('ai.genetic.realtimeStreaming')}</span>
           </div>
           <Switch
             checked={isStreamingMode}
             onCheckedChange={setIsStreamingMode}
-            label={isStreamingMode ? '已开启' : '已关闭'}
+            label={isStreamingMode ? t('ai.genetic.enabledText') : t('ai.genetic.disabledText')}
             disabled={isRunning}
           />
         </div>
@@ -1009,14 +1011,14 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {paramError && (
           <Alert variant="warning" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
-            <AlertTitle>参数校验不通过</AlertTitle>
+            <AlertTitle>{t('ai.genetic.validationFailed')}</AlertTitle>
             <AlertDescription>{paramError}</AlertDescription>
           </Alert>
         )}
         {paramWarning && !paramError && (
           <Alert variant="warning" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
-            <AlertTitle>提示</AlertTitle>
+            <AlertTitle>{t('ai.genetic.notice')}</AlertTitle>
             <AlertDescription>{paramWarning}</AlertDescription>
           </Alert>
         )}
@@ -1031,7 +1033,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 aria-label={canRun ? '开始遗传算法进化' : '未知'}
                 title={effectsHint}
               >
-                开始进化
+                {t('ai.genetic.startEvolution')}
               </Button>
             ) : (
               <Button
@@ -1059,14 +1061,14 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               <>
                 <Loader2 className="w-4 h-4 text-accent-500 animate-spin" aria-hidden="true" />
                 <span className="text-sm font-medium text-accent-600 dark:text-accent-700" role="status">
-                  进化中...
+                  {t('ai.genetic.evolving')}
                 </span>
               </>
             )}
             {mutation.isSuccess && (
               <Badge variant="success" className="flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
-                进化完成
+                {t('ai.genetic.evolutionDone')}
               </Badge>
             )}
             {mutation.isError && (
@@ -1082,7 +1084,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {mutation.isError && !isRunning && (
           <Alert variant="warning" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
-            <AlertTitle>运行失败</AlertTitle>
+            <AlertTitle>{t('ai.genetic.runFailed')}</AlertTitle>
             <AlertDescription>
               {(mutation.error as Error)?.message || '遗传算法执行过程中发生错误，请检查参数后重试。'}
             </AlertDescription>
@@ -1100,7 +1102,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           {logs.length === 0 ? (
             <div className="text-neutral-400 dark:text-neutral-400 flex items-center gap-2 h-full justify-center">
               <Info className="w-4 h-4" aria-hidden="true" />
-              <span>日志将在运行时显示...</span>
+              <span>{t('ai.genetic.logsPlaceholder')}</span>
             </div>
           ) : (
             logs.map((log, i) => (

@@ -5,6 +5,7 @@
  * @version 5.0.0 - Unified Layout
  */
 import React, { useMemo, Suspense, lazy } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Filter, Lightbulb, Share2, TrendingUp, CheckCircle,
   ChevronDown, Download, RefreshCw, BookOpen, Sparkles, FlaskConical,
@@ -47,6 +48,8 @@ interface FormulaResultsProProps {
   effectLabels: string[]
   onCompareVersions?: (v1: number, v2: number) => void
   onSaveAll?: () => void
+  /** 单个候选保存成功回调（透传给 NeuralResultCard，触发保存成功反馈） */
+  onSaveSuccess?: (formulaId: number, candidateId: string) => void
   className?: string
 }
 
@@ -70,8 +73,10 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   effectLabels,
   onCompareVersions,
   onSaveAll,
+  onSaveSuccess,
   className = '',
 }) => {
+  const { t } = useTranslation()
   const [showOptimizationAdvisor, setShowOptimizationAdvisor] = React.useState(false)
   const [showSharePanel, setShowSharePanel] = React.useState(false)
   const [showStats, setShowStats] = React.useState(true)
@@ -90,10 +95,10 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
   const getGeneratorLabel = (gen: GeneratorType | undefined): string => {
     switch (gen) {
-      case 'llm': return 'AI 大模型'
-      case 'neural_network': return '神经网络'
-      case 'ga': return '遗传算法优化'
-      default: return '规则引擎'
+      case 'llm': return t('ai.formula.generateTab.generatorLlm')
+      case 'neural_network': return t('ai.formula.generateTab.generatorNeural')
+      case 'ga': return t('ai.formula.generateTab.generatorGa')
+      default: return t('ai.formula.generateTab.generatorRule')
     }
   }
 
@@ -113,22 +118,22 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-xl border border-border">
           <div className="text-center">
             <div className="text-display-sm font-bold text-primary">{stats.total}</div>
-            <div className="text-caption text-muted-foreground mt-0.5">配方数</div>
+            <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.formulaCountLabel')}</div>
           </div>
           <div className="text-center">
             <div className="text-display-sm font-bold text-success">{stats.avgScore.toFixed(1)}</div>
-            <div className="text-caption text-muted-foreground mt-0.5">平均分</div>
+            <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.avgScore')}</div>
           </div>
           <div className="text-center">
             <div className="text-display-sm font-bold text-warning">{stats.maxScore.toFixed(1)}</div>
-            <div className="text-caption text-muted-foreground mt-0.5">最高分</div>
+            <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.maxScore')}</div>
           </div>
           <div className="text-center">
             <div className="text-display-sm font-bold text-info">{stats.passedSafety}/{stats.total}</div>
-            <div className="text-caption text-muted-foreground mt-0.5">安全通过</div>
+            <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.safetyPassed')}</div>
           </div>
           <button onClick={() => setShowStats(false)} className="col-span-4 self-center text-caption text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <ChevronDown className="w-3 h-3" />收起
+            <ChevronDown className="w-3 h-3" />{t('ai.formula.generateTab.collapse')}
           </button>
         </div>
       )}
@@ -137,10 +142,10 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-title-sm font-semibold">{generateResult?.length || 0} 个配方</h3>
+            <h3 className="text-title-sm font-semibold">{t('ai.formula.generateTab.formulaCount', { count: generateResult?.length || 0 })}</h3>
             <Badge variant={getGeneratorBadge(generator)} className="text-label-sm">{getGeneratorLabel(generator)}</Badge>
           </div>
-          <p className="text-caption text-muted-foreground">点击配方可查看详情</p>
+          <p className="text-caption text-muted-foreground">{t('ai.formula.generateTab.clickFormulaForDetails')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -151,7 +156,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               onChange={(e) => onCategoryChange(e.target.value as FormulaCategory | 'all')}
               className="bg-transparent text-body-sm font-medium border-none outline-none cursor-pointer"
             >
-              <option value="all">全部</option>
+              <option value="all">{t('ai.formula.generateTab.all')}</option>
               {formulaCategories.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
             </select>
             {selectedCategory !== 'all' && (
@@ -161,32 +166,32 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
           <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
             <button onClick={() => onToggleSort('score')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'score' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
-              综合 {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
+              {t('ai.formula.generateTab.composite')} {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
             <button onClick={() => onToggleSort('synergy')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'synergy' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
-              协同 {sortBy === 'synergy' && (sortOrder === 'desc' ? '↓' : '↑')}
+              {t('ai.formula.generateTab.synergyShort')} {sortBy === 'synergy' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
 
           {(generateResult?.length || 0) >= 2 && <ResultsViewSwitcher viewMode={viewMode} onViewModeChange={onViewModeChange} />}
 
           <button onClick={() => setShowOptimizationAdvisor(!showOptimizationAdvisor)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showOptimizationAdvisor ? 'bg-warning/10 text-warning border-warning/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}>
-            <Lightbulb className="w-3.5 h-3.5" />优化建议
+            <Lightbulb className="w-3.5 h-3.5" />{t('ai.formula.generateTab.optimizationAdvice')}
           </button>
 
           <button onClick={() => setShowSharePanel(!showSharePanel)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showSharePanel ? 'bg-info/10 text-info border-info/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}>
-            <Share2 className="w-3.5 h-3.5" />分享
+            <Share2 className="w-3.5 h-3.5" />{t('ai.formula.generateTab.share')}
           </button>
 
           <div className="relative group">
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-muted text-muted-foreground hover:text-foreground border border-border">
-              <Download className="w-3.5 h-3.5" />导出
+              <Download className="w-3.5 h-3.5" />{t('ai.formula.generateTab.export')}
             </button>
             <div className="absolute right-0 mt-1 w-32 bg-surface rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
               <div className="py-1">
                 <button onClick={() => onExportFormula('json')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">JSON</button>
                 <button onClick={() => onExportFormula('csv')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">CSV</button>
-                <button className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted opacity-50 cursor-not-allowed">PDF (即将推出)</button>
+                <button className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted opacity-50 cursor-not-allowed">{t('ai.formula.generateTab.pdfComingSoon')}</button>
               </div>
             </div>
           </div>
@@ -222,9 +227,9 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {filteredResults.length === 0 ? (
         <div className="text-center py-12 bg-muted/20 rounded-xl border-2 border-dashed border-border">
           <Filter className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-          <h3 className="text-title-sm font-semibold text-foreground mb-1">暂无结果</h3>
-          <p className="text-body-sm text-muted-foreground mb-3">请尝试调整筛选条件</p>
-          <button onClick={() => onToggleSort('score')} className="px-3 py-1.5 text-caption bg-muted rounded-lg hover:bg-background">重置</button>
+          <h3 className="text-title-sm font-semibold text-foreground mb-1">{t('ai.formula.generateTab.noResults')}</h3>
+          <p className="text-body-sm text-muted-foreground mb-3">{t('ai.formula.generateTab.noResultsHint')}</p>
+          <button onClick={() => onToggleSort('score')} className="px-3 py-1.5 text-caption bg-muted rounded-lg hover:bg-background">{t('ai.formula.generateTab.reset')}</button>
         </div>
       ) : viewMode === 'card' ? (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -237,6 +242,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               onViewReport={() => onViewReport(candidate)}
               onSelect={() => onSelectCandidate(candidate)}
               isSelected={selectedCompareIndex === index}
+              onSaveSuccess={onSaveSuccess}
             />
           ))}
         </div>
@@ -255,8 +261,8 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {filteredResults.length > 0 && (
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
           <div className="flex items-center gap-4 text-caption text-muted-foreground">
-            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" />{filteredResults.filter(c => c.safety_passed).length} 通过安全</span>
-            <span className="flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-primary" />平均: {stats?.avgScore.toFixed(1) || 0}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" />{t('ai.formula.generateTab.passedSafety', { count: filteredResults.filter(c => c.safety_passed).length })}</span>
+            <span className="flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-primary" />{t('ai.formula.generateTab.average', { value: stats?.avgScore.toFixed(1) || 0 })}</span>
           </div>
           <div className="flex items-center gap-2">
             {/* 配方解释按钮 */}
@@ -269,15 +275,15 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              解读最佳配方
+              {t('ai.formula.generateTab.interpretBestFormula')}
             </button>
             {!showStats && (
               <button onClick={() => setShowStats(true)} className="px-3 py-1.5 text-caption text-muted-foreground hover:text-foreground flex items-center gap-1">
-                <RefreshCw className="w-3 h-3" />显示统计
+                <RefreshCw className="w-3 h-3" />{t('ai.formula.generateTab.showStats')}
               </button>
             )}
             {onSaveAll && (
-              <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={onSaveAll}>全部保存</Button>
+              <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={onSaveAll}>{t('ai.formula.generateTab.saveAll')}</Button>
             )}
           </div>
           {filteredResults.length >= 2 && onCompareVersions && (
@@ -285,20 +291,20 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               onClick={() => onCompareVersions(1, 2)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-info/10 text-info hover:bg-info/20 border border-info/20"
             >
-              版本对比
+              {t('ai.formula.generateTab.versionCompare')}
             </button>
           )}
           <button
             onClick={() => setShowRecommend(!showRecommend)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showRecommend ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
           >
-            <Sparkles className="w-3.5 h-3.5" />智能推荐
+            <Sparkles className="w-3.5 h-3.5" />{t('ai.formula.generateTab.smartRecommend')}
           </button>
           <button
             onClick={() => setShowExplanation(!showExplanation)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showExplanation ? 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-300/25 dark:text-accent-700 dark:border-accent-800' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
           >
-            <FlaskConical className="w-3.5 h-3.5" />配方方解
+            <FlaskConical className="w-3.5 h-3.5" />{t('ai.formula.generateTab.formulaExplanation')}
           </button>
         </div>
       )}

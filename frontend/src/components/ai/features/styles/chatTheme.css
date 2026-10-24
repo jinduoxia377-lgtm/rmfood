@@ -376,6 +376,20 @@
   color: #ffffff;
   letter-spacing: -0.01em;
 }
+/* 用户真实头像（实时同步：更新头像后 URL 带新时间戳，自动刷新） */
+.chat-unified .avatar-img {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+  background: var(--chat-avatar-user-bg, #059669);
+  transition: transform 0.15s ease;
+}
+.chat-unified .avatar-img:hover {
+  transform: scale(1.05);
+}
 
 /* --- 用户气泡 --- */
 .chat-unified .chat-bubble-user {

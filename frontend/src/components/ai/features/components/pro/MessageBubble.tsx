@@ -10,21 +10,22 @@
  * @lastUpdated 2026-08-23
  */
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import type { ChatMessage } from '../../hooks/useChatMessages'
+import { useAuthStore } from '@/stores/auth'
 import { detectMessageType, parseChartData } from './utils.tsx'
 import MarkdownRenderer from './MarkdownRenderer'
 import TypewriterText from './TypewriterText'
 import ReasoningRow, { type ReasoningStep } from './ReasoningRow'
 import StructuredMessageRenderer from '../structured/StructuredMessageRenderer'
-import { detectStructuredContent } from '../structured/utils'
+import { detectStructuredContent, extractStructuredFallback } from '../structured/utils'
 import EnhancedContentRenderer from './EnhancedContentRenderer'
 import {
 	Leaf, Copy, Check, RefreshCw,
 	Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
 	FileText, AlertTriangle, MoreHorizontal,
-	GitBranch, Share2, Cpu,
+	GitBranch, Share2, Cpu, Wand2,
 } from 'lucide-react'
 
 type Reaction = 'like' | 'dislike' | null
@@ -107,6 +108,8 @@ export interface MessageBubbleProps {
 	onDetails?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
 	onStructureSave?: (messageId: string, content: string) => void
 	onStructureShare?: (messageId: string, content: string) => void
+	/** 结构化兜底：将非结构化配方文本修复为结构化 JSON 后保存 */
+	onStructureRepair?: (messageId: string, content: string) => void
 	copiedId?: string | null
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 	isHighlighted?: boolean
@@ -162,6 +165,21 @@ function extractExtension(filename: string): string {
 	return match ? match[1].toUpperCase() : 'FILE'
 }
 
+/**
+ * 判断文本是否包含配方特征（成分表/配方/克/g 等关键词）。
+ * 用于结构化兜底：当 detectStructuredContent 返回 null 但内容像配方时，
+ * 在消息操作区展示「修复为结构化配方」按钮。
+ */
+export function isFormulaLikeContent(content: string): boolean {
+	if (!content || typeof content !== 'string') return false
+	const text = content.toLowerCase()
+	// 剂量写法：数字 + 克 / 数字 + g（避免单独字母 g 误报）
+	const hasDosageGram = /\d+\s*(克|g\b)/i.test(text)
+	// 配方特征关键词
+	const hasFormulaKeyword = /配方|成分表|配料|原料|用量|剂量|配伍|君臣佐使|功效|煎煮|服用|药食同源/.test(text)
+	return hasDosageGram || hasFormulaKeyword
+}
+
 // ── 子组件 ────────────────────────────────────────────────────────
 
 function LinkMessageCard({ url }: { url: string }) {
@@ -182,7 +200,7 @@ function LinkMessageCard({ url }: { url: string }) {
 						</div>
 						<div className="text-xs text-neutral-400 dark:text-neutral-400 truncate flex items-center gap-1">
 							{domain && (
-								<span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+								<span className="w-4 h-4 rounded flex items-center justify-center text-xs font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
 									{domainInitial}
 								</span>
 							)}
@@ -320,6 +338,12 @@ function renderMessageContent(
 		if (structured) {
 			return <StructuredMessageRenderer content={structured} />
 		}
+		// 兜底：即使标准检测失败，只要内容是合法 blocks JSON（如带前后说明文字/格式差异），
+		// 也渲染为专业配方卡，绝不裸显示 JSON。
+		const fallbackStructured = extractStructuredFallback(msg.content)
+		if (fallbackStructured) {
+			return <StructuredMessageRenderer content={fallbackStructured} />
+		}
 		// 流式中：内容像结构化 JSON 但未完成 → 显示加载占位，避免展示原始 JSON
 		if (streaming && isLikelyStructured(msg.content)) {
 			return (
@@ -421,7 +445,7 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 			<p className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-1.5 flex items-center gap-1.5">
 				<Cpu className="w-3.5 h-3.5" /> 辨证分析
 				{dialectics.engine === 'rule_engine_fallback' && (
-					<span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">规则引擎降级</span>
+					<span className="text-xs font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">规则引擎降级</span>
 				)}
 			</p>
 			{dialectics.constitution_tendency && (
@@ -466,6 +490,7 @@ export function MessageBubble({
 	onDetails,
 	onStructureSave,
 	onStructureShare,
+	onStructureRepair,
 	thinkingSteps,
 	isHighlighted,
 	isSelected,
@@ -480,6 +505,23 @@ export function MessageBubble({
 	}, [editingId, onEdit, msg.content, msg.id])
 
 	const handleCopy = useCallback(() => onCopy(msg.id, msg.content), [msg.id, msg.content, onCopy])
+
+	// ── 用户头像实时同步：订阅 auth store 的当前用户（更新头像后自动刷新）──
+	const currentUser = useAuthStore((s) => s.user)
+	// 头像 URL 追加基于当前用户头像地址变化的版本号，避免浏览器缓存旧头像；
+	// 仅当 avatarUrl 变化时递增版本号（纯函数），不在 render 中调用不纯函数。
+	const [prevAvatarUrl, setPrevAvatarUrl] = useState(currentUser?.avatarUrl)
+	const [avatarVersion, setAvatarVersion] = useState(0)
+	if (prevAvatarUrl !== currentUser?.avatarUrl) {
+		setPrevAvatarUrl(currentUser?.avatarUrl)
+		setAvatarVersion(v => v + 1)
+	}
+	const userAvatarSrc = useMemo(() => {
+		if (!currentUser?.avatarUrl) return ''
+		const sep = currentUser.avatarUrl.includes('?') ? '&' : '?'
+		return `${currentUser.avatarUrl}${sep}t=${avatarVersion}`
+	}, [currentUser?.avatarUrl, avatarVersion])
+	const userAvatarLabel = (currentUser?.fullName || currentUser?.username || 'U').slice(0, 1).toUpperCase()
 
 	const showDateSep = index > 0 && isNewDay(allMessages[index - 1]?.timestamp, msg.timestamp)
 
@@ -499,7 +541,18 @@ export function MessageBubble({
 				{/* 头像 */}
 				<div className={msg.role === 'user' ? 'avatar-user' : 'avatar-ai'}>
 					{msg.role === 'user' ? (
-						<span className="avatar-letter">U</span>
+						userAvatarSrc ? (
+							<img
+								key={currentUser?.avatarUrl}
+								src={userAvatarSrc}
+								alt={currentUser?.username || '用户'}
+								className="avatar-img"
+								referrerPolicy="no-referrer"
+								loading="lazy"
+							/>
+						) : (
+							<span className="avatar-letter">{userAvatarLabel}</span>
+						)
 					) : (
 						<>
 							<Leaf className="w-4 h-4" />
@@ -637,6 +690,12 @@ export function MessageBubble({
 						{msg.role === 'assistant' && onStructureSave && (
 							<button onClick={() => onStructureSave(msg.id, msg.content)} className="chat-action-btn" title="保存到配方库">
 								<Leaf className="w-3 h-3" />
+							</button>
+						)}
+						{msg.role === 'assistant' && onStructureRepair && !detectStructuredContent(msg.content) && isFormulaLikeContent(msg.content) && (
+							<button onClick={() => onStructureRepair(msg.id, msg.content)} className="chat-action-btn inline-flex items-center gap-1" title="修复为结构化配方">
+								<Wand2 className="w-3 h-3" />
+								<span className="text-[10px] leading-none">修复为结构化配方</span>
 							</button>
 						)}
 						{msg.role === 'assistant' && onStructureShare && (

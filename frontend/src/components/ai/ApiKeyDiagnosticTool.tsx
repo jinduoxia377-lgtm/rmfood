@@ -10,6 +10,7 @@
  * - 详细的诊断报告生成
  */
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -51,6 +52,7 @@ interface DiagnosticResult {
 }
 
 export default function ApiKeyDiagnosticTool() {
+  const { t } = useTranslation()
   const [diagnostic, setDiagnostic] = useState<DiagnosticResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [showRawKey, setShowRawKey] = useState(false)
@@ -299,7 +301,7 @@ export default function ApiKeyDiagnosticTool() {
       <Card className="w-full">
         <CardContent className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-3 text-neutral-600">正在分析 API Key...</span>
+          <span className="ml-3 text-neutral-600">{t('ai.config.analyzingKey')}</span>
         </CardContent>
       </Card>
     )
@@ -328,26 +330,26 @@ export default function ApiKeyDiagnosticTool() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">存储来源</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{t('ai.config.storageSource')}</p>
               <Badge variant={diagnostic.source === 'none' ? 'danger' : 'neutral'}>
                 {diagnostic.source || '未配置'}
               </Badge>
             </div>
 
             <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原始长度</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{t('ai.config.originalLength')}</p>
               <p className="text-lg font-bold">{diagnostic.keyLength} 字符</p>
             </div>
 
             <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">隐藏字符</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{t('ai.config.hiddenChars')}</p>
               <p className={`text-lg font-bold ${diagnostic.hiddenCharsRemoved > 0 ? 'text-error-600' : 'text-success-600'}`}>
                 {diagnostic.hiddenCharsRemoved} 个
               </p>
             </div>
 
             <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">格式有效性</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{t('ai.config.formatValidity')}</p>
               {diagnostic.isValidFormat ? (
                 <CheckCircle2 className="w-6 h-6 text-success-600" />
               ) : (
@@ -446,7 +448,7 @@ export default function ApiKeyDiagnosticTool() {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <div className="space-y-1 mt-2">
-              <p className="font-semibold">发现的问题：</p>
+              <p className="font-semibold">{t('ai.config.foundIssues')}</p>
               {diagnostic.issues.map((issue, idx) => (
                 <p key={idx}>{issue}</p>
               ))}

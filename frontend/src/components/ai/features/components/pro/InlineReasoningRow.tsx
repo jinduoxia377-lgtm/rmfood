@@ -98,7 +98,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
               {Array.from(new Set(steps.map(s => s.algorithm).filter((a): a is string => !!a))).slice(0, 3).map((alg) => {
                 const badge = ALGORITHM_BADGES[alg]
                 return badge ? (
-                  <span key={alg} className={`text-[9px] px-1 py-0.5 rounded font-medium ${badge.color}`}>
+                  <span key={alg} className={`text-xs px-1 py-0.5 rounded font-medium ${badge.color}`}>
                     {badge.label}
                   </span>
                 ) : null
@@ -158,7 +158,7 @@ export default function InlineReasoningRow({ steps, isThinking, elapsedMs }: Inl
 
                 {/* 算法标签 */}
                 {step.algorithm && ALGORITHM_BADGES[step.algorithm] && (
-                  <span className={`flex-shrink-0 text-[9px] px-1 py-0.5 rounded font-medium ${ALGORITHM_BADGES[step.algorithm].color}`}>
+                  <span className={`flex-shrink-0 text-xs px-1 py-0.5 rounded font-medium ${ALGORITHM_BADGES[step.algorithm].color}`}>
                     {ALGORITHM_BADGES[step.algorithm].label}
                   </span>
                 )}

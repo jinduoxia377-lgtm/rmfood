@@ -1,5 +1,3 @@
-import { logger } from '@/utils/safeLogger';
-
 // ===== 领域知识图谱 (V3.0 Professional Edition) =====
 // 覆盖14大分类，200+ 专业术语，支持深度语义实体提取
 

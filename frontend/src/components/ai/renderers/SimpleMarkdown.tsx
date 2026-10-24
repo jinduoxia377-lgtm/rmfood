@@ -227,7 +227,7 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
         if (isMounted) {
           setSanitizedHtml(result)
         }
-      } catch (error) {
+      } catch {
         if (isMounted) {
           const fallbackResult = sanitizeHtml(rawHtml)
           setSanitizedHtml(fallbackResult)

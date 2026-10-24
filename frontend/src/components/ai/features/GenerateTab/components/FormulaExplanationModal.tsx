@@ -1,5 +1,6 @@
 import React from 'react'
 import { BookOpen, ShieldCheck, AlertCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { AICandidate } from '@/api/ai'
@@ -52,6 +53,7 @@ function ExplanationSection({
 }
 
 export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaExplanationModalProps) {
+  const { t } = useTranslation()
   if (!candidate) return null
 
   const explanation = candidate.explanation
@@ -72,7 +74,7 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
             <div className="bg-muted/50 rounded-lg p-4">
               <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                配方组成（君臣佐使）
+                {t('ai.formula.generateTab.formulaComposition')}
               </h4>
               <div className="space-y-2">
                 {candidate.herb_combination.map((herb, idx) => (
@@ -81,7 +83,7 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
                     className="flex items-center justify-between py-2 px-3 bg-background rounded border border-border"
                   >
                     <div className="flex items-center gap-3">
-                      <HerbRoleBadge role={herb.role || '佐药'} />
+                      <HerbRoleBadge role={herb.role || t('ai.formula.ui.herbRoleAssistant')} />
                       <span className="font-medium">{herb.name}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
@@ -98,32 +100,32 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
             <>
               <ExplanationSection
                 icon={<ShieldCheck className="w-4 h-4" />}
-                title="君臣佐使结构分析"
+                title={t('ai.formula.generateTab.structureAnalysis')}
                 content={explanation.structure_analysis}
               />
 
               <ExplanationSection
                 icon={<BookOpen className="w-4 h-4" />}
-                title="现代药理机制"
+                title={t('ai.formula.generateTab.modernMechanism')}
                 content={explanation.mechanism_explanation}
               />
 
               <ExplanationSection
                 icon={<ShieldCheck className="w-4 h-4" />}
-                title="配伍协同原理"
+                title={t('ai.formula.generateTab.synergyPrinciple')}
                 content={explanation.synergistic_analysis}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ExplanationSection
                   icon={<ShieldCheck className="w-4 h-4 text-info" />}
-                  title="适用人群"
+                  title={t('ai.formula.generateTab.suitablePopulation')}
                   content={explanation.suitable_population}
                   className="bg-info/5 rounded-lg p-3"
                 />
                 <ExplanationSection
                   icon={<AlertCircle className="w-4 h-4 text-warning" />}
-                  title="禁忌与注意"
+                  title={t('ai.formula.generateTab.contraindications')}
                   content={explanation.contraindications}
                   className="bg-warning/5 rounded-lg p-3"
                 />
@@ -131,14 +133,14 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
 
               <ExplanationSection
                 icon={<ShieldCheck className="w-4 h-4 text-success" />}
-                title="服用建议"
+                title={t('ai.formula.generateTab.usageAdvice')}
                 content={explanation.usage_instructions}
                 className="bg-success/5 rounded-lg p-3"
               />
 
               <ExplanationSection
                 icon={<ShieldCheck className="w-4 h-4" />}
-                title="监测与迭代"
+                title={t('ai.formula.generateTab.monitoringIteration')}
                 content={explanation.monitoring_suggestions}
                 className="bg-muted/30 rounded-lg p-3"
               />
@@ -146,27 +148,26 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>配方解释生成中...</p>
+              <p>{t('ai.formula.generateTab.explanationGenerating')}</p>
             </div>
           )}
 
           {/* 免责声明 */}
           <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-            <strong>免责声明：</strong>本配方建议为辅助调理参考，不能替代医师诊断与治疗。
-            如有不适，请及时就医。孕妇、儿童、老年人及特殊体质人群请在医师指导下使用。
+            <strong>{t('ai.formula.generateTab.disclaimer')}</strong>{t('ai.formula.generateTab.disclaimerText')}
           </div>
         </div>
 
         {/* Footer */}
         <div className="pt-3 border-t flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            关闭
+            {t('ai.formula.generateTab.close')}
           </Button>
           <Button variant="default" onClick={() => {
             // 可以添加收藏或分享逻辑
             onClose()
           }}>
-            收藏配方
+            {t('ai.formula.ui.favoriteFormula')}
           </Button>
         </div>
       </DialogContent>

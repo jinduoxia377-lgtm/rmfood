@@ -1,8 +1,9 @@
-﻿/**
+/**
  * 模型选择与参数调节组件
  * 与 AI 主页面设计风格同步（AIAssistantPage 规范）
  */
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui'
 import { Select, Slider } from '@/components/ui'
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react'
@@ -23,6 +24,7 @@ interface ModelOption {
 }
 
 export function ModelSelector({ modelType, onModelChange, onParamsChange, className }: ModelSelectorProps) {
+  const { t } = useTranslation()
   const [showParams, setShowParams] = useState(false)
   const [params, setParams] = useState({
     temperature: 0.7,
@@ -33,11 +35,11 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
   })
 
   const modelOptions: ModelOption[] = [
-    { value: 'formula_gpt',   label: 'FormulaGPT',  description: '配方生成模型', icon: <Brain className="w-4 h-4" /> },
-    { value: 'synergy_net',   label: 'SynergyNet',  description: '协同分析模型', icon: <Brain className="w-4 h-4" /> },
-    { value: 'safety_checker',label: 'SafetyChecker',description: '安全检查模型', icon: <Brain className="w-4 h-4" /> },
-    { value: 'taste_predictor',label: 'TastePredictor',description: '口感预测模型', icon: <Brain className="w-4 h-4" /> },
-    { value: 'stability_model',label: 'StabilityModel',description: '稳定性预测模型', icon: <Brain className="w-4 h-4" /> },
+    { value: 'formula_gpt',   label: 'FormulaGPT',  description: t('ai.config.modelFormulaDesc'), icon: <Brain className="w-4 h-4" /> },
+    { value: 'synergy_net',   label: 'SynergyNet',  description: t('ai.config.modelSynergyDesc'), icon: <Brain className="w-4 h-4" /> },
+    { value: 'safety_checker',label: 'SafetyChecker',description: t('ai.config.modelSafetyDesc'), icon: <Brain className="w-4 h-4" /> },
+    { value: 'taste_predictor',label: 'TastePredictor',description: t('ai.config.modelTasteDesc'), icon: <Brain className="w-4 h-4" /> },
+    { value: 'stability_model',label: 'StabilityModel',description: t('ai.config.modelStabilityDesc'), icon: <Brain className="w-4 h-4" /> },
   ]
 
   const handleParamChange = (key: string, value: any) => {
@@ -57,8 +59,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
           </div>
           <div>
             {/* text-sm font-semibold — matches StatCard label pattern (was font-semibold=500) */}
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] dark:text-white leading-tight">模型选择</h3>
-            <p className="text-xs text-[var(--text-muted)] leading-tight mt-0.5">选择和配置 AI 模型</p>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] dark:text-white leading-tight">{t('ai.config.modelSelect')}</h3>
+            <p className="text-xs text-[var(--text-muted)] leading-tight mt-0.5">{t('ai.config.modelSelectDesc')}</p>
           </div>
         </div>
         <button
@@ -66,13 +68,13 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-normal text-[var(--text-secondary)] border border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
         >
           {showParams ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {showParams ? '收起参数' : '调节参数'}
+          {showParams ? t('ai.config.collapseParams') : t('ai.config.adjustParams')}
         </button>
       </div>
 
       <div className="mt-4 space-y-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-[var(--text-secondary)] block">模型类型</label>
+          <label className="text-sm font-semibold text-[var(--text-secondary)] block">{t('ai.config.modelType')}</label>
           <Select value={modelType} onChange={(v) => onModelChange(v as ModelType)}>
             {modelOptions.map((option) => (
               <option key={option.value} value={option.value}>

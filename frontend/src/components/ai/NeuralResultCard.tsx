@@ -10,6 +10,7 @@ import { SimpleEditToolbar } from './components/SimpleEditToolbar';
 import { CardHeader } from './components/CardHeader';
 import { ActionButtons } from './components/ActionButtons';
 import { useNeuralResultCard } from './hooks/useNeuralResultCard';
+import { FormulaValidationModal } from '@/components/ai/features/components/FormulaValidationModal';
 
 interface NeuralResultCardProps {
   candidate: AICandidate;
@@ -56,6 +57,12 @@ export function NeuralResultCard({
     saveToFormulaManager,
     handleNameChange,
     handleDescriptionChange,
+    validationResult,
+    validationModalOpen,
+    setValidationModalOpen,
+    setValidationResult,
+    validationNotice,
+    setValidationNotice,
   } = useNeuralResultCard({
     candidate,
     index,
@@ -72,6 +79,21 @@ export function NeuralResultCard({
       style={{ borderRadius: 'var(--radius-xl)' }}
     >
       {isEditing && <EditIndicator isAutoSaving={isAutoSaving} hasUnsavedChanges={hasUnsavedChanges} />}
+      {validationNotice && (
+        <div
+          role="status"
+          className="px-3 py-2 text-xs font-medium bg-warning-50 dark:bg-warning-300/15 text-warning-700 dark:text-warning-700 border-b border-warning-200 dark:border-warning-800"
+        >
+          ⚠ {validationNotice}
+          <button
+            className="ml-2 underline hover:opacity-80"
+            onClick={() => setValidationNotice(null)}
+            aria-label="关闭提示"
+          >
+            关闭
+          </button>
+        </div>
+      )}
       <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-primary-500/8 via-primary-400/5 to-transparent rounded-bl-full -translate-y-1/3 translate-x-1/3 opacity-60" />
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent-500/5 to-transparent rounded-tr-full translate-y-1/2 -translate-x-1/2 opacity-40" />
       <div className={`relative p-6 space-y-5 ${isEditing ? 'pt-12' : ''}`}>
@@ -147,6 +169,23 @@ export function NeuralResultCard({
           onSaveToManager={saveToFormulaManager}
         />
       </div>
+
+      {/* 成分级配方校验报告弹窗 */}
+      <FormulaValidationModal
+        open={validationModalOpen}
+        result={validationResult}
+        formulaName={typeof candidate.formula_name === 'string' ? candidate.formula_name : undefined}
+        onConfirm={() => {
+          // CRITICAL 阻断时确认按钮禁用，此回调实际只在 warnings 放行场景被触发；
+          // 关闭弹窗后由用户重新点击「保存」完成落库。
+          setValidationModalOpen(false)
+          setValidationResult(null)
+        }}
+        onCancel={() => {
+          setValidationModalOpen(false)
+          setValidationResult(null)
+        }}
+      />
     </Card>
   );
 }

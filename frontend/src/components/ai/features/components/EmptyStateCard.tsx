@@ -11,12 +11,15 @@
  */
 
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Brain, Sparkles, MessageSquare, FlaskConical } from 'lucide-react'
 
 interface QuickQuestion {
   id: string
+  questionKey: string
   question: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 
@@ -37,6 +40,7 @@ export function EmptyStateCard({
   onAsk,
   llmAvailable = true,
 }: EmptyStateCardProps) {
+  const { t } = useTranslation()
   const popularQuestions = questions.filter((q) => q.popular).slice(0, 3)
 
   return (
@@ -80,12 +84,12 @@ export function EmptyStateCard({
 
                 {/* 分类标签 */}
                 <span className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-1.5 uppercase tracking-wider">
-                  {q.category}
+                  {t(`ai.chat.quick.categories.${q.categoryKey}`)}
                 </span>
 
                 {/* 问题文本 */}
                 <span className="text-sm text-neutral-700 dark:text-neutral-200 leading-relaxed">
-                  {q.question}
+                  {t(`ai.chat.quick.questions.${q.questionKey}`, { defaultValue: q.question })}
                 </span>
               </button>
             )
@@ -95,7 +99,7 @@ export function EmptyStateCard({
         {/* 提示文字 */}
         <div className="mt-5 text-center">
           <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-            您也可以直接输入需求，AI 将为您智能生成配方方案
+            {t('ai.chat.quick.inputPrompt')}
           </p>
         </div>
       </div>

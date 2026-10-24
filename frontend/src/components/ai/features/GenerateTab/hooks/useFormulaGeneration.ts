@@ -34,7 +34,9 @@ function normalizeGenerator(raw: string | undefined | null): GeneratorType {
 interface EffectOption {
   id: string
   label: string
+  labelKey: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 

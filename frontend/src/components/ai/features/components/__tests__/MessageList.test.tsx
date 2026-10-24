@@ -5,6 +5,7 @@ import React from 'react'
 // （见 CLAUDE.md「AI 对话专业版组件」）。本文件此前仍指向旧路径，导致整个测试
 // 文件在收集阶段即失败（import 解析不到），属于重构后未同步的遗留问题。
 import { MessageList } from '../pro/MessageList'
+import { useAuthStore } from '@/stores/auth'
 
 // TypewriterText 依赖浏览器动画计时器，jsdom 中无法同步完成逐字渲染，
 // 导致「最后一条消息」的内容在断言时仍为空。在消息列表测试中将其替换为
@@ -626,6 +627,58 @@ describe('MessageList Component', () => {
 
       const { container } = render(<MessageList {...defaultProps} messages={messages} />)
       expect(container).toBeInTheDocument()
+    })
+  })
+
+  describe('用户头像实时同步（auth store 订阅）', () => {
+    it('用户消息头像从 auth store 读取，avatarUrl 更新后 src 实时变化（cache-busting）', () => {
+      useAuthStore.setState({
+        user: {
+          id: 'u1',
+          username: 'tester',
+          fullName: '测试用户',
+          avatarUrl: '/uploads/avatars/a.png',
+        } as never,
+        isAuthenticated: true,
+      })
+      const messages = [{ id: '1', role: 'user' as const, content: 'hi', timestamp: Date.now() }]
+      const { container, rerender } = render(<MessageList {...defaultProps} messages={messages} />)
+
+      const img = container.querySelector('.avatar-img') as HTMLImageElement
+      expect(img).not.toBeNull()
+      expect(img.src).toContain('/uploads/avatars/a.png')
+
+      // 模拟用户在设置页更新头像 → auth store 更新 → 重新渲染后头像 URL 变化
+      useAuthStore.setState({
+        user: {
+          id: 'u1',
+          username: 'tester',
+          fullName: '测试用户',
+          avatarUrl: '/uploads/avatars/b.png',
+        } as never,
+      })
+      rerender(<MessageList {...defaultProps} messages={messages} />)
+
+      const img2 = container.querySelector('.avatar-img') as HTMLImageElement
+      expect(img2.src).toContain('/uploads/avatars/b.png')
+      expect(img2.src).not.toBe(img.src)
+    })
+
+    it('未设置头像时回退到用户名首字母', () => {
+      useAuthStore.setState({
+        user: {
+          id: 'u1',
+          username: 'tester',
+          fullName: '测试用户',
+          avatarUrl: undefined,
+        } as never,
+        isAuthenticated: true,
+      })
+      const messages = [{ id: '1', role: 'user' as const, content: 'hi', timestamp: Date.now() }]
+      const { container } = render(<MessageList {...defaultProps} messages={messages} />)
+
+      expect(container.querySelector('.avatar-img')).toBeNull()
+      expect(container.querySelector('.avatar-letter')?.textContent).toBe('测')
     })
   })
 })

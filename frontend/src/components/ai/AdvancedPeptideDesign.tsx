@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Atom, Zap, RefreshCw, CheckCircle, AlertCircle, Loader2, ChevronDown, ChevronUp, Save, FolderOpen, Archive, Eye } from 'lucide-react'
 import { peptideDesignApi } from '@/api/ai'
 import type { PeptideResult, OptimizedPeptide, PepinventStatusResponse, PeptideDesignData } from '@/api/ai'
@@ -23,21 +24,22 @@ function randomMutate(seq: string, n: number): string {
 }
 
 const TARGET_EFFECTS = [
-  { id: 'ACE抑制', label: 'ACE 抑制', message: '降血压活性', color: 'blue' },
-  { id: '抗氧化', label: '抗氧化', message: '清除自由基', color: 'green' },
-  { id: 'DPP-IV抑制', label: 'DPP-IV 抑制', message: '降血糖活性', color: 'purple' },
-  { id: '增强渗透性', label: '膜渗透性', message: '提高生物利用度', color: 'orange' },
-  { id: '提高稳定性', label: '结构稳定', message: '增强热稳定性', color: 'red' },
+  { id: 'ACE抑制', label: 'ACE 抑制', labelKey: 'aceInhibition', message: '降血压活性', messageKey: 'aceInhibitionDesc', color: 'blue' },
+  { id: '抗氧化', label: '抗氧化', labelKey: 'antioxidant', message: '清除自由基', messageKey: 'antioxidantDesc', color: 'green' },
+  { id: 'DPP-IV抑制', label: 'DPP-IV 抑制', labelKey: 'dpp4Inhibition', message: '降血糖活性', messageKey: 'dpp4InhibitionDesc', color: 'purple' },
+  { id: '增强渗透性', label: '膜渗透性', labelKey: 'permeability', message: '提高生物利用度', messageKey: 'permeabilityDesc', color: 'orange' },
+  { id: '提高稳定性', label: '结构稳定', labelKey: 'stability', message: '增强热稳定性', messageKey: 'stabilityDesc', color: 'red' },
 ]
 
 const OPTIMIZATION_GOALS = [
-  { id: 'ACE_inhibitory', label: 'ACE 抑制活性', defaultWeight: 0.4 },
-  { id: 'antioxidant', label: '抗氧化能力', defaultWeight: 0.3 },
-  { id: 'permeability', label: '膜渗透性', defaultWeight: 0.2 },
-  { id: 'stability', label: '结构稳定性', defaultWeight: 0.1 },
+  { id: 'ACE_inhibitory', label: 'ACE 抑制活性', labelKey: 'aceInhibitoryActivity', defaultWeight: 0.4 },
+  { id: 'antioxidant', label: '抗氧化能力', labelKey: 'antioxidantCapacity', defaultWeight: 0.3 },
+  { id: 'permeability', label: '膜渗透性', labelKey: 'permeability', defaultWeight: 0.2 },
+  { id: 'stability', label: '结构稳定性', labelKey: 'structuralStability', defaultWeight: 0.1 },
 ]
 
 export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: AdvancedPeptideDesignProps) {
+  const { t } = useTranslation()
   const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState<'generate' | 'optimize' | 'sample'>('generate')
   const [mainView, setMainView] = useState<'design' | 'projects'>('design')  // 新增：主视图切换
@@ -93,7 +95,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
   // 保存当前设计为项目
   const handleSaveProject = async () => {
     if (!results) {
-      addToast({ type: 'warning', title: '提示', message: '请先生成或优化肽序列' })
+      addToast({ type: 'warning', title: t('ai.peptideDesign.toast.notice'), message: t('ai.peptideDesign.toast.promptBeforeGenerate') })
       return
     }
 
@@ -138,11 +140,11 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       }
 
       setCurrentProjectId(projectId)
-      addToast({ type: 'success', title: '保存成功', message: `项目已保存！ID: ${projectId}，包含 ${candidates.length} 个候选方案` })
+      addToast({ type: 'success', title: t('ai.peptideDesign.toast.saveSuccessTitle'), message: t('ai.peptideDesign.toast.saveSuccessMessage', { id: projectId, count: candidates.length }) })
       await loadProjects(1)
     } catch (err: any) {
       logger.error('保存项目失败:', err)
-      addToast({ type: 'error', title: '保存失败', message: err.message || '未知错误' })
+      addToast({ type: 'error', title: t('ai.peptideDesign.toast.saveFailedTitle'), message: err.message || t('ai.peptideDesign.toast.unknownError') })
     } finally {
       setSavingProject(false)
     }
@@ -172,24 +174,24 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       }
     } catch (err: any) {
       logger.error('加载项目失败:', err)
-      addToast({ type: 'error', title: '加载失败', message: '请重试' })
+      addToast({ type: 'error', title: t('ai.peptideDesign.toast.loadFailedTitle'), message: t('ai.peptideDesign.toast.retry') })
     }
   }
 
   // 归档项目
   const handleArchiveProject = async (id: number) => {
-    if (!confirm('确认归档此项目？归档后不可编辑。')) return
+    if (!confirm(t('ai.peptideDesign.toast.archiveConfirm'))) return
 
     try {
       await peptideDesignApi.archiveProject(id)
-      addToast({ type: 'success', title: '归档成功', message: '项目已归档' })
+      addToast({ type: 'success', title: t('ai.peptideDesign.toast.archiveSuccessTitle'), message: t('ai.peptideDesign.toast.archiveSuccessMessage') })
       await loadProjects(projectPage, statusFilter)
       if (selectedProject?.id === id) {
         setSelectedProject(null)
       }
     } catch (err: any) {
       logger.error('归档失败:', err)
-      addToast({ type: 'error', title: '归档失败', message: '请重试' })
+      addToast({ type: 'error', title: t('ai.peptideDesign.toast.archiveFailedTitle'), message: t('ai.peptideDesign.toast.retry') })
     }
   }
 
@@ -283,12 +285,12 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
           processingTime: Date.now(),
         })
         onPeptidesGenerated?.(simulated as PeptideResult[])
-        addToast({ type: 'info', title: '模拟模式', message: 'PepINVERT 服务不可用，已使用本地模拟生成' })
+        addToast({ type: 'info', title: t('ai.peptideDesign.toast.simulationMode'), message: t('ai.peptideDesign.toast.pepinvertUnavailable') })
       } else if (status === 401) {
-        setError('身份验证失败 (401): 请先登录后再使用肽设计功能')
+        setError(t('ai.peptideDesign.errors.authFailed'))
         logger.warn('[AdvancedPeptideDesign] 用户未登录')
       } else if (err?.code === 'ERR_NETWORK') {
-        setError('网络连接失败: 无法连接到后端服务器，请检查网络或后端服务是否启动')
+        setError(t('ai.peptideDesign.errors.networkFailed'))
       } else {
         const errorMsg = err?.response?.data?.detail || err.message || '生成过程中发生未知错误'
         setError(`生成失败: ${errorMsg}`)
@@ -362,12 +364,12 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
           iteration_improved: iterations,
         }))
         setResults({ optimized: simOptimized, processingTime: Date.now() })
-        addToast({ type: 'info', title: '模拟模式', message: 'RL优化引擎不可用，已使用本地模拟优化' })
+        addToast({ type: 'info', title: t('ai.peptideDesign.toast.simulationMode'), message: t('ai.peptideDesign.toast.rlUnavailable') })
       } else if (err?.code === 'ERR_NETWORK') {
-        setError('网络连接失败: 无法连接到后端服务器')
+        setError(t('ai.peptideDesign.errors.networkFailedShort'))
       } else {
-        const errorMsg = err?.response?.data?.detail || err.message || '优化过程中发生未知错误'
-        setError(`优化失败: ${errorMsg}`)
+        const errorMsg = err?.response?.data?.detail || err.message || t('ai.peptideDesign.errors.optimizeUnknown')
+        setError(t('ai.peptideDesign.errors.optimizeFailed', { error: errorMsg }))
         logger.error('[AdvancedPeptideDesign] RL优化失败', err)
       }
     } finally {
@@ -427,12 +429,12 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
           sampleSize,
         )
         setResults({ peptides: simPeptides as PeptideResult[], processingTime: Date.now() })
-        addToast({ type: 'info', title: '模拟模式', message: '采样服务不可用，已使用本地模拟采样' })
+        addToast({ type: 'info', title: t('ai.peptideDesign.toast.simulationMode'), message: t('ai.peptideDesign.toast.sampleUnavailable') })
       } else if (err?.code === 'ERR_NETWORK') {
-        setError('网络连接失败: 无法连接到后端服务器')
+        setError(t('ai.peptideDesign.errors.networkFailedShort'))
       } else {
-        const errorMsg = err?.response?.data?.detail || err.message || '采样过程中发生未知错误'
-        setError(`采样失败: ${errorMsg}`)
+        const errorMsg = err?.response?.data?.detail || err.message || t('ai.peptideDesign.errors.sampleUnknown')
+        setError(t('ai.peptideDesign.errors.sampleFailed', { error: errorMsg }))
         logger.error('[AdvancedPeptideDesign] 探索性采样失败', err)
       }
     } finally {
@@ -453,8 +455,8 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               <Atom className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">高级肽设计</h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">基于 PepINVERT 的分子级肽序列设计</p>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{t('ai.peptideDesign.title')}</h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('ai.peptideDesign.subtitle')}</p>
             </div>
           </div>
           {serviceStatus && (
@@ -464,7 +466,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                    color: serviceStatus.available ? '#1E8E3E' : '#DC2626',
                  }}>
               <span className={`w-2 h-2 rounded-full ${serviceStatus.available ? 'bg-success-500' : 'bg-error-500'}`} />
-              {serviceStatus.simulation_mode ? '模拟模式' : '就绪'}
+              {serviceStatus.simulation_mode ? t('ai.peptideDesign.toast.simulationMode') : t('ai.peptideDesign.toast.ready')}
             </div>
           )}
         </div>
@@ -481,7 +483,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               }`}
             >
               <Sparkles className="w-4 h-4 inline mr-1" />
-              新设计
+              {t('ai.peptideDesign.viewDesign')}
             </button>
             <button
               onClick={() => setMainView('projects')}
@@ -492,7 +494,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               }`}
             >
               <FolderOpen className="w-4 h-4 inline mr-1" />
-              我的项目 ({projectTotal})
+              {t('ai.peptideDesign.projectCount', { count: projectTotal })}
             </button>
           </div>
 
@@ -511,7 +513,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   {tab === 'generate' && <Sparkles className="w-4 h-4 inline mr-1" />}
                   {tab === 'optimize' && <Zap className="w-4 h-4 inline mr-1" />}
                   {tab === 'sample' && <RefreshCw className="w-4 h-4 inline mr-1" />}
-                  {tab === 'generate' ? '智能生成' : tab === 'optimize' ? 'RL 优化' : '探索采样'}
+                  {tab === 'generate' ? t('ai.peptideDesign.tabGenerate') : tab === 'optimize' ? t('ai.peptideDesign.tabOptimize') : t('ai.peptideDesign.tabSample')}
                 </button>
               ))}
             </>
@@ -530,11 +532,11 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                 onChange={(e) => { setStatusFilter(e.target.value); loadProjects(1, e.target.value) }}
                 className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
               >
-                <option value="">全部状态</option>
-                <option value="draft">草稿</option>
-                <option value="in_progress">进行中</option>
-                <option value="completed">已完成</option>
-                <option value="archived">已归档</option>
+                <option value="">{t('ai.peptideDesign.projects.allStatuses')}</option>
+                <option value="draft">{t('ai.peptideDesign.projects.draft')}</option>
+                <option value="in_progress">{t('ai.peptideDesign.projects.inProgress')}</option>
+                <option value="completed">{t('ai.peptideDesign.projects.completed')}</option>
+                <option value="archived">{t('ai.peptideDesign.projects.archived')}</option>
               </select>
             </div>
 
@@ -542,18 +544,18 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             {projectLoading ? (
               <div className="text-center py-12 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                加载项目列表...
+                {t('ai.peptideDesign.projects.loading')}
               </div>
             ) : projectList.length === 0 ? (
               <div className="text-center py-16 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                 <FolderOpen className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <h3 className="text-lg font-medium mb-2">暂无设计项目</h3>
-                <p className="text-sm">开始新设计并保存您的第一个项目</p>
+                <h3 className="text-lg font-medium mb-2">{t('ai.peptideDesign.projects.emptyTitle')}</h3>
+                <p className="text-sm">{t('ai.peptideDesign.projects.emptyDesc')}</p>
                 <button
                   onClick={() => setMainView('design')}
                   className="mt-4 px-6 py-2 bg-accent-container text-accent-main rounded-lg hover:bg-accent-container"
                 >
-                  开始新设计
+                  {t('ai.peptideDesign.projects.startNewDesign')}
                 </button>
               </div>
             ) : (
@@ -568,7 +570,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <h4 className="font-semibold text-neutral-900 dark:text-white truncate">
-                            {project.project_name || `项目 #${project.id}`}
+                            {project.project_name || t('ai.peptideDesign.projects.projectNameFallback', { id: project.id })}
                           </h4>
                           <div className="flex items-center gap-2 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                             <span className={`px-2 py-0.5 rounded-full ${
@@ -577,9 +579,9 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                               project.status === 'draft' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700' :
                               'bg-error-100 text-error-700'
                             }`}>
-                              {project.status === 'completed' ? '已完成' :
-                               project.status === 'in_progress' ? '进行中' :
-                               project.status === 'draft' ? '草稿' : '已归档'}
+                              {project.status === 'completed' ? t('ai.peptideDesign.projects.completed') :
+                               project.status === 'in_progress' ? t('ai.peptideDesign.projects.inProgress') :
+                               project.status === 'draft' ? t('ai.peptideDesign.projects.draft') : t('ai.peptideDesign.projects.archived')}
                             </span>
                             <span>• v{project.version}</span>
                           </div>
@@ -590,11 +592,11 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center text-sm mb-3">
                         <div className="bg-neutral-50 dark:bg-neutral-800 rounded p-2">
                           <div className="font-bold text-accent-600">{project.total_candidates}</div>
-                          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">候选方案</div>
+                          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.peptideDesign.projects.candidates')}</div>
                         </div>
                         <div className="bg-neutral-50 dark:bg-neutral-800 rounded p-2">
                           <div className="font-bold text-success-600">{project.pareto_size}</div>
-                          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Pareto前沿</div>
+                          <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.peptideDesign.projects.paretoFrontier')}</div>
                         </div>
                       </div>
 
@@ -621,12 +623,12 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                           className="flex-1 px-3 py-1.5 bg-accent-100 text-accent-700 rounded hover:bg-accent-200 flex items-center justify-center gap-1.5 text-sm font-medium"
                         >
                           <Eye className="w-4 h-4" />
-                          查看
+                          {t('ai.peptideDesign.projects.view')}
                         </button>
                         <button
                           onClick={() => handleArchiveProject(project.id)}
                           className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 rounded hover:bg-neutral-200 flex items-center justify-center gap-1.5 text-sm"
-                          title="归档项目"
+                          title={t('ai.peptideDesign.projects.archiveTitle')}
                         >
                           <Archive className="w-4 h-4" />
                         </button>
@@ -634,9 +636,9 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
                       {/* 时间戳 */}
                       <div className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                        创建于 {new Date(project.created_at).toLocaleDateString()}
+                        {t('ai.peptideDesign.projects.createdAt', { date: new Date(project.created_at).toLocaleDateString() })}
                         {project.updated_at !== project.created_at && (
-                          <> • 更新于 {new Date(project.updated_at).toLocaleDateString()}</>
+                          <> • {t('ai.peptideDesign.projects.updatedAt', { date: new Date(project.updated_at).toLocaleDateString() })}</>
                         )}
                       </div>
                     </div>
@@ -651,17 +653,17 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                       disabled={projectPage <= 1}
                       className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800"
                     >
-                      上一页
+                      {t('ai.peptideDesign.projects.prevPage')}
                     </button>
                     <span className="py-2 px-4 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                      第 {projectPage} / {Math.ceil(projectTotal / 12)} 页
+                      {t('ai.peptideDesign.projects.pageInfo', { current: projectPage, total: Math.ceil(projectTotal / 12) })}
                     </span>
                     <button
                       onClick={() => loadProjects(projectPage + 1, statusFilter)}
                       disabled={projectPage * 12 >= projectTotal}
                       className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:bg-neutral-800"
                     >
-                      下一页
+                      {t('ai.peptideDesign.projects.nextPage')}
                     </button>
                   </div>
                 )}
@@ -675,7 +677,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
-                选择目标功效（可多选）
+                {t('ai.peptideDesign.selectTargetEffects')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {TARGET_EFFECTS.map(effect => (
@@ -688,8 +690,8 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                         : 'border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
                     }`}
                   >
-                    <div className="font-medium text-sm">{effect.label}</div>
-                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{effect.message}</div>
+                    <div className="font-medium text-sm">{t(`ai.peptideDesign.targetEffects.${effect.labelKey}`, { defaultValue: effect.label })}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{t(`ai.peptideDesign.targetEffects.${effect.messageKey}`, { defaultValue: effect.message })}</div>
                   </button>
                 ))}
               </div>
@@ -698,7 +700,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             <div className="flex items-end gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  候选数量
+                  {t('ai.peptideDesign.candidateCount')}
                 </label>
                 <select
                   value={maxCandidates}
@@ -706,7 +708,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                 >
                   {[3, 5, 8, 10, 15, 20].map(n => (
-                    <option key={n} value={n}>{n} 条候选</option>
+                    <option key={n} value={n}>{t('ai.peptideDesign.candidateOption', { count: n })}</option>
                   ))}
                 </select>
               </div>
@@ -716,7 +718,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                 className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-accent-surface)] to-[var(--color-danger-surface-deep)] text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                开始生成
+                {t('ai.peptideDesign.startGenerate')}
               </button>
             </div>
           </div>
@@ -726,12 +728,12 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                种子肽序列
+                {t('ai.peptideDesign.optimize.seedSequence')}
               </label>
               <input
                 id="seed-sequence"
                 type="text"
-                placeholder="例如: VLGYT 或 LRPFF"
+                placeholder={t('ai.peptideDesign.optimize.seedPlaceholder')}
                 defaultValue="VLGYT"
                 className="w-full px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-mono"
               />
@@ -739,13 +741,13 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
-                优化目标及权重（总和应接近 1.0）
+                {t('ai.peptideDesign.optimize.goalsWeightHint')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {OPTIMIZATION_GOALS.map(goal => (
                   <div key={goal.id}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>{goal.label}</span>
+                      <span>{t(`ai.peptideDesign.optimizationGoals.${goal.labelKey}`, { defaultValue: goal.label })}</span>
                       <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{goal.defaultWeight}</span>
                     </div>
                     <input
@@ -765,7 +767,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             <div className="flex items-end gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  迭代次数
+                  {t('ai.peptideDesign.optimize.iterations')}
                 </label>
                 <input
                   id="iterations"
@@ -782,7 +784,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                 className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-warning-surface)] to-error-500 text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                RL 优化
+                {t('ai.peptideDesign.optimize.runOptimize')}
               </button>
             </div>
           </div>
@@ -793,7 +795,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  采样数量
+                  {t('ai.peptideDesign.sample.sampleSize')}
                 </label>
                 <input
                   id="sample-size"
@@ -806,7 +808,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  温度（可选）
+                  {t('ai.peptideDesign.sample.temperature')}
                 </label>
                 <input
                   id="temperature"
@@ -814,20 +816,20 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   min="0.1"
                   max="5"
                   step="0.1"
-                  placeholder="默认 1.0"
+                  placeholder={t('ai.peptideDesign.sample.defaultTempPlaceholder')}
                   className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                  Top-K（可选）
+                  {t('ai.peptideDesign.sample.topK')}
                 </label>
                 <input
                   id="top-k"
                   type="number"
                   min="1"
                   max="200"
-                  placeholder="默认 50"
+                  placeholder={t('ai.peptideDesign.sample.defaultTopKPlaceholder')}
                   className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
                 />
               </div>
@@ -839,7 +841,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
               className="px-6 py-2.5 bg-gradient-to-r from-[var(--color-info-surface)] to-[var(--color-secondary-surface-deep)] text-white rounded-lg font-medium hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              探索性采样
+              {t('ai.peptideDesign.sample.runSample')}
             </button>
           </div>
         )}
@@ -860,7 +862,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                   <>
                     <FolderOpen className="w-5 h-5 text-success-600" />
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      已保存到项目 #{currentProjectId}
+                      {t('ai.peptideDesign.projects.savedToProject', { id: currentProjectId })}
                     </span>
                   </>
                 ) : (

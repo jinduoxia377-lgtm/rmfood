@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState, useCallback } from 'react'
-import { Tooltip } from 'recharts'
+import { useTranslation } from 'react-i18next'
 import {
   FIVE_TASTES_LABELS,
   FIVE_TASTES_COLORS,
@@ -52,6 +52,7 @@ export function FlavorWheel({
   className = '',
   onHover,
 }: FlavorWheelProps) {
+  const { t } = useTranslation()
   const [hoveredTaste, setHoveredTaste] = useState<FiveTastes | null>(null)
 
   const center = size / 2
@@ -138,7 +139,7 @@ export function FlavorWheel({
         viewBox={`0 0 ${size} ${size}`}
         className="overflow-visible"
         role="img"
-        aria-label="五味分布风味轮"
+        aria-label={t('ai.taste.visualization.ariaLabel')}
       >
         {/* 背景圆 */}
         <circle
@@ -236,7 +237,7 @@ export function FlavorWheel({
           dominantBaseline="middle"
           className="text-sm font-bold fill-neutral-700 dark:fill-neutral-300"
         >
-          综合评分
+          {t('ai.taste.visualization.balanceScore')}
         </text>
         <text
           x={center}

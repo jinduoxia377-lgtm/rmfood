@@ -1,7 +1,7 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, Zap, Brain, RefreshCw, MessageSquare, History } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
-import { DEFAULTS } from '@/config'
 
 interface HeaderProps {
   advancedMode: boolean
@@ -30,6 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   onExportHistory,
   historyCount = 0,
 }) => {
+  const { t } = useTranslation()
+
   return (
     <div className="relative px-6 py-5 border-b border-neutral-100 dark:border-neutral-800 overflow-hidden">
       {/* 背景装饰 */}
@@ -51,16 +53,16 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                {DEFAULTS.PLACEHOLDER_TEXTS.PAGE_TITLE_GENERATE}
+                {t('ai.formula.title')}
               </h2>
               {llmAvailable && (
                 <Badge variant="success" className="text-xs px-1.5 py-0.5">
-                  AI就绪
+                  {t('ai.formula.generateTab.aiReady')}
                 </Badge>
               )}
             </div>
             <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-              {DEFAULTS.PLACEHOLDER_TEXTS.PAGE_SUBTITLE_GENERATE}
+              {t('ai.formula.ui.subtitle')}
             </p>
           </div>
         </div>
@@ -74,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 text-neutral-700 dark:text-neutral-300 hover:text-primary-700 dark:hover:text-primary-600"
             >
               <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">对话生成</span>
+              <span className="hidden sm:inline">{t('ai.formula.ui.chatGenerate')}</span>
             </button>
           )}
 
@@ -92,8 +94,8 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Brain className="w-4 h-4" />
             {advancedMode
-              ? DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SIMPLE_MODE
-              : DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_ADVANCED_MODE
+              ? t('ai.formula.generateTab.simpleMode')
+              : t('ai.formula.generateTab.advancedMode')
             }
           </button>
 
@@ -105,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
               icon={<RefreshCw className="w-4 h-4" />}
               onClick={onFullReset}
             >
-              {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_REGENERATE}
+              {t('ai.formula.generateTab.regenerate')}
             </Button>
           )}
 
@@ -122,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="w-10 h-5 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-700 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-neutral-600 peer-checked:bg-primary-600" />
               </div>
               <span className="text-neutral-600 dark:text-neutral-400 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
-                AI增强
+                {t('ai.formula.generateTab.aiEnhanced')}
               </span>
               <Badge variant="neutral" className="text-xs px-1.5 py-0.5">
                 {modelStatus?.llm?.provider || 'local'}
@@ -135,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onExportHistory}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              title="查看历史记录"
+              title={t('ai.formula.ui.viewHistoryRecord')}
             >
               <History className="w-4 h-4" />
               <span className="hidden sm:inline">{historyCount}</span>

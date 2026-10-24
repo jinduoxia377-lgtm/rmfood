@@ -638,10 +638,10 @@ function EnhancedSuggestionCard({
       {/* Footer */}
       <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-600 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${qScoreColor} border`}>
+          <Badge variant="outline" className={`text-xs px-1.5 py-0 ${qScoreColor} border`}>
             {qualityLabel}
           </Badge>
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+          <Badge variant="secondary" className="text-xs px-1.5 py-0">
             {getFrameworkLabel(suggestion.framework)}
           </Badge>
         </div>

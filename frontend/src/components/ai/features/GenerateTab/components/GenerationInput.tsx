@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Target, FileText, RefreshCw, Wand2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
@@ -22,7 +23,9 @@ const ParameterAdjustPanel = lazy(() =>
 interface EffectOption {
   id: string
   label: string
+  labelKey: string
   category: string
+  categoryKey: string
   popular: boolean
 }
 
@@ -65,6 +68,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
   onToggleParamPanel,
   useLlm,
 }) => {
+  const { t } = useTranslation()
   const isEffectSelected = useCallback((effectId: string) => {
     return selectedEffects.some(e => e.id === effectId)
   }, [selectedEffects])
@@ -127,7 +131,9 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
                   return effect || {
                     id: `custom_${effectName}`,
                     label: effectName,
+                    labelKey: effectName,
                     category: DEFAULTS.PLACEHOLDER_TEXTS.CATEGORY_CUSTOM,
+                    categoryKey: 'custom',
                     popular: false,
                   }
                 })
@@ -201,7 +207,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
                     )}
 
                     <span className="relative flex items-center gap-2">
-                      {effect.label}
+                      {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
 
                       {effect.popular && !isSelected && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full bg-warning-500/15 dark:bg-warning-500/25 text-warning-600 dark:text-warning-700 font-semibold border border-warning-200 dark:border-warning-700">

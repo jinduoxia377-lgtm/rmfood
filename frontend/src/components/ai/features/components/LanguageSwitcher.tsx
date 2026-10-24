@@ -87,7 +87,7 @@ function LanguageSwitcher({
     return (
       <div
         role="radiogroup"
-        aria-label={t('settings.language')}
+        aria-label={t('pages.settings.language')}
         className={`inline-flex rounded-lg border border-neutral-200 dark:border-neutral-700 p-1 ${className}`}
       >
         {SUPPORTED_LANGUAGES.map((lang: { code: string; name: string; flag: string }) => (
@@ -122,7 +122,7 @@ function LanguageSwitcher({
         className="gap-2"
       >
         {showFlag && <span>{currentLanguage?.flag}</span>}
-        <span className="hidden sm:inline">{currentLanguage?.name || t('settings.language')}</span>
+        <span className="hidden sm:inline">{currentLanguage?.name || t('pages.settings.language')}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
@@ -130,7 +130,7 @@ function LanguageSwitcher({
         <div
           className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-100"
           role="listbox"
-          aria-label={t('settings.language')}
+          aria-label={t('pages.settings.language')}
         >
           <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700">
             <p className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider flex items-center gap-1.5">

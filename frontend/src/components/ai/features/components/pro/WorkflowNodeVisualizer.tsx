@@ -115,7 +115,7 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
                 {stage.status === 'pending' && <Circle className="w-4 h-4" />}
                 <span className="text-xs font-medium text-center leading-tight">{stage.label}</span>
                 {stage.latencyMs > 0 && (
-                  <span className="text-[9px] opacity-60">{stage.latencyMs}ms</span>
+                  <span className="text-xs opacity-60">{stage.latencyMs}ms</span>
                 )}
               </div>
               {index < renderedStages.length - 1 && (

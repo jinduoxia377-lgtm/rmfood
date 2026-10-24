@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { Download, FileJson, FileSpreadsheet, FileText } from 'lucide-react'
 
@@ -18,28 +19,29 @@ const EXPORT_FORMATS = [
   {
     id: 'json' as const,
     label: 'JSON',
-    description: '完整的配方数据结构',
+    descriptionKey: 'formatJsonDesc',
     icon: FileJson,
     available: true,
   },
   {
     id: 'csv' as const,
     label: 'CSV',
-    description: 'Excel 兼容格式',
+    descriptionKey: 'formatCsvDesc',
     icon: FileSpreadsheet,
     available: true,
   },
   {
     id: 'pdf' as const,
     label: 'PDF',
-    description: '专业报告格式',
+    descriptionKey: 'formatPdfDesc',
     icon: FileText,
     available: false,
-    badge: '开发中',
+    badgeKey: 'developing',
   },
 ]
 
 export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
+  const { t } = useTranslation()
   const [includePatentScores, setIncludePatentScores] = useState(false)
   const [includeDetailedInfo, setIncludeDetailedInfo] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -67,7 +69,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
         onClick={() => {}}
         icon={<Download className="w-4 h-4" />}
       >
-        导出配方数据
+        {t('ai.formula.ui.exportFormulaData')}
       </Button>
 
       <div className="space-y-2">
@@ -89,13 +91,13 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-sm">{format.label}</span>
-                {format.badge && (
+                {format.badgeKey && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                    {format.badge}
+                    {t(`ai.formula.ui.${format.badgeKey}`)}
                   </span>
                 )}
               </div>
-              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{format.description}</span>
+              <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] truncate">{t(`ai.formula.ui.${format.descriptionKey}`)}</span>
             </div>
           </button>
         ))}
@@ -109,7 +111,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             onChange={(e) => setIncludePatentScores(e.target.checked)}
             className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
           />
-          <span className="text-sm text-neutral-600 dark:text-neutral-300">包含专利协同评分</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-300">{t('ai.formula.ui.includePatentScore')}</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -118,7 +120,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             onChange={(e) => setIncludeDetailedInfo(e.target.checked)}
             className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-primary-700 focus:ring-primary-500"
           />
-          <span className="text-sm text-neutral-600 dark:text-neutral-300">包含详细信息</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-300">{t('ai.formula.ui.includeDetails')}</span>
         </label>
       </div>
     </div>
