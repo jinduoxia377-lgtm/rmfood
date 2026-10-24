@@ -9,6 +9,15 @@
  */
 
 import { logger } from '@/utils/safeLogger'
+import {
+  FEEDBACK_ADOPT_WINDOW_MS,
+  FEEDBACK_OVERUSE_THRESHOLD,
+  FEEDBACK_OVERUSE_SCORE,
+  FEEDBACK_FREQUENT_THRESHOLD,
+  FEEDBACK_FREQUENT_SCORE,
+  FEEDBACK_NEW_SUGGESTION_SCORE,
+  FEEDBACK_NORMAL_SCORE,
+} from '@/config/ai/constants'
 import { type ExpertSuggestionV2 } from '../services/professionalIntelligenceEngine'
 
 export interface FeedbackRecord {
@@ -317,16 +326,16 @@ export class QualityScorer {
     void _userInput;
     const feedbackRecords = this.feedbackTracker.getFeedbackForSuggestion(suggestion.id)
 
-    if (feedbackRecords.length === 0) return 80 // 新建议默认高分
+    if (feedbackRecords.length === 0) return FEEDBACK_NEW_SUGGESTION_SCORE // 新建议默认高分
 
     const recentAdoptions = feedbackRecords.filter(r =>
       r.action === 'adopt' &&
-      Date.now() - r.timestamp < 7 * 24 * 60 * 60 * 1000, // 最近7天
+      Date.now() - r.timestamp < FEEDBACK_ADOPT_WINDOW_MS, // 最近 7 天
     ).length
 
-    if (recentAdoptions > 10) return 40 // 过度使用降分
-    if (recentAdoptions > 5) return 60
-    return 75
+    if (recentAdoptions > FEEDBACK_OVERUSE_THRESHOLD) return FEEDBACK_OVERUSE_SCORE // 过度使用降分
+    if (recentAdoptions > FEEDBACK_FREQUENT_THRESHOLD) return FEEDBACK_FREQUENT_SCORE
+    return FEEDBACK_NORMAL_SCORE
   }
 
   private calculateActionabilityScore(suggestion: ExpertSuggestionV2): number {
