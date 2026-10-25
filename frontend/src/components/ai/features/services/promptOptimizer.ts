@@ -16,6 +16,18 @@
 
 import { logger } from '@/utils/safeLogger'
 import { API_ENDPOINTS } from '@/config/apiEndpoints'
+import {
+  PROMPT_GRADE_EXCELLENT,
+  PROMPT_GRADE_GOOD,
+  PROMPT_GRADE_MEDIUM,
+  PROMPT_GRADE_BASIC,
+  PROMPT_COMPLEX_SIMPLE_SENTENCES,
+  PROMPT_COMPLEX_SIMPLE_CLAUSES,
+  PROMPT_COMPLEX_SIMPLE_AVG_LEN,
+  PROMPT_COMPLEX_MODERATE_SENTENCES,
+  PROMPT_COMPLEX_MODERATE_CLAUSES,
+  PROMPT_COMPLEX_MODERATE_AVG_LEN,
+} from '@/config/ai/constants'
 
 // ============================================
 // Type System - Complete Type Definitions
@@ -1203,10 +1215,10 @@ export class PromptOptimizer {
 
   private generateQualitySummary(score: number, _grade: string): string {
     void _grade;
-    if (score >= 90) return '优秀的提示词，结构清晰、要素完整，能够有效引导AI产出高质量结果'
-    if (score >= 78) return '良好的提示词，基本要素齐全，有少量可优化空间'
-    if (score >= 68) return '中等质量的提示词，核心意图明确但缺少重要细节'
-    if (score >= 55) return '基础水平的提示词，建议补充关键信息后重新提交'
+    if (score >= PROMPT_GRADE_EXCELLENT) return '优秀的提示词，结构清晰、要素完整，能够有效引导AI产出高质量结果'
+    if (score >= PROMPT_GRADE_GOOD) return '良好的提示词，基本要素齐全，有少量可优化空间'
+    if (score >= PROMPT_GRADE_MEDIUM) return '中等质量的提示词，核心意图明确但缺少重要细节'
+    if (score >= PROMPT_GRADE_BASIC) return '基础水平的提示词，建议补充关键信息后重新提交'
     return '提示词质量较低，强烈建议使用优化功能进行系统性改进'
   }
 
@@ -1215,8 +1227,8 @@ export class PromptOptimizer {
     const clauseCount = text.split(/[,，;；]/).length
     const avgSentenceLength = text.length / Math.max(sentenceCount, 1)
 
-    if (sentenceCount <= 2 && clauseCount <= 3 && avgSentenceLength < 30) return 'simple'
-    if (sentenceCount <= 4 && clauseCount <= 8 && avgSentenceLength < 60) return 'moderate'
+    if (sentenceCount <= PROMPT_COMPLEX_SIMPLE_SENTENCES && clauseCount <= PROMPT_COMPLEX_SIMPLE_CLAUSES && avgSentenceLength < PROMPT_COMPLEX_SIMPLE_AVG_LEN) return 'simple'
+    if (sentenceCount <= PROMPT_COMPLEX_MODERATE_SENTENCES && clauseCount <= PROMPT_COMPLEX_MODERATE_CLAUSES && avgSentenceLength < PROMPT_COMPLEX_MODERATE_AVG_LEN) return 'moderate'
     return 'complex'
   }
 
