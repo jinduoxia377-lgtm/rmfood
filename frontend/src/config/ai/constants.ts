@@ -79,3 +79,7 @@ export const EXPERT_RECOMMEND_CONFIDENCE = 0.4 // 生成成分推荐所需最低
 export const EXPERT_LONG_INPUT_LEN = 15 // 长输入无监管上下文 → 补监管建议
 export const EXPERT_DEGRADE_CONFIDENCE = 0.3 // 低置信度降级判定
 export const EXPERT_DEGRADE_MIN_INPUT_LEN = 8
+
+// ===== knowledgeGraphUpdater：知识图谱健康状态阈值 =====
+export const KGU_DEGRADED_SUCCESS_RATE = 80 // 成功率低于此值 → degraded
+export const KGU_CRITICAL_SUCCESS_RATE = 50 // 成功率低于此值 → critical

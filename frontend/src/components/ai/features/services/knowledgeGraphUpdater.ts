@@ -11,6 +11,7 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import { KGU_DEGRADED_SUCCESS_RATE, KGU_CRITICAL_SUCCESS_RATE } from '@/config/ai/constants';
 
 // ============ 类型定义 ============
 
@@ -650,8 +651,8 @@ export class KnowledgeGraphUpdater {
       this.stats.totalUpdates > 0 ? (this.stats.successfulUpdates / this.stats.totalUpdates) * 100 : 100;
 
     let healthStatus: 'healthy' | 'degraded' | 'critical' = 'healthy';
-    if (successRate < 80) healthStatus = 'degraded';
-    if (successRate < 50) healthStatus = 'critical';
+    if (successRate < KGU_DEGRADED_SUCCESS_RATE) healthStatus = 'degraded';
+    if (successRate < KGU_CRITICAL_SUCCESS_RATE) healthStatus = 'critical';
 
     return {
       currentVersion: this.currentVersion,
