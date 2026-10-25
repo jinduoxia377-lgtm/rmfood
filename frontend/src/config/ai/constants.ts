@@ -115,3 +115,10 @@ export const PIE_ADVANCED_COMPLEXITY = 55
 export const PIE_ADVANCED_TERMS = 3
 export const PIE_INTERMEDIATE_COMPLEXITY = 40
 export const PIE_INTERMEDIATE_TERMS = 2
+
+// ===== FormulaInferenceEngine：配方推断阈值 =====
+export const FIE_STRONG_SYNERGY_WEIGHT = 0.8 // 强协同组合权重阈值
+export const FIE_SAFETY_BASE_SCORE = 0.9 // 无禁忌时安全分
+export const FIE_SAFETY_MIN_SCORE = 0.3 // 安全分下限
+export const FIE_SAFETY_PENALTY_PER_CONTRA = 0.2 // 每个配伍禁忌扣分
+export const FIE_MAX_RECOMMENDATIONS = 5 // 推荐建议上限

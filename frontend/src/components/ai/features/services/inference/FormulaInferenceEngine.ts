@@ -11,6 +11,13 @@
  */
 
 import { knowledgeGraph, EdgeType } from '../knowledge/FormulaKnowledgeGraph'
+import {
+  FIE_STRONG_SYNERGY_WEIGHT,
+  FIE_SAFETY_BASE_SCORE,
+  FIE_SAFETY_MIN_SCORE,
+  FIE_SAFETY_PENALTY_PER_CONTRA,
+  FIE_MAX_RECOMMENDATIONS,
+} from '@/config/ai/constants'
 
 /* ================================================================== */
 /*  规则系统类型定义                                                    */
@@ -450,7 +457,7 @@ export class FormulaInferenceEngine {
         if (interaction) {
           if (interaction.type === EdgeType.CONTRADICTS) {
             warnings.push(`⚠️ 注意：${knowledgeGraph.getNode(ingredientIds[i])?.label}与${knowledgeGraph.getNode(ingredientIds[j])?.label}存在配伍注意（${interaction.properties?.description || ''}）`)
-          } else if (interaction.type === EdgeType.ENHANCES && interaction.weight >= 0.8) {
+          } else if (interaction.type === EdgeType.ENHANCES && interaction.weight >= FIE_STRONG_SYNERGY_WEIGHT) {
             recommendations.push(`✅ 推荐：${knowledgeGraph.getNode(ingredientIds[i])?.label}与${knowledgeGraph.getNode(ingredientIds[j])?.label}为强协同组合（强度${Math.round(interaction.weight * 100)}%）`)
           }
         }
@@ -485,10 +492,10 @@ export class FormulaInferenceEngine {
       summary: {
         synergyCount: interactions.length,
         contraindicationCount: contraindications.length,
-        safetyScore: contraindications.length === 0 ? 0.9 : Math.max(0.3, 0.9 - contraindications.length * 0.2),
+        safetyScore: contraindications.length === 0 ? FIE_SAFETY_BASE_SCORE : Math.max(FIE_SAFETY_MIN_SCORE, FIE_SAFETY_BASE_SCORE - contraindications.length * FIE_SAFETY_PENALTY_PER_CONTRA),
         coverageScore,
         warnings,
-        recommendations: recommendations.slice(0, 5),
+        recommendations: recommendations.slice(0, FIE_MAX_RECOMMENDATIONS),
       },
     }
   }
