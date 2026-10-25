@@ -59,3 +59,15 @@ export const FDE_FLAVOR_BONUS = 0.05 // 共同五味加分
 export const FDE_COMPAT_SCORE_MIN = -0.5 // 配伍分截断下限
 export const FDE_COMPAT_SCORE_MAX = 0.5 // 配伍分截断上限
 export const FDE_DEFAULT_WEIGHTS = { efficacy: 0.3, safety: 0.25, taste: 0.15, stability: 0.15, cost: 0.15 } as const
+
+// ===== promptOptimizer：质量分级与复杂度判定 =====
+export const PROMPT_GRADE_EXCELLENT = 90
+export const PROMPT_GRADE_GOOD = 78
+export const PROMPT_GRADE_MEDIUM = 68
+export const PROMPT_GRADE_BASIC = 55
+export const PROMPT_COMPLEX_SIMPLE_SENTENCES = 2
+export const PROMPT_COMPLEX_SIMPLE_CLAUSES = 3
+export const PROMPT_COMPLEX_SIMPLE_AVG_LEN = 30
+export const PROMPT_COMPLEX_MODERATE_SENTENCES = 4
+export const PROMPT_COMPLEX_MODERATE_CLAUSES = 8
+export const PROMPT_COMPLEX_MODERATE_AVG_LEN = 60
