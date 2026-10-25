@@ -52,3 +52,10 @@ export const SENTI_EXCLAMATION_SCORE = 5
 export const SENTI_QUESTION_SCORE = 2
 export const SENTI_REPEATED_WORD_SCORE = 3
 export const SENTI_REPEAT_COUNT_THRESHOLD = 1 // 词频超过此值视为重复
+
+// ===== formulaDesignEngine：配伍与评分 =====
+export const FDE_MERIDIAN_BONUS = 0.08 // 共同归经加分
+export const FDE_FLAVOR_BONUS = 0.05 // 共同五味加分
+export const FDE_COMPAT_SCORE_MIN = -0.5 // 配伍分截断下限
+export const FDE_COMPAT_SCORE_MAX = 0.5 // 配伍分截断上限
+export const FDE_DEFAULT_WEIGHTS = { efficacy: 0.3, safety: 0.25, taste: 0.15, stability: 0.15, cost: 0.15 } as const

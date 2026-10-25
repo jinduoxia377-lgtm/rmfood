@@ -12,6 +12,14 @@
  * @lastUpdated 2026-06-07
  */
 
+import {
+  FDE_MERIDIAN_BONUS,
+  FDE_FLAVOR_BONUS,
+  FDE_COMPAT_SCORE_MIN,
+  FDE_COMPAT_SCORE_MAX,
+  FDE_DEFAULT_WEIGHTS,
+} from '@/config/ai/constants'
+
 /* ================================================================== */
 /*  类型定义                                                            */
 /* ================================================================== */
@@ -587,12 +595,12 @@ export class FormulaDesignEngine {
     }
     // 归经互补
     const commonMeridians = a.properties.meridians?.filter(m => b.properties.meridians?.includes(m)) ?? []
-    score += commonMeridians.length * 0.08
+    score += commonMeridians.length * FDE_MERIDIAN_BONUS
     // 五味调和
     const commonFlavors = a.properties.flavor?.filter(f => b.properties.flavor?.includes(f)) ?? []
-    score += commonFlavors.length * 0.05
+    score += commonFlavors.length * FDE_FLAVOR_BONUS
 
-    return Math.max(-0.5, Math.min(0.5, score))
+    return Math.max(FDE_COMPAT_SCORE_MIN, Math.min(FDE_COMPAT_SCORE_MAX, score))
   }
 
   /* ================================================================ */
@@ -602,7 +610,7 @@ export class FormulaDesignEngine {
   /** 多维度评分 */
   calculateScores(
     formula: FormulaCandidate['ingredients'],
-    weights: OptimizationWeights = { efficacy: 0.3, safety: 0.25, taste: 0.15, stability: 0.15, cost: 0.15 }
+    weights: OptimizationWeights = FDE_DEFAULT_WEIGHTS
   ): { scores: Record<ScoreDimension, number>; overallScore: number } {
     // 功效评分
     const efficacyScore = this.calculateEfficacyScore(formula)
