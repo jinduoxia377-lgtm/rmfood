@@ -1,29 +1,91 @@
-#!/bin/sh
-# Pre-commit hook: 检查代码质量
+#!/usr/bin/env bash
+# Pre-commit hook: 代码质量 + 肽结构安全网 + 版本一致性门禁
+# =============================================================
+#
+# 本文件是唯一权威钩子，被 .git/hooks/pre-commit 调用（后者是本地接线层，
+# 未被 git 跟踪）。新建克隆后运行一次 `npm run hooks:setup` 完成接线。
+#
+# 必须用 bash 而非 sh：第 5 节用 ${PIPESTATUS[0]}，安全网一节用数组，
+# 两者都是 bash 专有语法，dash 会直接报语法错误。
+#
+# 临时放行：UI_GUARD_WARN=1 git commit（仅放行 UI 护栏，其余照旧阻塞）
 
 echo "🔍 运行 pre-commit 检查..."
 
-# 1. 检查是否有 print() 在 production 代码中
-echo "📋 检查后端 print()..."
-PRINT_COUNT=$(grep -rn "print(" backend/app --include="*.py" 2>/dev/null | grep -v ">>>" | grep -v "# " | grep -v '"""' | grep -v "archived" | grep -v "logger\." | grep -v "__main__" | wc -l)
-if [ "$PRINT_COUNT" -gt 0 ]; then
-    echo "❌ 发现 $PRINT_COUNT 处生产代码 print()，请使用 logger 替代"
-    grep -rn "print(" backend/app --include="*.py" | grep -v ">>>" | grep -v "# " | grep -v '"""' | grep -v "archived" | grep -v "logger\." | grep -v "__main__"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT" || exit 1
+
+# ---------------------------------------------------------------------------
+# 1. 肽结构核心修复防还原门禁
+# ---------------------------------------------------------------------------
+# 守护 /peptide-structure 的 P0 修复不被意外回退（pI 赋值 / CSRF 豁免 /
+# /history 路由 / 匿名用户 uid 等）。详见 backend/scripts/peptide_structure_guard.py。
+echo "📋 检查肽结构核心修复防还原..."
+python "$REPO_ROOT/backend/scripts/peptide_structure_guard.py"
+GUARD_EXIT=$?
+if [ "$GUARD_EXIT" -ne 0 ]; then
+    echo "❌ 核心修复防还原门禁失败，提交已阻止。"
+    echo "   处理：重新应用被还原的修复（参见 git log 中 8b5bb5f / fe8cdb0 / 9e37ce4 / 5bda72e）。"
     exit 1
 fi
-echo "✅ 后端 print() 检查通过"
+echo "✅ 肽结构核心修复防还原通过"
 
-# 2. 检查前端 console.log
-echo "📋 检查前端 console.log..."
-CONSOLE_COUNT=$(grep -rn "console\.log" frontend/src --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "safeConsole\|safeLogger\|logger\.ts\|errorBoundary" | wc -l)
-if [ "$CONSOLE_COUNT" -gt 0 ]; then
-    echo "❌ 发现 $CONSOLE_COUNT 处生产代码 console.log，请使用 logger 替代"
-    grep -rn "console\.log" frontend/src --include="*.tsx" --include="*.ts" | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "safeConsole\|safeLogger\|logger\.ts\|errorBoundary"
+# 额外保护：若本次提交触及受保护文件，再次确认关键修复仍在暂存区
+PROTECTED_FILES=(
+  "backend/app/services/peptide_analyzer/food_peptide_service.py"
+  "backend/app/core/security/security_middleware.py"
+  "backend/app/api/peptide_structure_routes.py"
+  "backend/app/api/advanced_peptide.py"
+)
+for f in "${PROTECTED_FILES[@]}"; do
+  if git diff --cached --name-only | grep -q "^$f\$"; then
+    STAGED_CONTENT=$(git show ":$f" 2>/dev/null || echo "")
+    case "$f" in
+      *food_peptide_service.py)
+        if ! echo "$STAGED_CONTENT" | grep -q "result.isoelectric_point = props\['isoelectric_point'\]"; then
+          echo "⚠️  暂存的 $f 缺失 pI 修复，提交将被阻止"; exit 1
+        fi ;;
+      *security_middleware.py)
+        if ! echo "$STAGED_CONTENT" | grep -q 'startswith("/api/v1/ai/peptide")'; then
+          echo "⚠️  暂存的 $f 缺失 /ai/peptide CSRF 豁免，提交将被阻止"; exit 1
+        fi ;;
+      *peptide_structure_routes.py)
+        if ! echo "$STAGED_CONTENT" | grep -q "@router.get('/history'"; then
+          echo "⚠️  暂存的 $f 缺失 /history 路由，提交将被阻止"; exit 1
+        fi ;;
+      *advanced_peptide.py)
+        if ! echo "$STAGED_CONTENT" | grep -q '_uid = current_user.id if current_user else "anonymous"'; then
+          echo "⚠️  暂存的 $f 缺失匿名用户修复，提交将被阻止"; exit 1
+        fi ;;
+    esac
+  fi
+done
+echo "✅ 受保护文件暂存内容确认通过"
+
+# ---------------------------------------------------------------------------
+# 2. 后端 print() —— 棘轮（只减不增）
+# ---------------------------------------------------------------------------
+# 零违规即失败不现实：存量 94 处。硬阻塞只会让钩子被 --no-verify 长期绕过。
+# 棘轮以 scripts/qc-baseline.json 的逐文件计数为基线，新增即阻塞，修复自动生效。
+# 详见 scripts/qc-ratchet.mjs 头部注释；刷新基线：npm run qc:baseline。
+echo "📋 后端 print() 棘轮..."
+node scripts/qc-ratchet.mjs print
+if [ $? -ne 0 ]; then
     exit 1
 fi
-echo "✅ 前端 console.log 检查通过"
 
-# 3. 检查前端 as any（允许图/d3 组件中的）
+# ---------------------------------------------------------------------------
+# 3. 前端 console.log —— 棘轮（只减不增）
+# ---------------------------------------------------------------------------
+echo "📋 前端 console.log 棘轮..."
+node scripts/qc-ratchet.mjs console
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# 4. 检查前端 as any（允许图/d3 组件中的）
+# ---------------------------------------------------------------------------
 echo "📋 检查前端 as any..."
 AS_ANY_COUNT=$(grep -rn "as any" frontend/src --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "knowledge-graph\|graph_panel\|d3\|GraphEdge\|GraphVertex" | wc -l)
 if [ "$AS_ANY_COUNT" -gt 50 ]; then
@@ -31,49 +93,58 @@ if [ "$AS_ANY_COUNT" -gt 50 ]; then
 fi
 echo "✅ 前端 as any 检查通过"
 
-# 4. 运行 TypeScript 类型检查
+# ---------------------------------------------------------------------------
+# 5. 运行 TypeScript 类型检查
+# ---------------------------------------------------------------------------
 echo "📋 运行 TypeScript 类型检查..."
-cd frontend && npx tsc --noEmit --pretty false 2>&1 | tail -20
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
+( cd frontend && npx tsc --noEmit --pretty false ) 2>&1 | tail -20
+TSC_EXIT=${PIPESTATUS[0]}
+if [ "$TSC_EXIT" -ne 0 ]; then
     echo "❌ TypeScript 类型检查失败"
     exit 1
 fi
 echo "✅ TypeScript 类型检查通过"
 
-# 5. 运行 Python lint
+# ---------------------------------------------------------------------------
+# 6. 运行 Python lint
+# ---------------------------------------------------------------------------
 echo "📋 运行 Python lint..."
-cd ..
 python -m ruff check backend/app --output-format=github 2>/dev/null || echo "⚠️  ruff 未安装，跳过 lint"
+echo "✅ Python lint 检查完成"
 
-echo "✅ Pre-commit 检查完成"
-
-# 6. UI/可访问性静态护栏（棘轮：只减不增）
-#
+# ---------------------------------------------------------------------------
+# 7. UI/可访问性静态护栏（棘轮：只减不增）
+# ---------------------------------------------------------------------------
 # 为什么不用"零违规即失败"：存量有 100+ 处（匿名输入框、渐变实底配白字等），
 # 一次性清零不现实；若非零即红，这个钩子会被长期 --no-verify 绕过而彻底失效。
 # 棘轮保证每修一批就收紧一次基线（node scripts/ui-guard.mjs --baseline），最终收敛到 0。
 echo "📋 UI/可访问性静态护栏（棘轮）..."
-cd frontend
-node scripts/ui-guard.mjs
-if [ $? -ne 0 ]; then
-    echo "❌ UI/可访问性护栏未通过：新增了违规。修掉它们，或确认是有意引入后重设基线。"
-    exit 1
+( cd frontend && node scripts/ui-guard.mjs )
+UI_EXIT=$?
+if [ "$UI_EXIT" -ne 0 ]; then
+    if [ -n "$UI_GUARD_WARN" ]; then
+        echo "⚠️  UI 护栏未通过，但 UI_GUARD_WARN=1 已设置，临时放行。"
+    else
+        echo "❌ UI/可访问性护栏未通过：新增了违规。修掉它们，或确认是有意引入后重设基线。"
+        echo "   临时放行：UI_GUARD_WARN=1 git commit（不推荐，优先修）。"
+        exit 1
+    fi
+else
+    echo "✅ UI/可访问性护栏通过"
 fi
-echo "✅ UI/可访问性护栏通过"
-cd ..
 
-# 7. 后端未定义名称扫描（NameError 隐患）
-#
+# ---------------------------------------------------------------------------
+# 8. 后端未定义名称扫描（NameError 隐患）
+# ---------------------------------------------------------------------------
 # 这类 bug 平时不报错，一旦走到那条分支就是 500。已靠它抓出
 # defaultdict / KnowledgeGraphService / HAS_SCIPY / sync_timeout 等一批真实 500。
 echo "📋 后端未定义名称扫描..."
-cd backend
-./venv/Scripts/python.exe scripts/scan_undefined.py app/api 2>/dev/null | tail -3
+( cd backend && [ -x ./venv/Scripts/python.exe ] && ./venv/Scripts/python.exe scripts/scan_undefined.py app/api 2>/dev/null ) | tail -3
 echo "✅ 未定义名称扫描完成（app/api 应保持 0 处）"
-cd ..
 
-# 8. 语义化版本一致性门禁（ADR-038）
-#
+# ---------------------------------------------------------------------------
+# 9. 语义化版本一致性门禁（ADR-038）
+# ---------------------------------------------------------------------------
 # 单一权威源（package.json）+ 8 处镜像 + JS/Python 双写清单漂移检测。
 # 纯本地文件读取，无网络无编译，通常 <1s；8 个承载点一致即返回 0，
 # 版本文件未变化时同样是快速通过，不会明显拖慢提交。
@@ -81,7 +152,9 @@ echo "📋 语义化版本一致性门禁..."
 node scripts/version/check-version.js --no-color
 if [ $? -ne 0 ]; then
     echo "❌ 版本一致性检查未通过：8 个承载点存在漂移，或 JS/Python 双写清单不一致"
-    echo "   修复方式：在仓库根目录执行 npm run version:bump -- <patch|minor|major|rc>"
+    echo "   修复方式：在仓库根目录执行 npm run version:bump -- <patch|minor|major|rc|final>"
     exit 1
 fi
 echo "✅ 语义化版本一致性通过"
+
+echo "✅ Pre-commit 检查完成"

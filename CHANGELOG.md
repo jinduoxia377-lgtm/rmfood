@@ -21,18 +21,24 @@
 - 版本工具链：`version:bump -- final` 子命令（rc 转正——只剥离 prerelease 后缀，M.N.P 与 build metadata 保持不变；已是正式版则报错退出）
 - 版本工具链：`check-version.js --verify-source-list`（默认开启），校验 JS `VERSION_SOURCES` 与 Python `VERSION_SOURCE_FILES` 双写清单的集合与顺序一致
 - 版本工具链：`npm run version:test`（`node:test`，45 个用例）
+- 提交钩子接线：`npm run hooks:setup`（把权威钩子 `.husky/pre-commit` 复制到 `.git/hooks/pre-commit`，自动备份原文件）
+- 提交钩子加固：`.husky/pre-commit` 合并为单一权威（9 节），新增肽结构 P0 修复防还原守卫与受保护文件暂存内容校验
+- print / console.log 棘轮：`scripts/qc-ratchet.mjs` + `scripts/qc-baseline.json` + `npm run qc:baseline`（逐文件计数，只减不增）
 - 发布文档集 [docs/release/](docs/release/)：发布流程总览（含两轴判定表）、CHECKLIST、ROLLBACK（四类回滚场景 SOP）
 - [ADR-039 API 契约版本命名统一](docs/adr/ADR-039-API契约版本命名统一.md)（📋 提案）
 
 ### Changed
 
 - `version:bump` 的 `patch` / `minor` / `major` 与 `prerelease` 语义修正：转正路径收敛为 `final` 唯一路径
-- `.husky/pre-commit` 新增语义化版本一致性门禁
+- `.husky/pre-commit` 重写为 bash（原 `#!/bin/sh` 下 `PIPESTATUS`、数组等 bash 专有语法不可用），print / console.log 由「零违规即失败」改为棘轮基线
+- 目录切换改为子 shell，消除原钩子 `cd frontend` 污染后续节工作目录的问题
 
 ### Fixed
 
 - 仓库卫生：1,139 个运行期产物文件（`pg_data_new/` 971 + `coverage_measurements/` 95 + `pytest-of-Administrator/` 73）移出 Git 索引，`backend/` 跟踪文件由 2,891 降至 1,731
 - `version-sources.js` / `bump-version.js` / `version.py` 三处注释「7 个承载点」更正为 8；`version.py` 注释中 `CURRENT_API_API_VERSION` 笔误更正
+- **提交钩子空转**：`.husky/pre-commit` 从未被执行——husky 未安装在根目录、`frontend/package.json` 无 `prepare` 脚本、`core.hooksPath` 为空，而实际生效的 `.git/hooks/pre-commit` 未被 Git 跟踪。此前 README 宣称的 husky + lint-staged 提交钩子长期是虚假状态
+- README 三处失实描述更正：提交钩子机制、`print()` 清理（实际存量 94 处而非已清零 9 处）、husky / lint-staged 状态
 - ADR-007 两条不存在的迁移路径更正为实际结构
 
 ### Removed
