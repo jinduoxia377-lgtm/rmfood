@@ -142,3 +142,8 @@ export const FGO_SAFE_LOW_SCORE = 0.9
 export const FGO_SCORE_FLOOR = 0.1 // 口感/成本评分下限
 export const FGO_BITTER_PENALTY = 0.08 // 苦味成分扣分
 export const FGO_WEIGHTS = { efficacy: 0.25, safety: 0.20, taste: 0.12, stability: 0.10, cost: 0.13, compatibility: 0.20 } as const
+
+// ===== nlpProcessor：NLP 规则评分 =====
+export const NLP_ENTITY_BOOST_FACTOR = 20 // 实体匹配加分基数
+export const NLP_SCORE_CAP = 100 // 意图分数上限
+export const NLP_NEGATIVE_PENALTY = 50 // 负面模式扣分

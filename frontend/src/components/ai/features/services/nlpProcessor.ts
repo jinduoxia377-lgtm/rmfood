@@ -13,6 +13,7 @@
 import { logger } from '@/utils/safeLogger'
 import { getNLPConfigService } from '../../../../config/nlp/nlpConfigService'
 import { getTermsByCategory, type Term } from './domainKnowledge'
+import { NLP_ENTITY_BOOST_FACTOR, NLP_SCORE_CAP, NLP_NEGATIVE_PENALTY } from '@/config/ai/constants'
 
 export interface CleanOptions {
   trimSpaces?: boolean;
@@ -661,9 +662,9 @@ export class IntentClassifier {
             const boost =
               matchingEntities.reduce((sum, e) => sum + e.confidence, 0) /
               matchingEntities.length *
-              20;
+              NLP_ENTITY_BOOST_FACTOR;
             const currentScore = scores.get(rule.intentType) || 0;
-            scores.set(rule.intentType, Math.min(100, currentScore + boost));
+            scores.set(rule.intentType, Math.min(NLP_SCORE_CAP, currentScore + boost));
           }
         }
       }
@@ -674,7 +675,7 @@ export class IntentClassifier {
         for (const negPattern of rule.negativePatterns) {
           if (this.matchPattern(negPattern, text)) {
             const currentScore = scores.get(rule.intentType) || 0;
-            scores.set(rule.intentType, Math.max(0, currentScore - 50));
+            scores.set(rule.intentType, Math.max(0, currentScore - NLP_NEGATIVE_PENALTY));
           }
         }
       }
