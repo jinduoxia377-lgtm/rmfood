@@ -11,6 +11,16 @@
 
 import { logger } from '@/utils/safeLogger'
 import {
+  PIE_DOMAIN_DIVERSITY_MIN,
+  PIE_DOMAIN_DIVERSITY_BONUS,
+  PIE_EXPERT_COMPLEXITY,
+  PIE_EXPERT_TERMS,
+  PIE_ADVANCED_COMPLEXITY,
+  PIE_ADVANCED_TERMS,
+  PIE_INTERMEDIATE_COMPLEXITY,
+  PIE_INTERMEDIATE_TERMS,
+} from '@/config/ai/constants'
+import {
   DomainCategory,
   DomainExpertiseLevel,
   type SemanticAnalysisResult,
@@ -524,15 +534,15 @@ export class ProfessionalIntelligenceEngineV4 {
     if (hasExpertTerms) score += 12
 
     const uniqueDomains = new Set(terms.map(t => t.domain))
-    if (uniqueDomains.size >= 3) score += 8
+    if (uniqueDomains.size >= PIE_DOMAIN_DIVERSITY_MIN) score += PIE_DOMAIN_DIVERSITY_BONUS
 
     return Math.min(score, 100)
   }
 
   private determineExpertiseLevel(terms: RecognizedDomainTerm[], complexity: number): DomainExpertiseLevel {
-    if (complexity >= 75 && terms.length >= 5) return DomainExpertiseLevel.EXPERT
-    if (complexity >= 55 && terms.length >= 3) return DomainExpertiseLevel.ADVANCED
-    if (complexity >= 40 && terms.length >= 2) return DomainExpertiseLevel.INTERMEDIATE
+    if (complexity >= PIE_EXPERT_COMPLEXITY && terms.length >= PIE_EXPERT_TERMS) return DomainExpertiseLevel.EXPERT
+    if (complexity >= PIE_ADVANCED_COMPLEXITY && terms.length >= PIE_ADVANCED_TERMS) return DomainExpertiseLevel.ADVANCED
+    if (complexity >= PIE_INTERMEDIATE_COMPLEXITY && terms.length >= PIE_INTERMEDIATE_TERMS) return DomainExpertiseLevel.INTERMEDIATE
     return DomainExpertiseLevel.BASIC
   }
 

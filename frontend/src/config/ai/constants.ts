@@ -105,3 +105,13 @@ export const PEF_GRADE_BPLUS = 72
 export const PEF_GRADE_B = 65
 export const PEF_GRADE_C = 55
 export const PEF_GRADE_D = 40
+
+// ===== professionalIntelligenceEngineV4：专家级别判定 =====
+export const PIE_DOMAIN_DIVERSITY_MIN = 3
+export const PIE_DOMAIN_DIVERSITY_BONUS = 8
+export const PIE_EXPERT_COMPLEXITY = 75
+export const PIE_EXPERT_TERMS = 5
+export const PIE_ADVANCED_COMPLEXITY = 55
+export const PIE_ADVANCED_TERMS = 3
+export const PIE_INTERMEDIATE_COMPLEXITY = 40
+export const PIE_INTERMEDIATE_TERMS = 2
