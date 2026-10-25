@@ -6,6 +6,16 @@
  */
 import { knowledgeGraph, EdgeType } from '../knowledge/FormulaKnowledgeGraph'
 import type { GraphNode } from '../knowledge/FormulaKnowledgeGraph'
+import {
+  FGO_SAFE_HIGH_RATIO,
+  FGO_SAFE_MEDIUM_RATIO,
+  FGO_SAFE_HIGH_SCORE,
+  FGO_SAFE_MEDIUM_SCORE,
+  FGO_SAFE_LOW_SCORE,
+  FGO_SCORE_FLOOR,
+  FGO_BITTER_PENALTY,
+  FGO_WEIGHTS,
+} from '@/config/ai/constants'
 
 export interface Chromosome { selection: boolean[]; dosages: number[] }
 export interface FitnessVector {
@@ -56,7 +66,7 @@ export class FormulaGeneticOptimizer {
       eff += (i === 0 ? ae*1.2 : ae) as number
       const idx = this.ingredients.indexOf(ing)
       const d = c.dosages[idx] as number; const lim = (p.safetyLimit as number) || 30; const r = d/lim
-      safe += (r>0.8 ? 0.3 : r>0.5 ? 0.6 : 0.9) as number
+      safe += (r > FGO_SAFE_HIGH_RATIO ? FGO_SAFE_HIGH_SCORE : r > FGO_SAFE_MEDIUM_RATIO ? FGO_SAFE_MEDIUM_SCORE : FGO_SAFE_LOW_SCORE) as number
       taste += (p.tasteScore ?? 0.5) as number
       const sm: Record<string,number> = { cold:0.7, cool:0.75, neutral:0.9, warm:0.8, hot:0.65 }
       stab += (sm[(p.nature as string) ?? 'neutral'] ?? 0.7)
@@ -64,8 +74,8 @@ export class FormulaGeneticOptimizer {
     }
     const n = sel.length
     eff = Math.min(1, eff/n); safe = safe/n
-    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => !!((i.properties as Record<string, unknown>)?.flavor as string || '').includes('苦')).length*0.08))
-    stab = stab/n; cost = Math.max(0.1, 1 - cost/n)
+    taste = Math.max(FGO_SCORE_FLOOR, Math.min(1, taste/n - sel.filter(i => !!((i.properties as Record<string, unknown>)?.flavor as string || '').includes('苦')).length * FGO_BITTER_PENALTY))
+    stab = stab/n; cost = Math.max(FGO_SCORE_FLOOR, 1 - cost/n)
     const pairs = new Set<string>()
     for (let i = 0; i < n; i++) {
       for (let j = i+1; j < n; j++) {
@@ -75,7 +85,7 @@ export class FormulaGeneticOptimizer {
       }
     }
     compat = pairs.size ? Math.max(0, Math.min(1, (compat/pairs.size+1)/2)) : 0.5
-    const overall = eff*0.25 + safe*0.20 + taste*0.12 + stab*0.10 + cost*0.13 + compat*0.20
+    const overall = eff * FGO_WEIGHTS.efficacy + safe * FGO_WEIGHTS.safety + taste * FGO_WEIGHTS.taste + stab * FGO_WEIGHTS.stability + cost * FGO_WEIGHTS.cost + compat * FGO_WEIGHTS.compatibility
     return { efficacy:+eff.toFixed(2), safety:+safe.toFixed(2), taste:+taste.toFixed(2), stability:+stab.toFixed(2), cost:+cost.toFixed(2), compatibility:+compat.toFixed(2), overall:+overall.toFixed(2) }
   }
 

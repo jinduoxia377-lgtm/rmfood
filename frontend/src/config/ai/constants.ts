@@ -132,3 +132,13 @@ export const FKG_MERIDIAN_BONUS = 0.05 // 共同归经加分
 export const FKG_FLAVOR_BONUS = 0.03 // 共同五味加分
 export const FKG_SCORE_MIN = -0.3 // 隐式兼容分下限
 export const FKG_SCORE_MAX = 0.7 // 隐式兼容分上限
+
+// ===== FormulaGeneticOptimizer：遗传优化评分 =====
+export const FGO_SAFE_HIGH_RATIO = 0.8 // 剂量/安全限值比 > 0.8 → 高风险分
+export const FGO_SAFE_MEDIUM_RATIO = 0.5 // > 0.5 → 中风险分
+export const FGO_SAFE_HIGH_SCORE = 0.3
+export const FGO_SAFE_MEDIUM_SCORE = 0.6
+export const FGO_SAFE_LOW_SCORE = 0.9
+export const FGO_SCORE_FLOOR = 0.1 // 口感/成本评分下限
+export const FGO_BITTER_PENALTY = 0.08 // 苦味成分扣分
+export const FGO_WEIGHTS = { efficacy: 0.25, safety: 0.20, taste: 0.12, stability: 0.10, cost: 0.13, compatibility: 0.20 } as const
