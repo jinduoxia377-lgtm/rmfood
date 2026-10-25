@@ -143,7 +143,7 @@ npm run version:current          # 打印当前版本
 
 | 层级 | 当前代数 | 依据（可核查） |
 |:-----|:--------:|:---------------|
-| **架构决策** | **ADR-038**（共 47 篇 ADR 文档） | [docs/adr/index.md](docs/adr/index.md)，最新 ADR-038 日期 2026-10-25 |
+| **架构决策** | **ADR-039**（共 48 篇 ADR 文档） | [docs/adr/index.md](docs/adr/index.md)，最新 ADR-039（API 契约版本命名统一）日期 2026-10-25 |
 | **数据库迁移** | **第 75 个 Alembic 版本文件** | `git ls-files backend/alembic/versions/*.py` = 75 |
 | **AI 助手中心（模块 CHANGELOG）** | **v8.0.0** | [frontend/src/components/ai/features/CHANGELOG.md](frontend/src/components/ai/features/CHANGELOG.md)：`[8.0.0] - 2026-05-12` |
 | **AI 助手中心（源码标记）** | **v9.0** | `KnowledgeGraph.tsx` / `usePerformanceMonitor.ts` / `useReportGenerator.ts` / `MemoizedChatMessage.tsx` / `GraphTab.tsx` 内标记 |
@@ -254,22 +254,27 @@ npm run version:current          # 打印当前版本
 | `academic/` | 19 | | |
 | `history-sidebar/` | 8 | | |
 
-### 后端文件分布（`backend/` 全量 2,891 个跟踪文件）
+### 后端文件分布（`backend/` 全量 1,731 个跟踪文件）
 
 | 位置 | 文件数 | 位置 | 文件数 |
 |:-----|:------:|:-----|:------:|
-| `pg_data_new/` | 971 | `app/` | 855 |
-| `scripts/` | 372 | `tests/` | 189 |
-| `app/services/` | 421 | `alembic/` | 79 |
-| `coverage_measurements/` | 95 | `pytest-of-Administrator/` | 73 |
-| `app/api/` | 133 | `app/core/` | 100 |
-| `app/models/` | 55 | `app/data/` | 44 |
-| `migrations/` | 22 | 其余 | 117 |
+| `app/` | 855 | `scripts/` | 372 |
+| `app/services/` | 421 | `tests/` | 189 |
+| `static/` | 109 | `alembic/` | 79 |
+| `app/api/` | 133 | `migrations/` | 22 |
+| `app/core/` | 100 | `backend/` 根目录 | 64 |
+| `app/models/` | 55 | `requirements/` | 12 |
+| `app/data/` | 44 | 其余（`ml_artifacts`/`data`/`deploy`/`services`/`.github`/`reports`/`conf`/`config`） | 29 |
 
 > 其中 Python 源文件共 **1,430 个**（`app/` 783 + `tests/` 184 + `scripts/` 351 +
-> `alembic/` 76 + `backend/` 根目录及遗留目录 36）。`pg_data_new/`（PostgreSQL 数据目录）、
-> `coverage_measurements/`、`pytest-of-Administrator/` 为**运行期产物却被提交入库**，
-> 合计 1,139 个文件，占 `backend/` 跟踪文件的 39%，应移出版本库。
+> `alembic/` 76 + `backend/` 根目录 36）。
+>
+> **运行期产物已移出索引**（2026-10-25 仓库卫生治理）：`pg_data_new/` 971 +
+> `coverage_measurements/` 95 + `pytest-of-Administrator/` 73 = **1,139 个文件**已
+> `git rm --cached`（仅移出索引，磁盘文件保留），治理前占 `backend/` 跟踪文件的 39.4%。
+> 三者均已加入 `.gitignore`。总量 **2,891 → 1,731**。另将根目录 21 个一次性
+> 临时输出/误操作产物移出索引并归档至 `backend/archive/trash-2026-10-25/`（52 文件
+> 共 42.9 MB，磁盘保留）。
 
 ---
 
@@ -596,7 +601,7 @@ f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈
 
 ## 架构决策记录（ADR）
 
-> 完整索引：[docs/adr/index.md](docs/adr/index.md) ｜ 47 篇文档，编号 001–038 + 7 组同号续篇
+> 完整索引：[docs/adr/index.md](docs/adr/index.md) ｜ 48 篇文档，编号 001–039 + 7 组同号续篇
 
 ### 当前活跃 ADR
 
@@ -640,6 +645,7 @@ f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈
 | 036 | [主题令牌双源收敛与生成器 L0 名映射](docs/adr/ADR-036-主题令牌双源收敛与生成器L0名映射.md) | ✅ 已接受 | 2026-10-02 | 前端/UI/UX |
 | 037 | [页头表面令牌（不参与反转的实底色）](docs/adr/ADR-037-页头表面令牌（不参与反转的实底色）.md) | ✅ 已接受 | 2026-10-02 | 前端/UI/UX |
 | 038 | [语义化版本发布体系](docs/adr/ADR-038-语义化版本发布体系.md) | ✅ 已接受 | 2026-10-25 | 工程治理/版本管理 |
+| 039 | [API 契约版本命名统一](docs/adr/ADR-039-API契约版本命名统一.md) | 📋 提案 | 2026-10-25 | 工程治理/API 契约 |
 
 ### 同号多文档登记（M4 治理裁决）
 
@@ -684,7 +690,9 @@ f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈
 | 门禁 | 命令 | 用途 |
 |:-----|:-----|:-----|
 | **版本门禁** | `npm run version:check` / `version:check:ci` | 8 个版本承载点一致性校验，CI 强制（ADR-038） |
-| **版本发布** | `npm run version:bump -- patch\|minor\|major\|rc` | 原子化更新全部承载点 + CHANGELOG 骨架 |
+| **版本发布** | `npm run version:bump -- patch\|minor\|major\|rc\|prerelease\|final` | 原子化更新全部承载点 + CHANGELOG 骨架（`final` 用于 rc 转正，只剥离后缀不推进 M.N.P） |
+| **版本一致性校验** | `npm run version:check`（含双写清单校验） | 8 承载点一致性 + `version-sources.js` ↔ `version.py` 清单同步，`--json` 供 CI |
+| **版本单元测试** | `npm run version:test` | `node:test` 覆盖 bump 运算 / 解析 / 漂移检测 / 退出码（45 用例） |
 | **主题门禁** | `npm run theme:gate` / `theme:gate:ci`（`--require-render`） | 设计令牌一致性，CI 强制 |
 | **主题审计** | `npm run theme:audit:css` / `theme:validate` | CSS 隔离审计 + 令牌校验 |
 | **UI 守卫** | `npm run ui:guard` / `ui:guard:baseline` | UI 一致性基线对比 |
@@ -971,8 +979,9 @@ rmfood-platform/
 │   ├── utils/ (49) assets/ (34) docs/ (17)
 │   └── miniprogram_npm/ (634, 第三方依赖, 不计入源码)
 │
-├── docs/                                    # 文档资产 (583)
-│   ├── adr/          (47)   架构决策记录 ← 权威索引
+├── docs/                                    # 文档资产 (586)
+│   ├── adr/          (48)   架构决策记录 ← 权威索引
+│   ├── release/      (3)    发布流程（总览 / CHECKLIST / ROLLBACK）
 │   ├── reports/      (49)   审计报告
 │   ├── assets/       (28)   设计资产
 │   ├── plans/        (38)   实施计划
@@ -983,7 +992,8 @@ rmfood-platform/
 │
 ├── tests/                 # 根级测试 (7)
 ├── scripts/               # 项目级脚本
-│   └── version/         # 版本治理（version-sources / check-version / bump-version）
+│   └── version/         # 版本治理（version-sources / check-version / bump-version + 2 测试）
+├── backend/archive/       # 卫生治理归档区（已 gitignore，仅本地留存，不入库）
 ├── models/ data/ tcmsp_data/ openfoodfacts/   # 数据与模型资产
 ├── deploy/ certs/ conf/ logs/                 # 部署与运行
 │
@@ -1024,7 +1034,9 @@ GitHub Actions（[.github/workflows/](.github/workflows/)），Node 20 + Python 
 | 8 | `deploy-staging` | 预发布环境 |
 | 9 | `deploy-production` | 生产环境 |
 | 10 | `smoke-test` | 部署后冒烟测试 |
-| 11 | `rollback` | 回滚 |
+| 11 | `rollback` | 回滚（**仅回滚镜像**，不执行数据库迁移回滚） |
+
+> ⚠️ **`rollback` job 不覆盖数据库**：该 job 流程为取旧镜像 tag → `docker compose down` → `docker pull` → `up -d` → 健康检查，全程无任何 `alembic` 调用。已部署带数据库迁移的版本被回滚后，数据库仍停留在新 schema。数据库回滚须人工按 [docs/release/ROLLBACK.md](docs/release/ROLLBACK.md) 场景 D 执行（迁移前必备份）。
 
 ### `security-scan.yml`
 
@@ -1062,17 +1074,17 @@ alembic downgrade -1          # 回滚一个版本
 | 🔴 P0 | **`torch` 依赖未声明** | 源码 9 个文件 `import torch`（含 `pytorch_generator.py`），但 `requirements*.txt` 均未声明；旧 README 曾声明 PyTorch ≥2.0.0。需核实安装来源并补入 |
 | 🟠 P1 | **ADR-001 六边形架构处于「已暂停」状态** | 领域层/适配器层已存在（17 + 16 文件）但未完成收敛，存在 `app/core` 与 `app/infrastructure` 职责重叠 |
 | 🟠 P1 | **ADR 编号历史误编号 7 组** | 已通过 `NNNb` 后缀治理，但旧编号仍在文件系统中并存，易误读 |
-| 🟠 P1 | **REST API 契约版本内部不一致** | `CURRENT_API_VERSION = "1.0.0"` 与 `API_MATRIX` 的 `v1`/`v2` 键名不对齐（详见 [ADR-038](docs/adr/ADR-038-语义化版本发布体系.md)「明确排除」）。改动会影响读取 `X-API-Version` 的下游客户端，需独立 ADR 处理 |
+| 🟠 P1 | **REST API 契约版本内部不一致** | `CURRENT_API_VERSION = "1.0.0"` 与 `API_MATRIX` 的 `v1`/`v2` 键名不对齐；实测另有三处 `X-API-Version` 注入点三种取值、`api_root` 硬编码脱钩、`deprecates: "2026-01-01"` 已过期 10 个月仍标 `current`、`api_versioning.py`（795 行）从未注册。**方案已成型**：见 [ADR-039](docs/adr/ADR-039-API契约版本命名统一.md)（📋 提案，推荐双轨制），待评审接受后实施 |
 | 🟡 P2 | **`transformers` 曾列为依赖但源码 0 引用** | 旧 README 声明 Transformers ≥4.35.0，实测无引用，需从文档中移除 |
 | 🟡 P2 | **后端 `services/` 体量过大（402 文件）** | 子域边界清晰但缺乏模块间契约约束，需考虑引入接口层 |
-| 🟡 P2 | **运行期产物被提交入库** | `backend/pg_data_new/`（971）等合计 1,139 个文件被 Git 跟踪，占 `backend/` 的 39%。需从版本库移除并加入 `.gitignore` |
-| 🟡 P2 | **`backend/` 根目录 36 个调试/探针脚本入库** | `_probe_*.py` / `_repro*.py` / `e2e*.py` / `gen3.py` / `debug_*.py` 等一次性排障脚本混在仓库中，与生产代码同级，应迁移至 `scripts/` 或移除 |
+| 🟡 P2 | **`backend/` 根目录 40 个一次性脚本入库** | 实测 40 个 tracked 脚本 = 启动/停止 12 + 探针/排障 28（README 旧称 36，偏低）。根目录 21 个一次性临时输出已移出索引并归档；**40 个脚本本体仍待决策**（迁入 `scripts/` 或删除，其中 12 个启动脚本与根 `start.ps1` 冗余）。另有 3 个 untracked 脚本，含 `test_chat_user_key.py` 硬编码 `password = "admin123"`（已被 `backend/test_*.py` 忽略，不会入库） |
 | 🟡 P2 | **测试覆盖率偏低** | 上一轮审计 6.5/10，阈值 60%，目标 80%；当前 142 前端 + 229 后端测试文件 |
 | 🟡 P2 | **AI 阈值集中化仅完成前端 14 个引擎** | 后端对应引擎（`services/ai/`）的硬编码阈值尚未同步治理 |
 | 🟡 P2 | **AI 模块版本号仍与平台版本正交** | 模块 CHANGELOG = v8.0.0、源码标记 = v9.0，与平台 `v2.0.0` 互不驱动。刻意未合并（见 ADR-038），待 AI 模块下一次大版本决策 |
 | 🟢 P3 | **`docs/` 根目录 310 个文件** | 文档散落，需按主题归档（`reports` / `reviews` / `plans` 已分目录） |
 | 🟢 P3 | **`APP_VERSION` 环境变量覆盖未经生产验证** | 本地已验证 `APP_VERSION=9.9.9` 可覆盖成功，但 Docker / Compose 部署流水线尚未实际注入该变量，首次生产发布需观察 |
-| 🟢 P3 | **版本承载点清单双写** | `scripts/version/version-sources.js` 与 `backend/app/version.py` 的 `VERSION_SOURCE_FILES` 需人工保持同步，无自动化校验 |
+| 🟢 P3 | **CI `rollback` job 不回滚数据库** | 该 job 仅回滚镜像，全程无 `alembic` 调用。带迁移的版本被回滚后数据库仍停在新 schema，须人工按 [docs/release/ROLLBACK.md](docs/release/ROLLBACK.md) 场景 D 执行 |
+| 🟢 P3 | **`v2.0.0` tag 是否已推送远端无法确认** | 本机 `git ls-remote --tags origin` 挂起超时（网络不通），本地 tag 已建且 `git describe` 可解析，但远端状态需联网环境复核 |
 
 ### 本轮已解决（v2.0.0，2026-10-25）
 
@@ -1084,7 +1096,15 @@ alembic downgrade -1          # 回滚一个版本
 | 🟠 P1 版本端点从未注册 | `register_version_routes` 因 `'_IncludedRouter' object has no attribute 'path'` 抛异常，被 try/except 静默降级 | 改用 `getattr(route, "path", None)` 防御，`/api` 与 `/api/v1/info` 首次成功注册 |
 | 🟡 P2 `LICENSE` 文件缺失 | README 与徽章声明 MIT 但无实体文件 | 补入根目录 [`LICENSE`](LICENSE) |
 | 🟠 P1 旧 README 数字严重过时 | 迁移 16 / TS 错误 140 / 后端 247 / 前端 839 / 端点 52 | 本文件已按实测全部更正（75 / 0 / 1,430 / 1,485 / 1,011） |
-| 🟢 无版本治理工具 | 手工维护 6 处版本号 | 新增 `scripts/version/` 三个脚本 + 4 个 npm scripts |
+| 🟢 无版本治理工具 | 手工维护 6 处版本号 | 新增 `scripts/version/` 五个脚本 + 5 个 npm scripts |
+| 🟡 P2 运行期产物被提交入库 | `pg_data_new/` 971 + `coverage_measurements/` 95 + `pytest-of-Administrator/` 73 = **1,139 文件**被跟踪，占 `backend/` 的 39.4% | 三者全部 `git rm --cached`（磁盘保留，不物理删除）+ `.gitignore` 卫生分区 15 条规则防回归；`backend/` 跟踪文件 **2,891 → 1,731** |
+| 🟡 P2 运行期 OpenAPI 导出物入库 | `openapi_clean.json` / `openapi_cleaned.json` / `openapi_fixed.json` 合计 4.27 MB，前两者 md5 相同（重复副本），三者均 mojibake；全仓**零代码引用**（`main.py:952 get_openapi_fixed()` 是函数名巧合，动态调用 `get_openapi()` 不读文件） | 移出索引并归档 + `backend/openapi_*.json` 规则 |
+| 🟡 P2 误命名的运行日志入库 | `herb_mechanisms_patch.txt` 名为"数据补丁"，实为 UTF-16 LE PowerShell 控制台日志（38,966 字节 / 19,483 字符，含 SciPy 版本告警） | 移出索引并归档 + 精确文件名规则 |
+| 🟢 P3 版本承载点清单双写 | `version-sources.js` 与 `version.py` 的 `VERSION_SOURCE_FILES` 需人工同步，无自动化校验 | `check-version.js` 新增 `--verify-source-list`（默认开启），从 Python 侧正则解析并与 JS 侧双向对比（缺失/多余/顺序差异均非 0），`version:check` 与 `version:check:ci` 强制；实测双写一致 |
+| 🟠 P1 rc 无法转正为正式版 | `version:bump -- rc` 后**无任何路径**产出正式版（patch/minor/major 保留 `-rc.N`，`prerelease` 反而推进 minor），脚本注释与实现不符 | 新增 `final` kind：只剥离 prerelease 后缀，M.N.P 与 build metadata 不变，已是正式版则报错；同时修正 `prerelease` 语义（正式版→bump patch 加标识符，预发布→递增标识符） |
+| 🟢 版本工具链零测试 | `scripts/version/` 无任何单元测试 | 新增 `version:test`（`node:test`），**45 用例**覆盖 bump 运算 / 各 kind 解析 / 双写漂移检测 / build metadata 落盘 / 退出码，全绿 |
+| 🟢 无发布流程文档 | 版本治理仅靠脚本注释与个人记忆 | 新增 [docs/release/](docs/release/) 三份文档（总览 / CHECKLIST / ROLLBACK），含两轴判定表、完整 checklist 与四类回滚场景 SOP |
+| 🟠 P1 ADR-007 迁移路径陈旧 | 文中 `backend/app/migrations/versions/` 与 `backend/app/core/migration.py` 两条路径均不存在 | 已按实际结构更正为 `backend/alembic/versions/`（75 个版本文件）与 `backend/app/core/compliance/migration.py`，并补充 `backend/migrations/` 遗留目录说明与修订记录 |
 
 ### 上一轮已完成项（2026-06-10 审计，历史记录）
 
@@ -1140,12 +1160,15 @@ Fork → Clone → 分支 (feature/fix/docs/refactor)
 4. **架构变更须先写 ADR**，参考 [docs/adr/index.md](docs/adr/index.md) 编写指南
 5. **新增 AI 引擎阈值须集中配置**，禁止散落的魔法数字（参考 2026-10-25 治理批次）
 6. **独立模块先行开发、全链路测试通过后再合并入主项目**
+7. **发布须走文档化流程**：先按 [docs/release/](docs/release/) 判定改动属于轴 A（平台版本）还是轴 B（API 契约），再执行 CHECKLIST；回滚遵循 ROLLBACK 四类场景 SOP
+8. **版本承载点禁止手工编辑**：一律用 `npm run version:bump`，否则 8 处镜像极易漂移
 
 ### 提交前自检
 
 ```bash
-# 版本一致性（发布前必查）
-npm run version:check
+# 版本治理：一致性门禁 + 工具链自测
+npm run version:check      # 8 个承载点 + JS/Python 双写清单
+npm run version:test       # 45 个用例
 
 # 前端
 cd frontend && npx tsc --noEmit && npm run lint && npm run test && npm run theme:gate:ci
@@ -1153,6 +1176,18 @@ cd frontend && npx tsc --noEmit && npm run lint && npm run test && npm run theme
 # 后端
 cd backend && pytest tests/ -q && black --check app/ && ruff check app/
 ```
+
+### 发布流程（简版，完整版见 [docs/release/CHECKLIST.md](docs/release/CHECKLIST.md)）
+
+```
+1. 判定轴      轴 A（平台版本）还是轴 B（API 契约）？两轴可独立演进
+2. 提升版本    npm run version:bump -- patch|minor|major|rc    # rc 转正用 final
+3. 手写 CHANGELOG   bump 只写骨架，条目内容必须手写
+4. 门禁        npm run version:check && npm run version:test
+5. 提交 + tag  git commit && git tag -a v<VERSION> -m "..."
+```
+
+> `version:bump` **绝不代提交**，只打印建议命令。tag 须为 annotated tag，推送需人工执行。
 
 ---
 

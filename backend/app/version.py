@@ -11,7 +11,7 @@ RMFOOD 平台发布版本的单一事实源（Single Source of Truth）
         npm run version:bump -- minor    # 2.0.0 -> 2.1.0
         npm run version:bump -- major    # 2.0.0 -> 3.0.0
 
-    该脚本会原子化更新全部 7 个版本承载点，避免版本漂移。
+    该脚本会原子化更新全部 8 个版本承载点，避免版本漂移。
 
     一致性门禁：  npm run version:check
     策略与决策：  docs/adr/ADR-038-语义化版本发布体系.md
@@ -23,7 +23,7 @@ RMFOOD 平台发布版本的单一事实源（Single Source of Truth）
 1. **本模块零依赖**：不 import 项目内任何模块，可被配置层安全引用而不产生循环导入。
 2. **仅承载「平台发布版本」一个语义**：即"这个项目整体到了哪一代"。
    REST API 契约版本（v1 / v2）是**独立轴**，权威定义在
-   `backend/app/api/api_version.py` 的 `CURRENT_API_API_VERSION` / `API_MATRIX`。
+   `backend/app/api/api_version.py` 的 `CURRENT_API_VERSION` / `API_MATRIX`。
    两个轴**不得混用**——API v1 在平台 2.x 内一直有效。
 3. **运行时可覆盖**：部署环境可用 `APP_VERSION` 环境变量覆盖内嵌版本
    （例如打补丁构建），覆盖逻辑在 `app.core.config.Settings` 中实现。

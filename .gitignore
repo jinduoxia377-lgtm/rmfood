@@ -287,3 +287,62 @@ docker/.env.deploy
 *.tgz
 cf*.png
 cloudflare_*.png
+
+# ============================================
+# ---- 仓库卫生治理（2026-10-25 新增）----
+# ============================================
+# 对应 README 技术债务清单 P2 项：
+#   [P2-1] 运行期产物被提交入库 —— backend/pg_data_new/（971 文件）、
+#          coverage_measurements/（95 文件）、pytest-of-Administrator/（73 文件）
+#   [P2-2] backend/ 根目录散落一次性探针/排障脚本与运行期产物
+#
+# 本次治理动作：
+#   1) 运行期产物已 git rm --cached（仅移出版本库，磁盘文件保留）
+#   2) 磁盘副本已移动归档至 backend/archive/trash-2026-10-25/（移动，非删除）
+#   3) 探针脚本本体未移动、未从版本库移除 —— 仅在卫生报告中分类登记，
+#      由 lead / 其他成员决定迁入 backend/scripts/ 或删除
+#
+# 说明：*.log、coverage.xml、.coverage、*.cache（匹配 jieba.cache）已由上文
+#       Logs / Testing / Temporary Files 段覆盖，本节不重复添加，仅补齐遗漏项。
+
+# ---- 运行期数据目录（对应 P2-1）----
+backend/pg_data_new/
+coverage_measurements/
+pytest-of-Administrator/
+
+# ---- Python 运行期产物补充（对应 P2-2）----
+# *.coverage  匹配 backend/ 等任意子目录下的 .coverage（上文 .coverage 仅匹配同名文件）
+# .coverage.* 带时间戳的 coverage 分片（此前漏网，2 个文件曾被误入库）
+# *.out       一次性扫描/编译输出（如 _scan500.out）
+*.coverage
+.coverage.*
+*.out
+
+# ---- backend/ 根目录散落的一次性临时输出 ----
+# 路径严格限定在 backend/ 根目录，避免误伤有价值的 md/json 报告
+backend/import_log.txt
+backend/import_output.txt
+backend/import_sync_result.txt
+backend/_scan500.out
+backend/unit_*.txt
+
+# ---- pip 误操作产物（`pip install x=1.44.0` 类畸形文件名）----
+backend/=*
+
+# ---- 运行期 OpenAPI 导出产物（对应 P2-2，本轮追加）----
+# openapi_clean / openapi_cleaned / openapi_fixed.json 为历史上手动导出的
+# 运行期 OpenAPI 规范：三者均含 GBK→UTF-8 mojibake，且 openapi_clean 与
+# openapi_cleaned md5 完全相同（重复副本）。无任何代码引用——
+# backend/app/main.py 的 get_openapi_fixed() 是动态调用 get_openapi() 生成的
+# 路由端点，函数名巧合，不读取任何 .json 文件。
+# 注：模式限定 backend/ 前缀且含下划线，不影响 docs/api/openapi.json 等正式文档。
+backend/openapi_*.json
+
+# ---- 误命名的运行日志（对应 P2-2，本轮追加）----
+# herb_mechanisms_patch.txt 名为"数据补丁"，实为 UTF-16 LE（BOM FF FE）编码的
+# PowerShell 控制台输出日志（gen_mechanisms.py 运行重定向保存）：38,966 字节 /
+# 19,483 字符，16,925 个空字节系 UTF-16 正常特征而非损坏。按日志类处置。
+backend/herb_mechanisms_patch.txt
+
+# ---- 卫生治理归档目录（本地暂存区，不入库）----
+backend/archive/

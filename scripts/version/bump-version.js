@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 /**
- * 版本发布助手：原子化更新全部 7 个版本承载点
+ * 版本发布助手：原子化更新全部 8 个版本承载点
  * =============================================
  *
  * 用法：
- *   node scripts/version/bump-version.js <patch|minor|major|rc> [--tag] [--yes]
+ *   node scripts/version/bump-version.js <patch|minor|major|rc|prerelease|final> [--tag] [--yes]
  *
- *   patch       2.0.0 -> 2.0.1     向后兼容的修复
- *   minor       2.0.0 -> 2.1.0     向后兼容的新功能
- *   major       2.0.0 -> 3.0.0     不兼容的破坏性变更
- *   rc          2.0.0 -> 2.0.0-rc.1  发布候选
+ *   patch       2.0.0 -> 2.0.1              向后兼容的修复
+ *   minor       2.0.0 -> 2.1.0              向后兼容的新功能
+ *   major       2.0.0 -> 3.0.0              不兼容的破坏性变更
+ *   rc          2.0.0 -> 2.0.0-rc.1         为当前基线造候选（不推进版本号）
+ *   prerelease  2.0.0 -> 2.0.1-alpha.0      下一版本的预发布（npm 语义）
+ *   final       2.0.0-rc.2 -> 2.0.0         转正：只剥离 prerelease 后缀
  *
  * 选项：
- *   --tag    更新后直接执行 `git tag -a vX.Y.Z -m "..."` 并推送（默认不执行，只打印命令）
+ *   --tag    更新后执行 `git tag -a vX.Y.Z -m "..."` 创建本地 tag；
+ *            推送仍由你手动完成（脚本只打印 push 命令，不会自动 push）
  *   --yes    跳过确认提示
  *
  * 退出码：0 成功；1 写入失败；2 参数错误
@@ -38,12 +41,14 @@ const yellow = (s) => c('33', s);
 const bold = (s) => c('1', s);
 const dim = (s) => c('2', s);
 
-if (!kind || !['patch', 'minor', 'major', 'rc', 'prerelease'].includes(kind)) {
-  console.error(red('用法：node scripts/version/bump-version.js <patch|minor|major|rc> [--tag] [--yes]\n'));
-  console.error(dim('  patch    向后兼容的修复      2.0.0 -> 2.0.1'));
-  console.error(dim('  minor    向后兼容的新功能    2.0.0 -> 2.1.0'));
-  console.error(dim('  major    破坏性变更          2.0.0 -> 3.0.0'));
-  console.error(dim('  rc       发布候选            2.0.0 -> 2.0.0-rc.1'));
+if (!kind || !['patch', 'minor', 'major', 'rc', 'prerelease', 'final'].includes(kind)) {
+  console.error(red('用法：node scripts/version/bump-version.js <patch|minor|major|rc|prerelease|final> [--tag] [--yes]\n'));
+  console.error(dim('  patch       向后兼容的修复      2.0.0 -> 2.0.1'));
+  console.error(dim('  minor       向后兼容的新功能    2.0.0 -> 2.1.0'));
+  console.error(dim('  major       破坏性变更          2.0.0 -> 3.0.0'));
+  console.error(dim('  rc          发布候选            2.0.0 -> 2.0.0-rc.1'));
+  console.error(dim('  prerelease  下一版本预发布      2.0.0 -> 2.0.1-alpha.0'));
+  console.error(dim('  final       转正（剥离后缀）    2.0.0-rc.2 -> 2.0.0'));
   process.exit(2);
 }
 
@@ -76,7 +81,15 @@ function confirm(question) {
     process.exit(2);
   }
 
-  const next = bump(current, kind);
+  // bump 可能因语义不成立而抛错（例如对正式版执行 final）——转成清晰的用法错误退出
+  let next;
+  try {
+    next = bump(current, kind);
+  } catch (e) {
+    console.error(red(`❌ ${e.message}`));
+    console.error(dim('   可选类型：patch | minor | major | rc | prerelease | final'));
+    process.exit(2);
+  }
   const date = todayISO();
   const tag = `v${next}`;
 
