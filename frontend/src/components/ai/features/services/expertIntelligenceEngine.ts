@@ -12,6 +12,14 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import {
+  EXPERT_LOW_CONFIDENCE,
+  EXPERT_MIN_INPUT_LEN,
+  EXPERT_RECOMMEND_CONFIDENCE,
+  EXPERT_LONG_INPUT_LEN,
+  EXPERT_DEGRADE_CONFIDENCE,
+  EXPERT_DEGRADE_MIN_INPUT_LEN,
+} from '@/config/ai/constants';
 
 // ===== 智能建议类型 =====
 export interface SmartSuggestion {
@@ -378,7 +386,7 @@ class ProSuggestionGenerator {
   generateProfessionalSuggestions(ctx: ParsedContext): SmartSuggestion[] {
     const suggestions: SmartSuggestion[] = [];
 
-    if (ctx.confidence < 0.15 && ctx.rawInput.length < 6) {
+    if (ctx.confidence < EXPERT_LOW_CONFIDENCE && ctx.rawInput.length < EXPERT_MIN_INPUT_LEN) {
       return suggestions;
     }
 
@@ -795,7 +803,7 @@ class ProSuggestionGenerator {
       });
     }
 
-    if (ctx.confidence >= 0.4 && ctx.ingredientMentions.length === 0 && ctx.functionGoals.length > 0) {
+    if (ctx.confidence >= EXPERT_RECOMMEND_CONFIDENCE && ctx.ingredientMentions.length === 0 && ctx.functionGoals.length > 0) {
       const ingredientRecMap: Record<string, string> = {
         '代谢调节(三高)':
           '热门成分推荐：①大豆肽(ACE抑制/调脂双效) ②苦瓜提取物(植物胰岛素模拟) ③桑叶DNJ(α-糖苷酶抑制) ④红曲(天然他汀,注意桔霉素控制<50ppb)',
@@ -822,7 +830,7 @@ class ProSuggestionGenerator {
       }
     }
 
-    if (ctx.rawInput.length > 15 && !ctx.regulatoryContext) {
+    if (ctx.rawInput.length > EXPERT_LONG_INPUT_LEN && !ctx.regulatoryContext) {
       suggestions.push({
         id: `smart-regcheck-${Date.now()}`,
         text: '合规性快速自查：①产品属性判定(普食/保健/特医/药品边界) ②原料合规性(GB2760/新资源食品/药食同源目录) ③声称红线规避(不得涉及疾病治疗/功能承诺) ④标签要素完整性(配料表/营养成分表/过敏原)',
@@ -833,7 +841,7 @@ class ProSuggestionGenerator {
       });
     }
 
-    if (ctx.confidence < 0.3 && ctx.rawInput.length >= 8) {
+    if (ctx.confidence < EXPERT_DEGRADE_CONFIDENCE && ctx.rawInput.length >= EXPERT_DEGRADE_MIN_INPUT_LEN) {
       suggestions.push({
         id: `smart-refine-${Date.now()}`,
         text: '💡 提升建议精准度：当前输入信息较少，建议补充以下任一维度以获得更专业建议：①具体产品形态(固体饮料/片剂/胶囊等) ②目标功效(降三高/免疫/肠道等) ③核心原料或成分 ④目标人群(中老年/职场/女性等) ⑤特殊要求(有机/素食/低糖等)',

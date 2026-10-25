@@ -71,3 +71,11 @@ export const PROMPT_COMPLEX_SIMPLE_AVG_LEN = 30
 export const PROMPT_COMPLEX_MODERATE_SENTENCES = 4
 export const PROMPT_COMPLEX_MODERATE_CLAUSES = 8
 export const PROMPT_COMPLEX_MODERATE_AVG_LEN = 60
+
+// ===== expertIntelligenceEngine：专家建议置信度阈值 =====
+export const EXPERT_LOW_CONFIDENCE = 0.15 // 低于此置信度且输入过短 → 跳过建议
+export const EXPERT_MIN_INPUT_LEN = 6
+export const EXPERT_RECOMMEND_CONFIDENCE = 0.4 // 生成成分推荐所需最低置信度
+export const EXPERT_LONG_INPUT_LEN = 15 // 长输入无监管上下文 → 补监管建议
+export const EXPERT_DEGRADE_CONFIDENCE = 0.3 // 低置信度降级判定
+export const EXPERT_DEGRADE_MIN_INPUT_LEN = 8
