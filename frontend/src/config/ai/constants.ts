@@ -122,3 +122,13 @@ export const FIE_SAFETY_BASE_SCORE = 0.9 // 无禁忌时安全分
 export const FIE_SAFETY_MIN_SCORE = 0.3 // 安全分下限
 export const FIE_SAFETY_PENALTY_PER_CONTRA = 0.2 // 每个配伍禁忌扣分
 export const FIE_MAX_RECOMMENDATIONS = 5 // 推荐建议上限
+
+// ===== FormulaKnowledgeGraph：知识图谱兼容性阈值 =====
+export const FKG_SIMILARITY_MIN = 0.3 // 相似成分推荐阈值
+export const FKG_IMPLICIT_ENHANCE_MIN = 0.4 // 隐式增强阈值
+export const FKG_IMPLICIT_CONTRADICT_MAX = 0.1 // 隐式禁忌阈值
+export const FKG_NEUTRAL_STRENGTH = 0.3 // 中性配伍强度
+export const FKG_MERIDIAN_BONUS = 0.05 // 共同归经加分
+export const FKG_FLAVOR_BONUS = 0.03 // 共同五味加分
+export const FKG_SCORE_MIN = -0.3 // 隐式兼容分下限
+export const FKG_SCORE_MAX = 0.7 // 隐式兼容分上限

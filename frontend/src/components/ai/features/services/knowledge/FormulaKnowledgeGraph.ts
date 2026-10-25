@@ -12,6 +12,17 @@
  * 3. 支持增量知识加载和验证
  */
 
+import {
+  FKG_SIMILARITY_MIN,
+  FKG_IMPLICIT_ENHANCE_MIN,
+  FKG_IMPLICIT_CONTRADICT_MAX,
+  FKG_NEUTRAL_STRENGTH,
+  FKG_MERIDIAN_BONUS,
+  FKG_FLAVOR_BONUS,
+  FKG_SCORE_MIN,
+  FKG_SCORE_MAX,
+} from '@/config/ai/constants'
+
 /* ================================================================== */
 /*  基础类型定义                                                        */
 /* ================================================================== */
@@ -483,7 +494,7 @@ export class FormulaKnowledgeGraph {
         ? dotProduct / (Math.sqrt(sourceMag) * Math.sqrt(targetMag))
         : 0
 
-      if (similarity > 0.3) {
+      if (similarity > FKG_SIMILARITY_MIN) {
         candidates.push({ ingredient: node, similarity: Math.round(similarity * 100) / 100 })
       }
     }
@@ -537,14 +548,14 @@ export class FormulaKnowledgeGraph {
 
         // 计算隐式兼容性
         const implicitScore = this.calculateImplicitCompatibility(aNode, bNode)
-        if (implicitScore >= 0.4) {
+        if (implicitScore >= FKG_IMPLICIT_ENHANCE_MIN) {
           results.push({
             pair: [a, b],
             type: EdgeType.ENHANCES,
             strength: implicitScore,
             description: `${aNode.label}与${bNode.label}性质相合`,
           })
-        } else if (implicitScore <= 0.1) {
+        } else if (implicitScore <= FKG_IMPLICIT_CONTRADICT_MAX) {
           results.push({
             pair: [a, b],
             type: EdgeType.CONTRADICTS,
@@ -555,7 +566,7 @@ export class FormulaKnowledgeGraph {
           results.push({
             pair: [a, b],
             type: EdgeType.INTERACTS_WITH,
-            strength: 0.3,
+            strength: FKG_NEUTRAL_STRENGTH,
             description: `${aNode.label}与${bNode.label}配伍中性`,
           })
         }
@@ -585,15 +596,15 @@ export class FormulaKnowledgeGraph {
     const aMer: string[] = (aProps.meridians as string[]) || []
     const bMer: string[] = (bProps.meridians as string[]) || []
     const commonMer = aMer.filter((m) => bMer.includes(String(m)))
-    score += commonMer.length * 0.05
+    score += commonMer.length * FKG_MERIDIAN_BONUS
 
     // 五味调和
     const aFla: string[] = (aProps.flavor as string[]) || []
     const bFla: string[] = (bProps.flavor as string[]) || []
     const commonFla = aFla.filter((f) => bFla.includes(String(f)))
-    score += commonFla.length * 0.03
+    score += commonFla.length * FKG_FLAVOR_BONUS
 
-    return Math.max(-0.3, Math.min(0.7, score))
+    return Math.max(FKG_SCORE_MIN, Math.min(FKG_SCORE_MAX, score))
   }
 
   /* ================================================================ */
