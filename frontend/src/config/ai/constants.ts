@@ -92,3 +92,16 @@ export const ISG_FAILURE_STEP = 0.05 // 拒绝后成功率减量
 export const ISG_CACHE_KEY_TRUNCATE = 100 // 缓存 key 输入截断长度
 export const ISG_CACHE_MAX_SIZE = 50 // 缓存上限
 export const ISG_CACHE_CLEANUP_BATCH = 25 // 超限后单次清理数量
+
+// ===== promptEngineeringFramework：提示词评分与等级阈值 =====
+export const PEF_CONCISE_LEN_EXCELLENT = 80
+export const PEF_CONCISE_LEN_GOOD = 120
+export const PEF_CONCISE_LEN_MEDIUM = 150
+export const PEF_CONCISE_LEN_BASIC = 170
+export const PEF_GRADE_S = 95
+export const PEF_GRADE_APLUS = 90
+export const PEF_GRADE_A = 80
+export const PEF_GRADE_BPLUS = 72
+export const PEF_GRADE_B = 65
+export const PEF_GRADE_C = 55
+export const PEF_GRADE_D = 40
