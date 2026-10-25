@@ -39,3 +39,16 @@ export const DTS_LENGTH_THRESHOLD_1 = 30
 export const DTS_LENGTH_THRESHOLD_2 = 50
 export const DTS_LENGTH_30_BONUS = 0.08
 export const DTS_LENGTH_50_BONUS = 0.07
+
+// ===== sentimentEngine：情感强度评分 =====
+export const SENTI_BASE_SCORE_CAP = 70 // 基础分上限
+export const SENTI_WEIGHT_RATIO = 60 // 主类别权重占比基数
+export const SENTI_KEYWORD_SCORE = 3 // 每个匹配关键词加分
+export const SENTI_DENSITY_MIN = 1.0
+export const SENTI_DENSITY_MAX = 1.5
+export const SENTI_DENSITY_FACTOR = 0.15
+export const SENTI_EXCLAMATION_BOOST_CAP = 30 // 感叹号/重复加强上限
+export const SENTI_EXCLAMATION_SCORE = 5
+export const SENTI_QUESTION_SCORE = 2
+export const SENTI_REPEATED_WORD_SCORE = 3
+export const SENTI_REPEAT_COUNT_THRESHOLD = 1 // 词频超过此值视为重复
