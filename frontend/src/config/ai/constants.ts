@@ -83,3 +83,12 @@ export const EXPERT_DEGRADE_MIN_INPUT_LEN = 8
 // ===== knowledgeGraphUpdater：知识图谱健康状态阈值 =====
 export const KGU_DEGRADED_SUCCESS_RATE = 80 // 成功率低于此值 → degraded
 export const KGU_CRITICAL_SUCCESS_RATE = 50 // 成功率低于此值 → critical
+
+// ===== intelligentSuggestionGenerator：智能建议生成器阈值 =====
+export const ISG_MIN_KEYWORD_LEN = 2 // 关键词最短长度
+export const ISG_INITIAL_SUCCESS_RATE = 0.5 // 建议初始成功率
+export const ISG_SUCCESS_STEP = 0.1 // 采纳后成功率增量
+export const ISG_FAILURE_STEP = 0.05 // 拒绝后成功率减量
+export const ISG_CACHE_KEY_TRUNCATE = 100 // 缓存 key 输入截断长度
+export const ISG_CACHE_MAX_SIZE = 50 // 缓存上限
+export const ISG_CACHE_CLEANUP_BATCH = 25 // 超限后单次清理数量
