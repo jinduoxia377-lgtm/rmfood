@@ -1,0 +1,31 @@
+{
+  "print": {
+    "backend/app/api/formula_validation.py": 3,
+    "backend/app/services/ai/models/trainer.py": 4,
+    "backend/app/services/analyze_recipe_generation.py": 1,
+    "backend/app/services/data_sources/expand_peptides.py": 1,
+    "backend/app/services/data_sources/generate_peptides.py": 7,
+    "backend/app/services/formula/coefficient_version_manager.py": 8,
+    "backend/app/services/formula/compatibility_rules.py": 3,
+    "backend/app/services/formula/multi_algorithm_orchestrator.py": 4,
+    "backend/app/services/formula/nutrition_database.py": 3,
+    "backend/app/services/formula/parallel_pipeline.py": 10,
+    "backend/app/services/formula/pk_pd_database.py": 7,
+    "backend/app/services/formula/stability_predictor.py": 6,
+    "backend/app/services/formula/taste_predictor.py": 6,
+    "backend/app/services/main_entry.py": 1,
+    "backend/app/services/nutrition/nutrition_database.py": 3,
+    "backend/app/services/openfoodfacts/loader_sync.py": 1,
+    "backend/app/services/peptide_analyzer/ml_predictor.py": 2,
+    "backend/app/services/verify_recipe_generation_data.py": 24
+  },
+  "console": {
+    "frontend/src/App.tsx": 1,
+    "frontend/src/components/molecule/MoleculeViewer3D.tsx": 1,
+    "frontend/src/pages/experiment/DoePage.tsx": 2,
+    "frontend/src/pages/test/MinSliderTest.tsx": 2,
+    "frontend/src/pages/test/SliderDiagnosticPage.tsx": 1,
+    "frontend/src/pages/test/SliderTestPage.tsx": 1,
+    "frontend/src/pages/test/TestSliderPage.tsx": 1
+  }
+}

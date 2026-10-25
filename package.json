@@ -20,6 +20,8 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "hooks:setup": "node scripts/setup-hooks.mjs",
+    "qc:baseline": "node scripts/qc-ratchet.mjs --update",
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:check": "node scripts/version/check-version.js",
     "version:check:ci": "node scripts/version/check-version.js --json",

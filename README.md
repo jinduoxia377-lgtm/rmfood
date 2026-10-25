@@ -128,6 +128,17 @@ npm run version:current          # 打印当前版本
 
 `bump` 脚本只改文件、**不执行 git commit**，以便人工审阅完整 diff 后再提交打 tag。
 
+**提交钩子接线**（克隆仓库后必做一次）
+
+```bash
+npm run hooks:setup   # 把 .husky/pre-commit 接线到 .git/hooks/pre-commit
+npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console 基线
+```
+
+> ⚠️ husky **未安装**在根目录，`frontend/package.json` 虽声明了 husky ^9.1.7 但没有 `prepare` 脚本，
+> 因此 `.husky/` 下的钩子长期空转——这是 2026-10-25 实测确认的治理缺陷。
+> 本项目改用 `.git/hooks/pre-commit` + `npm run hooks:setup` 接线，`.husky/pre-commit` 是唯一权威源。
+
 ### 两个正交的版本轴（勿混用）
 
 | 轴 | 当前值 | 含义 | 权威位置 | 运行时暴露 |
@@ -699,7 +710,8 @@ f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈
 | **令牌生成** | `npm run tokens:generate` | 从 TS 定义生成 CSS 变量（单一事实源） |
 | **性能审计** | `npm run audit:lighthouse` | Lighthouse 评分 |
 | **包体分析** | `rollup-plugin-visualizer` | 依赖体积可视化 |
-| **提交钩子** | husky + lint-staged（prettier + eslint --fix） | 提交前自动修复 |
+| **提交钩子** | `.husky/pre-commit`（9 节：肽结构防还原 / print·console 棘轮 / as any / tsc / ruff / UI 护栏 / 未定义名称 / 版本门禁） | `npm run hooks:setup` 接线到 `.git/hooks/pre-commit` |
+| **print/console 棘轮** | `npm run qc:baseline`（刷新）/ `node scripts/qc-ratchet.mjs print\|console` | 逐文件计数基线，只减不增：存量 94 处 print + 9 处 console 不阻塞，新增即阻塞 |
 | **后端扫描** | pip-audit + bandit | 依赖 CVE + AST 安全扫描 |
 
 ### 代码健康度（上一轮审计记录，2026-06-10，待下次全面复评）
@@ -1124,11 +1136,11 @@ alembic downgrade -1          # 回滚一个版本
 | devcontainer（Python 3.12 + Node 20） | ✅ |
 | 部署脚本（一键部署 + 数据库备份） | ✅ |
 | 每日安全扫描（GitHub Actions 定时） | ✅ |
-| 后端 `print()` 清理（生产代码 9 处） | ✅ |
+| 后端 `print()` 棘轮治理（存量 94 处 → 只减不增） | ✅（基线 `scripts/qc-baseline.json`） |
 | OpenTelemetry 分布式追踪 | ✅ |
 | API 版本协商机制（`X-API-Version` 响应头） | ✅ |
 | 邮件服务（`forgot_password`） | ✅ |
-| Prettier + husky / lint-staged | ✅ |
+| husky / lint-staged 提交钩子 | ❌ 从未生效：husky 未安装在根目录、frontend 无 `prepare` 脚本，`.husky/` 钩子长期空转（2026-10-25 实测确认） |
 | 移除未使用依赖（`passlib`） | ✅ |
 | **TypeScript 编译错误清零（1,331 → 0）** | ✅（2026-10-25 实测） |
 
