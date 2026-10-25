@@ -147,3 +147,9 @@ export const FGO_WEIGHTS = { efficacy: 0.25, safety: 0.20, taste: 0.12, stabilit
 export const NLP_ENTITY_BOOST_FACTOR = 20 // 实体匹配加分基数
 export const NLP_SCORE_CAP = 100 // 意图分数上限
 export const NLP_NEGATIVE_PENALTY = 50 // 负面模式扣分
+
+// ===== formulaExtractorService：配方提取阈值 =====
+export const FES_EFFECT_MIN_LENGTH = 5 // 功效描述最小长度
+export const FES_TABLE_MIN_CELLS = 3 // 表格解析最少列数
+export const FES_CONFIDENCE_WITH_INGREDIENTS = 0.9 // 有成分时的置信度
+export const FES_CONFIDENCE_NO_INGREDIENTS = 0.5 // 无成分时的置信度

@@ -17,6 +17,12 @@
 import { logger } from '@/utils/safeLogger'
 import type { StructuredContent } from '../components/structured/types'
 import type { AIRecognizedFormula } from '@/types/ai.types'
+import {
+  FES_EFFECT_MIN_LENGTH,
+  FES_TABLE_MIN_CELLS,
+  FES_CONFIDENCE_WITH_INGREDIENTS,
+  FES_CONFIDENCE_NO_INGREDIENTS,
+} from '@/config/ai/constants'
 
 /** 从 content-block 中提取的配方成分 */
 export interface ExtractedIngredient {
@@ -151,7 +157,7 @@ export function extractFormulaFromContent(content: StructuredContent): Extracted
           // 监测与迭代建议
           formula.monitoringAdvice = c.content
         } else if (lowerTitle.includes('预期') || lowerTitle.includes('功效')) {
-          const lines = c.content.split(/[；;。]/).filter(s => s.trim().length > 5)
+          const lines = c.content.split(/[；;。]/).filter(s => s.trim().length > FES_EFFECT_MIN_LENGTH)
           formula.expectedEffects = lines.map(l => l.trim()).filter(Boolean)
         } else if (lowerTitle.includes('总结') || lowerVariant === 'summary') {
           // 保存为备选描述
@@ -266,7 +272,7 @@ export function extractFormulaFromMarkdown(text: string): ExtractedFormula | nul
     const rows = tableLines[2].split('\n').filter(l => l.trim().startsWith('|'))
     for (const row of rows) {
       const cells = row.split('|').filter(c => c.trim())
-      if (cells.length >= 3) {
+      if (cells.length >= FES_TABLE_MIN_CELLS) {
         formula.ingredients.push({
           name: cells[0]?.trim() || '',
           dosage: cells[1]?.trim() || '',
@@ -295,7 +301,7 @@ export function toAIRecognizedFormula(extracted: ExtractedFormula): AIRecognized
     id: '',
     name: extracted.name || '未命名配方',
     ingredientCount: extracted.ingredients.length,
-    confidence: extracted.ingredients.length > 0 ? 0.9 : 0.5,
+    confidence: extracted.ingredients.length > 0 ? FES_CONFIDENCE_WITH_INGREDIENTS : FES_CONFIDENCE_NO_INGREDIENTS,
     sourceMessageId: '',
     parsedAt: new Date(),
     rawData: {} as any,
