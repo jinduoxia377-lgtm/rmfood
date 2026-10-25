@@ -11,6 +11,8 @@ export default {
     formulaIngredients: 'Formelinhaltsstoffe',
     addIngredient: 'Inhaltsstoff hinzufügen',
     selectIngredient: 'Inhaltsstoff auswählen...',
+    knownHerbsFromBackend: 'Backend-DB',
+    knownHerbsFallback: 'Offline-Liste',
     storageConditions: 'Lagerbedingungen',
     temperature: 'Temperatur (°C)',
     humidity: 'Luftfeuchtigkeit (%RH)',
