@@ -1,16 +1,50 @@
 {
   "name": "rmfood",
-  "version": "1.0.0",
-  "description": "RMFOOD 药食同源配方平台",
-  "main": "app.js",
+  "version": "2.0.0",
+  "description": "RMFOOD 药食同源配方平台 —— 面向药食同源功能性食品的 AI 驱动配方研发平台",
+  "private": true,
+  "license": "MIT",
+  "keywords": [
+    "rmfood",
+    "药食同源",
+    "配方研发",
+    "TCM",
+    "AI"
+  ],
+  "author": "RMFOOD Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rmfood/rmfood-platform.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version:check": "node scripts/version/check-version.js",
+    "version:check:ci": "node scripts/version/check-version.js --json",
+    "version:bump": "node scripts/version/bump-version.js",
+    "version:current": "node -p \"require('./package.json').version\""
+  },
+  "devDependencies": {},
   "dependencies": {
     "weui-miniprogram": "^2.7.0"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "versionPolicy": {
+    "authority": "package.json",
+    "semver": "2.0.0",
+    "adr": "docs/adr/ADR-038-语义化版本发布体系.md",
+    "changelog": "CHANGELOG.md",
+    "singleSourceOfTruthBackend": "backend/app/version.py",
+    "sources": [
+      "package.json",
+      "frontend/package.json",
+      "miniprogram/package.json",
+      "backend/pyproject.toml",
+      "backend/app/version.py",
+      ".env.example",
+      "backend/.env.example",
+      "CHANGELOG.md"
+    ]
+  }
 }

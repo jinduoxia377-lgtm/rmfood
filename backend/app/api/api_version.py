@@ -206,7 +206,11 @@ def register_version_routes(app: FastAPI) -> None:
     app.include_router(v1_info_router, prefix="/api/v1")
 
     # 确保 /health 在根路径可直接访问
-    if not any(route.path == "/health" for route in app.routes):
+    # ⚠️ 必须用 getattr 防御：较新的 Starlette 会在 app.routes 中放入
+    # _IncludedRouter 哨兵对象，它们没有 .path 属性。直接访问会抛
+    # AttributeError，导致整个 register_version_routes 失败并被调用方
+    # 的 try/except 静默降级为 warning —— 即 /api、/api/v1/info 从未注册成功。
+    if not any(getattr(route, "path", None) == "/health" for route in app.routes):
         app.add_api_route("/health", health_check, include_in_schema=True)
 
     logger.info(f"✅ API 版本管理已注册 (当前版本 v{CURRENT_API_VERSION})")
