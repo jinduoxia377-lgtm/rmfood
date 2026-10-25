@@ -9,6 +9,20 @@
  * - LRU 缓存（最近200条），单次分析 < 1ms
  */
 
+import {
+  SENTI_BASE_SCORE_CAP,
+  SENTI_WEIGHT_RATIO,
+  SENTI_KEYWORD_SCORE,
+  SENTI_DENSITY_MIN,
+  SENTI_DENSITY_MAX,
+  SENTI_DENSITY_FACTOR,
+  SENTI_EXCLAMATION_BOOST_CAP,
+  SENTI_EXCLAMATION_SCORE,
+  SENTI_QUESTION_SCORE,
+  SENTI_REPEATED_WORD_SCORE,
+  SENTI_REPEAT_COUNT_THRESHOLD,
+} from '@/config/ai/constants'
+
 // ===== 类型定义 =====
 
 /** 细粒度情绪类别 */
@@ -343,19 +357,19 @@ export class SentimentEngine {
   ): number {
     // base_score: 基于匹配关键词数量和权重的基础分（0-70）
     const totalWeight = allScores.reduce((sum, s) => sum + s.score, 0)
-    const baseScore = Math.min(70, (primary.score / Math.max(totalWeight, 1)) * 60 + primary.matchedKeywords.length * 3)
+    const baseScore = Math.min(SENTI_BASE_SCORE_CAP, (primary.score / Math.max(totalWeight, 1)) * SENTI_WEIGHT_RATIO + primary.matchedKeywords.length * SENTI_KEYWORD_SCORE)
 
     // keyword_density_multiplier: 关键词密度系数（1.0-1.5）
     const textLength = text.length
     const totalMatches = allScores.reduce((sum, s) => sum + s.matchedKeywords.length, 0)
     const density = textLength > 0 ? totalMatches / (textLength / 10) : 0
-    const densityMultiplier = Math.min(1.5, Math.max(1.0, 1.0 + density * 0.15))
+    const densityMultiplier = Math.min(SENTI_DENSITY_MAX, Math.max(SENTI_DENSITY_MIN, SENTI_DENSITY_MIN + density * SENTI_DENSITY_FACTOR))
 
     // exclamation_boost: 感叹号/重复加强（+0-30）
     const exclamationCount = (text.match(/!/g) || []).length
     const questionCount = (text.match(/\?/g) || []).length
     const repeatedWords = this.countRepeatedWords(text)
-    const exclamationBoost = Math.min(30, exclamationCount * 5 + questionCount * 2 + repeatedWords * 3)
+    const exclamationBoost = Math.min(SENTI_EXCLAMATION_BOOST_CAP, exclamationCount * SENTI_EXCLAMATION_SCORE + questionCount * SENTI_QUESTION_SCORE + repeatedWords * SENTI_REPEATED_WORD_SCORE)
 
     const intensity = baseScore * densityMultiplier + exclamationBoost
     return Math.round(Math.min(100, Math.max(0, intensity)))
@@ -370,7 +384,7 @@ export class SentimentEngine {
     }
     let repeatCount = 0
     Array.from(freq.values()).forEach((count) => {
-      if (count > 1) repeatCount += count - 1
+      if (count > SENTI_REPEAT_COUNT_THRESHOLD) repeatCount += count - 1
     })
     return repeatCount
   }
