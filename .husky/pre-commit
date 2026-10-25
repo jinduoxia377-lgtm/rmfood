@@ -71,3 +71,17 @@ cd backend
 ./venv/Scripts/python.exe scripts/scan_undefined.py app/api 2>/dev/null | tail -3
 echo "✅ 未定义名称扫描完成（app/api 应保持 0 处）"
 cd ..
+
+# 8. 语义化版本一致性门禁（ADR-038）
+#
+# 单一权威源（package.json）+ 8 处镜像 + JS/Python 双写清单漂移检测。
+# 纯本地文件读取，无网络无编译，通常 <1s；8 个承载点一致即返回 0，
+# 版本文件未变化时同样是快速通过，不会明显拖慢提交。
+echo "📋 语义化版本一致性门禁..."
+node scripts/version/check-version.js --no-color
+if [ $? -ne 0 ]; then
+    echo "❌ 版本一致性检查未通过：8 个承载点存在漂移，或 JS/Python 双写清单不一致"
+    echo "   修复方式：在仓库根目录执行 npm run version:bump -- <patch|minor|major|rc>"
+    exit 1
+fi
+echo "✅ 语义化版本一致性通过"

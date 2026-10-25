@@ -23,6 +23,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:check": "node scripts/version/check-version.js",
     "version:check:ci": "node scripts/version/check-version.js --json",
+    "version:test": "node --test scripts/version/*.test.js",
     "version:bump": "node scripts/version/bump-version.js",
     "version:current": "node -p \"require('./package.json').version\""
   },

@@ -18,7 +18,26 @@
 
 ### Added
 
-- 暂无
+- 版本工具链：`version:bump -- final` 子命令（rc 转正——只剥离 prerelease 后缀，M.N.P 与 build metadata 保持不变；已是正式版则报错退出）
+- 版本工具链：`check-version.js --verify-source-list`（默认开启），校验 JS `VERSION_SOURCES` 与 Python `VERSION_SOURCE_FILES` 双写清单的集合与顺序一致
+- 版本工具链：`npm run version:test`（`node:test`，45 个用例）
+- 发布文档集 [docs/release/](docs/release/)：发布流程总览（含两轴判定表）、CHECKLIST、ROLLBACK（四类回滚场景 SOP）
+- [ADR-039 API 契约版本命名统一](docs/adr/ADR-039-API契约版本命名统一.md)（📋 提案）
+
+### Changed
+
+- `version:bump` 的 `patch` / `minor` / `major` 与 `prerelease` 语义修正：转正路径收敛为 `final` 唯一路径
+- `.husky/pre-commit` 新增语义化版本一致性门禁
+
+### Fixed
+
+- 仓库卫生：1,139 个运行期产物文件（`pg_data_new/` 971 + `coverage_measurements/` 95 + `pytest-of-Administrator/` 73）移出 Git 索引，`backend/` 跟踪文件由 2,891 降至 1,731
+- `version-sources.js` / `bump-version.js` / `version.py` 三处注释「7 个承载点」更正为 8；`version.py` 注释中 `CURRENT_API_API_VERSION` 笔误更正
+- ADR-007 两条不存在的迁移路径更正为实际结构
+
+### Removed
+
+- 根目录 21 个一次性临时输出与误操作产物移出索引（含 4.27 MB 的 OpenAPI 导出副本、UTF-16 日志误名文件），磁盘副本归档至 `backend/archive/trash-2026-10-25/`
 
 ---
 
@@ -27,14 +46,14 @@
 > **首个正式语义化版本发布**。此前项目无任何 git tag、无 CHANGELOG，
 > 版本号停留在 `1.0.0`（三处 package.json）而 `backend/pyproject.toml` 已为 `2.0.0`。
 > 本次以 `backend/pyproject.toml` 既有的 `2.0.0` 为锚点，统一全平台版本号，
-> 并补齐版本治理基础设施。累计涵盖 **563 次提交**（2026-06-10 → 2026-10-25）与
-> **46 篇 ADR**（001–037）。
+> 并补齐版本治理基础设施。累计涵盖 **564 次提交**（2026-06-10 → 2026-10-25）与
+> **48 篇 ADR**（001–039，含 7 组同号续篇）。
 
 ### Added — 版本治理基础设施
 
 - 建立平台版本**单一事实源** `backend/app/version.py`（`__version__` / `VERSION_TUPLE` / `RELEASE_DATE`）
-- 版本一致性门禁脚本 `scripts/version/check-version.js`（7 个承载点交叉校验）
-- 版本发布助手 `scripts/version/bump-version.js`（patch / minor / major / rc 原子化更新）
+- 版本一致性门禁脚本 `scripts/version/check-version.js`（8 个承载点交叉校验 + 双写清单漂移检测）
+- 版本发布助手 `scripts/version/bump-version.js`（patch / minor / major / rc / prerelease / final 原子化更新）
 - CI 新增 `version-gate` job，PR 与 push 均强制校验版本一致性
 - 根 [package.json](package.json) 新增 `version:check` / `version:bump` / `version:current` 脚本
 - 本文件（CHANGELOG）与 [ADR-038](docs/adr/ADR-038-语义化版本发布体系.md) 版本策略记录
@@ -42,9 +61,10 @@
 
 ### Changed — 平台版本统一
 
-- 平台发布版本由 `1.0.0` 统一升级为 **`2.0.0`**，覆盖 7 个承载点：
+- 平台发布版本由 `1.0.0` 统一升级为 **`2.0.0`**，覆盖 8 个承载点：
   `package.json` / `frontend/package.json` / `miniprogram/package.json` /
-  `backend/pyproject.toml` / `backend/app/version.py` / `.env.example` / `CHANGELOG.md`
+  `backend/pyproject.toml` / `backend/app/version.py` / `.env.example` /
+  `backend/.env.example` / `CHANGELOG.md`
 
 ### Fixed — 运行时版本注入链路
 
