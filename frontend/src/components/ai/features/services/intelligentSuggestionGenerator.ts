@@ -12,6 +12,15 @@ import { logger } from '@/utils/safeLogger'
 import type { IntentClassificationResult, ExtractedEntity } from './nlpProcessor'
 import { fuzzyMatchTerms } from './domainKnowledge'
 import { getTemplatesByIntent, type SuggestionTemplate } from './suggestionTemplates'
+import {
+  ISG_MIN_KEYWORD_LEN,
+  ISG_INITIAL_SUCCESS_RATE,
+  ISG_SUCCESS_STEP,
+  ISG_FAILURE_STEP,
+  ISG_CACHE_KEY_TRUNCATE,
+  ISG_CACHE_MAX_SIZE,
+  ISG_CACHE_CLEANUP_BATCH,
+} from '@/config/ai/constants'
 
 export interface IntelligentSuggestion {
   id: string
@@ -57,7 +66,7 @@ class IntelligentKeywordExtractor {
     const keywords = [] as string[]
 
     for (const word of words) {
-      if (word.length < 2) continue
+      if (word.length < ISG_MIN_KEYWORD_LEN) continue
       if (this.COMMON_WORDS.has(word.toLowerCase())) continue
       keywords.push(word)
     }
@@ -157,14 +166,14 @@ class PersonalizationEngine {
     const existing = this.userProfile.get(suggestion.category) || {
       preferences: [],
       recentInteractions: [],
-      successRate: 0.5,
+      successRate: ISG_INITIAL_SUCCESS_RATE,
     }
 
     if (wasAccepted) {
-      existing.successRate = Math.min(1, existing.successRate + 0.1)
+      existing.successRate = Math.min(1, existing.successRate + ISG_SUCCESS_STEP)
       existing.recentInteractions.push(suggestion.title)
     } else {
-      existing.successRate = Math.max(0, existing.successRate - 0.05)
+      existing.successRate = Math.max(0, existing.successRate - ISG_FAILURE_STEP)
     }
 
     this.userProfile.set(suggestion.category, existing)
@@ -500,12 +509,12 @@ export class IntelligentSuggestionGenerator {
   }
 
   private generateCacheKey(context: GenerationContext, options: GenerationOptions): string {
-    return `${context.userInput.substring(0, 100)}-${options.maxSuggestions}-${options.realtimeMode}`
+    return `${context.userInput.substring(0, ISG_CACHE_KEY_TRUNCATE)}-${options.maxSuggestions}-${options.realtimeMode}`
   }
 
   private cleanupCache(): void {
-    if (this.suggestionCache.size > 50) {
-      const keysToRemove = Array.from(this.suggestionCache.keys()).slice(0, 25)
+    if (this.suggestionCache.size > ISG_CACHE_MAX_SIZE) {
+      const keysToRemove = Array.from(this.suggestionCache.keys()).slice(0, ISG_CACHE_CLEANUP_BATCH)
       keysToRemove.forEach(key => this.suggestionCache.delete(key))
     }
   }
