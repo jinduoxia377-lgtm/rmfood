@@ -46,6 +46,10 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# 平台发布版本的单一事实源（ADR-038）。
+# app.version 零依赖、不反向引用本模块，故不会产生循环导入。
+from app.version import __version__ as PLATFORM_VERSION
+
 logger = logging.getLogger(__name__)
 
 
@@ -402,7 +406,7 @@ class AIServiceConfig(BaseModel):
     api_key: str = Field(default="", description="AI 服务 API Key")
     base_url: str = Field(alias="DATABASE_URL", default="", description="AI 服务 Base URL")
     model: str = Field(default="gpt-4", description="默认模型")
-    max_tokens: int = Field(default=4096, ge=1, description="最大 Token 数")
+    max_tokens: int = Field(default=16000, ge=1, le=100000, description="最大 Token 数")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature 参数")
     request_timeout: int = Field(default=60, ge=1, description="请求超时（秒）")
     max_retries: int = Field(default=3, ge=0, description="最大重试次数")
@@ -461,6 +465,16 @@ class Settings(BaseSettings):
     # ─── 环境配置 ───
     app_env: Environment = Field(default=Environment.DEVELOPMENT, alias="ENV")
     debug: bool = Field(default=False, alias="DEBUG")
+
+    # ─── 运行时版本覆盖（ADR-038） ───
+    # 允许部署环境通过 APP_VERSION 覆盖镜像内嵌的版本号（例如打补丁构建）。
+    # 优先级：APP_VERSION 环境变量 > app.version.PLATFORM_VERSION。
+    # 命名为 app_version_override 以避免与下方 app_version 属性重名。
+    app_version_override: Optional[str] = Field(
+        default=None,
+        alias="APP_VERSION",
+        description="覆盖平台发布版本（部署期打补丁用；留空则使用 app.version.__version__）",
+    )
 
     # ─── Cookie Secure 覆盖 ───
     # 顶层字段，可从 .env 的 COOKIE_SECURE 读取（dotenv 源仅作用于顶层 Settings）。
@@ -676,7 +690,13 @@ class Settings(BaseSettings):
 
     @property
     def app_version(self) -> str:
-        return self.app.version
+        """平台发布版本（ADR-038）。
+
+        优先级：APP_VERSION 环境变量 > app.version.PLATFORM_VERSION。
+        注意这是「平台发布版本」，与 REST API 契约版本
+        （api_version.CURRENT_API_VERSION）是两个独立轴。
+        """
+        return self.app_version_override or self.app.version
 
     @property
     def cors_origins(self) -> List[str]:
@@ -815,7 +835,9 @@ class EncryptionConfig(BaseSettings):
 class AppInfoConfig(BaseModel):
     """应用信息配置"""
     name: str = "RMFOOD配方平台"
-    version: str = "1.0.0"
+    # 单一事实源：app.version.PLATFORM_VERSION（ADR-038）。
+    # 修改版本号请运行 `npm run version:bump`，不要手工编辑。
+    version: str = PLATFORM_VERSION
     description: str = "AI 驱动的配方管理系统"
     api_prefix: str = "/api/v1"
     docs_url: str = "/docs"
