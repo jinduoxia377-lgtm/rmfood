@@ -51,6 +51,12 @@ export interface KnownIngredient {
   base_shelf_life_months: number
 }
 
+export interface KnownIngredientsResponse {
+  status: string
+  count: number
+  ingredients: KnownIngredient[]
+}
+
 export const stabilityApi = {
   health: () => api.get('/stability/health'),
 
@@ -64,7 +70,5 @@ export const stabilityApi = {
     api.post('/stability/q10', data),
 
   listIngredients: () =>
-    api.get<{ status: string; data: { count: number; ingredients: KnownIngredient[] } }>(
-      '/stability/ingredients',
-    ),
+    api.get<KnownIngredientsResponse>('/stability/ingredients'),
 }

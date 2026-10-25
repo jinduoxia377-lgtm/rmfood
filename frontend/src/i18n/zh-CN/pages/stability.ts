@@ -11,6 +11,8 @@ export default {
     formulaIngredients: '配方成分',
     addIngredient: '添加成分',
     selectIngredient: '选择成分...',
+    knownHerbsFromBackend: '后端数据库',
+    knownHerbsFallback: '离线列表',
     storageConditions: '储存条件',
     temperature: '温度 (°C)',
     humidity: '湿度 (%RH)',

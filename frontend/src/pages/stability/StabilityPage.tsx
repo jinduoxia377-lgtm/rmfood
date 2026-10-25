@@ -3,7 +3,7 @@
  * Arrhenius 温度加速降解预测 + 交互式图表 + 多条件对比 + Q10 温度系数
  * 主题系统：对齐 Dashboard 设计系统规范（bg-grid + brand banner + Card/Button + design tokens）
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Thermometer, ShieldAlert, Zap, FlaskConical, TrendingDown,
@@ -17,7 +17,8 @@ import { stabilityApi, type StabilityIngredient } from '@/api/stability'
 import { useToast } from '@/components/ui/Toast'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui'
 
-const KNOWN_HERBS = [
+/** 后端稳定性数据库不可用时的降级列表（诚实降级：页面会提示数据来源） */
+const FALLBACK_KNOWN_HERBS = [
   '黄芪多糖', '枸杞多糖', '茯苓多糖',
   '灵芝多糖', '山药多糖', '人参皂苷', '人参皂苷Rg1',
   '黄芪苷IV', '甘草酸', '大豆异黄酮', '槲皮素', '葛根素',
@@ -41,16 +42,33 @@ const CHART_COLORS = [
 
 /** 主题色序列（图例圆点）— 与折线一致 */
 const CHART_LEGEND = [
-  'bg-[var(--color-success-container)]0',
-  'bg-[var(--color-secondary-container)]0',
-  'bg-[var(--color-warning-container)]0',
+  'bg-[var(--color-success-container)]',
+  'bg-[var(--color-secondary-container)]',
+  'bg-[var(--color-warning-container)]',
   'bg-danger-500',
-  'bg-[var(--color-accent-container)]0',
+  'bg-[var(--color-accent-container)]',
 ]
 
 export default function StabilityPage() {
   const { t } = useTranslation()
   const { addToast } = useToast()
+  // ── 已知成分下拉数据：优先从后端稳定性数据库加载，失败时回退静态列表 ──
+  const [knownHerbs, setKnownHerbs] = useState<string[]>(FALLBACK_KNOWN_HERBS)
+  const [knownHerbsSource, setKnownHerbsSource] = useState<'backend' | 'fallback'>('fallback')
+  useEffect(() => {
+    let cancelled = false
+    stabilityApi.listIngredients()
+      .then(res => {
+        if (cancelled) return
+        const list = res.data?.ingredients?.map(i => i.name) ?? []
+        if (list.length > 0) {
+          setKnownHerbs(list)
+          setKnownHerbsSource('backend')
+        }
+      })
+      .catch(() => { /* 静默降级为静态列表 */ })
+    return () => { cancelled = true }
+  }, [])
   const [ingredients, setIngredients] = useState<StabilityIngredient[]>([
     { name: '黄芪多糖', dosage_mg: 3000 },
     { name: '维生素C', dosage_mg: 500 },
@@ -102,7 +120,7 @@ export default function StabilityPage() {
     } finally { setLoading(false) }
   }
 
-  const scoreColor = (s: number) => s >= 0.7 ? 'text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]' : s >= 0.4 ? 'text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]' : 'text-danger-500 dark:text-danger-600'
+  const scoreColor = (s: number) => s >= 0.7 ? 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]' : s >= 0.4 ? 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]' : 'text-danger-500 dark:text-danger-600'
   const scoreBg = (s: number) => s >= 0.7 ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/20 border-[var(--color-success-border)] dark:border-success-900' : s >= 0.4 ? 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/20 border-[var(--color-warning-border)] dark:border-warning-900' : 'bg-danger-50 dark:bg-danger-950/20 border-danger-200 dark:border-danger-900'
 
   const chartData = result?.monthly_curve?.map((pt: any) => ({
@@ -125,7 +143,7 @@ export default function StabilityPage() {
     v < 4 ? t('pages.stability.q10Interpretation.high') :
     t('pages.stability.q10Interpretation.extreme')
 
-  const selectClass = 'h-9 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
+  const selectClass = 'h-11 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring'
 
   return (
     <div className="min-h-screen">
@@ -174,8 +192,17 @@ export default function StabilityPage() {
             <CardHeader className="px-5 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <FlaskConical size={14} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]" />
+                  <FlaskConical size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
                   {t('pages.stability.formulaIngredients')}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
+                    knownHerbsSource === 'backend'
+                      ? 'text-success-700 dark:text-success-400 border-success-200 dark:border-success-800'
+                      : 'text-warning-700 dark:text-warning-400 border-warning-200 dark:border-warning-800'
+                  }`}>
+                    {knownHerbsSource === 'backend'
+                      ? t('pages.stability.knownHerbsFromBackend')
+                      : t('pages.stability.knownHerbsFallback')}
+                  </span>
                 </CardTitle>
                 <Button variant="secondary" size="sm" onClick={addIngredient} icon={<FlaskConical size={12} />} className="text-xs">
                   {t('pages.stability.addIngredient')}
@@ -188,7 +215,7 @@ export default function StabilityPage() {
                   <select value={ing.name} onChange={e => updateIngredient(i, 'name', e.target.value)}
                     className={`flex-1 ${selectClass}`}>
                     <option value="">{t('pages.stability.selectIngredient')}...</option>
-                    {KNOWN_HERBS.map(h => <option key={h} value={h}>{h}</option>)}
+                    {knownHerbs.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                   <Input type="number" value={ing.dosage_mg}
                     onChange={e => updateIngredient(i, 'dosage_mg', parseFloat(e.target.value) || 0)}
@@ -205,7 +232,7 @@ export default function StabilityPage() {
           <Card>
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                <Thermometer size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />
+                <Thermometer size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                 {t('pages.stability.storageConditions')}
               </CardTitle>
             </CardHeader>
@@ -266,7 +293,7 @@ export default function StabilityPage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                  <Layers size={14} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]" />
+                  <Layers size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
                   {t('pages.stability.multiConditionCompare')}
                 </CardTitle>
               </CardHeader>
@@ -306,7 +333,7 @@ export default function StabilityPage() {
                 <div className={`rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] border ${scoreBg(result.stability_score)}`}>
                   <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.stability.stabilityScore')}</div>
                   <div className={`text-2xl font-bold ${scoreColor(result.stability_score)}`}>{(result.stability_score * 100).toFixed(1)}%</div>
-                  <div className="w-full bg-[var(--border-color)] rounded-[var(--radius-pill)] h-1.5 mt-2"><div className="bg-[var(--color-success-container)]0 h-1.5 rounded-[var(--radius-pill)] transition-all" style={{ width: `${result.stability_score * 100}%` }} /></div>
+                  <div className="w-full bg-[var(--border-color)] rounded-[var(--radius-pill)] h-1.5 mt-2"><div className="bg-[var(--color-success-container)] h-1.5 rounded-[var(--radius-pill)] transition-all" style={{ width: `${result.stability_score * 100}%` }} /></div>
                 </div>
                 <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] bg-[var(--bg-secondary)] border border-[var(--border-color)] dark:border-neutral-800">
                   <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.stability.estimatedShelfLife')}</div>
@@ -320,7 +347,7 @@ export default function StabilityPage() {
                 </div>
                 <div className="rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] bg-[var(--bg-secondary)] border border-[var(--border-color)] dark:border-neutral-800">
                   <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.stability.riskItems')}</div>
-                  <div className={`text-2xl font-bold ${result.risk_factors.length > 2 ? 'text-danger-500 dark:text-danger-600' : result.risk_factors.length > 0 ? 'text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]' : 'text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]'}`}>{result.risk_factors.length}</div>
+                  <div className={`text-2xl font-bold ${result.risk_factors.length > 2 ? 'text-danger-500 dark:text-danger-600' : result.risk_factors.length > 0 ? 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]' : 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'}`}>{result.risk_factors.length}</div>
                   <div className="text-xs text-[var(--text-muted)] mt-1">{t('pages.stability.riskItemsDesc')}</div>
                 </div>
               </div>
@@ -329,7 +356,7 @@ export default function StabilityPage() {
               <Card>
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <TrendingDown size={14} className="text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]" />
+                    <TrendingDown size={14} className="text-[var(--color-success-text)] dark:text-[var(--color-success-text)]" />
                     {t('pages.stability.degradationCurve')}
                   </CardTitle>
                 </CardHeader>
@@ -347,8 +374,8 @@ export default function StabilityPage() {
                     </LineChart>
                   </ResponsiveContainer></div>
                   <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] flex-wrap">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-success-container)]0" />{t('pages.stability.qualified')}</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-warning-container)]0" />{t('pages.stability.needAttention')}</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-success-container)]" />{t('pages.stability.qualified')}</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-warning-container)]" />{t('pages.stability.needAttention')}</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-[var(--radius-pill)] bg-danger-500" />{t('pages.stability.unqualified')}</span>
                   </div>
                 </CardContent>
@@ -359,14 +386,14 @@ export default function StabilityPage() {
                 <Card className="border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/60">
                   <CardHeader className="px-5 pt-5 pb-3">
                     <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <AlertTriangle size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />
+                      <AlertTriangle size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                       {t('pages.stability.riskFactors')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-5 pb-5 pt-0 space-y-2">
                     {result.risk_factors.map((rf: any, i: number) => (
                       <div key={i} className="flex items-start gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2 bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-warning-border)] dark:border-warning-900">
-                        <Zap size={12} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)] mt-0.5 shrink-0" />
+                        <Zap size={12} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] mt-0.5 shrink-0" />
                         <span className="text-sm text-[var(--text-primary)] flex-1">{rf.description}</span>
                         <span className="text-xs font-mono text-[var(--text-muted)] shrink-0">{t('pages.stability.severity', { value: (rf.severity * 100).toFixed(0) })}</span>
                       </div>
@@ -379,14 +406,14 @@ export default function StabilityPage() {
               <Card className="border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)]/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <ShieldAlert size={14} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]" />
+                    <ShieldAlert size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
                     {t('pages.stability.storageAdvice')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-2">
                   {result.storage_advice.map((advice: string, i: number) => (
                     <div key={i} className="flex items-start gap-2 px-[var(--space-apple-sm)] py-2 bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-secondary-border)] dark:border-secondary-900">
-                      <span className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)] mt-0.5 shrink-0">→</span>
+                      <span className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] mt-0.5 shrink-0">→</span>
                       <span className="text-sm text-[var(--text-primary)]">{advice}</span>
                     </div>
                   ))}
@@ -400,7 +427,7 @@ export default function StabilityPage() {
             <Card className="border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/60">
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Zap size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />
+                  <Zap size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                   {t('pages.stability.q10Title')}
                 </CardTitle>
               </CardHeader>

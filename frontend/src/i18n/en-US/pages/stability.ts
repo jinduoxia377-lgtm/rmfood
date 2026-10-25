@@ -11,6 +11,8 @@ export default {
     formulaIngredients: 'Formula Ingredients',
     addIngredient: 'Add Ingredient',
     selectIngredient: 'Select ingredient...',
+    knownHerbsFromBackend: 'Backend DB',
+    knownHerbsFallback: 'Offline list',
     storageConditions: 'Storage Conditions',
     temperature: 'Temperature (°C)',
     humidity: 'Humidity (%RH)',
