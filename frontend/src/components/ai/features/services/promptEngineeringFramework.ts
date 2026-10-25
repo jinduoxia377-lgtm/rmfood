@@ -1,4 +1,17 @@
 import { logger } from '@/utils/safeLogger'
+import {
+  PEF_CONCISE_LEN_EXCELLENT,
+  PEF_CONCISE_LEN_GOOD,
+  PEF_CONCISE_LEN_MEDIUM,
+  PEF_CONCISE_LEN_BASIC,
+  PEF_GRADE_S,
+  PEF_GRADE_APLUS,
+  PEF_GRADE_A,
+  PEF_GRADE_BPLUS,
+  PEF_GRADE_B,
+  PEF_GRADE_C,
+  PEF_GRADE_D,
+} from '@/config/ai/constants'
 /**
  * Prompt Engineering Framework V2.0 — 行业领先提示词工程管理系统
  *
@@ -1331,11 +1344,11 @@ export class PromptEngineeringFramework {
   private scoreConciseness(prompt: string): number {
     if (!prompt) return 0.5
     const len = prompt.length
-    if (len <= 80) return 1.0
-    if (len <= 120) return 0.9
-    if (len <= 150) return 0.75
-    if (len <= 170) return 0.6
-    return Math.max(0.2, 0.5 - (len - 170) / 100)
+    if (len <= PEF_CONCISE_LEN_EXCELLENT) return 1.0
+    if (len <= PEF_CONCISE_LEN_GOOD) return 0.9
+    if (len <= PEF_CONCISE_LEN_MEDIUM) return 0.75
+    if (len <= PEF_CONCISE_LEN_BASIC) return 0.6
+    return Math.max(0.2, 0.5 - (len - PEF_CONCISE_LEN_BASIC) / 100)
   }
 
   private scoreStructure(prompt: string): number {
@@ -1377,13 +1390,13 @@ export class PromptEngineeringFramework {
   }
 
   private scoreToGrade(score: number): 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' | 'F' {
-    if (score >= 95) return 'S'
-    if (score >= 90) return 'A+'
-    if (score >= 80) return 'A'
-    if (score >= 72) return 'B+'
-    if (score >= 65) return 'B'
-    if (score >= 55) return 'C'
-    if (score >= 40) return 'D'
+    if (score >= PEF_GRADE_S) return 'S'
+    if (score >= PEF_GRADE_APLUS) return 'A+'
+    if (score >= PEF_GRADE_A) return 'A'
+    if (score >= PEF_GRADE_BPLUS) return 'B+'
+    if (score >= PEF_GRADE_B) return 'B'
+    if (score >= PEF_GRADE_C) return 'C'
+    if (score >= PEF_GRADE_D) return 'D'
     return 'F'
   }
 
