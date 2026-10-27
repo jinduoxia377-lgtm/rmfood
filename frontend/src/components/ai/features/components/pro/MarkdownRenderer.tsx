@@ -4,15 +4,15 @@
  * 支持：标题层级、粗体/斜体/删除线/高亮/键盘键/上下标、链接、图片、
  *       专业表格（对齐/斑马纹/sticky表头/响应式）、嵌套引用块、
  *       嵌套列表+任务列表、Callout提示块、增强代码块（行号/文件名/折叠）、
- *       数学公式（行内/块级）、脚注、自动目录、分隔线变体、FormulaCard集成
+ *       数学公式（行内/块级）、脚注、自动目录、分隔线变体
  */
 import React, { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Copy, Check, ChevronDown, ChevronUp,
   Info, AlertTriangle, CheckCircle, XCircle, Lightbulb, MessageSquare,
   Image as ImageIcon, Link2, Hash
 } from 'lucide-react'
-import FormulaCard from './FormulaCard'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -32,24 +32,29 @@ interface HeadingInfo {
   id: string
 }
 
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string
+
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const CALLOUT_CONFIG: Record<CalloutType, {
+/** 生成 Callout 配置（文案走 i18n，语言切换后重新求值） */
+function getCalloutConfig(t: TranslateFn): Record<CalloutType, {
   icon: typeof Info
   label: string
   bgColor: string
   borderColor: string
   iconColor: string
   titleColor: string
-}> = {
-  INFO:     { icon: Info,          label: '信息',   bgColor: 'bg-secondary-50 dark:bg-secondary-950/40', borderColor: 'border-secondary-200 dark:border-secondary-800', iconColor: 'text-secondary-500',    titleColor: 'text-secondary-700 dark:text-secondary-700' },
-  WARNING:  { icon: AlertTriangle,  label: '警告',   bgColor: 'bg-warning-50 dark:bg-warning-950/40', borderColor: 'border-warning-200 dark:border-warning-800', iconColor: 'text-warning-500',  titleColor: 'text-warning-700 dark:text-warning-700' },
-  SUCCESS:  { icon: CheckCircle,    label: '成功',   bgColor: 'bg-success-50 dark:bg-success-950/40', borderColor: 'border-success-200 dark:border-success-800', iconColor: 'text-success-500',  titleColor: 'text-success-700 dark:text-success-600' },
-  ERROR:    { icon: XCircle,       label: '错误',   bgColor: 'bg-error-50 dark:bg-error-950/40', borderColor: 'border-error-200 dark:border-error-800', iconColor: 'text-error-500',    titleColor: 'text-error-700 dark:text-error-600' },
-  TIP:      { icon: Lightbulb,     label: '提示',   bgColor: 'bg-accent-50 dark:bg-accent-950/40', borderColor: 'border-accent-200 dark:border-accent-800', iconColor: 'text-accent-500',  titleColor: 'text-accent-700 dark:text-accent-700' },
-  NOTE:     { icon: MessageSquare,  label: '注意',   bgColor: 'bg-neutral-50 dark:bg-neutral-900/40', borderColor: 'border-neutral-200 dark:border-neutral-700', iconColor: 'text-neutral-500',   titleColor: 'text-neutral-700 dark:text-neutral-300' },
+}> {
+  return {
+    INFO:     { icon: Info,          label: t('ai.markdown.info'),     bgColor: 'bg-secondary-50 dark:bg-secondary-950/40', borderColor: 'border-secondary-200 dark:border-secondary-800', iconColor: 'text-secondary-500',    titleColor: 'text-secondary-700 dark:text-secondary-700' },
+    WARNING:  { icon: AlertTriangle,  label: t('ai.markdown.warning'),  bgColor: 'bg-warning-50 dark:bg-warning-950/40', borderColor: 'border-warning-200 dark:border-warning-800', iconColor: 'text-warning-500',  titleColor: 'text-warning-700 dark:text-warning-700' },
+    SUCCESS:  { icon: CheckCircle,    label: t('ai.markdown.success'),  bgColor: 'bg-success-50 dark:bg-success-950/40', borderColor: 'border-success-200 dark:border-success-800', iconColor: 'text-success-500',  titleColor: 'text-success-700 dark:text-success-600' },
+    ERROR:    { icon: XCircle,       label: t('ai.markdown.error'),    bgColor: 'bg-error-50 dark:bg-error-950/40', borderColor: 'border-error-200 dark:border-error-800', iconColor: 'text-error-500',    titleColor: 'text-error-700 dark:text-error-600' },
+    TIP:      { icon: Lightbulb,     label: t('ai.markdown.tip'),      bgColor: 'bg-accent-50 dark:bg-accent-950/40', borderColor: 'border-accent-200 dark:border-accent-800', iconColor: 'text-accent-500',  titleColor: 'text-accent-700 dark:text-accent-700' },
+    NOTE:     { icon: MessageSquare,  label: t('ai.markdown.note'),   bgColor: 'bg-neutral-50 dark:bg-neutral-900/40', borderColor: 'border-neutral-200 dark:border-neutral-700', iconColor: 'text-neutral-500',   titleColor: 'text-neutral-700 dark:text-neutral-300' },
+  }
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -101,7 +106,7 @@ interface ParseResult {
   headings: HeadingInfo[]
 }
 
-function parseMarkdown(content: string): ParseResult {
+function parseMarkdown(content: string, t: TranslateFn): ParseResult {
   if (!content) return { elements: [], headings: [] }
 
   const lines = content.split('\n')
@@ -216,8 +221,9 @@ function parseMarkdown(content: string): ParseResult {
 
       if (inMathBlock) {
         elements.push(
-          <div key={`math-${elements.length}`} className="my-3 flex justify-center">
-            <FormulaCard data={{ name: '公式', description: mathContent, ingredients: [], effects: [] }} />
+          <div key={`math-${elements.length}`} className="chat-md-math-block">
+            <span className="chat-md-math-label">{t('ai.markdown.formula')}</span>
+            <pre className="chat-md-math-content">{mathContent}</pre>
           </div>
         )
         mathContent = ''
@@ -434,8 +440,9 @@ function parseMarkdown(content: string): ParseResult {
   if (inCallout) flushCallout()
   if (inMathBlock && mathContent) {
     elements.push(
-      <div key={`math-end`} className="my-3 flex justify-center">
-        <FormulaCard data={{ name: '公式', description: mathContent, ingredients: [], effects: [] }} />
+      <div key={`math-end`} className="chat-md-math-block">
+        <span className="chat-md-math-label">{t('ai.markdown.formula')}</span>
+        <pre className="chat-md-math-content">{mathContent}</pre>
       </div>
     )
   }
@@ -463,9 +470,10 @@ function parseMarkdown(content: string): ParseResult {
 /* ------------------------------------------------------------------ */
 
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  const { t } = useTranslation()
   const { elements, headings } = useMemo(
-    () => parseMarkdown(content),
-    [content, parseMarkdown],
+    () => parseMarkdown(content, t),
+    [content, t],
   )
 
   const h2Headings = headings.filter(h => h.level === 2)
@@ -478,7 +486,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <details open>
             <summary className="chat-md-toc-summary">
               <Hash className="w-3.5 h-3.5" />
-              <span>目录</span>
+              <span>{t('ai.markdown.toc')}</span>
               <ChevronDown className="w-3 h-3 chat-md-toc-chevron" />
             </summary>
             <ol className="chat-md-toc-list">
@@ -498,6 +506,17 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
 /*  内联渲染引擎                                                        */
 /* ================================================================== */
+
+/** 中文排版优化：在中英文/数字之间自动插入空格（如"人参ginseng" → "人参 ginseng"） */
+function improveZhTypography(text: string): string {
+  return text
+    // 中文后接英文/数字：加空格
+    .replace(/([\u4e00-\u9fff])([A-Za-z0-9])/g, '$1 $2')
+    // 英文/数字后接中文：加空格
+    .replace(/([A-Za-z0-9])([\u4e00-\u9fff])/g, '$1 $2')
+    // 中文与半角标点之间的多余空格规整（避免重复空格）
+    .replace(/\s+/g, ' ')
+}
 
 /**
  * 渲染内联格式：粗体、斜体、删除线、高亮、键盘键、上标、下标、
@@ -556,13 +575,13 @@ function renderInline(text: string, footnotes?: Map<string, string>): React.Reac
     }
 
     if (!earliestMatch || earliestIndex >= remaining.length) {
-      parts.push(remaining)
+      parts.push(improveZhTypography(remaining))
       break
     }
 
     // 前缀文本
     if (earliestIndex > 0) {
-      parts.push(remaining.slice(0, earliestIndex))
+      parts.push(improveZhTypography(remaining.slice(0, earliestIndex)))
     }
 
     // 根据类型渲染
@@ -593,9 +612,7 @@ function renderInline(text: string, footnotes?: Map<string, string>): React.Reac
         break
       case 'math-inline':
         parts.push(
-          <span key={idx++} className="chat-md-math-inline">
-            <FormulaCard data={{ name: '', description: earliestMatch[1], ingredients: [], effects: [] }} />
-          </span>
+          <code key={idx++} className="chat-md-math-inline">{earliestMatch[1]}</code>
         )
         break
       case 'image':
@@ -643,6 +660,7 @@ interface TableProps {
 }
 
 function TableRenderer({ rows }: TableProps) {
+  const { t } = useTranslation()
   if (rows.length < 2) return null
 
   const headerRow = rows[0]
@@ -693,7 +711,7 @@ function TableRenderer({ rows }: TableProps) {
             <tr>
               <td colSpan={headerRow.length} className="chat-md-empty-cell">
                 <ImageIcon className="w-4 h-4 opacity-30 mb-1" />
-                <span>暂无数据</span>
+                <span>{t('ai.markdown.emptyData')}</span>
               </td>
             </tr>
           </tbody>
@@ -741,7 +759,8 @@ interface CalloutProps {
 }
 
 function CalloutBlock({ type, title, lines }: CalloutProps) {
-  const config = CALLOUT_CONFIG[type]
+  const { t } = useTranslation()
+  const config = getCalloutConfig(t)[type]
   const Icon = config.icon
 
   return (
@@ -772,6 +791,7 @@ interface CodeBlockProps {
 }
 
 function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(true)
 
@@ -816,13 +836,13 @@ function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
           {shouldCollapse && (
             <button onClick={() => setExpanded(!expanded)}
               className="chat-md-code-btn"
-              title={expanded ? '收起' : '展开'}
+              title={expanded ? t('ai.markdown.collapse') : t('ai.markdown.expand')}
             >
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              <span className="text-xs ml-0.5">{expanded ? '收起' : `${codeLines.length} 行`}</span>
+              <span className="text-xs ml-0.5">{expanded ? t('ai.markdown.collapse') : t('ai.markdown.lines', { count: codeLines.length })}</span>
             </button>
           )}
-          <button onClick={handleCopy} className="chat-md-code-btn" title="复制代码">
+          <button onClick={handleCopy} className="chat-md-code-btn" title={t('ai.markdown.copyCode')}>
             {copied
               ? <Check className="w-3.5 h-3.5 text-success-400" />
               : <Copy className="w-3.5 h-3.5" />
@@ -856,7 +876,7 @@ function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
       {/* 折叠提示 */}
       {!expanded && shouldCollapse && (
         <button onClick={() => setExpanded(true)} className="chat-md-expand-hint">
-          展开全部 ({codeLines.length} 行)
+          {t('ai.markdown.expandAll')} ({codeLines.length} {t('ai.markdown.lines', { count: codeLines.length })})
           <ChevronDown className="w-3 h-3 ml-1" />
         </button>
       )}
@@ -896,6 +916,40 @@ const MDStyles = `
   --md-link: var(--color-secondary-500);
   --md-code-bg: var(--bg-tertiary, var(--bg-canvas));
   --md-code-text: var(--text-primary, #1D1D1F);
+  /* 语义色（映射项目主题变量，暗色模式在 .dark 下覆盖） */
+  --md-indigo: var(--color-primary-500, #10b981);
+  --md-heading-3: var(--text-secondary, #1f2937);
+  --md-heading-4: var(--text-secondary, #374151);
+  --md-body: var(--text-secondary, #374151);
+  --md-bold: var(--text-primary, #111827);
+  --md-muted: var(--text-muted, #9ca3af);
+  --md-mark-bg: #fef08a;
+  --md-mark-text: #854d0e;
+  --md-kbd-bg1: #f8f9fa;
+  --md-kbd-bg2: #e9ecef;
+  --md-kbd-border: #d1d5db;
+  --md-kbd-text: #374151;
+  --md-inline-code-bg: #f3f4f6;
+  --md-inline-code-text: #BE185D;
+  --md-table-border: #e5e7eb;
+  --md-table-header-bg: #f9fafb;
+  --md-table-header-text: #1f2937;
+  --md-table-cell-border: #f3f4f6;
+  --md-table-cell-text: #374151;
+  --md-table-alt-bg: #fafafa;
+  --md-toc-bg: #f9fafb;
+  --md-img-border: #e5e7eb;
+  --md-footnote-text: #6b7280;
+  /* 代码块（GitHub 风格，亮/暗均统一） */
+  --md-code-block-bg: #f6f8fa;
+  --md-code-block-border: #d0d7de;
+  --md-code-header-bg: #eaeef2;
+  --md-code-header-border: #d0d7de;
+  --md-code-text: #24292f;
+  --md-code-muted: #57606a;
+  --md-code-dim: #6e7781;
+  --md-code-filename: #0969da;
+  --md-code-line-bg: #f6f8fa;
 }
 
 .dark .chat-md-root {
@@ -910,6 +964,40 @@ const MDStyles = `
   --md-accent-soft: rgba(48, 209, 88, 0.15);
   --md-code-bg: rgba(44, 44, 46, 0.8);
   --md-code-text: var(--bg-canvas);
+  /* 暗色语义色 */
+  --md-indigo: var(--color-primary-400, #34d399);
+  --md-heading-3: #e5e7eb;
+  --md-heading-4: #d1d5db;
+  --md-body: #d1d5db;
+  --md-bold: #f3f4f6;
+  --md-muted: #9ca3af;
+  --md-mark-bg: #854d0e;
+  --md-mark-text: #fef08a;
+  --md-kbd-bg1: #374151;
+  --md-kbd-bg2: #1f2937;
+  --md-kbd-border: #4b5563;
+  --md-kbd-text: #d1d5db;
+  --md-inline-code-bg: #1f2937;
+  --md-inline-code-text: #EC4899;
+  --md-table-border: #374151;
+  --md-table-header-bg: #1f2937;
+  --md-table-header-text: #f3f4f6;
+  --md-table-cell-border: #374151;
+  --md-table-cell-text: #d1d5db;
+  --md-table-alt-bg: rgba(31, 41, 55, 0.4);
+  --md-toc-bg: #1f2937;
+  --md-img-border: #374151;
+  --md-footnote-text: #9ca3af;
+  /* 暗色代码块 */
+  --md-code-block-bg: #161b22;
+  --md-code-block-border: #30363d;
+  --md-code-header-bg: #1f242f;
+  --md-code-header-border: #30363d;
+  --md-code-text: #e6edf3;
+  --md-code-muted: #8b949e;
+  --md-code-dim: #8b949e;
+  --md-code-filename: #58a6ff;
+  --md-code-line-bg: #161b22;
 }
 
 /* ===== Root Container ===== */
@@ -958,11 +1046,11 @@ const MDStyles = `
   line-height: 1.42;
   margin-top: 1em;
   margin-bottom: 0.45em;
-  color: #1f2937;
+  color: var(--md-heading-3);
   scroll-margin-top: 1em;
 }
 .dark .chat-md-h3 {
-  color: #e5e7eb;
+  color: var(--md-heading-3);
 }
 
 .chat-md-h4 {
@@ -971,42 +1059,42 @@ const MDStyles = `
   line-height: 1.45;
   margin-top: 0.85em;
   margin-bottom: 0.35em;
-  color: #374151;
+  color: var(--md-heading-4);
   scroll-margin-top: 1em;
 }
 .dark .chat-md-h4 {
-  color: #d1d5db;
+  color: var(--md-heading-4);
 }
 
 /* ===== Paragraph ===== */
 .chat-md-p {
   font-size: 0.875rem;
   line-height: 1.7;
-  color: #374151;
+  color: var(--md-body);
   padding: 0.15em 0;
 }
 .dark .chat-md-p {
-  color: #d1d5db;
+  color: var(--md-body);
 }
 
 /* ===== Horizontal Rule ===== */
 .chat-md-hr {
   border: none;
-  border-top: 1.5px solid #e5e7eb;
+  border-top: 1.5px solid var(--md-border);
   margin: 1em 0;
   opacity: 0.7;
 }
 .dark .chat-md-hr {
-  border-top-color: #374151;
+  border-top-color: var(--md-border);
 }
 
 /* ===== Inline Styles ===== */
 .chat-md-bold {
   font-weight: 700;
-  color: #111827;
+  color: var(--md-bold);
 }
 .dark .chat-md-bold {
-  color: #f3f4f6;
+  color: var(--md-bold);
 }
 
 .chat-md-italic {
@@ -1016,19 +1104,19 @@ const MDStyles = `
 .chat-md-del {
   text-decoration: line-through;
   opacity: 0.6;
-  color: #9ca3af;
+  color: var(--md-muted);
 }
 
 .chat-md-mark {
-  background-color: #fef08a;
-  color: #854d0e;
+  background-color: var(--md-mark-bg);
+  color: var(--md-mark-text);
   padding: 0.1em 0.25em;
   border-radius: 0.2em;
   font-weight: 500;
 }
 .dark .chat-md-mark {
-  background-color: #854d0e;
-  color: #fef08a;
+  background-color: var(--md-mark-bg);
+  color: var(--md-mark-text);
 }
 
 .chat-md-kbd {
@@ -1037,18 +1125,18 @@ const MDStyles = `
   padding: 0.12em 0.45em;
   font-size: 0.78em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 1px solid #d1d5db;
+  background: linear-gradient(180deg, var(--md-kbd-bg1) 0%, var(--md-kbd-bg2) 100%);
+  border: 1px solid var(--md-kbd-border);
   border-bottom-width: 2px;
   border-radius: 0.3em;
   box-shadow: 0 1px 1px rgba(0,0,0,0.08);
-  color: #374151;
+  color: var(--md-kbd-text);
   line-height: 1.4;
 }
 .dark .chat-md-kbd {
-  background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
-  border-color: #4b5563;
-  color: #d1d5db;
+  background: linear-gradient(180deg, var(--md-kbd-bg1) 0%, var(--md-kbd-bg2) 100%);
+  border-color: var(--md-kbd-border);
+  color: var(--md-kbd-text);
 }
 
 .chat-md-sup {
@@ -1067,20 +1155,52 @@ const MDStyles = `
   padding: 0.1em 0.4em;
   font-size: 0.82em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background-color: #f3f4f6;
+  background-color: var(--md-inline-code-bg);
   border-radius: 0.25em;
-  color: #BE185D;
+  color: var(--md-inline-code-text);
   white-space: nowrap;
 }
 .dark .chat-md-inline-code {
-  background-color: #1f2937;
-  color: #EC4899;
+  background-color: var(--md-inline-code-bg);
+  color: var(--md-inline-code-text);
 }
 
 .chat-md-math-inline {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: var(--md-inline-code-bg);
+  border-radius: 0.25em;
+  padding: 0.1em 0.4em;
+  font-size: 0.82em;
+  color: var(--md-inline-code-text);
+}
+
+.chat-md-math-block {
+  margin: 0.75em 0;
+  padding: 0.65em 0.9em;
+  border-radius: 0.5em;
+  border: 1px solid var(--md-table-border);
+  background-color: var(--md-toc-bg);
+}
+
+.chat-md-math-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--md-muted);
+  margin-bottom: 0.35em;
+}
+
+.chat-md-math-content {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--md-body);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
 }
 
 .chat-md-inline-img {
@@ -1120,20 +1240,22 @@ const MDStyles = `
   text-decoration: underline;
 }
 .chat-md-fn-missing {
-  color: #d1d5db;
+  color: var(--md-muted);
   opacity: 0.5;
 }
 
 /* ===== Table System ===== */
 .chat-md-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin: 0.75em 0;
+  max-width: 100%;
   min-width: 100%;
   border-radius: 0.5em;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--md-table-border);
 }
 .dark .chat-md-table-wrap {
-  border-color: #374151;
+  border-color: var(--md-table-border);
 }
 
 .chat-md-table {
@@ -1147,10 +1269,10 @@ const MDStyles = `
   padding: 0.6em 0.85em;
   font-weight: 600;
   font-size: 0.84em;
-  color: #1f2937;
-  background-color: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
-  border-right: 1px solid #f3f4f6;
+  color: var(--md-table-header-text);
+  background-color: var(--md-table-header-bg);
+  border-bottom: 2px solid var(--md-table-border);
+  border-right: 1px solid var(--md-table-cell-border);
   white-space: nowrap;
   position: relative;
 }
@@ -1158,10 +1280,10 @@ const MDStyles = `
   border-right: none;
 }
 .dark .chat-md-th {
-  color: #f3f4f6;
-  background-color: #1f2937;
-  border-bottom-color: #4b5563;
-  border-right-color: #374151;
+  color: var(--md-table-header-text);
+  background-color: var(--md-table-header-bg);
+  border-bottom-color: var(--md-table-border);
+  border-right-color: var(--md-table-cell-border);
 }
 
 .chat-md-thead-sticky .chat-md-th {
@@ -1172,38 +1294,38 @@ const MDStyles = `
 
 .chat-md-td {
   padding: 0.5em 0.85em;
-  color: #374151;
-  border-bottom: 1px solid #f3f4f6;
-  border-right: 1px solid #f9fafb;
+  color: var(--md-table-cell-text);
+  border-bottom: 1px solid var(--md-table-cell-border);
+  border-right: 1px solid var(--md-table-cell-border);
   vertical-align: top;
 }
 .chat-md-td:last-child {
   border-right: none;
 }
 .dark .chat-md-td {
-  color: #d1d5db;
-  border-bottom-color: #374151;
-  border-right-color: #1f2937;
+  color: var(--md-table-cell-text);
+  border-bottom-color: var(--md-table-cell-border);
+  border-right-color: var(--md-table-cell-border);
 }
 
 .chat-md-row-alt {
-  background-color: #fafafa;
+  background-color: var(--md-table-alt-bg);
 }
 .dark .chat-md-row-alt {
-  background-color: rgba(31, 41, 55, 0.4);
+  background-color: var(--md-table-alt-bg);
 }
 
 .chat-md-table tbody tr:hover {
-  background-color: #f3f4f6;
+  background-color: var(--md-border);
 }
 .dark .chat-md-table tbody tr:hover {
-  background-color: rgba(55, 65, 81, 0.5);
+  background-color: var(--md-border);
 }
 
 .chat-md-empty-cell {
   padding: 2em 1em;
   text-align: center;
-  color: #9ca3af;
+  color: var(--md-muted);
   font-size: 0.82rem;
   display: flex;
   flex-direction: column;
@@ -1222,11 +1344,11 @@ const MDStyles = `
 .chat-md-bq-line {
   font-size: 0.87rem;
   line-height: 1.65;
-  color: #374151;
+  color: var(--md-body);
   margin: 0.25em 0;
 }
 .dark .chat-md-bq-line {
-  color: #d1d5db;
+  color: var(--md-body);
 }
 
 /* ===== Lists ===== */
@@ -1238,24 +1360,24 @@ const MDStyles = `
   gap: 0.5em;
   font-size: 0.87rem;
   line-height: 1.6;
-  color: #374151;
+  color: var(--md-body);
   padding: 0.15em 0;
 }
 .dark .chat-md-ul-item,
 .dark .chat-md-ol-item,
 .dark .chat-md-task-item {
-  color: #d1d5db;
+  color: var(--md-body);
 }
 
 .chat-md-bullet {
-  color: #9ca3af;
+  color: var(--md-muted);
   flex-shrink: 0;
   margin-top: 0.22em;
   font-size: 0.75em;
 }
 
 .chat-md-ol-num {
-  color: #9ca3af;
+  color: var(--md-muted);
   flex-shrink-0;
   min-width: 1.4em;
   text-align: right;
@@ -1277,7 +1399,7 @@ const MDStyles = `
   justify-content: center;
   width: 1.05em;
   height: 1.05em;
-  border: 1.5px solid #d1d5db;
+  border: 1.5px solid var(--md-kbd-border);
   border-radius: 0.22em;
   flex-shrink: 0;
   margin-top: 0.18em;
@@ -1286,12 +1408,12 @@ const MDStyles = `
   transition: all 0.15s;
 }
 .dark .chat-md-checkbox {
-  border-color: #4b5563;
+  border-color: var(--md-kbd-border);
 }
 
 .chat-md-checked {
-  background-color: var(--color-primary-400);
-  border-color: var(--color-primary-400);
+  background-color: var(--md-accent2);
+  border-color: var(--md-accent2);
   color: white;
   font-weight: 700;
 }
@@ -1326,11 +1448,11 @@ const MDStyles = `
 .chat-md-callout-line {
   font-size: 0.86rem;
   line-height: 1.65;
-  color: #374151;
+  color: var(--md-body);
   margin: 0.2em 0;
 }
 .dark .chat-md-callout-line {
-  color: #d1d5db;
+  color: var(--md-body);
 }
 
 /* ===== Enhanced Code Block ===== */
@@ -1338,12 +1460,12 @@ const MDStyles = `
   margin: 0.75em 0;
   border-radius: 0.6em;
   overflow: hidden;
-  background-color: #1e1e2e;
-  border: 1px solid #313244;
+  background-color: var(--md-code-block-bg);
+  border: 1px solid var(--md-code-block-border);
 }
 .dark .chat-md-code-block {
-  background-color: #111118;
-  border-color: #2a2a3a;
+  background-color: var(--md-code-block-bg);
+  border-color: var(--md-code-block-border);
 }
 
 .chat-md-code-header {
@@ -1351,8 +1473,8 @@ const MDStyles = `
   align-items: center;
   justify-content: space-between;
   padding: 0.5em 0.75em;
-  background-color: #313244;
-  border-bottom: 1px solid #45475a;
+  background-color: var(--md-code-header-bg);
+  border-bottom: 1px solid var(--md-code-header-border);
 }
 
 .chat-md-code-meta {
@@ -1370,19 +1492,19 @@ const MDStyles = `
 
 .chat-md-lang-label {
   font-size: 0.72rem;
-  color: #a6adc8;
+  color: var(--md-code-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-weight: 500;
 }
 
 .chat-md-code-sep {
-  color: #585b70;
+  color: var(--md-code-dim);
   font-size: 0.72rem;
 }
 
 .chat-md-filename {
   font-size: 0.72rem;
-  color: #cba6f7;
+  color: var(--md-code-filename);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -1397,7 +1519,7 @@ const MDStyles = `
   align-items: center;
   padding: 0.25em 0.45em;
   border-radius: 0.3em;
-  color: #a6adc8;
+  color: var(--md-code-muted);
   transition: all 0.15s;
   font-size: 0.72rem;
   background: transparent;
@@ -1405,8 +1527,8 @@ const MDStyles = `
   cursor: pointer;
 }
 .chat-md-code-btn:hover {
-  background-color: #45475a;
-  color: #cdd6f4;
+  background-color: var(--md-code-header-border);
+  color: var(--md-code-text);
 }
 
 .chat-md-code-body {
@@ -1418,10 +1540,11 @@ const MDStyles = `
   margin: 0;
   font-size: 0.78rem;
   line-height: 1.6;
-  color: #cdd6f4;
+  color: var(--md-code-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   overflow-x: auto;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .chat-md-line-numbers {
@@ -1430,14 +1553,14 @@ const MDStyles = `
   padding-left: 0.75em;
   text-align: right;
   user-select: none;
-  border-right: 1px solid #313244;
-  color: #585b70;
+  border-right: 1px solid var(--md-code-block-border);
+  color: var(--md-code-dim);
   font-size: 0.72rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   line-height: 1.6;
   min-width: 2.2em;
   flex-shrink: 0;
-  background-color: #181825;
+  background-color: var(--md-code-line-bg);
 }
 
 .chat-md-ln {
@@ -1451,16 +1574,16 @@ const MDStyles = `
   gap: 0.3em;
   padding: 0.4em;
   font-size: 0.72rem;
-  color: #a6adc8;
-  background-color: #313244;
-  border-top: 1px solid #45475a;
+  color: var(--md-code-muted);
+  background-color: var(--md-code-header-bg);
+  border-top: 1px solid var(--md-code-header-border);
   cursor: pointer;
   transition: background-color 0.15s;
   width: 100%;
   border: none;
 }
 .chat-md-expand-hint:hover {
-  background-color: #45475a;
+  background-color: var(--md-code-header-border);
 }
 
 /* ===== Figure / Image ===== */
@@ -1472,16 +1595,16 @@ const MDStyles = `
   max-width: 100%;
   height: auto;
   border-radius: 0.5em;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--md-img-border);
 }
 .dark .chat-md-img {
-  border-color: #374151;
+  border-color: var(--md-img-border);
 }
 
 .chat-md-figcaption {
   text-align: center;
   font-size: 0.78rem;
-  color: #9ca3af;
+  color: var(--md-muted);
   margin-top: 0.5em;
   font-style: italic;
 }
@@ -1489,14 +1612,14 @@ const MDStyles = `
 /* ===== Table of Contents ===== */
 .chat-md-toc {
   margin: 0.75em 0 1em;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--md-table-border);
   border-radius: 0.5em;
-  background-color: #f9fafb;
+  background-color: var(--md-toc-bg);
   overflow: hidden;
 }
 .dark .chat-md-toc {
-  border-color: #374151;
-  background-color: #1f2937;
+  border-color: var(--md-table-border);
+  background-color: var(--md-toc-bg);
 }
 
 .chat-md-toc-summary {
@@ -1506,7 +1629,7 @@ const MDStyles = `
   padding: 0.55em 0.85em;
   font-size: 0.83rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--md-body);
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -1516,13 +1639,13 @@ const MDStyles = `
   display: none;
 }
 .chat-md-toc-summary:hover {
-  background-color: #f3f4f6;
+  background-color: var(--md-border);
 }
 .dark .chat-md-toc-summary {
-  color: #d1d5db;
+  color: var(--md-body);
 }
 .dark .chat-md-toc-summary:hover {
-  background-color: #374151;
+  background-color: var(--md-border);
 }
 
 .chat-md-toc-chevron {
@@ -1546,21 +1669,21 @@ details[open] .chat-md-toc-chevron {
   display: block;
   padding: 0.3em 0.65em;
   font-size: 0.82rem;
-  color: var(--color-primary-600, #059669);
+  color: var(--md-link);
   text-decoration: none;
   border-radius: 0.3em;
   transition: all 0.15s;
 }
 .chat-md-toc-link:hover {
-  background-color: var(--color-primary-50, #ecfdf5);
-  color: var(--color-primary-700, #047857);
+  background-color: var(--md-accent-soft);
+  color: var(--md-accent);
 }
 .dark .chat-md-toc-link {
-  color: var(--color-primary-400, #34d399);
+  color: var(--md-link);
 }
 .dark .chat-md-toc-link:hover {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: var(--color-primary-300, #6ee7b7);
+  background-color: var(--md-accent-soft);
+  color: var(--md-accent);
 }
 
 /* ===== Footnotes ===== */
@@ -1570,11 +1693,11 @@ details[open] .chat-md-toc-chevron {
 }
 
 .chat-md-footnotes-divider {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--md-border);
   margin-bottom: 0.6em;
 }
 .dark .chat-md-footnotes-divider {
-  border-top-color: #374151;
+  border-top-color: var(--md-border);
 }
 
 .chat-md-footnote-item {
@@ -1582,15 +1705,15 @@ details[open] .chat-md-toc-chevron {
   gap: 0.35em;
   font-size: 0.78rem;
   line-height: 1.6;
-  color: #6b7280;
+  color: var(--md-footnote-text);
   padding: 0.15em 0;
 }
 .dark .chat-md-footnote-item {
-  color: #9ca3af;
+  color: var(--md-footnote-text);
 }
 
 .chat-md-footnote-ref a {
-  color: var(--color-primary-500, #10b981);
+  color: var(--md-accent2);
   text-decoration: none;
   font-weight: 500;
 }
