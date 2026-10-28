@@ -1,10 +1,11 @@
 """单元测试：多维度推荐引擎"""
+import sys
+from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 import pytest_asyncio
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, AsyncMock, patch
 
-import sys
 sys.path.insert(0, '.')
 
 from app.services.recommendation_engine import RecommendationEngine, ScoreCalculator

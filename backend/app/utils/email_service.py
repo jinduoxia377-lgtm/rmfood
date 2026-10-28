@@ -10,13 +10,13 @@
 - 速率限制：每分钟最多 5 次重置请求
 """
 import logging
+import os
 import smtplib
 import ssl
 import time
-import os
 from datetime import datetime, timedelta, timezone
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -531,7 +531,7 @@ def send_whitelist_verification_email(
         headline = "Whitelist Verification Code"
         greeting = "Hello,"
         body_text = (
-            f"Your whitelist application verification code is:"
+            "Your whitelist application verification code is:"
         )
         code_label = "Verification Code"
         hint = "The code is valid for 10 minutes. If you did not submit this application, please ignore this email."

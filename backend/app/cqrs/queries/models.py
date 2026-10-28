@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict
 from datetime import datetime
+from typing import Dict, List, Optional
+
 
 @dataclass
 class FormulaQueryModel:
@@ -17,7 +18,7 @@ class FormulaQueryModel:
     is_approved: bool
     popularity_count: int = 0
     last_accessed: Optional[datetime] = None
-    
+
     @classmethod
     def from_write_model(cls, write_model):
         return cls(

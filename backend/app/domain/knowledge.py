@@ -5,8 +5,8 @@
 不依赖 Neo4j 或 SQLAlchemy，纯 Python。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 class NodeType:

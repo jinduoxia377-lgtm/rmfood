@@ -18,11 +18,11 @@ import logging
 import re
 import threading
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Set
+from typing import Dict, Optional, Set
 
 import bcrypt
 from fastapi import HTTPException, status
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 
 from ..core.config import settings
 
@@ -152,7 +152,7 @@ def decode_token(token: str) -> dict:
         return payload
 
     except jwt.ExpiredSignatureError:
-        logger.warning(f"Token已过期")
+        logger.warning("Token已过期")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="认证令牌已过期，请重新登录",
@@ -585,13 +585,13 @@ def create_secure_cookie_settings(
     Returns:
         dict: FastAPI set_cookie 参数
     """
-    from ..core.config import settings
-
     # 基础安全设置
     # COOKIE_SECURE 覆盖: 纯 HTTP 部署（如公网 IP 无 TLS）可设 COOKIE_SECURE=false，
     # 使浏览器接受非 HTTPS 下的 Set-Cookie（Secure 属性会被浏览器拒绝存储）。
     # 优先级: 环境变量 COOKIE_SECURE > settings.security.cookie_secure > (not debug)
     import os as _os
+
+    from ..core.config import settings
     _env_override = _os.environ.get("COOKIE_SECURE")
     if _env_override is not None:
         cookie_secure = _env_override.lower() in ("1", "true", "yes")

@@ -6,7 +6,7 @@
 """
 
 import re
-from typing import Any, Optional
+from typing import Optional
 
 # 可能泄露敏感信息的模式
 _SENSITIVE_PATTERNS = [

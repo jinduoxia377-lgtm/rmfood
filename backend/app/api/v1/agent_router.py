@@ -182,25 +182,27 @@ async def execute_agent_stream(
     orch = get_orchestrator()
     ctx = _execution_context(current_user, tenant, db)
 
+    def _sse(event: str, data) -> str:
+        # Starlette StreamingResponse 只接受 bytes/str 分块；yield dict 会在
+        # 真正流式消费时抛 RuntimeError。统一序列化为 SSE `data: <json>\n\n`。
+        return f"data: {json.dumps({'event': event, 'data': data}, ensure_ascii=False)}\n\n"
+
     async def event_stream():
-        yield {"event": "start", "data": json.dumps({"query": req.query, "mode": req.mode}, ensure_ascii=False)}
+        yield _sse("start", {"query": req.query, "mode": req.mode})
 
         if req.mode == "fast":
             tool_chain = req.tool_chain or []
             for tool_name, params in tool_chain:
-                yield {"event": "tool_start", "data": json.dumps({"tool": tool_name}, ensure_ascii=False)}
+                yield _sse("tool_start", {"tool": tool_name})
                 # 此处简化：实际应在 orchestrator 中暴露流式接口
-                yield {"event": "tool_done", "data": json.dumps({"tool": tool_name, "status": "done"}, ensure_ascii=False)}
+                yield _sse("tool_done", {"tool": tool_name, "status": "done"})
 
         execution = await orch.execute_smart(
             req.query, max_steps=req.max_steps, context=ctx,
         )
 
-        yield {
-            "event": "complete",
-            "data": json.dumps(execution.to_dict(), ensure_ascii=False),
-        }
-        yield {"event": "done", "data": ""}
+        yield _sse("complete", execution.to_dict())
+        yield _sse("done", "")
 
     return StreamingResponse(
         event_stream(),
@@ -324,11 +326,13 @@ async def execute_workflow_stream(
     """
     engine = get_workflow_engine()
 
+    def _sse(event: str, data) -> str:
+        # Starlette StreamingResponse 只接受 bytes/str 分块；yield dict 会在
+        # 真正流式消费时抛 RuntimeError。统一序列化为 SSE `data: <json>\n\n`。
+        return f"data: {json.dumps({'event': event, 'data': data}, ensure_ascii=False)}\n\n"
+
     async def event_stream():
-        yield {"event": "start", "data": json.dumps(
-            {"workflow_type": workflow_type, "query": req.query},
-            ensure_ascii=False
-        )}
+        yield _sse("start", {"workflow_type": workflow_type, "query": req.query})
 
         async for event in engine.execute_stream(
             workflow_type=workflow_type,
@@ -336,7 +340,13 @@ async def execute_workflow_stream(
             max_steps=req.max_steps,
             context=_execution_context(current_user, tenant, db),
         ):
-            yield {"event": event["type"], "data": json.dumps(event, ensure_ascii=False)}
+            if event.get("type") == "done":
+                # 前端 onComplete 期望完整 WorkflowExecution 对象
+                full = engine.get_execution(event.get("execution_id", ""))
+                data = full.to_dict() if full is not None else event
+            else:
+                data = event
+            yield _sse(event["type"], data)
 
     return StreamingResponse(
         event_stream(),

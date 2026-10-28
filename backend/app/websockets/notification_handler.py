@@ -6,14 +6,13 @@
 - 心跳检测：30秒无响应则断开
 - 重连机制：自动恢复订阅
 """
-import json
 import asyncio
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Dict, Set, Optional, Any
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional, Set
 
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 
@@ -271,12 +270,12 @@ class NotificationWebSocketHandler:
                             f"   用户: {user_id}\n"
                             f"   团队: {team_id}"
                         )
-                        
+
                         try:
                             await conn_info.websocket.close(code=4001, reason="heartbeat timeout")
                         except Exception as close_err:
                             logger.debug("关闭 WebSocket 心跳超时连接失败: %s", close_err)
-                        
+
                         await self.disconnect(conn_info.websocket, team_id, user_id)
 
     async def _send_personal_message(self, websocket: WebSocket, message: Dict[str, Any]):

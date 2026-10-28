@@ -6,7 +6,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from .knowledge import KGNode, KGRelation, GraphPath, HerbInfo, CompoundInfo
+from .knowledge import CompoundInfo, GraphPath, HerbInfo, KGNode, KGRelation
 
 
 class KnowledgeGraphRepository(ABC):

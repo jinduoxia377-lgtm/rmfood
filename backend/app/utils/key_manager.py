@@ -3,25 +3,24 @@
 提供安全的密钥生成、派生、轮换和存储管理。
 支持HKDF密钥派生、版本控制和自动轮换。
 """
-import os
-import json
 import base64
 import hashlib
 import hmac
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+import os
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.core.observability.logging_config import logger
 
 try:
-    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
 
-from .encryption import EncryptionUtils, EncryptionError
+from .encryption import EncryptionUtils
 
 
 @dataclass
@@ -36,7 +35,7 @@ class KeyMetadata:
     is_archived: bool = False
     purpose: str = "data_encryption"
     user_id: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "key_id": self.key_id,
@@ -112,13 +111,13 @@ class KeyManager:
 
         self.key_rotation_days = key_rotation_days
         self.archive_retention_days = archive_retention_days
-        
+
         self._user_keys: Dict[str, Tuple[bytes, KeyMetadata]] = {}
         self._key_versions: Dict[str, List[KeyMetadata]] = {}
         self._archived_keys: Dict[str, KeyArchiveEntry] = {}
-        
+
         self._current_version: int = 1
-        
+
         self._stats = {
             "keys_derived": 0,
             "rotations_completed": 0,
@@ -154,7 +153,7 @@ class KeyManager:
             32
         """
         cache_key = f"{user_id}:{version or 'latest'}"
-        
+
         if cache_key in self._user_keys:
             return self._user_keys[cache_key][0]
 
@@ -177,11 +176,11 @@ class KeyManager:
         )
 
         self._user_keys[cache_key] = (derived_key, metadata)
-        
+
         if user_id not in self._key_versions:
             self._key_versions[user_id] = []
         self._key_versions[user_id].append(metadata)
-        
+
         self._stats["keys_derived"] += 1
 
         return derived_key
@@ -209,7 +208,7 @@ class KeyManager:
             轮换结果信息
         """
         last_rotation = self._stats.get("last_rotation")
-        
+
         if not force and last_rotation:
             days_since_rotation = (datetime.now(timezone.utc) - last_rotation).days
             if days_since_rotation < self.key_rotation_days:
@@ -221,22 +220,22 @@ class KeyManager:
                 }
 
         old_master_key = self._master_key
-        
+
         try:
             new_master_key = EncryptionUtils.generate_key()
-            
+
             archive_entry = self._archive_key(old_master_key, purpose="master_key")
-            
+
             self._master_key = new_master_key
             self._current_version += 1
-            
+
             self._user_keys.clear()
-            
+
             self._stats["rotations_completed"] += 1
             self._stats["last_rotation"] = datetime.now(timezone.utc)
-            
+
             expired_count = self._cleanup_expired_archives()
-            
+
             return {
                 "success": True,
                 "new_version": self._current_version,
@@ -282,10 +281,10 @@ class KeyManager:
             k for k in self._user_keys.keys()
             if k.startswith(f"{user_id}:")
         ]
-        
+
         for key in keys_to_remove:
             del self._user_keys[key]
-            
+
         return len(keys_to_remove) > 0
 
     def verify_key_integrity(
@@ -304,7 +303,7 @@ class KeyManager:
     def get_stats(self) -> Dict[str, Any]:
         """获取密钥管理统计信息"""
         active_users = len(set(k.split(":")[0] for k in self._user_keys.keys()))
-        
+
         return {
             **self._stats,
             "current_version": self._current_version,
@@ -375,13 +374,13 @@ class KeyManager:
         使用多次哈希迭代作为后备方案。
         """
         prk = hmac.new(salt, master_key, hashlib.sha256).digest()
-        
+
         okm = b""
         t = b""
         for i in range(0, length, 32):
             t = hmac.new(prk, t + info + bytes([i + 1]), hashlib.sha256).digest()
             okm += t
-            
+
         return okm[:length]
 
     def _archive_key(
@@ -393,9 +392,9 @@ class KeyManager:
         try:
             archive_key = EncryptionUtils.generate_key()
             nonce = EncryptionUtils.generate_nonce()
-            
+
             encrypted_key, _ = EncryptionUtils.encrypt(key, archive_key)
-            
+
             entry = KeyArchiveEntry(
                 key_id=self._generate_key_id(),
                 encrypted_key=encrypted_key,
@@ -411,12 +410,12 @@ class KeyManager:
                     days=self.archive_retention_days
                 ),
             )
-            
+
             self._archived_keys[entry.key_id] = entry
             self._stats["archive_count"] += 1
-            
+
             return entry
-            
+
         except Exception as e:
             logger.error(f"[KeyManager] 归档密钥失败: {e}")
             return None
@@ -428,10 +427,10 @@ class KeyManager:
             k for k, v in self._archived_keys.items()
             if v.retention_until and v.retention_until < now
         ]
-        
+
         for key in expired_keys:
             del self._archived_keys[key]
-            
+
         return len(expired_keys)
 
     @staticmethod

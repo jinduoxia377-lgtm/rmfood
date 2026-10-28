@@ -1,7 +1,7 @@
 """CQRS module for query-side optimization"""
 
-from .queries.service import QueryService
 from .queries.models import FormulaQueryModel
+from .queries.service import QueryService
 
 __all__ = [
     "QueryService",

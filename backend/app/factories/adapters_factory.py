@@ -1,10 +1,11 @@
 """适配器工厂注册表模块 - 延迟注册实现"""
 from __future__ import annotations
-import os
+
 import logging
+import os
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Type, Any, Optional, Callable, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Type
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +93,13 @@ class AdapterRegistry(metaclass=ABCMeta):
 class AppAdapterRegistry(AdapterRegistry):
     def _initialize_default_variants(self) -> None:
         pass
-    
+
     def register_core_adapters_at_runtime(self) -> None:
-        from app.infrastructure.herb_knowledge_adapters import (TCMSPHerbKnowledgeAdapter, BuiltinHerbKnowledgeAdapter, InMemoryHerbKnowledgeAdapter)
+        from app.infrastructure.herb_knowledge_adapters import (
+            BuiltinHerbKnowledgeAdapter,
+            InMemoryHerbKnowledgeAdapter,
+            TCMSPHerbKnowledgeAdapter,
+        )
 
         self.register_variant("herb_knowledge", "prod", TCMSPHerbKnowledgeAdapter, "Production: TCMSP database herb knowledge")
         self.register_variant("herb_knowledge", "test", InMemoryHerbKnowledgeAdapter, "Test: in-memory herb knowledge adapter")
@@ -103,7 +108,10 @@ class AppAdapterRegistry(AdapterRegistry):
 
         # formula_repository（可选：缺失时跳过）
         try:
-            from app.infrastructure.formula_repository import (SqlalchemyFormulaRepository, InMemoryFormulaRepository)
+            from app.infrastructure.formula_repository import (
+                InMemoryFormulaRepository,
+                SqlalchemyFormulaRepository,
+            )
             self.register_variant("formula_repository", "prod", SqlalchemyFormulaRepository, "Production: SQLAlchemy ORM formula repository")
             self.register_variant("formula_repository", "test", InMemoryFormulaRepository, "Test: in-memory formula repository")
             self.set_default("formula_repository", "prod")
@@ -117,7 +125,7 @@ class AppAdapterRegistry(AdapterRegistry):
             self.set_default("event_publisher", "dev")
         except ImportError:
             logger.warning("[AdapterRegistry] event_bus 模块不存在，跳过注册")
-        
+
         logger.info("Core adapters registered at runtime")
 
     def load_all(self) -> None:
@@ -145,7 +153,7 @@ class MicroServiceRegistry(AdapterRegistry):
     Each microservice can declare its own ports and environment-specific implementations.
     This prepares the codebase for eventual physical separation into independent services.
     """
-    
+
     def register_microservice_port(
         self,
         service_name: str,
@@ -155,20 +163,20 @@ class MicroServiceRegistry(AdapterRegistry):
         default_variant: str = "prod"
     ) -> None:
         """Register a port for a specific microservice with multiple implementation variants."""
-        
+
         # Create a unique port identifier including service name
         full_port_key = f"{service_name}.{port_name}"
-        
+
         for variant_key, adapter_cls in variants.items():
             # Determine environment based on variant or explicit mapping
             if env_mapping and variant_key in env_mapping:
                 env = env_mapping[variant_key]
             else:
                 env = variant_key  # Use variant key as env
-            
+
             # Create description including service context
             desc = f"{service_name} - {port_name} variant: {variant_key}"
-            
+
             # Register using the base class method
             self.register_variant(
                 port_name=full_port_key,
@@ -177,10 +185,10 @@ class MicroServiceRegistry(AdapterRegistry):
                 description=desc,
                 env_override=env
             )
-        
+
         # Set default for this port
         self.set_default(full_port_key, default_variant)
-    
+
     def get_microservice_adapter(
         self,
         service_name: str,
@@ -195,12 +203,11 @@ class MicroServiceRegistry(AdapterRegistry):
 def create_microservice_registry() -> MicroServiceRegistry:
     """Create and initialize a MicroServiceRegistry with predefined service ports."""
     registry = MicroServiceRegistry()
-    
+
     # Pre-register common microservice ports
-    
+
     # 1. AI Conversation Service ports
-    from app.services.ai.conversation_ports import IChatPort, MessageStoragePort
-    
+
     # For now, use in-memory adapters as placeholders
     # In microservice mode, these would be replaced by HTTP/gRPC client adapters that call the remote service
     registry.register_microservice_port(
@@ -214,7 +221,7 @@ def create_microservice_registry() -> MicroServiceRegistry:
         env_mapping={"prod": "production", "dev": "development", "test": "testing"},
         default_variant="dev"
     )
-    
+
     # 2. Formula Calculation Service ports
     registry.register_microservice_port(
         service_name="formula-calculation-service",
@@ -226,7 +233,7 @@ def create_microservice_registry() -> MicroServiceRegistry:
         },
         default_variant="dev"
     )
-    
+
     # 3. Authentication Service ports
     registry.register_microservice_port(
         service_name="authz-service",
@@ -238,7 +245,7 @@ def create_microservice_registry() -> MicroServiceRegistry:
         },
         default_variant="dev"
     )
-    
+
     logger.info("Microservice registry initialized with core service ports")
     return registry
 

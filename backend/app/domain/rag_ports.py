@@ -4,9 +4,8 @@ RAG 端口接口（M2.1）
 向量存储、嵌入生成、文档处理的抽象接口。
 """
 from abc import ABC, abstractmethod
-from typing import Optional
 
-from .rag import DocumentChunk, EmbeddedChunk, RetrievalQuery, RetrievalResult, KnowledgeBase
+from .rag import DocumentChunk, EmbeddedChunk, RetrievalQuery, RetrievalResult
 
 
 class VectorStore(ABC):

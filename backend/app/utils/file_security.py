@@ -9,11 +9,11 @@
 - ✅ 扩展名白名单：仅允许安全的文件类型
 - ✅ 安全文件名生成：UUID 替代原始文件名
 """
+import logging
 import os
 import uuid
-import logging
-from pathlib import Path
 from typing import Optional, Tuple
+
 from fastapi import HTTPException, UploadFile, status
 
 logger = logging.getLogger(__name__)

@@ -3,19 +3,17 @@
 提供AES-256-GCM加密/解密功能，用于保护敏感同步数据。
 支持字典递归加密、密钥派生和安全的密钥管理。
 """
-import os
-import json
+import base64
 import hashlib
 import hmac
-import base64
-import struct
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Union
+import json
+import os
+from typing import Any, Dict, Optional, Tuple
 
 try:
+    from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-    from cryptography.hazmat.primitives import hashes
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
@@ -47,18 +45,18 @@ class EncryptionUtils:
         >>> ciphertext, nonce = utils.encrypt(b"sensitive data", key)
         >>> plaintext = utils.decrypt(ciphertext, nonce, key)
     """
-    
+
     ALGORITHM = "AES-256-GCM"
     KEY_LENGTH = 32  # 256 bits
     NONCE_LENGTH = 12  # 96 bits (recommended for GCM)
     TAG_LENGTH = 16  # 128 bits authentication tag
-    
+
     SENSITIVE_FIELDS = {
         "password", "secret", "token", "api_key", "private_key",
         "access_token", "refresh_token", "auth_code", "credential",
         "ssn", "credit_card", "bank_account",
     }
-    
+
     SENSITIVE_PATTERNS = [
         "email", "phone", "address", "id_card", "passport",
     ]
@@ -129,20 +127,20 @@ class EncryptionUtils:
                 f"密钥长度必须为 {EncryptionUtils.KEY_LENGTH} 字节，"
                 f"实际为 {len(key)} 字节"
             )
-        
+
         nonce = EncryptionUtils.generate_nonce()
-        
+
         try:
             aesgcm = AESGCM(key)
-            
+
             ciphertext_with_tag = aesgcm.encrypt(
                 nonce=nonce,
                 data=plaintext,
                 associated_data=associated_data,
             )
-            
+
             return ciphertext_with_tag, nonce
-            
+
         except Exception as e:
             raise EncryptionError(f"加密失败: {str(e)}") from e
 
@@ -175,21 +173,21 @@ class EncryptionUtils:
         """
         if len(key) != EncryptionUtils.KEY_LENGTH:
             raise ValueError(f"密钥长度必须为 {EncryptionUtils.KEY_LENGTH} 字节")
-        
+
         if len(nonce) != EncryptionUtils.NONCE_LENGTH:
             raise ValueError(f"Nonce长度必须为 {EncryptionUtils.NONCE_LENGTH} 字节")
-        
+
         try:
             aesgcm = AESGCM(key)
-            
+
             plaintext = aesgcm.decrypt(
                 nonce=nonce,
                 data=ciphertext,
                 associated_data=associated_data,
             )
-            
+
             return plaintext
-            
+
         except Exception as e:
             raise DecryptionError(f"解密失败（可能数据被篡改或密钥错误）: {str(e)}") from e
 
@@ -219,14 +217,14 @@ class EncryptionUtils:
             >>> # encrypted["password"] = {"encrypted": True, "value": "...", "nonce": "..."}
         """
         result = {}
-        
+
         for field_name, value in data.items():
             should_encrypt = (
                 encrypt_all or
                 field_name.lower() in EncryptionUtils.SENSITIVE_FIELDS or
                 any(pattern in field_name.lower() for pattern in EncryptionUtils.SENSITIVE_PATTERNS)
             )
-            
+
             if should_encrypt and value is not None:
                 try:
                     value_bytes = (
@@ -234,9 +232,9 @@ class EncryptionUtils:
                         if not isinstance(value, bytes)
                         else value
                     )
-                    
+
                     ciphertext, nonce = EncryptionUtils.encrypt(value_bytes, key)
-                    
+
                     result[field_name] = {
                         "__encrypted__": True,
                         "v": base64.b64encode(ciphertext).decode("ascii"),
@@ -258,7 +256,7 @@ class EncryptionUtils:
                 ]
             else:
                 result[field_name] = value
-                
+
         return result
 
     @staticmethod
@@ -280,20 +278,20 @@ class EncryptionUtils:
             DecryptionError: 如果任何字段解密失败
         """
         result = {}
-        
+
         for field_name, value in encrypted_data.items():
             if isinstance(value, dict) and value.get("__encrypted__"):
                 try:
                     ciphertext = base64.b64decode(value["v"])
                     nonce = base64.b64decode(value["n"])
-                    
+
                     decrypted_bytes = EncryptionUtils.decrypt(ciphertext, nonce, key)
-                    
+
                     try:
                         result[field_name] = json.loads(decrypted_bytes.decode("utf-8"))
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         result[field_name] = decrypted_bytes
-                        
+
                 except Exception as e:
                     result[field_name] = value
                     result[f"{field_name}_decrypt_error"] = "解密失败"
@@ -310,7 +308,7 @@ class EncryptionUtils:
                 ]
             else:
                 result[field_name] = value
-                
+
         return result
 
     @staticmethod
@@ -371,7 +369,7 @@ class EncryptionUtils:
         """
         if salt is None:
             salt = os.urandom(16)
-        
+
         hashed = hashlib.pbkdf2_hmac(
             "sha256",
             password.encode("utf-8"),
@@ -379,7 +377,7 @@ class EncryptionUtils:
             iterations=260000,  # OWASP推荐值
             dklen=32,
         )
-        
+
         return hashed.hex(), base64.b64encode(salt).decode("ascii")
 
 

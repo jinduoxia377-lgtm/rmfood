@@ -4,9 +4,10 @@
 定义 Agent 框架核心类型：任务、结果、Agent 规格。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from datetime import datetime
+from enum import Enum, auto
 from typing import Optional
 
 

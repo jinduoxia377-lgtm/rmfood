@@ -4,6 +4,7 @@
 移动端 API 的轻量级数据模型。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
