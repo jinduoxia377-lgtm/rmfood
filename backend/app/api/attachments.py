@@ -11,21 +11,24 @@
 import logging
 import os
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, status
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 
-from ..models.models import Attachment, Formula, Experiment, User
-from ..services.auth import get_current_user
 from ..api.deps import get_db_session
+from ..models.models import Attachment, Experiment, Formula, User
+from ..services.auth import get_current_user
 from ..utils.file_security import (
     ALLOWED_FILE_TYPES,
     MAX_ATTACHMENT_SIZE,
     detect_file_mime_from_content,
-    sanitize_filename as file_security_sanitize_filename,
     validate_file_path,
+)
+from ..utils.file_security import (
+    sanitize_filename as file_security_sanitize_filename,
 )
 
 router = APIRouter(prefix="/attachments", tags=["附件"])

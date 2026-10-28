@@ -3,14 +3,13 @@ Ingredient Analysis Router - 配料分析API
 提供：OCR识别 + 六维分析 + 数据库查询
 """
 
+import io
 import logging
 import re
-import base64
-import io
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import JSONResponse
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
 
 from ...services.ingredient_analysis import analysis_service
 
@@ -166,9 +165,9 @@ def _run_ocr(content: bytes) -> Optional[str]:
     """尝试可用的 OCR 引擎，返回识别文本；无可用引擎返回 None。"""
     # 1. RapidOCR / ONNX（纯 ONNX、无 torch 依赖，中文效果好，首选）
     try:
-        from rapidocr_onnxruntime import RapidOCR
         import numpy as np
         from PIL import Image
+        from rapidocr_onnxruntime import RapidOCR
 
         img = Image.open(io.BytesIO(content))
         arr = np.array(img)

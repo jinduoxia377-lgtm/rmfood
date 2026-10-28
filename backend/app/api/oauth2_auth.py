@@ -24,21 +24,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import settings
 from ..core.database.session import get_db
-from ..models.user_model import User
+from ..core.security.account_lockout import AccountLockout
 from ..models.enums import UserRole
-from ..schemas.user import Token
+from ..models.user_model import User
 from ..utils.auth import (
-    create_access_token,
-    create_refresh_token,
-    decode_token,
-    verify_password,
-    get_password_hash,
-    validate_password_strength,
     add_token_to_blacklist,
     check_rate_limit,
     clear_rate_limit,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_password_hash,
+    validate_password_strength,
+    verify_password,
 )
-from ..core.security.account_lockout import AccountLockout
 
 logger = logging.getLogger(__name__)
 

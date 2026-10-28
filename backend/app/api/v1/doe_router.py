@@ -7,13 +7,12 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, text
+from sqlalchemy import select, text
 
 from app.core.database.session import get_db
 from app.services.doe import (
-    DOEEngine,
-    Factor,
     DOERun,
+    Factor,
     ResponseSurfaceModel,
     get_doe_engine,
 )
@@ -185,11 +184,11 @@ async def generate_mixture(req: MixtureDesignRequest) -> dict:
 async def fit_response_surface(req: ResponseSurfaceRequest) -> dict:
     """
     根据实验数据拟合响应面二次模型
-    
+
     模型形式：Y = b0 + Σbi*Xi + Σbij*Xi*Xj + Σbii*Xi²
     """
     engine = get_doe_engine()
-    
+
     # 解析 runs
     runs = []
     for r_data in req.runs:
@@ -200,14 +199,14 @@ async def fit_response_surface(req: ResponseSurfaceRequest) -> dict:
             response_values=r_data.get("response_values", {}),
         )
         runs.append(run)
-    
+
     models = engine.fit_response_surface(
         runs=runs,
         response_names=req.response_names,
         include_interaction=req.include_interaction,
         include_quadratic=req.include_quadratic,
     )
-    
+
     return {
         "status": "ok",
         "models": [
@@ -230,11 +229,11 @@ async def fit_response_surface(req: ResponseSurfaceRequest) -> dict:
 async def inverse_search(req: InverseSearchRequest) -> dict:
     """
     给定目标响应值，反推最优因子组合
-    
+
     使用梯度下降 + 约束优化
     """
     engine = get_doe_engine()
-    
+
     # 解析模型
     model_data = req.model
     factors = model_data.get("factors", [])
@@ -262,7 +261,7 @@ async def inverse_search(req: InverseSearchRequest) -> dict:
         rmse={},
         significant_terms=[],
     )
-    
+
     # 把前端传来的 factor_bounds（{name: [lo, hi]} 列表/元组）规范化为 {name: (lo, hi)}
     norm_bounds: Optional[dict] = None
     if req.factor_bounds:
@@ -273,7 +272,7 @@ async def inverse_search(req: InverseSearchRequest) -> dict:
         target_values=req.target_values,
         factor_bounds=norm_bounds,
     )
-    
+
     return {
         "status": "ok",
         "target_values": result.target_values,
@@ -685,7 +684,6 @@ async def seed_from_formula(
 
     返回可直接 POST /doe/fit 的 runs + factors + response，前端自动回填拟合队列。
     """
-    from datetime import datetime
 
     # 1. 读真实配方 + 成分占比
     rows = (

@@ -8,13 +8,13 @@ Provides system-level endpoints for monitoring and managing:
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.core.performance.cache_system import get_cache
-from app.core.performance.task_queue import get_task_queue, TaskPriority
+from app.core.performance.task_queue import TaskPriority, get_task_queue
 
 logger = logging.getLogger(__name__)
 

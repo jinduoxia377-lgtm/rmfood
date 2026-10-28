@@ -4,25 +4,23 @@ v2.0 (2026-07-06): 替换 Mock 数据为真实服务调用
 - analyze_formula → ai_service.analyze_formula()
 - recommendations → 基于数据库的真实配方查询
 """
-import logging
 import datetime
 from datetime import timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 from . import (
-    logger,
-    _get_llm_service,
-    ai_service,
-    router,
-    get_db_session,
-    get_current_user,
-    User,
     FormulaStatus,
+    User,
+    ai_service,
+    get_current_user,
+    get_db_session,
+    logger,
+    router,
 )
 
 sub_router = APIRouter(tags=["推荐"])
@@ -69,6 +67,11 @@ async def analyze_formula(
     2. 调用 ai_service 进行成分/功效/安全分析
     3. 生成综合分析报告
     """
+    # 未登录直接 401（get_current_user 为可选认证，current_user 可能为 None，
+    # 后续 current_user.id 会抛 AttributeError 变成 500）
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="请先登录后再使用 AI 分析")
+
     # 组织计划 AI 配额检查（超限 403）
     try:
         from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
@@ -82,8 +85,9 @@ async def analyze_formula(
         target_effects = req.target_effects
 
         if req.formula_id:
-            from ...models.formula import Formula
             from sqlalchemy.orm import selectinload
+
+            from ...models.formula import Formula
             result = await db.execute(
                 select(Formula)
                 .options(selectinload(Formula.ingredients))
@@ -159,8 +163,9 @@ async def get_recommendations(
         raise HTTPException(status_code=403, detail=str(e))
 
     try:
-        from ...models.formula import Formula
         from sqlalchemy.orm import selectinload
+
+        from ...models.formula import Formula
 
         # 查询用户的配方（排除当前基于的配方）
         query = select(Formula).options(selectinload(Formula.ingredients)).where(

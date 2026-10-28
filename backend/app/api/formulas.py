@@ -3,34 +3,49 @@
 配方 CRUD、版本管理、审核流程、AI 推荐
 """
 import logging
+from datetime import datetime
 from typing import Dict, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, status, UploadFile, File, Form
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from ..api.deps import FormulaFilterParams, PaginationParams, get_db_session, require_role
+from ..api.deps import get_current_user as _optional_get_current_user
+from ..core.multi_tenant.tenant_quota import QuotaType, require_quota
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.plans import require_plan
+from ..models.enums import FormulaStatus, UserRole
+from ..models.formula import Formula
+from ..models.user_model import User
 from ..schemas import (
-    FormulaCreate, FormulaUpdate, FormulaResponse, FormulaListResponse,
-    FormulaVersionResponse, FormulaReviewRequest,
-    AIRecommendationRequest, AIRecommendationResponse,
-    ApiResponse, SuccessResponse, PaginatedResponse,
-    PeptideResponse
+    AIRecommendationRequest,
+    AIRecommendationResponse,
+    FormulaCreate,
+    FormulaResponse,
+    FormulaReviewRequest,
+    FormulaUpdate,
+    FormulaVersionResponse,
+    SuccessResponse,
 )
 from ..schemas.formula import (
     BatchStatusUpdateRequest,
-    IngredientResponse,
 )
-from ..services.formula import FormulaService
-from ..models.enums import UserRole, FormulaStatus
-from ..models.user_model import User
-from ..models.formula import Formula
-from ..services.auth import get_current_user as _required_get_current_user
-from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role, get_current_user as _optional_get_current_user
-from ..core.plans import require_plan
-from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
-from ..core.multi_tenant.tenant_quota import QuotaType, require_quota
-
 from ..services.ai.formula_intelligence import _match_food_material
+from ..services.auth import get_current_user as _required_get_current_user
+from ..services.formula import FormulaService
 
 
 async def _enrich_ingredients_with_food_material(
@@ -207,7 +222,6 @@ async def list_formulas(
         search=filters.search,
         organization_id=org_id,
     )
-    from ..schemas.formula import IngredientResponse as _IngResp, PeptideResponse as _PepResp
     formula_responses = []
     for f in formulas:
         ing_data = []
@@ -301,10 +315,12 @@ async def get_formula_statistics(
     统计口径与默认列表一致：排除已归档（软删除 status=ARCHIVED），
     使 total_formulas 与列表 total 匹配，避免前端计数卡片与列表行数不一致。
     """
-    from sqlalchemy import func, select as sa_select
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
+
+    from sqlalchemy import func
+    from sqlalchemy import select as sa_select
+
     from ..models.formula import Formula
-    from ..models.user_model import User
 
     org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
     if org_id is None:
@@ -582,7 +598,6 @@ async def get_formula_nutrition(
     db: AsyncSession = Depends(get_db_session),
 ):
     """计算并返回配方的营养成分摘要（热量、宏量营养素、过敏原等）"""
-    from ..models.formula import Formula
     from ..services.formula.nutrition_service import FormulaNutritionService
 
     result = await _get_formula_with_ingredients(db, formula_id)
@@ -655,7 +670,6 @@ async def validate_formula_nutrition(
     db: AsyncSession = Depends(get_db_session),
 ):
     """校验配方成分总重量是否为 100%"""
-    from ..models.formula import Formula
     from ..services.formula.nutrition_service import FormulaNutritionService
 
     result = await _get_formula_with_ingredients(db, formula_id)
@@ -695,8 +709,7 @@ async def optimize_formula_lp(
     db: AsyncSession = Depends(get_db_session),
 ):
     """使用 MILP 对配方成分进行精确配比优化，最小化成本并满足营养约束"""
-    from ..models.formula import Formula
-    from ..services.formula.lp_solver import MILPSolver, HerbNutritionData, NutritionConstraint
+    from ..services.formula.lp_solver import HerbNutritionData, MILPSolver, NutritionConstraint
     from ..services.formula.nutrition_database import HERB_NUTRITION_DB
 
     # 验证配方存在及租户归属（有效组织解析，兼容 Cookie 认证/org_id=NULL）
@@ -783,7 +796,6 @@ async def analyze_formula_synergy(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.synergy_engine import SynergyEngine
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -828,7 +840,6 @@ async def predict_formula_stability(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.stability_predictor import StabilityPredictor
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -881,7 +892,6 @@ async def predict_formula_taste(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.taste_predictor import TastePredictor
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -919,7 +929,6 @@ async def check_formula_safety(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.safety_alert_system import SafetyAlertSystem
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -951,7 +960,6 @@ async def check_formula_compatibility(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.compatibility_checker import CompatibilityChecker
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -985,7 +993,6 @@ async def predict_formula_effect(
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    from ..models.formula import Formula
     from ..services.formula.effect_simulator import EffectSimulator
 
     formula = await _get_formula_with_ingredients(db, formula_id)
@@ -1135,9 +1142,10 @@ async def copy_formula(
     db: AsyncSession = Depends(get_db_session),
 ):
     """基于现有配方创建新配方（草稿状态）"""
-    from ..models.formula import Formula, Ingredient, Peptide, formula_ingredients, formula_peptides
-    from ..services.formula import FormulaService
     from sqlalchemy import select as sa_select
+
+    from ..models.formula import Formula, formula_ingredients, formula_peptides
+    from ..services.formula import FormulaService
 
     # 解析有效组织（Cookie 认证兼容）：无有效组织 → 403 拒绝复制
     org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
@@ -1152,8 +1160,8 @@ async def copy_formula(
         raise HTTPException(status_code=404, detail="源配方不存在")
 
     # 生成新配方（code 为 NOT NULL 唯一字段，须显式生成，与导入/创建一致）
-    from datetime import datetime as _dt
     import uuid as _uuid
+    from datetime import datetime as _dt
     new_formula = Formula(
         code=f"RMF-{_dt.now().strftime('%Y%m%d')}-{str(_uuid.uuid4())[:6].upper()}",
         name=f"{source.name} (副本)",
@@ -1211,7 +1219,9 @@ async def multi_algorithm_optimize(
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.multi_algorithm_orchestrator import (
-        MultiAlgorithmOrchestrator, FusionConfig, AlgorithmType
+        AlgorithmType,
+        FusionConfig,
+        MultiAlgorithmOrchestrator,
     )
     ingredients = request.get('ingredients', [])
     if not ingredients:
@@ -1252,7 +1262,6 @@ async def export_formula(
     db: AsyncSession = Depends(get_db_session),
 ):
     """导出单个配方的详细信息为 PDF 或 Excel"""
-    from ..models.formula import Formula
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
@@ -1294,7 +1303,8 @@ async def export_formula(
         }
 
         if format_type == "csv":
-            import csv, io
+            import csv
+            import io
             output = io.StringIO()
             writer = csv.DictWriter(output, fieldnames=["id", "code", "name", "description", "status", "version"])
             writer.writeheader()
@@ -1326,7 +1336,6 @@ async def apply_optimization_result(
     db: AsyncSession = Depends(get_db_session),
 ):
     """将 MILP 或 RatioOptimizer 的结果应用到配方成分"""
-    from ..models.formula import Formula
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
@@ -1367,7 +1376,6 @@ async def save_analysis_result(
     db: AsyncSession = Depends(get_db_session),
 ):
     """保存深度分析结果到数据库，支持后续查看"""
-    from ..models.formula import Formula
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
@@ -1403,7 +1411,6 @@ async def get_analysis_history(
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方的分析历史记录"""
-    from ..models.formula import Formula
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
@@ -1440,7 +1447,8 @@ async def get_operation_logs(
     db: AsyncSession = Depends(get_db_session),
 ):
     """从审计日志表查询配方相关的操作日志"""
-    from sqlalchemy import func, desc, asc
+    from sqlalchemy import asc, desc, func
+
     from ..models.system import AuditLog
 
     query = select(AuditLog).where(AuditLog.entity_type == "formula")
@@ -1531,7 +1539,8 @@ async def export_operation_logs(
     db: AsyncSession = Depends(get_db_session),
 ):
     """导出操作日志为 CSV 或 Excel"""
-    from sqlalchemy import func
+    from sqlalchemy import desc, func
+
     from ..models.system import AuditLog
 
     query = select(AuditLog).where(AuditLog.entity_type == "formula")
@@ -1544,7 +1553,8 @@ async def export_operation_logs(
     query = query.order_by(desc(AuditLog.created_at))
     rows = (await db.execute(query)).scalars().all()
 
-    import csv, io
+    import csv
+    import io
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["时间", "操作者", "角色", "动作", "目标类型", "目标ID", "结果", "IP"])
@@ -1649,12 +1659,13 @@ async def batch_delete_formulas(
     db: AsyncSession = Depends(get_db_session),
 ):
     """批量软删除配方（按 ID 列表）"""
-    from ..models.formula import Formula
-    from ..models.enums import UserRole
     import uuid
+    from datetime import datetime
 
-    from datetime import datetime, timezone
     from sqlalchemy import select
+
+    from ..models.enums import UserRole
+    from ..models.formula import Formula
 
     ids: list[int] = request.get("ids", [])
     if not ids:
@@ -1767,7 +1778,9 @@ async def import_formulas(
     import re as _re
     import uuid
     from datetime import datetime
+
     import pandas as pd
+
     from ..models.formula import Formula
 
     # 解析有效组织（Cookie 认证兼容）：无有效组织 → 403，避免创建 organization_id=None 孤儿配方
@@ -1993,7 +2006,9 @@ async def export_formulas_batch(
               "ids": [..], "includeIngredients": bool}
     """
     import io
+
     from fastapi.responses import Response
+
     from ..models.formula import Formula
 
     fmt = str(request.get("format", "csv")).lower()
@@ -2040,7 +2055,7 @@ async def export_formulas_batch(
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4, landscape
         from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
         styles = getSampleStyleSheet()

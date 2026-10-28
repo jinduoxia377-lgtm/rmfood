@@ -18,13 +18,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_current_active_user, get_db_session
+from app.services.ai.agent.mcp_bridge import McpBridge
+from app.services.llm_service import _get_encryption_key
+from app.utils.encryption import EncryptionUtils
+
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...models import User
 from ...models.mcp_server import McpServerConfig
-from app.utils.encryption import EncryptionUtils
-from app.services.llm_service import _get_encryption_key
-from app.services.ai.agent.mcp_bridge import McpBridge
+from ..deps import get_current_active_user, get_db_session
 
 router = APIRouter(prefix="/admin/mcp-servers", tags=["MCP 服务器管理"])
 

@@ -23,31 +23,30 @@
 """
 
 from __future__ import annotations
+
 import asyncio
 import json
 import logging
 import os
-import uuid
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...api.deps import get_current_active_user, get_db_session
 from ...core.distributed.ray_manager import (
+    ClusterState,
+    ClusterStatus,
     RayClusterManager,
     RayConfig,
+    ResourceUsage,
     TaskConfig,
     TaskState,
-    ClusterState,
     TaskStatus,
-    ClusterStatus,
-    ResourceUsage,
-    get_ray_manager
+    get_ray_manager,
 )
-from ...api.deps import get_current_active_user, get_db_session
 from ...models import User
 from ...models.enums import UserRole
 

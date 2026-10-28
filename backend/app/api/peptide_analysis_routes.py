@@ -11,20 +11,24 @@
 - GET /export - 导出CSV/Excel
 """
 import logging
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_active_user, PaginationParams
+from ..api.deps import PaginationParams, get_db_session
+from ..core.plans import require_plan
 from ..models.user_model import User
+from ..schemas import ApiResponse, SuccessResponse
 from ..schemas.peptide_analysis import (
-    PeptideAnalysisCreate, PeptideAnalysisUpdate,
-    PeptideAnalysisResponse, PeptideAnalysisListResponse, BatchResult
+    BatchResult,
+    PeptideAnalysisCreate,
+    PeptideAnalysisListResponse,
+    PeptideAnalysisResponse,
+    PeptideAnalysisUpdate,
 )
-from ..schemas import SuccessResponse, ApiResponse
 from ..services.peptide_analysis_service import PeptideAnalysisService
 
 logger = logging.getLogger(__name__)
@@ -42,7 +46,7 @@ router = APIRouter(prefix="/peptide-analyses", tags=["肽序列分析"])
 async def create_analysis(
     data: PeptideAnalysisCreate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """创建新的肽序列分析记录"""
     try:
@@ -80,7 +84,7 @@ async def list_analyses(
     sort_by: Optional[str] = Query("created_at", description="排序字段"),
     sort_order: Optional[str] = Query("desc", description="排序方向"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """分页获取分析列表"""
     try:
@@ -118,7 +122,7 @@ async def list_analyses(
 async def get_analysis(
     analysis_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """获取分析详情（含嵌套的details）"""
     try:
@@ -166,7 +170,7 @@ async def update_analysis(
     analysis_id: int,
     data: PeptideAnalysisUpdate,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """更新分析记录的元数据"""
     try:
@@ -201,7 +205,7 @@ async def update_analysis(
 async def delete_analysis(
     analysis_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """软删除分析记录"""
     try:
@@ -227,7 +231,7 @@ async def delete_analysis(
 async def batch_create_analyses(
     items: list[PeptideAnalysisCreate],
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """批量创建分析记录"""
     if len(items) > 100:
@@ -257,7 +261,7 @@ async def export_analyses(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """导出分析数据为文件"""
     try:
@@ -308,8 +312,9 @@ async def export_analyses(
         elif format == "excel":
             # Excel 导出使用 openpyxl
             from io import BytesIO
+
             from openpyxl import Workbook
-            from openpyxl.styles import Font, Alignment, PatternFill
+            from openpyxl.styles import Alignment, Font, PatternFill
 
             wb = Workbook()
             ws = wb.active

@@ -3,21 +3,18 @@
 将TCMHerb数据库对象正确映射到前端（仅 TCMSP 药学数据）
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func
-from typing import List, Dict, Any
+from typing import Any, Dict
 
-from ..schemas import (
-    IngredientCreate, IngredientUpdate, IngredientResponse, IngredientListResponse,
-    ApiResponse, SuccessResponse, PaginatedResponse
-)
-from ..services.ingredient import IngredientService
-from ..services.auth import get_current_user
-from ..models.user_model import User
-from ..models.enums import UserRole
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..api.deps import PaginationParams, get_db_session
 from ..models.external_data import TCMHerb
-from ..api.deps import get_db_session, PaginationParams, require_role
+from ..schemas import (
+    ApiResponse,
+    IngredientResponse,
+)
 
 router = APIRouter(prefix="/ingredients", tags=["成分管理"])
 logger = logging.getLogger(__name__)
@@ -144,7 +141,7 @@ async def get_ingredient_stats(
     try:
         total = (await db.execute(select(func.count()).select_from(TCMHerb))).scalar() or 0
         food_homology = (await db.execute(
-            select(func.count()).where(TCMHerb.is_food_homology == True)
+            select(func.count()).where(TCMHerb.is_food_homology.is_(True))
         )).scalar() or 0
 
         # 分类统计

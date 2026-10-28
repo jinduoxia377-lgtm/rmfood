@@ -7,24 +7,24 @@ import logging  # A-27：文件里只有函数内的 import logging，模块级 
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, update, delete
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import delete, func, select, update
 
-from ...core.database.session import get_db
-from ...models.notification import Notification, NotificationPreference as NotificationPreferenceModel
-from ...models.enums import NotificationType, NotificationStatus
+from ...api.deps import CurrentUser, DbSession
+from ...models.enums import NotificationStatus, NotificationType
+from ...models.notification import Notification
+from ...models.notification import NotificationPreference as NotificationPreferenceModel
 from ...schemas.notification_schemas import (
+    DeleteNotificationResponse,
+    MarkAllReadResponse,
+    MarkReadResponse,
     NotificationItem,
     NotificationListResponse,
-    UnreadCountResponse,
-    MarkReadResponse,
-    MarkAllReadResponse,
-    DeleteNotificationResponse,
-    NotificationPreferencesUpdate,
     NotificationPreferencesResponse,
+    NotificationPreferencesUpdate,
+    UnreadCountResponse,
 )
-from ...api.deps import get_current_active_user, CurrentUser, DbSession
+
 logger = logging.getLogger(__name__)  # A-27：原缺失
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
@@ -75,7 +75,7 @@ async def list_notifications(
         unread_result = await db.execute(
             select(func.count(Notification.id)).where(
                 Notification.user_id == current_user.id,
-                Notification.is_read == False,
+                Notification.is_read.is_(False),
             )
         )
         unread_count = unread_result.scalar() or 0
@@ -117,7 +117,7 @@ async def get_unread_count(
         unread_result = await db.execute(
             select(func.count(Notification.id)).where(
                 Notification.user_id == current_user.id,
-                Notification.is_read == False,
+                Notification.is_read.is_(False),
             )
         )
         unread_count = unread_result.scalar() or 0
@@ -125,7 +125,7 @@ async def get_unread_count(
         last_read_result = await db.execute(
             select(func.max(Notification.read_at)).where(
                 Notification.user_id == current_user.id,
-                Notification.is_read == True,
+                Notification.is_read.is_(True),
             )
         )
         last_read_at = last_read_result.scalar()
@@ -147,9 +147,9 @@ async def mark_as_read(
 ):
     """
     将指定通知标记为已读
-    
+
     - **notification_id**: 通知ID
-    
+
     更新已读状态和读取时间。
     """
     result = await db.execute(
@@ -159,13 +159,13 @@ async def mark_as_read(
         )
     )
     notification = result.scalar_one_or_none()
-    
+
     if not notification:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="通知不存在",
         )
-    
+
     if notification.is_read:
         return MarkReadResponse(
             success=True,
@@ -173,12 +173,12 @@ async def mark_as_read(
             notification_id=notification_id,
             is_read=True,
         )
-    
+
     notification.is_read = True
     notification.status = NotificationStatus.READ
     notification.read_at = _now()
     await db.commit()
-    
+
     return MarkReadResponse(
         success=True,
         message="已标记为已读",
@@ -195,28 +195,28 @@ async def mark_all_as_read(
 ):
     """
     将所有通知（或指定类型）标记为已读
-    
+
     - **type**: 可选，只标记此类型的通知为已读
-    
+
     批量更新操作，返回标记的数量。
     """
     query = update(Notification).where(
         Notification.user_id == current_user.id,
-        Notification.is_read == False,
+        Notification.is_read.is_(False),
     ).values(is_read=True, status=NotificationStatus.READ, read_at=_now())
-    
+
     if type_filter:
         try:
             notif_type = NotificationType(type_filter)
             query = query.where(Notification.type == notif_type)
         except ValueError:
             logger.warning("无效的通知类型过滤器，已忽略: %s", type_filter)
-    
+
     result = await db.execute(query)
     await db.commit()
-    
+
     marked_count = result.rowcount
-    
+
     return MarkAllReadResponse(
         success=True,
         message=f"已将 {marked_count} 条通知标记为已读",
@@ -234,10 +234,10 @@ async def clear_all_notifications(
 ):
     """
     清空当前用户的所有通知（或指定类型）
-    
+
     - **type**: 可选，只清除此类型
     - **confirm**: 必须设置为true以确认操作
-    
+
     ⚠️ 此操作不可逆，请谨慎使用。
     """
     if not confirm:
@@ -275,9 +275,9 @@ async def delete_notification(
 ):
     """
     删除指定通知
-    
+
     - **notification_id**: 通知ID
-    
+
     物理删除通知记录。
     """
     result = await db.execute(
@@ -287,16 +287,16 @@ async def delete_notification(
         )
     )
     notification = result.scalar_one_or_none()
-    
+
     if not notification:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="通知不存在",
         )
-    
+
     await db.delete(notification)
     await db.commit()
-    
+
     return DeleteNotificationResponse(
         success=True,
         message="通知已删除",
@@ -312,7 +312,7 @@ async def update_preferences(
 ):
     """
     更新通知偏好设置（持久化到 notification_preferences 表）
-    
+
     - **email_enabled**: 启用邮件通知
     - **push_enabled**: 启用推送通知
     - **team_invite**: 团队邀请通知
@@ -322,7 +322,7 @@ async def update_preferences(
     - **formula_review**: 配方审核通知
     - **experiment_complete**: 实验完成通知
     - **quiet_hours_start/end**: 免打扰时间段 (HH:MM格式)
-    
+
     只传入需要修改的字段，未传字段保持不变。
     """
     preferences_data = {
@@ -424,7 +424,7 @@ async def get_preferences(
 ):
     """
     获取当前用户的通知偏好设置（从 notification_preferences 表读取）
-    
+
     返回所有偏好设置项的当前值。
     """
     default_preferences = {
@@ -491,9 +491,9 @@ async def get_notification_detail(
 ):
     """
     获取单条通知的详细信息
-    
+
     - **notification_id**: 通知ID
-    
+
     返回完整的通知内容和元数据。
     """
     result = await db.execute(
@@ -503,11 +503,11 @@ async def get_notification_detail(
         )
     )
     notification = result.scalar_one_or_none()
-    
+
     if not notification:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="通知不存在",
         )
-    
+
     return NotificationItem.model_validate(notification)

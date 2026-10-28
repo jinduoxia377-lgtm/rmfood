@@ -7,29 +7,27 @@
 - 预测值与实验实测值对比分析
 - 验证报告生成与导出
 """
-from typing import Optional, List, Dict, Any
 import logging
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_current_user, get_db_session
 from app.models import (
-    Formula, Experiment, Workflow, WorkflowTask,
-    WorkflowStatus, TaskStatus, User,
+    Experiment,
+    Formula,
+    TaskStatus,
+    User,
+    WorkflowStatus,
 )
-from app.schemas.workflow import WorkflowResponse, WorkflowTaskResponse
 from app.services.formula_validation_workflow import (
     FormulaValidationService,
     ValidationStage,
-    ValidationOutcome,
-    FormulaValidationResult,
 )
-import asyncio
 
 
 async def _run_validation_bg(
@@ -203,7 +201,7 @@ async def trigger_formula_validation(
         await _run_validation_bg(db, workflow.id, result.validation_id,
                           [ValidationStage(s) for s in stages_list],
                           payload.experiment_id, config)
-        print(f"[DEBUG] Validation pipeline completed", flush=True)
+        print("[DEBUG] Validation pipeline completed", flush=True)
     except Exception as e:
         print(f"[DEBUG] Validation pipeline error: {e}", flush=True)
         logger.error("验证管线执行失败: %s", e, exc_info=True)
@@ -376,7 +374,7 @@ async def retry_validation(
     """
     重新执行验证工作中失败的阶段。
     """
-    from app.models import Workflow, WorkflowTask
+    from app.models import Workflow
 
     # 查询最新一条该配方的验证工作流
     result = (await db.execute(
@@ -408,7 +406,7 @@ async def retry_validation(
     stage_names = [t.name.lower().replace(" ", "_") for t in failed_tasks]
     config = {
         "formula_id": formula_id,
-        "formula_name": workflow.config.get("formula_name", formula.name),
+        "formula_name": workflow.config.get("formula_name", f"配方#{formula_id}"),
         "daily_dosage_g": workflow.config.get("daily_dosage_g", 10),
         "target_population": workflow.config.get("target_population", "adult"),
         "body_weight_kg": workflow.config.get("body_weight_kg", 65),

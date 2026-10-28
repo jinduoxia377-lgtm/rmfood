@@ -14,11 +14,11 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import select, func
+from fastapi import Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_current_user, get_db_session
 from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
@@ -26,18 +26,30 @@ logger = logging.getLogger(__name__)
 from . import router
 
 
+def _require_user(current_user: Optional[User]) -> User:
+    """收藏写操作必须登录；未认证返回 401（避免 None.preferences 触发 500）。"""
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    return current_user
+
+
 def _get_pantry_ids(user: User, item_type: str) -> list:
-    """从 User.preferences JSON 中获取收藏 ID 列表"""
+    """从 User.preferences JSON 中获取收藏 ID 列表（返回副本，避免原地修改污染 ORM 属性历史）"""
     prefs = user.preferences or {}
     pantry = prefs.get("pantry", {})
-    return pantry.get(item_type, [])
+    return list(pantry.get(item_type, []))
 
 
 def _set_pantry_ids(user: User, item_type: str, ids: list):
-    """将收藏 ID 列表写入 User.preferences JSON"""
-    prefs = user.preferences or {}
-    pantry = prefs.setdefault("pantry", {})
-    pantry[item_type] = ids
+    """将收藏 ID 列表写入 User.preferences JSON
+
+    注意：必须创建新的 dict 再赋给 user.preferences，否则 SQLAlchemy 的 JSON
+    列无法检测“同一对象原地修改”，commit 后变更不会持久化（经典 JSON 变更陷阱）。
+    """
+    prefs = dict(user.preferences or {})
+    pantry = dict(prefs.get("pantry") or {})
+    pantry[item_type] = list(ids)
+    prefs["pantry"] = pantry
     user.preferences = prefs
 
 
@@ -50,6 +62,10 @@ async def get_pantry(
     current_user: User = Depends(get_current_user),
 ):
     """获取当前用户的收藏列表（基于 preferences JSON）"""
+    # 未认证用户可正常浏览，收藏列表返回空（避免 500 干扰市售产品页面加载）
+    if current_user is None:
+        return {"items": [], "total": 0}
+
     results = []
     item_types_to_fetch = [item_type] if item_type else ["food_material", "retail_product", "herb", "peptide"]
 
@@ -110,6 +126,7 @@ async def add_to_pantry_material(
     current_user: User = Depends(get_current_user),
 ):
     """将食品原料添加到用户收藏"""
+    current_user = _require_user(current_user)
     from app.models.food_material import FoodMaterial
 
     result = await db.execute(select(FoodMaterial).where(FoodMaterial.id == material_id))
@@ -135,6 +152,7 @@ async def remove_from_pantry_material(
     current_user: User = Depends(get_current_user),
 ):
     """从用户收藏中移除食品原料"""
+    current_user = _require_user(current_user)
     ids = _get_pantry_ids(current_user, "food_material")
     if material_id not in ids:
         raise HTTPException(status_code=404, detail="收藏项不存在")
@@ -154,6 +172,7 @@ async def add_to_pantry_product(
     current_user: User = Depends(get_current_user),
 ):
     """将零售产品添加到用户收藏"""
+    current_user = _require_user(current_user)
     from app.models.retail_product import RetailProduct
 
     result = await db.execute(select(RetailProduct).where(RetailProduct.id == product_id))
@@ -178,6 +197,7 @@ async def remove_from_pantry_product(
     current_user: User = Depends(get_current_user),
 ):
     """从用户收藏中移除零售产品"""
+    current_user = _require_user(current_user)
     ids = _get_pantry_ids(current_user, "retail_product")
     if product_id not in ids:
         raise HTTPException(status_code=404, detail="收藏项不存在")
@@ -197,6 +217,7 @@ async def add_to_pantry_herb(
     current_user: User = Depends(get_current_user),
 ):
     """将中药材添加到用户收藏（通过 name_cn 或 tcmsp_id 匹配）"""
+    current_user = _require_user(current_user)
     from app.models.external_data import TCMHerb
 
     result = await db.execute(
@@ -223,6 +244,7 @@ async def remove_from_pantry_herb(
     current_user: User = Depends(get_current_user),
 ):
     """从用户收藏中移除中药材"""
+    current_user = _require_user(current_user)
     ids = _get_pantry_ids(current_user, "herb")
     if herb_id not in ids:
         raise HTTPException(status_code=404, detail="收藏项不存在")
@@ -242,6 +264,7 @@ async def add_to_pantry_peptide(
     current_user: User = Depends(get_current_user),
 ):
     """将活性肽添加到用户收藏"""
+    current_user = _require_user(current_user)
     from app.models.external_data import BioactivePeptide
 
     result = await db.execute(select(BioactivePeptide).where(BioactivePeptide.id == peptide_id))
@@ -266,6 +289,7 @@ async def remove_from_pantry_peptide(
     current_user: User = Depends(get_current_user),
 ):
     """从用户收藏中移除活性肽"""
+    current_user = _require_user(current_user)
     ids = _get_pantry_ids(current_user, "peptide")
     if peptide_id not in ids:
         raise HTTPException(status_code=404, detail="收藏项不存在")

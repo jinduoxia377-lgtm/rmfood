@@ -8,13 +8,11 @@ MCP API 路由
 - GET  /api/v1/mcp/health         — 健康检查
 """
 import logging
-from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
 
 from app.services.mcp_server import (
     MCP_TOOL_REGISTRY,
-    list_tools,
     get_tool_metadata,
     list_all_tool_names,
 )

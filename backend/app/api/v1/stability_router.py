@@ -15,7 +15,6 @@ from pydantic import BaseModel, Field
 
 from app.core.database.session import get_db
 from app.services.ai_models.stability_model import (
-    ArrheniusStabilityModelService,
     get_stability_model,
 )
 

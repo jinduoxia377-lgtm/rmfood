@@ -2,10 +2,11 @@
 
 提供导入任务追踪和错误日志的数据库操作函数。所有操作均使用异步 SQLAlchemy Session。
 """
-from typing import Dict, Any, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timezone
 
 
 async def get_import_task(db: AsyncSession, task_id: str) -> dict:

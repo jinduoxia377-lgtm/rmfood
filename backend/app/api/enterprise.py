@@ -13,15 +13,14 @@
 """
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
 
-from ..api.deps import admin_route, get_current_user
-from ..models.models import User, UserRole
-from ..models.enums import UserRole as EnumUserRole
+from ..api.deps import admin_route
+from ..models.models import User
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/enterprise", tags=["🔒 企业级管理"])
@@ -170,7 +169,7 @@ async def get_user_permissions(
     current_user: User = Depends(admin_route),
 ):
     """获取指定用户的权限列表（含生命周期状态）"""
-    from ..core.rbac.permission_lifecycle import get_plm, PermissionStatus
+    from ..core.rbac.permission_lifecycle import PermissionStatus, get_plm
 
     plm = get_plm()
     status_enum = PermissionStatus(status_filter) if status_filter else None
@@ -204,7 +203,9 @@ async def request_permission(
 ):
     """申请一个新权限"""
     from ..core.rbac.permission_lifecycle import (
-        get_plm, PermissionType, PermissionStatus, PermissionLifecycleManager
+        PermissionStatus,
+        PermissionType,
+        get_plm,
     )
 
     required_fields = ["user_id", "user_name", "resource", "action", "reason"]

@@ -12,16 +12,19 @@
 所有子模块共享同一个 router 实例（来自 db_modules/__init__.py）。
 """
 # Import all submodules to register their endpoints
-from .db_modules import herbs  # noqa: F401
-from .db_modules import peptides  # noqa: F401
-from .db_modules import compounds  # noqa: F401
-from .db_modules import dashboard  # noqa: F401
-from .db_modules import search  # noqa: F401
-from .db_modules import food_materials  # noqa: F401
-from .db_modules import retail_products  # noqa: F401
-from .db_modules import openfoodfacts  # noqa: F401
-from .db_modules import database_extras  # noqa: F401  # RMCHM + CFAM 检索
 from . import search_analytics  # noqa: F401
 
 # Re-export the shared router for main.py to include
-from .db_modules import router  # noqa: F401
+from .db_modules import (
+    compounds,  # noqa: F401
+    dashboard,  # noqa: F401
+    database_extras,  # noqa: F401  # RMCHM + CFAM 检索
+    food_materials,  # noqa: F401
+    herbs,  # noqa: F401
+    openfoodfacts,  # noqa: F401
+    pantry,  # noqa: F401  # 收藏/书架（frontend 依赖 POST /pantry/*）
+    peptides,  # noqa: F401
+    retail_products,  # noqa: F401
+    router,  # noqa: F401
+    search,  # noqa: F401
+)

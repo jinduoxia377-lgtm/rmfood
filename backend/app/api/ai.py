@@ -12,13 +12,14 @@ AI 智能服务 API 入口 - 重组版
 
 所有子模块共享同一个 router 实例（来自 ai_modules/__init__.py）。
 """
-from .ai_modules import generation  # noqa: F401
-from .ai_modules import chat  # noqa: F401
-from .ai_modules import models_and_tools  # noqa: F401
-from .ai_modules import recommendations  # noqa: F401
-from .ai_modules import versions  # noqa: F401
-from .ai_modules import optimization  # noqa: F401
-from .ai_modules import experiment  # noqa: F401
-
 # Re-export the shared router for main.py to include
-from .ai_modules import router  # noqa: F401
+from .ai_modules import (
+    chat,  # noqa: F401
+    experiment,  # noqa: F401
+    generation,  # noqa: F401
+    models_and_tools,  # noqa: F401
+    optimization,  # noqa: F401
+    recommendations,  # noqa: F401
+    router,  # noqa: F401
+    versions,  # noqa: F401
+)

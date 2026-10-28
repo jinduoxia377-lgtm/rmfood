@@ -21,25 +21,24 @@ RMFOOD API通用工具函数库
     ):
         # 权限检查
         require_role(current_user, [UserRole.ADMIN, UserRole.RESEARCHER])
-        
+
         # 查询数据
         total, items = await formula_service.list_all(page, page_size)
-        
+
         # 返回标准化分页响应
         return StandardResponse.paginated(items, total, page, page_size)
 """
 
 import logging
-from typing import Any, Dict, List, Optional, TypeVar, Generic
-from functools import wraps
 from datetime import datetime
+from functools import wraps
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from fastapi import Query, HTTPException, Request, Depends
+from fastapi import Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-
 
 # ════════════════════════════════════════════
 # 1. 标准化API响应
@@ -48,9 +47,9 @@ from pydantic import BaseModel
 class StandardResponse:
     """
     标准化API响应构建器
-    
+
     确保所有API返回一致的JSON格式:
-    
+
     成功响应:
     {
       "success": true,
@@ -58,7 +57,7 @@ class StandardResponse:
       "message": "操作成功",
       "timestamp": "2026-05-04T12:00:00Z"
     }
-    
+
     分页响应:
     {
       "success": true,
@@ -70,10 +69,10 @@ class StandardResponse:
         "total_pages": 5
       }
     }
-    
+
     错误响应: 由 exceptions.py 的 AppError 处理
     """
-    
+
     @staticmethod
     def success(
         data: Any = None,
@@ -89,12 +88,12 @@ class StandardResponse:
             "timestamp": datetime.utcnow().isoformat()
         }
         response.update(extra)
-        
+
         return JSONResponse(
             status_code=status_code,
             content=response
         )
-    
+
     @staticmethod
     def created(
         data: Any = None,
@@ -104,14 +103,14 @@ class StandardResponse:
     ) -> JSONResponse:
         """资源创建成功 (201)"""
         response_data = {"id": resource_id} if resource_id else data
-        
+
         return StandardResponse.success(
             data=response_data,
             message=message,
             status_code=201,
             **extra
         )
-    
+
     @staticmethod
     def no_content(message: str = "删除成功") -> JSONResponse:
         """无内容返回 (204)"""
@@ -123,7 +122,7 @@ class StandardResponse:
                 "timestamp": datetime.utcnow().isoformat()
             }
         )
-    
+
     @staticmethod
     def paginated(
         items: List[Any],
@@ -134,18 +133,18 @@ class StandardResponse:
     ) -> Dict[str, Any]:
         """
         分页响应（返回字典，由FastAPI自动序列化）
-        
+
         Args:
             items: 当前页的数据列表
             total: 总记录数
             page: 当前页码 (从1开始)
             page_size: 每页大小
-            
+
         Returns:
             标准化的分页响应字典
         """
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
-        
+
         return {
             "success": True,
             "data": items,
@@ -182,7 +181,7 @@ def get_pagination_params(
 ) -> Dict[str, Any]:
     """
     解析并验证分页参数
-    
+
     Usage:
         @router.get("/items")
         async def list_items(pagination: Dict = Depends(get_pagination_params)):
@@ -205,32 +204,32 @@ async def paginate_query(
 ) -> tuple:
     """
     对SQLAlchemy查询应用分页
-    
+
     Args:
         query: SQLAlchemy Select语句
         pagination: get_pagination_params()的返回值
-        
+
     Returns:
         (total_count, items_list) 元组
     """
     from sqlalchemy import func
-    
+
     # 计算总数
     count_query = func.count().select().query_from(query.subquery())
     total_result = await query.session.execute(count_query)
     total = total_result.scalar() or 0
-    
+
     # 应用排序和分页
     if pagination.get("sort_by"):
-        from sqlalchemy import desc, asc, col
+        from sqlalchemy import asc, col, desc
         order_func = desc if pagination["sort_order"] == "DESC" else asc
         query = query.order_by(order_func(col(pagination["sort_by"])))
-    
+
     query = query.offset(pagination["offset"]).limit(pagination["page_size"])
-    
+
     result = await query.execute()
     items = result.scalars().all()
-    
+
     return total, list(items)
 
 
@@ -238,15 +237,16 @@ async def paginate_query(
 # 3. 权限检查装饰器
 # ════════════════════════════════════════════
 
-from ..core.rbac.rbac import RBACManager as RBACEngine, Permission
-from ..models.enums import UserRole
-from app.core.middleware.exceptions import AuthorizationError, AuthenticationError
+from app.core.middleware.exceptions import AuthenticationError, AuthorizationError
+
+from ..core.rbac.rbac import Permission
+from ..core.rbac.rbac import RBACManager as RBACEngine
 
 
 def require_roles(allowed_roles: List[str]):
     """
     角色权限检查装饰器
-    
+
     Usage:
         @require_roles([UserRole.ADMIN, UserRole.MANAGER])
         async def admin_only_endpoint(current_user=Depends(get_current_user)):
@@ -257,16 +257,16 @@ def require_roles(allowed_roles: List[str]):
         async def wrapper(*args, **kwargs):
             # 从kwargs中获取current_user（FastAPI依赖注入）
             current_user = kwargs.get('current_user')
-            
+
             if not current_user:
                 raise AuthenticationError(message="未提供用户凭据")
-            
+
             if current_user.role not in allowed_roles:
                 raise AuthorizationError(
                     required_permission=f"角色: {', '.join(allowed_roles)}",
                     current_role=current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
                 )
-            
+
             return await func(*args, **kwargs)
         return wrapper
     return decorator
@@ -275,7 +275,7 @@ def require_roles(allowed_roles: List[str]):
 def require_permission(permission: Permission):
     """
     细粒度权限检查装饰器
-    
+
     Usage:
         @require_permission(Permission.DELETE_FORMULA)
         async def delete_formula(formula_id: int, ...):
@@ -285,17 +285,17 @@ def require_permission(permission: Permission):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             current_user = kwargs.get('current_user')
-            
+
             if not current_user:
                 raise AuthenticationError()
-            
+
             rbac = RBACEngine()
             if not rbac.check_permission(current_user, permission):
                 raise AuthorizationError(
                     required_permission=str(permission),
                     current_role=current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
                 )
-            
+
             return await func(*args, **kwargs)
         return wrapper
     return decorator
@@ -304,7 +304,7 @@ def require_permission(permission: Permission):
 def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: bool = True, is_admin: bool = False):
     """
     资源所有权检查
-    
+
     Args:
         resource_owner_id: 资源的所有者ID
         current_user_id: 当前用户ID
@@ -319,23 +319,22 @@ def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: b
 # 4. 请求日志中间件
 # ════════════════════════════════════════════
 
-import time
 import uuid
 
 
 class RequestLogger:
     """请求日志记录器"""
-    
+
     @staticmethod
     def generate_request_id() -> str:
         """生成唯一请求ID"""
         return str(uuid.uuid4())[:8].upper()
-    
+
     @staticmethod
     async def log_request(request: Request, response_time_ms: float):
         """记录API请求日志"""
         from ..core.logger import logger
-        
+
         logger.info(
             f"{request.method} {request.url.path}",
             extra={
@@ -356,14 +355,14 @@ class RequestLogger:
 def validate_required_fields(data: Dict, required_fields: List[str]):
     """
     验证必填字段是否存在
-    
+
     Raises:
         ValidationError: 如果缺少必填字段
     """
     from app.core.middleware.exceptions import ValidationError
 
     missing_fields = [field for field in required_fields if field not in data or data[field] is None]
-    
+
     if missing_fields:
         raise ValidationError(
             message=f"缺少必填字段: {', '.join(missing_fields)}",
@@ -374,29 +373,29 @@ def validate_required_fields(data: Dict, required_fields: List[str]):
 def sanitize_string_input(value: str, max_length: int = 1000) -> str:
     """
     清理字符串输入（防止XSS）
-    
+
     - 去除首尾空白
     - 限制最大长度
     - 移除危险HTML标签
     """
     import re
-    
+
     if not isinstance(value, str):
         return str(value)[:max_length]
-    
+
     value = value.strip()
     value = value[:max_length]
-    
+
     # 移除潜在的HTML/JS注入
     dangerous_patterns = [
         r'<script[^>]*>.*?</script>',
         r'javascript:',
         r'on\w+\s*=',
     ]
-    
+
     for pattern in dangerous_patterns:
         value = re.sub(pattern, '', value, flags=re.IGNORECASE | re.DOTALL)
-    
+
     return value
 
 
@@ -416,17 +415,18 @@ MAX_UPLOAD_SIZE_MB = 50
 def validate_upload_file(filename: str, file_size: int):
     """
     验证上传文件
-    
+
     Args:
         filename: 文件名
         file_size: 文件大小（字节）
-        
+
     Raises:
         ValidationError: 如果文件不符合要求
     """
-    from app.core.middleware.exceptions import ValidationError
     import os
-    
+
+    from app.core.middleware.exceptions import ValidationError
+
     # 检查扩展名
     ext = os.path.splitext(filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
@@ -435,7 +435,7 @@ def validate_upload_file(filename: str, file_size: int):
             field="file",
             constraints=[f"允许的类型: {', '.join(ALLOWED_EXTENSIONS[:10])}..."]
         )
-    
+
     # 检查文件大小
     max_bytes = MAX_UPLOAD_SIZE_MB * 1024 * 1024
     if file_size > max_bytes:

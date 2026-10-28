@@ -20,7 +20,9 @@ from pydantic import BaseModel, Field
 from ...api.deps import get_current_user
 from ...models import User
 from ...services.ai.shared.inference_queue import (
-    inference_queue, QueueFullError, TaskStatus,
+    QueueFullError,
+    TaskStatus,
+    inference_queue,
 )
 
 logger = logging.getLogger("rmfood.api.ai.tasks")

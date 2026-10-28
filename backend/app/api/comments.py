@@ -2,17 +2,20 @@
 配方/实验评论 API
 支持嵌套评论（回复）、内部备注（仅内部可见）
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-
-from ..models.models import (
-    Comment, User, Formula, Experiment,
-)
-from ..services.auth import get_current_user as _auth_get_current_user
-from ..api.deps import get_db_session, PaginationParams, get_current_user
-from pydantic import BaseModel
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..api.deps import PaginationParams, get_current_user, get_db_session
+from ..models.models import (
+    Comment,
+    Experiment,
+    Formula,
+    User,
+)
 
 router = APIRouter(prefix="/comments", tags=["评论"])
 
@@ -71,7 +74,7 @@ async def list_comments(
         raise HTTPException(status_code=400, detail="需要指定 formula_id 或 experiment_id")
 
     if not include_internal:
-        stmt = stmt.where(Comment.is_internal == False)
+        stmt = stmt.where(Comment.is_internal.is_(False))
 
     # 总数
     count_stmt = select(func.count()).select_from(stmt.subquery())

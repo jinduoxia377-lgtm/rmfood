@@ -2,12 +2,13 @@
 中药材图片映射服务
 提供药材图片URL查询API
 """
-import os
 import json
+import os
 import re
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from typing import Optional
 
 router = APIRouter(prefix="/herbs", tags=["中药材"])
 

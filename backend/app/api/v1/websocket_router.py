@@ -3,20 +3,15 @@
 提供实时通知推送的WebSocket端点。
 统一使用 WebSocketManager (core/websocket_manager) 作为唯一管理器。
 """
+import asyncio
 import json
 import logging
-import asyncio
 import urllib.parse
-from datetime import datetime, timezone
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-from fastapi import Depends
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
-from ...models.user_model import User
 from ...core.realtime.websocket_manager import get_ws_manager
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 

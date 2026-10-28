@@ -9,9 +9,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.plugin_registry import get_plugin_registry, PluginType
 from app.api.deps import get_db_session
 from app.core.api_framework.integration_framework import get_api_key_service
+from app.services.plugin_registry import PluginType, get_plugin_registry
 
 logger = logging.getLogger(__name__)
 

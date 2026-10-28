@@ -15,9 +15,8 @@ from pydantic import BaseModel, Field
 
 from app.core.database.session import get_db
 from app.services.label_generator.generator import (
-    LabelGenerator,
-    get_label_generator,
     LABEL_SIZES,
+    get_label_generator,
 )
 
 logger = logging.getLogger(__name__)

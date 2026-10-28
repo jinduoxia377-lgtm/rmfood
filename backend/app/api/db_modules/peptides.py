@@ -1,23 +1,23 @@
 """
 活性肽与知识图谱检索 API
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from fastapi import Depends, HTTPException, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
 from ...models import (
-    User, BioactivePeptide, KnowledgeGraphNode,
+    BioactivePeptide,
+    User,
 )
-from ...services.data_sources.dfbp_client import dfbp_service
-from ...services.data_sources.graph_service import graph_service
+from ..deps import get_current_user, get_db_session
 
 """
 Shared router for peptides module.
 """
+import logging
+
 from . import router
 
-import logging
 logger = logging.getLogger(__name__)
 
 @router.get("/peptides", summary="DFBP 活性肽检索")
@@ -195,5 +195,6 @@ async def get_peptide_detail(
 
 
 import logging
+
 logger = logging.getLogger(__name__)
 logger.info("peptides module loaded")

@@ -4,18 +4,20 @@ P1-2: 账号安全管理（防暴力破解）
 说明：通知相关接口已统一收敛到 v1 notification_router（/api/v1/notifications），
 本文件不再重复定义，避免路由遮蔽。
 """
-from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, distinct, cast, String, text, bindparam
+from sqlalchemy import String, bindparam, cast, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_active_user, require_role
+from ..api.deps import get_db_session, require_role
+from ..core.rbac.permission import Permission, PermissionChecker
 from ..models.models import (
-    User, UserRole,
+    User,
+    UserRole,
 )
 from ..schemas.user import UserResponse
-from ..core.rbac.permission import PermissionChecker, Permission
 
 router = APIRouter(tags=["通知与用户管理"])
 
@@ -151,8 +153,8 @@ async def list_users(
     # 全量统计（不随分页/筛选变化，供统计卡片/角色分布使用）
     stats_query = select(
         func.count(User.id).label("total_users"),
-        func.count(User.id).filter(User.is_active == True).label("active_users"),
-        func.count(User.id).filter(User.is_active == False).label("inactive_users"),
+        func.count(User.id).filter(User.is_active.is_(True)).label("active_users"),
+        func.count(User.id).filter(User.is_active.is_(False)).label("inactive_users"),
     )
     stats_row = (await db.execute(stats_query)).one()
     role_rows = (await db.execute(
@@ -189,16 +191,16 @@ async def update_user_role(
     perm_checker.require_permission(Permission.USER_UPDATE)
     if user_id == current_user.id:
         raise HTTPException(400, detail="不能修改自己的角色")
-    
+
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not user:
         raise HTTPException(404, detail="用户不存在")
-    
+
     try:
         new_role = UserRole(role)
     except ValueError:
         raise HTTPException(400, detail=f"无效的角色: {role}")
-    
+
     user.role = new_role
     await db.commit()
     return {"detail": f"用户 {user.username} 角色已更新为 {role}"}
@@ -242,27 +244,27 @@ async def unlock_user_account(
 ):
     """
     管理员手动解锁被锁定的账号
-    
+
     功能:
     - 清除登录失败计数器
     - 解除账号锁定状态
     - 记录审计日志
-    
+
     权限要求: ADMIN 角色
     """
     perm_checker = PermissionChecker(current_user)
     perm_checker.require_permission(Permission.USER_UPDATE)
     from ..core.security.account_lockout import AccountLockout
-    
+
     # 检查目标用户是否存在
     target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not target_user:
         raise HTTPException(status_code=404, detail="用户不存在")
-    
+
     # 执行解锁操作
     lockout = AccountLockout()
     success = await lockout.manual_unlock(db, user_id, current_user)
-    
+
     if success:
         return {
             "detail": f"账号 {target_user.username} 已成功解锁",
@@ -284,7 +286,7 @@ async def get_account_lock_status(
 ):
     """
     查看用户的账号锁定状态和安全信息
-    
+
     返回信息:
     - 当前锁定状态
     - 登录失败次数
@@ -293,18 +295,18 @@ async def get_account_lock_status(
     """
     perm_checker = PermissionChecker(current_user)
     perm_checker.require_permission(Permission.USER_READ)
+
     from ..core.security.account_lockout import AccountLockout
-    from datetime import datetime, timezone
-    
+
     # 查询目标用户
     target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not target_user:
         raise HTTPException(status_code=404, detail="用户不存在")
-    
+
     # 检查锁定状态
     lockout = AccountLockout()
     is_locked, lock_info = await lockout.is_account_locked(db, target_user.username)
-    
+
     return {
         "user_id": target_user.id,
         "username": target_user.username,
@@ -558,8 +560,9 @@ async def batch_import_users(
     """
     import csv
     import io
-    from ..services.user import UserService
+
     from ..services.auth import get_password_hash
+    from ..services.user import UserService
 
     service = UserService(db)
 

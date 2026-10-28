@@ -12,43 +12,35 @@ Provides:
 - Cache optimization and performance monitoring
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, WebSocket, WebSocketDisconnect
-from fastapi.responses import Response, JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta, timezone
-import asyncio
-from ..utils.file_security import sanitize_filename  # A-27: 583 行导出文件名净化用到，原漏导入
 import json
 import logging
 import uuid
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response
+from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.database.session import get_db
 from ..api.deps import get_current_active_user
-from ..core.plans import require_plan
-from ..utils.error_sanitize import sanitize_error
 from ..core.analytics_reports.analytics_engine import (
-    AnalyticsService,
     ExportFormat,
     ReportConfig,
     TimeGranularity,
-    ChartType,
-    KPIMetric,
-    ChartData,
     get_analytics_service,
 )
-from ..core.analytics_reports.health_monitor import get_health_monitor
 from ..core.analytics_reports.anomaly_detector import get_anomaly_detector
 from ..core.analytics_reports.business_metrics import BusinessMetricsService
-from ..core.multi_tenant.tenant_security import require_tenant, TenantContext
+from ..core.database.session import get_db
 from ..core.multi_tenant.org_resolver import resolve_effective_org_id
-from ..core.realtime.websocket import connection_manager, WebSocketMessage
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.plans import require_plan
+from ..core.realtime.websocket import WebSocketMessage, connection_manager
 from ..models.user_model import User
-from ..models.enums import UserRole
-
+from ..utils.error_sanitize import sanitize_error
+from ..utils.file_security import sanitize_filename  # A-27: 583 行导出文件名净化用到，原漏导入
 
 logger = logging.getLogger(__name__)
 
@@ -97,14 +89,14 @@ async def get_dashboard_data(
 ):
     """
     Get complete dashboard data (real database queries)
-    
+
     - KPI core metrics (formulas, experiments, user activity, etc.)
     - Trend chart data
     - Recent activity feed
     - Top entity rankings
     - System health status
     - Available filter options
-    
+
     Supports time range filtering: 7d/30d/90d
     Supports multi-dimensional filtering: categories, status, users
     """
@@ -193,7 +185,7 @@ async def get_dashboard_data(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Dashboard failed", exc_info=True)
+        logger.error("Dashboard failed", exc_info=True)
         raise HTTPException(status_code=500, detail=sanitize_error(e, "数据获取失败，请稍后重试"))
 
 
@@ -210,7 +202,7 @@ async def get_kpi_metrics(
         days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
         days = days_map.get(time_range, 30)
         kpi = await service._get_kpi_metrics(days=days, org_id=await resolve_effective_org_id(tenant.org_id, current_user, db))
-        
+
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "metrics": kpi,
@@ -232,7 +224,7 @@ async def get_trend_data(
 ):
     """
     Get trend data for an entity (real database query)
-    
+
     - entity: formulas/experiments/users/ai_generations etc.
     - days: time range (days)
     - granularity: data granularity
@@ -241,16 +233,16 @@ async def get_trend_data(
         gran = TimeGranularity(granularity)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid granularity: {granularity}")
-    
+
     valid_entities = ["formulas", "experiments", "users", "ai_generations"]
     if entity not in valid_entities:
         raise HTTPException(status_code=400, detail=f"Unsupported entity type: {entity}. Supported types: {valid_entities}")
-    
+
     try:
         service = get_analytics_service(db)
         org_id = await resolve_effective_org_id(tenant.org_id, current_user, db)
         trend_data = await service._get_trend_data(entity, days, gran, org_id=org_id)
-        
+
         return {
             "entity": entity,
             "days": days,
@@ -407,27 +399,27 @@ async def websocket_dashboard_endpoint(
         return
 
     await websocket.accept()
-    
+
     # Connection info
     client_info = {
         "type": "dashboard",
         "user_agent": websocket.headers.get("user-agent", "unknown"),
         "connected_at": datetime.now(timezone.utc).isoformat(),
     }
-    
+
     # Register connection
     await connection_manager.connect(websocket, user_id, connection_id or f"anon_{id(websocket)}", client_info)
-    
+
     logger.info(f"Analytics WebSocket connection established: {connection_id}")
-    
+
     try:
         while True:
             data = await websocket.receive_text()
-            
+
             try:
                 message = json.loads(data)
                 msg_type = message.get("type")
-                
+
                 if msg_type == "subscribe":
                     # Handle subscription request
                     channels = message.get("channels", [])
@@ -436,7 +428,7 @@ async def websocket_dashboard_endpoint(
                         {"subscribed_channels": channels}
                     ))
                     logger.info(f"User {user_id} subscribed to channels: {channels}")
-                
+
                 elif msg_type == "unsubscribe":
                     # Handle unsubscription request
                     channels = message.get("channels", [])
@@ -444,7 +436,7 @@ async def websocket_dashboard_endpoint(
                         f"Unsubscribed from channels: {', '.join(channels)}",
                         {"unsubscribed_channels": channels}
                     ))
-                
+
                 elif msg_type == "ping":
                     # Heartbeat response
                     connection_manager.update_ping(connection_id)
@@ -452,11 +444,11 @@ async def websocket_dashboard_endpoint(
                         "type": "pong",
                         "timestamp": datetime.now(timezone.utc).isoformat()
                     })
-                
+
                 elif msg_type == "request_data":
                     # Request data refresh
                     data_type = message.get("data_type", "dashboard")
-                    
+
                     # Trigger data refresh logic here
                     refresh_message = WebSocketMessage.data_update(
                         entity_type="dashboard",
@@ -464,26 +456,26 @@ async def websocket_dashboard_endpoint(
                         action="refresh_requested",
                         data={"requested_by": user_id, "data_type": data_type}
                     )
-                    
+
                     await websocket.send_json(refresh_message)
-                
+
                 else:
                     # Unknown message type
                     await websocket.send_json(WebSocketMessage.error(
                         f"Unknown message type: {msg_type}",
                         "UNKNOWN_MESSAGE_TYPE"
                     ))
-                    
+
             except json.JSONDecodeError:
                 await websocket.send_json(WebSocketMessage.error(
                     "Invalid JSON format",
                     "INVALID_JSON"
                 ))
-                
+
     except WebSocketDisconnect:
         logger.info(f"Analytics WebSocket disconnected: {connection_id}")
         await connection_manager.disconnect(user_id, connection_id)
-        
+
     except Exception as e:
         logger.error(f"WebSocket error ({connection_id}): {e}")
         await connection_manager.disconnect(user_id, connection_id)
@@ -492,7 +484,7 @@ async def websocket_dashboard_endpoint(
 async def broadcast_analytics_update(update_type: str, data: Dict[str, Any]):
     """
     Broadcast analytics data update to all connected clients
-    
+
     Args:
         update_type: Update type (kpi_update, chart_refresh, system_event)
         data: Update data
@@ -505,7 +497,7 @@ async def broadcast_analytics_update(update_type: str, data: Dict[str, Any]):
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     )
-    
+
     await connection_manager.broadcast(message)
     logger.info(f"Broadcast analytics data update: {update_type}")
 
@@ -523,7 +515,7 @@ async def create_report(
 ):
     """
     Generate custom report (real database data)
-    
+
     - Configure multiple widgets (tables, charts, KPIs)
     - Support data filter conditions
     - Dynamically fetch data from database
@@ -538,19 +530,19 @@ async def create_report(
             export_format=request.export_format,
             created_by=current_user.id,
         )
-        
+
         service = get_analytics_service(db)
         report_data = await service.generate_custom_report(config, org_id=await resolve_effective_org_id(tenant.org_id, current_user, db))
-        
+
         logger.debug(f"Report generated successfully: {config.name} (ID: {config.id})")
-        
+
         return {
             "success": True,
             "report": report_data,
             "config_id": config.id,
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
-        
+
     except Exception as e:
         logger.error("报告生成失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="报告生成失败，请稍后重试")
@@ -565,7 +557,7 @@ async def export_data(
 ):
     """
     Export data in specified format (real data)
-    
+
     - Excel (.xlsx): Formatted spreadsheet
     - PDF (.pdf): HTML format report
     - CSV (.csv): Comma-separated values
@@ -573,34 +565,34 @@ async def export_data(
     """
     try:
         service = get_analytics_service(db)
-        
+
         data_to_export = request.data
-        
+
         # If report ID provided, load report config and generate data first
         if request.report_id and not data_to_export:
             config = await _load_report_config(db, request.report_id)
             if config:
                 result = await service.generate_custom_report(config, org_id=await resolve_effective_org_id(tenant.org_id, current_user, db))
                 data_to_export = result
-        
+
         if not data_to_export:
             raise HTTPException(status_code=400, detail="请提供要导出的数据或报告编号")
-        
+
         # Execute export
         export_result = await service.export_data(
             data=data_to_export,
             format=request.format,
             file_name=request.file_name,
         )
-        
+
         logger.debug(f"Data exported successfully: {export_result.file_name} ({export_result.format.value})")
-        
+
         # 规范化文件名并使用 RFC 5987 编码
         safe_filename = sanitize_filename(export_result.file_name)
         import urllib.parse
         encoded_filename = urllib.parse.quote(safe_filename, safe='')
         content_disposition = f'attachment; filename="{safe_filename}"; filename*=UTF-8\'\'{encoded_filename}'
-        
+
         return Response(
             content=export_result.data,
             media_type=export_result.content_type,
@@ -609,7 +601,7 @@ async def export_data(
                 "Content-Length": str(export_result.file_size_bytes),
             },
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -724,7 +716,8 @@ async def custom_aggregation(
             validated_group_by = _validate_identifier(group_by, "group_by")
 
         # ── Build safe query using SQLAlchemy ColumnElement ──────────
-        from sqlalchemy import column, func, select as sa_select
+        from sqlalchemy import column, func
+        from sqlalchemy import select as sa_select
 
         select_clauses = []
         for field, operation, alias in validated_ops:
@@ -780,7 +773,7 @@ async def custom_aggregation(
             "data": [dict(row._mapping) for row in rows],
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -801,10 +794,10 @@ async def _load_report_config(db: AsyncSession, report_id: str) -> Optional[Repo
             {"id": report_id},
         )
         row = result.fetchone()
-        
+
         if not row:
             return None
-        
+
         return ReportConfig(
             id=row.id,
             name=row.name,

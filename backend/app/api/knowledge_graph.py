@@ -18,13 +18,17 @@ from collections import defaultdict  # A-27：detect_communities 用到，原先
 from typing import Any, Dict, List, Optional, Set  # A-27：Set 亦被用到，原先漏导入
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import (  # or_: /nodes/{id}/neighbors 与 /subgraph 用到，原漏导入 → NameError 500
+    or_,
+    select,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_  # or_: /nodes/{id}/neighbors 与 /subgraph 用到，原漏导入 → NameError 500
 
-from .deps import get_db_session, get_current_user, get_current_active_user
+from ..core.plans import require_plan
+from ..models.knowledge_graph import KGNode
 from ..models.user_model import User
 from ..services.kg.graph_engine import KnowledgeGraphEngine
-from ..models.knowledge_graph import KGNode
+from .deps import get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +46,7 @@ engine = KnowledgeGraphEngine()
 async def build_knowledge_graph(
     rebuild: bool = Query(False, description="是否全量重建（清空后重建）"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),  # 变更操作：强制认证
+    current_user: User = Depends(require_plan("knowledge_graph")),  # 变更操作：强制认证
 ) -> Dict[str, Any]:
     """触发从TCMSP数据库重建知识图谱
 
@@ -85,7 +89,7 @@ async def compute_centrality(
     edge_type: Optional[str] = Query(None, description="边类型过滤"),
     limit: int = Query(20, ge=1, le=200, description="返回top-N结果"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """计算节点的中心性指标
 
@@ -162,7 +166,7 @@ async def detect_communities(
     node_type: Optional[str] = Query(None, description="节点类型过滤"),
     limit_per_community: int = Query(10, ge=1, le=50, description="每个社区返回的最大节点数"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """执行Louvain社区检测算法
 
@@ -243,7 +247,7 @@ async def kcore_decomposition(
     k: Optional[int] = Query(None, ge=1, description="K值（不传则返回所有节点的coreness值）"),
     node_type: Optional[str] = Query(None, description="节点类型过滤"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """K-Core分解分析
 
@@ -309,7 +313,7 @@ async def recommend_similar_herbs(
     herb_name: str,
     top_n: int = Query(10, ge=1, le=50, description="返回top-N相似药材"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """根据图谱拓扑结构推荐与目标药材相似的药材
 
@@ -375,7 +379,7 @@ async def recommend_similar_nodes(
     node_label: str,
     top_n: int = Query(10, ge=1, le=50, description="返回top-N相似节点"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """基于一跳邻居Jaccard相似度的通用节点推荐
 
@@ -472,7 +476,7 @@ async def get_key_bridges(
     top_n: int = Query(20, ge=1, le=100, description="返回top-N桥梁节点"),
     node_type: Optional[str] = Query(None, description="节点类型过滤"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """识别知识图谱中的关键桥梁节点
 
@@ -524,10 +528,9 @@ async def search_graph_nodes(
     node_type: Optional[str] = Query(None, description="节点类型过滤"),
     limit: int = Query(20, ge=1, le=100, description="返回数量"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """搜索知识图谱中的节点，支持模糊匹配和类型过滤"""
-    from sqlalchemy import func
 
     # 注意：KGNode 没有 description 列，描述信息存在 properties JSON 字段里。
     # 原实现引用 KGNode.description 触发 AttributeError → 500。
@@ -561,7 +564,7 @@ async def search_graph_nodes(
 async def get_node_neighbors(
     node_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """获取指定节点的所有邻居节点（入边和出边连接的节点）"""
     from ..models.knowledge_graph import KGEdge
@@ -618,7 +621,7 @@ async def get_node_subgraph(
     node_id: int,
     depth: int = Query(2, ge=1, le=3, description="搜索深度"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("knowledge_graph")),
 ) -> Dict[str, Any]:
     """获取指定节点的子图（多跳邻居 + 连接边）"""
     from ..models.knowledge_graph import KGEdge

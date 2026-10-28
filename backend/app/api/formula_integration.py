@@ -8,19 +8,19 @@
 - Swagger/OpenAPI 文档自动生成
 """
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel, Field
-from typing import Annotated, List, Dict, Optional, Any
-from datetime import datetime
 import asyncio
-import importlib
 import json
 import logging
+from datetime import datetime
+from typing import Annotated, Any, Dict, List, Optional
 
-from .deps import get_db_session, get_current_active_user, CurrentUser, require_role, User
-from ..models.enums import UserRole
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..core.plans import require_plan
+from .deps import User, get_current_active_user, get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +168,6 @@ class DeepGenerationResponse(BaseModel):
 # 统一使用 WebSocketManager (core/websocket_manager)
 from ..core.realtime.websocket_manager import get_ws_manager as _get_ws_manager
 
-
 # ==================== API 端点实现 ====================
 
 @router.post("/synergy/analyze", response_model=SynergyAnalysisResponse, summary="分析成分协同效应")
@@ -178,7 +177,7 @@ async def analyze_synergy(
 ):
     """
     分析两个成分之间的协同作用机制
-    
+
     返回 5 种协同机制的详细得分和综合协同指数 (SI):
     - Mechanism-1: 药效增强协同 (Bliss Independence)
     - Mechanism-2: 药代动力学协同 (PK Interaction)
@@ -187,8 +186,8 @@ async def analyze_synergy(
     - Mechanism-5: 感官品质协同 (味觉矩阵)
     """
     try:
-        from ..services.formula.synergy_engine import SynergyEngine
         from ..models.external_data import TCMHerb
+        from ..services.formula.synergy_engine import SynergyEngine
 
         # 从真实 tcm_herbs 表加载成分数据（OB%、靶点），填充分析 context
         context = dict(request.context or {})
@@ -293,7 +292,7 @@ async def analyze_synergy(
             ingredient_pair=f"{request.ingredient_a} + {request.ingredient_b}",
             overall_si=report.overall_si,
             mechanisms={
-                m.mechanism_type.value: m.score 
+                m.mechanism_type.value: m.score
                 for m in report.mechanisms
             },
             dominant_mechanism=report.dominant_mechanism.value if report.dominant_mechanism else None,
@@ -301,7 +300,7 @@ async def analyze_synergy(
             timestamp=datetime.now().isoformat(),
             data_source=data_source
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="协同分析模块不可用")
     except Exception as e:
@@ -313,22 +312,27 @@ async def analyze_synergy(
 async def optimize_ratio(
     request: RatioOptimizationRequest,
     db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     使用 NSGA-III 多目标遗传算法优化配方比例
-    
+
     优化目标 (4 维):
     - f₁: 最大化综合功效得分
     - f₂: 最大化安全性得分
     - f₃: 最大化稳定性得分
     - f₄: 最小化成本
-    
+
     性能保证: ≤8 成分输入 < 3 秒完成
     输出: Pareto 前沿的多个非支配解
     """
     try:
-        from ..services.formula.ratio_optimizer import RatioOptimizer, Ingredient, OptimizationConfig
-        
+        from ..services.formula.ratio_optimizer import (
+            Ingredient,
+            OptimizationConfig,
+            RatioOptimizer,
+        )
+
         optimizer_ingredients = [
             Ingredient(
                 name=ing.get("name", ""),
@@ -341,15 +345,15 @@ async def optimize_ratio(
             )
             for ing in request.ingredients
         ]
-        
+
         config = OptimizationConfig(
             population_size=request.population_size,
             max_generations=request.max_generations,
         )
-        
+
         optimizer = RatioOptimizer(config=config)
         frontier = optimizer.optimize_ratio(optimizer_ingredients, request.constraints)
-        
+
         solutions_data = [
             {
                 "ratios": sol.ratios,
@@ -359,7 +363,7 @@ async def optimize_ratio(
             }
             for sol in frontier.solutions[:10]
         ]
-        
+
         return RatioOptimizationResponse(
             success=True,
             formula_id=f"OPT-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -369,7 +373,7 @@ async def optimize_ratio(
             solution_count=len(frontier.solutions),
             diversity_metric=frontier.diversity_metric
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="配比优化模块不可用")
     except Exception as e:
@@ -384,18 +388,18 @@ async def check_compatibility(
 ):
     """
     执行 4 层架构的配方兼容性检测
-    
+
     检测层级:
     - Layer 1: 化学层面 (pH冲突/沉淀/氧化还原)
     - Layer 2: 药理学层面 (受体竞争/酶互作)
     - Layer 3: 营养学层面 (抗营养因子/螯合)
     - Layer 4: 法规层面 (GB标准/特殊人群限制)
-    
+
     输出: 0-100 分数 + 详细问题列表 + 修改建议
     """
     try:
         from ..services.formula.compatibility_checker import CompatibilityChecker
-        
+
         checker = CompatibilityChecker()
         report = checker.check_compatibility(
             ingredients=request.ingredients,
@@ -406,8 +410,8 @@ async def check_compatibility(
         # 计算兼容性数据库覆盖率（诚实标注：未覆盖成分可能存在未知相互作用）
         try:
             from ..services.formula.compatibility_checker import (
-                CHEMICAL_PROPERTIES_DB,
                 ANTINUTRIENT_FACTORS_DB,
+                CHEMICAL_PROPERTIES_DB,
                 GB2760_LIMITS_DB,
             )
             covered_names = set()
@@ -449,7 +453,7 @@ async def check_compatibility(
             info_count=report.info_count,
             data_coverage=data_coverage
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="兼容性检测模块不可用")
     except Exception as e:
@@ -464,10 +468,10 @@ async def predict_effect(
 ):
     """
     基于 PopPK/PD 模型预测配方的时效曲线和效应曲线
-    
+
     PK 模型: 一室模型 with first-order absorption
     PD 模型: Sigmoid Emax 模型
-    
+
     输出:
     - C-T 曲线数据 (血浆浓度-时间)
     - E-T 曲线数据 (效应水平-时间)
@@ -495,7 +499,7 @@ async def predict_effect(
             simulation_hours=request.simulation_hours,
             time_points=request.time_points
         )
-        
+
         return EffectPredictionResponse(
             success=True,
             formula_id=prediction.formula_id,
@@ -507,7 +511,7 @@ async def predict_effect(
             visualization_data=prediction.visualization_data,
             auc=prediction.auc
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="效果预测模块不可用")
     except Exception as e:
@@ -522,17 +526,17 @@ async def check_safety(
 ):
     """
     三级安全阈值预警系统
-    
+
     预警级别:
     - INFO: 距阈值 <20%
     - WARNING: 超过软阈值但未达硬阈值
     - CRITICAL: 达到硬阈值 → 阻断操作
-    
+
     支持特殊人群模式 (孕妇/儿童/老年人)
     """
     try:
         from ..services.formula.safety_alert_system import SafetyAlertSystem
-        
+
         system = SafetyAlertSystem()
         result = system.check_formula_safety(
             ingredients=request.ingredients,
@@ -540,7 +544,7 @@ async def check_safety(
             target_group=request.target_group,
             usage_scenario=request.usage_scenario
         )
-        
+
         alerts_data = [
             {
                 "level": alert.alert_level.value,
@@ -555,7 +559,7 @@ async def check_safety(
             }
             for alert in result.alerts
         ]
-        
+
         return SafetyCheckResponse(
             is_safe=result.is_safe,
             overall_risk_score=result.overall_risk_score,
@@ -564,7 +568,7 @@ async def check_safety(
             blocked_by_critical=result.blocked_by_critical,
             recommendations=result.recommendations or []
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
@@ -692,25 +696,23 @@ async def predict_taste_global(
 async def deep_generation(
     request: DeepGenerationRequest,
     db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     执行完整的增强配方生成管线
-    
+
     管线流程:
     1. 协同效应分析 → 2. 配比优化 → 3. 兼容性检测 → 4. 效果预测 → 5. 安全检查
-    
+
     特性:
     - 自动降级 (某模块失败时回退到标准流程)
     - 缓存支持 (相同参数复用结果)
     - 向后兼容 (mode=standard 时使用原逻辑)
     """
     try:
-        from ..services.formula.integration_service import (
-            FormulaIntegrationService, 
-            DeepGenerationRequest as DGRequest,
-            GenerationMode
-        )
-        
+        from ..services.formula.integration_service import DeepGenerationRequest as DGRequest
+        from ..services.formula.integration_service import FormulaIntegrationService, GenerationMode
+
         service = FormulaIntegrationService()
 
         # 预计算真实 synergy context（tcm_herbs OB/靶点 + 风味档案 + PK 参数）
@@ -771,7 +773,7 @@ async def deep_generation(
 
         dg_request = DGRequest(
             ingredients=request.ingredients,
-            mode=GenerationMode.DEEP_INTEGRATION if request.mode == "deep_integration" 
+            mode=GenerationMode.DEEP_INTEGRATION if request.mode == "deep_integration"
                    else GenerationMode.STANDARD,
             target_efficacy=request.target_efficacy,
             safety_priority=request.safety_priority,
@@ -781,7 +783,7 @@ async def deep_generation(
         )
 
         response = service.orchestrate_deep_generation(dg_request, synergy_contexts=synergy_contexts)
-        
+
         return DeepGenerationResponse(
             success=response.success,
             formula_id=response.formula_id,
@@ -814,7 +816,7 @@ async def deep_generation(
             mode_used=response.mode_used.value,
             cache_hit=response.cache_hit
         )
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="配方集成服务模块不可用")
     except Exception as e:
@@ -826,15 +828,15 @@ async def deep_generation(
 async def get_safety_thresholds():
     """
     查询当前生效的安全阈值配置
-    
+
     包含所有内置成分的 ADI/UL/特殊人群/法规限量信息
     """
     try:
         from ..services.formula.safety_alert_system import SafetyAlertSystem
-        
+
         system = SafetyAlertSystem()
         thresholds = system.get_all_thresholds()
-        
+
         return {
             "success": True,
             "version": getattr(system, "_current_version", "unknown"),
@@ -842,7 +844,7 @@ async def get_safety_thresholds():
             "thresholds": thresholds,
             "total_count": len(thresholds)
         }
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
@@ -866,17 +868,17 @@ async def update_safety_threshold(
     - 记录操作人和时间戳
     - 更新后立即生效
     """
-    
+
     try:
         from ..services.formula.safety_alert_system import SafetyAlertSystem
-        
+
         system = SafetyAlertSystem()
         result = system.update_threshold(
             ingredient_name,
             updates,
             operator=getattr(current_user, "username", str(current_user.id)),
         )
-        
+
         return {
             "success": result["success"],
             "updated_ingredient": ingredient_name,
@@ -884,7 +886,7 @@ async def update_safety_threshold(
             "effective_immediately": True,
             "version": getattr(system, "_current_version", "unknown")
         }
-        
+
     except ImportError as e:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:

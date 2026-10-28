@@ -24,12 +24,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_active_user
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...domain.bots import AIBot, BotStatus, BotVisibility
 from ...models import User
 from ...models.ai_model_config import AIModelConfig
 from ...services.ai.agent.bot_manager import BotManager
+from ..deps import get_current_active_user, get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class BotCreateRequest(BaseModel):
     provider: Optional[str] = Field(None, max_length=64)
     model_id: Optional[str] = Field(None, max_length=128)
     temperature: float = Field(0.7, ge=0.0, le=2.0)
-    max_tokens: int = Field(4096, ge=128, le=32768)
+    max_tokens: int = Field(16000, ge=128, le=32768)  # P1-4：由 4096 提到 16000，与模型层默认值对齐
     capabilities: list[str] = Field(default_factory=list)
     visibility: str = Field("private", pattern="^(private|org)$")
     is_chief: bool = False
@@ -353,8 +353,8 @@ async def get_bot_history(
 
     按 chat_sessions.bot_id 过滤，取最近一个会话的消息（时间正序）。
     """
-    from ...models.chat import ChatSession, ChatMessage
     from ...models.bot import AIBot as AIBotModel
+    from ...models.chat import ChatMessage, ChatSession
 
     bot = (await db.execute(
         select(AIBotModel).where(AIBotModel.id == bot_id, AIBotModel.deleted_at.is_(None))

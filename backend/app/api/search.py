@@ -4,15 +4,15 @@
 """
 
 import logging
+from typing import Optional
 
-from fastapi import APIRouter, Query, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
 
-from ..api.deps import get_db_session, get_current_active_user
-from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter
-from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..api.deps import get_current_active_user, get_db_session
+from ..core.analytics_reports.search_engine import AdvancedFilter, SearchEngine, SearchQuery
 from ..core.multi_tenant.org_resolver import resolve_effective_org_id
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ..models import User
 
 router = APIRouter(prefix="/search", tags=["搜索服务"])
@@ -60,7 +60,7 @@ async def global_search_endpoint(
 ):
     """
     全局搜索（跨多种资源类型）—— 强制认证 + 租户隔离
-    
+
     - 在配方、实验、原料等中同时搜索
     - 返回分类汇总结果
     - 支持中文模糊匹配
@@ -115,7 +115,7 @@ async def search_resource(
 ):
     """
     指定资源类型的搜索与高级筛选 —— 强制认证 + 租户隔离
-    
+
     支持参数:
     - **q**: 关键词搜索
     - **sort_by**: 排序字段 (name/created_at/updated_at)
@@ -127,7 +127,7 @@ async def search_resource(
     """
     org_id = await _require_search_org(tenant, current_user, db)
     engine = SearchEngine(db)
-    
+
     # 构建查询对象
     query = SearchQuery(
         keyword=q,
@@ -137,7 +137,7 @@ async def search_resource(
         page_size=page_size,
         facets=["status", "category"] if facets else None,
     )
-    
+
     # 添加筛选条件
     if status:
         query.filters.append(AdvancedFilter(field="status", operator="eq", value=status))
@@ -151,12 +151,12 @@ async def search_resource(
                 value=[created_from, created_to] if created_from and created_to else created_from or created_to
             )
         )
-    
+
     # P0：注入租户 org 过滤（organization_id == 解析出的有效 org_id）
     _apply_org_filter(query, org_id)
-    
+
     result = await engine.advanced_search(resource_type, query)
-    
+
     return result.to_dict()
 
 
@@ -170,7 +170,7 @@ async def get_suggestions(
     """获取搜索自动补全建议"""
     engine = SearchEngine(db)
     suggestions = await engine.get_suggestions(prefix, type, limit)
-    
+
     return {"suggestions": suggestions}
 
 
@@ -188,7 +188,7 @@ async def add_favorite(
     """添加到收藏夹"""
     engine = SearchEngine(db)
     success = await engine.add_to_favorites(current_user.id, item_type, item_id)
-    
+
     return {"success": success, "message": "已添加到收藏夹"}
 
 
@@ -202,7 +202,7 @@ async def remove_favorite(
     """从收藏夹移除"""
     engine = SearchEngine(db)
     success = await engine.remove_from_favorites(current_user.id, item_type, item_id)
-    
+
     return {"success": success, "message": "已从收藏夹移除"}
 
 
@@ -215,7 +215,7 @@ async def list_favorites(
     """获取当前用户的收藏列表"""
     engine = SearchEngine(db)
     favorites = await engine.get_favorites(current_user.id, type)
-    
+
     return {"items": favorites, "total": len(favorites)}
 
 
@@ -229,7 +229,7 @@ async def check_favorite_status(
     """检查某项是否已被收藏"""
     engine = SearchEngine(db)
     is_fav = await engine.is_favorited(current_user.id, item_type, item_id)
-    
+
     return {"is_favorited": is_fav}
 
 
@@ -247,7 +247,7 @@ async def record_view(
     """记录一次页面访问"""
     engine = SearchEngine(db)
     await engine.record_view(current_user.id, item_type, item_id)
-    
+
     return {"success": True}
 
 
@@ -260,5 +260,5 @@ async def list_recent_views(
     """获取最近访问列表（按时间倒序）"""
     engine = SearchEngine(db)
     recent_views = await engine.get_recent_views(current_user.id, limit)
-    
+
     return {"items": recent_views}

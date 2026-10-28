@@ -6,20 +6,21 @@ RMFOOD 对话管理 API
 - 消息管理（创建/读取/删除/批量删除）
 - 导出功能（JSON/CSV格式）
 """
-import logging
 import csv
-from io import StringIO
+import logging
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, Path
+from io import StringIO
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, func
 from sqlalchemy.orm import joinedload
 
-from ..api.deps import get_db_session, get_current_active_user
+from ..api.deps import get_current_active_user, get_db_session
 from ..models import User
-from ..models.chat import ChatSession, ChatMessage
+from ..models.chat import ChatMessage, ChatSession
 
 logger = logging.getLogger(__name__)
 
@@ -40,31 +41,31 @@ async def get_sessions(
     try:
         query = select(ChatSession).filter(
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         if search:
             query = query.filter(ChatSession.title.ilike(f"%{search}%"))
-        
+
         query = query.order_by(ChatSession.updated_at.desc())
-        
+
         # 分页
         offset = (page - 1) * page_size
         query = query.offset(offset).limit(page_size)
-        
+
         result = await db.execute(query)
         sessions = result.scalars().all()
-        
+
         # 获取总数
         count_query = select(func.count(ChatSession.id)).filter(
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         if search:
             count_query = count_query.filter(ChatSession.title.ilike(f"%{search}%"))
         count_result = await db.execute(count_query)
         total = count_result.scalar_one()
-        
+
         return {
             "items": [s.to_dict() for s in sessions],
             "total": total,
@@ -88,16 +89,16 @@ async def get_session(
         query = select(ChatSession).options(joinedload(ChatSession.messages)).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         result = await db.execute(query)
         # joinedload 集合（messages）后必须调用 unique()，否则 scalar_one_or_none 抛 InvalidRequestError
         session = result.unique().scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         return {
             "session": session.to_dict(),
             "messages": [m.to_dict() for m in session.messages],
@@ -125,11 +126,11 @@ async def create_session(
             message_count=0,
             is_active=True,
         )
-        
+
         db.add(session)
         await db.commit()
         await db.refresh(session)
-        
+
         logger.info(f"用户 {current_user.id} 创建会话: {session.id}")
         return session.to_dict()
     except Exception as e:
@@ -150,23 +151,23 @@ async def update_session(
         query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         result = await db.execute(query)
         session = result.scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         if title is not None:
             session.title = title
         if tags is not None:
             session.tags = tags
-        
+
         await db.commit()
         await db.refresh(session)
-        
+
         return session.to_dict()
     except HTTPException:
         raise
@@ -186,18 +187,18 @@ async def delete_session(
         query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         result = await db.execute(query)
         session = result.scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         session.is_active = False
         await db.commit()
-        
+
         logger.info(f"用户 {current_user.id} 删除会话: {session_id}")
         return {"success": True, "message": "会话已删除"}
     except HTTPException:
@@ -223,29 +224,29 @@ async def get_session_messages(
         session_query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         session_result = await db.execute(session_query)
         if not session_result.scalar_one_or_none():
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         query = select(ChatMessage).filter(
             ChatMessage.session_id == session_id
         ).order_by(ChatMessage.timestamp.asc())
-        
+
         offset = (page - 1) * page_size
         query = query.offset(offset).limit(page_size)
-        
+
         result = await db.execute(query)
         messages = result.scalars().all()
-        
+
         # 获取总数
         count_query = select(func.count(ChatMessage.id)).filter(
             ChatMessage.session_id == session_id
         )
         count_result = await db.execute(count_query)
         total = count_result.scalar_one()
-        
+
         return {
             "items": [m.to_dict() for m in messages],
             "total": total,
@@ -273,23 +274,23 @@ async def get_message(
         session_query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         session_result = await db.execute(session_query)
         if not session_result.scalar_one_or_none():
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         query = select(ChatMessage).filter(
             ChatMessage.id == message_id,
             ChatMessage.session_id == session_id
         )
-        
+
         result = await db.execute(query)
         message = result.scalar_one_or_none()
-        
+
         if not message:
             raise HTTPException(status_code=404, detail="消息不存在")
-        
+
         return message.to_dict()
     except HTTPException:
         raise
@@ -313,18 +314,18 @@ async def add_message(
         session_query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         result = await db.execute(session_query)
         session = result.scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         # 验证角色
         if role not in ['user', 'assistant', 'system']:
             raise HTTPException(status_code=400, detail="无效的角色值")
-        
+
         message = ChatMessage(
             session_id=session_id,
             role=role,
@@ -332,16 +333,16 @@ async def add_message(
             timestamp=datetime.now(timezone.utc),
             message_metadata=metadata,
         )
-        
+
         db.add(message)
-        
+
         # 更新会话消息计数
         session.message_count += 1
         session.updated_at = datetime.now(timezone.utc)
-        
+
         await db.commit()
         await db.refresh(message)
-        
+
         logger.info(f"用户 {current_user.id} 在会话 {session_id} 添加消息: {message.id}")
         return message.to_dict()
     except HTTPException:
@@ -364,33 +365,33 @@ async def delete_message(
         session_query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         session_result = await db.execute(session_query)
         session = session_result.scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         query = select(ChatMessage).filter(
             ChatMessage.id == message_id,
             ChatMessage.session_id == session_id
         )
-        
+
         result = await db.execute(query)
         message = result.scalar_one_or_none()
-        
+
         if not message:
             raise HTTPException(status_code=404, detail="消息不存在")
-        
+
         await db.delete(message)
-        
+
         # 更新会话消息计数
         session.message_count = max(0, session.message_count - 1)
         session.updated_at = datetime.now(timezone.utc)
-        
+
         await db.commit()
-        
+
         logger.info(f"用户 {current_user.id} 删除消息: {message_id}")
         return {"success": True, "message": "消息已删除"}
     except HTTPException:
@@ -413,31 +414,31 @@ async def batch_delete_messages(
         session_query = select(ChatSession).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
         session_result = await db.execute(session_query)
         session = session_result.scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         if not message_ids or len(message_ids) == 0:
             raise HTTPException(status_code=400, detail="请提供要删除的消息ID")
-        
+
         # 执行批量删除
         delete_query = delete(ChatMessage).where(
             ChatMessage.id.in_(message_ids),
             ChatMessage.session_id == session_id
         )
-        
+
         result = await db.execute(delete_query)
-        
+
         # 更新会话消息计数
         session.message_count = max(0, session.message_count - result.rowcount)
         session.updated_at = datetime.now(timezone.utc)
-        
+
         await db.commit()
-        
+
         logger.info(f"用户 {current_user.id} 批量删除 {result.rowcount} 条消息")
         return {
             "success": True,
@@ -465,15 +466,15 @@ async def export_session_json(
         query = select(ChatSession).options(joinedload(ChatSession.messages)).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         result = await db.execute(query)
         session = result.unique().scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         export_data = {
             "session": session.to_dict(),
             "exported_at": datetime.now(timezone.utc).isoformat(),
@@ -481,7 +482,7 @@ async def export_session_json(
             "include_metadata": include_metadata,
             "messages": [m.to_dict(include_metadata) for m in session.messages],
         }
-        
+
         return JSONResponse(
             content=export_data,
             media_type="application/json",
@@ -508,19 +509,19 @@ async def export_session_csv(
         query = select(ChatSession).options(joinedload(ChatSession.messages)).filter(
             ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         )
-        
+
         result = await db.execute(query)
         session = result.unique().scalar_one_or_none()
-        
+
         if not session:
             raise HTTPException(status_code=404, detail="会话不存在或无权访问")
-        
+
         # 创建CSV内容
         output = StringIO()
         writer = csv.writer(output)
-        
+
         # 表头
         headers = ["消息ID", "角色", "内容", "时间戳"]
         if include_metadata:
@@ -530,7 +531,7 @@ async def export_session_csv(
                 "评价", "反馈", "是否书签", "书签备注", "标签", "元数据"
             ])
         writer.writerow(headers)
-        
+
         # 数据行
         for message in session.messages:
             row = [
@@ -539,7 +540,7 @@ async def export_session_csv(
                 message.content.replace("\n", "\\n"),
                 message.timestamp.strftime("%Y-%m-%d %H:%M:%S")
             ]
-            
+
             if include_metadata:
                 row.extend([
                     message.is_edited,
@@ -557,12 +558,12 @@ async def export_session_csv(
                     ",".join(message.message_tags or []),
                     str(message.message_metadata or {})
                 ])
-            
+
             writer.writerow(row)
-        
+
         output.seek(0)
         csv_content = output.getvalue()
-        
+
         return StreamingResponse(
             iter([csv_content]),
             media_type="text/csv;charset=utf-8",
@@ -588,13 +589,13 @@ async def export_all_sessions_json(
     try:
         query = select(ChatSession).options(joinedload(ChatSession.messages)).filter(
             ChatSession.user_id == current_user.id,
-            ChatSession.is_active == True
+            ChatSession.is_active.is_(True)
         ).order_by(ChatSession.updated_at.desc())
-        
+
         result = await db.execute(query)
         # joinedload 集合（messages）后必须调用 unique()，否则同一会话会按消息数重复返回
         sessions = result.unique().scalars().all()
-        
+
         export_data = {
             "user_id": current_user.id,
             "username": current_user.username,
@@ -610,7 +611,7 @@ async def export_all_sessions_json(
                 for s in sessions
             ],
         }
-        
+
         return JSONResponse(
             content=export_data,
             media_type="application/json",
@@ -635,9 +636,11 @@ async def restore_chat_sessions(
     与 POST /sync 配对：新设备登录同一账号后调用本端点，
     即可拉回旧设备同步过的会话历史（快照级，非实时同步）。
     """
-    from ..models.system import SystemConfig
-    from sqlalchemy import select
     import json as _json
+
+    from sqlalchemy import select
+
+    from ..models.system import SystemConfig
 
     config_key = f"chat_sync_{current_user.id}"
     try:
@@ -676,9 +679,11 @@ async def sync_chat_sessions(
     说明：这是快照级同步（JSON 存储，按 session id 去重合并），供备份/恢复使用；
     完整的跨设备会话恢复需要 client_id 关联，属结构性改造，暂未实现。
     """
-    from ..models.system import SystemConfig
-    from sqlalchemy import select
     import json as _json
+
+    from sqlalchemy import select
+
+    from ..models.system import SystemConfig
 
     config_key = f"chat_sync_{current_user.id}"
     try:

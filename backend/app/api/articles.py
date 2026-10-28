@@ -3,12 +3,12 @@ Health Articles API Routes
 提供健康知识文章列表和详情接口
 """
 
-from fastapi import APIRouter, Query, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
-from datetime import datetime
+from typing import Optional
 
-from ..api.deps import get_db_session, get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..api.deps import get_current_user, get_db_session
 from ..models import User
 
 router = APIRouter(prefix="/articles", tags=["健康知识文章"])
@@ -69,18 +69,18 @@ async def list_articles(
 ):
     """获取健康知识文章列表"""
     articles = SAMPLE_ARTICLES
-    
+
     # Apply filters
     if category:
         articles = [a for a in articles if a.get("category") == category]
     if tag:
         articles = [a for a in articles if tag in a.get("tags", [])]
-    
+
     # Pagination
     start = (page - 1) * page_size
     end = start + page_size
     paginated_articles = articles[start:end]
-    
+
     return {
         "items": paginated_articles,
         "total": len(articles),
@@ -97,13 +97,13 @@ async def get_article(
 ):
     """获取单篇文章详情"""
     article = next((a for a in SAMPLE_ARTICLES if a["id"] == article_id), None)
-    
+
     if not article:
         raise HTTPException(status_code=404, detail="文章不存在")
-    
+
     # Increment views
     article["views"] += 1
-    
+
     return article
 
 

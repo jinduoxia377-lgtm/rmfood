@@ -7,22 +7,21 @@
 - GET  /api/v1/documents/health    — 健康检查
 """
 import logging
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user, get_db_session
 from app.core.database.session import get_db
-from app.api.deps import get_db_session, get_current_user
 from app.models.document_extraction import DocumentExtraction
+from app.models.peptide_batch_coa import COATestItem, PeptideBatchCOA
 from app.models.user_model import User
-from app.models.peptide_batch_coa import PeptideBatchCOA, COATestItem
 from app.services.document_extractor.extractor import (
-    DocumentExtractor,
-    get_document_extractor,
     DOCUMENT_FIELD_SCHEMAS,
+    get_document_extractor,
 )
 
 logger = logging.getLogger(__name__)

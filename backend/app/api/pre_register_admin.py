@@ -26,15 +26,15 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, or_, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, require_role
+from ..core.rbac.permission import Permission, PermissionChecker
 from ..models.models import User, UserRole
 from ..models.pre_register import PreRegisterRequest, PreRegisterStatus
-from ..core.rbac.permission import PermissionChecker, Permission
-from ..services.auth import get_password_hash
 from ..services import whitelist as whitelist_service
+from ..services.auth import get_password_hash
 
 
 def _generate_temp_password(length: int = 12) -> str:
@@ -236,6 +236,8 @@ async def _approve_one(
         role=target_role,
         department=req.department,
         is_active=True,
+        # 白名单通过 → 授予专业版（规格 tenant-isolation-segmentation-plan.md 3.4）
+        plan="pro",
     )
     db.add(user)
     await db.flush()

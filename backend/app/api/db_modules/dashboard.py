@@ -1,29 +1,25 @@
 """
 仪表盘、排行、趋势与搜索建议 API
 """
-import json
-from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, func, text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
 from ...models import (
-    User, TCMHerb, MMIDHerb, BioactivePeptide,
-    DataSnapshot,
+    BioactivePeptide,
+    TCMHerb,
 )
-from ...services.data_sources.tcmsp_client import tcmsp_service
-from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
 from ...services.data_sources.graph_service import graph_service
+from ..deps import get_db_session
 
 """
 Shared router for dashboard module.
 """
+import logging
+
 from . import router
 
-import logging
 logger = logging.getLogger(__name__)
 
 @router.get("/ranking/food-homology", summary="药食同源原料热度排行")
@@ -40,7 +36,7 @@ async def ranking_food_homology(
 
     # ── 数据库优先：查询药食同源药材 ──
     herbs_db = (await db.execute(
-        select(TCMHerb).where(TCMHerb.is_food_homology == True).order_by(TCMHerb.id)
+        select(TCMHerb).where(TCMHerb.is_food_homology.is_(True)).order_by(TCMHerb.id)
     )).scalars().all()
 
     if len(herbs_db) > 0:
@@ -819,5 +815,6 @@ def _generate_recommendations(hqs, pqs, hh, ph, total_herbs=100, total_peptides=
     return recs
 
 import logging
+
 logger = logging.getLogger(__name__)
 logger.info("dashboard module loaded")

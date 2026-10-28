@@ -4,15 +4,14 @@ Demo Module - Landing page public demo API module
 Provides unauthenticated AI chat interface for landing page visitors.
 Includes rate limiting and request logging.
 """
-import logging
-import datetime
 import json
+import logging
 import time
-from typing import Optional, List, Dict, Any
+from typing import Dict, List, Optional
+
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-import asyncio
 
 from app.services.thinking_engine import thinking_engine
 
@@ -53,15 +52,15 @@ def _check_rate_limit(ip: str) -> bool:
     now = time.time()
     if ip not in _rate_limit_cache:
         _rate_limit_cache[ip] = []
-    
+
     # Clean up expired records
     _rate_limit_cache[ip] = [
         t for t in _rate_limit_cache[ip] if now - t < RATE_LIMIT_WINDOW
     ]
-    
+
     if len(_rate_limit_cache[ip]) >= RATE_LIMIT_MAX_REQUESTS:
         return False
-    
+
     _rate_limit_cache[ip].append(now)
     return True
 
@@ -84,25 +83,25 @@ async def get_demo_status(request: Request):
 async def demo_chat(request: DemoChatRequest, req: Request):
     """
     Demo AI chat endpoint (non-streaming).
-    
+
     This endpoint does not require authentication and is designed for
     landing page visitors to experience the product.
     """
     client_ip = req.client.host
-    
+
     # Check rate limit
     if not _check_rate_limit(client_ip):
         raise HTTPException(
             status_code=429,
             detail={"error": "RATE_LIMIT_EXCEEDED", "message": "Request too frequent, please try again later"}
         )
-    
+
     start_time = time.time()
-    
+
     try:
         # Call thinking engine (async generator)
         generator = thinking_engine.generate_thinking_stream(request.message)
-        
+
         # Collect all chunks
         full_content = ""
         async for chunk in generator:
@@ -110,19 +109,19 @@ async def demo_chat(request: DemoChatRequest, req: Request):
                 full_content += chunk.get("content", "")
             elif chunk.get("type") == "thinking":
                 pass  # Ignore thinking steps for non-streaming
-        
+
         processing_time = int((time.time() - start_time) * 1000)
-        
+
         # Determine confidence based on content length
         confidence = min(0.95, 0.7 + len(full_content) / 1000)
-        
+
         return DemoChatResponse(
             reply=full_content or "Thank you for your question. I am analyzing it now...",
             confidence=confidence,
             model="thinking-engine-demo",
             processing_time_ms=processing_time
         )
-        
+
     except Exception as e:
         logger.error(f"[demo/chat] Error: {str(e)}")
         raise HTTPException(
@@ -135,27 +134,27 @@ async def demo_chat(request: DemoChatRequest, req: Request):
 async def demo_chat_stream(request: DemoChatRequest, req: Request):
     """
     Demo AI chat endpoint (streaming/SSE).
-    
+
     Returns response in SSE format for real-time display.
     """
     client_ip = req.client.host
-    
+
     # Check rate limit
     if not _check_rate_limit(client_ip):
         raise HTTPException(
             status_code=429,
             detail={"error": "RATE_LIMIT_EXCEEDED", "message": "Request too frequent, please try again later"}
         )
-    
+
     async def event_stream():
         try:
             # Send start event
             yield f"data: {json.dumps({'event': 'start', 'data': {{}}}, ensure_ascii=False)}\n\n"
-            
+
             # Generate response
             result = thinking_engine.generate_thinking_stream(request.message)
             full_content = ""
-            
+
             async for chunk in result:
                 if chunk.get("type") == "text":
                     content = chunk.get("content", "")
@@ -164,14 +163,14 @@ async def demo_chat_stream(request: DemoChatRequest, req: Request):
                 elif chunk.get("type") == "thinking":
                     # Send thinking step as event
                     yield f"data: {json.dumps({{'event': 'thinking', 'data': chunk}}, ensure_ascii=False)}\n\n"
-            
+
             # Send done event
             yield f"data: {json.dumps({{'event': 'done', 'data': {{'content': full_content}}}}, ensure_ascii=False)}\n\n"
-            
+
         except Exception as e:
             logger.error(f"[demo/chat/stream] Error: {str(e)}")
             yield f"data: {json.dumps({{'event': 'error', 'data': {{'error': str(e)}}}}, ensure_ascii=False)}\n\n"
-    
+
     return StreamingResponse(
         event_stream(),
         media_type="text/event-stream",

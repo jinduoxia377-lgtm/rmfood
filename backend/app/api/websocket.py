@@ -4,18 +4,17 @@ WebSocket API路由
 - 实现实时数据同步
 - 管理连接状态
 """
-import asyncio
 import json
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from ..core.realtime.websocket import connection_manager, WebSocketMessage
 from ..core._security_compat import decode_access_token
-from .deps import get_current_user
+from ..core.realtime.websocket import WebSocketMessage, connection_manager
 from ..models import User
+from .deps import get_current_user
 
 logger = logging.getLogger("rmfood.websocket.api")
 
@@ -171,7 +170,7 @@ async def broadcast_message(
     """广播消息（管理员）"""
     if not current_user.is_admin:
         return {"error": "权限不足"}
-    
+
     await connection_manager.broadcast(message)
     return {"success": True, "message": "消息已广播"}
 

@@ -7,16 +7,15 @@
 - 通用 CSV/TSV 格式
 """
 import logging
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from app.services.experiment.parsers import AnIMLParser, JcampDXParser
 from app.services.experiment.signal_processor import (
     PeakRecognitionEngine,
     SpectrumType,
-    analyze_spectrum,
 )
 
 logger = logging.getLogger(__name__)

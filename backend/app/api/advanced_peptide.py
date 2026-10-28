@@ -11,20 +11,18 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from sqlalchemy.exc import SQLAlchemyError
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-from ..api.deps import get_db_session, get_current_user
+from ..api.deps import get_db_session
+from ..core.plans import require_plan
 from ..models import User
 from ..services.ai_models.advanced_peptide_analyzer import (
-    AdvancedPeptideAnalyzer,
     get_advanced_analyzer,
 )
-from ..services.ai_models.pepinvent_adapter import ServiceUnavailableError
 
 router = APIRouter(prefix="/ai/peptide/advanced", tags=["PepINVENT高级分析"])
 
@@ -147,7 +145,7 @@ class VariantGenerationRequest(BaseModel):
 async def deep_analysis(
     req: DeepAnalysisRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     对单个肽进行全面的深度分析。
@@ -166,7 +164,7 @@ async def deep_analysis(
         logger.info(f"开始深度分析 - 序列: {req.sequence}, 用户: {_uid}")
 
         analyzer = get_advanced_analyzer()
-        
+
         try:
             result = await analyzer.analyze_peptide_deeply(req.sequence)
         except ValueError as ve:
@@ -205,7 +203,7 @@ async def deep_analysis(
 async def batch_analysis(
     req: BatchAnalysisRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     批量分析多个肽序列（并发执行）。
@@ -268,7 +266,7 @@ async def batch_analysis(
 async def pareto_optimization(
     req: ParetoOptimizationRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     计算 Pareto 最优前沿。
@@ -323,7 +321,7 @@ async def custom_optimization(
     req: CustomOptimizationRequest,
     background_tasks: BackgroundTasks,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     使用自定义评分函数进行遗传算法风格优化。
@@ -367,7 +365,7 @@ async def custom_optimization(
 async def synergy_analysis(
     req: SynergyAnalysisRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     分析肽与药材之间的协同效应。
@@ -403,7 +401,7 @@ async def synergy_analysis(
 async def solubility_prediction(
     req: SolubilityPredictionRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     预测肽在不同 pH 和温度条件下的溶解度变化。
@@ -445,7 +443,7 @@ async def solubility_prediction(
 async def generate_variants(
     req: VariantGenerationRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     基于模板生成多种类型的结构变体。
@@ -502,7 +500,7 @@ async def generate_variants(
 @router.get("/tasks/{task_id}", summary="查询异步任务状态")
 async def get_task_status(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     查询异步任务的执行状态和结果。
@@ -536,7 +534,7 @@ async def get_task_status(
 @router.delete("/tasks/{task_id}", summary="取消或清理任务")
 async def cancel_task(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """取消正在执行的任务或清理已完成的结果"""
     if task_id in _task_store:
@@ -547,7 +545,7 @@ async def cancel_task(
 
 
 @router.get("/capabilities", summary="查看高级功能能力清单")
-async def list_capabilities(current_user: User = Depends(get_current_user)):
+async def list_capabilities(current_user: User = Depends(require_plan("peptide_analysis"))):
     """
     列出所有可用的高级分析能力及其参数说明。
     用于前端动态构建 UI 表单。

@@ -2,18 +2,21 @@
 肽管理路由
 活性肽的CRUD操作
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas import (
-    PeptideCreate, PeptideUpdate, PeptideResponse, PeptideListResponse,
-    ApiResponse, SuccessResponse, PaginatedResponse
-)
-from ..services.peptide import PeptideService
-from ..services.auth import get_current_user
-from ..models.user_model import User
+from ..api.deps import PaginationParams, get_db_session, require_role
 from ..models.enums import UserRole
-from ..api.deps import get_db_session, PaginationParams, require_role
+from ..models.user_model import User
+from ..schemas import (
+    PeptideCreate,
+    PeptideListResponse,
+    PeptideResponse,
+    PeptideUpdate,
+    SuccessResponse,
+)
+from ..services.auth import get_current_user
+from ..services.peptide import PeptideService
 
 router = APIRouter(prefix="/peptides", tags=["肽管理"])
 

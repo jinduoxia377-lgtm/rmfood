@@ -4,15 +4,16 @@
 集成活性预测和安全性评估
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any, Literal
 import logging
 import os
+from typing import Dict, List, Literal, Optional
 
-from .deps import get_db_session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
 from ..core.plans import require_plan
 from ..models.user_model import User
+from .deps import get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +82,12 @@ def get_analyzer():
 async def health_check():
     deps_status = {"peplink": False, "rdkit": False}
     try:
-        import PepLink
+        import PepLink  # noqa: F401  # 故意导入以检测依赖可用性
         deps_status["peplink"] = True
     except ImportError:
         pass
     try:
-        import rdkit
+        import rdkit  # noqa: F401  # 故意导入以检测依赖可用性
         deps_status["rdkit"] = True
     except ImportError:
         pass
@@ -292,11 +293,13 @@ async def online_source_status():
 async def online_source_literature(
     activity_type: str = Query("ACE inhibitory peptide", description="活性类型关键词"),
     limit: int = Query(5, ge=1, le=20, description="返回条数"),
+    sequence: Optional[str] = Query(None, description="肽序列（可选）：提供时执行序列级检索"),
     _user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     仅当 NCBI PubMed 实测可达时返回真实文献；不可达时返回空列表 + offline 标记。
     诚实降级：绝不伪造文献记录。
+    sequence 提供时执行序列级检索（"{sequence} AND {activity_type}"）。
     """
     try:
         from app.services.peptide_analyzer.real_source_client import get_real_source_client
@@ -310,7 +313,11 @@ async def online_source_literature(
                 "note": "NCBI PubMed 当前不可达，未返回伪造文献。请检查网络后重试。",
                 "probe": probe,
             }
-        refs = await client.search_references(activity_type=activity_type, limit=limit)
+        refs = await client.search_references(
+            activity_type=activity_type,
+            limit=limit,
+            sequence=sequence,
+        )
         return {
             "success": True,
             "reachable": True,
@@ -507,9 +514,10 @@ async def smiles_to_image(smiles: str, _user: User = Depends(require_plan("pepti
     使用 RDKit 绘制分子结构，适合在 <img> 标签中直接展示
     """
     try:
+        from io import BytesIO
+
         from rdkit import Chem
         from rdkit.Chem import Draw
-        from io import BytesIO
 
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
@@ -660,7 +668,8 @@ async def get_history(
 ):
     """分页查询分析历史。"""
     try:
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         from app.models.peptide_analysis import PeptideAnalysis
 
         stmt = select(PeptideAnalysis).where(PeptideAnalysis.deleted_at.is_(None))
@@ -695,6 +704,7 @@ async def get_history_statistics(db=Depends(get_db_session), _user: User = Depen
     """聚合统计历史分析记录。"""
     try:
         from sqlalchemy import select
+
         from app.models.peptide_analysis import PeptideAnalysis
 
         base = select(PeptideAnalysis).where(PeptideAnalysis.deleted_at.is_(None))
@@ -737,7 +747,9 @@ async def delete_history(record_id: int, db=Depends(get_db_session), _user: User
     """软删除指定历史记录。"""
     try:
         from datetime import datetime, timezone
+
         from sqlalchemy import select
+
         from app.models.peptide_analysis import PeptideAnalysis
 
         row = (

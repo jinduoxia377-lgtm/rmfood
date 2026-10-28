@@ -9,30 +9,31 @@ Webhook & API密钥 & 集成 API 路由
 """
 
 import logging
-import aiohttp  # A-27: 319 行 except aiohttp.ClientError 用到，原漏导入
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
+
+import aiohttp  # A-27: 319 行 except aiohttp.ClientError 用到，原漏导入
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
 
-from .deps import get_db_session, get_current_user, get_current_active_user
-from .api_key_deps import get_current_api_key, get_current_active_api_key, require_api_scope, ApiKeyPrincipal
 from ..core.api_framework.integration_framework import (
-    WebhookService,
-    APIKeyService,
-    ThirdPartyIntegrationService,
+    IntegrationType,
     WebhookEvent,
     WebhookStatus,
-    IntegrationType,
-    get_webhook_service,
     get_api_key_service,
     get_integration_service,
+    get_webhook_service,
 )
-
+from .api_key_deps import (
+    ApiKeyPrincipal,
+    get_current_active_api_key,
+    get_current_api_key,
+    require_api_scope,
+)
+from .deps import get_current_active_user, get_current_user, get_db_session
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 
@@ -85,16 +86,16 @@ async def create_webhook(
 ):
     """
     创建新的Webhook
-    
+
     - 支持多种事件类型
     - 自动生成签名密钥
     - 可自定义请求头
     """
     service = get_webhook_service(db)
-    
+
     try:
         events = [WebhookEvent(e) for e in request.events]
-        
+
         webhook = await service.create_webhook(
             name=request.name,
             url=request.url,
@@ -156,7 +157,7 @@ async def get_webhook(
     """获取单个Webhook详情（包含secret）"""
     service = get_webhook_service(db)
     webhook = await service.get_webhook(webhook_id, current_user.id)
-    
+
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook不存在")
 
@@ -231,9 +232,9 @@ async def test_webhook(
     - 返回响应状态和耗时
     - SSRF 防护: 协议白名单 + DNS 预解析锁定 + 内网 IP 阻断
     """
+    import datetime
     import ipaddress
     import json
-    import datetime
     from urllib.parse import urlparse
 
     # ── SSRF 防护 Layer 1: 协议白名单 ──
@@ -329,7 +330,7 @@ async def test_webhook(
 async def list_events():
     """列出所有支持的事件类型"""
     events = []
-    
+
     for event in WebhookEvent:
         category, action = event.value.split(".", 1)
         events.append({
@@ -492,7 +493,7 @@ async def create_integration(
 ):
     """
     创建第三方服务集成
-    
+
     支持的平台:
     - Slack (Incoming Webhook URL)
     - 钉钉 (机器人Webhook URL + Secret)
@@ -530,8 +531,8 @@ async def list_integrations(
 ):
     """列出用户的所有第三方集成"""
     result = await db.execute(
-        """SELECT id, type, name, is_active, created_at 
-           FROM integrations 
+        """SELECT id, type, name, is_active, created_at
+           FROM integrations
            WHERE owner_id = :owner_id
            ORDER BY created_at DESC""",
         {"owner_id": current_user.id},
