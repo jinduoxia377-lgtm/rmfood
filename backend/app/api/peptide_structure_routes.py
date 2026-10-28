@@ -292,6 +292,7 @@ async def online_source_status():
 async def online_source_literature(
     activity_type: str = Query("ACE inhibitory peptide", description="活性类型关键词"),
     limit: int = Query(5, ge=1, le=20, description="返回条数"),
+    _user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     仅当 NCBI PubMed 实测可达时返回真实文献；不可达时返回空列表 + offline 标记。
