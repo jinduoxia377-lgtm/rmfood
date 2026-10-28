@@ -23,6 +23,7 @@ from ..models.models import User, UserRole, ExperimentStatus
 from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user
 from ..core.plans import require_plan
 from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.multi_tenant.org_resolver import resolve_effective_org_id
 from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
@@ -33,13 +34,7 @@ async def _require_experiment_access(current_user: Optional[User], db: AsyncSess
     if current_user is None:
         return
     from ..core.multi_tenant.multi_tenant_service import get_org_service
-    org_id = getattr(current_user, "organization_id", None)
-    if not org_id:
-        row = (await db.execute(
-            text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
-            {"uid": current_user.id},
-        )).fetchone()
-        org_id = row.organization_id if row else None
+    org_id = await resolve_effective_org_id(None, current_user, db)
     if not org_id:
         return
     svc = get_org_service(db)
@@ -80,8 +75,10 @@ async def list_experiments(
     按当前租户 org_id 过滤（organization_id==tenant.org_id），
     tenant.org_id 为 None 时禁止全平台列出实验。
     """
-    # P0：无租户上下文 → 禁止全平台列表
-    if tenant.org_id is None:
+    # P0：解析有效组织（Cookie 认证兼容：tenant.org_id 为 None 时回退
+    # 用户默认组织/首个活跃成员关系），无有效组织 → 禁止全平台列表。
+    org_id = await resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="缺少组织租户上下文，禁止全平台列出实验",
@@ -103,7 +100,7 @@ async def list_experiments(
     # 保留全局实验（organization_id 为 None）与当前租户实验；其余剔除。
     experiments = [
         e for e in experiments
-        if e.organization_id is None or e.organization_id == tenant.org_id
+        if e.organization_id is None or e.organization_id == org_id
     ]
     total = len(experiments)
     return ExperimentListResponse(
