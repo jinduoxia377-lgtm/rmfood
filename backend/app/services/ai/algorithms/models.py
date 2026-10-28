@@ -9,15 +9,8 @@ NSGA-II 多目标优化 — 数据模型
 """
 from __future__ import annotations
 
-import math
-import random
-import threading
-import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
-
-from .bayesian_formula_optimizer import _BUILTIN_HERBS, _EFFICACY_TO_HERBS, HerbParameter
-
 
 # ════════════════════════════════════════════
 # 数据类定义

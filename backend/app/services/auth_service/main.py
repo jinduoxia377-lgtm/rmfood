@@ -1,7 +1,8 @@
 """Authentication Service - Entry point."""
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
+
 from .auth_handler import AuthHandler
 
 app = FastAPI()

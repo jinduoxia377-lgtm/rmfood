@@ -2,13 +2,12 @@
 
 基于ABAC的权限检查机制
 """
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.middleware.exceptions import PermissionDeniedException
 from app.models import User
 from app.models.enums import UserRole
-from app.core.middleware.exceptions import PermissionDeniedException, ResourceNotFoundException
 
 
 class Permission:

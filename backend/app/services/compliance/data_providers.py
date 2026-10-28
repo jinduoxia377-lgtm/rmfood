@@ -10,8 +10,8 @@ from app.services.compliance.formula_compliance import (
     PROHIBITED_COMBINATIONS,
 )
 from app.services.data_sources.china_food_regulations import (
-    FOOD_SAFETY_STANDARDS,
     FOOD_ADDITIVES,
+    FOOD_SAFETY_STANDARDS,
 )
 from app.services.search.compliance_engine_v2 import RegulationDatabase
 

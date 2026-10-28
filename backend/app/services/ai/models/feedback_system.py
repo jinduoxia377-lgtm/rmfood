@@ -13,8 +13,12 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any  # A-27
-from typing import Dict, List, Optional
+from typing import (
+    Any,  # A-27
+    Dict,
+    List,
+    Optional,
+)
 
 logger = logging.getLogger(__name__)
 

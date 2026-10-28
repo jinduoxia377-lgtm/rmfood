@@ -19,11 +19,9 @@ except ImportError:
 
 from .synergy_models import (
     MechanismType,
-    TasteType,
     SynergyScore,
-    SyngineConfig,
+    TasteType,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +208,6 @@ class SynergyCalculatorMixin2:
         Returns:
             p-value
         """
-        from math import comb
 
         if k == 0:
             return 1.0

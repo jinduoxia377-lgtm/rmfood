@@ -34,12 +34,11 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Generic
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 
 import redis.asyncio as aioredis
-from cachetools import TTLCache, LRUCache
+from cachetools import TTLCache
 
 logger = logging.getLogger(__name__)
 

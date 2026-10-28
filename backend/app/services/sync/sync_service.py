@@ -3,23 +3,22 @@
 整合差异检测、变更队列、冲突解决和协议传输，
 提供完整的云端同步流程编排。
 """
+import asyncio
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
-import asyncio
+from typing import Any, Dict, List, Optional
 
-from .diff_detector import DiffDetector, SyncChange, ChangeType, batch_detect_changes
-from .change_queue import ChangeQueue, QueueItem, QueueItemStatus
+from .change_queue import ChangeQueue
 from .conflict_detector import (
-    ConflictDetector,
     Conflict,
-    ConflictType,
+    ConflictDetector,
     MergeStrategy,
     ResolvedEntity,
 )
-from .protocol import SyncProtocol, SyncPushResponse, SyncPullResponse
+from .diff_detector import ChangeType, DiffDetector, SyncChange
+from .protocol import SyncProtocol, SyncPullResponse, SyncPushResponse
 
 logger = logging.getLogger(__name__)
 
@@ -52,20 +51,20 @@ class SyncResult:
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     duration_ms: float = 0
-    
+
     pushed_count: int = 0
     pulled_count: int = 0
     conflicts_detected: int = 0
     conflicts_auto_resolved: int = 0
     conflicts_pending_user: int = 0
     failed_count: int = 0
-    
+
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
-    
+
     server_timestamp: Optional[datetime] = None
     next_sync_token: str = ""
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "success": self.success,
@@ -95,27 +94,27 @@ class SyncSession:
     mode: SyncMode
     state: SyncState = SyncState.IDLE
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     local_snapshot: Dict[str, Any] = field(default_factory=dict)
     server_snapshot: Dict[str, Any] = field(default_factory=dict)
     changes_detected: List[SyncChange] = field(default_factory=list)
     conflicts: List[Conflict] = field(default_factory=list)
     resolved_entities: List[ResolvedEntity] = field(default_factory=list)
-    
+
     result: Optional[SyncResult] = None
 
 
 class SyncService:
     """
     同步服务（编排层）
-    
+
     整合所有组件，执行完整的同步流程：
     1. 推送本地变更 (push)
     2. 拉取远程变更 (pull)
     3. 检测并解决冲突 (resolve conflicts)
     4. 更新本地和服务器状态
     5. 记录同步日志
-    
+
     使用示例：
         >>> service = SyncService()
         >>> result = await service.full_sync(user_id=1, device_id="device123")
@@ -131,7 +130,7 @@ class SyncService:
     ):
         """
         初始化同步服务
-        
+
         Args:
             max_concurrent_syncs: 最大并发同步数
             auto_resolve_conflicts: 是否自动解决可解决的冲突
@@ -145,14 +144,14 @@ class SyncService:
             default_strategy=default_conflict_strategy,
             auto_resolve_content=True,
         )
-        
+
         self.max_concurrent_syncs = max_concurrent_syncs
         self.auto_resolve_conflicts = auto_resolve_conflicts
         self.sync_timeout = sync_timeout_seconds
-        
+
         self._active_sessions: Dict[str, SyncSession] = {}
         self._user_last_sync: Dict[int, datetime] = {}
-        
+
         self._stats = {
             "total_syncs": 0,
             "successful_syncs": 0,
@@ -172,30 +171,30 @@ class SyncService:
     ) -> SyncResult:
         """
         执行完整的双向同步流程
-        
+
         流程：
         1. 检测本地变更
         2. 推送变更到服务器
         3. 拉取服务器变更
         4. 检测并解决冲突
         5. 应用合并后的变更
-        
+
         Args:
             user_id: 用户ID
             device_id: 设备ID
             local_data: 本地数据 {entity_type: {entity_id: data}}
             last_sync_timestamp: 上次同步时间戳
-            
+
         Returns:
             同步结果统计
         """
         session = self._create_session(user_id, device_id, SyncMode.FULL)
         session.local_snapshot = local_data
         start_time = datetime.now(timezone.utc)
-        
+
         try:
             session.state = SyncState.DETECTING_CHANGES
-            
+
             all_local_changes = []
             for entity_type, entities in local_data.items():
                 changes = await self.detector.detect_changes(
@@ -205,12 +204,12 @@ class SyncService:
                     entity_type=entity_type,
                 )
                 all_local_changes.extend(changes)
-            
+
             session.changes_detected = all_local_changes
             logger.info(f"[SyncService] 检测到 {len(all_local_changes)} 个本地变更")
 
             session.state = SyncState.PUSHING
-            
+
             push_changes = [
                 {
                     "entity_type": c.entity_type,
@@ -223,14 +222,14 @@ class SyncService:
                 for c in all_local_changes
                 if c.change_type in (ChangeType.CREATE, ChangeType.UPDATE)
             ]
-            
+
             push_response = await self.protocol.push_changes(
                 user_id=user_id,
                 device_id=device_id,
                 changes=push_changes,
                 client_timestamp=start_time,
             )
-            
+
             session.result = SyncResult(
                 pushed_count=push_response.accepted_count,
                 server_timestamp=push_response.server_timestamp,
@@ -238,35 +237,35 @@ class SyncService:
             )
 
             session.state = SyncState.PULLING
-            
+
             pull_response = await self.protocol.pull_changes(
                 user_id=user_id,
                 device_id=device_id,
                 since_timestamp=last_sync_timestamp,
                 limit=1000,
             )
-            
+
             session.server_snapshot = {
                 f"{c.get('entity_type', 'unknown')}:{c.get('entity_id', 'unknown')}": c.get("data", {})
                 for c in pull_response.server_changes
             }
-            
+
             session.result.pulled_count = len(pull_response.server_changes)
 
             session.state = SyncState.RESOLVING_CONFLICTS
 
             if push_response.conflicts or pull_response.conflicts:
                 all_conflicts_data = push_response.conflicts + pull_response.conflicts
-                
+
                 conflicts = await self.conflict_detector.detect_conflicts(
                     local_changes=push_changes,
                     remote_changes=pull_response.server_changes,
                 )
-                
+
                 session.conflicts = conflicts
-                
+
                 for conflict in conflicts:
-                    if (self.auto_resolve_conflicts and 
+                    if (self.auto_resolve_conflicts and
                         conflict.recommended_strategy != MergeStrategy.MANUAL):
                         try:
                             resolved = await self.conflict_detector.auto_resolve(conflict)
@@ -277,14 +276,14 @@ class SyncService:
                             session.result.conflicts_pending_user += 1
                     else:
                         session.result.conflicts_pending_user += 1
-                
+
                 session.result.conflicts_detected = len(conflicts)
 
             session.state = SyncState.COMPLETED
             session.result.success = True
-            
+
             self._update_user_last_sync(user_id)
-            
+
         except asyncio.TimeoutError:
             session.state = SyncState.FAILED
             session.result = SyncResult(
@@ -292,7 +291,7 @@ class SyncService:
                 errors=["同步超时"],
             )
             logger.error(f"[SyncService] 同步超时 ({self.sync_timeout}s)")  # A-27: 原引用了不存在的裸名
-            
+
         except Exception as e:
             session.state = SyncState.FAILED
             session.result = SyncResult(
@@ -300,14 +299,14 @@ class SyncService:
                 errors=["处理异常"],
             )
             logger.error(f"[SyncService] 同步异常: {e}", exc_info=True)
-            
+
         finally:
             end_time = datetime.now(timezone.utc)
             if session.result:
                 session.result.started_at = start_time
                 session.result.completed_at = end_time
                 session.result.duration_ms = (end_time - start_time).total_seconds() * 1000
-            
+
             self._cleanup_session(session.id)
             self._update_stats(session.result)
 
@@ -322,26 +321,26 @@ class SyncService:
     ) -> SyncResult:
         """
         增量同步（只处理最近变更）
-        
+
         只同步指定实体类型或最近修改的数据。
         适用于频繁的小规模同步场景。
-        
+
         Args:
             user_id: 用户ID
             device_id: 设备ID
             local_data: 本地数据
             entity_types: 要同步的实体类型列表（None表示全部）
-            
+
         Returns:
             同步结果
         """
         last_sync = self._user_last_sync.get(user_id)
-        
+
         filtered_data = local_data
         if entity_types:
             filtered_data = {
-                etype: data 
-                for etype, data in local_data.items() 
+                etype: data
+                for etype, data in local_data.items()
                 if etype in entity_types
             }
 
@@ -360,7 +359,7 @@ class SyncService:
     ) -> SyncPushResponse:
         """
         仅推送模式（不拉取远程变更）
-        
+
         适用于离线后的批量上传。
         """
         response = await self.protocol.push_changes(
@@ -368,9 +367,9 @@ class SyncService:
             device_id=device_id,
             changes=changes,
         )
-        
+
         self._stats["total_changes_pushed"] += response.accepted_count
-        
+
         return response
 
     async def pull_only(
@@ -381,7 +380,7 @@ class SyncService:
     ) -> SyncPullResponse:
         """
         仅拉取模式（不推送本地变更）
-        
+
         适用于强制刷新服务器数据到本地。
         """
         response = await self.protocol.pull_changes(
@@ -389,9 +388,9 @@ class SyncService:
             device_id=device_id,
             since_timestamp=since,
         )
-        
+
         self._stats["total_changes_pulled"] += len(response.server_changes)
-        
+
         return response
 
     async def resolve_conflict(
@@ -401,11 +400,11 @@ class SyncService:
     ) -> Optional[ResolvedEntity]:
         """
         解决特定冲突（用户手动）
-        
+
         Args:
             conflict_id: 冲突ID
             resolution: 解决方案 {strategy, choice, custom_data}
-            
+
         Returns:
             解决后的实体
         """
@@ -414,11 +413,11 @@ class SyncService:
                 if conflict.id == conflict_id:
                     strategy_str = resolution.get("strategy", "manual")
                     strategy = MergeStrategy(strategy_str)
-                    
+
                     if strategy == MergeStrategy.MANUAL:
                         user_choice = resolution.get("choice", "local")
                         custom_data = resolution.get("custom_data")
-                        
+
                         resolved = self.conflict_detector.manual_resolve(
                             conflict=conflict,
                             user_choice=user_choice,
@@ -429,12 +428,12 @@ class SyncService:
                             conflict=conflict,
                             strategy=strategy,
                         )
-                    
+
                     session.resolved_entities.append(resolved)
                     self._stats["total_conflicts_resolved"] += 1
-                    
+
                     return resolved
-                    
+
         return None
 
     def get_sync_status(self, user_id: int) -> Dict[str, Any]:
@@ -444,7 +443,7 @@ class SyncService:
             s for s in self._active_sessions.values()
             if s.user_id == user_id
         ]
-        
+
         return {
             "user_id": user_id,
             "last_sync_time": last_sync.isoformat() if last_sync else None,
@@ -478,16 +477,16 @@ class SyncService:
             device_id=device_id,
             mode=mode,
         )
-        
+
         if len(self._active_sessions) >= self.max_concurrent_syncs:
             oldest = min(
                 self._active_sessions.values(),
                 key=lambda s: s.created_at,
             )
             del self._active_sessions[oldest.id]
-        
+
         self._active_sessions[session.id] = session
-        
+
         return session
 
     def _cleanup_session(self, session_id: str):
@@ -504,14 +503,14 @@ class SyncService:
         """更新统计信息"""
         if not result:
             return
-            
+
         self._stats["total_syncs"] += 1
-        
+
         if result.success:
             self._stats["successful_syncs"] += 1
         else:
             self._stats["failed_syncs"] += 1
-        
+
         total = self._stats["total_syncs"]
         prev_avg = self._stats["avg_sync_duration_ms"]
         self._stats["avg_sync_duration_ms"] = (

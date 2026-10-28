@@ -10,16 +10,15 @@ https://openfoodfacts.github.io/openfoodfacts-server/api/
 - GET /data/barcodes/{barcode}.json — 批量条码查询
 """
 import gzip
-import io
 import json
 import logging
-import re
-import time
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Any, Optional, Iterator
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, Iterator, Optional
 from urllib.parse import urlencode
 
 import httpx
+
+from .openfoodfacts.config import OFFConfig
 
 logger = logging.getLogger(__name__)
 
@@ -27,21 +26,23 @@ logger = logging.getLogger(__name__)
 class OFFClient:
     """Open Food Facts REST API 客户端"""
 
-    def __init__(self):
+    def __init__(self, base_url: Optional[str] = None):
+        self.base_url = (base_url or OFFConfig.BASE_URL).rstrip("/")
         self._http_client = httpx.Client(
-            timeout=30.0,
-            headers={"User-Agent": "RMFOOD-DataPipeline/1.0"},
+            timeout=OFFConfig.HTTP_TIMEOUT,
+            headers={"User-Agent": OFFConfig.USER_AGENT},
         )
 
     # ── 产品搜索 ──────────────────────────────────────────────
 
     def search_by_keyword(self, keyword: str, page: int = 1, page_size: int = 20,
-                          fields: str = None, brand: str = None, category_tag: str = None) -> Dict[str, Any]:
+                           fields: str = None, brand: str = None, category_tag: str = None,
+                           base_url: Optional[str] = None) -> Dict[str, Any]:
         """
         关键词搜索产品
 
         官方参数: https://world.openfoodfacts.org/cgi/search.pl
-        - search_terms_s: 搜索关键词 (必填)
+        - search_terms: 搜索关键词 (必填；官方参数名，勿用 search_terms_s)
         - search_simple: 1 = 简化返回
         - action: process
         - json: 1 = JSON 响应
@@ -49,9 +50,11 @@ class OFFClient:
         - fields: 指定返回字段，逗号分隔
         - brands: 按品牌过滤 (新增)
         - categories_tags_contains: 按分类标签过滤 (新增)
+        - base_url: 镜像地址覆盖（用于多镜像故障转移）
         """
+        base_url = (base_url or self.base_url).rstrip("/")
         params = {
-            "search_terms_s": keyword,
+            "search_terms": keyword,
             "search_simple": "1",
             "action": "process",
             "json": "1",
@@ -65,45 +68,62 @@ class OFFClient:
         if fields:
             params["fields"] = fields
 
-        url = f"https://world.openfoodfacts.org/cgi/search.pl?{urlencode(params)}"
+        url = f"{base_url}/cgi/search.pl?{urlencode(params)}"
 
         try:
             response = self._http_client.get(url)
+            # 503/5xx → HTTPStatusError，由服务层进行镜像故障转移
             response.raise_for_status()
             data = response.json()
-            logger.info(f"[OFF] search '{keyword}': count={data.get('count', 0)}, products={len(data.get('products', []))}")
+            logger.info(
+                f"[OFF] search '{keyword}' on {base_url}: "
+                f"count={data.get('count', 0)}, products={len(data.get('products', []))}"
+            )
             return data
+        except httpx.HTTPStatusError as e:
+            logger.error(f"[OFF] search '{keyword}' HTTP {e.response.status_code} on {base_url}: {e}")
+            raise
         except httpx.HTTPError as e:
-            logger.error(f"[OFF] search failed: {e}")
-            return {"count": 0, "page": page, "page_count": 0, "page_size": page_size, "products": []}
+            logger.error(f"[OFF] search '{keyword}' failed on {base_url}: {e}")
+            raise
 
-    def search_by_barcode(self, barcode: str) -> Optional[Dict[str, Any]]:
+    def search_by_barcode(self, barcode: str, base_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
         按条码查询单个产品
 
         官方端点: https://world.openfoodfacts.org/api/v2/{product_code}.json
         返回完整响应（包含 product 和 status 字段），由调用方决定如何解析。
+        base_url: 镜像地址覆盖（用于多镜像故障转移）。
         """
-        url = f"https://world.openfoodfacts.org/api/v2/{barcode}.json"
+        base_url = (base_url or self.base_url).rstrip("/")
+        # 官方端点：/api/v2/product/{code}.json（注意必须有 product 段，否则返回 no code）
+        url = f"{base_url}/api/v2/product/{barcode}.json"
 
         try:
             response = self._http_client.get(url)
             if response.status_code == 404:
                 return None
+            # 503/5xx → HTTPStatusError，由服务层进行镜像故障转移
             response.raise_for_status()
             data = response.json()
             # 返回完整响应，让调用方决定如何处理
             return data
+        except httpx.HTTPStatusError as e:
+            logger.warning(f"[OFF] barcode query HTTP {e.response.status_code} on {base_url} for {barcode}: {e}")
+            raise
         except httpx.HTTPError as e:
-            logger.warning(f"[OFF] barcode query failed for {barcode}: {e}")
-            return None
+            logger.warning(f"[OFF] barcode query failed on {base_url} for {barcode}: {e}")
+            raise
 
-    def search_by_category(self, category_tag: str, page: int = 1, page_size: int = 20) -> Dict[str, Any]:
+    def search_by_category(self, category_tag: str, page: int = 1, page_size: int = 20,
+                            base_url: Optional[str] = None) -> Dict[str, Any]:
         """
         按分类标签搜索产品
 
         官方参数: categories_tags_contains
+        base_url: 镜像地址覆盖（用于多镜像故障转移）。
         """
+        base_url = (base_url or self.base_url).rstrip("/")
         params = {
             "categories_tags_contains": category_tag,
             "search_simple": "1",
@@ -112,17 +132,20 @@ class OFFClient:
             "page": page,
             "page_size": min(page_size, 100),
         }
-        url = f"https://world.openfoodfacts.org/cgi/search.pl?{urlencode(params)}"
+        url = f"{base_url}/cgi/search.pl?{urlencode(params)}"
 
         try:
             response = self._http_client.get(url)
             response.raise_for_status()
             data = response.json()
-            logger.info(f"[OFF] category '{category_tag}': count={data.get('count', 0)}")
+            logger.info(f"[OFF] category '{category_tag}' on {base_url}: count={data.get('count', 0)}")
             return data
+        except httpx.HTTPStatusError as e:
+            logger.error(f"[OFF] category search HTTP {e.response.status_code} on {base_url}: {e}")
+            raise
         except httpx.HTTPError as e:
-            logger.error(f"[OFF] category search failed: {e}")
-            return {"count": 0, "page": page, "page_count": 0, "page_size": page_size, "products": []}
+            logger.error(f"[OFF] category search failed on {base_url}: {e}")
+            raise
 
     def download_jsonl_diffs(self, from_date: date, to_date: date = None) -> Iterator[Dict[str, Any]]:
         """下载 JSONL 日增量数据"""

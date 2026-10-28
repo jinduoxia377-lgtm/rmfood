@@ -5,7 +5,6 @@ MultiObjectiveScorer - 多目标评分网络
 支持机器学习模型校准和历史数据反馈优化
 """
 import logging
-import random
 from typing import Any
 
 import numpy as np

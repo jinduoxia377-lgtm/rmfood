@@ -9,16 +9,15 @@
 - 权限与特性开关
 """
 
+import asyncio
+import importlib
 import json
 import logging
-import importlib
-import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Type
-
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class TranslationEntry:
 class I18nService:
     """
     国际化服务
-    
+
     Features:
     - 多语言翻译管理
     - 上下文感知翻译
@@ -76,14 +75,14 @@ class I18nService:
                 "common.success": "操作成功",
                 "common.error": "操作失败",
                 "common.warning": "警告",
-                
+
                 "nav.dashboard": "仪表盘",
                 "nav.formulas": "配方管理",
                 "nav.experiments": "实验记录",
                 "nav.ingredients": "原料库",
                 "nav.analytics": "数据分析",
                 "nav.settings": "设置",
-                
+
                 "formula.title": "配方名称",
                 "formula.status": "状态",
                 "formula.category": "分类",
@@ -93,39 +92,39 @@ class I18nService:
                 "formula.published": "已发布",
                 "formula.draft": "草稿",
                 "formula.archived": "已归档",
-                
+
                 "auth.login": "登录",
                 "auth.logout": "退出登录",
                 "auth.register": "注册",
                 "auth.forgot_password": "忘记密码？",
                 "auth.welcome_back": "欢迎回来",
-                
+
                 "notification.title": "通知中心",
                 "notification.mark_read": "标记为已读",
                 "notification.mark_all_read": "全部标为已读",
                 "notification.no_notifications": "暂无通知",
-                
+
                 "collaboration.mention": "{{user}} 提到了你",
                 "collaboration.comment_new": "新评论",
                 "collaboration.shared_with": "分享给",
-                
+
                 "analytics.kpi.formulas_total": "配方总数",
                 "analytics.kpi.active_users": "活跃用户",
                 "analytics.kpi.ai_generations": "AI生成次数",
                 "analytics.trend.monthly": "月度趋势",
-                
+
                 "org.name": "组织名称",
                 "org.members": "成员",
                 "org.teams": "团队",
                 "org.invite_member": "邀请成员",
                 "org.settings": "组织设置",
-                
+
                 "quota.storage": "存储空间",
                 "quota.members": "成员数量",
                 "quota.api_calls": "API调用次数",
                 "quota.warning": "配额使用警告",
             },
-            
+
             Locale.EN_US: {
                 "common.save": "Save",
                 "common.cancel": "Cancel",
@@ -138,14 +137,14 @@ class I18nService:
                 "common.success": "Success",
                 "common.error": "Error",
                 "common.warning": "Warning",
-                
+
                 "nav.dashboard": "Dashboard",
                 "nav.formulas": "Formulas",
                 "nav.experiments": "Experiments",
                 "nav.ingredients": "Ingredients",
                 "nav.analytics": "Analytics",
                 "nav.settings": "Settings",
-                
+
                 "formula.title": "Formula Name",
                 "formula.status": "Status",
                 "formula.category": "Category",
@@ -155,33 +154,33 @@ class I18nService:
                 "formula.published": "Published",
                 "formula.draft": "Draft",
                 "formula.archived": "Archived",
-                
+
                 "auth.login": "Login",
                 "auth.logout": "Logout",
                 "auth.register": "Register",
                 "auth.forgot_password": "Forgot password?",
                 "auth.welcome_back": "Welcome back",
-                
+
                 "notification.title": "Notifications",
                 "notification.mark_read": "Mark as read",
                 "notification.mark_all_read": "Mark all as read",
                 "notification.no_notifications": "No notifications",
-                
+
                 "collaboration.mention": "{{user}} mentioned you",
                 "collaboration.comment_new": "New comment",
                 "collaboration.shared_with": "Shared with",
-                
+
                 "analytics.kpi.formulas_total": "Total Formulas",
                 "analytics.kpi.active_users": "Active Users",
                 "analytics.kpi.ai_generations": "AI Generations",
                 "analytics.trend.monthly": "Monthly Trend",
-                
+
                 "org.name": "Organization Name",
                 "org.members": "Members",
                 "org.teams": "Teams",
                 "org.invite_member": "Invite Member",
                 "org.settings": "Organization Settings",
-                
+
                 "quota.storage": "Storage",
                 "quota.members": "Members",
                 "quota.api_calls": "API Calls",
@@ -198,22 +197,22 @@ class I18nService:
     def t(self, key: str, locale: Locale = Locale.ZH_CN, **kwargs) -> str:
         """
         翻译文本
-        
+
         Args:
             key: 翻译键
             locale: 目标语言
             **kwargs: 插值变量
-            
+
         Returns:
             翻译后的文本
         """
         entry = self._find_translation(key, locale)
-        
+
         if not entry:
             return key
 
         text = entry.value
-        
+
         if kwargs:
             for var_key, var_value in kwargs.items():
                 text = text.replace(f"{{{{{var_key}}}}}", str(var_value))
@@ -226,7 +225,7 @@ class I18nService:
             locale_translations = self._translations.get(try_locale, {})
             if key in locale_translations:
                 return locale_translations[key]
-        
+
         return None
 
     def get_available_locales(self) -> List[Dict[str, str]]:
@@ -237,7 +236,7 @@ class I18nService:
             Locale.JA_JP: "日本語",
             Locale.KO_KR: "한국어",
         }
-        
+
         return [
             {"code": locale.value, "name": display_names.get(locale, locale.value)}
             for locale in Locale
@@ -263,12 +262,12 @@ class PluginType(str, Enum):
 class PluginMetadata:
     """插件元数据"""
     id: str
-    name: string
-    version: string
-    description: string
-    author: string
+    name: str
+    version: str
+    description: str
+    author: str
     type: PluginType
-    entry_point: string
+    entry_point: str
     permissions: List[str] = field(default_factory=list)
     dependencies: List[str] = field(default_factory=list)
     config_schema: Dict[str, Any] = field(default_factory=dict)
@@ -287,7 +286,7 @@ class PluginInstance:
 class PluginManager:
     """
     插件管理器
-    
+
     Features:
     - 动态加载/卸载插件
     - 插件生命周期管理
@@ -420,7 +419,7 @@ class PluginManager:
 
         try:
             entry_file = self.plugins_dir / plugin_id / instance.metadata.entry_point
-            
+
             if entry_file.exists():
                 spec = importlib.util.spec_from_file_location(
                     f"plugin_{plugin_id}",
@@ -498,7 +497,7 @@ class KeyboardShortcut:
 class ShortcutManager:
     """
     快捷键管理器
-    
+
     Features:
     - 全局/局部快捷键注册
     - 冲突检测
@@ -514,12 +513,12 @@ class ShortcutManager:
     def register(self, shortcut: KeyboardShortcut):
         """注册快捷键"""
         existing = self._get_by_keys(shortcut.keys, shortcut.scope)
-        
+
         if existing and existing.id != shortcut.id:
             logger.warning(f"⚠️ 快捷键冲突: {shortcut.keys} 已被 '{existing.description}' 使用")
 
         self._shortcuts[shortcut.id] = shortcut
-        
+
         if shortcut.scope not in self._scope_shortcuts:
             self._scope_shortcuts[shortcut.scope] = []
         self._scope_shortcuts[shortcut.scope].append(shortcut.id)

@@ -3,9 +3,9 @@
 整合结构转换 + 活性预测 + 安全性评估
 """
 
-from .converter import PeptideConverter, SMILESResult, SequenceResult
-from .food_peptide_service import FoodPeptideAnalyzer, FoodPeptideAnalysis
 from .activity_predictor import ActivityPredictor, get_activity_predictor
+from .converter import PeptideConverter, SequenceResult, SMILESResult
+from .food_peptide_service import FoodPeptideAnalysis, FoodPeptideAnalyzer
 from .safety_predictor import SafetyPredictor, get_safety_predictor
 
 __all__ = [

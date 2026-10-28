@@ -10,11 +10,12 @@
 - 是否涉及安全/法规
 """
 from __future__ import annotations
+
 import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..knowledge_base import HerbKnowledge
+    pass
 
 # ── 配方需求关键词 ──
 FORMULA_KEYWORDS = [

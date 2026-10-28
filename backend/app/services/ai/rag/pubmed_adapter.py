@@ -10,16 +10,15 @@ API 特性：
 - 缓存机制避免重复查询
 """
 
-import logging
-import json
 import hashlib
+import json
+import logging
 import os
 import time
 from typing import Optional
-from datetime import datetime
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
+from urllib.request import Request, urlopen
 
 logger = logging.getLogger(__name__)
 

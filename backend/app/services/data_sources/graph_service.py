@@ -9,10 +9,9 @@ v2.0 — 数据扩充：
   - 新增蛋白质节点(PEPTIDE_TARGET_PATHS)
 """
 import logging
-from typing import Any
 from collections import defaultdict
+from typing import Any
 
-from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -918,7 +917,7 @@ class KnowledgeGraphService:
         self, node_label: str, depth: int = 1
     ) -> dict[str, Any]:
         """获取节点的关联关系网络
-        
+
         特殊标记:
           - __full__: 返回全量知识图谱（所有药材及其直接关系）
           - __sample__: 返回采样概览图（20个核心节点）
@@ -927,7 +926,7 @@ class KnowledgeGraphService:
         # ── 全量图谱模式 ──
         if node_label == '__full__':
             return await self.get_full_graph(depth)
-        
+
         # ── 采样概览模式 ──
         if node_label == '__sample__':
             return await self.get_sample_graph()
@@ -1005,13 +1004,13 @@ class KnowledgeGraphService:
 
     async def get_full_graph(self, depth: int = 1) -> dict[str, Any]:
         """返回全量知识图谱（所有药材节点 + 直接关系 + 肽节点）
-        
+
         策略：为避免前端渲染过载，
           - depth=1 时：所有药材节点(herb) + 每个药材的 top-3 化合物 + 配伍关系
           - depth>=2 时：额外展开化合物→靶点和药材→疾病
         """
-        from .tcmsp_client import TCMSP_HERB_DATABASE
         from .dfbp_client import DFBP_PEPTIDE_DATABASE
+        from .tcmsp_client import TCMSP_HERB_DATABASE
 
         # ── 按 depth 的 LRU 缓存 ────────────────────────────────
         # 实测：depth=1 首次构建 2.37s / 128KB 响应。构建过程纯 CPU 且输入
@@ -1043,7 +1042,7 @@ class KnowledgeGraphService:
                     "is_food_homology": herb.get("is_food_homology"),
                 },
             }
-            
+
             # 化合物关系（按深度分层展开）
             #
             # 深度语义（旧实现 depth>=2 一刀切，导致 depth=3 与 depth=2 字节级相同，
@@ -1196,7 +1195,7 @@ class KnowledgeGraphService:
 
         total_nodes = len(nodes)
         total_edges = len(edges)
-        
+
         # 类型统计
         type_counts: dict[str, int] = defaultdict(int)
         for n in nodes.values():
@@ -1228,34 +1227,34 @@ class KnowledgeGraphService:
         sample_herbs = ["人参", "黄芪", "当归", "丹参", "甘草",
                        "黄连", "川芎", "三七", "枸杞子", "山楂",
                        "茯苓", "白术", "阿胶", "红花", "熟地黄"]
-        
+
         nodes: dict[str, dict] = {}
         edges: list[dict] = []
-        
+
         for herb in TCMSP_HERB_DATABASE:
             name = herb["name_cn"]
             if name not in sample_herbs:
                 continue
             nodes[name] = {"type": "herb", "label": name, "properties": {"category": herb.get("category")}}
-            
+
             for comp in herb.get("compounds", [])[:2]:
                 cid = comp["name"]
                 if cid not in nodes:
                     nodes[cid] = {"type": "compound", "label": cid, "properties": {"ob": comp.get("ob")}}
                 edges.append({"source": name, "target": cid, "type": "contains"})
-            
+
             for t in herb.get("targets", [])[:3]:
                 if t not in nodes:
                     nodes[t] = {"type": "target", "label": t}
                 edges.append({"source": name, "target": t, "type": "targets"})
-            
+
             for d in herb.get("diseases", [])[:2]:
                 if d not in nodes:
                     nodes[d] = {"type": "disease", "label": d}
                 edges.append({"source": name, "target": d, "type": "treats"})
 
         # 核心配伍关系
-        core_interactions = [i for i in HERB_INTERACTIONS 
+        core_interactions = [i for i in HERB_INTERACTIONS
                             if i["a"] in sample_herbs and i["b"] in sample_herbs]
         for inter in core_interactions:
             edges.append({
@@ -1275,7 +1274,7 @@ class KnowledgeGraphService:
     async def _infer_node_type(self, node_label: str) -> str | None:
         """推断节点的类型"""
         from .tcmsp_client import TCMSP_HERB_DATABASE
-        
+
         # 检查是否是药材
         for herb in TCMSP_HERB_DATABASE:
             if herb["name_cn"] == node_label:
@@ -1286,7 +1285,7 @@ class KnowledgeGraphService:
                 return "target"
             if node_label in herb.get("diseases", []):
                 return "disease"
-        
+
         # 检查是否是化合物/靶点/疾病（来自路径数据）
         for path in COMPOUND_TARGET_PATHS:
             if path["compound"] == node_label:
@@ -1295,7 +1294,7 @@ class KnowledgeGraphService:
                 return "target"
             if path["disease"] == node_label:
                 return "disease"
-        
+
         # 检查活性肽
         from .dfbp_client import DFBP_PEPTIDE_DATABASE
         for pep in DFBP_PEPTIDE_DATABASE:
@@ -1445,15 +1444,15 @@ class KnowledgeGraphService:
 
     async def get_graph_stats(self) -> dict[str, Any]:
         """获取知识图谱整体统计（7种节点类型全覆盖）"""
-        from .tcmsp_client import TCMSP_HERB_DATABASE
         from .dfbp_client import DFBP_PEPTIDE_DATABASE
+        from .tcmsp_client import TCMSP_HERB_DATABASE
 
         all_targets: set[str] = set()
         all_diseases: set[str] = set()
         all_compounds: set[str] = set()
         herb_categories: set[str] = set()
         food_homology_count = 0
-        
+
         for herb in TCMSP_HERB_DATABASE:
             all_targets.update(herb.get("targets", []))
             all_diseases.update(herb.get("diseases", []))

@@ -168,28 +168,38 @@ class FrameworkEngine:
     async def _select_candidate_herbs(
         self, effects: List[str], limit: int
     ) -> List[Dict]:
-        """从 HerbKnowledgeService 检索候选药材"""
+        """从 HerbKnowledgeService 检索候选药材（数据库真实数据）"""
         try:
-            from ..ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+            from ..ai.algorithms.herb_knowledge_service import (
+                get_global_herb_knowledge,
+                normalize_effect_aliases,
+            )
             hk = get_global_herb_knowledge()
             if hk is None:
                 return []
 
-            all_herbs = await hk.get_all_herbs()
+            # P1 修复：hk.get_herbs() 是 HerbKnowledgeService 实际存在的同步方法，
+            # 返回 {herb_id: HerbParameter}；原 get_all_herbs() 不存在导致 AttributeError
+            # 被 except 捕获后静默回退内置库。这里直接读取数据库药材。
+            all_herbs = hk.get_herbs()
             if not all_herbs:
                 return []
 
+            # 功效别名归一化：把"补气养血/辅助降血脂"等前端标签展开为数据库索引键
+            # （补气/补血/养血/降脂等），使 seven-step 基于真实 TCMHerb 数据返回候选。
+            norm_effects = normalize_effect_aliases(list(effects))
+
             # 按功效评分排序
             scored = []
-            for herb in all_herbs:
+            for herb in all_herbs.values():
                 total_score = sum(
-                    herb.efficacy_scores.get(e, 0) for e in effects
+                    herb.efficacy_scores.get(e, 0) for e in norm_effects
                 )
                 if total_score > 0:
                     scored.append({
                         "id": herb.herb_id,
                         "name_cn": herb.name_cn,
-                        "efficacy_score": total_score / len(effects),
+                        "efficacy_score": total_score / max(1, len(norm_effects)),
                         "safety_index": herb.safety_index,
                         "cost_per_gram": herb.cost_per_gram,
                         "dosage_min": herb.dosage_min,
@@ -211,7 +221,10 @@ class FrameworkEngine:
     ) -> List[Dict]:
         """降级：使用内置知识库"""
         try:
-            from ..ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS, _EFFICACY_TO_HERBS
+            from ..ai.algorithms.bayesian_formula_optimizer import (
+                _BUILTIN_HERBS,
+                _EFFICACY_TO_HERBS,
+            )
             candidate_set = {}
             for effect in effects:
                 if effect in _EFFICACY_TO_HERBS:
@@ -263,7 +276,7 @@ class FrameworkEngine:
             return {}
 
         try:
-            from .lp_solver import MILPSolver, HerbNutritionData
+            from .lp_solver import HerbNutritionData, MILPSolver
 
             herb_data = {}
             for herb in herbs:

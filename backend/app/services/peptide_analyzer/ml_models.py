@@ -6,8 +6,8 @@
 import logging
 import math
 import random
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class PredictionResult:
     confidence: float
     method: str
     model_name: Optional[str] = None
-    
+
     def to_dict(self) -> dict:
         return {
             "sequence": self.sequence,
@@ -39,10 +39,10 @@ class PredictionResult:
 
 class AminoAcidEncoder:
     """氨基酸编码转换器"""
-    
+
     # 20种标准氨基酸单字母代码
     STANDARD_AAS = 'ACDEFGHIKLMNPQRSTVWY'
-    
+
     # 氨基酸向量表示（简化版理化性质）
     AA_VECTORS = {
         'A': [1.8, 89.09, 0, 0, 0, 0, 0, 0],      # 疏水性, MW, 电荷, 极性, 芳香族, 支链, 含硫, Pro
@@ -66,31 +66,31 @@ class AminoAcidEncoder:
         'W': [-0.9, 204.23, 0, 0, 1, 0, 0, 0],
         'Y': [-1.3, 181.19, 0, 1, 1, 0, 0, 0],
     }
-    
+
     @classmethod
     def encode_sequence(cls, sequence: str, max_len: int = 50) -> List[List[float]]:
         """将序列编码为向量矩阵"""
         seq = sequence.upper()
         encoded = []
-        
+
         for aa in seq[:max_len]:
             if aa in cls.AA_VECTORS:
                 encoded.append(cls.AA_VECTORS[aa])
             else:
                 encoded.append([0.0] * 8)  # 未知氨基酸用零向量
-        
+
         # 填充到固定长度
         while len(encoded) < max_len:
             encoded.append([0.0] * 8)
-        
+
         return encoded[:max_len]
-    
+
     @classmethod
     def extract_features(cls, sequence: str) -> List[float]:
         """提取综合特征向量"""
         seq = sequence.upper()
         seq_len = len(seq)
-        
+
         # 基础统计特征
         hydrophobic = sum(1 for aa in seq if aa in ['F', 'W', 'Y', 'L', 'I', 'V', 'M'])
         positive = sum(1 for aa in seq if aa in ['K', 'R', 'H'])
@@ -98,14 +98,14 @@ class AminoAcidEncoder:
         aromatic = sum(1 for aa in seq if aa in ['F', 'W', 'Y'])
         pro = seq.count('P')
         cysteine = seq.count('C')
-        
+
         # 末端特征
         n_term = seq[0] if seq else 'G'
         c_term = seq[-1] if seq else 'G'
-        
+
         # 分子量估算
         mw = sum(cls.AA_VECTORS.get(aa, [0, 110, 0, 0, 0, 0, 0, 0])[1] for aa in seq)
-        
+
         return [
             seq_len,                                          # 0: 长度
             hydrophobic / seq_len if seq_len > 0 else 0,     # 1: 疏水比例
@@ -120,20 +120,20 @@ class AminoAcidEncoder:
             cls._has_pro_motif(seq),                          # 10: Pro motif
             cls._has_aromatic_c_term(seq),                    # 11: C端芳香族
         ]
-    
+
     @classmethod
     def _is_hydrophobic_c_term(cls, aa: str) -> int:
         return 1 if aa in ['F', 'W', 'Y', 'L', 'I', 'M', 'P'] else 0
-    
+
     @classmethod
     def _is_positive_n_term(cls, aa: str) -> int:
         return 1 if aa in ['K', 'R', 'H'] else 0
-    
+
     @classmethod
     def _has_pro_motif(cls, seq: str) -> int:
         motifs = ['PP', 'LP', 'YP', 'KP', 'RP', 'AP', 'GP']
         return 1 if any(m in seq for m in motifs) else 0
-    
+
     @classmethod
     def _has_aromatic_c_term(cls, seq: str) -> int:
         return 1 if seq[-1] in ['F', 'W', 'Y'] else 0
@@ -239,7 +239,7 @@ class AminoAcidEncoder:
 
 class SimpleNeuralNetwork:
     """简化版神经网络，用于肽活性预测"""
-    
+
     def __init__(self, input_size: int, hidden_sizes: List[int], output_size: int = 1):
         self.input_size = input_size
         self.hidden_sizes = hidden_sizes
@@ -247,53 +247,53 @@ class SimpleNeuralNetwork:
         self.weights: List[List[List[float]]] = []
         self.biases: List[List[float]] = []
         self._initialize_weights()
-    
+
     def _initialize_weights(self):
         """初始化权重（Xavier初始化）"""
         layer_sizes = [self.input_size] + self.hidden_sizes + [self.output_size]
-        
+
         for i in range(len(layer_sizes) - 1):
             fan_in = layer_sizes[i]
             fan_out = layer_sizes[i + 1]
             limit = math.sqrt(6.0 / (fan_in + fan_out))
-            
-            w = [[random.uniform(-limit, limit) for _ in range(fan_out)] 
+
+            w = [[random.uniform(-limit, limit) for _ in range(fan_out)]
                  for _ in range(fan_in)]
             b = [0.0] * fan_out
-            
+
             self.weights.append(w)
             self.biases.append(b)
-    
+
     def _relu(self, x: float) -> float:
         return max(0, x)
-    
+
     def _sigmoid(self, x: float) -> float:
         if x > 500:
             return 1.0
         if x < -500:
             return 0.0
         return 1.0 / (1.0 + math.exp(-x))
-    
+
     def forward(self, input_data: List[float]) -> float:
         """前向传播"""
         current = input_data
-        
+
         for i, (w, b) in enumerate(zip(self.weights, self.biases)):
             new_current = []
             for j in range(len(b)):
                 sum_val = b[j]
                 for k in range(len(current)):
                     sum_val += current[k] * w[k][j]
-                
+
                 if i < len(self.weights) - 1:
                     new_current.append(self._relu(sum_val))
                 else:
                     new_current.append(self._sigmoid(sum_val))
-            
+
             current = new_current
-        
+
         return current[0] if current else 0.5
-    
+
     def train(self, X: List[List[float]], y: List[int], epochs: int = 100, lr: float = 0.01, class_weight: Optional[float] = None):
         """
         训练模型（简化版批量梯度下降）。
@@ -322,19 +322,19 @@ class SimpleNeuralNetwork:
             if epoch % 10 == 0:
                 avg_loss = total_loss / max(len(X), 1)
                 logger.debug(f"Epoch {epoch}, Loss: {avg_loss:.4f}")
-    
+
     def _backward_update(self, x: List[float], prediction: float, error: float, lr: float):
         """简化的反向传播更新"""
         # 更新输出层权重
         output_layer = len(self.weights) - 1
         w = self.weights[output_layer]
         b = self.biases[output_layer]
-        
+
         for j in range(len(b)):
             # sigmoid导数
             sigmoid_deriv = prediction * (1 - prediction)
             delta = error * sigmoid_deriv * lr
-            
+
             b[j] += delta
             for k in range(min(len(x), len(w))):
                 w[k][j] += delta * x[k]
@@ -347,10 +347,10 @@ class SimpleNeuralNetwork:
 class PeptideRankerModel:
     """
     PeptideRanker ACE抑制活性预测模型
-    
+
     基于文献规则的增强版预测器
     """
-    
+
     def __init__(self):
         self.model = SimpleNeuralNetwork(
             input_size=12,
@@ -359,40 +359,40 @@ class PeptideRankerModel:
         )
         self._trained = False
         logger.info("PeptideRanker 模型初始化")
-    
+
     def is_available(self) -> bool:
         return True
-    
+
     def train(self):
         """使用示例数据训练模型"""
         # 训练数据（来自DBAASP和ICE数据库的简化版）
         X_train = [
-            AminoAcidEncoder.extract_features(seq) 
+            AminoAcidEncoder.extract_features(seq)
             for seq in self._get_training_data()
         ]
         y_train = [1] * 20 + [0] * 20  # 前20条为活性阳性
-        
+
         self.model.train(X_train, y_train, epochs=50, lr=0.01)
         self._trained = True
         logger.info("PeptideRanker 模型训练完成")
-    
+
     def predict(self, sequences: List[str]) -> List[Dict[str, Any]]:
         """预测ACE抑制活性"""
         results = []
         for seq in sequences:
             features = AminoAcidEncoder.extract_features(seq)
-            
+
             if self._trained:
                 ml_score = self.model.forward(features)
             else:
                 ml_score = 0.5  # 未训练时使用规则预测
-            
+
             # 规则预测（作为基准）
             rule_score = self._rule_predict(seq)
-            
+
             # 融合预测（加权平均）
             final_score = ml_score * 0.6 + rule_score * 0.4
-            
+
             results.append({
                 "sequence": seq,
                 "score": round(final_score, 4),
@@ -407,26 +407,26 @@ class PeptideRankerModel:
                     'hydrophobic_c_term', 'positive_n_term', 'has_pro_motif', 'aromatic_c_term'
                 ], features)}
             })
-        
+
         return results
-    
+
     def _rule_predict(self, sequence: str) -> float:
         """基于规则的预测"""
         seq = sequence.upper()
         seq_len = len(seq)
         score = 0.0
-        
+
         # C端疏水性
         c_term = seq[-1] if seq else ''
         if c_term in ['F', 'W', 'Y']:
             score += 0.30
         elif c_term in ['L', 'I', 'M', 'P']:
             score += 0.25
-        
+
         # Pro含量
         pro_ratio = seq.count('P') / seq_len if seq_len > 0 else 0
         score += pro_ratio * 0.5
-        
+
         # 长度因子
         if 3 <= seq_len <= 8:
             score += 0.20
@@ -434,15 +434,15 @@ class PeptideRankerModel:
             score += 0.10
         else:
             score += 0.05
-        
+
         # Motif匹配
         motifs = {'PP': 0.10, 'LP': 0.08, 'YP': 0.08, 'KP': 0.06, 'RP': 0.06}
         for motif, weight in motifs.items():
             if motif in seq:
                 score += weight
-        
+
         return min(score, 1.0)
-    
+
     def _get_training_data(self) -> List[str]:
         """获取训练数据"""
         # ACE抑制肽（阳性）
@@ -469,10 +469,10 @@ class PeptideRankerModel:
 class BPFunModel:
     """
     BPFun 抗菌肽预测模型
-    
+
     基于正电荷、两亲性和长度等特征
     """
-    
+
     def __init__(self):
         self.model = SimpleNeuralNetwork(
             input_size=12,
@@ -481,10 +481,10 @@ class BPFunModel:
         )
         self._trained = False
         logger.info("BPFun 模型初始化")
-    
+
     def is_available(self) -> bool:
         return True
-    
+
     def train(self):
         """训练模型"""
         X_train = [
@@ -492,25 +492,25 @@ class BPFunModel:
             for seq in self._get_training_data()
         ]
         y_train = [1] * 20 + [0] * 20
-        
+
         self.model.train(X_train, y_train, epochs=50, lr=0.01)
         self._trained = True
         logger.info("BPFun 模型训练完成")
-    
+
     def predict(self, sequences: List[str]) -> List[Dict[str, Any]]:
         """预测抗菌活性"""
         results = []
         for seq in sequences:
             features = AminoAcidEncoder.extract_features(seq)
-            
+
             if self._trained:
                 ml_score = self.model.forward(features)
             else:
                 ml_score = 0.5
-            
+
             rule_score = self._rule_predict(seq)
             final_score = ml_score * 0.6 + rule_score * 0.4
-            
+
             results.append({
                 "sequence": seq,
                 "score": round(final_score, 4),
@@ -520,25 +520,25 @@ class BPFunModel:
                 "method": "hybrid",
                 "model_name": "BPFun",
             })
-        
+
         return results
-    
+
     def _rule_predict(self, sequence: str) -> float:
         """基于规则的预测"""
         seq = sequence.upper()
         seq_len = len(seq)
         score = 0.0
-        
+
         # 正电荷含量
         positive = sum(1 for aa in seq if aa in ['K', 'R', 'H'])
         positive_ratio = positive / seq_len if seq_len > 0 else 0
         score += positive_ratio * 0.6
-        
+
         # 疏水含量
         hydrophobic = sum(1 for aa in seq if aa in ['F', 'W', 'Y', 'L', 'I', 'V', 'M'])
         hydro_ratio = hydrophobic / seq_len if seq_len > 0 else 0
         score += hydro_ratio * 0.3
-        
+
         # 长度因子
         if 10 <= seq_len <= 50:
             score += 0.25
@@ -546,20 +546,20 @@ class BPFunModel:
             score += 0.10
         else:
             score += 0.05
-        
+
         # 两亲性
         if seq_len >= 6:
             n_term_hydro = sum(1 for aa in seq[:seq_len//2] if aa in ['F', 'W', 'Y', 'L', 'I', 'V', 'M'])
             c_term_hydro = sum(1 for aa in seq[seq_len//2:] if aa in ['F', 'W', 'Y', 'L', 'I', 'V', 'M'])
             if abs(n_term_hydro - c_term_hydro) < seq_len * 0.15:
                 score += 0.15
-        
+
         # 二硫键
         if seq.count('C') >= 2:
             score += 0.10
-        
+
         return min(score, 1.0)
-    
+
     def _get_training_data(self) -> List[str]:
         """获取训练数据"""
         active = [
@@ -585,14 +585,14 @@ class BPFunModel:
 
 class AntioxidantModel:
     """抗氧化肽预测模型"""
-    
+
     def __init__(self):
         self._trained = False
         logger.info("抗氧化预测模型初始化")
-    
+
     def is_available(self) -> bool:
         return True
-    
+
     def predict(self, sequences: List[str]) -> List[Dict[str, Any]]:
         """预测抗氧化活性"""
         results = []
@@ -606,18 +606,18 @@ class AntioxidantModel:
                 "model_name": "Antioxidant",
             })
         return results
-    
+
     def _predict(self, sequence: str) -> float:
         """预测抗氧化活性"""
         seq = sequence.upper()
         seq_len = len(seq)
         score = 0.0
-        
+
         # 抗氧化氨基酸含量
         antiox_aa = sum(1 for aa in seq if aa in ['H', 'Y', 'W', 'C', 'M'])
         antiox_ratio = antiox_aa / seq_len if seq_len > 0 else 0
         score += antiox_ratio * 0.7
-        
+
         # 长度因子
         if seq_len <= 10:
             score += 0.25
@@ -625,13 +625,13 @@ class AntioxidantModel:
             score += 0.15
         else:
             score += 0.05
-        
+
         # 抗氧化motif
         motifs = ['HY', 'WH', 'CY', 'YW', 'HH']
         for motif in motifs:
             if motif in seq:
                 score += 0.05
-        
+
         return min(score, 1.0)
 
 
@@ -641,7 +641,7 @@ class AntioxidantModel:
 
 class SafetyPredictorModel:
     """安全性预测模型"""
-    
+
     def predict_all(self, sequences: List[str]) -> Dict[str, Any]:
         """预测所有安全性指标"""
         results = {
@@ -649,7 +649,7 @@ class SafetyPredictorModel:
             "toxicity_scores": [],
             "digestibility_scores": []
         }
-        
+
         for seq in sequences:
             results["allergen_scores"].append({
                 "sequence": seq,
@@ -668,14 +668,14 @@ class SafetyPredictorModel:
                 "level": self._predict_digestibility(seq),
                 "method": "rule_based"
             })
-        
+
         return results
-    
+
     def _predict_allergen(self, sequence: str) -> float:
         """过敏原预测"""
         seq = sequence.upper()
         score = 0.0
-        
+
         allergen_patterns = {
             'QQ': 0.25, 'EE': 0.20, 'KK': 0.20,
             'GPP': 0.15, 'PPP': 0.15, 'CXC': 0.20,
@@ -683,37 +683,37 @@ class SafetyPredictorModel:
         for pattern, weight in allergen_patterns.items():
             if pattern in seq:
                 score += weight
-        
+
         score += (seq.count('P') / len(seq)) * 0.3 if seq else 0
         return min(score, 1.0)
-    
+
     def _predict_toxicity(self, sequence: str) -> float:
         """毒性预测"""
         seq = sequence.upper()
         seq_len = len(seq)
         score = 0.0
-        
+
         toxic_patterns = ['GPPP', 'AAAG', 'PPPP']
         for pattern in toxic_patterns:
             if pattern in seq:
                 score += 0.3
-        
+
         hydro_count = sum(1 for aa in seq if aa in ['F', 'W', 'Y', 'L', 'I', 'V'])
         if hydro_count / seq_len > 0.7 and seq_len > 20:
             score += 0.5
-        
+
         return min(score, 1.0)
-    
+
     def _predict_digestibility(self, sequence: str) -> str:
         """消化性预测"""
         seq = sequence.upper()
         seq_len = len(seq)
-        
+
         pro_ratio = seq.count('P') / seq_len if seq_len > 0 else 0
         hydro_ratio = sum(1 for aa in seq if aa in ['F', 'W', 'Y', 'L', 'I', 'V', 'M']) / seq_len if seq_len > 0 else 0
-        
+
         digest_score = pro_ratio * 0.5 + hydro_ratio * 0.3
-        
+
         if digest_score > 0.5:
             return "low"
         elif digest_score > 0.3:
@@ -728,35 +728,35 @@ class SafetyPredictorModel:
 
 class MLModelManager:
     """ML 模型管理器"""
-    
+
     def __init__(self):
         self.peptide_ranker = PeptideRankerModel()
         self.bpfun = BPFunModel()
         self.antioxidant = AntioxidantModel()
         self.safety = SafetyPredictorModel()
-        
+
         # 训练模型
         self.peptide_ranker.train()
         self.bpfun.train()
-        
+
         logger.info("ML模型管理器初始化完成")
-    
+
     async def predict_all_activities(self, sequences: List[str]) -> Dict[str, List[Dict]]:
         """预测所有活性"""
         ace_results = await self.peptide_ranker.predict(sequences)
         amp_results = await self.bpfun.predict(sequences)
         antiox_results = await self.antioxidant.predict(sequences)
-        
+
         return {
             "ACE_inhibition": ace_results,
             "Antimicrobial": amp_results,
             "Antioxidant": antiox_results,
         }
-    
+
     async def predict_safety(self, sequences: List[str]) -> Dict[str, Any]:
         """预测安全性"""
         return self.safety.predict_all(sequences)
-    
+
     def get_status(self) -> Dict[str, Any]:
         """获取模型状态"""
         return {

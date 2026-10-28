@@ -3,15 +3,15 @@ DOE 实验设计模块
 对标 FormLab DOE 模块
 """
 from .engine import (
+    DOEDesignType,
     DOEEngine,
     DOEResponse,
     DOEResponseBuilder,
-    Factor,
     DOERun,
-    ResponseSurfaceModel,
-    InverseSearchResult,
-    DOEDesignType,
+    Factor,
     FactorLevel,
+    InverseSearchResult,
+    ResponseSurfaceModel,
     get_doe_engine,
 )
 

@@ -23,21 +23,21 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from .synergy_analysis import SynergyAnalysisMixin
+from .synergy_calculators_1 import SynergyCalculatorMixin1
+from .synergy_calculators_2 import SynergyCalculatorMixin2
+from .synergy_data import SynergyDataMixin
+
 # Re-export all public symbols for backward compatibility
 from .synergy_models import (  # noqa: F401
     MechanismType,
-    TasteType,
-    SynergyScore,
-    SynergyReport,
     SynergyCoefficient,
-    VersionRecord,
+    SynergyReport,
+    SynergyScore,
     SyngineConfig,
+    TasteType,
+    VersionRecord,
 )
-from .synergy_calculators_1 import SynergyCalculatorMixin1
-from .synergy_calculators_2 import SynergyCalculatorMixin2
-from .synergy_analysis import SynergyAnalysisMixin
-from .synergy_data import SynergyDataMixin
-
 
 logger = logging.getLogger(__name__)
 
@@ -349,7 +349,7 @@ def example_usage():
     logger.info(f"{'='*50}")
     logger.info(f"综合协同指数 (SI): {report.overall_si:.4f}")
     logger.info(f"主导机制: {report.dominant_mechanism.value if report.dominant_mechanism else 'None'}")
-    logger.info(f"\n各机制得分:")
+    logger.info("\n各机制得分:")
     for mech in report.mechanisms:
         status = "✓" if mech.confidence > 0 else "✗"
         logger.info(f"  [{status}] {mech.mechanism_type.value:25s}: {mech.score:.4f} (置信度: {mech.confidence:.2f})")
@@ -389,13 +389,13 @@ def example_usage():
     alpha_new = engine.get_coefficient("黄芪", "大豆肽", "bliss_independence")
     logger.info(f"\n查询新系数: 黄豆-大豆肽 (bliss) = {alpha_new}")
     # 版本历史
-    logger.info(f"\n版本历史:")
+    logger.info("\n版本历史:")
     history = engine.get_version_history()
     for ver in history[-3:]:
         logger.info(f"  v{ver['version']}: {ver['source']} - {ver['changes_count']} 条变更")
     # 统计信息
     stats = engine.get_statistics()
-    logger.info(f"\n引擎统计:")
+    logger.info("\n引擎统计:")
     logger.info(f"  总系数数量: {stats['total_coefficients']}")
     logger.info(f"  当前版本: v{stats['current_version']}")
     logger.info(f"  SciPy 可用: {stats['has_scipy']}")

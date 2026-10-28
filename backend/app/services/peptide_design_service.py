@@ -1,19 +1,20 @@
 """RMFOOD 肽设计优化服务层"""
 import logging
-from typing import Any, Dict, List, Optional, Set, Tuple
 from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, update, and_
+from typing import Dict, List, Tuple
 
-from ..models.peptide_design import (
-    PeptideDesign, PeptideDesignCandidate,
-    PeptideDesignStatus
-)
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.middleware.exceptions import ConflictError, NotFoundError
+
+from ..models.peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus
 from ..schemas.peptide_design import (
-    PeptideDesignCreate, PeptideDesignUpdate,
-    PeptideDesignCandidateCreate, VersionInfo, ComparisonResult
+    ComparisonResult,
+    PeptideDesignCandidateCreate,
+    PeptideDesignCreate,
+    VersionInfo,
 )
-from app.core.middleware.exceptions import NotFoundError, ConflictError
 
 logger = logging.getLogger(__name__)
 
@@ -398,19 +399,20 @@ class PeptideDesignService:
         """获取设计项目详情"""
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
+
         from app.models.peptide_design import PeptideDesign
-        
+
         query = select(PeptideDesign).where(PeptideDesign.id == design_id)
         if include_candidates:
             query = query.options(selectinload(PeptideDesign.candidates))
-        
+
         result = await self.db.execute(query)
         project = result.scalar_one_or_none()
-        
+
         if not project:
             from app.core.middleware.exceptions import NotFoundError
             raise NotFoundError(resource="PeptideDesign", resource_id=design_id)
-        
+
         return project
 
     async def archive_project(self, design_id: int) -> None:

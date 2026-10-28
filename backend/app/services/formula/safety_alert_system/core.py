@@ -12,16 +12,14 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from .formula_check import FormulaCheckMixin
+from .thresholds import BUILT_IN_THRESHOLDS
 from .types import (
     AlertLevel,
     SafetyAlert,
-    SafetyCheckResult,
     SafetyThreshold,
     ThresholdUpdateRecord,
 )
-from .thresholds import BUILT_IN_THRESHOLDS
-from .formula_check import FormulaCheckMixin
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """
 RAG 全链路端到端验证测试
@@ -7,14 +8,18 @@ RAG 全链路端到端验证测试
 运行: cd backend && python tests/test_rag_e2e.py
 """
 
-import sys, os, asyncio
+import asyncio
+import os
+import sys
+
 RAG_DIR = os.path.normpath(os.path.join(
     os.path.dirname(__file__), "..", "app", "services", "ai", "rag"
 ))
 sys.path.insert(0, RAG_DIR)
 
 # 手动注册 rag 包，使相对导入有效
-import importlib, types
+import types
+
 _rag_pkg = types.ModuleType("services.ai.rag")
 _rag_pkg.__path__ = [RAG_DIR]
 _rag_pkg.__package__ = "services.ai.rag"
@@ -25,10 +30,9 @@ sys.modules["services.ai"].__path__ = []
 sys.modules["services.ai.rag"] = _rag_pkg
 
 # 导入 RAG 模块
-import services.ai.rag.models as _models
 import services.ai.rag.document_processor as _dp
-import services.ai.rag.vector_store as _vs
 import services.ai.rag.embedding_service as _emb
+import services.ai.rag.vector_store as _vs
 
 
 async def main():
@@ -78,7 +82,7 @@ async def main():
     # 测试 4: Prompt 增强
     logger.info("\n🧪 测试 4: Prompt 增强")
     context_parts = [f"[{c.chunk.metadata.get('source', '?')}] {c.chunk.content}" for c in results]
-    augmented = f"参考文档:\n" + "\n".join(context_parts) + f"\n问题: 枸杞子的功效"
+    augmented = "参考文档:\n" + "\n".join(context_parts) + "\n问题: 枸杞子的功效"
     logger.info(f"   ✅ Prompt ({len(augmented)} 字)")
     assert "枸杞" in augmented
 
@@ -87,7 +91,7 @@ async def main():
     assert "测试文档.txt" in store.list_sources()
     store.delete_by_source("测试文档.txt")
     assert store.chunk_count == 0
-    logger.info(f"   ✅ 删除成功")
+    logger.info("   ✅ 删除成功")
 
     store.reset()
     logger.info("\n" + "=" * 60)

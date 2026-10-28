@@ -12,19 +12,18 @@ PepINVERT 高级肽分析引擎
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import logging
 import math
 import random
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 from .pepinvent_adapter import (
-    PepinventAdapter,
     _STANDARD_AMINO_ACIDS,
+    PepinventAdapter,
 )
 
 

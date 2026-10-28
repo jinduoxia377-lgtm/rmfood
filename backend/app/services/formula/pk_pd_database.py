@@ -4,7 +4,7 @@ PK/PD 参数数据库扩展版
 数据来源：TCMSP、中国药典、OpenFoodFacts、PubMed 文献
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 # ==================== PK 参数数据库 ====================
 # 一室模型参数：F（生物利用度）、ka（吸收速率常数）、Vd（分布容积）、CL（清除率）、t_lag（吸收滞后时间）
@@ -71,7 +71,7 @@ PK_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
         "F": 0.52, "ka": 1.5, "Vd": 0.48, "CL": 0.28, "t_lag": 0.55,
         "source": "文献", "molecular_weight": "~300-800 Da"
     },
-    
+
     # === 多糖类 (12味) ===
     "黄芪多糖": {
         "F": 0.45, "ka": 0.8, "Vd": 0.4, "CL": 0.08, "t_lag": 0.5,
@@ -121,7 +121,7 @@ PK_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
         "F": 0.46, "ka": 0.80, "Vd": 0.36, "CL": 0.07, "t_lag": 0.4,
         "source": "TCMSP", "molecular_weight": "~10k-80k Da"
     },
-    
+
     # === 皂苷类 (10味) ===
     "人参皂苷": {
         "F": 0.20, "ka": 1.5, "Vd": 0.8, "CL": 0.35, "t_lag": 0.4,
@@ -163,7 +163,7 @@ PK_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
         "F": 0.12, "ka": 1.0, "Vd": 1.3, "CL": 0.38, "t_lag": 0.55,
         "source": "TCMSP:DP015678", "molecular_weight": "~800 Da"
     },
-    
+
     # === 黄酮类 (10味) ===
     "大豆异黄酮": {
         "F": 0.25, "ka": 1.2, "Vd": 1.5, "CL": 0.18, "t_lag": 0.6,
@@ -205,7 +205,7 @@ PK_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
         "F": 0.18, "ka": 1.1, "Vd": 1.2, "CL": 0.25, "t_lag": 0.5,
         "source": "文献", "molecular_weight": "286.2 Da"
     },
-    
+
     # === 其他活性成分 (5味) ===
     "维生素C": {
         "F": 0.87, "ka": 4.0, "Vd": 0.6, "CL": 0.45, "t_lag": 0.15,
@@ -249,7 +249,7 @@ PD_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
     "核桃肽": {"E_max": 0.40, "EC50": 32.0, "Hill": 0.8},
     "银杏肽": {"E_max": 0.55, "EC50": 18.0, "Hill": 1.2},
     "葡萄籽肽": {"E_max": 0.60, "EC50": 14.0, "Hill": 1.4},
-    
+
     # === 多糖类 ===
     "黄芪多糖": {"E_max": 0.80, "EC50": 8.0, "Hill": 2.0},
     "枸杞多糖": {"E_max": 0.78, "EC50": 10.0, "Hill": 1.8},
@@ -263,7 +263,7 @@ PD_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
     "红枣多糖": {"E_max": 0.60, "EC50": 18.0, "Hill": 1.3},
     "山药多糖": {"E_max": 0.55, "EC50": 22.0, "Hill": 1.2},
     "薏苡仁多糖": {"E_max": 0.58, "EC50": 20.0, "Hill": 1.25},
-    
+
     # === 皂苷类 ===
     "人参皂苷": {"E_max": 0.90, "EC50": 5.0, "Hill": 2.2},
     "人参皂苷Rg1": {"E_max": 0.88, "EC50": 5.5, "Hill": 2.1},
@@ -275,7 +275,7 @@ PD_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
     "红景天苷": {"E_max": 0.75, "EC50": 10.0, "Hill": 1.6},
     "甘草酸": {"E_max": 0.70, "EC50": 12.0, "Hill": 1.5},
     "柴胡皂苷": {"E_max": 0.65, "EC50": 15.0, "Hill": 1.4},
-    
+
     # === 黄酮类 ===
     "大豆异黄酮": {"E_max": 0.70, "EC50": 15.0, "Hill": 1.6},
     "槲皮素": {"E_max": 0.85, "EC50": 5.0, "Hill": 2.2},
@@ -287,7 +287,7 @@ PD_PARAMETERS_DB: Dict[str, Dict[str, float]] = {
     "淫羊藿苷": {"E_max": 0.80, "EC50": 7.0, "Hill": 1.8},
     "木犀草素": {"E_max": 0.68, "EC50": 14.0, "Hill": 1.5},
     "山奈酚": {"E_max": 0.65, "EC50": 16.0, "Hill": 1.4},
-    
+
     # === 其他 ===
     "维生素C": {"E_max": 0.60, "EC50": 20.0, "Hill": 1.3},
     "维生素E": {"E_max": 0.65, "EC50": 15.0, "Hill": 1.4},
@@ -326,7 +326,7 @@ def get_coverage_stats() -> Dict[str, int]:
 
 if __name__ == "__main__":
     stats = get_coverage_stats()
-    print(f"PK/PD 数据库覆盖统计:")
+    print("PK/PD 数据库覆盖统计:")
     print(f"  总成分数: {stats['total_ingredients']}")
     print(f"  肽类: {stats['peptide_count']}")
     print(f"  多糖类: {stats['polysaccharide_count']}")

@@ -13,7 +13,8 @@ SQL 安全工具模块
 
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
+
 from sqlalchemy import text as sa_text
 
 logger = logging.getLogger(__name__)
@@ -22,15 +23,15 @@ logger = logging.getLogger(__name__)
 class SafeQueryBuilder:
     """
     安全的SQL查询构建器
-    
+
     Usage:
         builder = SafeQueryBuilder()
         query, params = builder.select("users").where("id = :id", {"id": user_id}).build()
-        
+
         # 执行
         result = await db.execute(query, params)
     """
-    
+
     # 允许的表名白名单（防止表名注入）
     ALLOWED_TABLES = {
         'users', 'formulas', 'experiments', 'ingredients', 'peptides',
@@ -41,10 +42,10 @@ class SafeQueryBuilder:
         'tcm_herbs', 'bioactive_peptides', 'knowledge_graph_nodes',
         'knowledge_graph_edges', 'data_snapshots',
     }
-    
+
     # 允许的列名模式（只允许字母、数字、下划线）
     COLUMN_PATTERN = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
-    
+
     # 危险的SQL关键字（用于检测）
     DANGEROUS_PATTERNS = [
         r'\bDROP\b', r'\bDELETE\b(?!.*WHERE)', r'\bTRUNCATE\b',
@@ -53,7 +54,7 @@ class SafeQueryBuilder:
         r'\bEXEC\b', r'\bEXECUTE\b', r'\bxp_cmdshell\b',
         r'\bUNION\b.*\bSELECT\b', r'--\s*$',
     ]
-    
+
     def __init__(self, table_name: Optional[str] = None):
         self._table_name = None
         self._columns = ['*']
@@ -63,17 +64,17 @@ class SafeQueryBuilder:
         self._limit = None
         self._offset = None
         self._joins = []
-        
+
         if table_name:
             self.table(table_name)
-    
+
     def table(self, name: str) -> 'SafeQueryBuilder':
         """设置查询的主表"""
         if name not in self.ALLOWED_TABLES:
             raise ValueError(f"不允许的表名: {name}. 必须在白名单中.")
         self._table_name = name
         return self
-    
+
     def select(self, *columns: str) -> 'SafeQueryBuilder':
         """设置查询的列"""
         if columns:
@@ -85,88 +86,88 @@ class SafeQueryBuilder:
                     raise ValueError(f"不允许的列名: {col}")
             self._columns = validated_cols
         return self
-    
+
     def where(self, condition: str, params: Dict[str, Any]) -> 'SafeQueryBuilder':
         """添加 WHERE 条件（必须使用命名参数）"""
         if not isinstance(params, dict):
             raise TypeError("params 必须是字典类型")
-        
+
         # 验证条件中没有危险的SQL模式
         self._validate_sql_safety(condition)
-        
+
         self._conditions.append(condition)
         self._params.update(params)
         return self
-    
+
     def order_by(self, column: str, direction: str = 'ASC') -> 'SafeQueryBuilder':
         """设置排序"""
         direction = direction.upper()
         if direction not in ('ASC', 'DESC'):
             raise ValueError(f"无效的排序方向: {direction}，必须是 ASC 或 DESC")
-        
+
         if column != '*' and not self.COLUMN_PATTERN.match(column):
             raise ValueError(f"不允许的排序列: {column}")
-        
+
         self._order_by = f"{column} {direction}"
         return self
-    
+
     def limit(self, count: int) -> 'SafeQueryBuilder':
         """设置 LIMIT"""
         if not isinstance(count, int) or count < 0:
             raise TypeError("limit 必须是非负整数")
         self._limit = count
         return self
-    
+
     def offset(self, count: int) -> 'SafeQueryBuilder':
         """设置 OFFSET"""
         if not isinstance(count, int) or count < 0:
             raise TypeError("offset 必须是非负整数")
         self._offset = count
         return self
-    
+
     def join(self, table: str, on_condition: str, params: Optional[Dict] = None) -> 'SafeQueryBuilder':
         """添加 JOIN"""
         if table not in self.ALLOWED_TABLES:
             raise ValueError(f"不允许的连接表: {table}")
-        
+
         self._validate_sql_safety(on_condition)
         self._joins.append((table, on_condition))
         if params:
             self._params.update(params)
         return self
-    
+
     def build(self) -> Tuple[str, Dict[str, Any]]:
         """构建最终的 SQL 和 参数字典"""
         if not self._table_name:
             raise ValueError("未设置查询表名，请调用 .table() 方法")
-        
+
         parts = [f"SELECT {', '.join(self._columns)} FROM {self._table_name}"]
-        
+
         # JOINs
         for table, condition in self._joins:
             parts.append(f"JOIN {table} ON {condition}")
-        
+
         # WHERE
         if self._conditions:
             conditions_str = " AND ".join(f"({c})" for c in self._conditions)
             parts.append(f"WHERE {conditions_str}")
-        
+
         # ORDER BY
         if self._order_by:
             parts.append(f"ORDER BY {self._order_by}")
-        
+
         # LIMIT & OFFSET
         if self._limit is not None:
-            parts.append(f"LIMIT :_limit")
+            parts.append("LIMIT :_limit")
             self._params['_limit'] = self._limit
-        
+
         if self._offset is not None:
-            parts.append(f"OFFSET :_offset")
+            parts.append("OFFSET :_offset")
             self._params['_offset'] = self._offset
-        
+
         sql = " ".join(parts)
         return sql, self._params
-    
+
     def _validate_sql_safety(self, sql_fragment: str):
         """验证SQL片段安全性"""
         sql_upper = sql_fragment.upper()
@@ -176,21 +177,21 @@ class SafeQueryBuilder:
                     f"检测到潜在的安全风险: {pattern}",
                     "禁止在SQL中使用 DROP、DELETE无WHERE、UNION SELECT 等危险操作"
                 )
-    
+
     @classmethod
     def execute_safe(cls, db, sql: str, params: Dict[str, Any]):
         """执行安全的原始SQL查询（包装方法）"""
         # 最终安全验证
         instance = cls()
         instance._validate_sql_safety(sql)
-        
+
         # 确保所有参数都是基本类型（防止对象注入）
         safe_params = {}
         for key, value in params.items():
             if not isinstance(value, (str, int, float, bool, type(None), bytes)):
                 raise TypeError(f"参数 {key} 的类型不安全: {type(value)}")
             safe_params[key] = value
-        
+
         return db.execute(sa_text(sql), safe_params)
 
 
@@ -242,7 +243,7 @@ def build_select_query(
 ) -> Tuple[str, Dict]:
     """
     构建安全的 SELECT 查询
-    
+
     Args:
         table: 表名（必须在白名单中）
         columns: 列名列表
@@ -250,19 +251,19 @@ def build_select_query(
         order_by: 排序子句
         limit: 返回行数限制
         offset: 偏移量
-        
+
     Returns:
         (sql, params) 元组
     """
     builder = SafeQueryBuilder(table)
-    
+
     if columns:
         builder.select(*columns)
-    
+
     if conditions:
         for cond, params in conditions:
             builder.where(cond, params)
-    
+
     if order_by:
         # 解析简单的 "column ASC/DESC" 格式
         parts = order_by.split()
@@ -270,13 +271,13 @@ def build_select_query(
             builder.order_by(parts[0], parts[1])
         else:
             builder.order_by(order_by)
-    
+
     if limit is not None:
         builder.limit(limit)
-    
+
     if offset is not None:
         builder.offset(offset)
-    
+
     return builder.build()
 
 

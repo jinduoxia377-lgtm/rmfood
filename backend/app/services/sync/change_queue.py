@@ -9,7 +9,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
-from collections import OrderedDict
 
 
 class QueueItemStatus(str, Enum):
@@ -56,7 +55,7 @@ class QueueItem:
 class ChangeQueue:
     """
     异步变更队列
-    
+
     特性：
     - FIFO队列，支持优先级排序
     - 批量入队/出队优化
@@ -64,7 +63,7 @@ class ChangeQueue:
     - 幂等性标记
     - 自动重试机制
     - 持久化支持（可选）
-    
+
     使用示例：
         >>> queue = ChangeQueue()
         >>> await queue.enqueue(change)
@@ -80,7 +79,7 @@ class ChangeQueue:
     ):
         """
         初始化变更队列
-        
+
         Args:
             max_size: 队列最大容量
             batch_merge_enabled: 是否启用批量合并优化
@@ -90,14 +89,14 @@ class ChangeQueue:
         self._max_size = max_size
         self._batch_merge_enabled = batch_merge_enabled
         self._auto_retry = auto_retry
-        
+
         self._processing: bool = False
         self._items: Dict[str, QueueItem] = {}
         self._entity_index: Dict[str, str] = {}
-        
+
         self._completed_ids: Set[str] = set()
         self._lock = asyncio.Lock()
-        
+
         self._stats = {
             "total_enqueued": 0,
             "total_dequeued": 0,
@@ -114,17 +113,17 @@ class ChangeQueue:
     ) -> bool:
         """
         入队一个变更项
-        
+
         支持批量合并优化：
         - 如果同一实体的多个变更在队列中，可以合并为最新版本
-        
+
         Args:
             item: 队列项
             merge_strategy: 合并策略 (latest_wins/keep_all)
-            
+
         Returns:
             是否成功入队
-            
+
         Raises:
             QueueFullError: 队列已满
         """
@@ -134,26 +133,26 @@ class ChangeQueue:
         async with self._lock:
             if self._batch_merge_enabled and merge_strategy == "latest_wins":
                 existing_item_id = self._entity_index.get(item.entity_key)
-                
+
                 if existing_item_id and existing_item_id in self._items:
                     existing_item = self._items[existing_item_id]
-                    
+
                     if existing_item.status == QueueItemStatus.PENDING:
                         existing_item.data = item.data
                         existing_item.change_type = item.change_type
                         existing_item.created_at = item.created_at
                         existing_item.priority = item.priority
-                        
+
                         self._stats["merge_count"] += 1
                         return True
 
             self._items[item.id] = item
             self._entity_index[item.entity_key] = item.id
-            
+
             await self._queue.put(item.id)
-            
+
             self._stats["total_enqueued"] += 1
-            
+
             return True
 
     async def enqueue_batch(
@@ -163,23 +162,23 @@ class ChangeQueue:
     ) -> int:
         """
         批量入队多个变更项
-        
+
         Args:
             items: 队列项列表
             merge_strategy: 合并策略
-            
+
         Returns:
             成功入队的数量
         """
         success_count = 0
-        
+
         for item in items:
             try:
                 await self.enqueue(item, merge_strategy)
                 success_count += 1
             except QueueFullError:
                 break
-                
+
         return success_count
 
     async def dequeue_batch(
@@ -189,13 +188,13 @@ class ChangeQueue:
     ) -> List[QueueItem]:
         """
         出队一批变更项
-        
+
         保证顺序一致性：按入队顺序返回。
-        
+
         Args:
             batch_size: 最大出队数量
             timeout: 超时时间（秒），超时返回空列表
-            
+
         Returns:
             队列项列表（按FIFO顺序）
         """
@@ -203,17 +202,17 @@ class ChangeQueue:
             return []
 
         self._processing = True
-        
+
         try:
             batch: List[QueueItem] = []
             deadline = asyncio.get_event_loop_policy().get_event_loop().time() + timeout
-            
+
             while len(batch) < batch_size:
                 remaining_time = deadline - asyncio.get_event_loop_policy().get_event_loop().time()
-                
+
                 if remaining_time <= 0:
                     break
-                    
+
                 try:
                     item_id = await asyncio.wait_for(
                         self._queue.get(),
@@ -224,10 +223,10 @@ class ChangeQueue:
 
                 async with self._lock:
                     item = self._items.get(item_id)
-                    
+
                     if not item:
                         continue
-                        
+
                     if item.status == QueueItemStatus.PENDING:
                         item.mark_processing()
                         batch.append(item)
@@ -244,7 +243,7 @@ class ChangeQueue:
                         self._stats["retry_count"] += 1
 
             return batch
-            
+
         finally:
             self._processing = False
 
@@ -255,43 +254,43 @@ class ChangeQueue:
     ) -> int:
         """
         标记一批项目为已完成或失败（幂等操作）
-        
+
         幂等性保证：
         - 同一ID多次调用不会产生副作用
         - 已完成的项再次标记会被忽略
-        
+
         Args:
             item_ids: 项目ID列表
             success: 是否成功
-            
+
         Returns:
             实际更新的项目数
         """
         async with self._lock:
             updated_count = 0
-            
+
             for item_id in item_ids:
                 if item_id in self._completed_ids:
                     continue
-                    
+
                 item = self._items.get(item_id)
-                
+
                 if not item:
                     continue
-                    
+
                 if success:
                     item.mark_completed()
                     self._stats["total_completed"] += 1
                 else:
                     item.mark_failed("Marked as failed")
                     self._stats["total_failed"] += 1
-                
+
                 self._completed_ids.add(item_id)
-                
+
                 entity_key = item.entity_key
                 if self._entity_index.get(entity_key) == item_id:
                     del self._entity_index[entity_key]
-                
+
                 updated_count += 1
 
             return updated_count
@@ -303,27 +302,27 @@ class ChangeQueue:
     ) -> bool:
         """
         标记单个项目为失败（可重试）
-        
+
         Args:
             item_id: 项目ID
             error: 错误信息
-            
+
         Returns:
             是否成功标记
         """
         async with self._lock:
             item = self._items.get(item_id)
-            
+
             if not item:
                 return False
-                
+
             item.mark_failed(error)
-            
+
             if item.retry_count < item.max_retries and self._auto_retry:
                 await self._queue.put(item_id)
-            
+
             self._stats["total_failed"] += 1
-            
+
             return True
 
     @property
@@ -380,7 +379,7 @@ class ChangeQueue:
                 item_id for item_id, item in self._items.items()
                 if item.status == QueueItemStatus.PENDING
             ]
-            
+
             for item_id in pending_ids:
                 del self._items[item_id]
 
@@ -393,20 +392,20 @@ class ChangeQueue:
     ) -> Optional[QueueItem]:
         """
         根据实体类型和ID查找队列项
-        
+
         Args:
             entity_type: 实体类型
             entity_id: 实体ID
-            
+
         Returns:
             队列项（如果存在）
         """
         key = f"{entity_type}:{entity_id}"
         item_id = self._entity_index.get(key)
-        
+
         if item_id:
             return self._items.get(item_id)
-            
+
         return None
 
 

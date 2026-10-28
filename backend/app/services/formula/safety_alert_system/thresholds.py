@@ -14,7 +14,6 @@ SafetyAlertSystem - 内置阈值数据库
 
 from typing import Any, Dict
 
-
 # 常见药材 → 标志性活性成分 别名映射
 # 使 raw herb 名称能命中其活性成分阈值（如 黄芪 → 黄芪多糖/黄芪甲苷）
 HERB_ALIAS_MAP: Dict[str, str] = {

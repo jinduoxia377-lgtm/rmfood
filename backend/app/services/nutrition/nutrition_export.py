@@ -7,7 +7,7 @@
 
 import logging
 from io import BytesIO
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def export_to_excel(label_data: Dict[str, Any]) -> bytes:
     """
     try:
         from openpyxl import Workbook
-        from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+        from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
         from openpyxl.utils import get_column_letter
     except ImportError:
         raise ImportError("请安装 openpyxl: pip install openpyxl")
@@ -160,10 +160,10 @@ def export_to_pdf(label_data: Dict[str, Any]) -> bytes:
     """
     try:
         from reportlab.lib.pagesizes import A6
-        from reportlab.pdfgen import canvas
         from reportlab.lib.units import mm
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfgen import canvas
     except ImportError:
         raise ImportError("请安装 reportlab: pip install reportlab")
 

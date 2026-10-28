@@ -9,7 +9,7 @@ SynergyEngine 协同机制计算模块 (第 1 部分)
 
 import logging
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 try:
     import numpy as np
@@ -22,9 +22,7 @@ except ImportError:
 from .synergy_models import (
     MechanismType,
     SynergyScore,
-    SyngineConfig,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +181,7 @@ class SynergyCalculatorMixin1:
         if auc_a < 0 or auc_b < 0 or auc_combination < 0:
             raise ValueError("AUC 值不能为负数")
         if not (0 <= bioavailability_base <= 1):
-            raise ValueError(f"bioavailability_base 必须在 [0, 1] 范围内")
+            raise ValueError("bioavailability_base 必须在 [0, 1] 范围内")
 
         # 从数据库查询 Ki 值
         if ki_value is None and ingredient_a and ingredient_b:

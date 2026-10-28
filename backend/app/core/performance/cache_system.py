@@ -34,10 +34,9 @@ import json
 import logging
 import time
 from collections import OrderedDict
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from dataclasses import dataclass
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +48,17 @@ class CacheConfig:
     l1_enabled: bool = True
     l1_max_size: int = 1000              # 最大缓存条目数
     l1_default_ttl_seconds: int = 300     # 默认TTL (5分钟)
-    
+
     # L2 Redis配置
     l2_enabled: bool = False             # 默认关闭，需显式启用
     l2_url: Optional[str] = None         # redis://localhost:6379/0
     l2_default_ttl_seconds: int = 1800   # 默认TTL (30分钟)
     l2_key_prefix: str = "rmfood:"       # 键前缀
-    
+
     # 安全配置
     enable_null_caching: bool = True      # 缓存空值防止穿透
     null_ttl_seconds: int = 60            # 空值缓存TTL (1分钟)
-    
+
     # 监控配置
     enable_stats: bool = True             # 启用统计
 
@@ -73,14 +72,14 @@ class CacheStats:
     deletes: int = 0
     evictions: int = 0
     errors: int = 0
-    
+
     @property
     def hit_rate(self) -> float:
         total = self.hits + self.misses
         if total == 0:
             return 0.0
         return (self.hits / total) * 100
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "hits": self.hits,
@@ -97,17 +96,17 @@ class CacheStats:
 class MemoryCacheEntry:
     """内存缓存条目"""
     __slots__ = ('value', 'expires_at', 'created_at', 'size_bytes')
-    
+
     def __init__(self, value: Any, ttl_seconds: int):
         self.value = value
         self.created_at = time.time()
         self.expires_at = self.created_at + ttl_seconds
         self.size_bytes = len(json.dumps(value).encode('utf-8')) if value else 0
-    
+
     @property
     def is_expired(self) -> bool:
         return time.time() > self.expires_at
-    
+
     @property
     def ttl(self) -> int:
         remaining = self.expires_at - time.time()
@@ -117,20 +116,20 @@ class MemoryCacheEntry:
 class MultiLevelCache:
     """
     多级智能缓存系统
-    
+
     使用示例:
         cache = MultiLevelCache()
-        
+
         # 基本用法
         result = await cache.get("user:123")
         await cache.set("user:123", data, ttl=3600)
-        
+
         # 装饰器用法 (自动缓存函数结果)
         @cache.cached(ttl=600, key_prefix="peptide_analysis")
         async def analyze_peptide(sequence: str):
             # 复杂的分析逻辑...
             return result
-        
+
         # 带条件缓存的装饰器
         @cache.cached(
             ttl=1800,
@@ -140,32 +139,32 @@ class MultiLevelCache:
         async def expensive_query(seq):
             ...
     """
-    
+
     def __init__(self, config: Optional[CacheConfig] = None):
         self.config = config or CacheConfig()
         # 使用 OrderedDict 实现 O(1) LRU 淘汰
         self._l1_cache: OrderedDict[str, MemoryCacheEntry] = OrderedDict()
-        
+
         self._redis_client = None
         self._redis_available = False
-        
+
         self.stats = CacheStats()
-        
+
         # 初始化L2 Redis（如果配置了）
         if self.config.l2_enabled and self.config.l2_url:
             self._init_redis()
-        
+
         logger.info(
             f"🗄️ 多级缓存系统初始化 | "
             f"L1(内存): {'✅' if self.config.l1_enabled else '❌'} | "
             f"L2(Redis): {'✅' if self._redis_available else '❌'}"
         )
-    
+
     def _init_redis(self):
         """初始化Redis连接"""
         try:
             import redis.asyncio as aioredis
-            
+
             self._redis_client = aioredis.from_url(
                 self.config.l2_url,
                 decode_responses=True,
@@ -173,16 +172,16 @@ class MultiLevelCache:
             )
             self._redis_available = True
             logger.info(f"✅ Redis连接成功: {self.config.l2_url}")
-            
+
         except ImportError:
             logger.info("⚠️ redis库未安装，将仅使用内存缓存")
             self.config.l2_enabled = False
-            
+
         except Exception as e:
             logger.info(f"Redis连接失败: {e}，将降级到内存缓存")
             self._redis_available = False
             self.config.l2_enabled = False
-    
+
     def _generate_key(self, prefix: str, *args, **kwargs) -> str:
         """生成缓存键（使用 SHA256）"""
         key_data = {
@@ -194,7 +193,7 @@ class MultiLevelCache:
         ).hexdigest()[:16]
 
         return f"{prefix}:{key_hash}"
-    
+
     async def get(self, key: str) -> Optional[Any]:
         """
         获取缓存值 (L1 → L2 → None)
@@ -228,37 +227,37 @@ class MultiLevelCache:
                 del self._l1_cache[key]
                 if self.config.enable_stats:
                     self.stats.evictions += 1
-        
+
         # L2: Redis缓存
         if self.config.l2_enabled and self._redis_available:
             try:
                 full_key = f"{self.config.l2_key_prefix}{key}"
                 value = await self._redis_client.get(full_key)
-                
+
                 if value is not None:
                     # 反序列化
                     parsed_value = json.loads(value)
-                    
+
                     # 回填到L1
                     if self.config.l1_enabled:
                         self._set_l1(key, parsed_value, self.config.l1_default_ttl_seconds)
-                    
+
                     if self.config.enable_stats:
                         self.stats.hits += 1
                         self.stats.misses -= 1
-                    
+
                     logger.debug(f"🎯 L2命中 | Key: {key}")
                     return parsed_value
-                    
+
             except Exception as e:
                 logger.error(f"❌ L2读取失败: {e}")
                 if self.config.enable_stats:
                     self.stats.errors += 1
-        
+
         # 未命中
         logger.debug(f"💨 缓存未命中 | Key: {key}")
         return None
-    
+
     async def set(
         self,
         key: str,
@@ -268,58 +267,58 @@ class MultiLevelCache:
     ) -> bool:
         """
         设置缓存值 (同时写入L1和L2)
-        
+
         Args:
             key: 缓存键
             value: 要缓存的值
             ttl: 过期时间(秒)，None则使用默认值
             tags: 标签列表，用于批量失效
-            
+
         Returns:
             是否设置成功
         """
         ttl = ttl or self.config.l1_default_ttl_seconds
-        
+
         # 处理空值缓存
         if value is None and self.config.enable_null_caching:
             ttl = self.config.null_ttl_seconds
             value = "__NULL__"
-        
+
         success = True
-        
+
         # 写入L1
         if self.config.l1_enabled:
             self._set_l1(key, value, ttl)
-        
+
         # 写入L2
         if self.config.l2_enabled and self._redis_available:
             try:
                 full_key = f"{self.config.l2_key_prefix}{key}"
                 serialized = json.dumps(value)
-                
+
                 await self._redis_client.setex(
                     full_key,
                     ttl,
                     serialized
                 )
-                
+
                 # 如果有标签，记录到集合
                 if tags:
                     for tag in tags:
                         tag_key = f"{self.config.l2_key_prefix}tag:{tag}"
                         await self._redis_client.sadd(tag_key, full_key)
-                
+
             except Exception as e:
                 logger.error(f"❌ L2写入失败: {e}")
                 success = False
                 if self.config.enable_stats:
                     self.stats.errors += 1
-        
+
         if self.config.enable_stats:
             self.stats.sets += 1
-        
+
         return success
-    
+
     def _set_l1(self, key: str, value: Any, ttl: int):
         """写入L1内存缓存（OrderedDict，O(1)）"""
         # 如果已存在，先删除再插入（更新位置）
@@ -332,7 +331,7 @@ class MultiLevelCache:
 
         entry = MemoryCacheEntry(value, ttl)
         self._l1_cache[key] = entry
-    
+
     async def delete(self, key: str) -> bool:
         """删除缓存键"""
         deleted = False
@@ -341,7 +340,7 @@ class MultiLevelCache:
         if key in self._l1_cache:
             del self._l1_cache[key]
             deleted = True
-        
+
         # 从L2删除
         if self.config.l2_enabled and self._redis_available:
             try:
@@ -350,46 +349,46 @@ class MultiLevelCache:
                 deleted = True
             except Exception as e:
                 logger.error(f"❌ L2删除失败: {e}")
-        
+
         if deleted and self.config.enable_stats:
             self.stats.deletes += 1
-        
+
         return deleted
-    
+
     async def invalidate_by_tag(self, tag: str) -> int:
         """
         通过标签批量失效缓存
-        
+
         Args:
             tag: 标签名称
-            
+
         Returns:
             失效的缓存数量
         """
         count = 0
-        
+
         if self.config.l2_enabled and self._redis_available:
             try:
                 tag_key = f"{self.config.l2_key_prefix}tag:{tag}"
                 keys = await self._redis_client.smembers(tag_key)
-                
+
                 if keys:
                     await self._redis_client.delete(*keys)
                     await self._redis_client.delete(tag_key)
                     count = len(keys)
-                    
+
                     # 同时清除L1中的对应项
                     for full_key in keys:
                         key = full_key.replace(self.config.l2_key_prefix, "")
                         if key in self._l1_cache:
                             del self._l1_cache[key]
-                            
+
             except Exception as e:
                 logger.error(f"❌ 标签失效失败: {e}")
-        
+
         logger.info(f"🏷️ 标签失效 | Tag: {tag} | 数量: {count}")
         return count
-    
+
     def _evict_lru(self):
         """LRU淘汰策略：O(1) 移除最久未访问的条目"""
         if not self._l1_cache:
@@ -401,7 +400,7 @@ class MultiLevelCache:
             self.stats.evictions += 1
 
         logger.debug(f"🗑️ LRU淘汰 | Key: {oldest_key}")
-    
+
     def cached(
         self,
         ttl: Optional[int] = None,
@@ -412,12 +411,12 @@ class MultiLevelCache:
     ):
         """
         缓存装饰器工厂
-        
+
         用法:
             @cache.cached(ttl=600, key_prefix="analysis")
             async def my_function(arg1, arg2=None):
                 ...
-        
+
         Args:
             ttl: 缓存时间(秒)
             key_prefix: 键前缀
@@ -437,33 +436,33 @@ class MultiLevelCache:
                         *args,
                         **kwargs
                     )
-                
+
                 # 尝试从缓存获取
                 cached_result = await self.get(cache_key)
-                
+
                 if cached_result is not None:
                     # 检查是否是空值标记
                     if cached_result == "__NULL__":
                         return None
                     return cached_result
-                
+
                 # 执行原函数
                 result = await func(*args, **kwargs)
-                
+
                 # 检查缓存条件
                 if condition and not condition(result):
                     return result
-                
+
                 # 写入缓存
                 await self.set(cache_key, result, ttl=ttl, tags=tags)
-                
+
                 return result
-            
+
             wrapper._cache_key_prefix = key_prefix or func.__name__
             return wrapper
-        
+
         return decorator
-    
+
     async def get_or_set(
         self,
         key: str,
@@ -472,9 +471,9 @@ class MultiLevelCache:
     ) -> Any:
         """
         获取或设置缓存 (便捷方法)
-        
+
         如果缓存存在则返回，否则调用factory生成并缓存。
-        
+
         Usage:
             result = await cache.get_or_set(
                 "user:123",
@@ -483,21 +482,21 @@ class MultiLevelCache:
             )
         """
         value = await self.get(key)
-        
+
         if value is not None:
             return value
-        
+
         # 生成新值
         if asyncio.iscoroutinefunction(factory):
             value = await factory()
         else:
             value = factory()
-        
+
         # 缓存
         await self.set(key, value, ttl=ttl)
-        
+
         return value
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """获取缓存统计信息"""
         stats_dict = self.stats.to_dict()
@@ -515,11 +514,11 @@ class MultiLevelCache:
             }
         })
         return stats_dict
-    
+
     async def clear_all(self):
         """清空所有缓存"""
         self._l1_cache.clear()
-        
+
         if self._redis_available:
             try:
                 pattern = f"{self.config.l2_key_prefix}*"
@@ -531,9 +530,9 @@ class MultiLevelCache:
                 logger.info(f"🧹 L2已清空 | 删除 {len(keys)} 个键")
             except Exception as e:
                 logger.error(f"❌ L2清空失败: {e}")
-        
+
         logger.info("🧹 所有缓存已清空")
-    
+
     async def close(self):
         """关闭连接"""
         if self._redis_client:

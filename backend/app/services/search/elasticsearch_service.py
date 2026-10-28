@@ -11,12 +11,11 @@
 - 搜索建议（自动补全）
 """
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_, text
 
 logger = logging.getLogger(__name__)
 
@@ -72,15 +71,15 @@ class IndexDocument:
 class ElasticsearchService:
     """
     Elasticsearch集成服务
-    
+
     提供高性能的全文检索功能。
     如果Elasticsearch不可用，会降级为数据库LIKE查询。
-    
+
     注意：这是一个模拟实现，实际生产环境需要连接真实的ES集群。
     """
 
     INDEX_NAME = "prompts"
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
         self._index_store: Dict[int, IndexDocument] = {}
@@ -89,7 +88,7 @@ class ElasticsearchService:
     async def index_prompt(self, prompt: Dict[str, Any]) -> None:
         """
         索引提示词文档
-        
+
         字段配置：
         - name: 名称（boost=2.0，更高权重）
         - content: 内容（使用ik_max_word分词）
@@ -98,7 +97,7 @@ class ElasticsearchService:
         - author_name: 作者名
         - created_at: 创建时间
         - popularity: 热度值
-        
+
         Args:
             prompt: 提示词数据字典
         """
@@ -129,7 +128,7 @@ class ElasticsearchService:
     ) -> SearchResult:
         """
         高级搜索
-        
+
         功能特性：
         - 多字段匹配（name^2, content, tags）
         - 布尔运算（AND/OR/NOT）
@@ -137,13 +136,13 @@ class ElasticsearchService:
         - 范围查询（date_range）
         - 排序：相关性_score + 时间衰减函数 + 热度权重
         - 聚合：按分类/作者/标签分组统计
-        
+
         Args:
             query: 搜索关键词
             filters: 筛选条件
             page: 页码
             per_page: 每页条数
-            
+
         Returns:
             SearchResult对象
         """
@@ -162,24 +161,24 @@ class ElasticsearchService:
             )
 
         results = []
-        
+
         for doc_id, doc in self._index_store.items():
             score = self._calculate_relevance(query, doc)
-            
+
             if score > 0:
                 if filters.category and doc.category != filters.category:
                     continue
-                
+
                 if filters.author_id and doc.author_id != filters.author_id:
                     continue
-                    
+
                 if filters.tags:
                     if not any(tag in doc.tags for tag in filters.tags):
                         continue
-                        
+
                 if filters.date_from and doc.created_at < filters.date_from:
                     continue
-                    
+
                 if filters.date_to and doc.created_at > filters.date_to:
                     continue
 
@@ -206,7 +205,7 @@ class ElasticsearchService:
         paginated_results = results[offset:offset + per_page]
 
         max_score = paginated_results[0]["score"] if paginated_results else 0.0
-        
+
         facets = await self._build_facets(results)
 
         took_ms = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -237,15 +236,15 @@ class ElasticsearchService:
     ) -> List[SuggestionItem]:
         """
         搜索建议（输入时实时返回）
-        
+
         基于前缀匹配和频率排序。
         前端应配合debounce 300ms使用。
-        
+
         Args:
             prefix: 输入前缀
             team_id: 可选的团队ID限制
             limit: 返回数量
-            
+
         Returns:
             建议列表
         """
@@ -287,7 +286,7 @@ class ElasticsearchService:
     async def delete_index(self, prompt_id: int) -> None:
         """
         从索引中删除文档
-        
+
         Args:
             prompt_id: 要删除的提示词ID
         """
@@ -298,10 +297,10 @@ class ElasticsearchService:
     async def bulk_index(self, prompts: List[Dict[str, Any]]) -> int:
         """
         批量索引多个文档
-        
+
         Args:
             prompts: 提示词列表
-            
+
         Returns:
             成功索引的数量
         """

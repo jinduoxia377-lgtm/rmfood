@@ -10,10 +10,10 @@ NSGA-II 预设优化场景
 - comprehensive: 全面评估（7维）
 """
 from __future__ import annotations
-from typing import Dict, Optional
+
+from typing import Dict
 
 from .models import OptimizationConfig, OptimizationObjective
-
 
 PRESET_SCENARIOS: Dict[str, OptimizationConfig] = {}
 

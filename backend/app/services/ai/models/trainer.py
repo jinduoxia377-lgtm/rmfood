@@ -17,11 +17,10 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -500,7 +499,7 @@ def main():
         json.dump(result, f, ensure_ascii=False, indent=2)
     logger.info(f"训练历史已保存到 {history_path}")
 
-    print(f"\n训练完成!")
+    print("\n训练完成!")
     print(f"  Epochs: {result['total_epochs']}")
     print(f"  Best Loss: {result['best_loss']:.4f}")
     print(f"  Time: {result['total_time_sec']:.1f}s")

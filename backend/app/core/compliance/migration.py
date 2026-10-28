@@ -45,18 +45,14 @@
 
 from __future__ import annotations
 
-import asyncio
-import json
+import hashlib
 import logging
 import os
-import sys
 import time
-import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +489,7 @@ class MigrationManager:
                 execution.status = MigrationStatus.SKIPPED
                 execution.notes = "dry_run 模式"
                 execution.duration_seconds = 0.0
-                logger.info(f"  └─ [DRY RUN] 已预览")
+                logger.info("  └─ [DRY RUN] 已预览")
             else:
                 # 检查依赖
                 for dep in migration.depends_on:
@@ -521,10 +517,10 @@ class MigrationManager:
             # 尝试回滚（如果提供了 rollback_fn）
             if migration.rollback_fn and not dry_run:
                 try:
-                    logger.info(f"  └─ 尝试回滚...")
+                    logger.info("  └─ 尝试回滚...")
                     if self._db_session is not None:
                         await migration.rollback_fn(self._db_session)
-                    logger.info(f"  └─ ✅ 回滚成功")
+                    logger.info("  └─ ✅ 回滚成功")
                 except Exception as rollback_err:
                     logger.error(f"  └─ ❌ 回滚也失败: {rollback_err}", exc_info=True)
 
@@ -625,7 +621,7 @@ class MigrationManager:
 
         try:
             if dry_run:
-                logger.info(f"  └─ [DRY RUN] 已预览")
+                logger.info("  └─ [DRY RUN] 已预览")
                 return {
                     "version": migration.version,
                     "status": "skipped",
@@ -633,7 +629,7 @@ class MigrationManager:
                 }
 
             if migration.rollback_fn is None:
-                logger.warning(f"  └─ ⚠️ 无 rollback_fn，跳过")
+                logger.warning("  └─ ⚠️ 无 rollback_fn，跳过")
                 return {
                     "version": migration.version,
                     "status": "skipped",

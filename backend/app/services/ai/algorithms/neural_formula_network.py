@@ -9,8 +9,9 @@
 import logging
 import math
 import random
+from typing import Dict, List, Optional
+
 import numpy as np
-from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

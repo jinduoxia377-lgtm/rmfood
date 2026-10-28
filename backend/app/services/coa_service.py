@@ -6,12 +6,12 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from sqlalchemy import select, func, update, delete
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.peptide_batch_coa import PeptideBatchCOA, COATestItem
-from app.schemas.coa import COACreate, COAUpdate, COATestItemCreate, COATestItemUpdate
+from app.models.peptide_batch_coa import COATestItem, PeptideBatchCOA
+from app.schemas.coa import COACreate, COATestItemCreate, COATestItemUpdate, COAUpdate
 
 logger = logging.getLogger(__name__)
 

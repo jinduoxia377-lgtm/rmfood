@@ -1,13 +1,13 @@
 """RMFOOD 成分服务"""
-from typing import List, Tuple, Optional
 import logging  # A-27
+from typing import List, Optional, Tuple
 
 logger = logging.getLogger(__name__)  # A-27
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
 
 from ..models.formula import Ingredient
-from ..schemas.ingredient import IngredientCreate, IngredientUpdate, IngredientResponse
+from ..schemas.ingredient import IngredientCreate, IngredientUpdate
 
 
 class IngredientService:

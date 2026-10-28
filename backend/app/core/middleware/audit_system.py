@@ -18,8 +18,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +84,7 @@ class AuditLogEntry:
     session_id: Optional[str] = None
     request_id: Optional[str] = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     @property
     def checksum(self) -> str:
         """生成条目的完整性校验值"""
@@ -127,7 +126,7 @@ class DataLineageNode:
 class AuditService:
     """
     合规审计服务
-    
+
     Features:
     - 全量操作日志记录（不可篡改）
     - 数据变更前后快照对比
@@ -159,7 +158,7 @@ class AuditService:
     ) -> AuditLogEntry:
         """
         记录审计日志
-        
+
         Args:
             action: 操作类型
             resource_type: 资源类型
@@ -174,7 +173,7 @@ class AuditService:
             severity: 严重程度
             session_id: 会话ID
             request_id: 请求ID
-            
+
         Returns:
             创建的审计日志条目
         """
@@ -196,10 +195,10 @@ class AuditService:
         )
 
         await self.db.execute(
-            """INSERT INTO audit_logs 
+            """INSERT INTO audit_logs
                (id, action, resource_type, resource_id, user_id, username, ip_address, user_agent,
                 details, old_value, new_value, severity, session_id, request_id, checksum, created_at)
-               VALUES (:id, :action, :resource_type, :resource_id, :user_id, :username, 
+               VALUES (:id, :action, :resource_type, :resource_id, :user_id, :username,
                        :ip_address, :user_agent, :details::jsonb, :old_value, :new_value,
                        :severity, :session_id, :request_id, :checksum, NOW())""",
             {
@@ -243,7 +242,7 @@ class AuditService:
     ) -> Dict[str, Any]:
         """
         查询审计日志
-        
+
         支持多维度筛选、分页、搜索
         """
         conditions = []
@@ -293,9 +292,9 @@ class AuditService:
         total = count_result.scalar() or 0
 
         offset = (page - 1) * page_size
-        
+
         result = await self.db.execute(
-            f"""SELECT * FROM audit_logs 
+            f"""SELECT * FROM audit_logs
                 WHERE {where_clause}
                 ORDER BY created_at DESC
                 LIMIT :limit OFFSET :offset""",
@@ -333,11 +332,11 @@ class AuditService:
     async def get_resource_history(self, resource_type: AuditResourceType, resource_id: str) -> List[Dict[str, Any]]:
         """
         获取资源的完整操作历史
-        
+
         用于操作回放和数据溯源
         """
         result = await self.db.execute(
-            """SELECT * FROM audit_logs 
+            """SELECT * FROM audit_logs
                WHERE resource_type = :resource_type AND resource_id = :resource_id
                ORDER BY created_at ASC""",
             {"resource_type": resource_type.value, "resource_id": resource_id},
@@ -363,7 +362,7 @@ class AuditService:
         """获取用户活动统计"""
         result = await self.db.execute(
             """SELECT action, COUNT(*) as count, MAX(created_at) as last_seen
-               FROM audit_logs 
+               FROM audit_logs
                WHERE user_id = :user_id AND created_at >= NOW() - INTERVAL ':days days'
                GROUP BY action
                ORDER BY count DESC""",
@@ -401,7 +400,7 @@ class AuditService:
     ) -> ComplianceReport:
         """
         生成合规报告
-        
+
         包含:
         - 操作统计摘要
         - 关键安全事件
@@ -432,42 +431,42 @@ class AuditService:
         report.critical_events = critical_result.scalar() or 0
 
         by_action_result = await self.db.execute(
-            f"SELECT action, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY action ORDER BY COUNT DESC",
+            "SELECT action, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY action ORDER BY COUNT DESC",
             params,
         )
-        
+
         report.summary["by_action"] = [
             {"action": row.action, "count": row.count}
             for row in by_action_result.fetchall()
         ]
 
         by_user_result = await self.db.execute(
-            f"SELECT user_id, username, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY user_id, username ORDER BY COUNT DESC LIMIT 20",
+            "SELECT user_id, username, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY user_id, username ORDER BY COUNT DESC LIMIT 20",
             params,
         )
-        
+
         report.summary["top_users"] = [
             {"user_id": row.user_id, "username": row.username, "count": row.count}
             for row in by_user_result.fetchall()
         ]
 
         by_severity_result = await self.db.execute(
-            f"SELECT severity, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY severity",
+            "SELECT severity, COUNT(*) FROM audit_logs WHERE created_at BETWEEN :start AND :end GROUP BY severity",
             params,
         )
-        
+
         report.summary["by_severity"] = [
             {"severity": row.severity, "count": row.count}
             for row in by_severity_result.fetchall()
         ]
 
         critical_events_result = await self.db.execute(
-            """SELECT * FROM audit_logs 
+            """SELECT * FROM audit_logs
                WHERE created_at BETWEEN :start AND :end AND severity IN ('high', 'critical')
                ORDER BY created_at DESC LIMIT 100""",
             params,
         )
-        
+
         report.sections.append({
             "title": "关键安全事件",
             "type": "critical_events",
@@ -501,13 +500,13 @@ class AuditService:
 
         suspicious_ips = await self.db.execute(
             """SELECT ip_address, COUNT(DISTINCT user_id) as user_count, COUNT(*) as attempt_count
-               FROM audit_logs 
+               FROM audit_logs
                WHERE action = 'login' AND created_at BETWEEN :start AND :end
                GROUP BY ip_address HAVING COUNT(DISTINCT user_id) > 5
                ORDER BY attempt_count DESC LIMIT 10""",
             {"start": start_date, "end": end_date},
         )
-        
+
         for row in suspicious_ips.fetchall():
             anomalies.append({
                 "type": "suspicious_ip",
@@ -519,14 +518,14 @@ class AuditService:
 
         failed_logins = await self.db.execute(
             """SELECT user_id, username, COUNT(*) as fail_count
-               FROM audit_logs 
-               WHERE action = 'login' AND details->>'success' = 'false' 
+               FROM audit_logs
+               WHERE action = 'login' AND details->>'success' = 'false'
                AND created_at BETWEEN :start AND :end
                GROUP BY user_id, username HAVING COUNT(*) > 10
                ORDER BY fail_count DESC LIMIT 10""",
             {"start": start_date, "end": end_date},
         )
-        
+
         for row in failed_logins.fetchall():
             anomalies.append({
                 "type": "brute_force_attempt",
@@ -574,14 +573,15 @@ class AuditService:
         if format == "json":
             return json.dumps(query_result, ensure_ascii=False, indent=2).encode('utf-8')
         elif format == "csv":
-            import csv, io
+            import csv
+            import io
             output = io.StringIO()
             writer = csv.DictWriter(output, fieldnames=["id", "action", "resource_type", "resource_id", "user_id", "username", "severity", "created_at"])
             writer.writeheader()
-            
+
             for log in query_result.get("logs", []):
                 writer.writerow({k: log.get(k, "") for k in ["id", "action", "resource_type", "resource_id", "user_id", "username", "severity", "created_at"]})
-            
+
             return output.getvalue().encode('utf-8-sig')
         else:
             raise ValueError(f"不支持的导出格式: {format}")

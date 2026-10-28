@@ -9,9 +9,10 @@
 - 生成口感评估解释
 """
 from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 

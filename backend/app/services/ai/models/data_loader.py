@@ -270,6 +270,7 @@ class TCMSPDataLoader:
         """从 DFBP 数据库加载数据（如果可用）"""
         try:
             from sqlalchemy import text
+
             from app.core.database.database import get_async_session
 
             async def _load():

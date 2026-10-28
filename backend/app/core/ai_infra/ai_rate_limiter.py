@@ -28,7 +28,7 @@ AI 端点精细化限流器
 import logging
 import time
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, HTTPException, Request, status

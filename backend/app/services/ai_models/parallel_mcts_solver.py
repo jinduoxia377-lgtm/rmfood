@@ -1,11 +1,10 @@
 """Parallel MCTS Solver using concurrent.futures - Phase 2 Implementation"""
 
 import logging
-import random
-from typing import List, Optional, Any, Dict
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
 import os
+import random
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class ParallelMCTSOptimizer:
     def search(self):
         """Execute parallel MCTS search."""
         logger.info(f"Starting parallel MCTS: {self.n_simulations} sims, {self.num_workers} workers")
-        
+
         with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
             futures = [executor.submit(self.run_simulation, i) for i in range(self.n_simulations)]
             for future in as_completed(futures):
@@ -43,7 +42,7 @@ class ParallelMCTSOptimizer:
                     future.result()
                 except Exception as e:
                     logger.error(f"Simulation failed: {e}")
-        
+
         logger.info(f"Parallel search completed. Best reward: {self.best_reward:.4f}")
         return [{"reward": self.best_reward, "solution": self.best_solution}]
 

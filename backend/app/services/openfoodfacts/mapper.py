@@ -5,7 +5,7 @@ Open Food Facts → RMFOOD 字段映射器
 """
 import logging
 import re
-from typing import Dict, Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

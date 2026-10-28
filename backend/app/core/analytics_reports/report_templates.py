@@ -9,7 +9,6 @@
 
 from typing import Any, Dict, List
 
-
 REPORT_TEMPLATES: List[Dict[str, Any]] = [
     {
         "id": "formula_overview",

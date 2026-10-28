@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import logging
 import os
-import sys
 
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration

@@ -12,11 +12,11 @@
 """
 from __future__ import annotations
 
-import logging
 import hashlib
-from pathlib import Path
-from typing import Optional, Dict
+import logging
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,15 @@ class PromptService:
     """
 
     def __init__(self, config_path: str = "conf/prompts/default.yaml"):
-        self.config_path = Path(config_path)
+        # 将相对路径解析为相对于 backend/ 目录的绝对路径，
+        # 确保无论从哪个 CWD 启动后端都能正确定位配置文件。
+        # __file__ = backend/app/services/ai/prompt_service.py
+        # .parent x4 → backend/
+        self.config_path = (
+            Path(__file__).parent.parent.parent.parent / config_path
+            if not Path(config_path).is_absolute()
+            else Path(config_path)
+        )
         self._config: PromptConfig = PromptConfig()
         self._config_hash: str = ""
         self._last_loaded: float = 0
@@ -128,6 +136,14 @@ class PromptService:
             "formula_design": "academician",
             "safety_check": "academician",
             "general_qa": "consultant",
+            # P3-1：前端常用场景别名，与 conf/prompts/default.yaml 场景映射一致。
+            # YAML 加载失败时内置回退也能正确路由，避免这些场景回退到 base。
+            # （safety_officer / process_engineer 提示词未内置时，get_scenario_prompt
+            #  经 system_prompts.get(prompt_key, system_prompts.get("base","")) 安全回退 base）
+            "academician": "academician",
+            "safety_off": "safety_officer",
+            "process_eng": "process_engineer",
+            "concise_adv": "consultant",
         }
         self._config_hash = self._calculate_hash(str(self._config.system_prompts))
 

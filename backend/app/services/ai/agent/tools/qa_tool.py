@@ -8,10 +8,9 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
 
 from app.services.ai.rag.rag_service import rag_service
-from app.services.ai.safety import check_prompt, check_output
+from app.services.ai.safety import check_output, check_prompt
 
 from . import BaseAgentTool, ToolResult, register_tool
 
@@ -63,6 +62,10 @@ class QAAnswerTool(BaseAgentTool):
             question: str = params["question"]
             top_k: int = params.get("top_k", 5)
             include_sources: bool = params.get("include_sources", True)
+            # P0-4：user.id 为 int，向量库 metadata["user_id"] 存储为 str，
+            # 需转 str 才能正确匹配租户（否则 only 种子可见）。
+            _raw_uid = context.get("user_id")
+            user_id: str = str(_raw_uid) if _raw_uid else None
 
             # 安全检查：问题注入检测
             guard_result = check_prompt(question)
@@ -75,7 +78,7 @@ class QAAnswerTool(BaseAgentTool):
                 )
 
             # 调用 RAG 服务
-            result = await rag_service.augment_query(question, top_k=top_k)
+            result = await rag_service.augment_query(question, top_k=top_k, user_id=user_id)
 
             # 构建答案
             answer_parts = [f"**问题**: {question}\n"]

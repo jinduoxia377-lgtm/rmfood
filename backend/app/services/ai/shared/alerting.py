@@ -13,12 +13,11 @@ AI 服务告警规则引擎
     engine = get_alerting_engine()
     alerts = engine.evaluate(metrics_summary)
 """
-from dataclasses import dataclass, field
-from typing import Callable, Any
-import asyncio
 import logging
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 

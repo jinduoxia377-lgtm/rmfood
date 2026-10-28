@@ -11,16 +11,17 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.github_mcp_router import _call_tool
-from ....services.llm_service import LLMMessage, llm_service
+
 from ....domain.bots import AIBot, BotStatus, BotVisibility
 from ....models.mcp_server import McpServerConfig
+from ....services.llm_service import LLMMessage, llm_service
 from .bot_manager import BotManager
 
 logger = logging.getLogger(__name__)

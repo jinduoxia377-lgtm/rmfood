@@ -5,10 +5,9 @@
 提供搜索热词、趋势分析、搜索行为分析、转化率追踪。
 """
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timezone, timedelta
-from collections import Counter, defaultdict
-from sqlalchemy import select, func, text
+from typing import Any, Dict, List
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)

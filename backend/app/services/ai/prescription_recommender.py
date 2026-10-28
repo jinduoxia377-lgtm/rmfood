@@ -22,13 +22,13 @@ from __future__ import annotations
 import json
 import logging
 from collections import Counter
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.formula import Formula
 from app.models.external_data import TCMHerb
+from app.models.formula import Formula
 
 logger = logging.getLogger(__name__)
 

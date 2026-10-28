@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 
 class StructureScore(Enum):
@@ -46,7 +46,7 @@ class StructureReport:
 class PromptStructureAnalyzer:
     """
     结构分析器
-    
+
     基于启发式规则评估提示词结构：
     - 必需章节检测
     - 信息流逻辑分析
@@ -54,7 +54,7 @@ class PromptStructureAnalyzer:
     """
 
     REQUIRED_SECTIONS = ["role", "task", "constraints", "examples"]
-    
+
     SECTION_PATTERNS = {
         "role": [
             r'(?:角色|你是一个|你是|作为|扮演)[：:\s]',
@@ -86,32 +86,32 @@ class PromptStructureAnalyzer:
     def analyze(self, prompt_text: str) -> StructureReport:
         """
         执行结构分析
-        
+
         Args:
             prompt_text: 待分析的提示词
-            
+
         Returns:
             StructureReport 完整的分析报告
         """
         sections = {}
-        
+
         # 检测各章节
         for section_name, patterns in self.SECTION_PATTERNS.items():
             section_info = self._detect_section(prompt_text, section_name, patterns)
             sections[section_name] = section_info
-        
+
         # 计算总体得分
         overall_score = self._calculate_overall_score(sections)
-        
+
         # 识别优缺点
         strengths, weaknesses = self._identify_strengths_weaknesses(sections)
-        
+
         # 生成建议
         suggestions = self._generate_suggestions(sections)
-        
+
         # 判断结构类型
         structure_type = self._classify_structure_type(sections)
-        
+
         return StructureReport(
             overall_score=overall_score,
             sections=sections,
@@ -131,9 +131,9 @@ class PromptStructureAnalyzer:
         is_present = False
         position = -1
         best_match_length = 0
-        
+
         paragraphs = text.split('\n\n')
-        
+
         for i, para in enumerate(paragraphs):
             for pattern in patterns:
                 match = re.search(pattern, para, re.IGNORECASE | re.MULTILINE)
@@ -143,9 +143,9 @@ class PromptStructureAnalyzer:
                         position = i
                     if len(para) > best_match_length:
                         best_match_length = len(para)
-        
+
         quality = min(best_match_length / 100.0, 1.0) if is_present else 0.0
-        
+
         return SectionInfo(
             name=section_name,
             is_present=is_present,
@@ -157,7 +157,7 @@ class PromptStructureAnalyzer:
     def _calculate_overall_score(self, sections: Dict[str, SectionInfo]) -> float:
         """计算总体结构分数"""
         base_score = 40.0  # 基础分
-        
+
         # 必需章节权重
         required_weights = {
             "role": 15,
@@ -165,17 +165,17 @@ class PromptStructureAnalyzer:
             "constraints": 15,
             "examples": 10,
         }
-        
+
         for section_name, weight in required_weights.items():
             section = sections.get(section_name)
             if section and section.is_present:
                 base_score += weight * section.quality_score
-        
+
         # 可选章节加分
         optional_section = sections.get("output_format")
         if optional_section and optional_section.is_present:
             base_score += 10 * optional_section.quality_score
-        
+
         return min(base_score, 100.0)
 
     def _identify_strengths_weaknesses(
@@ -185,26 +185,26 @@ class PromptStructureAnalyzer:
         """识别优点和不足"""
         strengths = []
         weaknesses = []
-        
+
         # 检查必需章节
         required_present = sum(
-            1 for s in self.REQUIRED_SECTIONS 
+            1 for s in self.REQUIRED_SECTIONS
             if sections.get(s, SectionInfo(s)).is_present
         )
-        
+
         if required_present == len(self.REQUIRED_SECTIONS):
             strengths.append("✅ 所有必需章节齐全")
         elif required_present >= 3:
             strengths.append(f"✅ 大部分必需章节已包含 ({required_present}/{len(self.REQUIRED_SECTIONS)})")
         else:
             weaknesses.append(f"❌ 缺少关键章节（仅有{required_present}/{len(self.REQUIRED_SECTIONS)}）")
-        
+
         # 具体章节评价
         for section_name in self.REQUIRED_SECTIONS:
             section = sections.get(section_name)
             if not section:
                 continue
-                
+
             if section.is_present:
                 if section.quality_score > 0.8:
                     strengths.append(
@@ -218,16 +218,16 @@ class PromptStructureAnalyzer:
                 weaknesses.append(
                     f"❌ 缺少{section_name}章节"
                 )
-        
+
         return strengths, weaknesses
 
     def _generate_suggestions(self, sections: Dict[str, SectionInfo]) -> List[str]:
         """生成改进建议"""
         suggestions = []
-        
+
         for section_name in self.REQUIRED_SECTIONS:
             section = sections.get(section_name)
-            
+
             if not section or not section.is_present:
                 if section_name == "role":
                     suggestions.append(
@@ -249,7 +249,7 @@ class PromptStructureAnalyzer:
                 suggestions.append(
                     f"扩充{section_name}章节的内容，增加更多细节和说明"
                 )
-        
+
         return suggestions
 
     def _classify_structure_type(
@@ -260,10 +260,10 @@ class PromptStructureAnalyzer:
         present_count = sum(
             1 for s in sections.values() if s.is_present
         )
-        
+
         total_sections = len(sections)
         ratio = present_count / total_sections if total_sections > 0 else 0
-        
+
         if ratio >= 0.8:
             return "structured"
         elif ratio >= 0.5:
@@ -293,7 +293,7 @@ class PromptStructureAnalyzer:
 # [示例]
 **输入**: [示例输入]
 **输出**: [示例输出]""",
-            
+
             "semi_structured": """[角色定义]
 
 [任务描述]
@@ -304,8 +304,8 @@ class PromptStructureAnalyzer:
 
 示例：
 [1-2个简短示例]""",
-            
+
             "freeform": """[自由形式提示词，建议至少包含：角色、任务、期望输出]""",
         }
-        
+
         return templates.get(structure_type, templates["structured"])

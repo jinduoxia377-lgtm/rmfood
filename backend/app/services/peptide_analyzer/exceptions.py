@@ -3,14 +3,15 @@
 所有业务异常的基类和具体异常类型
 """
 
-from fastapi import HTTPException, status
-from typing import Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, Optional
+
+from fastapi import status
 
 
 class PeptideAnalysisError(Exception):
     """肽分析基础异常"""
-    
+
     def __init__(
         self,
         code: str,
@@ -27,7 +28,7 @@ class PeptideAnalysisError(Exception):
 
 class SequenceValidationError(PeptideAnalysisError):
     """序列验证错误"""
-    
+
     def __init__(self, sequence: str, reason: str):
         super().__init__(
             code="INVALID_SEQUENCE",
@@ -39,7 +40,7 @@ class SequenceValidationError(PeptideAnalysisError):
 
 class PeptideConversionError(PeptideAnalysisError):
     """SMILES转换错误"""
-    
+
     def __init__(self, sequence: str, reason: str):
         super().__init__(
             code="CONVERSION_FAILED",
@@ -51,7 +52,7 @@ class PeptideConversionError(PeptideAnalysisError):
 
 class MissingDependencyError(PeptideAnalysisError):
     """依赖缺失错误"""
-    
+
     def __init__(self, dependency: str):
         super().__init__(
             code="MISSING_DEPENDENCY",
@@ -63,7 +64,7 @@ class MissingDependencyError(PeptideAnalysisError):
 
 class ExternalServiceError(PeptideAnalysisError):
     """外部服务错误"""
-    
+
     def __init__(self, service: str, reason: str, original_error: Optional[Exception] = None):
         super().__init__(
             code="EXTERNAL_SERVICE_ERROR",
@@ -79,7 +80,7 @@ class ExternalServiceError(PeptideAnalysisError):
 
 class DatabaseError(PeptideAnalysisError):
     """数据库错误"""
-    
+
     def __init__(self, operation: str, reason: str):
         super().__init__(
             code="DATABASE_ERROR",
@@ -91,7 +92,7 @@ class DatabaseError(PeptideAnalysisError):
 
 class RateLimitError(PeptideAnalysisError):
     """速率限制错误"""
-    
+
     def __init__(self, retry_after: int = 60):
         super().__init__(
             code="RATE_LIMITED",
@@ -103,7 +104,7 @@ class RateLimitError(PeptideAnalysisError):
 
 class InternalError(PeptideAnalysisError):
     """内部错误"""
-    
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__(
             code="INTERNAL_ERROR",

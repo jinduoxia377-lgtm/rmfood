@@ -2,11 +2,11 @@
 合成配方数据生成模块
 实现专利权利要求 G4：合成配方数据生成
 """
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
-import random
-import math
 import json
+import math
+import random
+from dataclasses import dataclass
+from typing import Dict, List
 
 
 @dataclass

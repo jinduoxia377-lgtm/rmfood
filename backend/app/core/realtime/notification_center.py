@@ -13,19 +13,20 @@ from __future__ import annotations
 
 import enum
 import logging
-import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from sqlalchemy import select, func, update, delete
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
     Notification,
-    NotificationPreference as NotificationPreferenceModel,
-    NotificationType,
     NotificationStatus,
+    NotificationType,
     User,
+)
+from app.models import (
+    NotificationPreference as NotificationPreferenceModel,
 )
 
 logger = logging.getLogger(__name__)

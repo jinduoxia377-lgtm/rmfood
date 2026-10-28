@@ -8,9 +8,9 @@
 4. 适用人群与禁忌说明
 """
 from __future__ import annotations
+
 import json
 import logging
-import asyncio
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -841,8 +841,9 @@ class FormulaExplanationService:
 
         Returns: 加载的药材数量
         """
-        from app.models.external_data import TCMHerb
         from sqlalchemy import select
+
+        from app.models.external_data import TCMHerb
 
         rows = (await db.execute(
             select(TCMHerb).where(TCMHerb.extra_knowledge.is_not(None)).limit(2000)
@@ -1115,10 +1116,10 @@ class FormulaExplanationService:
             instruction = f"每日1剂，水煎分2-3次温服。建议连续服用{min(14, max(7, total_dosage // 5))}天为一疗程。"
         elif total_dosage > 30:
             form = "代茶饮"
-            instruction = f"将药材切碎，每日取适量沸水冲泡，代茶饮用。可反复冲泡至味淡。"
+            instruction = "将药材切碎，每日取适量沸水冲泡，代茶饮用。可反复冲泡至味淡。"
         else:
             form = "粉剂"
-            instruction = f"研细末，每日2-3次，每次3-5g，温水送服。"
+            instruction = "研细末，每日2-3次，每次3-5g，温水送服。"
 
         return f"建议服用形式：{form}。\n{instruction}"
 
@@ -1171,7 +1172,7 @@ class FormulaExplanationService:
         if len(target_effects) <= 2:
             effects_str = "+".join(self._effect_label(e) for e in target_effects[:2])
             return f"复方{effects_str}汤"
-        return f"复方调理方"
+        return "复方调理方"
 
     async def generate_explanation_async(
         self,

@@ -17,14 +17,14 @@ import logging
 import sys
 from typing import Any
 
-from sqlalchemy import select, update, func
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # 添加项目根目录到路径
 sys.path.insert(0, ".")
 
 from app.core.database.session import async_session_factory
-from app.models.external_data import TCMHerb, MMIDHerb
+from app.models.external_data import TCMHerb
 
 logger = logging.getLogger(__name__)
 
@@ -40,52 +40,52 @@ _EFFICACY_SCORES = {
     "白术": {"健脾": 0.85, "免疫调节": 0.72, "补气": 0.80, "利尿": 0.65},
     "甘草": {"抗炎": 0.78, "止咳": 0.72, "解毒": 0.75, "调和": 0.90},
     "大枣": {"补气": 0.78, "养血": 0.75, "免疫调节": 0.72, "安神": 0.65},
-    
+
     # 补血药
     "当归": {"补血": 0.92, "活血": 0.88, "调经": 0.85, "抗氧化": 0.75},
     "龙眼肉": {"补血": 0.80, "安神": 0.82, "补气": 0.70, "养心": 0.78},
-    
+
     # 清热药
     "金银花": {"清热解毒": 0.92, "抗炎": 0.85, "抗氧化": 0.78, "免疫调节": 0.72},
     "菊花": {"清热解毒": 0.85, "明目": 0.82, "平肝": 0.78, "抗氧化": 0.70},
     "蒲公英": {"清热解毒": 0.85, "消肿散结": 0.80, "利尿": 0.72, "抗炎": 0.75},
     "连翘": {"清热解毒": 0.82, "消肿散结": 0.78, "抗炎": 0.75, "抗菌": 0.70},
     "鱼腥草": {"清热解毒": 0.88, "消炎": 0.82, "利尿": 0.70, "抗菌": 0.78},
-    
+
     # 利水渗湿药
     "茯苓": {"利尿": 0.85, "健脾": 0.75, "免疫调节": 0.70, "安神": 0.65},
     "薏苡仁": {"利尿": 0.82, "健脾": 0.75, "祛湿": 0.78, "免疫调节": 0.68},
-    
+
     # 活血化瘀药
     "丹参": {"活血": 0.90, "心血管保护": 0.85, "抗炎": 0.78, "抗氧化": 0.82},
     "三七": {"活血": 0.92, "止血": 0.88, "消肿止痛": 0.85, "心血管保护": 0.80},
     "川芎": {"活血行气": 0.88, "止痛": 0.85, "祛风": 0.75, "降压": 0.70},
-    
+
     # 理气药
     "陈皮": {"理气": 0.85, "健脾": 0.78, "燥湿化痰": 0.82, "消化系统": 0.80},
     "砂仁": {"化湿开胃": 0.82, "温脾止泻": 0.78, "理气安胎": 0.75},
-    
+
     # 解表药
     "薄荷": {"疏散风热": 0.85, "清利头目": 0.80, "利咽透疹": 0.75, "疏肝": 0.70},
     "生姜": {"解表散寒": 0.82, "温中止呕": 0.85, "化痰止咳": 0.75, "抗炎": 0.70},
     "紫苏": {"解表散寒": 0.80, "行气和胃": 0.78, "解鱼蟹毒": 0.75},
-    
+
     # 补阴药
     "枸杞子": {"滋补肝肾": 0.90, "明目": 0.88, "抗氧化": 0.85, "免疫调节": 0.82},
     "麦冬": {"养阴生津": 0.85, "润肺清心": 0.82, "滋阴": 0.80},
     "玉竹": {"养阴润燥": 0.82, "生津止渴": 0.80, "美容": 0.75},
     "百合": {"养阴润肺": 0.82, "清心安神": 0.78, "滋阴": 0.75},
     "黄精": {"补气养阴": 0.85, "健脾": 0.80, "润肺": 0.78, "补肾": 0.75},
-    
+
     # 安神药
     "酸枣仁": {"安神": 0.90, "养心": 0.85, "敛汗": 0.75, "生津": 0.70},
     "柏子仁": {"养心安神": 0.85, "润肠通便": 0.75, "止汗": 0.70},
     "莲子": {"补脾止泻": 0.80, "益肾固精": 0.78, "养心安神": 0.75},
-    
+
     # 收涩药
     "五味子": {"收敛固涩": 0.85, "益气生津": 0.80, "补肾宁心": 0.78},
     "山茱萸": {"补益肝肾": 0.88, "收敛固涩": 0.82, "强筋骨": 0.75},
-    
+
     # 其他常用药材
     "山楂": {"消食化积": 0.90, "行气散瘀": 0.82, "降脂": 0.78, "心血管保护": 0.75},
     "荷叶": {"降脂": 0.85, "清暑利湿": 0.80, "升发清阳": 0.75, "减肥": 0.72},
@@ -155,22 +155,22 @@ _COST_PER_GRAM = {
 async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
     """
     为 TCMHerb 表填充结构化知识数据
-    
+
     Returns:
         统计信息 {inserted: int, updated: int, skipped: int}
     """
     stats = {"inserted": 0, "updated": 0, "skipped": 0}
-    
+
     # 获取所有药材
     result = await db.execute(select(TCMHerb))
     herbs = result.scalars().all()
-    
+
     logger.info(f"找到 {len(herbs)} 条药材记录，开始填充知识数据...")
-    
+
     for herb in herbs:
         if not herb.name_cn:
             continue
-            
+
         # 检查是否已有 extra_knowledge
         has_knowledge = False
         if herb.extra_knowledge:
@@ -180,24 +180,24 @@ async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
                     has_knowledge = True
             except (json.JSONDecodeError, TypeError):
                 pass
-        
+
         if has_knowledge:
             stats["skipped"] += 1
             continue
-        
+
         # 构建知识数据
         herb_id = _get_herb_id(herb.name_cn)
         efficacy_scores = _EFFICACY_SCORES.get(herb.name_cn, {})
         dosage_min, dosage_max = _DOSAGE_RANGES.get(herb.name_cn, (3, 15))
         safety_index = _SAFETY_INDEX.get(herb.name_cn, 0.90)
         cost_per_gram = _COST_PER_GRAM.get(herb.name_cn, 0.10)
-        
+
         # 确定协同配伍
         synergy_partners = _get_synergy_partners(herb.name_cn, efficacy_scores)
-        
+
         # 确定禁忌配伍
         antagonistic_pairs = _get_antagonistic_pairs(herb.name_cn)
-        
+
         # 构建 extra_knowledge JSON
         extra_knowledge = {
             "herb_id": herb_id,
@@ -212,21 +212,21 @@ async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
             "source": "recipe_generation_data_completer",
             "enriched_at": asyncio.get_event_loop().time() if 'asyncio' in globals() else None,
         }
-        
+
         # 更新记录
         await db.execute(
             update(TCMHerb)
             .where(TCMHerb.id == herb.id)
             .values(extra_knowledge=json.dumps(extra_knowledge, ensure_ascii=False))
         )
-        
+
         if efficacy_scores:
             stats["updated"] += 1
             logger.debug(f"✓ {herb.name_cn}: 功效评分 {len(efficacy_scores)} 项, herb_id={herb_id}")
         else:
             stats["skipped"] += 1
             logger.warning(f"⚠ {herb.name_cn}: 无功效评分数据")
-    
+
     await db.commit()
     logger.info(f"填充完成: 新增 {stats['inserted']}, 更新 {stats['updated']}, 跳过 {stats['skipped']}")
     return stats
@@ -283,11 +283,10 @@ def _get_antagonistic_pairs(name_cn: str) -> list[str]:
 
 async def verify_data_completeness(db: AsyncSession) -> dict[str, Any]:
     """验证数据完整性"""
-    from sqlalchemy import text
-    
+
     # 统计总数
     total = (await db.execute(select(func.count()).select_from(TCMHerb))).scalar() or 0
-    
+
     # 统计有 extra_knowledge 的数量
     with_knowledge = (await db.execute(
         select(func.count())
@@ -295,21 +294,21 @@ async def verify_data_completeness(db: AsyncSession) -> dict[str, Any]:
         .where(TCMHerb.extra_knowledge != None)
         .where(TCMHerb.extra_knowledge != '')
     )).scalar() or 0
-    
+
     # 统计药食同源数量
     food_homology = (await db.execute(
         select(func.count())
         .select_from(TCMHerb)
         .where(TCMHerb.is_food_homology == True)
     )).scalar() or 0
-    
+
     # 验证 extra_knowledge 格式
     result = await db.execute(select(TCMHerb).limit(10))
     herbs = result.scalars().all()
-    
+
     valid_knowledge = 0
     invalid_knowledge = 0
-    
+
     for herb in herbs:
         if herb.extra_knowledge:
             try:
@@ -322,7 +321,7 @@ async def verify_data_completeness(db: AsyncSession) -> dict[str, Any]:
                 invalid_knowledge += 1
         else:
             invalid_knowledge += 1
-    
+
     return {
         "total_herbs": total,
         "with_extra_knowledge": with_knowledge,
@@ -339,11 +338,11 @@ async def main():
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    
+
     logger.info("=" * 60)
     logger.info("配方生成数据完整性补全")
     logger.info("=" * 60)
-    
+
     async with async_session_factory() as db:
         # 1. 验证当前状态
         logger.info("\n[1] 验证当前数据状态...")
@@ -351,20 +350,20 @@ async def main():
         logger.info(f"  总药材数: {initial_stats['total_herbs']}")
         logger.info(f"  有知识数据: {initial_stats['with_extra_knowledge']}")
         logger.info(f"  覆盖率: {initial_stats['knowledge_coverage_rate']}")
-        
+
         # 2. 填充缺失的数据
         logger.info("\n[2] 开始填充知识数据...")
         enrich_stats = await enrich_herb_knowledge(db)
         logger.info(f"  更新: {enrich_stats['updated']}")
         logger.info(f"  跳过: {enrich_stats['skipped']}")
-        
+
         # 3. 验证最终状态
         logger.info("\n[3] 验证最终数据状态...")
         final_stats = await verify_data_completeness(db)
         logger.info(f"  总药材数: {final_stats['total_herbs']}")
         logger.info(f"  有知识数据: {final_stats['with_extra_knowledge']}")
         logger.info(f"  覆盖率: {final_stats['knowledge_coverage_rate']}")
-        
+
         # 4. 抽样验证
         logger.info("\n[4] 抽样验证数据质量...")
         result = await db.execute(
@@ -373,7 +372,7 @@ async def main():
             .limit(5)
         )
         sample_herbs = result.scalars().all()
-        
+
         for herb in sample_herbs:
             try:
                 data = json.loads(herb.extra_knowledge)
@@ -385,7 +384,7 @@ async def main():
                 logger.info(f"    协同: {data.get('synergy_partners')}")
             except Exception as e:
                 logger.error(f"  ✗ {herb.name_cn}: 解析失败 - {e}")
-    
+
     logger.info("\n" + "=" * 60)
     logger.info("数据补全完成!")
     logger.info("=" * 60)

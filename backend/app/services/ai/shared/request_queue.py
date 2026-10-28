@@ -24,11 +24,11 @@
 from __future__ import annotations
 
 import asyncio
-import time
 import logging
+import time
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, Callable, Awaitable
+from typing import Any, Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 

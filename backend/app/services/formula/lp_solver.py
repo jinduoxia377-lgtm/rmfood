@@ -16,10 +16,10 @@ MILP 混合整数线性规划求解器
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-from scipy.optimize import milp, Bounds, LinearConstraint
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 logger = logging.getLogger(__name__)
 

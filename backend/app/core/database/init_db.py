@@ -3,10 +3,13 @@
 建表 + 初始化管理员账号 + 种子数据（TCMSP/DFBP）
 """
 import logging
+
 from sqlalchemy import select
-from ..database.session import async_session_factory
+
 from app.models import User, UserRole
+
 from ..config import settings
+from ..database.session import async_session_factory
 
 logger = logging.getLogger(__name__)
 

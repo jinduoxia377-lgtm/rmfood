@@ -12,8 +12,12 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass
-from typing import Set  # A-27
-from typing import Dict, List, Optional
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Set,  # A-27
+)
 
 logger = logging.getLogger(__name__)
 

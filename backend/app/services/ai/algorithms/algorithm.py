@@ -12,7 +12,6 @@ NSGA-II 算法核心 — 遗传算法引擎
 """
 from __future__ import annotations
 
-import copy
 import logging
 import math
 import random
@@ -118,24 +117,28 @@ class NSGAIIOptimizer:
             raise
 
     async def optimize_async(self, target_effects: List[str] = None,
-                             constraints: Dict = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
+                             constraints: Dict = None,
+                             _cancel_signal: Optional[threading.Event] = None,
+                             progress_callback: Optional[callable] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
         """异步版本的 NSGA-II 优化流程"""
         await self._ensure_herbs_loaded()
-        return self.optimize(target_effects, constraints)
+        return self.optimize(target_effects, constraints, _cancel_signal, progress_callback)
 
     def optimize(self, target_effects: List[str] = None,
                  constraints: Dict = None,
-                 _cancel_signal: Optional[threading.Event] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
+                 _cancel_signal: Optional[threading.Event] = None,
+                 progress_callback: Optional[callable] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
         """执行多目标优化流程"""
         if self.config.mode == "weighted":
-            return self._optimize_weighted(target_effects, constraints, _cancel_signal)
+            return self._optimize_weighted(target_effects, constraints, _cancel_signal, progress_callback)
         if self.config.mode == "epsilon":
             logger.info("[NSGA-II] mode=epsilon 暂 alias 到 pareto 模式")
-        return self._optimize_pareto(target_effects, constraints, _cancel_signal)
+        return self._optimize_pareto(target_effects, constraints, _cancel_signal, progress_callback)
 
     def _optimize_pareto(self, target_effects: List[str], constraints: Dict,
-                         _cancel_signal: Optional[threading.Event]) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
-        return self._run_nsga2_loop(target_effects, constraints, _cancel_signal)
+                         _cancel_signal: Optional[threading.Event] = None,
+                         progress_callback: Optional[callable] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
+        return self._run_nsga2_loop(target_effects, constraints, _cancel_signal, progress_callback)
 
     async def _ensure_herbs_loaded(self):
         """优先从 HerbKnowledgeService 加载最新药材数据"""
@@ -336,7 +339,8 @@ class NSGAIIOptimizer:
         return final_pareto, history
 
     def _optimize_weighted(self, target_effects: List[str], constraints: Dict,
-                           _cancel_signal: Optional[threading.Event]) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
+                           _cancel_signal: Optional[threading.Event],
+                           progress_callback: Optional[callable] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
         """加权标量化简单GA"""
         constraints = constraints or {}
         effective_constraints = dict(constraints)

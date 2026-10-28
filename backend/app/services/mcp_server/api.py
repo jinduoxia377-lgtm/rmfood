@@ -5,15 +5,14 @@ MCP Server — FastAPI 端点层
 同时提供 /api/v1/mcp/tools 元数据端点用于工具发现。
 """
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.core.database.session import get_db
 from app.services.mcp_server import (
     MCP_TOOL_REGISTRY,
-    list_tools,
     get_tool_metadata,
     list_all_tool_names,
 )

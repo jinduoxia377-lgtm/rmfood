@@ -4,14 +4,14 @@
 """
 
 import asyncio
+import hashlib
+import json
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Callable, Tuple
-from enum import Enum
-import hashlib
-import json
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ class ParallelGenerationResult:
 class ParallelFormulaPipeline:
     """
     并行配方生成管线
-    
+
     管线架构:
     ┌─────────────────────────────────────────────────────────────┐
     │                    输入验证 & 缓存检查                       │
@@ -93,18 +93,18 @@ class ParallelFormulaPipeline:
     ┌──────────────────────────────────────┐
     │         结果融合 & 输出              │
     └──────────────────────────────────────┘
-    
+
     性能目标:
     - 串行: ~15秒
     - 并行: <3秒
     """
-    
+
     def __init__(self):
         self._cache: Dict[str, Any] = {}
         self._cache_max_size = 1000
         self._phase_timings: Dict[str, List[float]] = {}
         logger.info("ParallelFormulaPipeline 初始化完成")
-    
+
     def _generate_cache_key(self, request: ParallelGenerationRequest) -> str:
         """生成缓存键"""
         data = {
@@ -116,23 +116,23 @@ class ParallelFormulaPipeline:
         }
         raw = json.dumps(data, sort_keys=True, default=str).encode()
         return hashlib.sha256(raw).hexdigest()[:16]
-    
+
     async def generate(
         self,
         request: ParallelGenerationRequest
     ) -> ParallelGenerationResult:
         """
         执行并行配方生成
-        
+
         Args:
             request: 生成请求
-            
+
         Returns:
             ParallelGenerationResult: 生成结果
         """
         start_time = time.perf_counter()
         formula_id = f"FORMULA-{datetime.now().strftime('%Y%m%d%H%M%S')}-{hash(start_time) % 10000:04d}"
-        
+
         # 1. 缓存检查
         if request.use_caching:
             cache_key = self._generate_cache_key(request)
@@ -142,30 +142,30 @@ class ParallelFormulaPipeline:
                 cached_result["generation_time"] = time.perf_counter() - start_time
                 cached_result["cache_hit"] = True
                 return cached_result
-        
+
         phase_results: Dict[GenerationPhase, PhaseResult] = {}
         phase_times: Dict[str, float] = {}
-        
+
         try:
             # ========== Phase 1: 并行执行 Synergy + Compatibility ==========
             logger.info("Phase 1: 并行执行协同分析和兼容性检查...")
             phase1_start = time.perf_counter()
-            
+
             synergy_task = asyncio.create_task(
                 self._run_synergy_analysis(request)
             )
             compat_task = asyncio.create_task(
                 self._run_compatibility_check(request)
             )
-            
+
             synergy_result, compat_result = await asyncio.gather(
                 synergy_task, compat_task,
                 return_exceptions=True
             )
-            
+
             phase1_time = time.perf_counter() - phase1_start
             phase_times["phase1_parallel"] = phase1_time
-            
+
             if isinstance(synergy_result, Exception):
                 phase_results[GenerationPhase.SYNERGY] = PhaseResult(
                     phase=GenerationPhase.SYNERGY,
@@ -179,7 +179,7 @@ class ParallelFormulaPipeline:
                     data=synergy_result,
                     execution_time=phase1_time / 2  # 近似平分
                 )
-            
+
             if isinstance(compat_result, Exception):
                 phase_results[GenerationPhase.COMPATIBILITY] = PhaseResult(
                     phase=GenerationPhase.COMPATIBILITY,
@@ -193,25 +193,25 @@ class ParallelFormulaPipeline:
                     data=compat_result,
                     execution_time=phase1_time / 2
                 )
-            
+
             # ========== Phase 2: 比例优化（依赖Phase 1）==========
             logger.info("Phase 2: 执行比例优化...")
             phase2_start = time.perf_counter()
-            
+
             ratio_result = await self._run_ratio_optimization(
                 request,
                 phase_results.get(GenerationPhase.SYNERGY, PhaseResult(
                     phase=GenerationPhase.RATIO_OPTIMIZATION, success=False
                 )).data
             )
-            
+
             phase_times["ratio_optimization"] = time.perf_counter() - phase2_start
             phase_results[GenerationPhase.RATIO_OPTIMIZATION] = ratio_result
-            
+
             # ========== Phase 3: 并行执行 Effect + Safety ==========
             logger.info("Phase 3: 并行执行效果预测和安全检查...")
             phase3_start = time.perf_counter()
-            
+
             effect_task = asyncio.create_task(
                 self._run_effect_prediction(request, ratio_result.data)
             )
@@ -224,15 +224,15 @@ class ParallelFormulaPipeline:
             stability_task = asyncio.create_task(
                 self._run_stability_prediction(request, ratio_result.data)
             )
-            
+
             effect_result, safety_result, taste_result, stability_result = await asyncio.gather(
                 effect_task, safety_task, taste_task, stability_task,
                 return_exceptions=True
             )
-            
+
             phase3_time = time.perf_counter() - phase3_start
             phase_times["phase3_parallel"] = phase3_time
-            
+
             # 处理结果
             phase_results[GenerationPhase.EFFECT_PREDICTION] = self._wrap_result(
                 GenerationPhase.EFFECT_PREDICTION, effect_result, phase3_time / 4
@@ -246,7 +246,7 @@ class ParallelFormulaPipeline:
             phase_results["stability"] = self._wrap_result(
                 "stability", stability_result, phase3_time / 4
             )
-            
+
             # ========== 结果融合 ==========
             logger.info("融合所有阶段结果...")
             result = self._fuse_results(
@@ -255,14 +255,14 @@ class ParallelFormulaPipeline:
                 phase_times=phase_times,
                 start_time=start_time
             )
-            
+
             # 缓存结果
             if request.use_caching:
                 self._cache[cache_key] = result
                 self._evict_cache_if_needed()
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"配方生成失败: {e}", exc_info=True)
             return ParallelGenerationResult(
@@ -273,7 +273,7 @@ class ParallelFormulaPipeline:
                 phase_times=phase_times,
                 error_message=str(e)
             )
-    
+
     def _wrap_result(
         self,
         phase: GenerationPhase,
@@ -284,7 +284,7 @@ class ParallelFormulaPipeline:
         if isinstance(result, Exception):
             return PhaseResult(phase=phase, success=False, error=str(result), execution_time=exec_time)
         return PhaseResult(phase=phase, success=True, data=result, execution_time=exec_time)
-    
+
     async def _run_synergy_analysis(self, request: ParallelGenerationRequest) -> Dict:
         """协同分析"""
         # 模拟耗时操作
@@ -297,7 +297,7 @@ class ParallelFormulaPipeline:
                 {"type": "pk_interaction", "score": 0.6, "confidence": 0.6},
             ]
         }
-    
+
     async def _run_compatibility_check(self, request: ParallelGenerationRequest) -> Dict:
         """兼容性检查"""
         await asyncio.sleep(0.08)
@@ -308,7 +308,7 @@ class ParallelFormulaPipeline:
             "warning_count": 2,
             "recommendations": ["建议调整维生素C剂量"]
         }
-    
+
     async def _run_ratio_optimization(
         self,
         request: ParallelGenerationRequest,
@@ -316,7 +316,7 @@ class ParallelFormulaPipeline:
     ) -> PhaseResult:
         """比例优化"""
         await asyncio.sleep(0.15)
-        
+
         # 生成优化后的比例
         total = sum(i.get("percentage", 0) for i in request.ingredients)
         optimized = {}
@@ -326,13 +326,13 @@ class ParallelFormulaPipeline:
             if synergy_data:
                 base *= (1 + synergy_data.get("overall_si", 0.5) * 0.1)
             optimized[ing.get("name", "")] = round(base * 100, 2)
-        
+
         return PhaseResult(
             phase=GenerationPhase.RATIO_OPTIMIZATION,
             success=True,
             data=optimized
         )
-    
+
     async def _run_effect_prediction(
         self,
         request: ParallelGenerationRequest,
@@ -347,7 +347,7 @@ class ParallelFormulaPipeline:
             "auc": 120.5,
             "confidence": 0.78
         }
-    
+
     async def _run_safety_check(
         self,
         request: ParallelGenerationRequest,
@@ -361,7 +361,7 @@ class ParallelFormulaPipeline:
             "warnings": ["建议监测维生素C剂量"],
             "compliance_status": "compliant"
         }
-    
+
     async def _run_taste_prediction(
         self,
         request: ParallelGenerationRequest,
@@ -380,7 +380,7 @@ class ParallelFormulaPipeline:
             "acceptability": 0.72,
             "suggestions": ["添加红枣可提升甜味"]
         }
-    
+
     async def _run_stability_prediction(
         self,
         request: ParallelGenerationRequest,
@@ -394,7 +394,7 @@ class ParallelFormulaPipeline:
             "risk_factors": ["光照敏感性"],
             "recommendations": ["建议避光保存"]
         }
-    
+
     def _fuse_results(
         self,
         formula_id: str,
@@ -404,19 +404,19 @@ class ParallelFormulaPipeline:
     ) -> ParallelGenerationResult:
         """融合所有阶段结果"""
         recommendations = []
-        
+
         # 收集各阶段建议
         for phase, result in phase_results.items():
             if result.success and result.data:
                 if isinstance(result.data, dict):
                     recs = result.data.get("recommendations", [])
                     recommendations.extend(recs)
-        
+
         # 去重
         recommendations = list(dict.fromkeys(recommendations))
-        
+
         total_time = time.perf_counter() - start_time
-        
+
         return ParallelGenerationResult(
             success=True,
             formula_id=formula_id,
@@ -446,7 +446,7 @@ class ParallelFormulaPipeline:
             phase_times=phase_times,
             cache_hit=False
         )
-    
+
     def _evict_cache_if_needed(self):
         """缓存淘汰"""
         if len(self._cache) > self._cache_max_size:
@@ -455,13 +455,13 @@ class ParallelFormulaPipeline:
             for key in keys[:len(keys) // 2]:
                 del self._cache[key]
             logger.info(f"缓存淘汰，剩余 {len(self._cache)} 条")
-    
+
     def get_performance_stats(self) -> Dict:
         """获取性能统计"""
         all_times = []
         for times in self._phase_timings.values():
             all_times.extend(times)
-        
+
         return {
             "cache_size": len(self._cache),
             "avg_generation_time": sum(all_times) / len(all_times) if all_times else 0,
@@ -479,7 +479,7 @@ async def generate_formula_parallel(request: ParallelGenerationRequest) -> Paral
 
 if __name__ == "__main__":
     import asyncio
-    
+
     async def test():
         request = ParallelGenerationRequest(
             ingredients=[
@@ -492,27 +492,27 @@ if __name__ == "__main__":
             target_efficacy=0.75,
             use_caching=True
         )
-        
+
         # 第一次生成
         start = time.perf_counter()
         result = await generate_formula_parallel(request)
         elapsed = time.perf_counter() - start
-        
-        print(f"=== 并行配方生成测试 ===")
+
+        print("=== 并行配方生成测试 ===")
         print(f"配方ID: {result.formula_id}")
         print(f"生成时间: {elapsed:.3f}s (目标: <3s)")
         print(f"成功: {result.success}")
         print(f"优化比例: {result.optimized_ratios}")
         print(f"建议: {result.recommendations}")
         print(f"阶段耗时: {result.phase_times}")
-        
+
         # 第二次生成（缓存命中）
         start = time.perf_counter()
         result2 = await generate_formula_parallel(request)
         elapsed2 = time.perf_counter() - start
-        
-        print(f"\n缓存命中测试:")
+
+        print("\n缓存命中测试:")
         print(f"生成时间: {elapsed2:.3f}s")
         print(f"缓存命中: {result2.cache_hit}")
-    
+
     asyncio.run(test())

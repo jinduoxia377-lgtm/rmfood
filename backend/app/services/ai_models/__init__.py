@@ -15,31 +15,32 @@ AI 模型服务包
 - SimulatedAnnealingOptimizer: 模拟退火
 - GradientDescentOptimizer: 梯度下降
 """
-from .formula_gpt import MockFormulaGPTService as FormulaGPTService
-from .synergy_net import TCMSynergyService as SynergyNetService
-from .peptide_scorer import PeptideScorerService
-from .taste_predictor import TCMTastePredictorService as TastePredictorService
-from .stability_model import ArrheniusStabilityModelService as StabilityModelService
-from .safety_checker import SafetyCheckerService
-from .encoder import EncoderNetwork, FormulaEncoder
 from .decoder import DecoderNetwork, FormulaDecoder
-from .scorer import MultiObjectiveScorer, DiversityScorer
-from .neural_formula_engine import MockNeuralFormulaEngine as NeuralFormulaEngine, FormulaCandidate
+from .encoder import EncoderNetwork, FormulaEncoder
+from .formula_gpt import MockFormulaGPTService as FormulaGPTService
+from .gradient_descent_optimizer import (
+    AdaptiveLearningRate,
+    FormulaGradientCalculator,
+    GradientDescentOptimizer,
+    OptimizationMonitor,
+    create_formula_gradient_function,
+    create_formula_objective_function,
+)
+from .mcts_solver import MCTSNode, MCTSOptimizer, MCTSTree
+from .neural_formula_engine import FormulaCandidate
+from .neural_formula_engine import MockNeuralFormulaEngine as NeuralFormulaEngine
+from .peptide_scorer import PeptideScorerService
+from .safety_checker import SafetyCheckerService
+from .scorer import DiversityScorer, MultiObjectiveScorer
 from .simulated_annealing import (
-    SimulatedAnnealingOptimizer,
     AdaptiveSimulatedAnnealing,
     CoolingStrategy,
     NeighborhoodOperation,
+    SimulatedAnnealingOptimizer,
 )
-from .mcts_solver import MCTSNode, MCTSTree, MCTSOptimizer
-from .gradient_descent_optimizer import (
-    GradientDescentOptimizer,
-    AdaptiveLearningRate,
-    OptimizationMonitor,
-    FormulaGradientCalculator,
-    create_formula_objective_function,
-    create_formula_gradient_function,
-)
+from .stability_model import ArrheniusStabilityModelService as StabilityModelService
+from .synergy_net import TCMSynergyService as SynergyNetService
+from .taste_predictor import TCMTastePredictorService as TastePredictorService
 
 __all__ = [
     # Mock 实现（通过别名导出以保持向后兼容）

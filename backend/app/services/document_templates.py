@@ -2,37 +2,37 @@
 文档模板系统
 支持 Markdown/HTML 到 DOCX/PDF 的转换，提供专业领域模板
 """
-import os
-import uuid
-import re
-import base64
 import logging
+import os
+import re
+import uuid
 from datetime import datetime
-from typing import Optional, Any
 from pathlib import Path
-from io import BytesIO
 from xml.etree import ElementTree as ET
 
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor, Cm, Twips
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
-from docx.oxml.ns import qn
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
-from reportlab.lib.pagesizes import A4, letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, mm
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
+from docx.oxml.ns import qn
+from docx.shared import Pt, RGBColor
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 from reportlab.lib.colors import HexColor
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, Image, ListFlowable, ListItem, KeepTogether
-)
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
-from openpyxl.utils import get_column_letter
+from reportlab.platypus import (
+    ListFlowable,
+    ListItem,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1147,7 +1147,7 @@ class DocumentTemplateService:
         doc = Document()
 
         # 标题
-        title = doc.add_heading(f"配方可解释性报告", level=0)
+        title = doc.add_heading("配方可解释性报告", level=0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # 副标题
@@ -1261,10 +1261,17 @@ class DocumentTemplateService:
         """生成配方可解释性报告（PDF）"""
         output_path = self.temp_dir / f"explainability_{formula_name}_{uuid.uuid4().hex[:8]}.pdf"
 
-        from reportlab.lib.pagesizes import A4
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.platypus import (
+            PageBreak,
+            Paragraph,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
+            TableStyle,
+        )
 
         doc = SimpleDocTemplate(str(output_path), pagesize=A4)
         styles = getSampleStyleSheet()
@@ -1278,7 +1285,7 @@ class DocumentTemplateService:
         story = []
 
         # 标题
-        story.append(Paragraph(f"配方可解释性报告", styles['TitleChinese']))
+        story.append(Paragraph("配方可解释性报告", styles['TitleChinese']))
         story.append(Paragraph(f"配方：{formula_name}", styles['Chinese']))
         story.append(Paragraph(f"生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Chinese']))
         story.append(Spacer(1, 20))

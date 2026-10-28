@@ -3,9 +3,9 @@ RMFOODFP 肽链结构分析模块
 基于 PepLink 的肽序列↔SMILES 双向转换服务
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 import logging
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 # 注意：pip包名是peplink，但实际导入模块名是PepLink（大写P）
 try:
     from PepLink import (
-        aa_seqs_to_smiles,
-        smiles_to_aa_seqs,
-        list_supported_noncanonical_aas,
-        register_noncanonical_aa,
-        load_noncanonical_aas_from_csv,
         IntrachainBond,
+        aa_seqs_to_smiles,
+        list_supported_noncanonical_aas,
+        load_noncanonical_aas_from_csv,
+        register_noncanonical_aa,
+        smiles_to_aa_seqs,
     )
     PEPLINK_AVAILABLE = True
 except ImportError as e:
@@ -74,7 +74,7 @@ class PeptideStructureInfo:
 class PeptideConverter:
     """
     肽序列转换器
-    
+
     基于 PepLink 实现：
     - 序列 → SMILES/SELFIES 转换
     - SMILES/SELFIES → 序列解析
@@ -82,7 +82,7 @@ class PeptideConverter:
     - 末端修饰支持（296种内置）
     - 环肽结构支持（3类拓扑+11种键）
     """
-    
+
     def __init__(self):
         if not PEPLINK_AVAILABLE:
             raise ImportError(
@@ -90,7 +90,7 @@ class PeptideConverter:
             )
         self._supported_aas_cache = None
         self._initialized_aas = False
-    
+
     def _ensure_initialized(self) -> None:
         """确保必要的数据已初始化"""
         if not self._initialized_aas:
@@ -100,7 +100,7 @@ class PeptideConverter:
                 self._initialized_aas = True
             except Exception as e:
                 logger.warning(f"初始化非天然氨基酸列表失败: {e}")
-    
+
     def sequence_to_smiles(
         self,
         sequence: str,
@@ -112,7 +112,7 @@ class PeptideConverter:
     ) -> SMILESResult:
         """
         肽序列 → SMILES/SELFIES 转换
-        
+
         Args:
             sequence: 氨基酸序列（如 "ACDEFG" 或 "RRXXRF"）
             n_terminal: N端修饰（如 "ACT" 乙酰化）
@@ -123,7 +123,7 @@ class PeptideConverter:
             intrachain_bonds: 链内键列表
                 格式: [{"type": "DSB", "residues": ["C1", "C6"]}, ...]
             output_format: 输出格式 "smiles" 或 "selfies"
-        
+
         Returns:
             SMILESResult 对象
         """
@@ -134,9 +134,9 @@ class PeptideConverter:
                 sequence=sequence or "",
                 error_message="序列不能为空"
             )
-        
+
         seq_upper = sequence.upper()
-        
+
         # 验证序列长度
         if len(seq_upper) < 2:
             return SMILESResult(
@@ -144,18 +144,18 @@ class PeptideConverter:
                 sequence=seq_upper,
                 error_message="序列长度不能少于2个氨基酸"
             )
-        
+
         if len(seq_upper) > 100:
             return SMILESResult(
                 success=False,
                 sequence=seq_upper,
                 error_message="序列长度不能超过100个氨基酸"
             )
-        
+
         try:
             # 构建调用参数
             kwargs = {"output_format": output_format}
-            
+
             if n_terminal:
                 kwargs["n_terminal"] = n_terminal
             if c_terminal:
@@ -178,14 +178,14 @@ class PeptideConverter:
 
             # 调用 PepLink
             result_smiles = aa_seqs_to_smiles(seq_upper, **kwargs)
-            
+
             return SMILESResult(
                 success=True,
                 sequence=seq_upper,
                 smiles=result_smiles if output_format == "smiles" else None,
                 selfies=result_smiles if output_format == "selfies" else None,
             )
-            
+
         except Exception as e:
             logger.error(f"序列转 SMILES 失败: {e}", exc_info=True)
             return SMILESResult(
@@ -193,7 +193,7 @@ class PeptideConverter:
                 sequence=seq_upper,
                 error_message=str(e),
             )
-    
+
     def smiles_to_sequence(
         self,
         smiles: str,
@@ -201,11 +201,11 @@ class PeptideConverter:
     ) -> SequenceResult:
         """
         SMILES/SELFIES → 肽序列解析
-        
+
         Args:
             smiles: SMILES 或 SELFIES 字符串
             format_type: 输入格式 "smiles" 或 "selfies"
-        
+
         Returns:
             SequenceResult 对象
         """
@@ -214,11 +214,11 @@ class PeptideConverter:
                 success=False,
                 unsupported_reason="输入不能为空"
             )
-        
+
         try:
             # 调用 PepLink
             result = smiles_to_aa_seqs(smiles)
-            
+
             return SequenceResult(
                 success=True,
                 sequence=result.sequence,
@@ -226,14 +226,14 @@ class PeptideConverter:
                 cyclization=result.cyclization,
                 unsupported_reason=result.unsupported_reason,
             )
-            
+
         except Exception as e:
             logger.error(f"SMILES 解析失败: {e}", exc_info=True)
             return SequenceResult(
                 success=False,
                 unsupported_reason=str(e),
             )
-    
+
     def register_custom_aa(
         self,
         name: str,
@@ -241,11 +241,11 @@ class PeptideConverter:
     ) -> bool:
         """
         注册自定义非天然氨基酸
-        
+
         Args:
             name: 氨基酸名称（如 "MyAA"）
             smiles: SMILES 字符串定义
-        
+
         Returns:
             是否注册成功
         """
@@ -258,7 +258,7 @@ class PeptideConverter:
         except Exception as e:
             logger.error(f"注册自定义氨基酸失败: {e}", exc_info=True)
             return False
-    
+
     def load_custom_aas_from_csv(
         self,
         csv_path: str
@@ -280,11 +280,11 @@ class PeptideConverter:
         except Exception as e:
             logger.error(f"批量注册失败: {e}", exc_info=True)
             return 0
-    
+
     def list_supported_aas(self) -> Dict[str, str]:
         """
         获取支持的非天然氨基酸列表
-        
+
         Returns:
             {名称: SMILES定义} 字典
         """
@@ -293,7 +293,7 @@ class PeptideConverter:
         except Exception as e:
             logger.error(f"获取支持列表失败: {e}", exc_info=True)
             return {}
-    
+
     def get_structure_info(
         self,
         sequence: str,
@@ -304,19 +304,19 @@ class PeptideConverter:
     ) -> PeptideStructureInfo:
         """
         获取肽的完整结构信息
-        
+
         Args:
             sequence: 氨基酸序列
             n_terminal: N端修饰
             c_terminal: C端修饰
             unusual_aaminos: 非天然氨基酸
             intrachain_bonds: 链内键
-        
+
         Returns:
             PeptideStructureInfo 对象
         """
         info = PeptideStructureInfo(sequence=sequence.upper())
-        
+
         # 转换到 SMILES
         smiles_result = self.sequence_to_smiles(
             sequence,
@@ -325,7 +325,7 @@ class PeptideConverter:
             unusual_aaminos=unusual_aaminos,
             intrachain_bonds=intrachain_bonds,
         )
-        
+
         if smiles_result.success:
             info.smiles = smiles_result.smiles
             info.selfies = smiles_result.selfies
@@ -333,7 +333,7 @@ class PeptideConverter:
             info.c_terminal_modification = c_terminal
             info.unusual_amino_acids = unusual_aaminos or []
             info.intrachain_bonds = intrachain_bonds or []
-        
+
         return info
 
 

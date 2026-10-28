@@ -16,16 +16,25 @@
 由上游 RAGService 决定是否阻断整个检索流程。
 """
 
-import os
 import asyncio
+import hashlib
 import logging
+import os
+import threading
+from collections import OrderedDict
 from typing import Optional
+
 import httpx
 
 logger = logging.getLogger(__name__)
 
 # 本地 fastembed 模型单例缓存（按模型名）——避免重复加载与下载
 _LOCAL_MODEL_CACHE: dict[str, object] = {}
+
+# 嵌入向量 LRU 缓存 — 避免对相同文本重复计算嵌入
+_EMBEDDING_CACHE_MAX: int = int(os.getenv("EMBEDDING_CACHE_MAX", "5000"))
+_embedding_cache: OrderedDict[str, list[float]] = OrderedDict()
+_embedding_cache_lock = threading.Lock()
 
 
 class EmbeddingService:
@@ -63,6 +72,44 @@ class EmbeddingService:
         logger.debug("EmbeddingService 初始化: provider=%s, model=%s", self.provider, self.model)
         self._using_fallback = False  # 追踪是否处于降级模式
 
+    def _cache_key(self, text: str) -> str:
+        """生成缓存键（包含模型名，确保不同模型的嵌入不冲突）"""
+        return f"{self.model}:{hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]}"
+
+    def _cache_get(self, text: str) -> Optional[list[float]]:
+        """从缓存获取嵌入向量"""
+        key = self._cache_key(text)
+        with _embedding_cache_lock:
+            if key in _embedding_cache:
+                _embedding_cache.move_to_end(key)
+                return list(_embedding_cache[key])  # 返回副本避免外部修改
+        return None
+
+    def _cache_set(self, text: str, embedding: list[float]) -> None:
+        """将嵌入向量存入缓存"""
+        key = self._cache_key(text)
+        with _embedding_cache_lock:
+            _embedding_cache[key] = list(embedding)
+            _embedding_cache.move_to_end(key)
+            # LRU 淘汰：超过上限时移除最久未使用的条目
+            while len(_embedding_cache) > _EMBEDDING_CACHE_MAX:
+                _embedding_cache.popitem(last=False)
+
+    def cache_stats(self) -> dict:
+        """返回缓存统计信息"""
+        with _embedding_cache_lock:
+            return {
+                "entries": len(_embedding_cache),
+                "max_entries": _EMBEDDING_CACHE_MAX,
+                "hit_rate": "N/A",  # 简化版，不追踪命中率
+            }
+
+    def clear_cache(self) -> None:
+        """清空嵌入缓存"""
+        with _embedding_cache_lock:
+            _embedding_cache.clear()
+        logger.info("嵌入缓存已清空")
+
     async def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """批量文本向量化
 
@@ -81,12 +128,32 @@ class EmbeddingService:
         if not texts:
             return []
 
+        # 检查缓存命中
+        results: list[Optional[list[float]]] = [None] * len(texts)
+        uncached_indices: list[int] = []
+        uncached_texts: list[str] = []
+
+        for i, text in enumerate(texts):
+            cached = self._cache_get(text)
+            if cached is not None:
+                results[i] = cached
+            else:
+                uncached_indices.append(i)
+                uncached_texts.append(text)
+
+        # 无未缓存文本时直接返回
+        if not uncached_texts:
+            return [r for r in results if r is not None]
+
         # 本地嵌入模型（fastembed / ONNX）——无需 API key
         if self.provider == "local":
             try:
-                result = await self._embed_local(texts)
+                embeddings = await self._embed_local(uncached_texts)
                 self._using_fallback = False
-                return result
+                for pos, (orig_idx, emb) in enumerate(zip(uncached_indices, embeddings)):
+                    results[orig_idx] = emb
+                    self._cache_set(uncached_texts[pos], emb)
+                return [r for r in results if r is not None]
             except Exception as e:
                 logger.error("本地 Embedding 模型加载或推理失败: %s", e)
                 self._using_fallback = True
@@ -94,9 +161,12 @@ class EmbeddingService:
 
         try:
             if self.api_key:
-                result = await self._embed_via_api(texts)
+                embeddings = await self._embed_via_api(uncached_texts)
                 self._using_fallback = False
-                return result
+                for pos, (orig_idx, emb) in enumerate(zip(uncached_indices, embeddings)):
+                    results[orig_idx] = emb
+                    self._cache_set(uncached_texts[pos], emb)
+                return [r for r in results if r is not None]
         except Exception as e:
             logger.warning(
                 "Embedding API 调用失败，进入降级模式: %s — 检索结果将不可靠", e,
@@ -113,6 +183,24 @@ class EmbeddingService:
     def is_fallback_mode(self) -> bool:
         """检查当前是否处于降级模式（API 不可用）"""
         return self._using_fallback
+
+    @property
+    def model_dim(self) -> int | None:
+        """嵌入模型的向量维度"""
+        model_dims = {
+            "BAAI/bge-small-zh-v1.5": 512,
+            "text-embedding-3-small": 1536,
+            "text-embedding-3-large": 3072,
+        }
+        if self.model in model_dims:
+            return model_dims[self.model]
+        # 尝试从本地缓存的模型获取维度
+        if self.provider == "local" and self.model in _LOCAL_MODEL_CACHE:
+            cached = _LOCAL_MODEL_CACHE[self.model]
+            dim = getattr(cached, "dim", None)
+            if dim:
+                return int(dim)
+        return None
 
     async def _embed_local(self, texts: list[str]) -> list[list[float]]:
         """使用本地 fastembed 模型向量化。

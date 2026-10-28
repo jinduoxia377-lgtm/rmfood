@@ -10,11 +10,11 @@
 - 检索增强生成 (RAG): 基于历史相似配方推荐
 """
 from __future__ import annotations
+
 import logging
-import asyncio
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
+from dataclasses import dataclass
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class PretrainedModel:
     herb_embeddings: Dict[str, List[float]]  # 药材嵌入向量
     effect_embeddings: Dict[str, List[float]]  # 功效嵌入向量
     model_params: Dict[str, float]  # 模型参数
-    
+
     @property
     def is_loaded(self) -> bool:
         return bool(self.herb_embeddings)
@@ -115,7 +115,7 @@ class FormulaPretrainService:
     def _initialize_embeddings(self) -> None:
         """初始化嵌入矩阵"""
         import random
-        
+
         # 随机初始化（实际应使用预训练权重）
         for herb_id in self._herb_vocab:
             self._model.herb_embeddings[herb_id] = [

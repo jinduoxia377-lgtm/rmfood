@@ -3,21 +3,22 @@
 包含用于执行数据导入的 Celery 任务。
 该任务从数据库中读取配置，执行导入并实时更新进度。
 """
-import asyncio
 import logging
-import uuid
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
-from app.api.db_modules.import_db import get_import_task, update_task_progress, complete_task, log_import_error
-from app.services.import_engine.engine import ImportEngine, ImportStatus, ImportReport, ImportStats
+from app.api.db_modules.import_db import (
+    complete_task,
+    get_import_task,
+    log_import_error,
+    update_task_progress,
+)
+from app.api.deps import get_db_session
+from app.services.import_engine.adapters.base import FieldMapper
 from app.services.import_engine.adapters.csv_adapter import CsvAdapter
 from app.services.import_engine.adapters.json_adapter import JsonAdapter
-from app.services.import_engine.adapters.base import FieldMapper, AdapterType
-from app.api.deps import get_db_session
+from app.services.import_engine.engine import ImportEngine, ImportReport, ImportStats, ImportStatus
 
 logger = logging.getLogger(__name__)
 

@@ -14,10 +14,7 @@
 """
 
 import asyncio
-import json
 import logging
-import re
-import socket
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -62,7 +59,12 @@ class NCBIOnlineSource:
                         )
                     else:
                         result["note"] = f"HTTP {resp.status}"
+        except (ModuleNotFoundError, ImportError) as e:
+            # 依赖缺失 ≠ 网络不可达：明确提示安装 aiohttp，避免将来复发时误导为网络问题
+            logger.warning(f"NCBI 探测失败：aiohttp 依赖缺失（{e}），请执行 pip install aiohttp")
+            result["note"] = "依赖缺失：aiohttp 未安装（请执行 pip install aiohttp）"
         except Exception as e:
+            # 真实网络/服务异常：保持原样，暴露异常类型与摘要
             result["note"] = f"{type(e).__name__}: {str(e)[:80]}"
         self.last_probe = result
         return result
@@ -71,54 +73,83 @@ class NCBIOnlineSource:
         self,
         activity_type: str = "ACE inhibitory peptide",
         limit: int = 5,
+        sequence: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """检索真实 PubMed 文献（可达时返回真实数据，不可达时返回空列表 + 标记）"""
+        """检索真实 PubMed 文献（可达时返回真实数据，不可达时返回空列表 + 标记）
+
+        - sequence 为 None：维持现状，仅按 activity_type 关键词检索。
+        - sequence 提供时：构建序列级查询 "{sequence} AND {activity_type}"，
+          若序列级结果为空，回退为仅 activity_type 查询再检索一次。
+          返回的每条记录带 query 字段，诚实标注实际命中的检索式。
+        """
         if not (self.last_probe and self.last_probe.get("reachable")):
             # 先探测一次
             await self.probe()
         if not (self.last_probe and self.last_probe.get("reachable")):
             return []
         try:
-            import aiohttp
             import urllib.parse
-            query = urllib.parse.quote(activity_type)
-            url = (
-                f"{self.BASE}/esearch.fcgi?db=pubmed&term={query}"
-                f"&retmax={min(limit, 20)}&retmode=json"
-            )
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+
+            import aiohttp
+
+            async def _esearch_ids(session, term: str) -> List[str]:
+                """执行一次 esearch 查询，返回 idlist"""
+                quoted = urllib.parse.quote(term)
+                esearch_url = (
+                    f"{self.BASE}/esearch.fcgi?db=pubmed&term={quoted}"
+                    f"&retmax={min(limit, 20)}&retmode=json"
+                )
+                async with session.get(
+                    esearch_url, timeout=aiohttp.ClientTimeout(total=15)
+                ) as resp:
                     if resp.status != 200:
                         return []
                     data = await resp.json()
-                    id_list = data.get("esearchresult", {}).get("idlist", [])
-                    if not id_list:
+                    return data.get("esearchresult", {}).get("idlist", [])
+
+            # 实际使用的检索式（用于诚实标注每条结果的来源）
+            used_query = activity_type
+            if sequence:
+                used_query = f"{sequence} AND {activity_type}"
+
+            async with aiohttp.ClientSession() as session:
+                id_list = await _esearch_ids(session, used_query)
+                if sequence and not id_list:
+                    # 序列级结果为空：回退为仅 activity_type 查询（保证有结果且诚实标注）
+                    used_query = activity_type
+                    id_list = await _esearch_ids(session, used_query)
+                if not id_list:
+                    return []
+                # 取摘要
+                ids = ",".join(id_list[:limit])
+                url2 = f"{self.BASE}/esummary.fcgi?db=pubmed&id={ids}&retmode=json"
+                async with session.get(url2, timeout=aiohttp.ClientTimeout(total=15)) as resp2:
+                    if resp2.status != 200:
                         return []
-                    # 取摘要
-                    ids = ",".join(id_list[:limit])
-                    url2 = f"{self.BASE}/esummary.fcgi?db=pubmed&id={ids}&retmode=json"
-                    async with session.get(url2, timeout=aiohttp.ClientTimeout(total=15)) as resp2:
-                        if resp2.status != 200:
-                            return []
-                        sumdata = await resp2.json()
-                        out = []
-                        for uid, meta in sumdata.get("result", {}).items():
-                            if uid == "uids":
-                                continue
-                            out.append({
-                                "pmid": uid,
-                                "title": meta.get("title", ""),
-                                "journal": meta.get("source", ""),
-                                "pubdate": meta.get("pubdate", ""),
-                                "authors": [a.get("name") for a in meta.get("authors", [])][:3],
-                                "doi": next(
-                                    (a.get("value") for a in meta.get("articleids", []) if a.get("idtype") == "doi"),
-                                    None,
-                                ),
-                                "url": f"https://www.ncbi.nlm.nih.gov/pubmed/{uid}/",
-                                "source_database": "PubMed (NCBI E-utilities)",
-                            })
-                        return out
+                    sumdata = await resp2.json()
+                    out = []
+                    for uid, meta in sumdata.get("result", {}).items():
+                        if uid == "uids":
+                            continue
+                        out.append({
+                            "pmid": uid,
+                            "title": meta.get("title", ""),
+                            "journal": meta.get("source", ""),
+                            "pubdate": meta.get("pubdate", ""),
+                            "authors": [a.get("name") for a in meta.get("authors", [])][:3],
+                            "doi": next(
+                                (a.get("value") for a in meta.get("articleids", []) if a.get("idtype") == "doi"),
+                                None,
+                            ),
+                            "url": f"https://www.ncbi.nlm.nih.gov/pubmed/{uid}/",
+                            "source_database": "PubMed (NCBI E-utilities)",
+                            "query": used_query,
+                        })
+                    return out
+        except (ModuleNotFoundError, ImportError) as e:
+            # 依赖缺失：直接返回空列表，避免把依赖问题当网络失败反复探测
+            logger.warning(f"NCBI 在线文献检索跳过：aiohttp 依赖缺失（{e}），请执行 pip install aiohttp")
+            return []
         except Exception as e:
             logger.warning(f"NCBI 在线文献检索失败: {e}")
             return []
@@ -176,14 +207,17 @@ class RealSourceClient:
         self,
         activity_type: Optional[str] = None,
         limit: int = 5,
+        sequence: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         真实在线文献检索（仅 NCBI PubMed）。
         不可达时返回空列表（诚实降级，不伪造文献）。
+        sequence 提供时执行序列级检索（"{sequence} AND {activity_type}"）。
         """
         return await self.ncbi.search_peptide_literature(
             activity_type=activity_type or "ACE inhibitory peptide",
             limit=limit,
+            sequence=sequence,
         )
 
 

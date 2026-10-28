@@ -10,6 +10,7 @@
 - 签名验证与安全
 """
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -19,11 +20,9 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
-import asyncio
+from typing import Any, Callable, Dict, List, Optional
 
 from sqlalchemy import text
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,23 +37,23 @@ class WebhookEvent(str, Enum):
     FORMULA_UPDATED = "formula.updated"
     FORMULA_DELETED = "formula.deleted"
     FORMULA_PUBLISHED = "formula.published"
-    
+
     EXPERIMENT_CREATED = "experiment.created"
     EXPERIMENT_UPDATED = "experiment.updated"
     EXPERIMENT_COMPLETED = "experiment.completed"
-    
+
     COMMENT_ADDED = "comment.added"
     MEMBER_INVITED = "member.invited"
     MEMBER_REMOVED = "member.removed"
-    
+
     AI_GENERATION_STARTED = "ai_generation.started"
     AI_GENERATION_COMPLETED = "ai_generation.completed"
     AI_GENERATION_FAILED = "ai_generation.failed"
-    
+
     WORKFLOW_APPROVAL_REQUESTED = "workflow.approval_requested"
     WORKFLOW_APPROVED = "workflow.approved"
     WORKFLOW_REJECTED = "workflow.rejected"
-    
+
     QUOTA_WARNING = "quota.warning"
     QUOTA_EXCEEDED = "quota.exceeded"
 
@@ -147,7 +146,7 @@ class IntegrationConfig:
 class EventBus:
     """
     事件总线
-    
+
     负责在系统中发布和订阅事件，
     触发关联的Webhook和集成。
     """
@@ -170,9 +169,9 @@ class EventBus:
     async def publish(self, event: WebhookEvent, payload: Dict[str, Any]):
         """发布事件"""
         logger.info(f"🚀 发布事件: {event.value}")
-        
+
         handlers = self._subscribers.get(event, [])
-        
+
         for handler in handlers:
             try:
                 if asyncio.iscoroutinefunction(handler):
@@ -194,7 +193,7 @@ event_bus = EventBus()
 class WebhookService:
     """
     Webhook管理服务
-    
+
     Features:
     - 创建/更新/删除Webhook
     - 事件触发与投递
@@ -219,7 +218,7 @@ class WebhookService:
     ) -> Webhook:
         """
         创建新Webhook
-        
+
         Args:
             name: 名称
             url: 回调URL
@@ -228,7 +227,7 @@ class WebhookService:
             secret: 签名密钥（可选，自动生成）
             headers: 自定义请求头
             org_id: 组织ID（可选）
-            
+
         Returns:
             Webhook对象
         """
@@ -243,7 +242,7 @@ class WebhookService:
             org_id=org_id,
         )
 
-        await self.db.execute(text("""INSERT INTO webhooks 
+        await self.db.execute(text("""INSERT INTO webhooks
                (id, name, url, events, secret, headers, status, owner_id, org_id, created_at, updated_at)
                VALUES (:id, :name, :url, CAST(:events_arr AS text[]), :secret, CAST(:headers_jsonb AS jsonb), :status, :owner_id, :org_id, NOW(), NOW())"""),
             {
@@ -264,19 +263,19 @@ class WebhookService:
             event_bus.subscribe(event, lambda e, p, wh=webhook: self._trigger_webhook(wh, e, p))
 
         logger.info(f"🪝 创建Webhook: {name} → {url} (events={[e.value for e in events]})")
-        
+
         return webhook
 
     async def get_webhooks(self, owner_id: int) -> List[Webhook]:
         """获取用户的所有Webhook"""
-        result = await self.db.execute(text("""SELECT * FROM webhooks 
+        result = await self.db.execute(text("""SELECT * FROM webhooks
                WHERE owner_id = :owner_id OR org_id IN (
                  SELECT org_id FROM organization_members WHERE user_id = :owner_id
                )
                ORDER BY created_at DESC"""),
             {"owner_id": owner_id},
         )
-        
+
         webhooks = []
         for row in result.fetchall():
             webhooks.append(Webhook(
@@ -295,7 +294,7 @@ class WebhookService:
                 success_count=row.success_count or 0,
                 failure_count=row.failure_count or 0,
             ))
-        
+
         return webhooks
 
     async def get_webhook(self, webhook_id: str, owner_id: int) -> Optional[Webhook]:
@@ -304,10 +303,10 @@ class WebhookService:
             {"id": webhook_id, "owner_id": owner_id},
         )
         row = result.fetchone()
-        
+
         if not row:
             return None
-        
+
         return Webhook(
             id=row.id,
             name=row.name,
@@ -335,15 +334,15 @@ class WebhookService:
         allowed_fields = ["name", "url", "status"]
         set_clauses = []
         params = {"id": webhook_id, "owner_id": owner_id}
-        
+
         for key, value in updates.items():
             if key in allowed_fields:
                 set_clauses.append(f"{key} = :{key}")
                 params[key] = value
-        
+
         if set_clauses:
             set_clauses.append("updated_at = NOW()")
-            
+
             await self.db.execute(text("UPDATE webhooks SET {', '.join(set_clauses)} WHERE id = :id AND owner_id = :owner_id"),
                 params,
             )
@@ -357,13 +356,13 @@ class WebhookService:
             {"id": webhook_id, "owner_id": owner_id},
         )
         await self.db.commit()
-        
+
         return True
 
     async def _trigger_webhook(self, webhook: Webhook, event: WebhookEvent, payload: Dict[str, Any]):
         """触发Webhook（内部方法）"""
         import aiohttp
-        
+
         delivery = WebhookDelivery(
             id=str(uuid.uuid4()),
             webhook_id=webhook.id,
@@ -373,9 +372,9 @@ class WebhookService:
 
         try:
             body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
-            
+
             signature = self._generate_signature(body, webhook.secret)
-            
+
             headers = {
                 "Content-Type": "application/json",
                 "User-Agent": "RMFOOD-Webhook/2.0",
@@ -387,14 +386,14 @@ class WebhookService:
             }
 
             start_time = datetime.now()
-            
+
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.post(webhook.url, data=body, headers=headers) as response:
                     delivery.response_status = response.status
                     delivery.response_body = await response.text()
                     delivery.success = 200 <= response.status < 300
-            
+
             delivery.duration_ms = int((datetime.now() - start_time).total_seconds() * 1000)
 
             if delivery.success:
@@ -424,7 +423,7 @@ class WebhookService:
 
     async def _log_delivery(self, delivery: WebhookDelivery):
         """记录投递日志"""
-        await self.db.execute(text("""INSERT INTO webhook_deliveries 
+        await self.db.execute(text("""INSERT INTO webhook_deliveries
                (id, webhook_id, event_type, payload, response_status, response_body, duration_ms, success, retry_count, created_at)
                VALUES (:id, :webhook_id, :event_type, CAST(:payload_jsonb AS jsonb), :response_status, :response_body, :duration_ms, :success, :retry_count, NOW())"""),
             {
@@ -461,7 +460,7 @@ class WebhookService:
 class APIKeyService:
     """
     API密钥管理服务
-    
+
     Features:
     - 安全的密钥生成与存储（仅存储hash）
     - 权限范围控制
@@ -476,7 +475,7 @@ class APIKeyService:
     def generate_key(self) -> tuple:
         """
         生成新的API密钥
-        
+
         Returns:
             (plain_key, key_prefix) 元组，plain_key仅返回一次
         """
@@ -495,14 +494,14 @@ class APIKeyService:
     ) -> tuple:
         """
         创建API密钥
-        
+
         Args:
             name: 密钥名称
             scopes: 权限范围列表
             owner_id: 所有者ID
             expires_in_days: 有效期（天），None表示永不过期
             org_id: 组织ID
-            
+
         Returns:
             (api_key_object, plain_key) 仅创建时返回明文密钥
         """
@@ -524,7 +523,7 @@ class APIKeyService:
             expires_at=expires_at,
         )
 
-        await self.db.execute(text("""INSERT INTO api_keys 
+        await self.db.execute(text("""INSERT INTO api_keys
                (id, name, key_hash, key_prefix, scopes, owner_id, org_id, expires_at, is_active, created_at)
                VALUES (:id, :name, :key_hash, :key_prefix, CAST(:scopes_arr AS text[]), :owner_id, :org_id, :expires_at, TRUE, NOW())"""),
             {
@@ -541,14 +540,14 @@ class APIKeyService:
         await self.db.commit()
 
         logger.info(f"🔑 创建API密钥: {name} (prefix={prefix})")
-        
+
         return api_key, plain_key
 
     async def verify_key(self, plain_key: str) -> Optional[APIKey]:
         """验证API密钥并返回密钥对象"""
         key_hash = hashlib.sha256(plain_key.encode()).hexdigest()
 
-        result = await self.db.execute(text("""SELECT * FROM api_keys 
+        result = await self.db.execute(text("""SELECT * FROM api_keys
                WHERE key_hash = :key_hash AND is_active = TRUE
                AND (expires_at IS NULL OR expires_at > NOW())"""),
             {"key_hash": key_hash},
@@ -580,7 +579,7 @@ class APIKeyService:
     async def list_keys(self, owner_id: int) -> List[Dict[str, Any]]:
         """列出用户的所有API密钥（不含实际密钥值）"""
         result = await self.db.execute(text("""SELECT id, name, key_prefix, scopes, expires_at, last_used_at, is_active, created_at
-               FROM api_keys 
+               FROM api_keys
                WHERE owner_id = :owner_id
                ORDER BY created_at DESC"""),
             {"owner_id": owner_id},
@@ -609,7 +608,7 @@ class APIKeyService:
         await self.db.commit()
 
         logger.info(f"🔒 撤销API密钥: {key_id}")
-        
+
         return True
 
 
@@ -620,7 +619,7 @@ class APIKeyService:
 class ThirdPartyIntegrationService:
     """
     第三方集成服务
-    
+
     支持的平台:
     - Slack (Incoming Webhooks)
     - 钉钉 (机器人)
@@ -651,7 +650,7 @@ class ThirdPartyIntegrationService:
             org_id=org_id,
         )
 
-        await self.db.execute(text("""INSERT INTO integrations 
+        await self.db.execute(text("""INSERT INTO integrations
                (id, type, name, config, events, is_active, owner_id, org_id, created_at)
                VALUES (:id, :type, :name, CAST(:config_jsonb AS jsonb), CAST(:events_arr AS text[]), :is_active, :owner_id, :org_id, NOW())"""),
             {

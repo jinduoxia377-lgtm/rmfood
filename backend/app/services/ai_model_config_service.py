@@ -9,13 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.models.ai_model_config import AIModelConfig
 
@@ -31,7 +29,7 @@ class ModelConfig:
     api_key_plaintext: str = ""
     base_url: str = ""
     model: str = ""
-    max_tokens: int = 4096
+    max_tokens: int = 16000
     temperature: float = 0.7
     timeout_ms: int = 30000
     max_retries: int = 3
@@ -183,6 +181,7 @@ class AIModelConfigService:
     @classmethod
     def _get_encryption_key(cls) -> bytes:
         import hashlib
+
         from app.core.config import settings
         raw = settings.encryption.encryption_key or settings.secret_key or ""
         if not raw:

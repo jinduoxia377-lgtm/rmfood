@@ -9,11 +9,11 @@
 - 可视化数据输出 (JSON for 前端图表库)
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Any
-import math
 import logging
+import math
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -39,19 +39,19 @@ class EffectPrediction:
     effect_duration: float      # 效应持续时间 (小时)
     optimal_window: Tuple[float, float]  # 最佳服用时间窗口
     visualization_data: Dict[str, Any] = field(default_factory=dict)
-    
+
     @property
     def auc(self) -> float:
         """计算曲线下面积 AUC (梯形法)"""
         if len(self.ct_curve) < 2:
             return 0.0
-        
+
         auc = 0.0
         for i in range(1, len(self.ct_curve)):
             dt = self.ct_curve[i].time_hour - self.ct_curve[i-1].time_hour
             avg_conc = (self.ct_curve[i].concentration + self.ct_curve[i-1].concentration) / 2
             auc += dt * avg_conc
-        
+
         return auc
 
 
@@ -190,17 +190,17 @@ def _resolve_ingredient_params(name: str):
 class EffectSimulator:
     """
     效果预测模拟器 - 基于 PopPK/PD 的配方效果预测
-    
+
     PK 模型: 一室模型 with first-order absorption
     PD 模型: Sigmoid Emax 模型
-    
+
     输出:
     - C-T 曲线 (血浆浓度-时间)
     - E-T 曲线 (效应水平-时间)
     - 关键参数 (Tmax, Cmax, AUC, 效应持续时间)
     - 最佳服用时间窗口建议
     """
-    
+
     def __init__(self):
         logger.info("EffectSimulator 初始化成功")
 
@@ -215,14 +215,14 @@ class EffectSimulator:
     ) -> EffectPrediction:
         """
         预测配方的整体效果
-        
+
         Args:
             formula_ingredients: 配方成分列表 [{"name", "amount_mg", "percentage"}, ...]
             formula_id: 配方标识符
             body_weight_kg: 受试者体重 (kg)，默认 70kg
             simulation_hours: 模拟时长 (小时)，默认 24h
             time_points: 时间点数量，默认 100 个点
-        
+
         Returns:
             EffectPrediction: 完整的预测结果，包含 C-T/E-T 曲线和可视化数据
 
@@ -240,12 +240,12 @@ class EffectSimulator:
 
         logger.info(f"开始效果预测 - 配方ID={formula_id}, 成分数={len(formula_ingredients)}, "
                     f"DB覆盖数={len(db_overrides)}")
-        
+
         time_array = [i * simulation_hours / (time_points - 1) for i in range(time_points)]
-        
+
         total_ct = []
         total_et = []
-        
+
         db_hit_names = []
         for ing in formula_ingredients:
             name = ing.get("name", "")
@@ -295,9 +295,9 @@ class EffectSimulator:
 
             ct_single = self._calculate_pk_curve(pk_params, dose_mg_kg, time_array)
             et_single = self._calculate_pd_curve(pd_params, ct_single)
-            
+
             weight = ing.get("percentage", 0) / 100.0
-            
+
             if not total_ct:
                 total_ct = [c * weight for c in ct_single]
                 total_et = [e * weight for e in et_single]
@@ -305,14 +305,14 @@ class EffectSimulator:
                 for i in range(len(total_ct)):
                     total_ct[i] += ct_single[i] * weight
                     total_et[i] += et_single[i] * weight
-        
+
         if not total_ct:
             total_ct = [0.0] * len(time_array)
             total_et = [0.0] * len(time_array)
-        
-        confidence_intervals = [(max(0, c*0.7), min(c*1.3, c+0.5)) 
+
+        confidence_intervals = [(max(0, c*0.7), min(c*1.3, c+0.5))
                                for c in total_ct]
-        
+
         ct_curve = [
             TimePoint(
                 time_hour=t,
@@ -322,7 +322,7 @@ class EffectSimulator:
             )
             for i, (t, c, e) in enumerate(zip(time_array, total_ct, total_et))
         ]
-        
+
         et_curve = [
             TimePoint(
                 time_hour=t,
@@ -332,24 +332,24 @@ class EffectSimulator:
             )
             for t, c, e in zip(time_array, total_ct, total_et)
         ]
-        
+
         peak_idx = total_ct.index(max(total_ct)) if total_ct else 0
         t_max = time_array[peak_idx]
         c_max = total_ct[peak_idx]
         e_max = max(total_et) if total_et else 0.0
-        
+
         effect_threshold = e_max * 0.5
         above_threshold = [t for t, e in zip(time_array, total_et) if e >= effect_threshold]
         duration = above_threshold[-1] - above_threshold[0] if len(above_threshold) >= 2 else 0.0
-        
+
         optimal_start = max(0, t_max - 0.5)
         optimal_end = t_max + duration if duration > 0 else t_max + 4
         optimal_window = (optimal_start, optimal_end)
-        
+
         viz_data = self._generate_visualization_data(
             time_array, total_ct, total_et, t_max, c_max, e_max, optimal_window
         )
-        
+
         prediction = EffectPrediction(
             formula_id=formula_id,
             ct_curve=ct_curve,
@@ -361,10 +361,10 @@ class EffectSimulator:
             optimal_window=optimal_window,
             visualization_data=viz_data
         )
-        
+
         logger.info(f"预测完成 - Tmax={t_max:.2f}h, Cmax={c_max:.2f}μg/mL, "
                    f"Emax={e_max:.2f}, 持续时间={duration:.2f}h")
-        
+
         return prediction
 
     def _calculate_pk_curve(
@@ -375,7 +375,7 @@ class EffectSimulator:
     ) -> List[float]:
         """
         计算一室模型 PK 曲线 (C-t)
-        
+
         方程: C(t) = (F × Dose × ka) / (Vd × (ka - ke)) × (e^(-ke×t) - e^(-ka×t))
         """
         F = pk_params["F"]
@@ -383,18 +383,18 @@ class EffectSimulator:
         Vd = pk_params["Vd"]
         CL = pk_params["CL"]
         t_lag = pk_params.get("t_lag", 0.0)
-        
+
         ke = CL / Vd
-        
+
         concentrations = []
-        
+
         for t in time_array:
             if t <= t_lag:
                 concentrations.append(0.0)
                 continue
-            
+
             t_adj = t - t_lag
-            
+
             if abs(ka - ke) < 1e-10:
                 conc = (F * dose_mg_kg * ka / Vd) * t_adj * math.exp(-ke * t_adj)
             else:
@@ -404,9 +404,9 @@ class EffectSimulator:
                     conc = term1 * term2
                 except (OverflowError, ValueError):
                     conc = 0.0
-            
+
             concentrations.append(max(0.0, conc))
-        
+
         return concentrations
 
     def _calculate_pd_curve(
@@ -416,29 +416,29 @@ class EffectSimulator:
     ) -> List[float]:
         """
         计算 Sigmoid Emax PD 曲线 (E-t)
-        
+
         方程: E(t) = E_max × C(t)^γ / (EC50^γ + C(t)^γ)
         """
         E_max = pd_params["E_max"]
         EC50 = pd_params["EC50"]
         Hill = pd_params["Hill"]
-        
+
         effects = []
-        
+
         for c in ct_values:
             if EC50 <= 0:
                 effects.append(E_max if c > 0 else 0.0)
                 continue
-            
+
             try:
                 numerator = E_max * (c ** Hill)
                 denominator = (EC50 ** Hill) + (c ** Hill)
                 effect = numerator / denominator
             except (OverflowError, ValueError):
                 effect = E_max if c > EC50 else 0.0
-            
+
             effects.append(max(0.0, min(1.0, effect)))
-        
+
         return effects
 
     def _generate_visualization_data(
@@ -452,33 +452,33 @@ class EffectSimulator:
         optimal_window: Tuple[float, float]
     ) -> Dict[str, Any]:
         """生成前端可视化所需的 JSON 数据结构"""
-        
+
         ct_series = {
             "name": "血浆浓度",
-            "data": [{"time": round(t, 2), "value": round(c, 4)} 
+            "data": [{"time": round(t, 2), "value": round(c, 4)}
                     for t, c in zip(time_array, ct_values)],
             "unit": "μg/mL",
             "color": "#2563eb"
         }
-        
+
         et_series = {
             "name": "效应水平",
-            "data": [{"time": round(t, 2), "value": round(e, 4)} 
+            "data": [{"time": round(t, 2), "value": round(e, 4)}
                     for t, e in zip(time_array, et_values)],
             "unit": "normalized (0-1)",
             "color": "#dc2626"
         }
-        
+
         markers = [
             {"time": round(t_max, 2), "label": f"Tmax ({t_max:.1f}h)", "type": "peak"},
             {"time": 0, "label": "服用时间", "type": "event"},
             {"time": round(optimal_window[0], 2), "label": "最佳窗口开始", "type": "window_start"},
             {"time": round(optimal_window[1], 2), "label": "最佳窗口结束", "type": "window_end"}
         ]
-        
+
         upper_band = [min(v * 1.3, v + 0.5) for v in ct_values]
         lower_band = [max(v * 0.7, 0) for v in ct_values]
-        
+
         visualization_data = {
             "chart_type": "dual_axis_line_chart",
             "x_axis_label": "时间 (小时)",
@@ -496,13 +496,13 @@ class EffectSimulator:
                 "lower": [round(l, 4) for l in lower_band]
             },
             "export_metadata": {
-                "title": f"配方效果预测曲线",
+                "title": "配方效果预测曲线",
                 "dpi": 300,
                 "format": ["png", "svg", "pdf"],
                 "dimensions": {"width": 1200, "height": 600}
             }
         }
-        
+
         return visualization_data
 
     def compare_formulas(
@@ -512,10 +512,10 @@ class EffectSimulator:
     ) -> ComparisonData:
         """
         多方案对比分析
-        
+
         Args:
             formulas: {formula_name: ingredients_list}
-        
+
         Returns:
             ComparisonData: 包含所有方案的对比数据和指标
         """
@@ -525,14 +525,14 @@ class EffectSimulator:
             et_curves={},
             comparison_metrics={}
         )
-        
+
         for formula_name, ingredients in formulas.items():
-            pred = self.predict_effect(formula_id=formula_name, 
+            pred = self.predict_effect(formula_id=formula_name,
                                        formula_ingredients=ingredients, **kwargs)
-            
+
             comparison.ct_curves[formula_name] = pred.ct_curve
             comparison.et_curves[formula_name] = pred.et_curve
-            
+
             comparison.comparison_metrics[formula_name] = {
                 "Tmax": round(pred.peak_time, 2),
                 "Cmax": round(pred.peak_concentration, 4),
@@ -541,9 +541,9 @@ class EffectSimulator:
                 "Duration": round(pred.effect_duration, 2),
                 "OptimalWindow": [round(w, 2) for w in pred.optimal_window]
             }
-        
+
         logger.info(f"方案对比完成 - 共 {len(formulas)} 个方案")
-        
+
         return comparison
 
 
@@ -553,7 +553,7 @@ def quick_test():
     logger.info("效果预测模拟器 - 快速测试")
     logger.info("=" * 70)
     simulator = EffectSimulator()
-    
+
     test_formula = [
         {"name": "大豆肽", "amount_mg": 500, "percentage": 30},
         {"name": "黄芪多糖", "amount_mg": 300, "percentage": 18},
@@ -561,7 +561,7 @@ def quick_test():
         {"name": "维生素C", "amount_mg": 200, "percentage": 12},
         {"name": "大豆异黄酮", "amount_mg": 80, "percentage": 5},
     ]
-    
+
     logger.info("\n【测试配方】综合营养配方")
     logger.info("-" * 70)
     prediction = simulator.predict_effect(
@@ -571,21 +571,21 @@ def quick_test():
         simulation_hours=24.0,
         time_points=100
     )
-    
-    logger.info(f"\n✅ 预测完成!")
-    logger.info(f"\n📊 核心指标:")
+
+    logger.info("\n✅ 预测完成!")
+    logger.info("\n📊 核心指标:")
     logger.info(f"   • 达峰时间 Tmax: {prediction.peak_time:.2f} 小时")
     logger.info(f"   • 峰浓度 Cmax: {prediction.peak_concentration:.4f} μg/mL")
     logger.info(f"   • 最大效应 Emax: {prediction.max_effect:.4f} (归一化)")
     logger.info(f"   • 曲线下面积 AUC: {prediction.auc:.2f} μg·h/mL")
     logger.info(f"   • 效应持续时间: {prediction.effect_duration:.2f} 小时")
     logger.info(f"   • 最佳服用窗口: {prediction.optimal_window[0]:.1f}h - {prediction.optimal_window[1]:.1f}h")
-    logger.info(f"\n📈 时效曲线采样 (前 10 个点):")
+    logger.info("\n📈 时效曲线采样 (前 10 个点):")
     logger.info(f"   {'时间(h)':<10} {'浓度(μg/mL)':<14} {'效应水平':<10}")
     logger.info(f"   {'-'*34}")
     for tp in prediction.ct_curve[:10]:
         logger.info(f"   {tp.time_hour:<10.2f} {tp.concentration:<14.4f} {tp.effect_level:<10.4f}")
-    logger.info(f"\n🎨 可视化数据结构:")
+    logger.info("\n🎨 可视化数据结构:")
     logger.info(f"   图表类型: {prediction.visualization_data['chart_type']}")
     logger.info(f"   数据序列数: {len(prediction.visualization_data['series'])}")
     logger.info(f"   标记点数: {len(prediction.visualization_data['markers'])}")
@@ -597,20 +597,20 @@ def quick_test():
         {"name": "黄芪多糖", "amount_mg": 200, "percentage": 30},
         {"name": "大豆肽", "amount_mg": 150, "percentage": 30},
     ]
-    
+
     formula_b = [
         {"name": "大豆异黄酮", "amount_mg": 120, "percentage": 35},
         {"name": "维生素C", "amount_mg": 500, "percentage": 35},
         {"name": "胶原蛋白肽", "amount_mg": 300, "percentage": 30},
     ]
-    
+
     comparison = simulator.compare_formulas({
         "高功效配方-A": formula_a,
         "抗氧化配方-B": formula_b
     })
-    
+
     logger.info(f"\n对比方案数: {len(comparison.formulas)}")
-    logger.debug(f"\n详细指标对比:")
+    logger.debug("\n详细指标对比:")
     for name, metrics in comparison.comparison_metrics.items():
         logger.info(f"\n【{name}】")
         for key, value in metrics.items():
@@ -619,20 +619,20 @@ def quick_test():
     logger.info("验证标准检查:")
     logger.info("=" * 70)
     checks = [
-        ("3.8 C-T 曲线形状合理性", 
+        ("3.8 C-T 曲线形状合理性",
          prediction.peak_concentration > 0 and prediction.peak_time > 0 and prediction.peak_time < 10),
         ("3.9 E-T 曲线范围正确", 0 <= prediction.max_effect <= 1),
-        ("3.9 最佳窗口基于 Tmax", 
+        ("3.9 最佳窗口基于 Tmax",
          prediction.optimal_window[0] <= prediction.peak_time <= prediction.optimal_window[1]),
-        ("3.10 JSON 数据格式兼容性", 
-         "data" in prediction.visualization_data["series"][0] and 
+        ("3.10 JSON 数据格式兼容性",
+         "data" in prediction.visualization_data["series"][0] and
          all(isinstance(p.get("time"), (int, float)) for p in prediction.visualization_data["series"][0]["data"])),
         ("3.10 多方案对比支持", len(comparison.comparison_metrics) == 2),
-        ("3.10 导出元数据完整", 
-         "export_metadata" in prediction.visualization_data and 
+        ("3.10 导出元数据完整",
+         "export_metadata" in prediction.visualization_data and
          "format" in prediction.visualization_data["export_metadata"]),
     ]
-    
+
     for check_name, result in checks:
         status = "✅ PASS" if result else "❌ FAIL"
         logger.info(f"{status}: {check_name}")

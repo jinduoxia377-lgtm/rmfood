@@ -1,10 +1,11 @@
 """RMFOOD 肽服务"""
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
 
 from ..models.formula import Peptide
-from ..schemas.peptide import PeptideCreate, PeptideUpdate, PeptideResponse
+from ..schemas.peptide import PeptideCreate, PeptideUpdate
 
 
 class PeptideService:

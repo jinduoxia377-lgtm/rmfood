@@ -12,10 +12,9 @@ WebSocket 连接管理模块
 - 连接状态细化：CONNECTED / AWAITING_PONG / TIMEOUT
 """
 import asyncio
-import json
 import logging
 from datetime import datetime
-from typing import Dict, Set, Optional, Any
+from typing import Any, Dict, Optional, Set
 
 logger = logging.getLogger("rmfood.websocket")
 
@@ -70,17 +69,17 @@ class ConnectionManager:
                 "WebSocket连接管理器已启动 (max=%d, per_user=%d, ping_interval=%ds)",
                 MAX_CONNECTIONS, MAX_CONNECTIONS_PER_USER, HEARTBEAT_INTERVAL,
             )
-    
+
     async def stop(self):
         """停止连接管理器"""
         if self.running:
             self.running = False
-            
+
             if self.broadcast_task:
                 self.broadcast_task.cancel()
             if self.heartbeat_task:
                 self.heartbeat_task.cancel()
-            
+
             # 关闭所有连接
             for user_connections in self.active_connections.values():
                 for websocket in user_connections.values():
@@ -88,11 +87,11 @@ class ConnectionManager:
                         await websocket.close()
                     except Exception as e:
                         logger.error(f"关闭WebSocket连接时出错: {e}")
-            
+
             self.active_connections.clear()
             self.connection_info.clear()
             logger.info("WebSocket连接管理器已停止")
-    
+
     async def connect(self, websocket: Any, user_id: str, connection_id: str, client_info: Dict[str, Any]) -> bool:
         """
         添加新连接
@@ -133,7 +132,7 @@ class ConnectionManager:
 
         if user_id not in self.active_connections:
             self.active_connections[user_id] = {}
-        
+
         self.active_connections[user_id][connection_id] = websocket
         self.connection_info[connection_id] = {
             "user_id": user_id,
@@ -143,12 +142,12 @@ class ConnectionManager:
             "status": "CONNECTED",                         # CONNECTED / AWAITING_PONG / TIMEOUT
             "client_info": client_info,
         }
-        
+
         logger.info(
             "[WS] 用户 %s 已连接 (id=%s, 总连接数=%d)",
             user_id, connection_id, self.total_connections,
         )
-        
+
         # 发送连接成功消息
         await self.send_personal_message(
             user_id,
@@ -163,7 +162,7 @@ class ConnectionManager:
             }
         )
         return True
-    
+
     async def disconnect(self, user_id: str, connection_id: str):
         """移除连接"""
         if user_id in self.active_connections:
@@ -175,18 +174,18 @@ class ConnectionManager:
                 except Exception as close_err:
                     logger.debug("关闭 WebSocket 连接失败: %s", close_err)
                 del self.active_connections[user_id][connection_id]
-                
+
                 if not self.active_connections[user_id]:
                     del self.active_connections[user_id]
-        
+
         if connection_id in self.connection_info:
             del self.connection_info[connection_id]
-        
+
         logger.info(
             "[WS] 用户 %s 断开连接 (id=%s, 剩余连接数=%d)",
             user_id, connection_id, self.total_connections,
         )
-    
+
     async def send_personal_message(self, user_id: str, connection_id: str, message: Dict[str, Any]):
         """发送个人消息"""
         try:
@@ -198,11 +197,11 @@ class ConnectionManager:
         except Exception as e:
             logger.error(f"发送个人消息失败: {e}")
         return False
-    
+
     async def broadcast(self, message: Dict[str, Any], exclude_users: Optional[Set[str]] = None):
         """广播消息"""
         await self.message_queue.put((message, exclude_users))
-    
+
     async def broadcast_to_user(self, user_id: str, message: Dict[str, Any]):
         """向特定用户广播消息"""
         if user_id in self.active_connections:
@@ -211,23 +210,23 @@ class ConnectionManager:
                     await websocket.send_json(message)
                 except Exception as e:
                     logger.error(f"向用户 {user_id} 发送消息失败: {e}")
-    
+
     async def _process_message_queue(self):
         """处理消息队列"""
         while self.running:
             try:
                 message, exclude_users = await self.message_queue.get()
-                
+
                 # 创建连接副本以避免迭代时修改字典
                 connections_copy = list(self.active_connections.items())
-                
+
                 for user_id, connections in connections_copy:
                     if exclude_users and user_id in exclude_users:
                         continue
-                    
+
                     # 创建连接ID和websocket的副本
                     connection_items = list(connections.items())
-                    
+
                     for connection_id, websocket in connection_items:
                         try:
                             # 再次检查连接是否仍然存在
@@ -241,7 +240,7 @@ class ConnectionManager:
                 break
             except Exception as e:
                 logger.error(f"处理消息队列时出错: {e}")
-    
+
     async def _heartbeat_check(self):
         """
         双向心跳检测（院士级增强）
@@ -310,7 +309,7 @@ class ConnectionManager:
                 break
             except Exception as e:
                 logger.error("[WS] 心跳检测异常: %s", e, exc_info=True)
-    
+
     def handle_pong(self, connection_id: str) -> None:
         """
         处理客户端 pong 响应（院士级修复：真正的双向心跳）
@@ -354,7 +353,7 @@ class ConnectionManager:
             "awaiting_pong": awaiting_pong,
             "per_user": per_user,
         }
-    
+
     def get_connection_info(self, connection_id: str) -> Optional[Dict[str, Any]]:
         """获取连接信息"""
         return self.connection_info.get(connection_id)
@@ -366,7 +365,7 @@ connection_manager = ConnectionManager()
 
 class WebSocketMessage:
     """WebSocket消息封装"""
-    
+
     @staticmethod
     def create(type: str, data: Any, **kwargs) -> Dict[str, Any]:
         """创建消息"""
@@ -377,7 +376,7 @@ class WebSocketMessage:
             **kwargs
         }
         return message
-    
+
     @staticmethod
     def data_update(entity_type: str, entity_id: str, action: str, data: Any) -> Dict[str, Any]:
         """创建数据更新消息"""
@@ -390,7 +389,7 @@ class WebSocketMessage:
                 "data": data
             }
         )
-    
+
     @staticmethod
     def error(message: str, code: str = "error") -> Dict[str, Any]:
         """创建错误消息"""
@@ -401,7 +400,7 @@ class WebSocketMessage:
                 "code": code
             }
         )
-    
+
     @staticmethod
     def success(message: str, data: Any = None) -> Dict[str, Any]:
         """创建成功消息"""
@@ -412,7 +411,7 @@ class WebSocketMessage:
                 "data": data
             }
         )
-    
+
     @staticmethod
     def user_status(user_id: str, status: str) -> Dict[str, Any]:
         """创建用户状态消息"""

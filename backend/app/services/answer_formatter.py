@@ -11,7 +11,6 @@
 - 问候/系统引导回答
 """
 from __future__ import annotations
-from typing import Any
 
 
 class AnswerFormatter:
@@ -47,7 +46,7 @@ class AnswerFormatter:
         scores = reasoning.get("scores", {})
         total_herbs = len(formula_data) if formula_data else 0
 
-        answer = f"## 智能配方方案\n\n"
+        answer = "## 智能配方方案\n\n"
         answer += (
             f"基于「{'、'.join(effects)}」功效需求，"
             f"运用贝叶斯优化算法为您设计以下配方方案：\n\n"
@@ -403,7 +402,7 @@ class AnswerFormatter:
                 return answer
 
         # 通用知识回答
-        answer = f"## 药食同源知识\n\n"
+        answer = "## 药食同源知识\n\n"
         answer += f"关于「{question}」，以下是基于知识库的专业信息：\n\n"
 
         if effects:

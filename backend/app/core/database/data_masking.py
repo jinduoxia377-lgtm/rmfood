@@ -17,27 +17,25 @@ RMFOOD 数据脱敏系统 (Data Masking / PII Redaction)
 
 使用方法:
     from app.core.database.data_masking import mask_value, mask_response, MaskLevel
-    
+
     # 基础脱敏
     masked_email = mask_value("user@example.com", "email")
-    
+
     # 响应脱敏（自动识别PII字段）
     safe_response = mask_response(user_dict, level=MaskLevel.PARTIAL)
-    
+
     # 自定义规则
     from app.core.database.data_masking import add_mask_rule
     add_mask_rule("my_custom_field", lambda v: v[0] + "***")
 """
 
 import hashlib
-import json
 import logging
 import re
 import secrets
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 class MaskLevel(str, Enum):
     """脱敏等级"""
-    
+
     NONE = "none"              # 不脱敏（明文，需特殊权限）
     PARTIAL = "partial"        # 部分脱敏（保留首/尾部分）
     FULL = "full"              # 完全脱敏（全部替换）
@@ -131,40 +129,40 @@ def _mask_email(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     if not value or '@' not in value:
         return value
     local, domain = value.rsplit('@', 1)
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "***@***.***"
     if level == MaskLevel.HASH:
         return hashlib.sha256(value.encode()).hexdigest()[:16]
-    
+
     # PARTIAL
     if len(local) <= 1:
         masked_local = local + "***"
     else:
         masked_local = local[0] + "*" * max(3, len(local) - 1)
-    
+
     if '.' in domain:
         domain_parts = domain.rsplit('.', 1)
         masked_domain = domain_parts[0][0] + "***." + domain_parts[1]
     else:
         masked_domain = domain[0] + "***"
-    
+
     return f"{masked_local}@{masked_domain}"
 
 
 def _mask_phone(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """手机号脱敏：13800138000 -> 138****8000"""
     digits = re.sub(r'\D', '', value)
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "*" * len(digits) if digits else "***********"
     if level == MaskLevel.HASH:
         return hashlib.sha256(digits.encode()).hexdigest()[:11]
-    
+
     # PARTIAL: 前3 + **** + 后4
     if len(digits) >= 11:
         return digits[:3] + "****" + digits[-4:]
@@ -177,14 +175,14 @@ def _mask_phone(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
 def _mask_id_card(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """身份证脱敏：前6 + ******** + 后4"""
     digits = re.sub(r'[^0-9Xx]', '', value)
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "*" * len(digits)
     if level == MaskLevel.HASH:
         return hashlib.sha256(digits.encode()).hexdigest()[:18]
-    
+
     # PARTIAL
     if len(digits) >= 18:
         return digits[:6] + "********" + digits[-4:]
@@ -198,14 +196,14 @@ def _mask_name(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """姓名脱敏：张三 -> 张* / John Smith -> J*** S***"""
     if not value:
         return value
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "*" * max(1, len(value.replace(' ', '')))
     if level == MaskLevel.HASH:
         return hashlib.sha256(value.encode()).hexdigest()[:8]
-    
+
     # PARTIAL
     parts = value.split()
     if len(parts) == 1:
@@ -222,14 +220,14 @@ def _mask_address(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """地址脱敏：仅保留省市级"""
     if not value:
         return value
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "***"
     if level == MaskLevel.HASH:
         return hashlib.sha256(value.encode()).hexdigest()[:12]
-    
+
     # PARTIAL: 保留前10-20个字符，其余替换
     if len(value) <= 10:
         return value
@@ -244,14 +242,14 @@ def _mask_password(value: str, level: MaskLevel = MaskLevel.FULL) -> str:
 def _mask_credit_card(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """银行卡脱敏：仅保留后4位"""
     digits = re.sub(r'\D', '', value)
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "*" * 16
     if level == MaskLevel.HASH:
         return hashlib.sha256(digits.encode()).hexdigest()[:16]
-    
+
     # PARTIAL: ****-****-****-1234
     if len(digits) >= 4:
         return "****-****-****-" + digits[-4:]
@@ -266,7 +264,7 @@ def _mask_ip(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
         return "***.***.***.***"
     if level == MaskLevel.HASH:
         return hashlib.sha256(value.encode()).hexdigest()[:8]
-    
+
     parts = value.split('.')
     if len(parts) >= 4:
         return parts[0] + "." + parts[1] + ".*.*"
@@ -277,14 +275,14 @@ def _mask_generic(value: str, level: MaskLevel = MaskLevel.PARTIAL) -> str:
     """通用脱敏"""
     if not value:
         return value
-    
+
     if level == MaskLevel.NONE:
         return value
     if level == MaskLevel.FULL:
         return "*" * max(3, min(len(value), 10))
     if level == MaskLevel.HASH:
         return hashlib.sha256(str(value).encode()).hexdigest()[:10]
-    
+
     # PARTIAL
     if len(value) <= 2:
         return value[0] + "*"
@@ -306,13 +304,13 @@ class MaskRule:
 
 class MaskingRegistry:
     """脱敏规则注册表"""
-    
+
     def __init__(self):
         self._rules: Dict[str, MaskRule] = {}
         self._custom_rules: Dict[str, Callable] = {}
         self._field_type_cache: Dict[str, str] = {}
         self._init_default_rules()
-    
+
     def _init_default_rules(self):
         """初始化默认规则"""
         defaults = {
@@ -329,34 +327,34 @@ class MaskingRegistry:
             "health": MaskRule("health", _mask_generic, MaskLevel.FULL, "健康信息"),
         }
         self._rules.update(defaults)
-    
+
     def register(self, field_type: str, func: Callable[[str, MaskLevel], str],
                  default_level: MaskLevel = MaskLevel.PARTIAL,
                  description: str = ""):
         """注册自定义脱敏规则"""
         self._rules[field_type] = MaskRule(field_type, func, default_level, description)
         logger.info(f"📋 已注册脱敏规则: {field_type}")
-    
+
     def detect_field_type(self, field_name: str) -> Optional[str]:
         """识别字段类型"""
         if field_name in self._field_type_cache:
             return self._field_type_cache[field_name]
-        
+
         normalized = field_name.lower().strip()
-        
+
         for field_type, patterns in PII_FIELD_PATTERNS.items():
             for pattern in patterns:
                 if pattern in normalized:
                     self._field_type_cache[field_name] = field_type
                     return field_type
-        
+
         self._field_type_cache[field_name] = None
         return None
-    
+
     def get_rule(self, field_type: str) -> Optional[MaskRule]:
         """获取脱敏规则"""
         return self._rules.get(field_type)
-    
+
     @property
     def field_types(self) -> Set[str]:
         return set(self._rules.keys())
@@ -386,34 +384,34 @@ def mask_value(value: Any, field_type: Optional[str] = None,
                level: MaskLevel = MaskLevel.PARTIAL) -> Any:
     """
     对单个值进行脱敏
-    
+
     Args:
         value: 待脱敏的值
         field_type: 字段类型（如 email, phone, name 等）。如不提供将自动识别
         field_name: 字段名，用于自动识别字段类型
         level: 脱敏等级
-    
+
     Returns:
         脱敏后的值
     """
     if value is None:
         return None
-    
+
     if isinstance(value, bool) or isinstance(value, (int, float)):
         return value
-    
+
     str_value = str(value)
-    
+
     # 识别字段类型
     detected_type = field_type
     if not detected_type and field_name:
         detected_type = _masking_registry.detect_field_type(field_name)
-    
+
     # 获取规则
     rule = None
     if detected_type:
         rule = _masking_registry.get_rule(detected_type)
-    
+
     # 应用规则
     if rule:
         try:
@@ -421,13 +419,13 @@ def mask_value(value: Any, field_type: Optional[str] = None,
         except Exception as e:
             logger.warning(f"脱敏规则 [{detected_type}] 执行失败: {e}")
             return _mask_generic(str_value, level)
-    
+
     # 基于内容的检测（文本中的PII）
     if detected_type is None:
         masked = _mask_content_in_text(str_value, level)
         if masked != str_value:
             return masked
-    
+
     return str_value
 
 
@@ -435,29 +433,29 @@ def _mask_content_in_text(text: str, level: MaskLevel) -> str:
     """从文本内容中识别并脱敏PII"""
     if not text or len(text) < 5:
         return text
-    
+
     result = text
-    
+
     # 检测邮箱
     result = CONTENT_PATTERNS["email"].sub(
         lambda m: _mask_email(m.group(), level), result
     )
-    
+
     # 检测手机号
     result = CONTENT_PATTERNS["phone_cn"].sub(
         lambda m: _mask_phone(m.group(), level), result
     )
-    
+
     # 检测身份证
     result = CONTENT_PATTERNS["id_card_cn"].sub(
         lambda m: _mask_id_card(m.group(), level), result
     )
-    
+
     # 检测IP
     result = CONTENT_PATTERNS["ipv4"].sub(
         lambda m: _mask_ip(m.group(), level), result
     )
-    
+
     return result
 
 
@@ -467,36 +465,36 @@ def mask_dict(data: Dict[str, Any],
               exempt_fields: Optional[Set[str]] = None) -> Dict[str, Any]:
     """
     对字典进行递归脱敏
-    
+
     Args:
         data: 待脱敏的字典
         level: 默认脱敏等级
         override_levels: 特定字段的覆盖等级 {field_name: level}
         exempt_fields: 豁免字段（不脱敏）
-    
+
     Returns:
         脱敏后的字典
     """
     if not data:
         return data
-    
+
     override_levels = override_levels or {}
     exempt_fields = exempt_fields or set()
-    
+
     result = {}
-    
+
     for key, value in data.items():
         # 豁免字段
         if key in exempt_fields:
             result[key] = value
             continue
-        
+
         # 检查是否为敏感字段
         field_type = _masking_registry.detect_field_type(key)
-        
+
         # 特定字段覆盖等级
         field_level = override_levels.get(key, level)
-        
+
         # 递归处理
         if value is None:
             result[key] = None
@@ -508,7 +506,7 @@ def mask_dict(data: Dict[str, Any],
             result[key] = mask_value(value, field_type, key, field_level)
         else:
             result[key] = value
-    
+
     return result
 
 
@@ -519,7 +517,7 @@ def mask_list(items: List[Any],
     """对列表进行递归脱敏"""
     if not items:
         return items
-    
+
     result = []
     for item in items:
         if isinstance(item, dict):
@@ -530,7 +528,7 @@ def mask_list(items: List[Any],
             result.append(_mask_content_in_text(item, level))
         else:
             result.append(item)
-    
+
     return result
 
 
@@ -540,12 +538,12 @@ def mask_response(response: Any,
                   exempt_fields: Optional[Set[str]] = None) -> Any:
     """
     通用响应脱敏入口
-    
+
     支持: dict, list, str, pydantic model
     """
     if response is None:
         return None
-    
+
     # Pydantic Model
     if hasattr(response, 'model_dump'):
         data = response.model_dump()
@@ -553,16 +551,16 @@ def mask_response(response: Any,
     if hasattr(response, 'dict'):
         data = response.dict()
         return mask_dict(data, level, override_levels, exempt_fields)
-    
+
     if isinstance(response, dict):
         return mask_dict(response, level, override_levels, exempt_fields)
-    
+
     if isinstance(response, list):
         return mask_list(response, level, override_levels, exempt_fields)
-    
+
     if isinstance(response, str):
         return _mask_content_in_text(response, level)
-    
+
     return response
 
 
@@ -573,10 +571,10 @@ def mask_response(response: Any,
 class ReversibleMasker:
     """
     可逆脱敏器（基于对称加密）
-    
+
     用于需要恢复原始值的场景（如客服后台查看用户信息）
     """
-    
+
     def __init__(self, secret_key: Optional[bytes] = None):
         if secret_key is None:
             # 使用系统环境变量或生成临时密钥
@@ -587,39 +585,39 @@ class ReversibleMasker:
             else:
                 secret_key = secrets.token_bytes(32)
                 logger.warning("⚠️ 未配置 MASKING_SECRET_KEY，使用临时密钥（重启后失效）")
-        
+
         self._key = secret_key
-    
+
     def mask(self, value: str) -> str:
         """加密脱敏"""
         if not value:
             return value
-        
+
         # 使用 key + value 的 HMAC 作为前缀 + 编码
         h = hmac_sha256(self._key, value.encode('utf-8'))
         encoded = base64_encode(value.encode('utf-8'))
         return f"ENC${h[:16]}${encoded}"
-    
+
     def unmask(self, masked: str) -> Optional[str]:
         """解密恢复"""
         if not masked or not masked.startswith("ENC$"):
             return masked
-        
+
         try:
             parts = masked.split("$")
             if len(parts) != 3:
                 return masked
-            
+
             _, h, encoded = parts
             value_bytes = base64_decode(encoded)
             value = value_bytes.decode('utf-8')
-            
+
             # 验证完整性
             verify_h = hmac_sha256(self._key, value.encode('utf-8'))
             if verify_h[:16] != h:
                 logger.warning("🔒 脱敏数据完整性校验失败")
                 return None
-            
+
             return value
         except Exception as e:
             logger.error(f"🔒 脱敏数据恢复失败: {e}")
@@ -650,24 +648,24 @@ def base64_decode(encoded: str) -> bytes:
 class MaskingLogFilter(logging.Filter):
     """
     日志脱敏过滤器
-    
+
     自动过滤日志消息中的 PII 信息，防止敏感数据写入日志文件。
-    
+
     使用方法:
         import logging
         logger = logging.getLogger("app")
         logger.addFilter(MaskingLogFilter())
     """
-    
+
     def __init__(self, level: MaskLevel = MaskLevel.PARTIAL):
         super().__init__()
         self.level = level
-    
+
     def filter(self, record):
         try:
             if isinstance(record.msg, str):
                 record.msg = _mask_content_in_text(record.msg, self.level)
-            
+
             if record.args:
                 if isinstance(record.args, dict):
                     record.args = {
@@ -683,7 +681,7 @@ class MaskingLogFilter(logging.Filter):
         except Exception as e:
             logger.debug("日志脱敏失败（非致命）: %s", e)
             # 脱敏失败不影响日志输出
-        
+
         return True
 
 
@@ -694,7 +692,7 @@ class MaskingLogFilter(logging.Filter):
 def detect_pii(text: str) -> Dict[str, List[str]]:
     """
     检测文本中的 PII
-    
+
     Returns:
         {field_type: [matched_values]}
     """
@@ -731,22 +729,22 @@ def mask_api_response(
 ) -> Any:
     """
     根据用户角色智能脱敏API响应
-    
+
     - ADMIN: NONE（可查看原文，需审计）
     - 内部角色: PARTIAL
     - 外部/匿名: FULL + HASH
-    
+
     Args:
         data: 响应数据
         user_role: 用户角色
         is_audit_context: 是否为审计场景（日志，通常使用 FULL）
-    
+
     Returns:
         脱敏后的响应数据
     """
     if is_audit_context:
         return mask_response(data, MaskLevel.PARTIAL)
-    
+
     if user_role == "ADMIN":
         # 管理员仅对最敏感字段做 PARTIAL 脱敏
         return mask_response(
@@ -759,7 +757,7 @@ def mask_api_response(
                 "token": MaskLevel.FULL,
             }
         )
-    
+
     # 默认 PARTIAL
     return mask_response(data, MaskLevel.PARTIAL)
 

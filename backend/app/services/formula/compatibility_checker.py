@@ -8,11 +8,11 @@
 - Layer 4: 法规层面 (GB标准/特殊人群限制)
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Set, Any
-from enum import Enum
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -52,15 +52,15 @@ class CompatibilityReport:
     recommendations: List[str]
     timestamp: datetime = field(default_factory=datetime.now)
     formula_id: Optional[str] = None
-    
+
     @property
     def error_count(self) -> int:
         return sum(1 for i in self.issues if i.level == IssueLevel.ERROR)
-    
+
     @property
     def warning_count(self) -> int:
         return sum(1 for i in self.issues if i.level == IssueLevel.WARNING)
-    
+
     @property
     def info_count(self) -> int:
         return sum(1 for i in self.issues if i.level == IssueLevel.INFO)
@@ -192,21 +192,21 @@ SPECIAL_POPULATION_RESTRICTIONS = {
 class CompatibilityChecker:
     """
     配方兼容性检测器 - 4层架构全面检测系统
-    
+
     检测流程:
     1. 化学层面 → pH/沉淀/氧化还原
     2. 药理学层面 → 受体竞争/酶互作
     3. 营养学层面 → 抗营养因子/螯合作用
     4. 法规层面 → GB标准/特殊人群
-    
+
     输出: 0-100 分数的综合报告 + 详细问题列表 + 修改建议
     """
-    
+
     def __init__(self):
         self.issues: List[CompatibilityIssue] = []
         self.passed_checks = 0
         self.total_checks = 0
-        
+
         logger.info("CompatibilityChecker 初始化成功")
 
     def check_compatibility(
@@ -217,29 +217,29 @@ class CompatibilityChecker:
     ) -> CompatibilityReport:
         """
         执行完整的 4 层兼容性检测
-        
+
         Args:
             ingredients: 成分列表 [{"name": "...", "amount_mg": ..., "percentage": ...}, ...]
             formula_id: 配方标识符
             target_population: 目标人群 (adult/pregnant/children/elderly)
-        
+
         Returns:
             CompatibilityReport: 完整的检测报告
         """
         self.issues = []
         self.passed_checks = 0
         self.total_checks = 0
-        
+
         logger.info(f"开始兼容性检测 - 成分数={len(ingredients)}, 目标人群={target_population}")
-        
+
         self._layer1_chemical_check(ingredients)
         self._layer2_pharmacological_check(ingredients)
         self._layer3_nutritional_check(ingredients)
         self._layer4_regulatory_check(ingredients, target_population)
-        
+
         overall_score = self._calculate_overall_score()
         recommendations = self._generate_recommendations()
-        
+
         report = CompatibilityReport(
             overall_score=overall_score,
             issues=self.issues.copy(),
@@ -248,32 +248,32 @@ class CompatibilityChecker:
             recommendations=recommendations,
             formula_id=formula_id
         )
-        
+
         logger.info(f"检测完成 - 总分={overall_score:.1f}, "
                    f"问题数={len(self.issues)} (ERROR:{report.error_count}, "
                    f"WARNING:{report.warning_count}, INFO:{report.info_count})")
-        
+
         return report
 
     def _layer1_chemical_check(self, ingredients: List[Dict]):
         """Layer 1: 化学层面检测"""
         logger.debug("执行 Layer 1: 化学层面检测")
         names = [ing["name"] for ing in ingredients]
-        
+
         ph_values = []
         for name in names:
             prop = CHEMICAL_PROPERTIES_DB.get(name, {})
             if "optimal_ph" in prop:
                 ph_values.append((name, prop["optimal_ph"]))
-        
+
         if len(ph_values) >= 2:
             self.total_checks += 1
             ph_ranges = [v[1] for v in ph_values]
             min_ph = min(r[0] for r in ph_ranges)
             max_ph = max(r[1] for r in ph_ranges)
-            
+
             if max_ph - min_ph > 2.0:
-                affected = [v[0] for v in ph_values 
+                affected = [v[0] for v in ph_values
                            if abs(v[1][0] - min_ph) < 1 or abs(v[1][1] - max_ph) < 1]
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.WARNING,
@@ -286,16 +286,16 @@ class CompatibilityChecker:
                 ))
             else:
                 self.passed_checks += 1
-        
+
         for rule in PRECIPITATION_RULES:
             self.total_checks += 1
-            reactant_a_found = any(rule["reactants"][0].lower() in n.lower() or 
-                                   any(rule["reactants"][0] in p.get("ion_type", "") 
+            reactant_a_found = any(rule["reactants"][0].lower() in n.lower() or
+                                   any(rule["reactants"][0] in p.get("ion_type", "")
                                        for p in CHEMICAL_PROPERTIES_DB.values() if n in p)
                                    for n in names)
-            reactant_b_found = any(rule["reactants"][1].lower() in n.lower() 
+            reactant_b_found = any(rule["reactants"][1].lower() in n.lower()
                                    for n in names)
-            
+
             if reactant_a_found and reactant_b_found:
                 self.issues.append(CompatibilityIssue(
                     level=rule["severity"],
@@ -307,18 +307,18 @@ class CompatibilityChecker:
                 ))
             else:
                 self.passed_checks += 1
-        
+
         redox_agents = []
         for name in names:
             prop = CHEMICAL_PROPERTIES_DB.get(name, {})
             if "redox_potential" in prop:
                 redox_agents.append((name, prop["redox_potential"]))
-        
+
         if len(redox_agents) >= 2:
             self.total_checks += 1
             redox_agents.sort(key=lambda x: x[1])
             delta_e = redox_agents[-1][1] - redox_agents[0][1]
-            
+
             if abs(delta_e) > 0.3:
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.WARNING,
@@ -337,22 +337,22 @@ class CompatibilityChecker:
         """Layer 2: 药理学层面检测"""
         logger.debug("执行 Layer 2: 药理学层面检测")
         names = [ing["name"] for ing in ingredients]
-        
+
         for receptor_info in RECEPTOR_BINDING_DB:
             self.total_checks += 1
             found_ligands = []
-            
+
             for ligand_name, _ in receptor_info["ligands"]:
                 if ligand_name in names:
                     found_ligands.append(ligand_name)
-            
+
             if len(found_ligands) >= 2 and receptor_info["competition_risk"] == "medium":
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.WARNING,
                     category=CheckCategory.PHARMACOLOGICAL,
                     description=f"受体竞争风险：{', '.join(found_ligands)} 可能竞争结合 {receptor_info['receptor']}",
                     scientific_basis=receptor_info["reference"],
-                    suggestion=f"如需同时使用，建议总剂量不超过单一成分推荐量的 70%",
+                    suggestion="如需同时使用，建议总剂量不超过单一成分推荐量的 70%",
                     affected_ingredients=found_ligands,
                     severity_score=6.0
                 ))
@@ -368,12 +368,12 @@ class CompatibilityChecker:
                 ))
             else:
                 self.passed_checks += 1
-        
+
         for enzyme_info in ENZYME_INTERACTION_DB:
             self.total_checks += 1
             substrates_found = [s for s in enzyme_info["substrates"] if s in names]
             inhibitors_found = [i for i in enzyme_info["inhibitors"] if i in names]
-            
+
             if substrates_found and inhibitors_found:
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.WARNING,
@@ -392,28 +392,28 @@ class CompatibilityChecker:
         """Layer 3: 营养学层面检测"""
         logger.debug("执行 Layer 3: 营养学层面检测")
         names = [ing["name"] for ing in ingredients]
-        
+
         antinutrient_keywords = {
             "植酸": ["植酸", "肌醇六磷酸"],
             "单宁": ["单宁", "鞣质", "多酚"],
             "胰蛋白酶抑制剂": ["胰蛋白酶抑制剂", "TI因子"],
             "皂苷": ["皂苷", "皂甙", "saponin"]
         }
-        
+
         for factor_name, keywords in antinutrient_keywords.items():
             self.total_checks += 1
             found_sources = []
-            
+
             for name in names:
                 for kw in keywords:
                     if kw.lower() in name.lower() or name in ANTINUTRIENT_FACTORS_DB.get(factor_name, {}).get("sources", []):
                         found_sources.append(name)
                         break
-            
+
             if found_sources:
                 factor_info = ANTINUTRIENT_FACTORS_DB.get(factor_name, {})
                 reduction = factor_info.get("bioavailability_reduction", 0.3)
-                
+
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.INFO if reduction < 0.5 else IssueLevel.WARNING,
                     category=CheckCategory.NUTRITIONAL,
@@ -426,14 +426,14 @@ class CompatibilityChecker:
                 ))
             else:
                 self.passed_checks += 1
-        
+
         mineral_ions = ["钙", "铁", "锌", "镁"]
         chelating_agents = ["多酚", "草酸", "植酸", "维生素C"]
-        
+
         minerals_present = [m for m in mineral_ions if m in names]
-        chelators_present = [c for c in chelating_agents if c in names or 
+        chelators_present = [c for c in chelating_agents if c in names or
                             any(c in n for n in names)]
-        
+
         if minerals_present and chelators_present:
             self.total_checks += 1
             self.issues.append(CompatibilityIssue(
@@ -452,16 +452,16 @@ class CompatibilityChecker:
     def _layer4_regulatory_check(self, ingredients: List[Dict], target_population: str):
         """Layer 4: 法规层面检测"""
         logger.debug("执行 Layer 4: 法规层面检测")
-        
+
         for ing in ingredients:
             name = ing.get("name", "")
             amount = ing.get("amount_mg", 0)
             percentage = ing.get("percentage", 0)
-            
+
             if name in GB2760_LIMITS_DB:
                 self.total_checks += 1
                 limit_info = GB2760_LIMITS_DB[name]
-                
+
                 if "max_daily_g" in limit_info:
                     daily_g = amount / 1000
                     if daily_g > limit_info["max_daily_g"]:
@@ -486,7 +486,7 @@ class CompatibilityChecker:
                         ))
                     else:
                         self.passed_checks += 1
-                
+
                 if "max_daily_mg" in limit_info:
                     if amount > limit_info["max_daily_mg"]:
                         self.issues.append(CompatibilityIssue(
@@ -510,14 +510,14 @@ class CompatibilityChecker:
                         ))
                     else:
                         self.passed_checks += 1
-        
+
         if target_population != "adult":
             self.total_checks += 1
             restrictions = SPECIAL_POPULATION_RESTRICTIONS.get(target_population, {})
-            
+
             restricted_found = []
             caution_found = []
-            
+
             for ing in ingredients:
                 name = ing.get("name", "")
                 if "restricted" in restrictions:
@@ -528,7 +528,7 @@ class CompatibilityChecker:
                     for c in restrictions["caution"]:
                         if c.lower() in name.lower() or c == name:
                             caution_found.append(name)
-            
+
             if restricted_found:
                 self.issues.append(CompatibilityIssue(
                     level=IssueLevel.ERROR,
@@ -555,7 +555,7 @@ class CompatibilityChecker:
     def _calculate_overall_score(self) -> float:
         """计算总体兼容性评分 (0-100)"""
         score = 100.0
-        
+
         for issue in self.issues:
             if issue.level == IssueLevel.ERROR:
                 score -= 25.0 * (issue.severity_score / 10.0)
@@ -563,29 +563,29 @@ class CompatibilityChecker:
                 score -= 10.0 * (issue.severity_score / 10.0)
             elif issue.level == IssueLevel.INFO:
                 score -= 2.0 * (issue.severity_score / 10.0)
-        
+
         return max(0.0, round(score, 1))
 
     def _generate_recommendations(self) -> List[str]:
         """自动生成修改建议"""
         recommendations = []
-        
+
         error_issues = [i for i in self.issues if i.level == IssueLevel.ERROR]
         warning_issues = [i for i in self.issues if i.level == IssueLevel.WARNING]
-        
+
         if not error_issues and not warning_issues:
             recommendations.append("✅ 配方整体兼容性良好，各成分间无显著冲突")
-        
+
         for issue in error_issues[:3]:
             recommendations.append(f"🔴 必须修改：{issue.suggestion}")
-        
+
         for issue in warning_issues[:3]:
             recommendations.append(f"⚠️ 建议优化：{issue.suggestion}")
-        
+
         if len(self.issues) > 6:
             remaining = len(self.issues) - 6
             recommendations.append(f"ℹ️ 还有 {remaining} 条次要建议，详见完整报告")
-        
+
         return recommendations
 
 
@@ -595,7 +595,7 @@ def quick_test():
     logger.info("配方兼容性检测系统 - 快速测试")
     logger.info("=" * 70)
     checker = CompatibilityChecker()
-    
+
     test_formula_1 = [
         {"name": "大豆肽", "amount_mg": 500, "percentage": 25},
         {"name": "黄芪多糖", "amount_mg": 300, "percentage": 15},
@@ -604,11 +604,11 @@ def quick_test():
         {"name": "人参皂苷", "amount_mg": 100, "percentage": 5},
         {"name": "大豆异黄酮", "amount_mg": 80, "percentage": 4},
     ]
-    
+
     logger.info("\n【测试配方 1】普通成人配方")
     logger.info("-" * 70)
     report_1 = checker.check_compatibility(test_formula_1, formula_id="TEST-001")
-    
+
     logger.info(f"\n总体评分: {report_1.overall_score}/100")
     logger.info(f"检测结果: {report_1.passed_checks}/{report_1.total_checks} 项通过")
     logger.error(f"问题统计: ERROR={report_1.error_count}, WARNING={report_1.warning_count}, INFO={report_1.info_count}")
@@ -630,11 +630,11 @@ def quick_test():
         {"name": "铁", "amount_mg": 35, "percentage": 8},
         {"name": "人参皂苷", "amount_mg": 150, "percentage": 6},
     ]
-    
+
     logger.info("\n\n【测试配方 2】含超标成分的配方")
     logger.info("-" * 70)
     report_2 = checker.check_compatibility(test_formula_2, formula_id="TEST-002")
-    
+
     logger.info(f"\n总体评分: {report_2.overall_score}/100")
     logger.info(f"检测结果: {report_2.passed_checks}/{report_2.total_checks} 项通过")
     logger.error(f"问题统计: ERROR={report_2.error_count}, WARNING={report_2.warning_count}, INFO={report_2.info_count}")
@@ -645,9 +645,9 @@ def quick_test():
         {"name": "人参皂苷", "amount_mg": 200, "percentage": 15},
         {"name": "叶酸", "amount_mg": 400, "percentage": 20},
     ]
-    report_3 = checker.check_compatibility(test_formula_3, formula_id="TEST-003", 
+    report_3 = checker.check_compatibility(test_formula_3, formula_id="TEST-003",
                                            target_population="pregnant")
-    
+
     logger.info(f"\n总体评分: {report_3.overall_score}/100 (目标人群: 孕妇)")
     logger.error(f"问题统计: ERROR={report_3.error_count}, WARNING={report_3.warning_count}")
     for issue in report_3.issues:
@@ -667,7 +667,7 @@ def quick_test():
         ("3.7 报告完整性", len(report_1.recommendations) > 0),
         ("3.8 特殊人群限制", report_3.error_count > 0),
     ]
-    
+
     for check_name, result in checks:
         status = "✅ PASS" if result else "❌ FAIL"
         logger.info(f"{status}: {check_name}")

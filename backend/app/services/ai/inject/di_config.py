@@ -9,8 +9,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, TypeVar, Generic, Type
-from weakref import WeakKeyDictionary
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 

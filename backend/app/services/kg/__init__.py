@@ -1,19 +1,19 @@
 """知识图谱服务模块"""
 
-from .reasoning_engine import (
-    KnowledgeGraphReasoningEngine,
-    PathResult,
-    SynergyResult,
-    SynergyType,
-    ConflictResult,
-    ConflictType,
-    InferenceReport,
-    get_reasoning_engine,
-)
 from .inference_agent import (
     KGQueryTool,
     KGReasonTool,
     KGVisualizeTool,
+)
+from .reasoning_engine import (
+    ConflictResult,
+    ConflictType,
+    InferenceReport,
+    KnowledgeGraphReasoningEngine,
+    PathResult,
+    SynergyResult,
+    SynergyType,
+    get_reasoning_engine,
 )
 
 __all__ = [

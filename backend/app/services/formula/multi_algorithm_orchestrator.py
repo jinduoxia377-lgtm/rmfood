@@ -6,12 +6,11 @@
 
 import asyncio
 import logging
+import random
 import time
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Any, Callable
 from enum import Enum
-import random
-import math
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import numpy as np
@@ -57,19 +56,19 @@ class FusionConfig:
 class MultiAlgorithmOrchestrator:
     """
     多算法融合优化器
-    
+
     算法架构:
     - NSGA-III: 4+维目标优化，良好多样性
     - MOEA/D: 高维目标分解策略
     - PSO: 连续空间快速收敛
     - SA: 局部搜索精化
-    
+
     融合策略:
     - union: 取所有算法结果的并集
     - weighted: 按算法权重加权融合
     - voting: 多数投票选择最优解
     """
-    
+
     def __init__(self, config: Optional[FusionConfig] = None):
         self.config = config or FusionConfig()
         self._algorithm_configs: Dict[str, Dict] = {
@@ -100,7 +99,7 @@ class MultiAlgorithmOrchestrator:
             }
         }
         self._results: List[AlgorithmResult] = []
-        
+
     async def optimize(
         self,
         ingredients: List[Dict[str, Any]],
@@ -109,18 +108,18 @@ class MultiAlgorithmOrchestrator:
     ) -> Dict[str, Any]:
         """
         执行多算法融合优化
-        
+
         Args:
             ingredients: 成分列表
             constraints: 约束条件
             callbacks: 回调函数字典
-            
+
         Returns:
             融合优化结果
         """
         start_time = time.perf_counter()
         logger.info(f"开始多算法融合优化，算法: {self.config.algorithms}")
-        
+
         # 并行执行各算法
         tasks = []
         for algo in self.config.algorithms:
@@ -128,17 +127,17 @@ class MultiAlgorithmOrchestrator:
                 self._run_algorithm(algo, ingredients, constraints, start_time)
             )
             tasks.append(task)
-        
+
         # 等待所有算法完成或超时
         results, pending = await asyncio.wait(
             tasks,
             timeout=self.config.time_budget
         )
-        
+
         # 取消超时任务
         for task in pending:
             task.cancel()
-        
+
         # 收集结果
         self._results = []
         for task in results:
@@ -148,17 +147,17 @@ class MultiAlgorithmOrchestrator:
                     self._results.append(result)
             except Exception as e:
                 logger.warning(f"算法执行失败: {e}")
-        
+
         # 融合结果
         fused_result = self._fuse_results(start_time)
-        
+
         elapsed = time.perf_counter() - start_time
         fused_result["computation_time"] = elapsed
         fused_result["algorithms_used"] = len(self._results)
-        
+
         logger.info(f"多算法融合优化完成，耗时: {elapsed:.2f}s")
         return fused_result
-    
+
     async def _run_algorithm(
         self,
         algo_type: str,
@@ -168,7 +167,7 @@ class MultiAlgorithmOrchestrator:
     ) -> AlgorithmResult:
         """运行单个算法"""
         algo_start = time.perf_counter()
-        
+
         try:
             if algo_type == AlgorithmType.NSGA3:
                 result = await self._run_nsga3(ingredients, constraints)
@@ -188,18 +187,18 @@ class MultiAlgorithmOrchestrator:
                     success=False,
                     error_message=f"未知算法: {algo_type}"
                 )
-            
+
             algo_end = time.perf_counter()
             result.computation_time = algo_end - algo_start
-            
+
             # 检查是否超时
             elapsed = algo_end - start_time
             if elapsed > self.config.time_budget:
                 result.success = False
                 result.error_message = "执行超时"
-            
+
             return result
-            
+
         except Exception as e:
             algo_end = time.perf_counter()
             return AlgorithmResult(
@@ -211,7 +210,7 @@ class MultiAlgorithmOrchestrator:
                 success=False,
                 error_message=str(e)
             )
-    
+
     def _run_nsga3(
         self,
         ingredients: List[Dict[str, Any]],
@@ -228,7 +227,7 @@ class MultiAlgorithmOrchestrator:
             computation_time=0.5,
             success=True
         )
-    
+
     def _run_moead(
         self,
         ingredients: List[Dict[str, Any]],
@@ -243,7 +242,7 @@ class MultiAlgorithmOrchestrator:
             computation_time=0.4,
             success=True
         )
-    
+
     def _run_pso(
         self,
         ingredients: List[Dict[str, Any]],
@@ -258,7 +257,7 @@ class MultiAlgorithmOrchestrator:
             computation_time=0.3,
             success=True
         )
-    
+
     def _run_sa(
         self,
         ingredients: List[Dict[str, Any]],
@@ -273,7 +272,7 @@ class MultiAlgorithmOrchestrator:
             computation_time=0.6,
             success=True
         )
-    
+
     def _generate_mock_frontier(self, count: int) -> List[Dict[str, float]]:
         """生成模拟 Pareto 前沿"""
         frontier = []
@@ -291,7 +290,7 @@ class MultiAlgorithmOrchestrator:
                 }
             })
         return frontier
-    
+
     def _fuse_results(self, start_time: float) -> Dict[str, Any]:
         """融合多个算法结果"""
         if not self._results:
@@ -301,7 +300,7 @@ class MultiAlgorithmOrchestrator:
                 "pareto_frontier": [],
                 "best_solution": None
             }
-        
+
         if self.config.fusion_method == "union":
             return self._fuse_by_union(start_time)
         elif self.config.fusion_method == "weighted":
@@ -310,19 +309,19 @@ class MultiAlgorithmOrchestrator:
             return self._fuse_by_voting(start_time)
         else:
             return self._fuse_by_union(start_time)
-    
+
     def _fuse_by_union(self, start_time: float) -> Dict[str, Any]:
         """并集融合"""
         all_solutions = []
         seen_keys = set()
-        
+
         for result in self._results:
             for solution in result.pareto_frontier:
                 key = tuple(sorted(solution.get("ingredients", {}).items()))
                 if key not in seen_keys:
                     seen_keys.add(key)
                     all_solutions.append(solution)
-        
+
         # 按综合得分排序
         all_solutions.sort(
             key=lambda x: (
@@ -333,7 +332,7 @@ class MultiAlgorithmOrchestrator:
             ),
             reverse=True
         )
-        
+
         return {
             "success": True,
             "fusion_method": "union",
@@ -342,7 +341,7 @@ class MultiAlgorithmOrchestrator:
             "best_solution": all_solutions[0] if all_solutions else None,
             "algorithms_contributed": [r.algorithm for r in self._results]
         }
-    
+
     def _fuse_by_weight(self, start_time: float) -> Dict[str, Any]:
         """加权融合"""
         weights = {
@@ -351,7 +350,7 @@ class MultiAlgorithmOrchestrator:
             AlgorithmType.PSO: 0.20,
             AlgorithmType.SA: 0.15
         }
-        
+
         # 合并并加权评分
         all_solutions = []
         for result in self._results:
@@ -359,12 +358,12 @@ class MultiAlgorithmOrchestrator:
             for solution in result.pareto_frontier:
                 solution["algorithm_weight"] = weight
                 all_solutions.append(solution)
-        
+
         all_solutions.sort(
             key=lambda x: x.get("efficacy", 0) * x.get("algorithm_weight", 1),
             reverse=True
         )
-        
+
         return {
             "success": True,
             "fusion_method": "weighted",
@@ -372,20 +371,20 @@ class MultiAlgorithmOrchestrator:
             "pareto_frontier": all_solutions[:20],
             "best_solution": all_solutions[0] if all_solutions else None
         }
-    
+
     def _fuse_by_voting(self, start_time: float) -> Dict[str, Any]:
         """投票融合"""
         # 收集所有算法都认可的最优解
         solution_votes: Dict[tuple, int] = {}
-        
+
         for result in self._results:
             for solution in result.pareto_frontier[:5]:  # 只考虑前5
                 key = tuple(sorted(solution.get("ingredients", {}).items()))
                 solution_votes[key] = solution_votes.get(key, 0) + 1
-        
+
         # 选择得票最多的解
         best_key = max(solution_votes, key=solution_votes.get) if solution_votes else None
-        
+
         if best_key:
             best_solution = None
             for result in self._results:
@@ -398,7 +397,7 @@ class MultiAlgorithmOrchestrator:
                     break
         else:
             best_solution = None
-        
+
         return {
             "success": True,
             "fusion_method": "voting",
@@ -406,7 +405,7 @@ class MultiAlgorithmOrchestrator:
             "best_solution": best_solution,
             "vote_counts": {k: v for k, v in sorted(solution_votes.items(), key=lambda x: -x[1])[:10]}
         }
-    
+
     def get_algorithm_stats(self) -> Dict[str, Any]:
         """获取算法统计信息"""
         return {
@@ -437,7 +436,7 @@ async def optimize_with_multi_algorithms(
 
 if __name__ == "__main__":
     import asyncio
-    
+
     async def test():
         ingredients = [
             {"name": "黄芪多糖", "efficacy": 0.7, "safety": 0.9},
@@ -445,12 +444,12 @@ if __name__ == "__main__":
             {"name": "枸杞多糖", "efficacy": 0.65, "safety": 0.88},
         ]
         constraints = {"max_cost": 100, "min_efficacy": 0.6}
-        
+
         result = await optimize_with_multi_algorithms(ingredients, constraints)
-        
+
         print(f"优化成功: {result['success']}")
         print(f"找到解数: {result['total_solutions']}")
         print(f"最佳解: {result['best_solution']}")
         print(f"算法统计: {result.get('algorithm_stats', {})}")
-    
+
     asyncio.run(test())

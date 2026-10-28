@@ -17,11 +17,11 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Optional
 
-from . import BaseAgentTool, ToolResult, register_tool
-from .....domain.bots import AIBot, BotVisibility, BotStatus
 from app.infrastructure.bots_impl import SQLAlchemyBotRepository
+
+from .....domain.bots import AIBot, BotStatus, BotVisibility
+from . import BaseAgentTool, ToolResult, register_tool
 
 logger = logging.getLogger(__name__)
 

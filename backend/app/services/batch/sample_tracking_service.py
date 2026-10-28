@@ -3,12 +3,12 @@
 """
 import logging
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Sample, Batch, TestReport, SampleType, TestResult
+from app.models import Batch, Sample, TestReport, TestResult
 from app.models.enums import SampleType as SampleTypeEnum
 
 logger = logging.getLogger(__name__)

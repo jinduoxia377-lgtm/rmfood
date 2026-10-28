@@ -34,14 +34,13 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request, status
 
 logger = logging.getLogger("rmfood.tenant.quota")
 audit_logger = logging.getLogger("rmfood.tenant.quota.audit")
@@ -569,6 +568,7 @@ async def refresh_org_plan_cache(db) -> int:
     plans: Dict[int, str] = {}
     try:
         from sqlalchemy import select as sa_select
+
         from app.models.organization import Organization
         result = await db.execute(sa_select(Organization.id, Organization.plan))
         for row in result.fetchall():

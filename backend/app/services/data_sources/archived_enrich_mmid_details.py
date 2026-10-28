@@ -15,11 +15,10 @@
 輸出 enriched_mmid_herbs.json，可直接合併入現有 herb 數據庫。
 """
 import json
-import re
-import time
 import os
+import re
 import sys
-from bs4 import BeautifulSoup
+import time
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FULL_DATA_PATH = os.path.join(BASEDIR, "mmid_full_data.json")
@@ -275,20 +274,20 @@ def main():
         if h.get("botanical_source"):
             source_count += 1
 
-    print(f"\n四氣分佈:")
+    print("\n四氣分佈:")
     for k, v in sorted(nature_counts.items(), key=lambda x: -x[1]):
         print(f"  {k}: {v}")
 
-    print(f"\n五味分佈 (Top 10):")
+    print("\n五味分佈 (Top 10):")
     for k, v in sorted(flavor_counts.items(), key=lambda x: -x[1])[:10]:
         print(f"  {k}: {v}")
 
     if toxicity_counts:
-        print(f"\n毒性分佈:")
+        print("\n毒性分佈:")
         for k, v in sorted(toxicity_counts.items(), key=lambda x: -x[1]):
             print(f"  {k}: {v}")
 
-    print(f"\n字段覆蓋率:")
+    print("\n字段覆蓋率:")
     print(f"  性味原文: {nature_raw_count}/{result['enriched']}")
     print(f"  功效: {efficacy_count}/{result['enriched']}")
     print(f"  產地: {origin_count}/{result['enriched']}")

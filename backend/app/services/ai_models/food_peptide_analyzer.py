@@ -26,20 +26,18 @@ RMFOOD 食品活性肽深度分析引擎 (Food-Active Peptide Deep Analyzer)
 
 from __future__ import annotations
 
-import asyncio
-import time  # A-27
 import logging
+import time  # A-27
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
 # 导入RMFOOD专用的食品肽分析器
 try:
     from ..peptide_analysis_v2.core_algorithms.food_peptide_analyzer import (
-        FoodPeptideAnalyzer,
         FoodPeptideAnalysisResult,
+        FoodPeptideAnalyzer,
     )
     FOOD_ANALYZER_AVAILABLE = True
 except ImportError as e:
@@ -51,9 +49,9 @@ except ImportError as e:
 class PeptideAnalysisResult:
     """
     肽分析结果 (RMFOOD格式)
-    
+
     保持与原有API接口兼容，但内容已优化为食品相关维度。
-    
+
     Attributes:
         sequence: 输入序列
         basic_properties: 基本理化性质 (分子量、pI等)
@@ -75,10 +73,10 @@ class PeptideAnalysisResult:
 class RMFOODPeptideAnalyzer:
     """
     RMFOOD食品活性肽专用分析器
-    
+
     这是RMFOOD配方平台的**核心分析引擎**，
     完全基于FoodPeptideAnalyzer实现，专为功能性食品开发优化。
-    
+
     与原版AdvancedPeptideAnalyzer的区别:
     ❌ 移除: 三级结构预测 (对食品肽过度工程化)
     ❌ 移除: PROSITE/GO/KEGG通路注释 (与食品无关)
@@ -87,13 +85,13 @@ class RMFOODPeptideAnalyzer:
     ✅ 新增: 生物活性预测 (ACE抑制/抗氧化/抗菌/鲜味)
     ✅ 新增: 苦味评分和溶解度指数 (感官接受度)
     ✅ 新增: 食品应用综合评分 (0-100分制)
-    
+
     性能指标:
     - 单序列完整分析: <200ms
     - 批量处理吞吐: >500 seq/s
     - 内存占用: <50MB (100条序列批量)
     """
-    
+
     def __init__(self):
         if FOOD_ANALYZER_AVAILABLE:
             self._analyzer = FoodPeptideAnalyzer()
@@ -101,52 +99,52 @@ class RMFOODPeptideAnalyzer:
         else:
             self._analyzer = None
             logger.warning("⚠️ 使用降级模式 (部分功能不可用)")
-            
+
     async def analyze_peptide_deeply(self, sequence: str) -> PeptideAnalysisResult:
         """
         对单个肽进行食品导向的深度分析
-        
+
         本方法是RMFOOD API的主要入口点，
         输出结果专门为食品配方开发设计。
-        
+
         Args:
             sequence: 氨基酸序列
-            
+
         Returns:
             PeptideAnalysisResult对象，包含所有食品相关分析维度
-            
+
         Example:
         >>> analyzer = RMFOODPeptideAnalyzer()
         >>> result = await analyzer.analyze_peptide_deeply("VLGYTKEGN")
         >>> if result.safety_assessment['risk_level'] == 'low':
         ...     logger.info(f"✅ 可用于食品 | 评分: {result.overall_scores['food_application_score']}")
-        
+
         Performance:
         - 快速模式: <100ms
         - 完整模式: <200ms
         """
         if not self._analyzer or not FOOD_ANALYZER_AVAILABLE:
             return self._fallback_analysis(sequence)
-            
+
         try:
             # 调用核心食品肽分析器
             food_result: FoodPeptideAnalysisResult = await self._analyzer.analyze(sequence)
-            
+
             # 转换为RMFOOD标准格式 (保持API兼容性)
             rmfood_result = self._convert_to_rmfood_format(food_result)
-            
+
             logger.info(
                 f"✅ RMFOOD深度分析完成 | 序列: {sequence[:20]}... | "
                 f"应用评分: {rmfood_result.overall_scores.get('food_application_score', 'N/A')} | "
                 f"安全等级: {rmfood_result.safety_assessment.get('risk_level', 'N/A')}"
             )
-            
+
             return rmfood_result
-            
+
         except Exception as e:
             logger.error("食品肽分析异常", exc_info=True)
             return self._error_result(sequence, "分析服务异常")
-    
+
     async def batch_analyze_for_food(
         self,
         sequences: List[str],
@@ -154,16 +152,16 @@ class RMFOODPeptideAnalyzer:
     ) -> Dict[str, Any]:
         """
         批量筛选适合食品应用的肽序列
-        
+
         适用场景:
         - 配方候选肽库虚拟筛选
         - 高通量酶解产物分析
         - 食品原料活性成分识别
-        
+
         Args:
             sequences: 待分析的肽序列列表
             min_score: 最低食品应用评分阈值 (0-100)
-            
+
         Returns:
             包含筛选结果的字典:
             {
@@ -176,38 +174,38 @@ class RMFOODPeptideAnalyzer:
         """
         if not self._analyzer:
             return {"error": "分析器未可用", "total_processed": 0}
-            
+
         start_time = time.time()
-        
+
         # 批量分析
         results = await self._analyzer.batch_analyze(sequences)
-        
+
         # 筛选达标候选
         qualified = [
-            r for r in results 
+            r for r in results
             if isinstance(r, FoodPeptideAnalysisResult) and r.food_application_score >= min_score
         ]
-        
+
         # 按评分排序，取Top 10
         top_candidates = sorted(
-            qualified, 
-            key=lambda x: x.food_application_score, 
+            qualified,
+            key=lambda x: x.food_application_score,
             reverse=True
         )[:10]
-        
+
         # 统计信息
         avg_score = (
-            sum(r.food_application_score for r in results if isinstance(r, FoodPeptideAnalysisResult)) / 
+            sum(r.food_application_score for r in results if isinstance(r, FoodPeptideAnalysisResult)) /
             len(results) if results else 0
         )
-        
+
         safe_count = sum(
-            1 for r in results 
+            1 for r in results
             if isinstance(r, FoodPeptideAnalysisResult) and r.safety.risk_level == "low"
         )
-        
+
         elapsed = (time.time() - start_time) * 1000
-        
+
         output = {
             "total_processed": len(sequences),
             "successful_analyses": len(results),
@@ -225,7 +223,7 @@ class RMFOODPeptideAnalyzer:
                             **r.bioactivity.ace_inhibition,
                             **r.bioactivity.antioxidant,
                             **r.bioactivity.antimicrobial,
-                        }.items() 
+                        }.items()
                         if isinstance(v, dict) and v.get('score', 0) > 0.5
                     ],
                     "recommendations": r.application_suggestions[:2],
@@ -248,18 +246,18 @@ class RMFOODPeptideAnalyzer:
             "processing_time_ms": round(elapsed, 1),
             "analysis_version": "v2.0-food",
         }
-        
+
         logger.info(
             f"📊 批量食品肽筛选完成 | 总数: {len(sequences)} | "
             f"达标: {len(qualified)} ({len(qualified)/len(sequences)*100:.0f}%) | "
             f"耗时: {elapsed:.0f}ms"
         )
-        
+
         return output
-    
+
     def _convert_to_rmfood_format(self, food_result: FoodPeptideAnalysisResult) -> PeptideAnalysisResult:
         """将FoodPeptideAnalysisResult转换为RMFOOD标准格式"""
-        
+
         # 基本理化性质
         basic_props = {}
         if food_result.physicochemical:
@@ -273,7 +271,7 @@ class RMFOODPeptideAnalyzer:
                 "essential_aa_ratio": pc.essential_aa_ratio,
                 "stable_ph_range": list(pc.stability_ph_range),
             }
-            
+
         # 二级结构
         sec_struct = {}
         if food_result.secondary_structure:
@@ -285,7 +283,7 @@ class RMFOODPeptideAnalyzer:
                 "dominant_structure": ss.dominant_structure,
                 "flexibility_regions": ss.flexibility_regions,
             }
-            
+
         # 食品相关理化剖面 (新增!)
         physico_profile = {}
         if food_result.physicochemical:
@@ -296,7 +294,7 @@ class RMFOODPeptideAnalyzer:
                 "nutritional_value": self._classify_nutrition(pc.essential_aa_ratio),
                 "processing_stability": self._classify_stability(pc.stability_ph_range),
             }
-            
+
         # 生物活性预测 (食品专用!)
         bioact_preds = {}
         if food_result.bioactivity:
@@ -309,7 +307,7 @@ class RMFOODPeptideAnalyzer:
                 "overall_food_potential": ba.overall_food_potential,
                 "recommended_applications": self._extract_applications(ba),
             }
-            
+
         # 安全性评估 (食品专用!)
         safety_assess = {}
         if food_result.safety:
@@ -323,7 +321,7 @@ class RMFOODPeptideAnalyzer:
                 "regulatory_status": self._classify_regulatory(s),
                 "recommendations": s.recommendations,
             }
-            
+
         # PTM位点 (精简为4种食品相关类型)
         ptm_summary = {}
         if food_result.ptm_sites:
@@ -337,30 +335,30 @@ class RMFOODPeptideAnalyzer:
                     "confidence": site.confidence,
                     "food_impact": site.food_relevance,
                 })
-                
+
             ptm_summary = {
                 "total_sites": len(food_result.ptm_sites),
                 "sites_by_type": ptm_by_type,
                 "modification_recommendations": self._generate_ptm_recommendations(ptm_by_type),
             }
-            
+
             # 将PTM信息合并到physico_profile中
             physico_profile["ptm_modification_potential"] = ptm_summary
-            
+
         # 综合评分 (含食品应用评分!)
         overall_scores = {
             "food_application_score": food_result.food_application_score,
             "composite_quality": food_result.validation.quality_score if food_result.validation else 0.5,
             "safety_weighted": round(
-                food_result.safety.safety_score * 35 + 
+                food_result.safety.safety_score * 35 +
                 food_result.bioactivity.overall_food_potential * 30 +
                 food_result.physicochemical.solubility_index * 20 +
-                (1 - food_result.physicochemical.bitterness_score) * 15, 
+                (1 - food_result.physicochemical.bitterness_score) * 15,
                 1
             ),
             "tier": self._score_to_tier(food_result.food_application_score),
         }
-        
+
         return PeptideAnalysisResult(
             sequence=food_result.sequence,
             basic_properties=basic_props,
@@ -370,11 +368,11 @@ class RMFOODPeptideAnalyzer:
             safety_assessment=safety_assess,
             overall_scores=overall_scores,
         )
-    
+
     # ════════════════════════════════════
     # 辅助方法: 分类与评级
     # ════════════════════════════════════
-    
+
     def _classify_solubility(self, solubility: float) -> str:
         if solubility > 0.8:
             return "Excellent (highly soluble)"
@@ -384,7 +382,7 @@ class RMFOODPeptideAnalyzer:
             return "Acceptable (may need formulation optimization)"
         else:
             return "Poor (requires solubility enhancement)"
-            
+
     def _classify_taste(self, bitterness: float) -> str:
         if bitterness < 0.2:
             return "Bland/Sweet (palatable)"
@@ -394,7 +392,7 @@ class RMFOODPeptideAnalyzer:
             return "Moderately bitter (may need masking)"
         else:
             return "Strongly bitter (significant sensory issue)"
-            
+
     def _classify_nutrition(self, essential_ratio: float) -> str:
         if essential_ratio > 0.6:
             return "High nutritional value"
@@ -402,7 +400,7 @@ class RMFOODPeptideAnalyzer:
             return "Moderate nutritional value"
         else:
             return "Low essential AA content"
-            
+
     def _classify_stability(self, ph_range: tuple) -> str:
         width = abs(ph_range[1] - ph_range[0])
         if width > 6:
@@ -411,7 +409,7 @@ class RMFOODPeptideAnalyzer:
             return "Moderate stability (pH control needed)"
         else:
             return "Narrow stability (strict pH requirements)"
-            
+
     def _classify_regulatory(self, safety) -> str:
         if safety.risk_level == "low" and safety.safety_score > 0.85:
             return "GRAS-like candidate (Generally Recognized As Safe)"
@@ -419,7 +417,7 @@ class RMFOODPeptideAnalyzer:
             return "Requires toxicology assessment"
         else:
             return "Not recommended for food use"
-            
+
     def _extract_applications(self, bioact) -> List[str]:
         apps = []
         if bioact.ace_inhibition.get('score', 0) > 0.55:
@@ -431,7 +429,7 @@ class RMFOODPeptideAnalyzer:
         if bioact.umami_enhancement.get('score', 0) > 0.30:
             apps.append(bioact.umami_enhancement.get('potential_application', ''))
         return [a for a in apps if a]
-        
+
     def _generate_ptm_recommendations(self, ptm_by_type: Dict) -> List[str]:
         recs = []
         if 'phosphorylation' in ptm_by_type:
@@ -443,7 +441,7 @@ class RMFOODPeptideAnalyzer:
         if 'o_glycosylation' in ptm_by_type:
             recs.append("O-glycosylation may modify texture/mouthfeel properties")
         return recs
-        
+
     def _score_to_tier(self, score: float) -> str:
         if score >= 75:
             return "A (Premium candidate)"
@@ -453,7 +451,7 @@ class RMFOODPeptideAnalyzer:
             return "C (Marginal - needs optimization)"
         else:
             return "D (Not suitable for current application)"
-    
+
     def _fallback_analysis(self, sequence: str) -> PeptideAnalysisResult:
         """降级模式 (当FoodPeptideAnalyzer不可用时)"""
         return PeptideAnalysisResult(
@@ -462,7 +460,7 @@ class RMFOODPeptideAnalyzer:
             safety_assessment={"risk_level": "unknown", "error": "Analyzer not initialized"},
             overall_scores={"food_application_score": 0, "tier": "N/A"},
         )
-        
+
     def _error_result(self, sequence: str, error_msg: str) -> PeptideAnalysisResult:
         """错误结果"""
         return PeptideAnalysisResult(
@@ -480,7 +478,7 @@ AdvancedPeptideAnalyzer = RMFOODPeptideAnalyzer
 def get_rmfood_analyzer() -> RMFOODPeptideAnalyzer:
     """
     获取RMFOOD食品肽分析器实例 (工厂方法)
-    
+
     Usage:
     >>> from ..services.ai_models.food_peptide_analyzer import get_rmfood_analyzer
     >>> analyzer = get_rmfood_analyzer()

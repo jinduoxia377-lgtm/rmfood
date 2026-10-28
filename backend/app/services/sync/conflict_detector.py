@@ -8,7 +8,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 
 class ConflictType(str, Enum):
@@ -41,23 +41,23 @@ class Conflict:
     entity_id: str = ""
     conflict_type: ConflictType = ConflictType.CONTENT_CONFLICT
     status: ConflictStatus = ConflictStatus.DETECTED
-    
+
     local_data: Dict[str, Any] = field(default_factory=dict)
     server_data: Dict[str, Any] = field(default_factory=dict)
     base_data: Optional[Dict[str, Any]] = None
-    
+
     local_timestamp: Optional[datetime] = None
     server_timestamp: Optional[datetime] = None
-    
+
     conflicting_fields: List[str] = field(default_factory=list)
-    
+
     recommended_strategy: MergeStrategy = MergeStrategy.LAST_WRITE_WINS
     resolved_data: Optional[Dict[str, Any]] = None
     resolution_strategy: Optional[MergeStrategy] = None
-    
+
     detected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     resolved_at: Optional[datetime] = None
-    
+
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -108,13 +108,13 @@ class ResolvedEntity:
 class ConflictDetector:
     """
     冲突检测器
-    
+
     功能：
     - 检测同一实体的并发修改（三向合并）
     - 分类冲突类型（内容/删除-修改/结构）
     - 推荐自动解决策略
     - 执行自动合并（LAST_WRITE_WINS / UNION_MERGE）
-    
+
     算法：
     基于CRDTs的三向合并：
     1. 比较本地版本与服务器版本的差异
@@ -131,7 +131,7 @@ class ConflictDetector:
     ):
         """
         初始化冲突检测器
-        
+
         Args:
             default_strategy: 默认合并策略
             auto_resolve_content: 是否自动解决内容冲突
@@ -140,16 +140,16 @@ class ConflictDetector:
         self.default_strategy = default_strategy
         self.auto_resolve_content = auto_resolve_content
         self.auto_resolve_structural = auto_resolve_structural
-        
+
         self._union_merge_fields: Set[str] = {
             "tags", "categories", "ingredients", "notes",
             "attachments", "references", "collaborators",
         }
-        
+
         self._protected_fields: Set[str] = {
             "id", "created_at", "created_by", "version",
         }
-        
+
         self._stats = {
             "total_detections": 0,
             "auto_resolutions": 0,
@@ -165,37 +165,37 @@ class ConflictDetector:
     ) -> List[Conflict]:
         """
         检测并发编辑产生的冲突
-        
+
         使用三向合并算法：
         - local_changes: 本地变更列表
-        - remote_changes: 远程（服务器）变更列表  
+        - remote_changes: 远程（服务器）变更列表
         - base_snapshot: 基线快照 {entity_key: base_data}
-        
+
         Returns:
             检测到的冲突列表
         """
         import time
         start_time = time.time()
-        
+
         conflicts: List[Conflict] = []
-        
+
         remote_index = self._index_changes_by_entity(remote_changes)
-        
+
         for local_change in local_changes:
             entity_key = f"{local_change.get('entity_type', 'unknown')}:{local_change.get('entity_id', 'unknown')}"
-            
+
             if entity_key not in remote_index:
                 continue
-                
+
             remote_change = remote_index[entity_key]
-            
+
             base_data = None
             if base_snapshot and entity_key in base_snapshot:
                 base_data = base_snapshot[entity_key]
-            
+
             local_data = local_change.get("data") or local_change.get("local_data", {})
             remote_data = remote_change.get("data") or remote_change.get("server_data", {})
-            
+
             conflict = await self._analyze_conflict(
                 entity_type=local_change.get("entity_type", "unknown"),
                 entity_id=str(local_change.get("entity_id", "")),
@@ -205,7 +205,7 @@ class ConflictDetector:
                 local_timestamp=self._parse_timestamp(local_change.get("timestamp")),
                 remote_timestamp=self._parse_timestamp(remote_change.get("timestamp")),
             )
-            
+
             if conflict:
                 conflicts.append(conflict)
 
@@ -221,23 +221,23 @@ class ConflictDetector:
     ) -> ResolvedEntity:
         """
         自动解决冲突
-        
+
         支持的策略：
         - LAST_WRITE_WINS: 选择时间戳更新的版本
         - UNION_MERGE: 合并集合类字段（tags, ingredients等）
-        
+
         Args:
             conflict: 冲突对象
             strategy: 合并策略（如果为None则使用推荐策略）
-            
+
         Returns:
             解决后的实体对象
-            
+
         Raises:
             ValueError: 如果策略不适用或数据无效
         """
         resolve_strategy = strategy or conflict.recommended_strategy
-        
+
         if resolve_strategy == MergeStrategy.MANUAL:
             return ResolvedEntity(
                 entity_type=conflict.entity_type,
@@ -260,17 +260,17 @@ class ConflictDetector:
             conflict.resolved_data = resolved.merged_data
             conflict.resolution_strategy = resolve_strategy
             conflict.resolved_at = datetime.now(timezone.utc)
-            
+
             self._stats["auto_resolutions"] += 1
-            
+
             return resolved
-            
+
         except Exception as e:
             conflict.metadata["auto_resolve_error"] = "自动解决失败"
             conflict.recommended_strategy = MergeStrategy.MANUAL
             conflict.status = ConflictStatus.PENDING_USER
             self._stats["manual_required"] += 1
-            
+
             raise ValueError(f"自动解决失败: {str(e)}") from e
 
     def manual_resolve(
@@ -281,12 +281,12 @@ class ConflictDetector:
     ) -> ResolvedEntity:
         """
         用户手动解决冲突
-        
+
         Args:
             conflict: 冲突对象
             user_choice: 用户选择 (local/server/custom)
             custom_data: 自定义合并数据（当user_choice="custom"时）
-            
+
         Returns:
             解决后的实体对象
         """
@@ -359,8 +359,8 @@ class ConflictDetector:
         )
 
         conflict_type = (
-            ConflictType.STRUCTURAL_CONFLICT 
-            if has_structural 
+            ConflictType.STRUCTURAL_CONFLICT
+            if has_structural
             else ConflictType.CONTENT_CONFLICT
         )
 
@@ -396,31 +396,31 @@ class ConflictDetector:
     ) -> List[str]:
         """找出真正冲突的字段（双方都从基线修改过的字段）"""
         conflicting: List[str] = []
-        
+
         all_keys = set(local.keys()) | set(remote.keys())
-        
+
         if base:
             for key in all_keys:
                 if key in self._protected_fields:
                     continue
-                    
+
                 local_val = local.get(key)
                 remote_val = remote.get(key)
                 base_val = base.get(key)
-                
+
                 local_changed = local_val != base_val
                 remote_changed = remote_val != base_val
-                
+
                 if local_changed and remote_changed:
                     conflicting.append(key)
         else:
             for key in all_keys:
                 if key in self._protected_fields:
                     continue
-                    
+
                 if local.get(key) != remote.get(key):
                     conflicting.append(key)
-                    
+
         return conflicting
 
     def _is_structural_conflict(
@@ -432,14 +432,14 @@ class ConflictDetector:
         """判断是否为结构性冲突（类型不匹配等）"""
         if type(local_value) != type(remote_value):
             return True
-            
+
         if isinstance(local_value, dict) and isinstance(remote_value, dict):
             local_keys = set(local_value.keys())
             remote_keys = set(remote_value.keys())
-            
+
             if local_keys != remote_keys:
                 return True
-                
+
         return False
 
     def _recommend_strategy(
@@ -450,7 +450,7 @@ class ConflictDetector:
         """根据冲突类型和字段特征推荐策略"""
         if conflict_type == ConflictType.DELETE_MODIFY_CONFLICT:
             return MergeStrategy.MANUAL
-            
+
         if conflict_type == ConflictType.STRUCTURAL_CONFLICT:
             return MergeStrategy.MANUAL if not self.auto_resolve_structural else MergeStrategy.LAST_WRITE_WINS
 
@@ -463,7 +463,7 @@ class ConflictDetector:
     def _apply_last_write_wins(self, conflict: Conflict) -> ResolvedEntity:
         """应用最后写入优先策略"""
         use_local = False
-        
+
         if conflict.local_timestamp and conflict.server_timestamp:
             use_local = conflict.local_timestamp > conflict.server_timestamp
         elif conflict.local_timestamp:
@@ -583,13 +583,13 @@ class ConflictDetector:
     def _update_stats(self, elapsed_ms: float, conflict_count: int):
         """更新统计信息"""
         self._stats["total_detections"] += 1
-        
+
         total = self._stats["total_detections"]
         prev_avg = self._stats["avg_detection_time_ms"]
         self._stats["avg_detection_time_ms"] = (
             (prev_avg * (total - 1) + elapsed_ms) / total
         )
-        
+
         if conflict_count > 0:
             self._stats["manual_required"] += 1
 
@@ -600,4 +600,5 @@ class ConflictDetector:
 
 
 import json as _json
+
 json = _json

@@ -10,13 +10,11 @@
 - 配方优化建议
 """
 
+import json
 import logging
-import math
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +140,7 @@ NRV_VALUES: Dict[NutrientType, float] = {
 class NutritionEngine:
     """
     营养计算与成本核算引擎
-    
+
     Features:
     - 精确的营养成分计算
     - 多维度成本分析
@@ -164,14 +162,14 @@ class NutritionEngine:
     ) -> NutritionResult:
         """
         计算配方的营养成分
-        
+
         Args:
             formula_id: 配方ID
             formula_name: 配方名称
             ingredients: 原料列表 [{ingredient_id, amount_g, ...}]
             serving_size_g: 每份重量(g)
             servings_per_container: 每容器份数
-            
+
         Returns:
             完整的营养计算结果
         """
@@ -185,7 +183,7 @@ class NutritionEngine:
 
         for ing in ingredients:
             ingredient_nutrition = await self._get_ingredient_nutrition(ing["ingredient_id"])
-            
+
             if not ingredient_nutrition:
                 continue
 
@@ -242,7 +240,7 @@ class NutritionEngine:
     ) -> FormulaCost:
         """
         计算配方成本
-        
+
         包含:
         - 原料成本
         - 加工成本
@@ -254,7 +252,7 @@ class NutritionEngine:
 
         for ing in ingredients:
             unit_cost = await self._get_ingredient_unit_cost(ing["ingredient_id"])
-            
+
             if unit_cost is None:
                 continue
 
@@ -263,7 +261,7 @@ class NutritionEngine:
             total_material_cost += cost
 
         processing_cost = total_material_cost * (processing_cost_pct / 100)
-        
+
         total_cost = (
             total_material_cost +
             processing_cost +
@@ -285,7 +283,7 @@ class NutritionEngine:
     ) -> ComplianceCheck:
         """
         合规性检查
-        
+
         检查项目:
         - 营养标签格式
         - 强制标示项目完整性
@@ -381,13 +379,13 @@ class NutritionEngine:
 
         if nutrients.get(NutrientType.PROTEIN, 0) < 5:
             recommendations.append("💪 蛋白质含量偏低，可考虑添加优质蛋白来源")
-        
+
         if nutrients.get(NutrientType.DIETARY_FIBER, 0) < 2:
             recommendations.append("🌾 膳食纤维不足，可增加全谷物或蔬菜成分")
-        
+
         if nutrients.get(NutrientType.SODIUM, 0) > 800:
             recommendations.append("⚠️ 钠含量偏高，建议减少盐或高钠调料使用")
-        
+
         if nutrients.get(NutrientType.CALCIUM, 0) < 50:
             recommendations.append="🦴 钙含量较低，可考虑强化钙质"
 
@@ -412,7 +410,7 @@ class NutritionEngine:
             {"id": ingredient_id},
         )
         row = result.fetchone()
-        
+
         if not row:
             return None
 
@@ -440,7 +438,7 @@ class NutritionEngine:
             {"id": ingredient_id},
         )
         row = result.fetchone()
-        
+
         return float(row.unit_price) if row and row.unit_price else None
 
 

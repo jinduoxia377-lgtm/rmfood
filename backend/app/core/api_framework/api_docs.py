@@ -18,12 +18,12 @@ import logging
 import time
 from datetime import datetime, timezone
 from functools import wraps
-from typing import Any, Dict, List, Optional, Type, Callable
+from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
-from pydantic import BaseModel, ValidationError, Field
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +493,6 @@ class ApiUsageTracker:
 
     def get_stats(self) -> Dict[str, Any]:
         """获取 API 使用统计（包含 P50 / P95 / P99 分位）"""
-        import statistics
 
         result = {
             "total_requests": self._total_requests,

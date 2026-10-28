@@ -13,9 +13,7 @@
 
 @version 1.0.0
 """
-import json
 import logging
-import math
 import re
 import time
 from dataclasses import dataclass, field
@@ -297,7 +295,7 @@ class SuperIntelligenceEnsembler:
                            kg_result: AlgorithmResult) -> str:
         parts = []
         if category == QueryCategory.FORMULA_DESIGN:
-            parts.append(f"## 🎯 配方设计方案\n")
+            parts.append("## 🎯 配方设计方案\n")
             if merged_herbs:
                 herb_names = {"hq":"黄芪","ds":"党参","gz":"枸杞","rs":"人参","dg":"当归",
                              "bq":"白术","fp":"茯苓","gq":"甘草","jgh":"菊花","cs":"川芎",
@@ -311,7 +309,7 @@ class SuperIntelligenceEnsembler:
             for result in results:
                 if result.confidence > 0.5:
                     parts.append(f"\n**{result.algorithm}**: 置信度 {result.confidence:.1%}")
-            parts.append(f"\n\n💡 **建议**: 可在配方生成模块选择具体功效标签获取完整方案。")
+            parts.append("\n\n💡 **建议**: 可在配方生成模块选择具体功效标签获取完整方案。")
         elif category == QueryCategory.INGREDIENT_QUERY and kg_result.output:
             herbs = kg_result.output.get("herbs", {})
             for hid, info in list(herbs.items())[:3]:
@@ -328,7 +326,7 @@ class SuperIntelligenceEnsembler:
             for result in results:
                 if result.confidence > 0.3:
                     parts.append(f"- ✅ **{result.algorithm}**: 置信度 {result.confidence:.1%}")
-            parts.append(f"\n如需专业配方建议，请明确目标功效（如免疫调节、抗氧化等）。")
+            parts.append("\n如需专业配方建议，请明确目标功效（如免疫调节、抗氧化等）。")
         return "\n".join(parts)
 
     def _build_thinking_steps(self, base_steps: List[Dict], results: List[AlgorithmResult],

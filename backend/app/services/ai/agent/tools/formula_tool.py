@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from . import BaseAgentTool, ToolResult, register_tool
 from .compliance_tool import FOOD_HERB_LIMITS
@@ -153,7 +153,13 @@ class FormulaGenerationTool(BaseAgentTool):
             if params.get("budget_constraint"):
                 constraints["budget_constraint"] = params["budget_constraint"]
 
-            result = await run_ga_generation(target_effects, constraints)
+            # P0-4：从执行上下文取 user_id 透传（user.id 为 int，转 str 匹配向量库 metadata）
+            ctx_user_id = context.get("user_id")
+            result = await run_ga_generation(
+                target_effects,
+                constraints,
+                user_id=str(ctx_user_id) if ctx_user_id else None,
+            )
             candidates = result.get("candidates") or []
             if not candidates:
                 return ToolResult(
@@ -246,7 +252,9 @@ class IngredientInfoTool(BaseAgentTool):
             if db is not None:
                 try:
                     import json as _json
+
                     from sqlalchemy import select
+
                     from .....models.external_data import TCMHerb
 
                     result = await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))

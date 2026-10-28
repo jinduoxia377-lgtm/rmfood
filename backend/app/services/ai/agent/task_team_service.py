@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,7 +39,11 @@ class TaskTeamService:
 
     async def _check_rate_limit(self, user_id: int) -> bool:
         """auto-team 限流：Redis 启用时用 SET NX；否则用进程内存表。"""
-        from ....core.distributed.redis_client import is_redis_enabled, redis_set_nx, make_rate_limit_key
+        from ....core.distributed.redis_client import (
+            is_redis_enabled,
+            make_rate_limit_key,
+            redis_set_nx,
+        )
         if is_redis_enabled():
             return await redis_set_nx(
                 make_rate_limit_key("auto_team_rate", user_id),
@@ -194,8 +198,11 @@ async def seed_github_mcp_server() -> bool:
     指向项目自身的 MCP 代理端点（封装 GitHub REST API）。
     """
     import os
+
     from sqlalchemy import select
+
     from app.core.database.session import async_session_factory
+
     from ....models.mcp_server import McpServerConfig
 
     base_url = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
@@ -238,8 +245,11 @@ async def recover_stale_tasks(timeout_minutes: int = 30) -> int:
     并在对应任务群写入提示消息（进程重启/执行超时场景下避免任务永远卡住）。
     """
     from datetime import datetime, timedelta, timezone
+
     from sqlalchemy import select, update
+
     from app.core.database.session import async_session_factory
+
     from ....models.task_group import TaskGroup
 
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=timeout_minutes)

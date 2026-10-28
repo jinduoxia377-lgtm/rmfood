@@ -5,10 +5,14 @@
 - 预定义角色权限矩阵（owner, admin, member, guest）
 - 权限继承规则
 """
-from typing import Optional  # A-27
-from typing import Dict, List, Set, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
+from typing import (
+    Dict,
+    List,
+    Optional,  # A-27
+    Set,
+)
 
 
 class TeamResource(str, Enum):
@@ -102,31 +106,31 @@ def check_role_permission(
 ) -> bool:
     """
     检查指定角色是否拥有特定资源的操作权限
-    
+
     Args:
         role: 角色 (owner/admin/member/guest)
         resource: 资源类型 (team/category/prompt_template/version)
         action: 操作 (view/create/edit/delete/manage等)
-        
+
     Returns:
         是否有权限
     """
     role_perms = ROLE_PERMISSIONS.get(role.lower(), {})
     resource_perms = role_perms.get(resource.lower(), [])
-    
+
     if "*" in resource_perms:
         return True
-    
+
     return action.lower() in [p.lower() for p in resource_perms]
 
 
 def get_role_permissions(role: str) -> Dict[str, List[str]]:
     """
     获取角色的所有权限
-    
+
     Args:
         role: 角色名称
-        
+
     Returns:
         权限字典 {resource_type: [actions]}
     """
@@ -136,18 +140,18 @@ def get_role_permissions(role: str) -> Dict[str, List[str]]:
 def get_all_permissions_for_role(role: str) -> Set[str]:
     """
     获取角色的所有权限字符串集合
-    
+
     格式: {"resource:action"}
-    
+
     Args:
         role: 角色名称
-        
+
     Returns:
         权限字符串集合
     """
     permissions = set()
     role_perms = get_role_permissions(role)
-    
+
     for resource, actions in role_perms.items():
         for action in actions:
             if action == "*":
@@ -156,5 +160,5 @@ def get_all_permissions_for_role(role: str) -> Set[str]:
                     permissions.add(f"{resource}:{a}")
             else:
                 permissions.add(f"{resource}:{action}")
-    
+
     return permissions

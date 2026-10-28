@@ -1,8 +1,7 @@
 """RMFOOD 配方成本效益计算服务"""
-from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
-
+from typing import Any, Dict, List, Optional
 
 INGREDIENT_COSTS: Dict[str, float] = {
     "黄芪": 0.15,

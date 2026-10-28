@@ -2,7 +2,8 @@
 供应商调价影响分析服务
 """
 import logging
-from typing import Dict, Any, List
+from typing import Any, Dict
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -126,7 +127,6 @@ class PriceChangeImpactService:
             raise ValueError(f"原料不存在: {ingredient_id}")
 
         # 记录价格历史
-        import json
         from datetime import datetime, timezone
         price_history = ingredient.properties.get("price_history", []) if ingredient.properties else []
         price_history.append({

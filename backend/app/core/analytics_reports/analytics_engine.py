@@ -12,30 +12,35 @@
 【已拆分】数据模型见 schemas.py，服务层见本文件。
 """
 
-import asyncio
 import csv
 import io
 import json
 import logging
+import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Dict, List, Optional, Tuple
+
 # A-48：下面 162 / 235 行用 isinstance(vv, Enum) 把枚举成员还原成原始值，
 # 但 Enum 从来没有导入过 —— 每次调用都 NameError，又被路由层的
 # except Exception -> HTTPException(500) 吞掉，表现成"服务器内部错误"。
 # /analytics/kpi 与 /analytics/anomalies 的 500 就是这个原因。
 from enum import Enum
-import uuid
-from sqlalchemy import text, func, DateTime, select
+from typing import Any, Dict, List, Optional, Tuple
+
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import aliased
 
-from app.models import Formula, Experiment, User, Comment
-from app.models.enums import FormulaStatus, ExperimentStatus
 from app.core.analytics_reports.health_monitor import get_health_monitor
-from app.core.analytics_reports.business_metrics import BusinessMetricsService
 from app.core.analytics_reports.schemas import (
-    ExportFormat, ChartType, TimeGranularity,
-    KPIMetric, ChartData, ReportConfig, ExportResult,
+    ChartData,
+    ChartType,
+    ExportFormat,
+    ExportResult,
+    KPIMetric,
+    ReportConfig,
+    TimeGranularity,
 )
+from app.models import Comment, Experiment, Formula, User
+from app.models.enums import ExperimentStatus, FormulaStatus
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +77,7 @@ class AnalyticsService:
 
     async def get_dashboard_stats(self, org_id: Optional[int] = None) -> Dict[str, Any]:
         now = datetime.now(timezone.utc)
-        
+
         stats = {
             "timestamp": now.isoformat(),
             "kpi": await self._get_kpi_metrics(org_id=org_id),
@@ -81,7 +86,7 @@ class AnalyticsService:
             "top_entities": await self._get_top_entities(org_id=org_id),
             "system_health": await self._get_system_health(),
         }
-        
+
         return stats
 
     async def _get_kpi_metrics(self, days: int = 30, org_id: Optional[int] = None) -> List[KPIMetric]:
@@ -94,7 +99,7 @@ class AnalyticsService:
             formulas_change = self._calc_change(formulas_last_week, formulas_prev_week)
 
             trend_data = await self._get_formula_trend_data(days=days, org_id=org_id)
-            
+
             metrics.append(KPIMetric(
                 id="total_formulas",
                 name="配方总数",
@@ -109,7 +114,7 @@ class AnalyticsService:
             total_experiments = await self._count_experiments(org_id=org_id)
             experiments_completed = await self._count_experiments_by_status(ExperimentStatus.COMPLETED, org_id=org_id)
             experiments_success_rate = round((experiments_completed / total_experiments * 100) if total_experiments > 0 else 0, 1)
-            
+
             metrics.append(KPIMetric(
                 id="total_experiments",
                 name="实验总数",
@@ -119,12 +124,12 @@ class AnalyticsService:
                 target=500.0,
                 trend_data=await self._get_experiment_trend_data(days=days, org_id=org_id),
             ))
-            
+
             metrics[-1].__dict__["success_rate"] = experiments_success_rate
 
             active_users_30d = await self._count_active_users(days=30, org_id=org_id)
             active_users_60d = await self._count_active_users(days=60, org_id=org_id)
-            
+
             metrics.append(KPIMetric(
                 id="active_users",
                 name="活跃用户",
@@ -138,7 +143,7 @@ class AnalyticsService:
 
             ai_generations_today = await self._count_ai_generations_recent(hours=24, org_id=org_id)
             ai_generations_yesterday = await self._count_ai_generations_between(hours_start=48, hours_end=24, org_id=org_id)
-            
+
             metrics.append(KPIMetric(
                 id="ai_generations",
                 name="AI生成次数(今日)",
@@ -150,7 +155,7 @@ class AnalyticsService:
             ))
 
             storage_used_mb = await self._get_storage_usage(org_id=org_id)
-            
+
             metrics.append(KPIMetric(
                 id="storage_usage",
                 name="存储使用量",
@@ -162,7 +167,7 @@ class AnalyticsService:
             ))
 
             published_formulas = await self._count_formulas_by_status(FormulaStatus.APPROVED, org_id=org_id)
-            
+
             metrics.append(KPIMetric(
                 id="published_formulas",
                 name="已发布配方",
@@ -212,7 +217,7 @@ class AnalyticsService:
         months = max(months, 1)
         formula_monthly = await self._get_formula_monthly_counts(months, org_id=org_id)
         experiment_monthly = await self._get_experiment_monthly_counts(months, org_id=org_id)
-        
+
         charts["monthly_creation_trend"] = ChartData(
             chart_type=ChartType.LINE,
             title="月度创建趋势",
@@ -240,7 +245,7 @@ class AnalyticsService:
 
         category_labels = await self._get_formula_category_labels(org_id=org_id)
         category_data = await self._get_formula_category_counts(org_id=org_id)
-        
+
         charts["category_breakdown"] = ChartData(
             chart_type=ChartType.BAR,
             title="分类使用情况",
@@ -256,7 +261,7 @@ class AnalyticsService:
                 },
             ],
         )
-        
+
         return {k: {kk: (vv.value if isinstance(vv, Enum) else vv) for kk, vv in v.__dict__.items()} for k, v in charts.items()}
 
     async def _get_recent_activity(self, org_id: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -323,7 +328,7 @@ class AnalyticsService:
 
     async def _get_top_entities(self, org_id: Optional[int] = None) -> Dict[str, List[Dict]]:
         top = {}
-        
+
         try:
             CommentAlias = aliased(Comment)
             top_query = (
@@ -334,8 +339,8 @@ class AnalyticsService:
                     func.count(CommentAlias.id).label('comment_count'),
                     User.username.label('creator')
                 )
-                .outerjoin(CommentAlias, 
-                          (CommentAlias.formula_id == Formula.id) & 
+                .outerjoin(CommentAlias,
+                          (CommentAlias.formula_id == Formula.id) &
                           (CommentAlias.resource_type == 'formula'))
                 .outerjoin(User, Formula.creator_id == User.id)
                 .where(Formula.status == FormulaStatus.APPROVED)
@@ -348,7 +353,7 @@ class AnalyticsService:
                 .order_by(func.count(CommentAlias.id).desc())
                 .limit(5)
             )
-            
+
             top["most_commented_formulas"] = [
                 {
                     "id": row.id,
@@ -363,7 +368,7 @@ class AnalyticsService:
             await self._rollback_quietly()
             logger.warning(f"Warning: _get_top_entities failed: {e}")
             top["most_commented_formulas"] = []
-        
+
         return top
 
     async def _get_system_health(self) -> Dict[str, Any]:
@@ -503,7 +508,7 @@ class AnalyticsService:
         for widget_config in config.widgets:
             widget_type = widget_config.get("type")
             widget_data = await self._generate_widget_data(widget_type, widget_config, date_range, filters, org_id=org_id)
-            
+
             report_data["widgets"].append({
                 "id": widget_config.get("id", str(uuid.uuid4())),
                 "type": widget_type,
@@ -514,7 +519,7 @@ class AnalyticsService:
         report_data["summary"] = await self._generate_report_summary(report_data["widgets"])
 
         logger.info(f"📊 报表生成完成: {config.name} ({len(report_data['widgets'])} widgets)")
-        
+
         return report_data
 
     async def export_data(
@@ -527,7 +532,7 @@ class AnalyticsService:
     ) -> ExportResult:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = f"report_{timestamp}"
-        
+
         if format == ExportFormat.CSV:
             return await self._export_csv(data, file_name or f"{default_name}.csv")
         elif format == ExportFormat.EXCEL:
@@ -541,16 +546,16 @@ class AnalyticsService:
 
     async def _export_csv(self, data: Dict, file_name: str) -> ExportResult:
         output = io.StringIO()
-        
+
         if "items" in data and isinstance(data["items"], list):
             items = data["items"]
             if items:
                 writer = csv.DictWriter(output, fieldnames=items[0].keys())
                 writer.writeheader()
                 writer.writerows(items)
-        
+
         content = output.getvalue().encode('utf-8-sig')
-        
+
         return ExportResult(
             file_name=file_name,
             file_size_bytes=len(content),
@@ -563,12 +568,12 @@ class AnalyticsService:
     async def _export_excel(self, data: Dict, file_name: str, sheet_name: str) -> ExportResult:
         try:
             import openpyxl
-            from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-            
+            from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = sheet_name
-            
+
             header_font = Font(bold=True, color="FFFFFF")
             header_fill = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid")
             header_alignment = Alignment(horizontal="center", vertical="center")
@@ -578,33 +583,33 @@ class AnalyticsService:
                 top=Side(style='thin'),
                 bottom=Side(style='thin'),
             )
-            
+
             if "items" in data and isinstance(data["items"], list):
                 items = data["items"]
                 if items:
                     headers = list(items[0].keys())
-                    
+
                     for col_idx, header in enumerate(headers, 1):
                         cell = ws.cell(row=1, column=col_idx, value=header)
                         cell.font = header_font
                         cell.fill = header_fill
                         cell.alignment = header_alignment
                         cell.border = thin_border
-                    
+
                     for row_idx, item in enumerate(items, 2):
                         for col_idx, key in enumerate(headers, 1):
                             value = item.get(key, "")
                             cell = ws.cell(row=row_idx, column=col_idx, value=value)
                             cell.border = thin_border
                             cell.alignment = Alignment(vertical="center")
-                    
+
                     for col_idx in range(1, len(headers) + 1):
                         ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = 18
-            
+
             virtual_stream = io.BytesIO()
             wb.save(virtual_stream)
             content = virtual_stream.getvalue()
-            
+
             return ExportResult(
                 file_name=file_name,
                 file_size_bytes=len(content),
@@ -613,14 +618,14 @@ class AnalyticsService:
                 data=content,
                 generated_at=datetime.now(timezone.utc),
             )
-            
+
         except ImportError:
             logger.warning("openpyql 未安装，回退到CSV格式")
             return await self._export_csv(data, file_name.replace('.xlsx', '.csv'))
 
     async def _export_json(self, data: Dict, file_name: str) -> ExportResult:
         content = json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8')
-        
+
         return ExportResult(
             file_name=file_name,
             file_size_bytes=len(content),
@@ -690,12 +695,12 @@ class AnalyticsService:
 <body>
     <h1>RMFOOD 配方平台分析报告</h1>
     <div class="meta">生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>
-    
+
     <div class="summary">
         <h3>摘要</h3>
         <p>本报告包含 {len(data.get('items', []))} 条记录</p>
     </div>
-    
+
     <table>
         <thead>
             <tr>{''.join(f'<th>{k}</th>' for k in list(data.get('items', [{}])[0].keys()) if data.get('items'))}</tr>
@@ -883,7 +888,7 @@ class AnalyticsService:
             # formulas.created_at 为 timestamp WITHOUT time zone（naive），绑定 naive UTC
             cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
             org_where, org_params = self._org_where(org_id)
-            
+
             if granularity == TimeGranularity.HOURLY:
                 result = await self.db.execute(text(f"""
                     SELECT DATE_TRUNC('hour', created_at) as period, COUNT(*) as count
@@ -900,9 +905,9 @@ class AnalyticsService:
                     GROUP BY period
                     ORDER BY period ASC
                 """), {"cutoff": cutoff, **org_params})
-            
+
             rows = result.fetchall()
-            
+
             return [
                 {
                     "period": str(row.period) if row.period else "",
@@ -911,7 +916,7 @@ class AnalyticsService:
                 }
                 for row in rows
             ]
-            
+
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"⚠️ 获取配方趋势数据失败 ({days}天): {e}")
@@ -929,9 +934,9 @@ class AnalyticsService:
                 GROUP BY period
                 ORDER BY period ASC
             """), {"cutoff": cutoff, **org_params})
-            
+
             rows = result.fetchall()
-            
+
             return [
                 {
                     "period": str(row.period) if row.period else "",
@@ -940,7 +945,7 @@ class AnalyticsService:
                 }
                 for row in rows
             ]
-            
+
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"⚠️ 获取实验趋势数据失败 ({days}天): {e}")
@@ -961,9 +966,9 @@ class AnalyticsService:
                 GROUP BY period
                 ORDER BY period ASC
             """), {"cutoff": cutoff, **org_params})
-            
+
             rows = result.fetchall()
-            
+
             return [
                 {
                     "period": str(row.period) if row.period else "",
@@ -972,7 +977,7 @@ class AnalyticsService:
                 }
                 for row in rows
             ]
-            
+
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"⚠️ 获取用户趋势数据失败 ({days}天): {e}")
@@ -992,9 +997,9 @@ class AnalyticsService:
                 GROUP BY period
                 ORDER BY period ASC
             """), {"time_unit": time_unit, "cutoff": cutoff, **org_params})
-            
+
             rows = result.fetchall()
-            
+
             return [
                 {
                     "period": str(row.period) if row.period else "",
@@ -1003,7 +1008,7 @@ class AnalyticsService:
                 }
                 for row in rows
             ]
-            
+
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"⚠️ 获取AI生成趋势数据失败 ({days}天, {granularity.value}): {e}")
@@ -1117,7 +1122,7 @@ class AnalyticsService:
     async def _generate_table_widget(self, config: Dict, date_range, filters, org_id: Optional[int] = None) -> Dict:
         entity_type = config.get("entity", "formula")
         limit = config.get("limit", 50)
-        
+
         try:
             if entity_type == "formula":
                 query = select(
@@ -1129,16 +1134,16 @@ class AnalyticsService:
                 if org_id is not None:
                     query = query.where(Formula.organization_id == org_id)
                 query = query.order_by(Formula.created_at.desc()).limit(limit)
-                
+
                 if date_range:
                     query = query.where(
-                        (Formula.created_at >= date_range[0]) & 
+                        (Formula.created_at >= date_range[0]) &
                         (Formula.created_at <= date_range[1])
                     )
-                    
+
                 result = await self.db.execute(query)
                 rows = result.fetchall()
-                
+
                 return {
                     "columns": ["id", "name", "status", "created_at"],
                     "items": [dict(row._mapping) for row in rows],
@@ -1146,7 +1151,7 @@ class AnalyticsService:
                 }
             else:
                 return {"columns": [], "items": [], "total": 0}
-                
+
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"Warning: _generate_table_widget failed: {e}")
@@ -1156,14 +1161,14 @@ class AnalyticsService:
         chart_type = config.get("chart_type", "bar")
         group_by = config.get("group_by", "status")
         entity_type = config.get("entity", "formula")
-        
+
         try:
             if entity_type == "formula" and group_by == "status":
                 status_counts = {}
                 for status in FormulaStatus:
                     count = await self._count_formulas_by_status(status, org_id=org_id)
                     status_counts[status.value] = count
-                
+
                 return {
                     "chart_type": chart_type,
                     "labels": list(status_counts.keys()),
@@ -1174,25 +1179,25 @@ class AnalyticsService:
                 }
             else:
                 return {"chart_type": chart_type, "labels": [], "datasets": []}
-                
+
         except Exception as e:
             logger.warning(f"Warning: _generate_chart_widget failed: {e}")
             return {"chart_type": chart_type, "labels": [], "datasets": []}
 
     async def _generate_kpi_widget(self, config: Dict, org_id: Optional[int] = None) -> Dict:
         metric_name = config.get("metric", "total_formulas")
-        
+
         kpi_map = {
             "total_formulas": lambda: self._count_formulas(org_id=org_id),
             "total_experiments": lambda: self._count_experiments(org_id=org_id),
             "total_users": lambda: self._count_users(org_id=org_id),
         }
-        
+
         if metric_name in kpi_map:
             value = await kpi_map[metric_name]()
         else:
             value = 0
-        
+
         return {
             "metric": metric_name,
             "value": value,
@@ -1213,7 +1218,7 @@ class AnalyticsService:
 
     async def _generate_report_summary(self, widgets: List[Dict]) -> Dict:
         total_records = sum(len(w.get("data", {}).get("items", [])) for w in widgets)
-        
+
         return {
             "total_widgets": len(widgets),
             "total_records": total_records,

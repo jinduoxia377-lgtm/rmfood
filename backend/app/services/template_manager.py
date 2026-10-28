@@ -4,13 +4,14 @@
 """
 import re
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
-from app.services.file_generator import FileGeneratorService, FileFormat
+from typing import Any, Dict, Tuple
+
+from app.services.file_generator import FileFormat, FileGeneratorService
 
 
 class TemplateManager:
     """模板管理器"""
-    
+
     def __init__(self, file_generator: FileGeneratorService):
         self.file_generator = file_generator
         self.templates = {
@@ -18,7 +19,7 @@ class TemplateManager:
             'tcm_recipe': self._create_tcm_recipe_template(),
             'experiment_report': self._create_experiment_report_template(),
         }
-    
+
     def _create_default_template(self) -> Dict[str, Any]:
         """创建默认模板"""
         return {
@@ -36,7 +37,7 @@ class TemplateManager:
                 'table': {'border': True, 'header_bold': True}
             }
         }
-    
+
     def _create_tcm_recipe_template(self) -> Dict[str, Any]:
         """创建中药配方报告模板"""
         return {
@@ -59,7 +60,7 @@ class TemplateManager:
                 'table': {'border': True, 'header_bold': True, 'alignment': 'center'}
             }
         }
-    
+
     def _create_experiment_report_template(self) -> Dict[str, Any]:
         """创建实验报告模板"""
         return {
@@ -82,18 +83,18 @@ class TemplateManager:
                 'table': {'border': True, 'header_bold': True}
             }
         }
-    
+
     def get_template(self, template_name: str) -> Dict[str, Any]:
         """获取模板"""
         return self.templates.get(template_name, self.templates['default'])
-    
+
     def parse_markdown(self, markdown: str) -> Dict[str, Any]:
         """解析Markdown内容"""
         content = {
             'title': '',
             'sections': []
         }
-        
+
         lines = markdown.strip().split('\n')
         current_section = None
         current_content = []
@@ -101,16 +102,16 @@ class TemplateManager:
         in_code_block = False
         code_language = ''
         code_content = ''
-        
+
         for line in lines:
             line = line.rstrip()
-            
+
             # 标题处理
             heading_match = re.match(r'^(#{1,6})\s+(.*)$', line)
             if heading_match:
                 level = len(heading_match.group(1))
                 text = heading_match.group(2)
-                
+
                 # 保存当前section
                 if current_section:
                     if current_content:
@@ -118,7 +119,7 @@ class TemplateManager:
                     if current_table:
                         current_section['table'] = current_table
                     content['sections'].append(current_section)
-                
+
                 # 新section
                 current_section = {
                     'heading': text,
@@ -127,7 +128,7 @@ class TemplateManager:
                 current_content = []
                 current_table = None
                 continue
-            
+
             # 代码块处理
             if line.startswith('```'):
                 if in_code_block:
@@ -138,26 +139,26 @@ class TemplateManager:
                     in_code_block = True
                     code_language = line[3:].strip()
                 continue
-            
+
             if in_code_block:
                 code_content += line + '\n'
                 continue
-            
+
             # 表格处理
             if line.startswith('|') and '|' in line[1:]:
                 if not current_table:
                     current_table = {'headers': [], 'data': []}
-                
+
                 cells = [cell.strip() for cell in line.split('|') if cell.strip()]
                 if any('---' in cell for cell in cells):
                     continue
-                
+
                 if not current_table['headers']:
                     current_table['headers'] = cells
                 else:
                     current_table['data'].append(cells)
                 continue
-            
+
             # 列表处理
             list_match = re.match(r'^(\s*)([-*]|\d+\.)\s+(.*)$', line)
             if list_match:
@@ -167,13 +168,13 @@ class TemplateManager:
                 spaces = '  ' * (indent // 2)
                 current_content.append(f'{spaces}{list_match.group(2)} {item}')
                 continue
-            
+
             # 普通段落
             if line:
                 current_content.append(line)
             else:
                 current_content.append('')
-        
+
         # 处理最后一个section
         if current_section:
             if current_content:
@@ -181,31 +182,31 @@ class TemplateManager:
             if current_table:
                 current_section['table'] = current_table
             content['sections'].append(current_section)
-        
+
         # 提取标题
         for section in content['sections']:
             if section.get('level') == 1:
                 content['title'] = section['heading']
                 break
-        
+
         return content
-    
+
     def convert_markdown_to_content(self, markdown: str, template_name: str = 'default') -> Dict[str, Any]:
         """将Markdown转换为内容结构"""
         parsed_content = self.parse_markdown(markdown)
         template = self.get_template(template_name)
-        
+
         organized_content = {
             'title': parsed_content.get('title', '文档'),
             'sections': parsed_content.get('sections', []),
             'footer': f'生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
         }
-        
+
         if template_name == 'tcm_recipe':
             organized_content = self._organize_tcm_recipe_content(organized_content)
-        
+
         return organized_content
-    
+
     def _organize_tcm_recipe_content(self, content: Dict[str, Any]) -> Dict[str, Any]:
         """组织中药配方报告内容"""
         tcm_content = {
@@ -222,13 +223,13 @@ class TemplateManager:
             'notes': [],
             'references': []
         }
-        
+
         for section in content.get('sections', []):
             tcm_content['table_of_contents'].append({
                 'title': section.get('heading', ''),
                 'level': section.get('level', 1)
             })
-        
+
         for section in content.get('sections', []):
             heading = section.get('heading', '').lower()
             if '基本信息' in heading or '配方名称' in heading:
@@ -245,20 +246,20 @@ class TemplateManager:
                 tcm_content['references'].append(section)
             else:
                 tcm_content['basic_info'].append(section)
-        
+
         return tcm_content
-    
-    def generate_from_markdown(self, markdown: str, format: FileFormat, 
+
+    def generate_from_markdown(self, markdown: str, format: FileFormat,
                              filename: str, template_name: str = 'default') -> Tuple[str, str]:
         """从Markdown生成文件"""
         content = self.convert_markdown_to_content(markdown, template_name)
         return self.file_generator.generate_file(content, format, filename)
-    
-    def generate_from_template(self, template_name: str, data: Dict[str, Any], 
+
+    def generate_from_template(self, template_name: str, data: Dict[str, Any],
                              format: FileFormat, filename: str) -> Tuple[str, str]:
         """从模板生成文件"""
         template = self.get_template(template_name)
-        
+
         if template_name == 'tcm_recipe':
             content = {
                 'cover': data.get('cover', {}),
@@ -277,7 +278,7 @@ class TemplateManager:
                 'sections': data.get('sections', []),
                 'footer': f'生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             }
-        
+
         return self.file_generator.generate_file(content, format, filename)
 
 

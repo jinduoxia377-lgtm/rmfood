@@ -4,10 +4,9 @@ OFF 数据批量嵌入生成
 复用现有的 EmbeddingService (fastembed + BAAI/bge-small-zh-v1.5)。
 """
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
+from typing import Any, Dict, List
 
-from sqlalchemy import text, select
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)

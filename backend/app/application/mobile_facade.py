@@ -7,8 +7,8 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from ..domain.mobile_ports import MobileServicePort
 from ..domain.mobile import MobileDashboard, PushNotification, TraceabilityRecord
+from ..domain.mobile_ports import MobileServicePort
 
 
 class MobileFacade:

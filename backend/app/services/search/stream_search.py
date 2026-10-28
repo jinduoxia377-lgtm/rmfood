@@ -6,7 +6,8 @@
 """
 import json
 import logging
-from typing import AsyncIterator, Dict, Any, List, Optional
+from typing import Any, AsyncIterator, Dict, Optional
+
 from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)

@@ -39,13 +39,13 @@ from __future__ import annotations
 
 import asyncio
 import contextvars
-import hashlib
+import logging
 import re
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from functools import lru_cache, wraps
+from functools import wraps
 from typing import (
     Any,
     Callable,
@@ -54,17 +54,13 @@ from typing import (
     Optional,
     Set,
     Tuple,
-    Type,
     TypeVar,
 )
 
 from fastapi import Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, select, and_, or_
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase
 
-import logging
 logger = logging.getLogger(__name__)
 
 # ═════════════════════════════════════════════
@@ -349,7 +345,6 @@ def _is_public_endpoint(path: str) -> bool:
 
 
 from starlette.responses import JSONResponse
-
 
 # ═════════════════════════════════════════════
 # 🟡 P4-1: 租户感知查询

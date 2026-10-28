@@ -8,8 +8,8 @@
 这符合 SQLAlchemy 的标准用法，且领域模型天然依赖持久化机制。
 详见 ADR-004 (Hexagonal Architecture)。
 """
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import MetaData
+from sqlalchemy.orm import DeclarativeBase
 
 # 命名约定：表名使用复数蛇形
 convention = {

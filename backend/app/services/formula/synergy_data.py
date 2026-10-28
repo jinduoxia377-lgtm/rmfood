@@ -4,10 +4,8 @@ SynergyEngine 数据管理模块
 提供研究数据导入、Schema 验证、版本管理和统计功能。
 """
 
-import hashlib
 import json
 import logging
-from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -26,11 +24,9 @@ except ImportError:
     HAS_SCIPY = False
 
 from .synergy_models import (
-    MechanismType,
     SynergyCoefficient,
     VersionRecord,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +203,7 @@ class SynergyDataMixin:
                     imported_count += 1
 
             except Exception as e:
-                errors.append(f"处理系数失败: 服务异常")
+                errors.append("处理系数失败: 服务异常")
 
         # 5. 更新版本号并保存
         self._current_version = new_version

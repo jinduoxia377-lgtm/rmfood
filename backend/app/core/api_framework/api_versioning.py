@@ -35,19 +35,16 @@
 
 from __future__ import annotations
 
-import logging
-import time
 import hashlib
-import json
+import logging
 import random
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar
 
-from fastapi import FastAPI, Request, Response, HTTPException, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request, status
 
 logger = logging.getLogger(__name__)
 

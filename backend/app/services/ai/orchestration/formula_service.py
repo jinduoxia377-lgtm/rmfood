@@ -6,20 +6,18 @@ FormulaGPT - AI 配方生成服务
 from __future__ import annotations
 
 import logging
-from typing import Any
 from dataclasses import dataclass, field
+from typing import Any
 
-from ...ai_models.formula_gpt import MockFormulaGPTService as FormulaGPTService
-from ...ai_models.synergy_net import TCMSynergyService as SynergyNetService
-from ...ai_models.peptide_scorer import PeptideScorerService
-from ...ai_models.taste_predictor import TCMTastePredictorService as TastePredictorService
-from ...ai_models.stability_model import ArrheniusStabilityModelService as StabilityModelService
-from ...ai_models.safety_checker import SafetyCheckerService
 from ...ai_models.pepinvent_service import (
-    PepinventService,
-    get_pepinvent_service,
     ServiceUnavailableError,
+    get_pepinvent_service,
 )
+from ...ai_models.peptide_scorer import PeptideScorerService
+from ...ai_models.safety_checker import SafetyCheckerService
+from ...ai_models.stability_model import ArrheniusStabilityModelService as StabilityModelService
+from ...ai_models.synergy_net import TCMSynergyService as SynergyNetService
+from ...ai_models.taste_predictor import TCMTastePredictorService as TastePredictorService
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +46,10 @@ class AIService:
     """
 
     def __init__(self):
-        self.formula_gpt = FormulaGPTService()
+        # ⚠️ DEPRECATED：FormulaGPTService 曾指向 MockFormulaGPTService（random.sample 假数据）。
+        # 2026-10-28 起 generate_formula() 改为委托 run_ga_generation（真实 GA 服务），
+        # 不再实例化 Mock。self.formula_gpt 保留为 None 仅为兼容历史属性访问。
+        self.formula_gpt = None
         self.synergy_net = SynergyNetService()
         self.peptide_scorer = PeptideScorerService()
         self.taste_predictor = TastePredictorService()
@@ -80,24 +81,40 @@ class AIService:
         """
         logger.info(f"开始AI配方生成，目标功效: {target_effects}")
 
+        logger.warning(
+            "[AIService.generate_formula] 已废弃：本方法现委托 run_ga_generation（真实 GA），"
+            "不再走 MockFormulaGPTService。历史调用方请改走 /api/v1/ai/generate 或直接调用 run_ga_generation()。"
+        )
+
         use_pepinvent = (constraints or {}).get("use_pepinvent", False)
 
         if use_pepinvent and self.pepinvent_service is not None:
             return await self._generate_with_pepinvent(target_effects, constraints)
 
-        candidates = await self.formula_gpt.generate_candidates(
-            target_effects=target_effects,
-            constraints=constraints or {},
-        )
-        logger.info(f"FormulaGPT 生成 {len(candidates)} 套候选方案")
+        # 替代 MockFormulaGPTService（random.sample 假数据）：委托真实 GA 服务。
+        from ..formula_generation_service import run_ga_generation
 
+        ga_result = await run_ga_generation(target_effects, constraints or {}, user_id=None)
         results: list[AIFormulaResult] = []
-        for candidate in candidates:
-            result = await self._evaluate_candidate(candidate)
-            results.append(result)
+        for c in ga_result.get("candidates", []):
+            results.append(AIFormulaResult(
+                formula_name=c.get("formula_name", "未命名配方"),
+                herb_combination=c.get("herb_combination", []),
+                peptide_candidates=c.get("peptide_candidates", []),
+                synergy_score=c.get("synergy_score"),
+                safety_passed=bool(c.get("safety_passed", False)),
+                safety_details={},
+                taste_score=c.get("taste_score"),
+                stability_score=c.get("stability_score"),
+                overall_score=c.get("overall_score"),
+                generated_at=c.get("generated_at"),
+            ))
 
         results.sort(key=lambda r: r.overall_score or 0, reverse=True)
-        logger.info(f"AI配方生成完成，返回 {len(results)} 套方案")
+        logger.info(
+            "[AIService.generate_formula] run_ga_generation 返回 %d 套候选（generator=%s, degraded=%s）",
+            len(results), ga_result.get("generator"), ga_result.get("degraded"),
+        )
         return results
 
     async def _generate_with_pepinvent(

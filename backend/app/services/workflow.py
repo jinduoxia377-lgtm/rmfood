@@ -2,10 +2,10 @@
 工作流服务
 管理AI配方生成、数据同步等工作流流程
 """
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import Workflow, WorkflowTask, WorkflowStatus, TaskStatus
+from ..models import TaskStatus, Workflow, WorkflowStatus, WorkflowTask
 
 
 class WorkflowService:

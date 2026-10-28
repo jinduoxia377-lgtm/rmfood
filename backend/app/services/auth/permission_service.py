@@ -6,26 +6,20 @@
 - 用户权限查询
 - Redis集成支持
 """
-import logging
 import hashlib
-import json
-from typing import Dict, List, Optional, Any, Set
-from datetime import datetime, timezone
+import logging
+from typing import Dict, List, Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
+from app.models.team_member import TeamMember
 from app.services.auth.permissions import (
-    ROLE_PERMISSIONS,
-    RESOURCE_HIERARCHY,
-    check_role_permission,
-    get_all_permissions_for_role,
     PermissionCheck,
     PermissionResult,
+    check_role_permission,
+    get_all_permissions_for_role,
 )
-from app.models.team_member import TeamMember
-from app.models.enums import TeamRole
-from app.core.middleware.exceptions import PermissionDeniedException
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +27,7 @@ logger = logging.getLogger(__name__)
 class PermissionService:
     """
     权限校验服务（带缓存支持）
-    
+
     Attributes:
         cache: 缓存客户端（可选Redis或内存缓存）
         cache_ttl: 缓存过期时间（秒）
@@ -53,20 +47,20 @@ class PermissionService:
     ) -> bool:
         """
         核心权限检查（带缓存）
-        
+
         实现逻辑：
         1. 先查缓存
         2. 缓存未命中则查数据库
         3. 结果写入缓存
         4. 返回bool
-        
+
         Args:
             user_id: 用户ID
             resource_type: 资源类型
             resource_id: 资源ID
             action: 操作类型
             db: 数据库会话（可选）
-            
+
         Returns:
             是否有权限
         """
@@ -107,12 +101,12 @@ class PermissionService:
     ) -> Dict[str, List[str]]:
         """
         获取用户在团队内的所有权限（用于前端渲染控制）
-        
+
         Args:
             user_id: 用户ID
             team_id: 团队ID
             db: 数据库会话
-            
+
         Returns:
             权限字典 {resource_type: [actions]}
         """
@@ -150,12 +144,12 @@ class PermissionService:
     ) -> Dict[str, bool]:
         """
         批量权限检查（减少DB查询）
-        
+
         Args:
             user_id: 用户ID
             checks: 权限检查请求列表
             db: 数据库会话
-            
+
         Returns:
             检查结果字典 {"check_key": bool}
         """
@@ -203,14 +197,14 @@ class PermissionService:
     ) -> PermissionResult:
         """
         要求拥有权限，否则返回详细的结果对象
-        
+
         Args:
             user_id: 用户ID
             resource_type: 资源类型
             resource_id: 资源ID
             action: 操作类型
             db: 数据库会话
-            
+
         Returns:
             PermissionResult 对象
         """
@@ -236,7 +230,7 @@ class PermissionService:
     def invalidate_user_cache(self, user_id: int):
         """
         使用户权限缓存失效（角色变更时调用）
-        
+
         Args:
             user_id: 用户ID
         """
@@ -245,7 +239,7 @@ class PermissionService:
                 pattern = f"perm:{user_id}:*"
                 if hasattr(self.cache, 'keys'):
                     keys_to_delete = [
-                        k for k in self.cache.keys() 
+                        k for k in self.cache.keys()
                         if k.startswith(f"perm:{user_id}:")
                     ]
                     for key in keys_to_delete:
@@ -322,11 +316,11 @@ class PermissionService:
     def _find_min_required_role(self, resource: str, action: str) -> Optional[str]:
         """
         查找执行操作所需的最低角色
-        
+
         Args:
             resource: 资源类型
             action: 操作
-            
+
         Returns:
             最低要求的角色名称
         """

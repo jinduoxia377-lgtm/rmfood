@@ -78,6 +78,7 @@ def require_plan(feature: str) -> Callable:
         feature: 功能 key（须在 PLAN_FEATURES 中）。
     """
     from fastapi import Depends, HTTPException, status
+
     from ..api.deps import get_current_active_user
     from ..models import User
 

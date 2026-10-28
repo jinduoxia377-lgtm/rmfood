@@ -11,7 +11,7 @@ AI 响应缓存服务 (v1.0)
 import hashlib
 import logging
 import time
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 

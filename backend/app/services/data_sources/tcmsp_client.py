@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select, func, or_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -640,6 +640,7 @@ class TCMSPSyncService:
 
         try:
             from sqlalchemy import func
+
             from app.models.models import TCMHerb
 
             total_herbs = (await db.execute(select(func.count()).select_from(TCMHerb))).scalar() or 0
@@ -698,8 +699,9 @@ class TCMSPSyncService:
         支持增量同步（同名药材更新，新增药材插入）。
         优化：批量加载 + UPSERT 替代 N+1 查询。
         """
-        from app.models.models import TCMHerb, DataSnapshot
         import json
+
+        from app.models.models import DataSnapshot, TCMHerb
 
         now = datetime.utcnow()
         snapshot_id = f"tcmsp_{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
@@ -835,6 +837,7 @@ class TCMSPSyncService:
             if db is None:
                 raise Exception("No database session provided")
             from sqlalchemy import func
+
             from app.models.models import TCMHerb
 
             result = await db.execute(
@@ -862,6 +865,7 @@ class TCMSPSyncService:
         """获取药食同源药材列表（数据库优先，无数据时用内存知识库）"""
         try:
             from sqlalchemy import func
+
             from app.models.models import TCMHerb
 
             query = select(TCMHerb).where(TCMHerb.is_food_homology == True)

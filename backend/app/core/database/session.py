@@ -28,20 +28,19 @@ PostgreSQL 数据库会话管理
 - "连接池耗尽": 增大 pool_size/max_overflow，排查未关闭的会话
 - "SSL 错误": 检查 ssl_mode 配置与服务器证书
 """
+import asyncio
 import logging
 import os
-import sys
-import asyncio
 import time
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from sqlalchemy import event, text
+from sqlalchemy import text
 from sqlalchemy.exc import (
     DBAPIError,
-    OperationalError,
-    InterfaceError,
-    PendingRollbackError,
     IntegrityError,
+    InterfaceError,
+    OperationalError,
+    PendingRollbackError,
     ProgrammingError,
 )
 from sqlalchemy.ext.asyncio import (
@@ -50,7 +49,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from dotenv import load_dotenv
+
 # NOTE: DATABASE_URL is provided via Docker environment variables.
 # Do NOT call load_dotenv here to avoid overwriting container env vars.
 from .database import Base
@@ -59,7 +58,6 @@ logger = logging.getLogger(__name__)
 
 def _get_settings():
     """Lazy import settings to ensure dotenv is loaded first"""
-    import os
     # Docker environment already provides DATABASE_URL via compose
     from ..config import get_settings
     return get_settings()
@@ -320,7 +318,7 @@ def _create_engine():
     if tuned_params.get('keepalive_enabled', False):
         # Add keepalive parameters to server_settings if needed
         # Currently using the default asyncpg connection behavior
-        logger.debug(f"[DB] TCP keepalives enabled (will be applied at socket level)")
+        logger.debug("[DB] TCP keepalives enabled (will be applied at socket level)")
 
     # SSL configuration
     ssl_mode = _get_settings().database.ssl_mode

@@ -11,8 +11,10 @@
 from __future__ import annotations
 
 import logging
-from collections import deque  # A-27
-from collections import defaultdict
+from collections import (
+    defaultdict,
+    deque,  # A-27
+)
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -293,8 +295,9 @@ class KnowledgeGraphReasoningEngine:
         db_service: Any,
     ) -> List[PathResult]:
         """基于数据库的BFS路径推理"""
-        from sqlalchemy import select, or_
-        from app.models.knowledge_graph import KGNode, KGEdge
+        from sqlalchemy import select
+
+        from app.models.knowledge_graph import KGEdge, KGNode
 
         paths: List[PathResult] = []
 
@@ -449,8 +452,9 @@ class KnowledgeGraphReasoningEngine:
         db_service: Any,
     ) -> List[SynergyResult]:
         """基于数据库的协同效应推理"""
-        from sqlalchemy import select, or_
-        from app.models.knowledge_graph import KGNode, KGEdge
+        from sqlalchemy import select
+
+        from app.models.knowledge_graph import KGEdge, KGNode
 
         synergies: List[SynergyResult] = []
 

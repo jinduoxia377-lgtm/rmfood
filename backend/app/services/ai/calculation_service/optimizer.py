@@ -1,10 +1,11 @@
 """Optimizer interface and implementations."""
 
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class Optimizer:
     """Optimization service for formula calculation."""
-    
+
     def calculate(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Run optimization based on request parameters."""
         # This would use parallel MCTS or other algorithms in production

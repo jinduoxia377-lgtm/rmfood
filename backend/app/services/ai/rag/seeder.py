@@ -4,20 +4,44 @@
 
 工作流程：
 1. 读取内置数据源（TCMSP 药材库、中国食品法规等）
-2. 格式化为人类可读的 Markdown 文本
-3. 调用 rag_service.ingest_document() 分块 -> 向量化 -> 存储
+2. 合并 MMID 传统属性（四气/五味/归经/毒性）
+3. 格式化为人类可读的 Markdown 文本
+4. 调用 rag_service.ingest_document() 分块 -> 向量化 -> 存储
 
 幂等设计：已注入则跳过，不会重复写入。
 """
 
-import logging
 import importlib.util
+import json
+import logging
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# 种子文档文件名常量（供 seed_if_needed 和 rag_router 共享使用）
+SEED_DOCUMENT_NAMES = frozenset({
+    'tcm_herb_encyclopedia.md',
+    'food_homology_catalog.md',
+    'food_safety_regulations.md',
+})
+
 # 数据源所在目录（seeder在 rag/ 下，需要向上两级到 services/，再进入 data_sources/）
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data_sources"
+
+# MMID 数据文件路径
+_MMID_DATA_FILE = _DATA_DIR / "archived_enriched_mmid_herbs.json"
+
+# 四气翻译映射
+_NATURE_MAP = {
+    "warm": "温", "hot": "热", "cold": "寒", "cool": "凉",
+    "neutral": "平", "warm-hot": "温偏热", "cool-cold": "凉偏寒",
+}
+
+# 五味翻译映射
+_FLAVOR_MAP = {
+    "pungent": "辛", "acrid": "辛", "bitter": "苦", "sweet": "甘",
+    "sour": "酸", "salty": "咸", "bland": "淡", "平和": "平和",
+}
 
 
 def _import_module_direct(filename):
@@ -41,7 +65,7 @@ def _import_module_direct(filename):
 
 
 def _load_herb_database():
-    """加载所有药材数据（TCMSP 基础库 + 扩展数据）"""
+    """加载所有药材数据（TCMSP 基础库 + 扩展数据），并合并 MMID 传统属性"""
     herbs = []
 
     # 1. TCMSP 基础库
@@ -72,31 +96,97 @@ def _load_herb_database():
             unique.append(h)
 
     logger.info("药材数据库合计: %d 味（去重后）", len(unique))
+
+    # 3. 合并 MMID 传统属性（四气/五味/归经/毒性）
+    unique = _merge_mmid_attributes(unique)
+
     return unique
 
 
+def _load_mmid_data():
+    """加载 MMID 药材传统属性数据"""
+    if not _MMID_DATA_FILE.exists():
+        logger.debug("MMID 数据文件不存在: %s", _MMID_DATA_FILE)
+        return {}
+
+    try:
+        with open(_MMID_DATA_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        herbs = data.get('herbs', [])
+        mmid_map = {h['name_cn']: h for h in herbs if h.get('name_cn')}
+        logger.info("加载 MMID 传统属性数据: %d 味", len(mmid_map))
+        return mmid_map
+    except Exception as e:
+        logger.warning("加载 MMID 数据失败: %s", e)
+        return {}
+
+
+def _merge_mmid_attributes(herbs):
+    """将 MMID 传统属性（四气/五味/归经/毒性）合并到药材记录"""
+    if not herbs:
+        return herbs
+
+    mmid_map = _load_mmid_data()
+    if not mmid_map:
+        logger.debug("无 MMID 数据可合并")
+        return herbs
+
+    merged_count = 0
+    for herb in herbs:
+        name = herb.get('name_cn', '')
+        if name in mmid_map:
+            mmid = mmid_map[name]
+            # 合并传统属性到 extra_knowledge 字段
+            extra = herb.get('extra_knowledge', {})
+            extra['nature'] = _NATURE_MAP.get(mmid.get('nature'), mmid.get('nature'))
+            extra['flavor'] = [_FLAVOR_MAP.get(f, f) for f in mmid.get('flavor', [])]
+            extra['meridians'] = mmid.get('meridians', [])
+            extra['toxicity'] = mmid.get('toxicity')
+            extra['efficacy_raw'] = mmid.get('efficacy', '')
+            extra['processing'] = mmid.get('processing', '')
+            extra['origin'] = mmid.get('origin', '')
+            herb['extra_knowledge'] = extra
+            merged_count += 1
+
+    logger.info("MMID 属性合并完成: %d/%d 味药材已补充传统属性", merged_count, len(herbs))
+    return herbs
+
+
 def _format_herb_record(herb):
-    """将单味药材数据格式化为 Markdown 章节"""
+    """将单味药材数据格式化为 Markdown 章节（含 MMID 传统属性）"""
     lines = []
-    lines.append(f"## {herb[chr(110)+chr(97)+chr(109)+chr(101)+chr(95)+chr(99)+chr(110)]}（{herb.get(chr(110)+chr(97)+chr(109)+chr(101)+chr(95)+chr(108)+chr(97)+chr(116)+chr(105)+chr(110), chr(39)+chr(39))}）")
+    lines.append(f"## {herb['name_cn']}（{herb.get('name_latin', '')}）")
     lines.append("")
-    lines.append(f"**类别**：{herb.get(chr(99)+chr(97)+chr(116)+chr(101)+chr(103)+chr(111)+chr(114)+chr(121), chr(39)+chr(26426)+chr(20998)+chr(20998)+chr(65306))}")
-    lines.append(f"**拼音**：{herb.get(chr(110)+chr(97)+chr(109)+chr(101)+chr(95)+chr(112)+chr(105)+chr(110)+chr(121)+chr(105)+chr(110), chr(39)+chr(39))}")
-    lines.append(f"**药食同源**：{chr(26159) if herb.get(chr(105)+chr(115)+chr(95)+chr(102)+chr(111)+chr(111)+chr(100)+chr(95)+chr(104)+chr(111)+chr(109)+chr(111)+chr(108)+chr(111)+chr(103)+chr(121)) else chr(21542)}")
+    lines.append(f"**类别**：{herb.get('category', '未分类')}")
+    lines.append(f"**拼音**：{herb.get('name_pinyin', '')}")
+    lines.append(f"**药食同源**：{'是' if herb.get('is_food_homology') else '否'}")
+
+    # 四气/五味/归经（来自 MMID）
+    extra = herb.get('extra_knowledge', {})
+    if extra.get('nature'):
+        lines.append(f"**四气**：{extra['nature']}")
+    if extra.get('flavor'):
+        lines.append(f"**五味**：{'、'.join(extra['flavor'])}")
+    if extra.get('meridians'):
+        lines.append(f"**归经**：{'、'.join(extra['meridians'])}")
+    if extra.get('toxicity'):
+        lines.append(f"**毒性**：{extra['toxicity']}")
 
     if herb.get("ob_percent") is not None:
-        lines.append(f"**口服生物利用度**：{herb[chr(111)+chr(98)+chr(95)+chr(112)+chr(101)+chr(114)+chr(99)+chr(101)+chr(110)+chr(116)]}%")
+        lines.append(f"**口服生物利用度**：{herb['ob_percent']}%")
     if herb.get("dl_value") is not None:
-        lines.append(f"**类药性**：{herb[chr(100)+chr(108)+chr(95)+chr(118)+chr(97)+chr(108)+chr(117)+chr(101)]}")
+        lines.append(f"**类药性**：{herb['dl_value']}")
 
     if herb.get("effects"):
-        lines.append(f"**功效**：{herb[chr(101)+chr(102)+chr(102)+chr(101)+chr(99)+chr(116)+chr(115)]}")
+        lines.append(f"**功效**：{herb['effects']}")
+    if extra.get('efficacy_raw'):
+        lines.append(f"**传统功效**：{extra['efficacy_raw']}")
 
     compounds = herb.get("compounds", [])
     if compounds:
         top = compounds[:5]
         lines.append("**主要活性成分**：" + "、".join(
-            f"{c.get(chr(110)+chr(97)+chr(109)+chr(101), chr(63))}(OB:{c.get(chr(111)+chr(98), chr(63))}%, DL:{c.get(chr(100)+chr(108), chr(63))})"
+            f"{c.get('name', '?')}(OB:{c.get('ob', '?')}%, DL:{c.get('dl', '?')})"
             for c in top
         ))
 
@@ -107,6 +197,11 @@ def _format_herb_record(herb):
     diseases = herb.get("diseases", [])
     if diseases:
         lines.append("**适应症**：" + "、".join(diseases[:10]))
+
+    if extra.get('processing'):
+        lines.append(f"**炮制**：{extra['processing']}")
+    if extra.get('origin'):
+        lines.append(f"**产地**：{extra['origin']}")
 
     lines.append("")
     return "\n".join(lines)
@@ -255,34 +350,56 @@ async def seed_if_needed(rag_service=None):
         logger.error('无法获取 RAGService 实例，种子注入中止')
         return {'seeded': False, 'documents': 0, 'total_chunks': 0}
 
-    stats = svc.get_stats()
-    if stats.get('total_chunks', 0) > 0:
-        logger.info('知识库已有 %d 个数据块，跳过种子注入', stats['total_chunks'])
-        return {'seeded': False, 'documents': 0, 'total_chunks': stats['total_chunks']}
-
-    logger.info('知识库为空，开始注入内置知识库种子...')
-
-    documents = build_seed_documents()
-    if not documents:
+    # 幂等逻辑：检查种子文档特定的 source 名称是否已存在
+    # 而非检查 total_chunks > 0（用户上传任意文档后不应阻断种子注入）
+    # P2-8：改为按单个 filename 判断——部分失败重试时只注入缺失的，
+    # 不重复注入已存在的种子文档（ingest_document 无按 source 去重）。
+    seed_documents = build_seed_documents()
+    if not seed_documents:
         logger.warning('没有可用的种子文档')
         return {'seeded': False, 'documents': 0, 'total_chunks': 0}
 
+    seed_filenames = {fn for fn, _ in seed_documents}
+    # existing_sources 只取 system 种子源（种子注入均以 user_id="system" 存储）
+    existing_sources = set(svc.list_documents(user_id="system"))
+    missing = [(fn, txt) for fn, txt in seed_documents if fn not in existing_sources]
+
+    if not missing:
+        stats = svc.get_stats(user_id="system")
+        logger.info('种子文档已全部存在 (%d/%d)，跳过注入', len(seed_filenames), len(seed_documents))
+        return {
+            'seeded': True,
+            'documents': len(stats.get('documents', []) or []),
+            'total_chunks': stats.get('total_chunks', 0),
+            'files': list(seed_filenames),
+            'skipped': True,
+        }
+
+    logger.info('种子文档不完整，需注入 %d/%d ...', len(missing), len(seed_documents))
+
     total_chunks = 0
     seeded_files = []
+    seed_errors = []
 
-    for filename, text in documents:
+    for filename, text in missing:
         try:
             content_bytes = text.encode('utf-8')
-            info = await svc.ingest_document(content_bytes, filename)
+            info = await svc.ingest_document(content_bytes, filename, user_id="system")
             total_chunks += info.chunk_count
             seeded_files.append(filename)
             logger.info('种子文档注入成功: %s (%d 块)', filename, info.chunk_count)
         except Exception as e:
             logger.error('种子文档注入失败 %s: %s', filename, e, exc_info=True)
+            seed_errors.append(f'{filename}: {e}')
 
+    # 修复：全部种子注入失败（如 Embedding 不可用）时不得返回 seeded=true，
+    # 否则 /seed 响应与 /seed/status 的 is_seeded 矛盾，给前端/用户造成「知识库已就绪」的错觉。
+    # 全部种子文档均成功注入（无错误）才 seeded=true；有错误则 seeded=false 并返回 errors。
+    all_present = seed_filenames.issubset(set(svc.list_documents(user_id="system")))
     return {
-        'seeded': True,
+        'seeded': len(seed_errors) == 0 and all_present,
         'documents': len(seeded_files),
         'total_chunks': total_chunks,
         'files': seeded_files,
+        'errors': seed_errors if seed_errors else None,
     }

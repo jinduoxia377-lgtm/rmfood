@@ -10,13 +10,12 @@ import traceback
 import uuid
 from typing import Optional
 
-from fastapi import Request, HTTPException
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic_core import ValidationError as PydanticValidationError
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.utils.error_sanitize import sanitize_error
-
 
 logger = logging.getLogger(__name__)
 
@@ -24,44 +23,44 @@ logger = logging.getLogger(__name__)
 class GlobalExceptionHandler(BaseHTTPMiddleware):
     """
     全局异常处理中间件
-    
+
     功能:
     1. 捕获所有未处理的异常
     2. 将业务异常转换为合适的HTTP状态码
     3. 记录详细的错误日志
     4. 返回用户友好的错误信息
     """
-    
+
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        
+
         try:
             response = await call_next(request)
-            
+
             # 记录响应时间
             process_time = time.time() - start_time
             response.headers["X-Process-Time"] = str(process_time)
-            
+
             # 如果响应已经是错误状态，记录日志
             if response.status_code >= 400:
                 await self._log_error_response(request, response, process_time)
-            
+
             return response
-            
+
         except Exception as exc:
             # 捕获所有未处理的异常
             return await self._handle_exception(request, exc, start_time)
-    
+
     async def _handle_exception(self, request: Request, exception: Exception, start_time: float):
         """处理异常并返回适当的响应"""
-        
+
         process_time = time.time() - start_time
         url = request.url.path
         method = request.method
-        
+
         # 根据异常类型确定HTTP状态码和消息
         status_code, error_detail = self._classify_exception(exception)
-        
+
         # 记录详细错误日志
         logger.error(
             f"[GlobalException] {method} {url} -> {status_code}\n"
@@ -70,7 +69,7 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
             f"堆栈跟踪:\n{traceback.format_exc()}\n"
             f"处理时间: {process_time:.3f}s"
         )
-        
+
         # 返回JSON格式的错误响应
         error_code = getattr(exception, 'error_code', f"ERROR_{status_code}")
         raw_details = getattr(exception, 'details', None)
@@ -100,7 +99,7 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
             status_code=status_code,
             content=response_content,
         )
-    
+
     def _classify_exception(self, exception: Exception) -> tuple:
         """
         分类异常并返回适当的状态码和消息
@@ -109,21 +108,21 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
             tuple: (status_code, error_message)
         """
         from app.core.middleware.exceptions import (
+            AIServiceUnavailableError,
             AuthenticationError,
-            TokenExpiredError,
             AuthorizationError,
-            ValidationError,
-            NotFoundError,
             ConflictError,
+            DeviceNotRegisteredError,
+            NotFoundError,
+            PermissionDeniedError,
             RateLimitError,
+            RateLimitExceededError,
             ServiceUnavailableError,
             # 新增异常
             SyncConflictError,
-            PermissionDeniedError,
-            RateLimitExceededError,
-            DeviceNotRegisteredError,
             TeamAccessDeniedError,
-            AIServiceUnavailableError,
+            TokenExpiredError,
+            ValidationError,
             VersionNotFoundError,
         )
 
@@ -187,15 +186,19 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
             return exception.status_code, detail
 
         # 数据库相关异常 -> 根据具体类型返回不同状态码
-        from app.core.database.session import DatabaseConnectionError, DatabaseQueryError, DatabasePoolExhaustedError
-        
+        from app.core.database.session import (
+            DatabaseConnectionError,
+            DatabasePoolExhaustedError,
+            DatabaseQueryError,
+        )
+
         if isinstance(exception, DatabaseConnectionError):
             return 503, "数据库连接异常，请稍后再试"
         if isinstance(exception, DatabasePoolExhaustedError):
             return 503, "数据库连接池已满，请稍后再试"
         if isinstance(exception, DatabaseQueryError):
             return 400, "数据库查询异常，请检查请求参数"
-        
+
         # 其他数据库相关异常 -> 503 服务不可用
         exception_str = str(exception).lower()
         if any(keyword in exception_str for keyword in [
@@ -205,12 +208,12 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
 
         # 默认 -> 500 服务器错误
         return 500, "服务器内部错误，请稍后再试"
-    
+
     async def _log_error_response(self, request: Request, response, process_time: float):
         """记录错误响应"""
         url = request.url.path
         method = request.method
-        
+
         if response.status_code >= 500:
             logger.error(
                 f"[ErrorResponse] {method} {url} -> {response.status_code} "

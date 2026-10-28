@@ -5,8 +5,9 @@ BM25 全文检索搜索器
 替代原有的 LIKE 模糊匹配，提供更高质量的相关性排序。
 """
 import logging
-from typing import List, Dict, Any, Optional
-from sqlalchemy import text, select
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..openfoodfacts.config import OFFConfig

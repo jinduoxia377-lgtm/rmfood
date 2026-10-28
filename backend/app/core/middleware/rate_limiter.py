@@ -5,16 +5,15 @@
 为公共搜索接口添加请求频率限制，防止滥用。
 """
 import time
-from typing import Optional
 
-from fastapi import Request, Response, HTTPException, status
+from fastapi import Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """
     轻量级限流中间件。
-    
+
     仅对匹配的端点生效，未匹配的端点直接放行。
     所有限流信息通过 X-RateLimit-* 响应头返回。
     """
@@ -42,20 +41,20 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """Returns (allowed, remaining, reset_seconds)"""
         now = time.time()
         window_start = now - 60
-        
+
         if key not in self._windows:
             self._windows[key] = []
-        
+
         timestamps = [t for t in self._windows[key] if t > window_start]
         current_count = len(timestamps)
-        
+
         if current_count >= rpm:
             return False, 0, int(60 - (now - timestamps[0]))
-        
+
         timestamps.append(now)
         self._windows[key] = timestamps
         remaining = rpm - current_count - 1
-        
+
         # Cleanup old entries periodically
         if now % self._cleanup_age < 1:
             for k in list(self._windows.keys()):
@@ -64,7 +63,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     self._windows[k] = ts_list
                 else:
                     del self._windows[k]
-        
+
         return True, remaining, 60
 
     async def dispatch(self, request: Request, call_next):
@@ -74,15 +73,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if path.startswith(pattern):
                 rule = limits
                 break
-        
+
         if not rule:
             return await call_next(request)
-        
+
         client_ip = request.client.host if request.client else "unknown"
         key = self._get_key(path, client_ip)
-        
+
         allowed, remaining, reset_sec = self._check(key, rule["rpm"])
-        
+
         if not allowed:
             response = Response(
                 content='{"detail":"请求过于频繁，请稍后重试"}',
@@ -94,7 +93,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             response.headers["X-RateLimit-Reset"] = str(reset_sec)
             response.headers["Retry-After"] = str(reset_sec)
             return response
-        
+
         response = await call_next(request)
         response.headers["X-RateLimit-Limit"] = str(rule["rpm"])
         response.headers["X-RateLimit-Remaining"] = str(remaining)

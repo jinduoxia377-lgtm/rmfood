@@ -35,23 +35,20 @@
 
 from __future__ import annotations
 
-import asyncio
+import logging
 import time
 import uuid
-
-from app.utils.error_sanitize import sanitize_error
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict
 
-from fastapi import APIRouter, Request, Response
-from pydantic import BaseModel
+from fastapi import APIRouter, Response
 from starlette.responses import JSONResponse, PlainTextResponse
 
-import logging
+from app.utils.error_sanitize import sanitize_error
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,16 +58,18 @@ logger = logging.getLogger(__name__)
 
 try:
     from prometheus_client import (
-        Counter,
-        Histogram,
-        Gauge,
-        Summary,
-        Info,
-        Enum as PEnum,
-        generate_latest,
         CONTENT_TYPE_LATEST,
-        CollectorRegistry,
         REGISTRY,
+        CollectorRegistry,
+        Counter,
+        Gauge,
+        Histogram,
+        Info,
+        Summary,
+        generate_latest,
+    )
+    from prometheus_client import (
+        Enum as PEnum,
     )
 
     HAS_PROMETHEUS = True

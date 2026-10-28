@@ -4,13 +4,12 @@ Open Food Facts 数据客户端
 提供 REST API 查询和批量数据下载能力。
 """
 import gzip
-import io
 import json
 import logging
 import re
 import time
-from datetime import datetime, date, timedelta
-from typing import List, Dict, Any, Optional, Iterator
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, Iterator, List, Optional
 from urllib.parse import urlencode
 
 import httpx

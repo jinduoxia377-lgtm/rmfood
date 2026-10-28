@@ -119,6 +119,7 @@ class TCMTastePredictorService:
     async def _load_taste_data(self, names: list[str]) -> dict[str, dict[str, Any]]:
         """加载 mmid_herbs 五味四气 + tcm_herbs effects"""
         from sqlalchemy import select
+
         from ...core.database.session import async_session_factory
         from ...models.external_data import MMIDHerb, TCMHerb
 

@@ -6,8 +6,9 @@
 """
 import logging
 import math
-from typing import List, Dict, Any, Optional
-from sqlalchemy import text, select
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)

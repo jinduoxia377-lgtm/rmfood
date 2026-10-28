@@ -7,11 +7,12 @@
 - 章节标题感知的分块策略
 """
 
-import os
-import re
 import hashlib
 import logging
+import os
+import re
 from typing import Optional
+
 from .models import DocumentChunk
 
 logger = logging.getLogger(__name__)
@@ -60,15 +61,17 @@ class DocumentProcessor:
     def _extract_pdf(self, content: bytes) -> str:
         """PDF 解析（PyPDF2 → pdfminer 回退）"""
         try:
-            import PyPDF2
             from io import BytesIO
+
+            import PyPDF2
             reader = PyPDF2.PdfReader(BytesIO(content))
             texts = [page.extract_text() for page in reader.pages if page.extract_text()]
             return '\n\n'.join(texts)
         except ImportError:
             try:
-                from pdfminer.high_level import extract_text
                 from io import BytesIO
+
+                from pdfminer.high_level import extract_text
                 return extract_text(BytesIO(content))
             except ImportError:
                 return "[PDF 解析需要安装 PyPDF2 或 pdfminer.six]"
@@ -85,8 +88,9 @@ class DocumentProcessor:
     def _extract_docx(self, content: bytes) -> str:
         """Word .docx 解析"""
         try:
-            from docx import Document
             from io import BytesIO
+
+            from docx import Document
             doc = Document(BytesIO(content))
             paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
             return '\n\n'.join(paragraphs)
@@ -97,8 +101,9 @@ class DocumentProcessor:
     def _extract_xlsx(self, content: bytes) -> str:
         """Excel .xlsx 解析"""
         try:
-            import openpyxl
             from io import BytesIO
+
+            import openpyxl
             wb = openpyxl.load_workbook(BytesIO(content), read_only=True)
             lines = []
             for ws in wb.worksheets:
@@ -115,8 +120,9 @@ class DocumentProcessor:
     def _extract_pptx(self, content: bytes) -> str:
         """PowerPoint .pptx 解析"""
         try:
-            from pptx import Presentation
             from io import BytesIO
+
+            from pptx import Presentation
             prs = Presentation(BytesIO(content))
             texts = []
             for slide in prs.slides:
@@ -187,21 +193,22 @@ class DocumentProcessor:
                     current_chunk_text = para
                     continue
 
-                # 合并段落到当前块
-                if current_chunk_text:
-                    new_text = current_chunk_text + "\n\n" + para
-                else:
-                    new_text = para
+                # 合并段落到当前块（P3：单段超长时按句子/硬上限切分，避免巨型块）
+                for seg in self._split_long_text(para):
+                    if current_chunk_text:
+                        new_text = current_chunk_text + "\n\n" + seg
+                    else:
+                        new_text = seg
 
-                if len(new_text) > self.CHUNK_SIZE * 1.5:
-                    # 块太大，先保存
-                    chunk = self._create_chunk(current_chunk_text, filename, chunk_index, current_section)
-                    if chunk:
-                        chunks.append(chunk)
-                    chunk_index += 1
-                    current_chunk_text = para
-                else:
-                    current_chunk_text = new_text
+                    if len(new_text) > self.CHUNK_SIZE * 1.5:
+                        # 块太大，先保存
+                        chunk = self._create_chunk(current_chunk_text, filename, chunk_index, current_section)
+                        if chunk:
+                            chunks.append(chunk)
+                        chunk_index += 1
+                        current_chunk_text = seg
+                    else:
+                        current_chunk_text = new_text
 
         # 保存最后一个块
         if current_chunk_text:
@@ -235,6 +242,33 @@ class DocumentProcessor:
             sections = [("", paragraphs)]
 
         return sections
+
+    def _split_long_text(self, text: str) -> list[str]:
+        """P3: 对超长文本按句子边界/硬上限切分。
+
+        单个超长段落（无空行分隔的长文本）若不切分会形成远超 CHUNK_SIZE 的
+        巨型块，破坏嵌入/检索质量。优先在句子边界切分；若窗口内无句子边界，
+        则在硬上限处硬切。返回的每段长度 ≤ CHUNK_SIZE * 1.5（与合并阈值一致）。
+        """
+        hard_cap = int(self.CHUNK_SIZE * 1.5)
+        if len(text) <= hard_cap:
+            return [text]
+        pieces: list[str] = []
+        rest = text
+        while len(rest) > hard_cap:
+            window = rest[:hard_cap]
+            cut = 0
+            for sep in self.SENTENCE_SEPARATORS:
+                idx = window.rfind(sep)
+                if idx != -1 and idx + len(sep) > cut:
+                    cut = idx + len(sep)
+            if cut <= 0:
+                cut = hard_cap  # 无句子边界，硬切
+            pieces.append(rest[:cut].strip())
+            rest = rest[cut:]
+        if rest.strip():
+            pieces.append(rest.strip())
+        return [p for p in pieces if p]
 
     def _create_chunk(self, text: str, filename: str, index: int, section: str) -> Optional[DocumentChunk]:
         """创建单个文档块"""

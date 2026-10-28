@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import time
 from dataclasses import dataclass, field
@@ -359,7 +358,7 @@ class MultiAgentCollaborator:
 
     def _synthesize_final_response(self, session: CollaborationSession) -> str:
         """综合所有 Agent 结果生成最终建议"""
-        parts = [f"## 多 Agent 协作结果\n\n"]
+        parts = ["## 多 Agent 协作结果\n\n"]
         parts.append(f"**用户请求**: {session.user_query}\n\n")
 
         # 各 Agent 摘要

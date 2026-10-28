@@ -5,8 +5,7 @@
 自动检查原料/产品的法规合规性。
 """
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

@@ -41,19 +41,15 @@
 
 from __future__ import annotations
 
-import io
-import os
-import re
-import logging
 import hashlib
+import io
+import logging
+import os
 import uuid
-import asyncio
-import time
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from pathlib import Path
 from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     import magic  # python-magic - 可选依赖（可用魔数映射替代）
@@ -61,7 +57,7 @@ try:
 except ImportError:
     HAS_MAGIC = False
 
-from fastapi import UploadFile, HTTPException, status
+from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 

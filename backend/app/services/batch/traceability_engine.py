@@ -4,11 +4,12 @@
 - 反向：成品批次 → 使用的所有原料批号
 """
 import logging
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Batch, Sample, TestReport, IngredientLot
+from app.models import Batch, IngredientLot, Sample, TestReport
 
 logger = logging.getLogger(__name__)
 

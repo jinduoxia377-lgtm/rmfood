@@ -4,12 +4,16 @@
 """
 
 import logging
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import (
+    desc,
+    func,
+    select,
+    update,  # A-27
+)
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, and_, or_
-from sqlalchemy import update  # A-27
-from sqlalchemy.orm import selectinload
 
 from app.models.peptide_structure import PeptideStructureAnalysis
 from app.models.user_model import User
@@ -20,18 +24,18 @@ logger = logging.getLogger(__name__)
 class PeptideStructureHistoryService:
     """
     肽链结构分析历史记录服务
-    
+
     提供：
     - 保存分析结果
     - 查询历史记录
     - 删除历史记录
     - 统计分析
     """
-    
+
     def __init__(self, db: AsyncSession, user: User):
         self.db = db
         self.user = user
-    
+
     async def save_analysis(
         self,
         sequence: str,
@@ -42,14 +46,14 @@ class PeptideStructureHistoryService:
     ) -> PeptideStructureAnalysis:
         """
         保存分析结果到历史记录
-        
+
         Args:
             sequence: 肽序列
             result: 分析结果字典
             n_terminal: N端修饰
             c_terminal: C端修饰
             unusual_aaminos: 非天然氨基酸列表
-            
+
         Returns:
             保存的记录对象
         """
@@ -81,19 +85,19 @@ class PeptideStructureHistoryService:
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
             )
-            
+
             self.db.add(record)
             await self.db.commit()
             await self.db.refresh(record)
-            
+
             logger.info(f"保存分析历史: {sequence}, ID={record.id}")
             return record
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.error(f"保存分析历史失败: {e}", exc_info=True)
             raise
-    
+
     async def get_history(
         self,
         page: int = 1,
@@ -108,7 +112,7 @@ class PeptideStructureHistoryService:
     ) -> Dict[str, Any]:
         """
         查询分析历史记录
-        
+
         Args:
             page: 页码
             page_size: 每页数量
@@ -119,7 +123,7 @@ class PeptideStructureHistoryService:
             is_toxic: 毒性过滤
             sort_by: 排序字段
             sort_order: 排序方向
-            
+
         Returns:
             分页结果
         """
@@ -129,7 +133,7 @@ class PeptideStructureHistoryService:
                 PeptideStructureAnalysis.user_id == self.user.id,
                 PeptideStructureAnalysis.deleted_at.is_(None)
             )
-            
+
             # 筛选条件
             if sequence:
                 query = query.where(PeptideStructureAnalysis.sequence.ilike(f"%{sequence}%"))
@@ -141,41 +145,41 @@ class PeptideStructureHistoryService:
                 query = query.where(PeptideStructureAnalysis.is_allergen == is_allergen)
             if is_toxic is not None:
                 query = query.where(PeptideStructureAnalysis.is_toxic == is_toxic)
-            
+
             # 总数
             count_query = select(func.count()).select_from(query.subquery())
             total_result = await self.db.execute(count_query)
             total = total_result.scalar() or 0
-            
+
             # 排序
             sort_column = getattr(PeptideStructureAnalysis, sort_by, PeptideStructureAnalysis.created_at)
             if sort_order == "desc":
                 query = query.order_by(desc(sort_column))
             else:
                 query = query.order_by(sort_column)
-            
+
             # 分页
             query = query.offset((page - 1) * page_size).limit(page_size)
-            
+
             # 执行查询
             result = await self.db.execute(query)
             records = result.scalars().all()
-            
+
             return {
                 "total": total,
                 "page": page,
                 "page_size": page_size,
                 "items": [r.to_dict() for r in records],
             }
-            
+
         except Exception as e:
             logger.error(f"查询历史记录失败: {e}", exc_info=True)
             raise
-    
+
     async def get_statistics(self) -> Dict[str, Any]:
         """
         获取分析历史统计
-        
+
         Returns:
             统计信息
         """
@@ -205,10 +209,10 @@ class PeptideStructureHistoryService:
                 PeptideStructureAnalysis.user_id == self.user.id,
                 PeptideStructureAnalysis.deleted_at.is_(None)
             )
-            
+
             result = await self.db.execute(stats_query)
             stats = result.fetchone()
-            
+
             # 评分分布
             distribution_query = select(
                 func.count().label("count"),
@@ -217,17 +221,17 @@ class PeptideStructureHistoryService:
                 PeptideStructureAnalysis.user_id == self.user.id,
                 PeptideStructureAnalysis.deleted_at.is_(None)
             ).group_by("bin").order_by("bin")
-            
+
             dist_result = await self.db.execute(distribution_query)
             distribution = [{"bin": row.bin, "count": row.count} for row in dist_result.fetchall()]
-            
+
             # 活性类型分布
             activity_dist = {
                 "ace_high": sum(1 for r in range(100) if r * 0.01 >= 0.8),
                 "antiox_high": 0,
                 "amp_high": 0,
             }
-            
+
             return {
                 "total_analyses": stats.total or 0,
                 "avg_food_score": round(float(stats.avg_score or 0), 2),
@@ -241,18 +245,18 @@ class PeptideStructureHistoryService:
                 "score_distribution": distribution,
                 "activity_distribution": activity_dist,
             }
-            
+
         except Exception as e:
             logger.error(f"获取统计信息失败: {e}", exc_info=True)
             raise
-    
+
     async def get_record(self, record_id: int) -> Optional[PeptideStructureAnalysis]:
         """
         获取单条记录
-        
+
         Args:
             record_id: 记录 ID
-            
+
         Returns:
             记录对象或 None
         """
@@ -268,14 +272,14 @@ class PeptideStructureHistoryService:
         except Exception as e:
             logger.error(f"获取记录失败: {e}", exc_info=True)
             raise
-    
+
     async def delete_record(self, record_id: int) -> bool:
         """
         软删除记录
-        
+
         Args:
             record_id: 记录 ID
-            
+
         Returns:
             是否删除成功
         """
@@ -283,26 +287,26 @@ class PeptideStructureHistoryService:
             record = await self.get_record(record_id)
             if not record:
                 return False
-            
+
             record.deleted_at = datetime.utcnow()
             record.updated_at = datetime.utcnow()
             await self.db.commit()
-            
+
             logger.info(f"删除分析历史: ID={record_id}")
             return True
-            
+
         except Exception as e:
             await self.db.rollback()
             logger.error(f"删除记录失败: {e}", exc_info=True)
             raise
-    
+
     async def batch_delete(self, record_ids: List[int]) -> int:
         """
         批量删除记录
-        
+
         Args:
             record_ids: 记录 ID 列表
-            
+
         Returns:
             删除的数量
         """
@@ -325,14 +329,14 @@ class PeptideStructureHistoryService:
             await self.db.rollback()
             logger.error(f"批量删除失败: {e}", exc_info=True)
             raise
-    
+
     async def export_to_csv(self, record_ids: Optional[List[int]] = None) -> str:
         """
         导出历史记录为 CSV
-        
+
         Args:
             record_ids: 记录的 ID 列表（可选，None 表示全部）
-            
+
         Returns:
             CSV 内容
         """
@@ -348,23 +352,23 @@ class PeptideStructureHistoryService:
                     PeptideStructureAnalysis.user_id == self.user.id,
                     PeptideStructureAnalysis.deleted_at.is_(None)
                 )
-            
+
             result = await self.db.execute(query)
             records = result.scalars().all()
-            
+
             # 生成 CSV
             import csv
             import io
-            
+
             output = io.StringIO()
             writer = csv.writer(output)
-            
+
             # 写入表头
             writer.writerow([
                 "ID", "序列", "分子量", "食品评分", "ACE抑制", "抗氧化", "抗菌",
                 "过敏原", "毒性", "消化性", "苦味", "鲜味", "SMILES", "分析时间"
             ])
-            
+
             # 写入数据
             for r in records:
                 writer.writerow([
@@ -383,9 +387,9 @@ class PeptideStructureHistoryService:
                     r.smiles or "",
                     r.created_at.isoformat(),
                 ])
-            
+
             return output.getvalue()
-            
+
         except Exception as e:
             logger.error(f"导出 CSV 失败: {e}", exc_info=True)
             raise

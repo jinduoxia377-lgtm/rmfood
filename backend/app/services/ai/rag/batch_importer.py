@@ -15,9 +15,9 @@
 import json
 import logging
 import os
-from typing import Dict, List, Optional, Callable, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Callable, List, Optional
 
 from .models import DocumentInfo
 from .rag_service import RAGService
@@ -57,10 +57,10 @@ class FieldMapping:
 
 class BatchImporter:
     """批量导入器
-    
+
     支持从 CSV、Excel、JSON 文件批量导入文档。
     """
-    
+
     def __init__(self, rag_service: RAGService, user_id: str = "system"):
         """
         Args:
@@ -70,7 +70,7 @@ class BatchImporter:
         self.rag_service = rag_service
         self.user_id = user_id
         self.progress_callback: Optional[Callable[[int, int, str], None]] = None
-    
+
     async def import_csv(
         self,
         content: bytes,
@@ -80,36 +80,36 @@ class BatchImporter:
         encoding: str = "utf-8",
     ) -> BatchImportResult:
         """从 CSV 导入文档
-        
+
         Args:
             content: 文件二进制内容
             filename: 文件名
             mapping: 字段映射配置
             delimiter: 分隔符
             encoding: 文件编码
-        
+
         Returns:
             导入结果
         """
         import csv
         from io import StringIO
-        
+
         mapping = mapping or FieldMapping()
         start_time = datetime.now().timestamp()
         errors: List[ImportError] = []
         documents: List[DocumentInfo] = []
-        
+
         try:
             text = content.decode(encoding)
             reader = csv.DictReader(StringIO(text), delimiter=delimiter)
-            
+
             if not reader.fieldnames:
                 raise ValueError("CSV 文件为空或缺少表头")
-            
+
             total = 0
             for row_idx, row in enumerate(reader, start=1):
                 total += 1
-                
+
                 # 获取内容字段
                 content_field = mapping.content_field
                 if content_field not in row:
@@ -120,7 +120,7 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 content = row.get(content_field, "").strip()
                 if not content:
                     errors.append(ImportError(
@@ -130,28 +130,28 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 # 获取标题
                 title = None
                 if mapping.title_field and mapping.title_field in row:
                     title = row.get(mapping.title_field)
-                
+
                 # 获取来源
                 source = None
                 if mapping.source_field and mapping.source_field in row:
                     source = row.get(mapping.source_field)
-                
+
                 # 构建文档元数据
                 metadata = {}
                 for field_name in mapping.metadata_fields:
                     if field_name in row:
                         metadata[field_name] = row[field_name]
-                
+
                 # 生成文档名
                 doc_filename = f"{os.path.splitext(filename)[0]}_{row_idx}"
                 if title:
                     doc_filename = f"{title}_{row_idx}"
-                
+
                 # 调用 RAG 服务索引
                 doc_info = await self.rag_service.ingest_document(
                     content=content.encode(encoding),
@@ -159,11 +159,11 @@ class BatchImporter:
                     user_id=self.user_id,
                 )
                 documents.append(doc_info)
-                
+
                 # 进度回调
                 if self.progress_callback:
                     self.progress_callback(row_idx, total, f"已导入 {row_idx}/{total}")
-                
+
         except Exception as e:
             errors.append(ImportError(
                 row=0,
@@ -172,9 +172,9 @@ class BatchImporter:
                 value=None,
             ))
             logger.error("CSV 导入失败: %s", e, exc_info=True)
-        
+
         duration_ms = (datetime.now().timestamp() - start_time) * 1000
-        
+
         return BatchImportResult(
             total=len(documents) + len(errors),
             success=len(documents),
@@ -184,7 +184,7 @@ class BatchImporter:
             duration_ms=duration_ms,
             message=f"成功导入 {len(documents)} 条，失败 {len(errors)} 条",
         )
-    
+
     async def import_excel(
         self,
         content: bytes,
@@ -193,19 +193,20 @@ class BatchImporter:
         sheet_name: Optional[str] = None,
     ) -> BatchImportResult:
         """从 Excel 导入文档
-        
+
         Args:
             content: 文件二进制内容
             filename: 文件名
             mapping: 字段映射配置
             sheet_name: 工作表名称（None 表示第一个 sheet）
-        
+
         Returns:
             导入结果
         """
         try:
-            import openpyxl
             from io import BytesIO
+
+            import openpyxl
         except ImportError:
             return BatchImportResult(
                 total=0,
@@ -221,15 +222,15 @@ class BatchImporter:
                 duration_ms=0,
                 message="openpyxl 未安装",
             )
-        
+
         mapping = mapping or FieldMapping()
         start_time = datetime.now().timestamp()
         errors: List[ImportError] = []
         documents: List[DocumentInfo] = []
-        
+
         try:
             wb = openpyxl.load_workbook(BytesIO(content), read_only=True)
-            
+
             # 选择工作表
             if sheet_name:
                 if sheet_name not in wb.sheetnames:
@@ -237,14 +238,14 @@ class BatchImporter:
                 ws = wb[sheet_name]
             else:
                 ws = wb.active
-            
+
             # 获取表头
             rows = list(ws.iter_rows(values_only=True))
             if not rows:
                 raise ValueError("Excel 文件为空")
-            
+
             headers = [str(h) if h else f"col_{i}" for i, h in enumerate(rows[0])]
-            
+
             total = len(rows) - 1
             for row_idx, row in enumerate(rows[1:], start=1):
                 # 构建行字典
@@ -252,7 +253,7 @@ class BatchImporter:
                 for i, header in enumerate(headers):
                     value = row[i] if i < len(row) else None
                     row_dict[header] = str(value) if value is not None else ""
-                
+
                 # 获取内容字段
                 content_field = mapping.content_field
                 if content_field not in row_dict:
@@ -263,7 +264,7 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 content = row_dict.get(content_field, "").strip()
                 if not content:
                     errors.append(ImportError(
@@ -273,17 +274,17 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 # 获取标题
                 title = None
                 if mapping.title_field and mapping.title_field in row_dict:
                     title = row_dict.get(mapping.title_field)
-                
+
                 # 生成文档名
                 doc_filename = f"{os.path.splitext(filename)[0]}_{row_idx}"
                 if title:
                     doc_filename = f"{title}_{row_idx}"
-                
+
                 # 调用 RAG 服务索引
                 doc_info = await self.rag_service.ingest_document(
                     content=content.encode('utf-8'),
@@ -291,13 +292,13 @@ class BatchImporter:
                     user_id=self.user_id,
                 )
                 documents.append(doc_info)
-                
+
                 # 进度回调
                 if self.progress_callback:
                     self.progress_callback(row_idx, total, f"已导入 {row_idx}/{total}")
-            
+
             wb.close()
-            
+
         except Exception as e:
             errors.append(ImportError(
                 row=0,
@@ -306,9 +307,9 @@ class BatchImporter:
                 value=None,
             ))
             logger.error("Excel 导入失败: %s", e, exc_info=True)
-        
+
         duration_ms = (datetime.now().timestamp() - start_time) * 1000
-        
+
         return BatchImportResult(
             total=len(documents) + len(errors),
             success=len(documents),
@@ -318,7 +319,7 @@ class BatchImporter:
             duration_ms=duration_ms,
             message=f"成功导入 {len(documents)} 条，失败 {len(errors)} 条",
         )
-    
+
     async def import_json(
         self,
         content: bytes,
@@ -327,13 +328,13 @@ class BatchImporter:
         array_path: Optional[str] = None,
     ) -> BatchImportResult:
         """从 JSON 导入文档
-        
+
         Args:
             content: 文件二进制内容
             filename: 文件名
             mapping: 字段映射配置
             array_path: 数组路径（如 "data.items"）
-        
+
         Returns:
             导入结果
         """
@@ -341,10 +342,10 @@ class BatchImporter:
         start_time = datetime.now().timestamp()
         errors: List[ImportError] = []
         documents: List[DocumentInfo] = []
-        
+
         try:
             data = json.loads(content.decode('utf-8'))
-            
+
             # 导航到数组路径
             if array_path:
                 parts = array_path.split('.')
@@ -355,14 +356,14 @@ class BatchImporter:
                         data = data[part]
                     else:
                         raise ValueError(f"路径不存在: {array_path}")
-            
+
             # 确保是数组
             if isinstance(data, dict):
                 data = [data]
-            
+
             if not isinstance(data, list):
                 raise ValueError("JSON 数据必须是数组或对象")
-            
+
             total = len(data)
             for row_idx, item in enumerate(data, start=1):
                 if not isinstance(item, dict):
@@ -373,7 +374,7 @@ class BatchImporter:
                         value=str(item)[:100],
                     ))
                     continue
-                
+
                 # 获取内容字段
                 content_field = mapping.content_field
                 if content_field not in item:
@@ -384,7 +385,7 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 content = str(item.get(content_field, "")).strip()
                 if not content:
                     errors.append(ImportError(
@@ -394,17 +395,17 @@ class BatchImporter:
                         value=None,
                     ))
                     continue
-                
+
                 # 获取标题
                 title = None
                 if mapping.title_field and mapping.title_field in item:
                     title = str(item.get(mapping.title_field))
-                
+
                 # 生成文档名
                 doc_filename = f"{os.path.splitext(filename)[0]}_{row_idx}"
                 if title:
                     doc_filename = f"{title}_{row_idx}"
-                
+
                 # 调用 RAG 服务索引
                 doc_info = await self.rag_service.ingest_document(
                     content=content.encode('utf-8'),
@@ -412,11 +413,11 @@ class BatchImporter:
                     user_id=self.user_id,
                 )
                 documents.append(doc_info)
-                
+
                 # 进度回调
                 if self.progress_callback:
                     self.progress_callback(row_idx, total, f"已导入 {row_idx}/{total}")
-            
+
         except Exception as e:
             errors.append(ImportError(
                 row=0,
@@ -425,9 +426,9 @@ class BatchImporter:
                 value=None,
             ))
             logger.error("JSON 导入失败: %s", e, exc_info=True)
-        
+
         duration_ms = (datetime.now().timestamp() - start_time) * 1000
-        
+
         return BatchImportResult(
             total=len(documents) + len(errors),
             success=len(documents),
@@ -437,7 +438,7 @@ class BatchImporter:
             duration_ms=duration_ms,
             message=f"成功导入 {len(documents)} 条，失败 {len(errors)} 条",
         )
-    
+
     async def import_file(
         self,
         content: bytes,
@@ -446,18 +447,18 @@ class BatchImporter:
         **kwargs,
     ) -> BatchImportResult:
         """自动检测文件类型并导入
-        
+
         Args:
             content: 文件二进制内容
             filename: 文件名
             mapping: 字段映射配置
             **kwargs: 额外参数
-        
+
         Returns:
             导入结果
         """
         ext = os.path.splitext(filename)[1].lower()
-        
+
         if ext == '.csv':
             return await self.import_csv(
                 content, filename, mapping,

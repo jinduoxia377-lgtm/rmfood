@@ -77,14 +77,15 @@ class UnifiedFormulaEngine:
             return
 
         try:
-            from .signal_encoder import get_signal_encoder
+            from .formula_discriminator import get_formula_discriminator
+            from .formula_predictor import get_formula_predictor
+            from .formula_selector import get_formula_selector
+
             # ★ 关键修复：优先使用真正的 PyTorch LSTM 生成器
             from .pytorch_generator import PyTorchFormulaGenerator
-            from .formula_predictor import get_formula_predictor
-            from .formula_discriminator import get_formula_discriminator
-            from .template_subsystem import get_template_subsystem
             from .rl_tuner import get_rl_tuner
-            from .formula_selector import get_formula_selector
+            from .signal_encoder import get_signal_encoder
+            from .template_subsystem import get_template_subsystem
 
             self._signal_encoder = get_signal_encoder()
             # 使用真正的 PyTorch LSTM 生成器（而非启发式版本）。
@@ -113,13 +114,13 @@ class UnifiedFormulaEngine:
 
     def _fallback_to_heuristic(self):
         """降级到启发式生成器（当 PyTorch 不可用时）"""
-        from .signal_encoder import get_signal_encoder
         from .autoregressive_generator import get_autoregressive_generator
-        from .formula_predictor import get_formula_predictor
         from .formula_discriminator import get_formula_discriminator
-        from .template_subsystem import get_template_subsystem
-        from .rl_tuner import get_rl_tuner
+        from .formula_predictor import get_formula_predictor
         from .formula_selector import get_formula_selector
+        from .rl_tuner import get_rl_tuner
+        from .signal_encoder import get_signal_encoder
+        from .template_subsystem import get_template_subsystem
 
         self._signal_encoder = get_signal_encoder()
         self._generator = get_autoregressive_generator(herb_vocab=self.herb_vocab)
@@ -148,6 +149,7 @@ class UnifiedFormulaEngine:
 
         if type(self._generator).__name__ == "PyTorchFormulaGenerator":
             import torch
+
             from .pytorch_generator import GenerationConfig
 
             config = GenerationConfig(
@@ -231,11 +233,17 @@ class UnifiedFormulaEngine:
             logger.info(f"[UnifiedEngine] 选择模板: {template_name or '无'}")
 
             # Step 3: 自回归生成（多轮采样）
-            generated_formulas = []
-            for _ in range(n_candidates):
-                formula = self._generate_candidate(signal, template, constraints)
-                if formula:
-                    generated_formulas.append(formula)
+            # P0-2 修复：PyTorch LSTM 推理是纯同步 CPU 操作，直接循环会阻塞事件循环
+            # 约 52 秒（实测）。整体放入 asyncio.to_thread，避免阻塞其它请求。
+            def _generate_all() -> List[Dict]:
+                results: List[Dict] = []
+                for _ in range(n_candidates):
+                    formula = self._generate_candidate(signal, template, constraints)
+                    if formula:
+                        results.append(formula)
+                return results
+
+            generated_formulas = await asyncio.to_thread(_generate_all)
 
             if not generated_formulas:
                 return GenerationResult(
@@ -248,20 +256,24 @@ class UnifiedFormulaEngine:
                     execution_time_ms=(time.perf_counter() - start_time) * 1000,
                 )
 
-            # Step 4: 预测器评分
-            scored_formulas = []
-            for formula in generated_formulas:
-                pred = self._predictor.predict(formula, target_effects)
-                scored_formulas.append({
-                    **formula,
-                    "efficacy_score": pred.efficacy,
-                    "safety_score": pred.safety,
-                    "taste_score": pred.taste,
-                    "cost_score": pred.cost_score,
-                    "synergy_score": pred.synergy,
-                    "stability_score": pred.stability,
-                    "overall_score": pred.overall,
-                })
+            # Step 4: 预测器评分（同步 CPU 推理，同样放入线程池）
+            def _score_all() -> List[Dict]:
+                scored: List[Dict] = []
+                for formula in generated_formulas:
+                    pred = self._predictor.predict(formula, target_effects)
+                    scored.append({
+                        **formula,
+                        "efficacy_score": pred.efficacy,
+                        "safety_score": pred.safety,
+                        "taste_score": pred.taste,
+                        "cost_score": pred.cost_score,
+                        "synergy_score": pred.synergy,
+                        "stability_score": pred.stability,
+                        "overall_score": pred.overall,
+                    })
+                return scored
+
+            scored_formulas = await asyncio.to_thread(_score_all)
 
             # Step 5: 判别器新颖性检查
             for f in scored_formulas:
@@ -349,16 +361,102 @@ class UnifiedFormulaEngine:
         candidates: List[Dict],
         constraints: Optional[Dict],
     ) -> List[Dict]:
-        """安全合规检查（简化版，后续集成 SafetyChecker）"""
-        # TODO: 集成 SafetyChecker
-        return candidates
+        """安全合规检查：十八反/十九畏配伍禁忌 + 剂量上限。
+
+        修复 P1-2：原实现为 TODO 空操作，v2 生成的配方不经过任何安全校验。
+        现在：
+        - 对每个候选，先按 herb_db 的 dosage_max 做剂量上限裁剪（超限则裁剪到上限并告警）；
+        - 再检查十八反/十九畏配伍禁忌（基于中文名配对），命中禁忌的候选直接丢弃；
+        - 返回通过安全校验的候选列表。
+        """
+        if not candidates:
+            return candidates
+
+        try:
+            from ...ai_models.safety_checker import (
+                _EIGHTEEN_CONTRAINDICATIONS,
+                _NINETEEN_ANTAGONISMS,
+            )
+            forbidden_pairs = _EIGHTEEN_CONTRAINDICATIONS | _NINETEEN_ANTAGONISMS
+        except Exception as e:
+            logger.warning(f"[UnifiedEngine] 加载配伍禁忌规则失败，跳过安全校验: {e}")
+            return candidates
+
+        # herb_id -> 中文名映射（herb_db 的键是 herb_id，值含 name_cn）
+        id_to_name_cn: Dict[str, str] = {}
+        for hid, info in self.herb_db.items():
+            if isinstance(info, dict):
+                id_to_name_cn[hid] = info.get("name_cn", hid) or hid
+            else:
+                id_to_name_cn[hid] = getattr(info, "name_cn", hid) or hid
+
+        safe_candidates: List[Dict] = []
+        for cand in candidates:
+            # 只取 herb_db 中存在的药材键（过滤评分等附加键）
+            herb_items = {k: v for k, v in cand.items() if k in self.herb_db}
+            if not herb_items:
+                continue
+
+            # 1) 剂量上限校验（超限裁剪到 dosage_max）
+            clipped: Dict[str, float] = {}
+            dosage_issues: List[str] = []
+            for hid, dosage_raw in herb_items.items():
+                try:
+                    dosage = float(dosage_raw)
+                except (TypeError, ValueError):
+                    continue
+                info = self.herb_db.get(hid, {})
+                dosage_max = 30.0
+                if isinstance(info, dict):
+                    dosage_max = float(info.get("dosage_max", 30.0) or 30.0)
+                else:
+                    dosage_max = float(getattr(info, "dosage_max", 30.0) or 30.0)
+                if dosage > dosage_max:
+                    dosage_issues.append(
+                        f"{id_to_name_cn.get(hid, hid)} 剂量 {dosage}g 超过上限 {dosage_max}g，已裁剪"
+                    )
+                    dosage = dosage_max
+                clipped[hid] = dosage
+
+            # 2) 十八反/十九畏配伍禁忌检查
+            names_cn = [id_to_name_cn.get(hid, hid) for hid in clipped]
+            forbidden_hit = None
+            for i in range(len(names_cn)):
+                for j in range(i + 1, len(names_cn)):
+                    pair = (names_cn[i], names_cn[j])
+                    if pair in forbidden_pairs or (pair[1], pair[0]) in forbidden_pairs:
+                        forbidden_hit = f"{pair[0]} + {pair[1]}"
+                        break
+                if forbidden_hit:
+                    break
+
+            if forbidden_hit:
+                logger.warning(
+                    f"[UnifiedEngine] 候选命中配伍禁忌被丢弃: {forbidden_hit}"
+                )
+                continue
+
+            if dosage_issues:
+                logger.warning(f"[UnifiedEngine] 候选剂量超限已裁剪: {dosage_issues}")
+
+            safe_candidates.append({**cand, **clipped})
+
+        return safe_candidates
 
     def _build_tcm_structure(
         self, candidates: List[Dict], target_effects: List[str]
     ) -> List[Dict]:
-        """君臣佐使结构构建"""
+        """君臣佐使结构构建（药材名映射为中文名 name_cn）"""
         if not candidates:
             return []
+
+        # herb_id -> 中文名映射
+        id_to_name_cn: Dict[str, str] = {}
+        for hid, info in self.herb_db.items():
+            if isinstance(info, dict):
+                id_to_name_cn[hid] = info.get("name_cn", hid) or hid
+            else:
+                id_to_name_cn[hid] = getattr(info, "name_cn", hid) or hid
 
         # 按综合评分排序
         sorted_candidates = sorted(
@@ -383,7 +481,7 @@ class UnifiedFormulaEngine:
             role = roles[i] if i < len(roles) else "佐"
             formula_data.append({
                 "role": role,
-                "name": name,
+                "name": id_to_name_cn.get(name, name),  # 中文名
                 "dosage": f"{dosage}g",
                 "purpose": target_effects[0] if target_effects else "综合调理",
                 "score": best.get("overall_score", 0),

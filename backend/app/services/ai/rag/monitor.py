@@ -14,15 +14,14 @@
 - 多通知渠道
 """
 
-import time
-import logging
 import asyncio
-import statistics
-from typing import Dict, List, Optional, Callable, Any, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
-from enum import Enum
+import logging
+import time
 from collections import deque
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +57,7 @@ class MetricStats:
     min: float = float('inf')
     max: float = float('-inf')
     values: List[float] = field(default_factory=list)
-    
+
     def add(self, value: float) -> None:
         self.count += 1
         self.sum += value
@@ -66,10 +65,10 @@ class MetricStats:
         self.max = max(self.max, value)
         if len(self.values) < 1000:  # 最多保存 1000 个值
             self.values.append(value)
-    
+
     def avg(self) -> float:
         return self.sum / self.count if self.count > 0 else 0.0
-    
+
     def percentile(self, p: float) -> float:
         """计算百分位数"""
         if not self.values:
@@ -80,7 +79,7 @@ class MetricStats:
         c = f + 1 if f + 1 < len(sorted_values) else f
         d = k - f
         return sorted_values[f] + d * (sorted_values[c] - sorted_values[f])
-    
+
     def std(self) -> float:
         """计算标准差"""
         if self.count < 2:
@@ -114,7 +113,7 @@ class Alert:
     value: float = 0.0
     acknowledged_by: Optional[str] = None
     resolved_at: Optional[datetime] = None
-    
+
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
@@ -133,7 +132,7 @@ class Alert:
 
 class RAGMonitor:
     """RAG 监控服务"""
-    
+
     def __init__(
         self,
         max_history: int = 10000,
@@ -146,31 +145,31 @@ class RAGMonitor:
         """
         self.max_history = max_history
         self.check_interval = check_interval
-        
+
         # 指标存储（metric_name -> MetricStats）
         self._metrics: Dict[str, MetricStats] = {}
-        
+
         # 指标历史（metric_name -> deque of MetricPoint）
         self._history: Dict[str, deque[MetricPoint]] = {}
-        
+
         # 告警规则
         self._rules: List[AlertRule] = []
-        
+
         # 活跃告警
         self._active_alerts: Dict[str, Alert] = {}
-        
+
         # 通知回调
         self._notifiers: List[Callable[[Alert], None]] = []
-        
+
         # 运行状态
         self._running = False
         self._check_task: Optional[asyncio.Task] = None
-        
+
         # 默认告警规则
         self._init_default_rules()
-        
+
         logger.info("RAG 监控服务初始化: max_history=%d, interval=%ds", max_history, check_interval)
-    
+
     def _init_default_rules(self) -> None:
         """初始化默认告警规则"""
         self._rules = [
@@ -215,17 +214,17 @@ class RAGMonitor:
                 message="查询频率超过 100 QPS",
             ),
         ]
-    
+
     def start(self) -> None:
         """启动监控"""
         if self._running:
             logger.warning("监控服务已在运行")
             return
-        
+
         self._running = True
         self._check_task = asyncio.create_task(self._check_loop())
         logger.info("监控服务已启动")
-    
+
     async def stop(self) -> None:
         """停止监控"""
         self._running = False
@@ -236,7 +235,7 @@ class RAGMonitor:
             except asyncio.CancelledError:
                 pass
         logger.info("监控服务已停止")
-    
+
     async def _check_loop(self) -> None:
         """检查循环"""
         while self._running:
@@ -245,7 +244,7 @@ class RAGMonitor:
             except Exception as e:
                 logger.error("告警评估异常: %s", e, exc_info=True)
             await asyncio.sleep(self.check_interval)
-    
+
     def record_metric(
         self,
         name: str,
@@ -254,12 +253,12 @@ class RAGMonitor:
     ) -> None:
         """记录指标"""
         tags = tags or {}
-        
+
         # 更新统计
         if name not in self._metrics:
             self._metrics[name] = MetricStats()
         self._metrics[name].add(value)
-        
+
         # 更新历史
         if name not in self._history:
             self._history[name] = deque(maxlen=self.max_history)
@@ -268,27 +267,27 @@ class RAGMonitor:
             value=value,
             tags=tags,
         ))
-    
+
     def record_retrieval_latency(self, latency_ms: float) -> None:
         """记录检索延迟"""
         self.record_metric("retrieval_latency", latency_ms)
         self.record_metric("retrieval_latency_p50", latency_ms, {"percentile": "p50"})
-    
+
     def record_query(self, success: bool, latency_ms: float) -> None:
         """记录查询"""
         self.record_metric("query_count", 1.0)
         self.record_metric("query_latency", latency_ms)
-        
+
         if success:
             self.record_metric("query_success", 1.0)
         else:
             self.record_metric("query_error", 1.0)
-    
+
     def record_error(self, error_type: str, message: str) -> None:
         """记录错误"""
         self.record_metric("error_count", 1.0)
         logger.error("[%s] %s", error_type, message)
-    
+
     def record_quality_metric(
         self,
         precision: float,
@@ -301,17 +300,17 @@ class RAGMonitor:
         self.record_metric("recall_avg", recall)
         self.record_metric("f1_avg", f1)
         self.record_metric("mrr_avg", mrr)
-    
+
     def _evaluate_alerts(self) -> None:
         """评估告警规则"""
         for rule in self._rules:
             if not rule.enabled:
                 continue
-            
+
             stats = self._metrics.get(rule.metric)
             if not stats or stats.count == 0:
                 continue
-            
+
             # 获取当前值
             if rule.metric.endswith("_p95"):
                 current_value = stats.percentile(95)
@@ -319,10 +318,10 @@ class RAGMonitor:
                 current_value = stats.percentile(50)
             else:
                 current_value = stats.avg()
-            
+
             # 评估规则
             should_fire = self._evaluate_rule(rule, current_value)
-            
+
             # 获取或创建告警
             alert_id = rule.name
             if should_fire:
@@ -339,7 +338,7 @@ class RAGMonitor:
                         value=current_value,
                     )
                     self._active_alerts[alert_id] = alert
-                    logger.warning("告警触发: %s (%.2f %s %.2f)", 
+                    logger.warning("告警触发: %s (%.2f %s %.2f)",
                                    rule.name, current_value, rule.operator, rule.threshold)
                     self._notify(alert)
             else:
@@ -349,7 +348,7 @@ class RAGMonitor:
                     alert.status = AlertStatus.RESOLVED
                     alert.resolved_at = datetime.now(timezone.utc)
                     logger.info("告警解决: %s", rule.name)
-    
+
     def _evaluate_rule(self, rule: AlertRule, value: float) -> bool:
         """评估告警规则"""
         operators = {
@@ -360,11 +359,11 @@ class RAGMonitor:
         }
         op = operators.get(rule.operator, operators["gt"])
         return op(value, rule.threshold)
-    
+
     def add_notifier(self, notifier: Callable[[Alert], None]) -> None:
         """添加通知回调"""
         self._notifiers.append(notifier)
-    
+
     def _notify(self, alert: Alert) -> None:
         """发送通知"""
         for notifier in self._notifiers:
@@ -372,7 +371,7 @@ class RAGMonitor:
                 notifier(alert)
             except Exception as e:
                 logger.error("通知发送失败: %s", e)
-    
+
     def acknowledge_alert(self, alert_id: str, user: str) -> bool:
         """确认告警"""
         if alert_id in self._active_alerts:
@@ -381,7 +380,7 @@ class RAGMonitor:
             alert.acknowledged_by = user
             return True
         return False
-    
+
     def resolve_alert(self, alert_id: str) -> bool:
         """解决告警"""
         if alert_id in self._active_alerts:
@@ -390,7 +389,7 @@ class RAGMonitor:
             alert.resolved_at = datetime.now(timezone.utc)
             return True
         return False
-    
+
     def get_metric_stats(self, name: Optional[str] = None) -> Dict:
         """获取指标统计"""
         if name:
@@ -408,7 +407,7 @@ class RAGMonitor:
                 "p95": round(stats.percentile(95), 4),
                 "p99": round(stats.percentile(99), 4),
             }
-        
+
         return {
             name: {
                 "count": stats.count,
@@ -417,7 +416,7 @@ class RAGMonitor:
             }
             for name, stats in self._metrics.items()
         }
-    
+
     def get_metric_history(
         self,
         name: str,
@@ -427,16 +426,16 @@ class RAGMonitor:
     ) -> List[Dict]:
         """获取指标历史"""
         points = list(self._history.get(name, []))
-        
+
         # 过滤时间范围
         if start_time:
             points = [p for p in points if p.timestamp >= start_time]
         if end_time:
             points = [p for p in points if p.timestamp <= end_time]
-        
+
         # 限制数量
         points = points[-limit:]
-        
+
         return [
             {
                 "timestamp": p.timestamp.isoformat(),
@@ -445,11 +444,11 @@ class RAGMonitor:
             }
             for p in points
         ]
-    
+
     def get_active_alerts(self) -> List[Dict]:
         """获取活跃告警"""
         return [alert.to_dict() for alert in self._active_alerts.values()]
-    
+
     def get_alert_rules(self) -> List[Dict]:
         """获取告警规则"""
         return [
@@ -464,26 +463,26 @@ class RAGMonitor:
             }
             for rule in self._rules
         ]
-    
+
     def add_alert_rule(self, rule: AlertRule) -> None:
         """添加告警规则"""
         self._rules.append(rule)
         logger.info("添加告警规则: %s", rule.name)
-    
+
     def remove_alert_rule(self, rule_name: str) -> bool:
         """移除告警规则"""
         original_len = len(self._rules)
         self._rules = [r for r in self._rules if r.name != rule_name]
         return len(self._rules) < original_len
-    
+
     def get_health_report(self) -> Dict:
         """获取健康报告"""
         total_queries = self._metrics.get("query_count", MetricStats()).count
         total_errors = self._metrics.get("query_error", MetricStats()).count
         error_rate = (total_errors / total_queries * 100) if total_queries > 0 else 0.0
-        
+
         avg_latency = self._metrics.get("query_latency", MetricStats()).avg()
-        
+
         status = "healthy"
         if error_rate > 10:
             status = "critical"
@@ -491,7 +490,7 @@ class RAGMonitor:
             status = "warning"
         elif avg_latency > 500:
             status = "warning"
-        
+
         return {
             "status": status,
             "timestamp": datetime.now(timezone.utc).isoformat(),

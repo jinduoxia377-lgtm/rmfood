@@ -7,7 +7,7 @@ import logging
 import math
 import random
 from enum import Enum
-from typing import Any, Callable, Literal
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 

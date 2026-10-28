@@ -142,7 +142,7 @@ async def main():
         stats = await seed_herb_knowledge(db)
 
     logger.info(f"\n{'=' * 50}")
-    logger.info(f"知识库种子导入完成")
+    logger.info("知识库种子导入完成")
     logger.info(f"  总计: {stats['total']} 种药材")
     logger.info(f"  新增: {stats['seeded']}")
     logger.info(f"  更新: {stats['updated']}")

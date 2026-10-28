@@ -18,8 +18,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.models.enums import IngredientLotStatus, BatchStatus
-
 logger = logging.getLogger(__name__)
 
 

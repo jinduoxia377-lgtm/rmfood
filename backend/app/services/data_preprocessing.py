@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Any, TypedDict
 from dataclasses import dataclass
+from typing import Any, TypedDict
 
 logger = logging.getLogger(__name__)
 

@@ -31,8 +31,8 @@ logger = logging.getLogger("import_herb_food_homology")
 
 async def _import_herb_food_homology(source_path: str) -> dict:
     """执行导入，返回统计信息。"""
-    import asyncio
     from sqlalchemy import text
+
     from app.core.database import engine
 
     stats = {

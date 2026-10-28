@@ -17,13 +17,13 @@
 """
 import logging
 from collections import defaultdict, deque
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ...models.knowledge_graph import KGNode, KGEdge
+from ...models.knowledge_graph import KGEdge, KGNode
 
 logger = logging.getLogger(__name__)
 

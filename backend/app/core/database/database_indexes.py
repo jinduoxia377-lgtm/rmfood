@@ -2,8 +2,9 @@
 数据库索引优化建议
 为常用查询字段添加索引以提升查询性能
 """
-from sqlalchemy import text
 import logging
+
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 

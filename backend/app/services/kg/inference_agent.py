@@ -12,13 +12,11 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from app.services.kg.reasoning_engine import (
-    get_reasoning_engine,
     KnowledgeGraphReasoningEngine,
-    SynergyType,
-    ConflictType,
+    get_reasoning_engine,
 )
 
 from ..ai.agent.tools import BaseAgentTool, ToolResult, register_tool

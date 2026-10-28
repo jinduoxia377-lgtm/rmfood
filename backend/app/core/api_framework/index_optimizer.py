@@ -28,15 +28,15 @@ sql = generate_index_creation_sql(index_analysis['missing_indexes'])
 """
 from __future__ import annotations
 
-import time
 import logging
-
-from app.utils.error_sanitize import sanitize_error
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+import time
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.utils.error_sanitize import sanitize_error
 
 logger = logging.getLogger(__name__)
 
@@ -331,7 +331,7 @@ INDEX_CANDIDATES: List[IndexCandidate] = [
 
 class IndexAnalyzer:
     """索引分析器
-    
+
     功能:
     1. 检查现有索引使用情况
     2. 生成缺失的索引建议
@@ -344,7 +344,7 @@ class IndexAnalyzer:
     async def get_existing_indexes(self) -> Dict[str, List[str]]:
         """
         查询数据库中已存在的索引
-        
+
         Returns:
             {table_name: [index_name1, index_name2, ...]}
         """
@@ -376,7 +376,7 @@ class IndexAnalyzer:
     async def get_unused_indexes(self) -> List[Dict[str, Any]]:
         """
         识别未使用的索引（需要 pg_stat_user_indexes 视图）
-        
+
         Returns:
             [{table_name, index_name, scans}]
         """
@@ -466,11 +466,11 @@ class IndexAnalyzer:
     ) -> str:
         """
         生成 CREATE INDEX SQL 脚本
-        
+
         Args:
             candidates: 要创建的索引候选列表（None 时使用预定义列表）
             priority_filter: 只创建特定优先级（high/medium/low）
-        
+
         Returns:
             包含 SQL 语句的字符串
         """
@@ -520,12 +520,12 @@ class IndexAnalyzer:
     async def get_table_sizes(self) -> List[Dict[str, Any]]:
         """
         获取各表大小（辅助判断索引创建成本）
-        
+
         Returns:
             [{table_name, size_bytes, size_mb, row_count}]
         """
         query = text("""
-            SELECT 
+            SELECT
                 c.relname AS table_name,
                 pg_total_relation_size(c.oid) AS total_size,
                 c.reltuples::bigint AS approx_rows
@@ -553,12 +553,12 @@ class IndexAnalyzer:
     async def create_indexes(self, candidates: List[IndexCandidate]) -> Dict[str, Any]:
         """
         【危险操作】直接创建索引（不推荐，仅供开发环境使用）
-        
+
         生产环境建议:
         1. 先生成 SQL: generate_creation_sql()
         2. DBA 审核后手动执行
         3. 优先使用 CREATE INDEX CONCURRENTLY
-        
+
         Returns:
             {created: count, errors: [...], sql: [...]}
         """

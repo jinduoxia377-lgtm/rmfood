@@ -1,14 +1,14 @@
 """内置执行器子包"""
+from .agent_executors import (
+    AgentFastExecutor,
+    AgentSmartExecutor,
+)
 from .built_in import (
-    LLMExecutor,
+    DataAnalysisExecutor,
     FormulaGPTExecutor,
+    LLMExecutor,
     SafetyCheckExecutor,
     SynergyAnalysisExecutor,
-    DataAnalysisExecutor,
-)
-from .agent_executors import (
-    AgentSmartExecutor,
-    AgentFastExecutor,
 )
 
 __all__ = [
