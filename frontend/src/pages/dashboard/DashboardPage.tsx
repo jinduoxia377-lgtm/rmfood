@@ -11,6 +11,7 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
   Sparkles, Download, Settings, AlertTriangle, Search, RefreshCw, ArrowRight, Loader2,
+  Lock as LockIcon,
 } from 'lucide-react'
 import { useDashboardStatistics, useDashboardTrends, useFormulas, useExperiments } from '@/hooks/useQueries'
 import { useAuthStore } from '@/stores/auth'
@@ -24,8 +25,9 @@ import { cn } from '@/lib/utils'
 import { searchApi } from '@/api/search'
 import i18n from '@/i18n'
 
-import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, type CardConfig, type DashboardLayout } from '@/config/dashboard'
+import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, isPremiumCardType, getCardPlanRequirement, DASHBOARD_CARD_FEATURE, type CardConfig, type DashboardLayout } from '@/config/dashboard'
 import { DraggableCard, DashboardLayout as GridLayout, LayoutEditor, LayoutSwitcher } from '@/pages/formula/components/DashboardLayout'
+import { hasPlan, toPlan, type Plan } from '@/utils/plan'
 
 import { AIInsights, KPIDashboard } from '@/pages/formula/components/AIInsights'
 
@@ -100,6 +102,8 @@ function renderTemplateManager(currentLayout: DashboardLayout, setCurrentLayout:
 
 interface CardRenderProps {
   card: CardConfig
+  // 用户订阅计划（免费/专业），用于 premium 卡片门控
+  plan?: Plan
   data: {
     formulas: { total: number; by_status: Record<string, number> }
     experiments: { total: number; by_status: Record<string, number> }
@@ -140,7 +144,31 @@ interface CardRenderProps {
   refetchAIInsights?: () => void
 }
 
-function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline }: CardRenderProps) {
+function renderCard({ card, plan, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline }: CardRenderProps) {
+  // 免费-专业版分割：premium 卡片仅 pro 可用；free 渲染锁定态 + 升级引导
+  if (isPremiumCardType(card.type) && !hasPlan(toPlan(plan), DASHBOARD_CARD_FEATURE)) {
+    const required = getCardPlanRequirement(card.type)
+    return (
+      <div
+        role="status"
+        className="flex flex-col items-center justify-center gap-3 h-full min-h-[160px] rounded-[var(--radius-Apple-md)] border border-dashed border-[var(--border-color)] dark:border-neutral-700 bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-secondary)]/30 px-6 py-10 text-center"
+      >
+        <LockIcon className="w-8 h-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
+        <p className="text-sm font-medium text-[var(--text-primary)]">专业版功能 · {card.title}</p>
+        <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-sm">
+          {required === 'pro' ? '该卡片为专业版专属，升级到专业版即可解锁。' : '该功能需要更高版本。'}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/billing')}
+          className="mt-1 inline-flex items-center gap-2 rounded-[var(--radius-Apple-sm)] px-4 py-2 text-sm font-medium bg-secondary-container text-secondary-main hover:bg-secondary-container/80 transition-colors"
+        >
+          查看专业版方案
+        </button>
+      </div>
+    )
+  }
+
   // Data preparation moved into individual card components
   const statIndexMap: Record<string, number> = {
     'stats-formulas': 0, 'stats-experiments': 1, 'stats-in-progress': 2, 'stats-completed': 3,
@@ -482,6 +510,12 @@ export default function DashboardPage() {
     const cardInfo = cardCatalog[type]
     if (!cardInfo) return
 
+    // 免费-专业版分割：免费用户不可添加 premium 卡片 → 跳转升级
+    if (isPremiumCardType(type) && !hasPlan(toPlan(user?.plan), DASHBOARD_CARD_FEATURE)) {
+      navigate('/billing')
+      return
+    }
+
     const newCard: CardConfig = {
       id: `card-${Date.now()}`,
       type: type as CardConfig['type'],
@@ -496,7 +530,7 @@ export default function DashboardPage() {
     const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
     setCurrentLayout(newLayout)
     DashboardConfigManager.saveLayout(newLayout)
-  }, [currentLayout])
+  }, [currentLayout, user, navigate])
 
   const duplicateCard = useCallback((cardId: string) => {
     const cardToDuplicate = currentLayout.cards.find(card => card.id === cardId)
@@ -505,6 +539,12 @@ export default function DashboardPage() {
     const allCards = [...CARD_CATALOG.default, ...CARD_CATALOG.premium]
     const cardInfo = allCards.find(card => card.type === cardToDuplicate.type)
     if (!cardInfo) return
+
+    // 免费-专业版分割：免费用户不可复制 premium 卡片 → 跳转升级
+    if (isPremiumCardType(cardToDuplicate.type) && !hasPlan(toPlan(user?.plan), DASHBOARD_CARD_FEATURE)) {
+      navigate('/billing')
+      return
+    }
 
     const newCard: CardConfig = {
       id: `card-${Date.now()}`,
@@ -521,7 +561,7 @@ export default function DashboardPage() {
     const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
     setCurrentLayout(newLayout)
     DashboardConfigManager.saveLayout(newLayout)
-  }, [currentLayout])
+  }, [currentLayout, user, navigate])
 
   const switchLayout = useCallback((layoutId: string) => {
     const layout = layouts.find(l => l.id === layoutId)
@@ -917,6 +957,7 @@ export default function DashboardPage() {
               >
                 {renderCard({
                   card,
+                  plan: toPlan(user?.plan),
                   data: stats ? {
                     formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} },
                     experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} },

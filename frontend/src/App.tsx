@@ -15,6 +15,7 @@ import { queryClient } from '@/utils/queryClient';
 import { useEffect, Suspense, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
+import { usePlan, type PlanFeature } from '@/utils/plan';
 import LandingPage from '@/pages/landing/LandingPage';
 import InvitationAcceptPage from '@/pages/invitations/InvitationAcceptPage';
 import { UserRole } from '@/types/index';
@@ -196,6 +197,25 @@ function AdminGuard({ children }: { children: ReactNode }) {
 
   if ((user.role as string).toLowerCase() !== UserRole.ADMIN) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+/**
+ * 专业版守卫：用户 plan 不满足功能所需最低版本时，跳转到升级/套餐页（/billing）。
+ * 免费-专业版分割（规格 §4.3）：专业路由加守卫，不满足跳转升级。
+ */
+function PlanGuard({ feature, children }: { feature: PlanFeature; children: ReactNode }) {
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const { hasFeature } = usePlan();
+
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
+
+  if (!hasFeature(feature)) {
+    return <Navigate to="/billing" replace />;
   }
 
   return <>{children}</>;
@@ -592,11 +612,13 @@ const router = createBrowserRouter([
       {
         path: 'peptide-structure',
         element: (
-          <Suspense fallback={<LoadingComponent />}>
-            <ModuleErrorBoundary moduleName="肽链结构分析">
-              <PeptideStructurePage />
-            </ModuleErrorBoundary>
-          </Suspense>
+          <PlanGuard feature="peptide_analysis">
+            <Suspense fallback={<LoadingComponent />}>
+              <ModuleErrorBoundary moduleName="肽链结构分析">
+                <PeptideStructurePage />
+              </ModuleErrorBoundary>
+            </Suspense>
+          </PlanGuard>
         ),
       },
       {
@@ -638,9 +660,11 @@ const router = createBrowserRouter([
       {
         path: 'analytics',
         element: (
-          <Suspense fallback={<LoadingComponent />}>
-            <AnalyticsPage />
-          </Suspense>
+          <PlanGuard feature="advanced_analytics">
+            <Suspense fallback={<LoadingComponent />}>
+              <AnalyticsPage />
+            </Suspense>
+          </PlanGuard>
         ),
       },
       {
