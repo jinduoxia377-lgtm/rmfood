@@ -30,6 +30,7 @@ from . import (
     get_current_active_user,
     User,
 )
+from ...core.plans import require_plan
 
 
 class NeuralGenerateRequest(BaseModel):
@@ -109,7 +110,7 @@ async def ai_health_check():
 async def generate_formula_neural(
     req: NeuralGenerateRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     基于遗传算法多目标优化的高级配方生成模式。
@@ -157,7 +158,7 @@ async def generate_formula_neural(
 async def generate_formula_v2(
     req: FormulaGenerateV2Request,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     统一配方生成引擎 v2（兼容端点，仍属规则类）。
@@ -224,7 +225,7 @@ async def generate_formula_v2(
 async def generate_formula_seven_step(
     req: SevenStepFormulaRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     七步专业配方设计引擎（兼容端点，仍属规则类）。

@@ -12,9 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from . import (
     logger,
     get_db_session,
-    get_current_user,
+    get_current_active_user,
     User,
 )
+from ...core.plans import require_plan
 
 from ...services.ai.formula_generation_service import run_ga_generation
 
@@ -40,7 +41,7 @@ class FormulaGenerateRequest(BaseModel):
 async def generate_formula(
     req: FormulaGenerateRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User | None = Depends(get_current_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
 ):
     """
     基于遗传算法多目标优化的配方生成管线。

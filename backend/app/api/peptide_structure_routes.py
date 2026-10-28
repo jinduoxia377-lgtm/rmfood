@@ -11,6 +11,8 @@ import logging
 import os
 
 from .deps import get_db_session
+from ..core.plans import require_plan
+from ..models.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +96,7 @@ async def health_check():
 
 # 序列转换API
 @router.post("/sequence-to-smiles", summary="序列转SMILES")
-async def sequence_to_smiles(req: SequenceToSmilesRequest):
+async def sequence_to_smiles(req: SequenceToSmilesRequest, _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         converter = get_converter()
         result = converter.sequence_to_smiles(
@@ -116,7 +118,7 @@ async def sequence_to_smiles(req: SequenceToSmilesRequest):
 
 
 @router.post("/smiles-to-sequence", summary="SMILES转序列")
-async def smiles_to_sequence(req: SmilesToSequenceRequest):
+async def smiles_to_sequence(req: SmilesToSequenceRequest, _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         converter = get_converter()
         result = converter.smiles_to_sequence(req.smiles, req.format_type)
@@ -131,7 +133,7 @@ async def smiles_to_sequence(req: SmilesToSequenceRequest):
 
 
 @router.post("/register-custom-aa", summary="注册自定义氨基酸")
-async def register_custom_aa(req: RegisterAARequest):
+async def register_custom_aa(req: RegisterAARequest, _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         converter = get_converter()
         success = converter.register_custom_aa(req.name, req.smiles)
@@ -156,7 +158,7 @@ async def list_supported_aas():
 
 # 分析API
 @router.post("/analyze", summary="食品肽完整分析")
-async def analyze_peptide(req: PeptideAnalysisRequest):
+async def analyze_peptide(req: PeptideAnalysisRequest, _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         analyzer = get_analyzer()
         result = await analyzer.analyze(
@@ -172,7 +174,7 @@ async def analyze_peptide(req: PeptideAnalysisRequest):
 
 
 @router.post("/batch-analyze", summary="批量肽分析")
-async def batch_analyze(req: BatchAnalysisRequest):
+async def batch_analyze(req: BatchAnalysisRequest, _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         analyzer = get_analyzer()
         results = await analyzer.batch_analyze(sequences=req.sequences, max_concurrent=req.max_concurrent)
@@ -187,6 +189,7 @@ async def batch_analyze(req: BatchAnalysisRequest):
 async def external_source_lookup(
     sequence: str,
     use_online: bool = True,
+    _user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     在 DFBP 本地库（7540 条）+ BioPeptideDB 在线 API 中检索序列，
@@ -217,7 +220,7 @@ async def external_source_lookup(
 
 # 高级功能API
 @router.post("/hydrolysis/simulate", summary="水解模拟")
-async def simulate_hydrolysis(sequence: str, enzymes: str = "Pepsin,Trypsin"):
+async def simulate_hydrolysis(sequence: str, enzymes: str = "Pepsin,Trypsin", _user: User = Depends(require_plan("peptide_analysis"))):
     try:
         enzyme_list = [e.strip() for e in enzymes.split(",")]
         from app.services.peptide_analyzer.advanced_analysis import HydrolysisSimulator
@@ -229,7 +232,7 @@ async def simulate_hydrolysis(sequence: str, enzymes: str = "Pepsin,Trypsin"):
 
 
 @router.post("/evolution/align", summary="序列比对")
-async def align_sequences(sequences: str, matrix: str = "BLOSUM62"):
+async def align_sequences(sequences: str, matrix: str = "BLOSUM62", _user: User = Depends(require_plan("peptide_analysis"))):
     """两序列 Needleman-Wunsch 比对。matrix 参数保留以兼容调用方，当前算法使用内置替换矩阵。"""
     try:
         seq_list = [s.strip() for s in sequences.split(",")]
@@ -248,7 +251,7 @@ async def align_sequences(sequences: str, matrix: str = "BLOSUM62"):
 
 
 @router.post("/quantitative/predict", summary="定量预测")
-async def quantitative_predict(sequence: str, model: str = "QSAR"):
+async def quantitative_predict(sequence: str, model: str = "QSAR", _user: User = Depends(require_plan("peptide_analysis"))):
     """QSAR 定量预测：ACE 抑制 IC50 + 抗氧化活性。model 参数保留兼容。"""
     try:
         if not sequence or not sequence.strip():
@@ -323,6 +326,7 @@ async def online_source_literature(
 async def ml_train(
     target_activity: str = Query("ACE inhibitory", description="目标活性类型"),
     epochs: int = Query(60, ge=10, le=200, description="训练轮数"),
+    _user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     用 DFBP 真实库中标注记录 85% 子集训练 SimpleNeuralNetwork，
@@ -346,7 +350,7 @@ async def ml_train(
 
 
 @router.post("/ml-predict", summary="真实 ML 模型单序列预测")
-async def ml_predict(sequence: str, target_activity: str = Query("ACE inhibitory")):
+async def ml_predict(sequence: str, target_activity: str = Query("ACE inhibitory"), _user: User = Depends(require_plan("peptide_analysis"))):
     """
     用已训练（或加载持久化权重）的 ML 模型做单序列预测。
     未训练/权重缺失时回退规则并显式标记 method=fallback_rule，绝不伪造 ML 结果。
@@ -424,6 +428,7 @@ async def search_database(
     food_source: str = Query(None, description="食物来源"),
     page: int = Query(1, ge=1, description="页码"),
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
+    _user: User = Depends(require_plan("peptide_analysis")),
 ):
     try:
         from app.services.peptide_analyzer.food_database import get_food_peptide_database
@@ -495,7 +500,7 @@ async def get_model_status():
 
 # 分子结构图生成API
 @router.get("/smiles-to-image", summary="SMILES转分子结构图")
-async def smiles_to_image(smiles: str):
+async def smiles_to_image(smiles: str, _user: User = Depends(require_plan("peptide_analysis"))):
     """
     根据 SMILES 字符串生成 2D 分子结构图（PNG）
     使用 RDKit 绘制分子结构，适合在 <img> 标签中直接展示
@@ -527,7 +532,7 @@ async def smiles_to_image(smiles: str):
 
 # 分子3D坐标生成API
 @router.get("/smiles-to-3d", summary="SMILES转3D分子坐标")
-async def smiles_to_3d(smiles: str):
+async def smiles_to_3d(smiles: str, _user: User = Depends(require_plan("peptide_analysis"))):
     """
     根据 SMILES 字符串生成 3D 分子坐标（原子 + 键信息）
     使用 RDKit 进行 3D 构象优化（MMFF94/UFF），返回供 Three.js 渲染的原子和键数据
@@ -650,6 +655,7 @@ async def get_history(
     page_size: int = Query(20, ge=1, le=100),
     sequence: Optional[str] = Query(None),
     db=Depends(get_db_session),
+    _user: User = Depends(require_plan("peptide_analysis")),
 ):
     """分页查询分析历史。"""
     try:
@@ -684,7 +690,7 @@ async def get_history(
 
 
 @router.get('/history/statistics', summary='历史记录统计')
-async def get_history_statistics(db=Depends(get_db_session)):
+async def get_history_statistics(db=Depends(get_db_session), _user: User = Depends(require_plan("peptide_analysis"))):
     """聚合统计历史分析记录。"""
     try:
         from sqlalchemy import select
@@ -726,7 +732,7 @@ async def get_history_statistics(db=Depends(get_db_session)):
 
 
 @router.delete('/history/{record_id}', summary='删除历史记录')
-async def delete_history(record_id: int, db=Depends(get_db_session)):
+async def delete_history(record_id: int, db=Depends(get_db_session), _user: User = Depends(require_plan("peptide_analysis"))):
     """软删除指定历史记录。"""
     try:
         from datetime import datetime, timezone
