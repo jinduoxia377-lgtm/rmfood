@@ -523,6 +523,24 @@ class Settings(BaseSettings):
         同时拒绝任何 SQLite URL。
         """
         import os
+        # SECRET_KEY：.env 的 SECRET_KEY 无顶层字段，被 pydantic(extra=ignore) 忽略，
+        # 仅 OS 环境变量生效。若 OS 未设置 SECRET_KEY，回退读取 .env 文件，保证重启后
+        # JWT 密钥稳定（否则 dev 下随机生成，重启后旧 token 失效导致全员退出登录）。
+        # 优先级：OS 环境变量(在 _apply_env_overrides 中覆盖) > .env 文件。
+        if not os.environ.get("SECRET_KEY"):
+            env_path = _ENV_FILE_PATH
+            if env_path and os.path.exists(env_path):
+                try:
+                    with open(env_path, "r", encoding="utf-8") as _env_f:
+                        for _env_line in _env_f:
+                            _env_line = _env_line.strip()
+                            if _env_line.startswith("SECRET_KEY="):
+                                _secret_val = _env_line.split("=", 1)[1].strip().strip('"').strip("'")
+                                if _secret_val and len(_secret_val) >= 32:
+                                    self.security.secret_key = _secret_val
+                                break
+                except Exception:
+                    pass
         # 数据库 URL：支持多种环境变量格式
         db_url = os.environ.get("DATABASE__URL") or os.environ.get("DATABASE_URL")
         if db_url:
