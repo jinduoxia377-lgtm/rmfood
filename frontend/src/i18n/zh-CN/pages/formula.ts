@@ -69,6 +69,7 @@ export default {
     cancelSelect: '取消选择',
     loadFailed: '加载失败',
     loadFailedDesc: '无法获取配方数据，请检查网络连接后重试',
+    loadFailedForbiddenDesc: '当前账号无组织或访问权限，请联系管理员确认授权',
     retry: '重试',
 
     // 空状态
