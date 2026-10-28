@@ -1,4 +1,5 @@
 import { logger } from '@/utils/safeLogger';
+import type { Plan, PlanFeature } from '@/utils/plan';
 
 /**
  * 仪表盘配置管理系统
@@ -128,20 +129,42 @@ export const CARD_CATALOG = {
     { type: 'activity-timeline' as const, name: '最近动态', description: '显示系统活动时间线', icon: 'History' },
   ],
   premium: [
-    { type: 'kpi-dashboard' as const, name: 'KPI监控面板', description: '关键绩效指标实时监控', icon: 'Target' },
-    { type: 'team-activity' as const, name: '团队活动', description: '团队成员协作活动展示', icon: 'Users' },
-    { type: 'ai-insights' as const, name: 'AI智能洞察', description: '基于数据的智能分析与建议', icon: 'Brain' },
-    { type: 'websocket-status' as const, name: 'WebSocket状态', description: '实时连接状态监控', icon: 'Socket' },
-    { type: 'real-time-sync' as const, name: '实时数据同步', description: '数据变更实时同步演示', icon: 'RefreshCw' },
-    { type: 'team-dashboard-share' as const, name: '团队共享管理', description: '管理仪表板共享和权限', icon: 'Share2' },
-    { type: 'team-online-status' as const, name: '团队在线状态', description: '显示实时在线协作者', icon: 'Users' },
-    { type: 'change-history' as const, name: '变更历史', description: '记录所有修改操作', icon: 'History' },
-    { type: 'template-manager' as const, name: '模板管理', description: '导入/导出仪表板模板', icon: 'FileText' },
-    { type: 'export-manager' as const, name: '数据导出', description: '多格式数据导出管理', icon: 'Download' },
-    { type: 'api-integration' as const, name: 'API集成', description: '第三方服务集成管理', icon: 'Settings' },
-    { type: 'ai-analysis' as const, name: 'AI分析面板', description: '配方智能分析与推荐', icon: 'Brain' },
+    { type: 'kpi-dashboard' as const, name: 'KPI监控面板', description: '关键绩效指标实时监控', icon: 'Target', requiredPlan: 'pro' as const },
+    { type: 'team-activity' as const, name: '团队活动', description: '团队成员协作活动展示', icon: 'Users', requiredPlan: 'pro' as const },
+    { type: 'ai-insights' as const, name: 'AI智能洞察', description: '基于数据的智能分析与建议', icon: 'Brain', requiredPlan: 'pro' as const },
+    { type: 'websocket-status' as const, name: 'WebSocket状态', description: '实时连接状态监控', icon: 'Socket', requiredPlan: 'pro' as const },
+    { type: 'real-time-sync' as const, name: '实时数据同步', description: '数据变更实时同步演示', icon: 'RefreshCw', requiredPlan: 'pro' as const },
+    { type: 'team-dashboard-share' as const, name: '团队共享管理', description: '管理仪表板共享和权限', icon: 'Share2', requiredPlan: 'pro' as const },
+    { type: 'team-online-status' as const, name: '团队在线状态', description: '显示实时在线协作者', icon: 'Users', requiredPlan: 'pro' as const },
+    { type: 'change-history' as const, name: '变更历史', description: '记录所有修改操作', icon: 'History', requiredPlan: 'pro' as const },
+    { type: 'template-manager' as const, name: '模板管理', description: '导入/导出仪表板模板', icon: 'FileText', requiredPlan: 'pro' as const },
+    { type: 'export-manager' as const, name: '数据导出', description: '多格式数据导出管理', icon: 'Download', requiredPlan: 'pro' as const },
+    { type: 'api-integration' as const, name: 'API集成', description: '第三方服务集成管理', icon: 'Settings', requiredPlan: 'pro' as const },
+    { type: 'ai-analysis' as const, name: 'AI分析面板', description: '配方智能分析与推荐', icon: 'Brain', requiredPlan: 'pro' as const },
   ],
 }
+
+/**
+ * 是否为专业版（premium）卡片。
+ * 免费用户不可添加/使用，仅 pro 可用；free 显示锁定态 + 升级引导。
+ */
+export function isPremiumCardType(type: string): boolean {
+  return CARD_CATALOG.premium.some((card) => card.type === type);
+}
+
+/**
+ * 返回卡片所需的最低版本。
+ * - premium 卡片 → 'pro'
+ * - 免费卡片 / 未知类型 → null（无版本要求）
+ */
+export function getCardPlanRequirement(type: string): Plan | null {
+  const premium = CARD_CATALOG.premium.find((card) => card.type === type);
+  if (premium) return premium.requiredPlan ?? 'pro';
+  return null;
+}
+
+/** 仪表盘卡片的专业功能 key 映射（用于 hasPlan 门控；premium 卡片统一映射到 advanced_analytics） */
+export const DASHBOARD_CARD_FEATURE: PlanFeature = 'advanced_analytics';
 
 class DashboardConfigManager {
   private static STORAGE_KEY = 'rmfood_dashboard_configs'

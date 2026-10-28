@@ -5,7 +5,7 @@
 import logging
 import secrets
 from typing import Optional, Union
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -21,6 +21,8 @@ from ..services.experiment_service import ExperimentService
 from ..services.auth import require_role
 from ..models.models import User, UserRole, ExperimentStatus
 from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user
+from ..core.plans import require_plan
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
@@ -63,8 +65,9 @@ class ExperimentDataUpdate(BaseModel):
 async def list_experiments(
     pagination: PaginationParams = Depends(),
     filters: ExperimentFilterParams = Depends(),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """分页获取实验列表
 
@@ -72,7 +75,18 @@ async def list_experiments(
     FastAPI 的 Pydantic 无法把 ORM 实例序列化为 JSON（PydanticSerializationError）
     → 500。改用专用响应模式 `ExperimentListResponse`，其 `from_attributes`
     会把 ORM 对象逐字段映射，稳定输出 JSON。
+
+    P0 租户隔离：强制认证（require_plan→get_current_active_user）+
+    按当前租户 org_id 过滤（organization_id==tenant.org_id），
+    tenant.org_id 为 None 时禁止全平台列出实验。
     """
+    # P0：无租户上下文 → 禁止全平台列表
+    if tenant.org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="缺少组织租户上下文，禁止全平台列出实验",
+        )
+
     await _require_experiment_access(current_user, db)
     service = ExperimentService(db)
     experiments, total = await service.list_experiments(
@@ -85,6 +99,13 @@ async def list_experiments(
         sort_field=filters.sort_field,
         sort_order=filters.sort_order,
     )
+    # P0：API 层追加 org 过滤（experiment_service 不可改）。
+    # 保留全局实验（organization_id 为 None）与当前租户实验；其余剔除。
+    experiments = [
+        e for e in experiments
+        if e.organization_id is None or e.organization_id == tenant.org_id
+    ]
+    total = len(experiments)
     return ExperimentListResponse(
         items=experiments,
         total=total,
@@ -95,7 +116,7 @@ async def list_experiments(
 
 @router.get("/statistics", response_model=dict, summary="实验统计")
 async def get_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取实验统计概览"""
@@ -106,7 +127,7 @@ async def get_statistics(
 @router.get("/{experiment_id}", response_model=ExperimentResponse, summary="获取实验详情")
 async def get_experiment(
     experiment_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取实验详情（含数据点）"""
@@ -118,6 +139,7 @@ async def get_experiment(
 async def create_experiment(
     data: ExperimentCreate,
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR)),
+    _plan_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新实验"""
@@ -130,7 +152,7 @@ async def create_experiment(
 async def update_experiment(
     experiment_id: int,
     data: ExperimentUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """更新实验信息"""
@@ -142,6 +164,7 @@ async def update_experiment(
 async def delete_experiment(
     experiment_id: int,
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR, UserRole.ADMIN)),
+    _plan_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """取消实验（软删除：状态置为 cancelled）"""
@@ -154,6 +177,7 @@ async def delete_experiment(
 async def batch_delete_experiments(
     data: dict,
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR, UserRole.ADMIN)),
+    _plan_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """批量取消实验"""
@@ -185,7 +209,7 @@ async def batch_delete_experiments(
 @router.post("/{experiment_id}/start", response_model=ExperimentResponse, summary="开始实验")
 async def start_experiment(
     experiment_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """将计划中的实验切换为进行中"""
@@ -197,7 +221,7 @@ async def start_experiment(
 async def complete_experiment(
     experiment_id: int,
     payload: CompleteExperimentRequest = CompleteExperimentRequest(),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """完成实验并记录结果
@@ -221,7 +245,7 @@ async def complete_experiment(
 @router.get("/{experiment_id}/data", response_model=list[ExperimentDataResponse], summary="获取实验数据")
 async def get_data_points(
     experiment_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取实验全部数据点"""
@@ -236,7 +260,7 @@ async def add_data_point(
     value: float | str | None = None,
     unit: str | None = None,
     notes: str | None = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """向实验添加单个数据点"""
@@ -249,7 +273,7 @@ async def add_data_point(
 @router.delete("/data/{data_point_id}", summary="删除数据点")
 async def delete_data_point(
     data_point_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """删除指定数据点"""
@@ -261,7 +285,7 @@ async def delete_data_point(
 async def update_data_point(
     data_point_id: int,
     payload: ExperimentDataUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """更新指定数据点的可编辑字段（parameter / value / unit / notes / measurement_time）。
@@ -323,7 +347,7 @@ async def update_data_point(
 async def writeback_experiment_result(
     experiment_id: int,
     payload: dict,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -385,7 +409,7 @@ async def writeback_experiment_result(
 @router.post("/{experiment_id}/share", summary="创建实验分享链接")
 async def create_experiment_share(
     experiment_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """生成（或复用已存在的）实验公开分享码。

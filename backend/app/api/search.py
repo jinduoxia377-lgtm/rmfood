@@ -3,15 +3,38 @@
 全文搜索 + 高级筛选 + 收藏夹 + 最近访问
 """
 
-from fastapi import APIRouter, Query, Depends, HTTPException
+import logging
+
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from ..api.deps import get_db_session, get_current_active_user
-from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
+from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ..models import User
 
 router = APIRouter(prefix="/search", tags=["搜索服务"])
+
+logger = logging.getLogger(__name__)
+
+
+def _apply_org_filter(query: SearchQuery, org_id: Optional[int]) -> SearchQuery:
+    """为搜索查询追加 organization_id 租户过滤（无 org 时保持原查询）。"""
+    if org_id is not None:
+        query.filters.append(
+            AdvancedFilter(field="organization_id", operator="eq", value=org_id)
+        )
+    return query
+
+
+def _require_org(tenant: TenantContext) -> None:
+    """强制租户上下文：无 org_id 时禁止全平台搜索（P0 跨租户泄漏）。"""
+    if tenant.org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="缺少组织租户上下文，禁止全平台范围搜索",
+        )
 
 
 @router.get("/global", summary="全局跨类型搜索")
@@ -21,25 +44,45 @@ async def global_search_endpoint(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
-    全局搜索（跨多种资源类型）
+    全局搜索（跨多种资源类型）—— 强制认证 + 租户隔离
     
     - 在配方、实验、原料等中同时搜索
     - 返回分类汇总结果
     - 支持中文模糊匹配
+    - P0：强制认证 + 按当前租户 org_id 过滤，杜绝跨租户泄漏
     """
+    _require_org(tenant)
     type_list = [t.strip() for t in types.split(",") if t.strip()]
-    
-    result = await global_search(
-        db=db,
-        keyword=q,
-        types=type_list,
-        page=page,
-        page_size=page_size,
-    )
-    
-    return result
+
+    # 直接用 advanced_search 并注入 organization_id 过滤（search_engine 不可改，
+    # 故在 API 层过滤），保证全局搜索同样按租户隔离。
+    engine = SearchEngine(db)
+    results = {}
+    total = 0
+    for type_name in type_list:
+        try:
+            query = _apply_org_filter(
+                SearchQuery(keyword=q, page=page, page_size=page_size),
+                tenant.org_id,
+            )
+            res = await engine.advanced_search(type_name, query)
+            results[type_name] = res.to_dict()
+            total += res.total
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"全局搜索 {type_name} 失败: {e}")
+            results[type_name] = {"items": [], "total": 0}
+
+    return {
+        "keyword": q,
+        "types": results,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @router.get("/{resource_type}", summary="资源类型搜索")
@@ -56,9 +99,11 @@ async def search_resource(
     page_size: int = Query(20, ge=1, le=100),
     facets: bool = Query(False, description="是否返回聚合统计"),
     db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
-    指定资源类型的搜索与高级筛选
+    指定资源类型的搜索与高级筛选 —— 强制认证 + 租户隔离
     
     支持参数:
     - **q**: 关键词搜索
@@ -69,6 +114,7 @@ async def search_resource(
     - **created_from/to**: 时间范围
     - **facets**: 是否返回聚合统计
     """
+    _require_org(tenant)
     engine = SearchEngine(db)
     
     # 构建查询对象
@@ -94,6 +140,9 @@ async def search_resource(
                 value=[created_from, created_to] if created_from and created_to else created_from or created_to
             )
         )
+    
+    # P0：注入租户 org 过滤（organization_id == tenant.org_id）
+    _apply_org_filter(query, tenant.org_id)
     
     result = await engine.advanced_search(resource_type, query)
     

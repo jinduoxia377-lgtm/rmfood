@@ -50,12 +50,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 # ── Token 操作（包装 utils/auth.py，保持向后兼容的 API） ──
 
-def create_access_token(user_id: int, role: str) -> str:
-    """生成访问令牌（向后兼容的接口，内部委托给 utils/auth.py）"""
-    return _create_access_token({
-        "sub": str(user_id),
-        "role": role,
-    })
+def create_access_token(
+    user_id: int,
+    role: str,
+    org_id: Optional[int] = None,
+    plan: Optional[str] = None,
+) -> str:
+    """生成访问令牌（向后兼容的接口，内部委托给 utils/auth.py）。
+
+    org_id/plan 写入 JWT，供 TenantMiddleware（core/multi_tenant/tenant_security.py）
+    解析租户上下文，实现租户隔离。
+    """
+    data: dict = {"sub": str(user_id), "role": role}
+    if org_id is not None:
+        data["org_id"] = org_id
+    if plan is not None:
+        data["plan"] = plan
+    return _create_access_token(data)
 
 
 def create_refresh_token(user_id: int, role: str) -> str:
@@ -206,9 +217,11 @@ class AuthService:
         # 除主键外的所有属性），若在 commit 后再访问 user.role 会触发异步懒加载
         # MissingGreenlet（greenlet_spawn has not been called）。因此先读取角色标量值。
         role_value = user.role.value
+        org_value = user.organization_id
+        plan_value = user.plan
         await self.lockout.reset_login_attempts(self.db, user)
 
-        access_token = create_access_token(user.id, role_value)
+        access_token = create_access_token(user.id, role_value, org_value, plan_value)
         refresh_token = create_refresh_token(user.id, role_value)
 
         logger.info(
@@ -252,11 +265,32 @@ class AuthService:
             full_name=full_name,
             role=UserRole.RESEARCHER,
             is_active=True,
+            plan="free",  # 直接注册默认免费版
         )
         self.db.add(user)
         await self.db.flush()
 
-        logger.info(f"新用户注册: {user.username}")
+        # ── 白名单授权（规格 tenant-isolation-segmentation-plan.md 3.4）──
+        # 若该 email 存在 status='approved' 的 pre_register 申请记录，
+        # 说明其已通过白名单审核 → 授予专业版（plan='pro'）。
+        # 延迟导入避免 models 循环依赖。
+        from ..models.pre_register import PreRegisterRequest, PreRegisterStatus
+
+        approved_req = (
+            await self.db.execute(
+                select(PreRegisterRequest.id)
+                .where(
+                    PreRegisterRequest.email == email,
+                    PreRegisterRequest.status == PreRegisterStatus.APPROVED,
+                )
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+        if approved_req is not None:
+            user.plan = "pro"
+            logger.info(f"白名单授权: 用户 {user.username} 注册时授予专业版 (email={email})")
+
+        logger.info(f"新用户注册: {user.username} (plan={user.plan})")
         return user
 
     async def refresh_access_token(self, refresh_token: str) -> Token:
@@ -338,7 +372,7 @@ class AuthService:
         mark_refresh_token_used(refresh_token)
 
         # Step 6: 生成新的 token 对
-        new_access_token = create_access_token(user.id, user.role.value)
+        new_access_token = create_access_token(user.id, user.role.value, user.organization_id, user.plan)
         new_refresh_token = create_refresh_token(user.id, user.role.value)
 
         logger.info(

@@ -518,3 +518,104 @@ async def close_quota_system() -> None:
         _meter = None
     _checker = None
     logger.info("[QuotaSystem] 配额管理系统已关闭")
+
+
+# ── plan 感知的配额 provider（② 配额安全接线）──────────────────
+#
+# 背景：QuotaChecker._default_provider 硬编码 plan="free"，且 set_quota_provider
+# 从未被调用 → 所有租户都按免费版限额执行，pro/enterprise 租户被错误限制。
+#
+# 实现：provider 是**同步函数**（在 async check/consume 内被调用），而本应用的
+# 数据库访问全部是 async engine（app/core/database/session.py 无 sync engine，
+# 也没有 create_engine 的同步实例），无法在同步 provider 里直接读 DB。
+# 因此采用「启动时加载 org_id→plan 内存缓存 + 运行时未命中回退 free」策略：
+#   - refresh_org_plan_cache(db)    从 organizations 表加载所有租户 plan 到缓存
+#   - plan_aware_quota_provider()   同步 provider，读缓存，未命中/非法 plan 回退 free
+#   - ensure_plan_aware_provider()  一次性把 provider 挂到全局 checker（幂等）
+#   - wire_plan_aware_quota()       lifespan 启动时调用：加载缓存 + 挂载 provider
+#
+# 注意：应用启动后新建/变更的组织在下次 refresh_org_plan_cache()（或重启）前
+# 仍按缓存中的旧 plan 计算；缓存未命中的组织回退 plan="free"（安全默认）。
+
+_org_plan_cache: Dict[int, str] = {}
+_plan_provider_wired: bool = False
+
+
+def get_org_plan(org_id: int) -> str:
+    """读取组织 plan（内存缓存；未命中回退 "free"）"""
+    plan = _org_plan_cache.get(org_id, "free")
+    if plan not in QUOTA_PLANS:
+        return "free"
+    return plan
+
+
+def plan_aware_quota_provider(org_id: int) -> TenantQuota:
+    """同步配额 provider：根据 organizations.plan 返回正确的 TenantQuota。
+
+    这是 `(org_id) -> TenantQuota` 形状的同步函数，供 QuotaChecker.set_quota_provider
+    使用。plan 来自启动时加载的 org_id→plan 缓存；缓存未命中或 plan 非法时回退
+    plan="free"（保守，避免错误放大到 pro/enterprise 之外的未知 plan）。
+    """
+    return TenantQuota(org_id=org_id, plan=get_org_plan(org_id))
+
+
+async def refresh_org_plan_cache(db) -> int:
+    """从 organizations 表加载所有租户 plan 到内存缓存。
+
+    启动时 / 组织 plan 变更后调用。返回成功加载的组织数（0 表示失败，缓存保持为空，
+    此时所有组织按 free 处理）。
+    """
+    global _org_plan_cache
+    plans: Dict[int, str] = {}
+    try:
+        from sqlalchemy import select as sa_select
+        from app.models.organization import Organization
+        result = await db.execute(sa_select(Organization.id, Organization.plan))
+        for row in result.fetchall():
+            plan = (row.plan or "free") if row.plan else "free"
+            if plan not in QUOTA_PLANS:
+                plan = "free"
+            plans[int(row.id)] = plan
+    except Exception as e:  # noqa: BLE001
+        logger.warning("[QuotaPlan] 加载组织 plan 缓存失败，全部回退 free: %s", e)
+        _org_plan_cache = {}
+        return 0
+    _org_plan_cache = plans
+    logger.info("[QuotaPlan] 已加载 %d 个租户 plan 到缓存", len(plans))
+    return len(plans)
+
+
+def ensure_plan_aware_provider() -> bool:
+    """把 plan 感知 provider 挂到全局 checker（幂等，只生效一次）。
+
+    返回 True 表示 provider 已挂载（首次或此前已挂载）。
+    """
+    global _plan_provider_wired
+    if _plan_provider_wired:
+        return True
+    get_quota_checker().set_quota_provider(plan_aware_quota_provider)
+    _plan_provider_wired = True
+    logger.info("[QuotaPlan] plan 感知 quota provider 已挂载到全局 checker")
+    return True
+
+
+async def wire_plan_aware_quota(db=None) -> int:
+    """启动时一次性初始化：加载 plan 缓存并挂载 provider。
+
+    传 db（AsyncSession）时直接使用；否则自行创建会话。返回加载的组织数。
+    """
+    if db is None:
+        from app.core.database.session import get_session_factory
+        factory = get_session_factory()
+        async with factory() as session:
+            count = await refresh_org_plan_cache(session)
+    else:
+        count = await refresh_org_plan_cache(db)
+    ensure_plan_aware_provider()
+    return count
+
+
+# 模块导入即挂载 provider：保证即使走不到 lifespan 的路径（脚本/测试/单测）
+# 也默认使用 plan 感知 provider（缓存为空时回退 free）。plan 缓存由
+# wire_plan_aware_quota() 在应用启动时填充。此调用幂等，只会生效一次。
+ensure_plan_aware_provider()

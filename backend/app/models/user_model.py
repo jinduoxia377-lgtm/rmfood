@@ -50,6 +50,12 @@ class User(Base):
     two_factor_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)  # TOTP 密钥（Base32）
     two_factor_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)  # 是否已启用 2FA
 
+    # ── 用户级版本（免费/专业分割，规格 tenant-isolation-segmentation-plan.md 2.1）──
+    # 默认 'free'（直接注册）；白名单通过 → 'pro'（白名单即专业分割的授予通道）。
+    # 'enterprise' 保留给组织级 Subscription.plan（organization.py:77），Phase 1 不引入用户级 enterprise。
+    # 写法仿 organization.py Subscription.plan。
+    plan: Mapped[str] = mapped_column(String(20), default="free", nullable=False)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
 
@@ -103,6 +109,19 @@ class User(Base):
             UserRole.ADMIN: 4,
         }
         return level_map.get(self.role, 0)
+
+    # ── 用户级版本（免费/专业分割）辅助方法 ──
+    # 委托给 app/core/plans.py（单一事实来源），延迟导入避免 models ↔ core 循环依赖。
+    @property
+    def effective_plan(self) -> str:
+        """返回该用户的有效 plan（归一化，脏值回落 'free'）。"""
+        from ..core.plans import effective_plan as _effective_plan
+        return _effective_plan(self)
+
+    def has_feature(self, feature: str) -> bool:
+        """判断用户是否满足某功能的版本门槛（规格 2.3）。"""
+        from ..core.plans import has_plan as _has_plan
+        return _has_plan(self, feature)
 
     # ── 防御层：users.role 列在库里是 varchar（实际存大写的枚举名，如
     #    'ADMIN'/'GUEST'/'RESEARCHER'）。模型使用 Enum(UserRole, native_enum=False)
