@@ -140,6 +140,13 @@ async def lifespan(app: FastAPI):
             logger.info("[Startup] 数据库初始化完成")
         except Exception as e:
             logger.error(f"[Startup] 数据库初始化失败: {e}")
+    # 2.5 ② 配额安全接线：加载组织 plan 缓存并挂载 plan 感知 quota provider
+    try:
+        from .core.multi_tenant.tenant_quota import wire_plan_aware_quota
+        plan_count = await wire_plan_aware_quota()
+        logger.info("[Startup] 配额 plan 感知 provider 已挂载（%d 个租户 plan 加载）", plan_count)
+    except Exception as e:
+        logger.warning(f"[Startup] 配额 plan provider 挂载失败（非阻塞，回退 free）: {e}")
     # 3. 注册延迟加载路由（包括 ingredients）
     try:
         register_lazy_routers()

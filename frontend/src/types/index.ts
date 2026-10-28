@@ -24,6 +24,9 @@ export interface User {
   fullName?: string;
   avatarUrl?: string;
 
+  // 订阅计划（用户级，Phase 1：'free' | 'pro'；缺省 'free'）
+  plan: 'free' | 'pro';
+
   // 角色与权限
   role: UserRole;
   isActive: boolean;
