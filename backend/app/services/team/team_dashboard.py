@@ -7,17 +7,16 @@
 - 团队动态时间线
 """
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, List, Dict, Any, Tuple
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, and_, case, text
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List
 
-from app.models.team import Team
+from sqlalchemy import and_, desc, func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.notification import Notification
+from app.models.prompt_version import PromptVersion
 from app.models.team_member import TeamMember
 from app.models.user_model import User
-from app.models.prompt_version import PromptVersion
-from app.models.notification import Notification
-from app.models.enums import TeamRole
 
 logger = logging.getLogger(__name__)
 
@@ -31,17 +30,17 @@ class TeamDashboardService:
     async def get_stats(self, team_id: int) -> Dict[str, Any]:
         """
         获取团队统计数据
-        
+
         包括：
         - 成员总数 / 各角色数量
         - 提示词总数 / 本月新增数
         - 版本提交次数趋势（近30天）
         - 活跃度排名Top 10成员
         - 分类分布饼图数据
-        
+
         Args:
             team_id: 团队ID
-            
+
         Returns:
             统计数据字典
         """
@@ -85,19 +84,19 @@ class TeamDashboardService:
     ) -> Dict[str, Any]:
         """
         获取团队动态流
-        
+
         包括：
         - 成员加入/离开
         - 提示词创建/修改/删除
         - 评论和讨论
         - 角色变更
         - 按时间倒序排列
-        
+
         Args:
             team_id: 团队ID
             limit: 返回条数限制
             offset: 偏移量
-            
+
         Returns:
             动态流列表
         """
@@ -161,7 +160,7 @@ class TeamDashboardService:
     async def _get_version_trend(self, team_id: int, days: int = 30) -> List[Dict[str, Any]]:
         """
         获取版本提交趋势（近N天）
-        
+
         返回每日提交次数的列表
         """
         since = datetime.now(timezone.utc) - timedelta(days=days)
@@ -192,7 +191,7 @@ class TeamDashboardService:
     ) -> List[Dict[str, Any]]:
         """
         获取活跃度排名Top N成员
-        
+
         基于版本提交次数排序
         """
         result = await self.db.execute(

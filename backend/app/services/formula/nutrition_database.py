@@ -62,7 +62,7 @@ HERB_NUTRITION_DB: Dict[str, Dict[str, float]] = {
         "iron": 5.0, "zinc": 2.00, "vitamin_a": 0, "vitamin_c": 5.0,
         "source": "TCMSP"
     },
-    
+
     # === 补血类 (8味) ===
     "当归": {
         "protein": 9.5, "fat": 3.5, "carbohydrate": 55.3,
@@ -112,7 +112,7 @@ HERB_NUTRITION_DB: Dict[str, Dict[str, float]] = {
         "iron": 6.8, "zinc": 1.90, "vitamin_a": 64, "vitamin_c": 4.0,
         "source": "中国食物成分表 第6版"
     },
-    
+
     # === 补阴类 (8味) ===
     "麦冬": {
         "protein": 5.0, "fat": 0.5, "carbohydrate": 70.0,
@@ -162,7 +162,7 @@ HERB_NUTRITION_DB: Dict[str, Dict[str, float]] = {
         "iron": 2.0, "zinc": 0.60, "vitamin_a": 0, "vitamin_c": 0,
         "source": "TCMSP"
     },
-    
+
     # === 补阳类 (8味) ===
     "枸杞子": {
         "protein": 13.9, "fat": 1.0, "carbohydrate": 62.9,
@@ -212,7 +212,7 @@ HERB_NUTRITION_DB: Dict[str, Dict[str, float]] = {
         "iron": 4.0, "zinc": 1.50, "vitamin_a": 0, "vitamin_c": 0,
         "source": "TCMSP"
     },
-    
+
     # === 药食同源常见食材 (15味) ===
     "薏苡仁": {
         "protein": 12.0, "fat": 3.0, "carbohydrate": 70.0,
@@ -327,21 +327,21 @@ def get_coverage_stats() -> Dict[str, Any]:
         "药食同源": ["薏苡仁", "莲子", "芡实", "黑芝麻", "核桃仁", "花生", "栗子", "山楂",
                      "菊花", "玫瑰花", "桂花", "陈皮", "姜", "葱", "蒜"]
     }
-    
+
     stats = {
         "total_ingredients": len(HERB_NUTRITION_DB),
         "categories": {}
     }
-    
+
     for category, items in categories.items():
         stats["categories"][category] = sum(1 for item in items if item in HERB_NUTRITION_DB)
-    
+
     return stats
 
 
 if __name__ == "__main__":
     stats = get_coverage_stats()
-    print(f"营养数据库覆盖统计:")
+    print("营养数据库覆盖统计:")
     print(f"  总成分数: {stats['total_ingredients']}")
     for cat, count in stats['categories'].items():
         print(f"  {cat}: {count}味")

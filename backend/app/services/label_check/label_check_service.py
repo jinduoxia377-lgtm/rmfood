@@ -582,8 +582,8 @@ def classify_ingredient(name: str) -> Dict[str, Any]:
             "category_label": "药食同源目录内物质",
             "level": "info",
             "message": (
-                f"该成分属于《既是食品又是药品的中药材目录》内物质，"
-                f"可作为食品原料使用。"
+                "该成分属于《既是食品又是药品的中药材目录》内物质，"
+                "可作为食品原料使用。"
             ),
             "max_dosage_mg_per_day": max_dosage,
         }
@@ -629,8 +629,8 @@ def classify_ingredient(name: str) -> Dict[str, Any]:
             "category_label": "营养强化剂（GB 14880）",
             "level": "info",
             "message": (
-                f"该成分属于 GB 14880 允许使用的营养强化剂，"
-                f"需按标准规定的人群和用量范围使用。"
+                "该成分属于 GB 14880 允许使用的营养强化剂，"
+                "需按标准规定的人群和用量范围使用。"
             ),
             "function": enricher.get("function", ""),
         }

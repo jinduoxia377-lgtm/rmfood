@@ -34,12 +34,11 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from fastapi import status as http_status
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
@@ -255,7 +254,7 @@ class PermissionDenied(ApiError):
     def __init__(self, permission: str = ""):
         super().__init__(
             "AUTH_004",
-            message=f"权限不足" + (f" (需要: {permission})" if permission else ""),
+            message="权限不足" + (f" (需要: {permission})" if permission else ""),
         )
 
 
@@ -274,7 +273,7 @@ def _build_response_body(
 ) -> Dict[str, Any]:
     """
     统一的响应体构建工具（内部使用）
-    
+
     确保所有响应遵循统一的格式约定
     """
     body = {

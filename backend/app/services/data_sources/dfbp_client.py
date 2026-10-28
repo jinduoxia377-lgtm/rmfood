@@ -8,7 +8,8 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any
-from sqlalchemy import select, func
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,9 @@ except (ImportError, Exception):
 
 # 尝试导入程序化生成的活性肽数据
 try:
-    from app.services.data_sources.generate_peptides import GENERATED_PEPTIDES as _GENERATED_PEPTIDES
+    from app.services.data_sources.generate_peptides import (
+        GENERATED_PEPTIDES as _GENERATED_PEPTIDES,
+    )
 except (ImportError, Exception):
     _GENERATED_PEPTIDES = []
 
@@ -263,8 +266,9 @@ class DFBPSyncService:
         将内置知识库数据同步到本地数据库。
         支持增量同步。
         """
-        from app.models.models import BioactivePeptide, DataSnapshot
         import json
+
+        from app.models.models import BioactivePeptide, DataSnapshot
 
         now = datetime.now(timezone.utc)
         snapshot_id = f"dfbp_{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"

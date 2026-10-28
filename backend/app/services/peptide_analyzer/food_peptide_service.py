@@ -3,17 +3,17 @@
 整合结构转换 + 性质计算 + 活性预测 + 安全性评估
 """
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
-import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 # 导入核心组件
-from .converter import PeptideConverter, SMILESResult
-from .activity_predictor import get_activity_predictor, ActivityPredictor
-from .safety_predictor import get_safety_predictor, SafetyPredictor
+from .activity_predictor import get_activity_predictor
+from .converter import PeptideConverter
+from .safety_predictor import get_safety_predictor
 
 
 @dataclass
@@ -25,28 +25,28 @@ class FoodPeptideAnalysis:
     molecular_weight: float = 0.0
     isoelectric_point: float = 0.0
     hydrophobicity: float = 0.0
-    
+
     # 活性预测结果
     ace_inhibition_score: float = 0.0
     ace_confidence: float = 0.0
     ace_is_active: bool = False
     ace_motifs: List[str] = field(default_factory=list)
-    
+
     antioxidant_score: float = 0.0
     antioxidant_confidence: float = 0.0
     antioxidant_is_active: bool = False
     antioxidant_motifs: List[str] = field(default_factory=list)
-    
+
     antimicrobial_score: float = 0.0
     antimicrobial_confidence: float = 0.0
     antimicrobial_is_active: bool = False
     antimicrobial_motifs: List[str] = field(default_factory=list)
-    
+
     dpp4_inhibition_score: float = 0.0
     dpp4_confidence: float = 0.0
     dpp4_is_active: bool = False
     dpp4_motifs: List[str] = field(default_factory=list)
-    
+
     # 真实 ML 模型（DFBP 库训练，含真实文献 + 程序合成两层来源）并列分数
     ml_ace_score: Optional[float] = None      # 真实 ML 模型 ACE 抑制分（0-1）
     ml_method: str = "unavailable"            # ml / fallback_rule / unavailable
@@ -80,7 +80,7 @@ class FoodPeptideAnalysis:
     ml_gen_loo_long_recall: Optional[float] = None
     ml_short_peptide_bias: str = ""
     ml_model_name: str = "PeptideRanker-Mini"
-    
+
     # 安全性评估结果
     food_safety_score: float = 0.0
     is_allergen: bool = False
@@ -95,19 +95,19 @@ class FoodPeptideAnalysis:
     proteolytic_resistance: bool = False
     overall_risk: str = "low"
     warnings: List[str] = field(default_factory=list)
-    
+
     # 口感预测
     bitterness_score: float = 0.0
     umami_potential: float = 0.0
-    
+
     # 来源信息
     source_food: Optional[str] = None
     source_database: Optional[str] = None
     literature_refs: List[str] = field(default_factory=list)
-    
+
     # 元数据
     analysis_timestamp: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典格式"""
         return {
@@ -117,7 +117,7 @@ class FoodPeptideAnalysis:
             "molecular_weight": round(self.molecular_weight, 2),
             "isoelectric_point": round(self.isoelectric_point, 2),
             "hydrophobicity": round(self.hydrophobicity, 4),
-            
+
             "ace_inhibition": {
                 "score": round(self.ace_inhibition_score, 4),
                 "level": self._get_score_level(self.ace_inhibition_score),
@@ -183,7 +183,7 @@ class FoodPeptideAnalysis:
                     f"训练子集 {self.ml_training_samples} 条 = 真实 {self.ml_train_real_count} + 合成 {self.ml_train_synth_count}。"
                 ) if self.ml_library_size else "真实 ML 模型：用 DFBP 库标注数据训练（合成数据已显式标注）",
             },
-            
+
             "safety": {
                 "food_score": round(self.food_safety_score, 2),
                 "is_allergen": self.is_allergen,
@@ -199,21 +199,21 @@ class FoodPeptideAnalysis:
                 "overall_risk": self.overall_risk,
                 "warnings": self.warnings
             },
-            
+
             "taste": {
                 "bitterness": round(self.bitterness_score, 4),
                 "umami": round(self.umami_potential, 4),
             },
-            
+
             "source": {
                 "food": self.source_food,
                 "database": self.source_database,
                 "references": self.literature_refs,
             },
-            
+
             "analysis_time": self.analysis_timestamp.isoformat() + "Z"
         }
-    
+
     def _get_score_level(self, score: float) -> str:
         """获取评分等级"""
         if score >= 0.8:
@@ -223,7 +223,7 @@ class FoodPeptideAnalysis:
         elif score > 0:
             return "low"
         return "none"
-    
+
     def get_activity_summary(self) -> str:
         """获取活性摘要"""
         activities = []
@@ -236,7 +236,7 @@ class FoodPeptideAnalysis:
         if self.dpp4_is_active:
             activities.append(f"DPP-IV抑制(score={self.dpp4_inhibition_score:.2f}, conf={self.dpp4_confidence:.2f})")
         return ", ".join(activities) if activities else "无显著活性预测"
-    
+
     def get_safety_summary(self) -> str:
         """获取安全性摘要"""
         parts = [f"风险等级: {self.overall_risk}"]
@@ -251,14 +251,14 @@ class FoodPeptideAnalysis:
 class FoodPeptideAnalyzer:
     """
     食品肽综合分析器
-    
+
     整合：
     1. PeptideConverter (PepLink): 结构转换
     2. ActivityPredictor: 活性预测
     3. SafetyPredictor: 安全性评估
     4. RDKit: 理化性质计算
     """
-    
+
     # 常见末端修饰的分子量偏移（Da）
     _MOD_MW_OFFSETS = {
         "ACT": 42.0106,    # N端乙酰化
@@ -272,7 +272,7 @@ class FoodPeptideAnalyzer:
         self.converter = PeptideConverter()
         self.activity_predictor = get_activity_predictor()
         self.safety_predictor = get_safety_predictor()
-        
+
         # 简化的疏水性表（Kyte-Doolittle）
         self._hydrophobicity = {
             'I': 4.5, 'V': 4.2, 'L': 3.8, 'F': 2.8, 'C': 2.5,
@@ -280,7 +280,7 @@ class FoodPeptideAnalyzer:
             'W': -0.9, 'Y': -1.3, 'P': -1.6, 'H': -3.2, 'E': -3.5,
             'Q': -3.5, 'D': -3.5, 'N': -3.5, 'K': -3.9, 'R': -4.5,
         }
-    
+
     async def analyze(
         self,
         sequence: str,
@@ -323,77 +323,77 @@ class FoodPeptideAnalyzer:
             result.molecular_weight = props['molecular_weight']
             result.hydrophobicity = props['hydrophobicity']
             result.isoelectric_point = props['isoelectric_point']
-            
+
             # Step 3: 活性预测（使用真实特征工程模型）
             activity_results = await self.activity_predictor.predict_all(seq)
-            
+
             result.ace_inhibition_score = activity_results['ace_inhibition']['score']
             result.ace_confidence = activity_results['ace_inhibition']['confidence']
             result.ace_is_active = activity_results['ace_inhibition']['is_active']
             result.ace_motifs = activity_results['ace_inhibition']['motifs']
-            
+
             result.antioxidant_score = activity_results['antioxidant']['score']
             result.antioxidant_confidence = activity_results['antioxidant']['confidence']
             result.antioxidant_is_active = activity_results['antioxidant']['is_active']
             result.antioxidant_motifs = activity_results['antioxidant']['motifs']
-            
+
             result.antimicrobial_score = activity_results['antimicrobial']['score']
             result.antimicrobial_confidence = activity_results['antimicrobial']['confidence']
             result.antimicrobial_is_active = activity_results['antimicrobial']['is_active']
             result.antimicrobial_motifs = activity_results['antimicrobial']['motifs']
-            
+
             result.dpp4_inhibition_score = activity_results['dpp4_inhibition']['score']
             result.dpp4_confidence = activity_results['dpp4_inhibition']['confidence']
             result.dpp4_is_active = activity_results['dpp4_inhibition']['is_active']
             result.dpp4_motifs = activity_results['dpp4_inhibition']['motifs']
-            
+
             # Step 3b: 真实 ML 模型并列预测（DFBP 7540 条真数据训练的 PeptideRanker-Mini）
             # 与 QSAR 规则分并列输出；未加载权重时诚实标记 fallback_rule，不冒充 ML
             await self._run_real_ml(seq, result)
-            
+
             # Step 4: 安全性评估（使用专业预测器）
             safety_results = await self.safety_predictor.assess(seq)
-            
+
             result.is_allergen = safety_results['is_allergen']
             result.allergen_source = safety_results.get('allergen_source')
             result.allergen_evidence = safety_results.get('allergen_evidence', '')
             result.warnings.extend(safety_results.get('allergen_warnings', []))
-            
+
             result.is_toxic = safety_results['is_toxic']
             result.toxic_source = safety_results.get('toxic_source')
             result.toxic_evidence = safety_results.get('toxic_evidence', '')
-            
+
             result.digestibility = safety_results.get('digestibility', 'unknown')
             result.digestibility_reason = safety_results.get('digestibility_reason', '')
             result.peptic_resistance = safety_results.get('peptic_resistance', False)
             result.proteolytic_resistance = safety_results.get('proteolytic_resistance', False)
             result.overall_risk = safety_results.get('overall_risk', 'low')
             result.warnings.extend(safety_results.get('compliance_warnings', []))
-            
+
             # Step 5: 口感预测
             taste = self._predict_taste(seq)
             result.bitterness_score = taste['bitterness']
             result.umami_potential = taste['umami']
-            
+
             # Step 6: 计算综合食品评分
             result.food_safety_score = self._calculate_food_score(result)
-            
+
             # Step 7: 来源追溯（数据库检索 + 食物来源 + 文献 + NCBI 在线证据）
             await self._enrich_source(seq, result)
-            
+
             logger.info(
                 f"肽分析完成: {sequence}, "
                 f"分子量: {result.molecular_weight:.1f} Da, "
                 f"食品评分: {result.food_safety_score:.1f}/100, "
                 f"风险: {result.overall_risk}"
             )
-            
+
         except Exception as e:
             logger.error(f"食品肽分析失败: {e}", exc_info=True)
             raise
-        
+
         return result
-    
+
     async def _enrich_source(
         self,
         sequence: str,
@@ -462,13 +462,27 @@ class FoodPeptideAnalyzer:
             client = get_real_source_client()
             probe = await client.ncbi.probe()
             if not probe.get("reachable"):
-                result.literature_refs.append(
-                    "[离线] NCBI PubMed 当前不可达，未追加在线文献（诚实降级，无伪造数据）"
-                )
+                note = (probe.get("note") or "").strip()
+                if "依赖缺失" in note:
+                    offline_msg = (
+                        "[离线] NCBI PubMed 在线文献不可用（依赖缺失：aiohttp 未安装），"
+                        "未追加在线文献（诚实降级，无伪造数据）"
+                    )
+                elif note:
+                    offline_msg = (
+                        f"[离线] NCBI PubMed 不可达（{note}），"
+                        "未追加在线文献（诚实降级，无伪造数据）"
+                    )
+                else:
+                    offline_msg = (
+                        "[离线] NCBI PubMed 当前不可达，未追加在线文献（诚实降级，无伪造数据）"
+                    )
+                result.literature_refs.append(offline_msg)
                 return
             # 用活性类型关键词检索（优先用命中的真实活性类型，否则默认 ACE 抑制肽）
+            # 传入 sequence 实现序列级检索：query = "{sequence} AND {activity_type}"
             query = (activity_type_hint or "ACE inhibitory peptide")
-            refs = await client.search_references(activity_type=query, limit=limit)
+            refs = await client.search_references(activity_type=query, limit=limit, sequence=sequence)
             if not refs:
                 result.literature_refs.append(f"[在线] NCBI PubMed 可达，但 {query} 无匹配文献")
                 return
@@ -560,7 +574,6 @@ class FoodPeptideAnalyzer:
         疏水性基于 Kyte-Doolittle 表计算。
         等电点（pI）通过 Henderson-Hasselbalch 方程近似计算。
         """
-        from collections import Counter
 
         # 从 SMILES 精确计算分子量
         mw = 0.0
@@ -604,8 +617,7 @@ class FoodPeptideAnalyzer:
         - 通过二分法找到净电荷为零时的 pH
         """
         from collections import Counter
-        from rdkit import Chem
-        from rdkit.Chem import rdMolDescriptors
+
 
         # 如果 RDKit 可用，直接用 SMILES 计算精确 pI
         # 否则使用简化公式
@@ -654,7 +666,7 @@ class FoodPeptideAnalyzer:
             else:
                 hi = mid
         return (lo + hi) / 2.0
-    
+
     def _predict_taste(
         self,
         sequence: str
@@ -666,24 +678,24 @@ class FoodPeptideAnalyzer:
         bitter_aa = {'F', 'W', 'Y', 'L', 'I', 'V', 'M'}
         bitter_count = sum(1 for aa in sequence if aa in bitter_aa)
         bitterness = bitter_count / max(len(sequence), 1)
-        
+
         # 鲜味预测：富含 Glu, Asp
         umami_aa = {'E', 'D'}
         umami_count = sum(1 for aa in sequence if aa in umami_aa)
         umami = umami_count / max(len(sequence), 1)
-        
+
         return {
             'bitterness': round(min(bitterness * 2, 1.0), 4),
             'umami': round(min(umami * 2, 1.0), 4),
         }
-    
+
     def _calculate_food_score(
         self,
         result: FoodPeptideAnalysis
     ) -> float:
         """
         计算食品应用综合评分 (0-100)
-        
+
         评分维度:
         - 活性得分 (40%)
         - 安全性得分 (30%)
@@ -697,17 +709,17 @@ class FoodPeptideAnalyzer:
             result.antimicrobial_score * 0.3 +
             result.dpp4_inhibition_score * 0.1
         ) * 100
-        
+
         # 安全性得分
         risk_scores = {'low': 100, 'medium': 60, 'high': 20}
         safety_score = risk_scores.get(result.overall_risk, 50)
-        
+
         # 苦味惩罚
         taste_score = max(0, 100 - result.bitterness_score * 100)
-        
+
         # 文献支持得分
         lit_score = min(len(result.literature_refs) * 20, 100)
-        
+
         # 综合评分
         food_score = (
             activity_score * 0.4 +
@@ -715,9 +727,9 @@ class FoodPeptideAnalyzer:
             taste_score * 0.2 +
             lit_score * 0.1
         )
-        
+
         return round(food_score, 2)
-    
+
     async def batch_analyze(
         self,
         sequences: List[str],
@@ -725,30 +737,30 @@ class FoodPeptideAnalyzer:
     ) -> List[FoodPeptideAnalysis]:
         """
         批量分析肽序列
-        
+
         Args:
             sequences: 序列列表
             max_concurrent: 最大并发数
-        
+
         Returns:
             分析结果列表
         """
         import asyncio
-        
+
         async def analyze_one(seq: str) -> FoodPeptideAnalysis:
             return await self.analyze(seq)
-        
+
         # 限制并发数
         semaphore = asyncio.Semaphore(max_concurrent)
-        
+
         async def _analyze_with_semaphore(seq: str) -> FoodPeptideAnalysis:
             async with semaphore:
                 return await analyze_one(seq)
-        
+
         # 并发执行
         tasks = [_analyze_with_semaphore(seq) for seq in sequences]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # 过滤异常
         valid_results = []
         for i, result in enumerate(results):
@@ -756,7 +768,7 @@ class FoodPeptideAnalyzer:
                 logger.error(f"序列 {sequences[i]} 分析失败: {result}")
             else:
                 valid_results.append(result)
-        
+
         return valid_results
 
 

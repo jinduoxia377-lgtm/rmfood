@@ -18,7 +18,7 @@ from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ....domain.bots import AIBot, BotMemory
-from ....infrastructure.bots_impl import SQLAlchemyBotRepository, SQLAlchemyBotMemoryStore
+from ....infrastructure.bots_impl import SQLAlchemyBotMemoryStore, SQLAlchemyBotRepository
 from ..agent.orchestrator import AgentExecution, AgentOrchestrator, get_orchestrator
 
 logger = logging.getLogger(__name__)
@@ -343,9 +343,10 @@ class BotManager:
     async def find_bot_by_name(self, name: str, tenant_id: int) -> Optional[AIBot]:
         """按名称查找同租户下未删除的 Bot（用于招募查重）。"""
         from sqlalchemy import select
+
         from ....domain.bots import BotStatus
-        from ....models.bot import AIBot as AIBotModel
         from ....infrastructure.bots_impl import _to_domain_bot
+        from ....models.bot import AIBot as AIBotModel
 
         result = await self._repo._db.execute(
             select(AIBotModel).where(

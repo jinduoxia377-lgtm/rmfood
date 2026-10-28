@@ -16,9 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from app.services.constraint_penalty import (
-    Constraint,
     ConstraintPenaltyMechanism,
-    PenaltyForm,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,12 +43,21 @@ FOOD_HERB_MAX_DOSAGE: Dict[str, float] = {
     "黑芝麻": 6000, "龙眼肉": 10000,
 }
 
-# 禁忌搭配（十八反、十九畏）
+# 禁忌搭配（十八反 + 十九畏 = 官方 28 对）
+# 依据：《中国药典》2020 版（藜芦组含党参）+ 十九畏歌诀（川乌/草乌、赤石脂/白石脂分别计数）
+# 与 safety_checker._CONTRAINDICATION_PAIRS / compliance_tool.PROHIBITED_COMBINATIONS 保持一致。
 PROHIBITED_COMBINATIONS: List[List[str]] = [
-    ["人参", "藜芦"], ["甘草", "甘遂"], ["甘草", "大戟"],
-    ["甘草", "芫花"], ["海藻", "甘草"], ["乌头", "贝母"],
-    ["乌头", "瓜蒌"], ["乌头", "半夏"], ["乌头", "白蔹"],
-    ["乌头", "白及"],
+    # ── 十八反（17 对）──
+    ["甘草", "甘遂"], ["甘草", "大戟"], ["甘草", "海藻"], ["甘草", "芫花"],
+    ["乌头", "半夏"], ["乌头", "瓜蒌"], ["乌头", "贝母"], ["乌头", "白蔹"], ["乌头", "白及"],
+    ["藜芦", "人参"], ["藜芦", "党参"], ["藜芦", "沙参"], ["藜芦", "丹参"],
+    ["藜芦", "玄参"], ["藜芦", "苦参"], ["藜芦", "细辛"], ["藜芦", "芍药"],
+    # ── 十九畏（11 对）──
+    ["硫黄", "朴硝"], ["水银", "砒霜"], ["狼毒", "密陀僧"],
+    ["巴豆", "牵牛子"], ["丁香", "郁金"],
+    ["川乌", "犀角"], ["草乌", "犀角"],
+    ["牙硝", "三棱"], ["官桂", "赤石脂"], ["官桂", "白石脂"],
+    ["人参", "五灵脂"],
 ]
 
 # 特殊人群禁忌

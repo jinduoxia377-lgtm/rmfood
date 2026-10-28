@@ -11,8 +11,6 @@ import math
 import random
 from typing import Any, Optional
 
-import numpy as np
-
 from .scorer import MultiObjectiveScorer
 
 logger = logging.getLogger(__name__)

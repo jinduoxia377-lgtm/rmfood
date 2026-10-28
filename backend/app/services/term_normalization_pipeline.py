@@ -1,14 +1,14 @@
 """术语标准化预处理管道
 实现术语的标准化处理流程，确保术语使用准确率100%
 """
-from typing import List, Dict, Optional, Any, Callable
-from dataclasses import dataclass
+import logging
 import re
 import string
 from collections import OrderedDict
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 from app.core.observability.logging_config import logger
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +24,11 @@ class PipelineStep:
 
 class TermNormalizationPipeline:
     """术语标准化预处理管道"""
-    
+
     def __init__(self):
         self.steps = OrderedDict()
         self._register_default_steps()
-    
+
     def _register_default_steps(self):
         """注册默认预处理步骤"""
         self.add_step(
@@ -71,30 +71,30 @@ class TermNormalizationPipeline:
             transform=self._remove_stopwords,
             description="去除停用词"
         )
-    
+
     def add_step(self, name: str, transform: Callable[[str], str], description: Optional[str] = None):
         """添加预处理步骤"""
         self.steps[name] = PipelineStep(name=name, transform=transform, description=description)
-    
+
     def remove_step(self, name: str):
         """移除预处理步骤"""
         if name in self.steps:
             del self.steps[name]
-    
+
     def enable_step(self, name: str, enabled: bool = True):
         """启用/禁用预处理步骤"""
         if name in self.steps:
             self.steps[name].enabled = enabled
-    
+
     def get_step(self, name: str) -> Optional[PipelineStep]:
         """获取指定步骤"""
         return self.steps.get(name)
-    
+
     def process(self, term: str) -> str:
         """执行完整的标准化流程"""
         if not term:
             return term
-        
+
         result = term
         for step_name, step in self.steps.items():
             if step.enabled:
@@ -102,13 +102,13 @@ class TermNormalizationPipeline:
                     result = step.transform(result)
                 except Exception as e:
                     logger.error(f"Error in step {step_name}: {e}")
-        
+
         return result
-    
+
     def process_batch(self, terms: List[str]) -> List[str]:
         """批量处理术语"""
         return [self.process(term) for term in terms]
-    
+
     def get_steps_info(self) -> List[Dict]:
         """获取所有步骤信息"""
         return [{
@@ -116,36 +116,36 @@ class TermNormalizationPipeline:
             "description": step.description,
             "enabled": step.enabled
         } for step in self.steps.values()]
-    
+
     # ========== 预处理步骤实现 ==========
-    
+
     @staticmethod
     def _strip_whitespace(term: str) -> str:
         """去除首尾空格"""
         return term.strip()
-    
+
     @staticmethod
     def _remove_extra_spaces(term: str) -> str:
         """去除多余空格（多个空格合并为一个）"""
         return re.sub(r'\s+', '', term)
-    
+
     @staticmethod
     def _remove_punctuation(term: str) -> str:
         """去除标点符号"""
         punctuation = string.punctuation + "，。！？；：、【】（）《》‘’“”·"
         return ''.join(char for char in term if char not in punctuation)
-    
+
     @staticmethod
     def _normalize_case(term: str) -> str:
         """统一转换为小写"""
         return term.lower()
-    
+
     @staticmethod
     def _remove_special_chars(term: str) -> str:
         """去除特殊字符"""
         # 只保留中文、英文、数字
         return re.sub(r'[^\u4e00-\u9fff0-9a-zA-Z]', '', term)
-    
+
     @staticmethod
     def _replace_fullwidth_chars(term: str) -> str:
         """全角字符转半角"""
@@ -157,7 +157,7 @@ class TermNormalizationPipeline:
             else:
                 result += char
         return result
-    
+
     @staticmethod
     def _normalize_numbers(term: str) -> str:
         """标准化数字格式"""
@@ -165,13 +165,13 @@ class TermNormalizationPipeline:
         chinese_nums = {'零': '0', '一': '1', '二': '2', '三': '3', '四': '4',
                         '五': '5', '六': '6', '七': '7', '八': '8', '九': '9',
                         '十': '10', '百': '100', '千': '1000', '万': '10000'}
-        
+
         result = term
         for chinese, arabic in chinese_nums.items():
             result = result.replace(chinese, arabic)
-        
+
         return result
-    
+
     @staticmethod
     def _remove_stopwords(term: str) -> str:
         """去除停用词"""
@@ -184,7 +184,7 @@ class TermNormalizationPipeline:
 
 class TermValidationPipeline(TermNormalizationPipeline):
     """术语验证预处理管道"""
-    
+
     def __init__(self):
         super().__init__()
         # 添加验证相关步骤
@@ -198,13 +198,13 @@ class TermValidationPipeline(TermNormalizationPipeline):
             transform=self._validate_chars,
             description="验证字符有效性"
         )
-    
+
     def _validate_length(self, term: str) -> str:
         """验证术语长度（最大200字符）"""
         if len(term) > 200:
             raise ValueError(f"术语长度超过限制: {len(term)} > 200")
         return term
-    
+
     def _validate_chars(self, term: str) -> str:
         """验证字符有效性"""
         # 检查是否包含非法字符
@@ -215,7 +215,7 @@ class TermValidationPipeline(TermNormalizationPipeline):
 
 class TermCorrectionPipeline(TermNormalizationPipeline):
     """术语纠错预处理管道"""
-    
+
     def __init__(self):
         super().__init__()
         # 添加纠错相关步骤
@@ -229,7 +229,7 @@ class TermCorrectionPipeline(TermNormalizationPipeline):
             transform=self._standardize_abbreviations,
             description="标准化缩写"
         )
-    
+
     def _correct_common_typos(self, term: str) -> str:
         """纠正常见拼写错误"""
         typos = {
@@ -248,12 +248,12 @@ class TermCorrectionPipeline(TermNormalizationPipeline):
             '食品法': '食品安全法',
             '预包': '预包装',
         }
-        
+
         for typo, correct in typos.items():
             term = term.replace(typo, correct)
-        
+
         return term
-    
+
     def _standardize_abbreviations(self, term: str) -> str:
         """标准化缩写"""
         abbreviations = {
@@ -274,7 +274,7 @@ class TermCorrectionPipeline(TermNormalizationPipeline):
             'GMP': '良好生产规范',
             'ISO': '国际标准化组织',
         }
-        
+
         # 对于缩写，我们不直接替换，而是保持原样（因为缩写可能是有意使用的）
         # 这里主要是确保缩写的一致性
         return term
@@ -282,12 +282,12 @@ class TermCorrectionPipeline(TermNormalizationPipeline):
 
 class ComprehensiveTermPipeline:
     """综合术语处理管道"""
-    
+
     def __init__(self):
         self.normalization_pipeline = TermNormalizationPipeline()
         self.validation_pipeline = TermValidationPipeline()
         self.correction_pipeline = TermCorrectionPipeline()
-    
+
     def process(self, term: str, mode: str = "full") -> Dict[str, Any]:
         """
         处理术语
@@ -304,11 +304,11 @@ class ComprehensiveTermPipeline:
             "errors": [],
             "warnings": []
         }
-        
+
         try:
             if mode in ["full", "normalize"]:
                 result["normalized"] = self.normalization_pipeline.process(term)
-            
+
             if mode in ["full", "validate"]:
                 try:
                     normalized_for_validation = result["normalized"] or term
@@ -316,21 +316,21 @@ class ComprehensiveTermPipeline:
                 except ValueError as e:
                     result["is_valid"] = False
                     result["errors"].append("处理异常")
-            
+
             if mode in ["full", "correct"]:
                 input_for_correction = result["normalized"] or term
                 result["corrected"] = self.correction_pipeline.process(input_for_correction)
-                
+
                 # 检查是否有更正
                 if result["corrected"] != input_for_correction:
                     result["warnings"].append("术语已自动更正")
-        
+
         except Exception as e:
             result["is_valid"] = False
             result["errors"].append("处理失败")
-        
+
         return result
-    
+
     def process_batch(self, terms: List[str], mode: str = "full") -> List[Dict[str, Any]]:
         """批量处理术语"""
         return [self.process(term, mode) for term in terms]
@@ -370,7 +370,7 @@ def process_term(term: str, mode: str = "full") -> Dict[str, Any]:
 if __name__ == "__main__":
     # 测试示例
     pipeline = ComprehensiveTermPipeline()
-    
+
     test_terms = [
         " 黄芪 ",
         "黄茋",
@@ -379,7 +379,7 @@ if __name__ == "__main__":
         "HACCP体系",
         "太肽",
     ]
-    
+
     logger.info("术语处理测试:")
     logger.info("=" * 50)
     for term in test_terms:

@@ -8,8 +8,8 @@ RRF 公式: score(d) = Σ (1 / (K + rank_d))
 其中 K = 60 (常数), rank_d = 文档 d 在某个排名中的位置。
 """
 import logging
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

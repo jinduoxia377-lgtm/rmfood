@@ -2,6 +2,7 @@
 
 import os
 
+
 class Config:
     SERVICE_NAME = "ai-conversation-service"
     PORT = int(os.getenv("PORT", "8000"))

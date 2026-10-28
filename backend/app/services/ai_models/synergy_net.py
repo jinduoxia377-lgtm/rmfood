@@ -158,6 +158,7 @@ class TCMSynergyService:
     async def _load_herbs(self, names: list[str]) -> dict[str, dict[str, Any]]:
         """从 tcm_herbs + tcm_herb_compounds 加载真实药材数据"""
         from sqlalchemy import select
+
         from ...core.database.session import async_session_factory
         from ...models.external_data import TCMHerb
         from ...models.tcm_schema import tcm_herb_compounds

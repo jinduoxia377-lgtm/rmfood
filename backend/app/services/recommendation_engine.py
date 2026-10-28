@@ -13,7 +13,7 @@ import logging
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -119,8 +119,8 @@ class RecommendationEngine:
         limit: int = 6,
     ) -> List[RecommendationScore]:
         """生成推荐列表"""
-        from ...models.formula import Formula
         from ...core.multi_tenant.tenant_security import current_tenant_id
+        from ...models.formula import Formula
 
         org_id = current_tenant_id()
 

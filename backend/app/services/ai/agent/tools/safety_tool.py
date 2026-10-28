@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from . import BaseAgentTool, ToolResult, register_tool
 
@@ -92,7 +92,7 @@ class SafetyAssessTool(BaseAgentTool):
                         "level": "high",
                         "type": "population_forbidden",
                         "description": f"{herb} 禁止用于 {population} 人群",
-                        "suggestion": f"替换为更安全的替代药材",
+                        "suggestion": "替换为更安全的替代药材",
                     })
 
             is_safe = len(risks) == 0

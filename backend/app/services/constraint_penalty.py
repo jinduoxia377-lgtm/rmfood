@@ -2,10 +2,10 @@
 约束惩罚机制模块
 实现专利权利要求 E4：约束违反惩罚机制
 """
-from typing import Dict, List, Optional, Callable, Tuple
+import math
 from dataclasses import dataclass
 from enum import Enum
-import math
+from typing import Callable, Dict, List, Tuple
 
 
 class PenaltyForm(Enum):

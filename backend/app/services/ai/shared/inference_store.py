@@ -12,11 +12,9 @@ AI 推理结果存储后端 — 可插拔存储抽象
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import time
-import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

@@ -21,13 +21,11 @@ Phase 3-C: 实现读写分离，将读操作路由到只读副本。
       ...
 """
 from __future__ import annotations
+
 import logging
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.pool import NullPool
 
 from ..config import settings
 
@@ -95,8 +93,9 @@ async def check_read_replica_health() -> dict:
         return {"status": "not_configured"}
 
     try:
-        from sqlalchemy import text
         import time
+
+        from sqlalchemy import text
         start = time.perf_counter()
         async with _read_replica_engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
@@ -186,13 +185,13 @@ async def get_replication_lag() -> dict:
             "replica_ts": str,
         }
     """
-    import time as _time
 
     if not _read_replica_engine:
         return {"status": "not_configured", "lag_seconds": 0, "lag_ms": 0}
 
     try:
         from sqlalchemy import text
+
         from ..database.session import engine
 
         # 1. 获取主库当前时间

@@ -6,21 +6,21 @@
 - 邀请链接生成与验证
 - 权限检查与审计日志
 """
-import uuid
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, List, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, update, delete, and_, or_
-from sqlalchemy.exc import IntegrityError
+import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
 
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.middleware.audit_system import AuditService
+from app.core.middleware.exceptions import NotFoundError, PermissionDeniedError
+from app.models.enums import NotificationType, TeamRole
+from app.models.notification import Notification
 from app.models.team import Team
 from app.models.team_member import TeamMember
 from app.models.user_model import User
-from app.models.notification import Notification
-from app.models.enums import TeamRole, NotificationType
-from app.core.middleware.exceptions import PermissionDeniedError, NotFoundError
-from app.core.middleware.audit_system import AuditService
 
 logger = logging.getLogger(__name__)
 
@@ -41,16 +41,16 @@ class TeamService:
     ) -> Team:
         """
         创建新团队
-        
+
         Args:
             owner_id: 创建者用户ID
             name: 团队名称（2-100字符）
             description: 可选描述
             settings: 团队设置
-            
+
         Returns:
             创建的Team对象
-            
+
         Raises:
             ValueError: 参数验证失败
         """
@@ -63,7 +63,7 @@ class TeamService:
             "allow_member_invite": False,
             "require_approval": True,
         }
-        
+
         if settings:
             default_settings.update(settings)
 
@@ -100,14 +100,14 @@ class TeamService:
     async def get_team(self, team_id: int, user_id: int) -> Dict[str, Any]:
         """
         获取团队详情（含成员列表、提示词统计、活跃度指标）
-        
+
         Args:
             team_id: 团队ID
             user_id: 当前用户ID（用于权限检查）
-            
+
         Returns:
             包含团队详细信息的字典
-            
+
         Raises:
             PermissionDeniedError: 用户不是团队成员
             NotFoundError: 团队不存在
@@ -177,15 +177,15 @@ class TeamService:
     ) -> Team:
         """
         更新团队设置（仅Owner/Admin）
-        
+
         Args:
             team_id: 团队ID
             user_id: 操作用户ID
             **kwargs: 要更新的字段
-            
+
         Returns:
             更新后的Team对象
-            
+
         Raises:
             PermissionDeniedError: 权限不足
         """
@@ -222,14 +222,14 @@ class TeamService:
     async def archive_team(self, team_id: int, user_id: int) -> bool:
         """
         归档团队（软删除，数据保留）
-        
+
         Args:
             team_id: 团队ID
             user_id: 操作用户ID（必须是Owner）
-            
+
         Returns:
             是否成功归档
-            
+
         Raises:
             PermissionDeniedError: 只有Owner可以归档
         """
@@ -269,19 +269,19 @@ class TeamService:
     ) -> Dict[str, Any]:
         """
         邀请成员加入团队
-        
+
         支持三种方式：
         1. 通过用户ID直接添加
         2. 通过邮箱发送邀请
         3. 生成分享链接
-        
+
         Args:
             team_id: 团队ID
             inviter_id: 邀请人ID
             user_id: 被邀请用户ID（直接添加方式）
             email: 被邀请人邮箱（邮件邀请方式）
             role: 初始角色
-            
+
         Returns:
             邀请结果信息
         """
@@ -317,7 +317,7 @@ class TeamService:
                 user_id=user_id,
                 type=NotificationType.SYSTEM,
                 title="您已被加入团队",
-                content=f"您已被邀请加入团队",
+                content="您已被邀请加入团队",
                 metadata_={"team_id": team_id, "inviter_id": inviter_id, "role": role.value},
             )
             self.db.add(notification)
@@ -337,7 +337,7 @@ class TeamService:
 
         elif email:
             invite_code = str(uuid.uuid4())[:8].upper()
-            
+
             notification = Notification(
                 user_id=inviter_id,
                 type=NotificationType.SYSTEM,
@@ -367,12 +367,12 @@ class TeamService:
     ) -> TeamMember:
         """
         用户接受邀请加入团队
-        
+
         Args:
             team_id: 团队ID
             user_id: 用户ID
             invitation_token: 邀请令牌（可选）
-            
+
         Returns:
             创建的TeamMember对象
         """
@@ -415,15 +415,15 @@ class TeamService:
     ) -> bool:
         """
         从团队中移除成员
-        
+
         Args:
             team_id: 团队ID
             operator_id: 操作人ID
             member_id: 要移除的成员记录ID
-            
+
         Returns:
             是否成功移除
-            
+
         Raises:
             PermissionDeniedError: 权限不足或不能移除Owner
         """
@@ -478,16 +478,16 @@ class TeamService:
     ) -> TeamMember:
         """
         更新成员角色
-        
+
         Args:
             team_id: 团队ID
             operator_id: 操作人ID
             member_id: 成员记录ID
             new_role: 新角色
-            
+
         Returns:
             更新后的TeamMember对象
-            
+
         Raises:
             PermissionDeniedError: 权限不足
         """
@@ -557,13 +557,13 @@ class TeamService:
     ) -> Dict[str, Any]:
         """
         生成邀请链接
-        
+
         Args:
             team_id: 团队ID
             creator_id: 创建者ID
             expires_hours: 有效期（小时）
             max_uses: 最大使用次数
-            
+
         Returns:
             邀请链接信息
         """
@@ -577,7 +577,7 @@ class TeamService:
             base_url = getattr(settings, 'base_url', 'http://localhost:8000')
         except ImportError:
             base_url = 'http://localhost:8000'
-        
+
         invite_url = f"{base_url}/teams/join?code={invite_code}"
 
         logger.info(f"🔗 邀请链接已生成: {invite_code} for team {team_id}")
@@ -600,13 +600,13 @@ class TeamService:
     ) -> Dict[str, Any]:
         """
         获取用户加入的所有团队列表
-        
+
         Args:
             user_id: 用户ID
             include_archived: 是否包含已归档团队
             page: 页码
             page_size: 每页条数
-            
+
         Returns:
             分页的团队列表
         """

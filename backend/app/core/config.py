@@ -32,18 +32,13 @@
 
 from __future__ import annotations
 
-import os
-import json
 import logging
+import os
 import secrets
-from contextlib import contextmanager
-from dataclasses import dataclass, field, fields
-from datetime import datetime, timezone
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # 平台发布版本的单一事实源（ADR-038）。
@@ -154,7 +149,7 @@ class DatabaseConfig(BaseModel):
     - 连接池耗尽: 增大 pool_size / max_overflow，排查长事务或慢查询
     """
 
-    url: str = Field(alias="DATABASE_URL", 
+    url: str = Field(alias="DATABASE_URL",
         default="",
         description=(
             "PostgreSQL 连接 URL，格式: postgresql+asyncpg://user:password@host:port/dbname "
@@ -273,7 +268,7 @@ class RedisConfig(BaseModel):
 
 class CeleryConfig(BaseModel):
     """Celery 异步任务配置"""
-    broker_url: str = Field(alias="DATABASE_URL", 
+    broker_url: str = Field(alias="DATABASE_URL",
         default="redis://localhost:6379/1",
         description="Celery Broker URL (Redis)，需以 redis:// 或 rediss:// 开头"
     )
@@ -408,7 +403,7 @@ class AIServiceConfig(BaseModel):
     model: str = Field(default="gpt-4", description="默认模型")
     max_tokens: int = Field(default=16000, ge=1, le=100000, description="最大 Token 数")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature 参数")
-    request_timeout: int = Field(default=60, ge=1, description="请求超时（秒）")
+    request_timeout: int = Field(default=120, ge=1, description="LLM 读超时（秒）：两次数据读取之间的最大间隔")
     max_retries: int = Field(default=3, ge=0, description="最大重试次数")
     retry_delay: float = Field(default=1.0, ge=0, description="重试延迟（秒）")
 
@@ -646,7 +641,7 @@ class Settings(BaseSettings):
 
     def _apply_env_overrides(self) -> None:
         """应用环境变量覆盖，使用安全的 URL 解析方法."""
-        from urllib.parse import urlparse, urlunparse, parse_qs
+        from urllib.parse import urlparse, urlunparse
 
         for env_key, value in os.environ.items():
             if env_key.startswith("APP_"):

@@ -5,8 +5,8 @@ OFF 增量同步状态追踪器
 """
 import json
 import logging
-from typing import Optional, Dict, Any
-from datetime import datetime, date, timezone
+from datetime import date, datetime, timezone
+from typing import Any, Dict, Optional
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession

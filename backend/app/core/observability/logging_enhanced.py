@@ -32,24 +32,24 @@
 
 from __future__ import annotations
 
-import logging
-import json
-import time
 import asyncio
+import json
+import logging
 import threading
-from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-from contextlib import contextmanager
+import time
 from collections import defaultdict
+from contextlib import contextmanager
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
-from fastapi import Request, FastAPI
+from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # 尝试导入现有日志配置
 try:
-    from ..observability.logging_config import StructuredJsonFormatter, HumanReadableFormatter
+    from ..observability.logging_config import HumanReadableFormatter, StructuredJsonFormatter
 except ImportError:
     StructuredJsonFormatter = None  # type: ignore
     HumanReadableFormatter = None  # type: ignore

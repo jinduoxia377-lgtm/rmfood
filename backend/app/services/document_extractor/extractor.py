@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import io
-import json
 import logging
 import re
 from dataclasses import dataclass, field
@@ -409,8 +408,8 @@ class DocumentExtractor:
         说明：RapidOCR 模型为进程内单例，首次调用需加载模型（约 15-25 秒），
         后续请求复用模型，通常 3-8 秒即可完成。
         """
-        import pypdfium2 as pdfium
         import numpy as np
+        import pypdfium2 as pdfium
 
         engine = self._get_ocr_engine()
         blocks: List[Dict[str, Any]] = []

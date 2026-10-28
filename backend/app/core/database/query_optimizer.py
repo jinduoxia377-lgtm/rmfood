@@ -30,24 +30,22 @@ formula = await optimized_service.get_optimized(formula_id=123)
 """
 from __future__ import annotations
 
-import time
 import logging
+import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Generic
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import (
-    selectinload, joinedload, subqueryload,
+    selectinload,
 )
 
-# 导入领域模型
-from ..models.formula import Formula, Category, Tag
-from ..models.ingredient import Ingredient
-from ..models.peptide import Peptide
-from ..models.user_model import User
-from ..models.experiment import Experiment
 from ..models.enums import FormulaStatus
+
+# 导入领域模型
+from ..models.formula import Formula
+from ..models.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ T = TypeVar('T')
 @dataclass
 class EagerLoadStrategy:
     """预加载策略配置"""
-    
+
     # 配方预加载
     formula_full: list = field(default_factory=lambda: [
         # 关联实体（集合关系，使用 selectinload 更高效）
@@ -76,14 +74,14 @@ class EagerLoadStrategy:
         # 关联集合（一对多）
         'experiments',       # 关联实验
     ])
-    
+
     # 配方精简版（列表页使用）
     formula_list: list = field(default_factory=lambda: [
         'categories',
         'tags',
         'creator',  # 只在列表页显示创建者信息
     ])
-    
+
     # 用户预加载
     user_detail: list = field(default_factory=lambda: [
         'teams',
@@ -199,8 +197,8 @@ class FormulaQueryOptimizer:
 
         elapsed = time.time() - start
         logger.info(
-            f"[QueryOptimizer] 配方列表查询: %dms total=%d "
-            f"(eager_load=%s, eager_relations=%d)",
+            "[QueryOptimizer] 配方列表查询: %dms total=%d "
+            "(eager_load=%s, eager_relations=%d)",
             int(elapsed * 1000), total, eager_load,
             len(strategy.formula_full),
         )
@@ -240,7 +238,7 @@ class FormulaQueryOptimizer:
 
         elapsed = time.time() - start
         logger.info(
-            f"[QueryOptimizer] 配方详情查询: %dms success=%s",
+            "[QueryOptimizer] 配方详情查询: %dms success=%s",
             int(elapsed * 1000), formula is not None,
         )
 
@@ -276,7 +274,7 @@ class FormulaQueryOptimizer:
 
         elapsed = time.time() - start
         logger.info(
-            f"[QueryOptimizer] 统计查询: %dms", int(elapsed * 1000),
+            "[QueryOptimizer] 统计查询: %dms", int(elapsed * 1000),
         )
 
         if row is None:

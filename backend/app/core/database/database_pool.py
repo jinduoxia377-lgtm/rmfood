@@ -22,23 +22,21 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 import threading
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Callable, Dict, Generic, List, Optional, TypeVar, cast
 
-from sqlalchemy import text, func, select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy import func, select
 from sqlalchemy.exc import (
-    OperationalError,
     InterfaceError,
+    OperationalError,
     PendingRollbackError,
-    TimeoutError as SAQueryTimeout,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..config import settings
-from .session import async_session_factory, engine, get_db
+from .session import async_session_factory, engine
 
 logger = logging.getLogger(__name__)
 

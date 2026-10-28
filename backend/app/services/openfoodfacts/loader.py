@@ -6,7 +6,7 @@ OFF 数据批量入库加载器
 import asyncio
 import json
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -140,7 +140,7 @@ class OFFLoader:
 
                 if attempt >= max_retries - 1:
                     # Final failure - re-raise all failed products
-                    logger.error(f"[Loader] 批次达到最大重试次数，全部失败")
+                    logger.error("[Loader] 批次达到最大重试次数，全部失败")
                     raise
 
                 await asyncio.sleep(2 ** attempt)  # Exponential backoff for batch retry

@@ -7,17 +7,16 @@
 - 冲突检测和返回
 """
 import asyncio
+import hashlib
 import json
+import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-import hashlib
-import time
+from typing import Any, Dict, List, Optional
 
 from app.core.observability.logging_config import logger
-
 
 try:
     import msgpack
@@ -130,13 +129,13 @@ class HeartbeatMessage:
 class SyncProtocol:
     """
     同步协议处理器
-    
+
     功能：
     - 推送本地变更到服务器（支持msgpack压缩）
     - 拉取服务器端变更（支持分页）
     - 断点续传（大文件分块传输）
     - 心跳机制（每30秒检测连接）
-    
+
     配置项：
     - protocol_version: 协议版本
     - compression_enabled: 是否启用压缩
@@ -155,11 +154,11 @@ class SyncProtocol:
         self.compression_enabled = compression_enabled and MSGPACK_AVAILABLE
         self.heartbeat_interval = heartbeat_interval
         self.chunk_size = chunk_size
-        
+
         self._active_transfers: Dict[str, Dict[str, Any]] = {}
         self._heartbeat_tasks: Dict[str, asyncio.Task] = {}
         self._connection_status: Dict[str, bool] = {}
-        
+
         self._stats = {
             "total_pushes": 0,
             "total_pulls": 0,
@@ -178,16 +177,16 @@ class SyncProtocol:
     ) -> SyncPushResponse:
         """
         推送本地变更到服务器
-        
+
         Args:
             user_id: 用户ID
             device_id: 设备ID
             changes: 变更列表
             client_timestamp: 客户端时间戳
-            
+
         Returns:
             推送响应，包含接受的变更数和冲突列表
-            
+
         流程：
         1. 序列化并压缩数据（如果启用）
         2. 验证数据完整性
@@ -204,16 +203,16 @@ class SyncProtocol:
             )
 
         transfer_id = str(uuid.uuid4())
-        
+
         try:
             serialized_data = self._serialize_changes(changes)
-            
+
             compressed_data = serialized_data
             original_size = len(serialized_data)
-            
+
             if self.compression_enabled and original_size > 1024:
                 compressed_data = self._compress_data(serialized_data)
-                
+
                 compression_ratio = (
                     (original_size - len(compressed_data)) / original_size * 100
                     if original_size > 0 else 0
@@ -236,7 +235,7 @@ class SyncProtocol:
             for change in changes:
                 try:
                     entity_key = f"{change.get('entity_type', 'unknown')}:{change.get('entity_id', 'unknown')}"
-                    
+
                     change_with_metadata = {
                         **change,
                         "_sync_metadata": {
@@ -247,9 +246,9 @@ class SyncProtocol:
                             "received_at": datetime.now(timezone.utc).isoformat(),
                         },
                     }
-                    
+
                     accepted_changes.append(change_with_metadata)
-                    
+
                 except Exception as e:
                     conflicts.append({
                         "entity_type": change.get("entity_type", "unknown"),
@@ -277,9 +276,9 @@ class SyncProtocol:
             if transfer_id in self._active_transfers:
                 self._active_transfers[transfer_id]["status"] = TransferStatus.FAILED
                 self._active_transfers[transfer_id]["error"] = "传输失败"
-            
+
             self._stats["transfers_failed"] += 1
-            
+
             return SyncPushResponse(
                 success=False,
                 error="传输失败",
@@ -297,24 +296,24 @@ class SyncProtocol:
     ) -> SyncPullResponse:
         """
         拉取服务器端变更
-        
+
         只返回since_timestamp之后的变更，包含完整快照数据。
         支持分页拉取避免一次性传输过多数据。
-        
+
         Args:
             user_id: 用户ID
             device_id: 设备ID
             since_timestamp: 起始时间戳（只返回此时间之后的变更）
             limit: 每页最大条数
             page: 页码
-            
+
         Returns:
             拉取响应，包含服务器变更列表和元数据
         """
         self._stats["total_pulls"] += 1
-        
+
         sync_token = str(uuid.uuid4())
-        
+
         mock_changes = [
             {
                 "entity_type": "formula",
@@ -351,20 +350,20 @@ class SyncProtocol:
     ) -> str:
         """
         启动大文件传输（断点续传）
-        
+
         将大数据分割为多个块，支持断点续传。
-        
+
         Args:
             data: 原始数据
             metadata: 元数据信息
-            
+
         Returns:
             传输ID（用于后续操作）
         """
         transfer_id = str(uuid.uuid4())
-        
+
         chunks = self._split_into_chunks(data)
-        
+
         self._active_transfers[transfer_id] = {
             "status": TransferStatus.PENDING,
             "metadata": metadata,
@@ -384,19 +383,19 @@ class SyncProtocol:
     ) -> Optional[TransferChunk]:
         """
         获取指定传输块
-        
+
         Args:
             transfer_id: 传输ID
             chunk_id: 块编号
-            
+
         Returns:
             传输块数据（如果存在）
         """
         transfer = self._active_transfers.get(transfer_id)
-        
+
         if not transfer:
             return None
-            
+
         chunks = transfer.get("chunks", {})
         return chunks.get(chunk_id)
 
@@ -406,20 +405,20 @@ class SyncProtocol:
     ) -> bool:
         """
         完成传输并验证完整性
-        
+
         Args:
             transfer_id: 传输ID
-            
+
         Returns:
             是否成功完成
         """
         transfer = self._active_transfers.get(transfer_id)
-        
+
         if not transfer:
             return False
-            
+
         all_received = len(transfer.get("completed_chunks", [])) == transfer.get("total_chunks", 0)
-        
+
         if all_received:
             transfer["status"] = TransferStatus.COMPLETED
             transfer["completed_at"] = datetime.now(timezone.utc)
@@ -435,14 +434,14 @@ class SyncProtocol:
     ) -> asyncio.Task:
         """
         启动心跳检测任务
-        
+
         每30秒发送一次ping，等待pong响应。
         如果超时未收到响应，标记设备为离线。
-        
+
         Args:
             device_id: 设备ID
             callback: 收到pong时的回调函数
-            
+
         Returns:
             异步任务对象
         """
@@ -453,17 +452,17 @@ class SyncProtocol:
             while self._connection_status.get(device_id, False):
                 try:
                     ping = HeartbeatMessage.create_ping(device_id, sequence)
-                    
+
                     await asyncio.sleep(self.heartbeat_interval)
-                    
+
                     if not self._connection_status.get(device_id, False):
                         break
-                        
+
                     if callback:
                         await callback(ping)
-                        
+
                     sequence += 1
-                    
+
                 except asyncio.CancelledError:
                     break
                 except Exception as e:
@@ -472,13 +471,13 @@ class SyncProtocol:
 
         task = asyncio.create_task(_heartbeat_loop())
         self._heartbeat_tasks[device_id] = task
-        
+
         return task
 
     async def stop_heartbeat(self, device_id: str):
         """停止心跳检测"""
         self._connection_status[device_id] = False
-        
+
         task = self._heartbeat_tasks.pop(device_id, None)
         if task and not task.done():
             task.cancel()
@@ -501,7 +500,7 @@ class SyncProtocol:
             1 for t in self._active_transfers.values()
             if t.get("status") == TransferStatus.IN_PROGRESS
         )
-        
+
         return {
             **self._stats,
             "protocol_version": self.protocol_version.value,
@@ -518,7 +517,7 @@ class SyncProtocol:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "changes": changes,
         }
-        
+
         if self.compression_enabled:
             return msgpack.packb(data, use_bin_type=True)
         else:
@@ -541,13 +540,13 @@ class SyncProtocol:
         transfer_id = str(uuid.uuid4())
         total_size = len(data)
         total_chunks = (total_size + self.chunk_size - 1) // self.chunk_size
-        
+
         chunks = []
         for i in range(total_chunks):
             start = i * self.chunk_size
             end = min(start + self.chunk_size, total_size)
             chunk_data = data[start:end]
-            
+
             chunk = TransferChunk(
                 chunk_id=i,
                 total_chunks=total_chunks,
@@ -556,7 +555,7 @@ class SyncProtocol:
                 transfer_id=transfer_id,
             )
             chunks.append(chunk)
-            
+
         return chunks
 
     def _serialize_response(self, response_data: Dict[str, Any]) -> bytes:

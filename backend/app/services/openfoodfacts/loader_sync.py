@@ -3,9 +3,10 @@ OFF 数据批量入库加载器 - 同步版本 (适用于 Windows)
 
 使用 psycopg2 进行稳定的数据库连接，避免 asyncpg 在 Windows 下的连接不稳定问题。
 """
-import logging
 import json
-from typing import List, Dict, Any
+import logging
+from typing import Any, Dict, List
+
 import psycopg2
 from psycopg2.extensions import connection as PsycopgConnection
 

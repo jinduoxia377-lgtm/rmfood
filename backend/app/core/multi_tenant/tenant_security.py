@@ -29,7 +29,7 @@ import contextvars
 import logging
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 from starlette.types import ASGIApp
@@ -271,8 +271,7 @@ class TenantQueryGuard:
     def _audit_query(self, clauseelement) -> None:
         """检查 SQL 语句是否涉及租户表且是否携带 org_id 过滤"""
         try:
-            from sqlalchemy.sql import Select, Delete, Update
-            import sqlalchemy as sa
+            from sqlalchemy.sql import Delete, Select, Update
 
             # 仅检查 SELECT/DELETE/UPDATE
             if not isinstance(clauseelement, (Select, Delete, Update)):

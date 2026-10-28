@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .models import MultiObjectiveIndividual, OptimizationConfig
 
@@ -147,7 +147,6 @@ class FormulaEvaluator:
     def _merge_builtin_properties(self) -> None:
         """合并内置的四气五味/归经/五味分类数据"""
         try:
-            from .bayesian_formula_optimizer import _BUILTIN_HERBS
             builtin_props = getattr(self, '_herb_properties', {})
             builtin_flavor = getattr(self, '_flavor_map', {})
 

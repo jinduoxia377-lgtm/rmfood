@@ -18,18 +18,13 @@ import logging
 import math
 import random
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from .bayesian_formula_optimizer import _BUILTIN_HERBS, _EFFICACY_TO_HERBS, HerbParameter
 from .multi_objective_optimizer import (
-    MultiObjectiveIndividual,
     FormulaEvaluator,
-    OptimizationObjective,
-    OptimizationConfig,
     MOGAResult,
-    PRESET_SCENARIOS,
-    get_preset_scenario,
+    MultiObjectiveIndividual,
+    OptimizationConfig,
 )
 
 logger = logging.getLogger(__name__)

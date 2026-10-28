@@ -13,10 +13,9 @@
     config_value = {"api_key": "sk-abc123", "base_url": "https://api.openai.com"}
     encrypted_config = encrypt_dict_field(config_value, sensitive_keys=["api_key"])
 """
-import json
 import logging
 import os
-from typing import Any, Optional
+from typing import Optional
 
 from cryptography.fernet import Fernet
 
@@ -185,7 +184,6 @@ def rotate_encryption_key(old_key: str, new_key: str) -> dict:
     Returns:
         {"rotated_count": int, "failed_count": int}
     """
-    import copy
 
     old_fernet = Fernet(old_key)
     new_fernet = Fernet(new_key)

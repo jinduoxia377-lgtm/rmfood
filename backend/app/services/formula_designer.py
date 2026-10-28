@@ -11,6 +11,7 @@
 3. 硬编码 _BUILTIN_HERBS（仅用于测试/开发）
 """
 from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -26,7 +27,7 @@ class FormulaDesigner:
     def __init__(self, knowledge_base: dict):
         self._kb = knowledge_base
         self._data_source = self._detect_data_source()
-    
+
     def _detect_data_source(self) -> str:
         """检测当前使用的数据来源"""
         try:
@@ -51,7 +52,7 @@ class FormulaDesigner:
         Returns dict with keys: summary, details, data (list[dict]), scores
         """
         effects = intent.get("target_effects") or ["免疫调节", "抗氧化"]
-        
+
         logger.info(f"[FormulaDesigner] 数据来源: {self._data_source}")
 
         # 肽类问题走专用路径
@@ -87,7 +88,7 @@ class FormulaDesigner:
     ) -> dict:
         """使用七步专业引擎生成配方"""
         try:
-            from .formula.seven_step_engine import SevenStepFormulaEngine, FormulaRequest
+            from .formula.seven_step_engine import FormulaRequest, SevenStepFormulaEngine
 
             product_form = intent.get("product_form", "保健饮品")
             target_group = intent.get("target_group", "adult")
@@ -150,23 +151,47 @@ class FormulaDesigner:
     ) -> dict:
         """使用统一公式引擎生成配方"""
         try:
+            from .ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
             from .ai.models import get_unified_formula_engine
-            from .ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
 
-            # 构建 herb_db
+            # 构建 herb_db / herb_vocab —— 优先使用 HerbKnowledgeService 数据库药材
+            # （修复 P1-1：原实现硬编码 _BUILTIN_HERBS 约 60 个键且含大量重复 ID，
+            #  返回的药材名是 ID 而非中文名。）
             herb_db = {}
-            for hid, herb in _BUILTIN_HERBS.items():
-                herb_db[herb.herb_id] = {
-                    "name_cn": herb.name_cn,
-                    "efficacy_scores": herb.efficacy_scores,
-                    "safety_index": herb.safety_index,
-                    "cost_per_gram": herb.cost_per_gram,
-                    "tastes": [],
-                    "antagonistic_pairs": herb.antagonistic_pairs,
-                    "synergy_partners": herb.synergy_partners,
-                }
+            hk = get_global_herb_knowledge()
+            if hk is not None:
+                all_herbs = hk.get_herbs()
+                for hid, herb in all_herbs.items():
+                    herb_db[hid] = {
+                        "name_cn": getattr(herb, "name_cn", hid) or hid,
+                        "efficacy_scores": dict(getattr(herb, "efficacy_scores", None) or {}),
+                        "safety_index": getattr(herb, "safety_index", 0.9),
+                        "cost_per_gram": getattr(herb, "cost_per_gram", 0.15),
+                        "tastes": [],
+                        "dosage_min": getattr(herb, "dosage_min", 3.0),
+                        "dosage_max": getattr(herb, "dosage_max", 30.0),
+                        "antagonistic_pairs": list(getattr(herb, "antagonistic_pairs", None) or []),
+                        "synergy_partners": list(getattr(herb, "synergy_partners", None) or []),
+                    }
 
-            herb_vocab = list(_BUILTIN_HERBS.keys())
+            if not herb_db:
+                # 极端兜底：数据库未初始化时使用内置库（仍可运行，但明确告警）
+                logger.warning("[FormulaDesigner] HerbKnowledgeService 未初始化，v2 引擎回退内置药材库")
+                from .ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
+                for hid, herb in _BUILTIN_HERBS.items():
+                    herb_db[herb.herb_id] = {
+                        "name_cn": herb.name_cn,
+                        "efficacy_scores": herb.efficacy_scores,
+                        "safety_index": herb.safety_index,
+                        "cost_per_gram": herb.cost_per_gram,
+                        "tastes": [],
+                        "dosage_min": herb.dosage_min,
+                        "dosage_max": herb.dosage_max,
+                        "antagonistic_pairs": herb.antagonistic_pairs,
+                        "synergy_partners": herb.synergy_partners,
+                    }
+
+            herb_vocab = list(herb_db.keys())
 
             engine = get_unified_formula_engine(herb_db=herb_db, herb_vocab=herb_vocab)
 

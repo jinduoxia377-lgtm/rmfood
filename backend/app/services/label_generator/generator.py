@@ -13,7 +13,7 @@ from __future__ import annotations
 import io
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional
+from typing import Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,8 @@ class LabelGenerator:
             raise ImportError(self._import_error)
         try:
             import barcode
-            from barcode.writer import ImageWriter
             import qrcode
+            from barcode.writer import ImageWriter
             from PIL import Image, ImageDraw, ImageFont
 
             self._barcode_module = barcode
@@ -190,7 +190,7 @@ class LabelGenerator:
         deep_link = f"{self._deep_link_base}/{entity_type}/{entity_id}"
 
         svg_parts = [
-            f'<?xml version="1.0" encoding="UTF-8"?>',
+            '<?xml version="1.0" encoding="UTF-8"?>',
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">',
             f'  <rect width="{w}" height="{h}" fill="white" stroke="#ddd" stroke-width="1"/>',
             f'  <text x="10" y="20" font-family="monospace" font-size="14" fill="#000">[{entity_type.upper()}] #{entity_id}</text>',
@@ -211,7 +211,7 @@ class LabelGenerator:
                 import re
                 match = re.search(r'<svg[^>]*>(.*?)</svg>', svg_content, re.DOTALL)
                 if match:
-                    svg_parts.append(f'  <!-- Code128 Barcode -->')
+                    svg_parts.append('  <!-- Code128 Barcode -->')
                     svg_parts.append(f'  <g transform="translate({w - 180}, 65) scale(0.5)">'
                                      f'{match.group(1)}</g>')
             except Exception as e:

@@ -1,94 +1,94 @@
 """RMFOOD 服务层"""
-from .auth import AuthService
-from .user import UserService
-from .formula import FormulaService
-from .experiment_service import ExperimentService
-from .ingredient import IngredientService
-from .peptide import PeptideService
 from .ai import AIService, ai_service
-from .cost_calculator import (
-    CostCalculator,
-    CostCalculationResult,
-    CostEffectivenessResult,
-    OptimizationResult,
-    CostBreakdownItem,
-    CostUnit,
-    cost_calculator,
-    calculate_formula_cost,
-    calculate_cost_effectiveness,
-    optimize_cost_constraints,
-    INGREDIENT_COSTS,
-)
-from .data_preprocessing import (
-    DataPreprocessingPipeline,
-    data_preprocessing_pipeline,
-    ParameterNormalizer,
-    MissingValueHandler,
-    EffectEncoder,
-    HerbFeatureExtractor,
-    CompatibilityFeatureBuilder,
-    PreprocessingConfig,
-    EFFECT_ENCODINGS,
-    CATEGORY_ENCODINGS,
-)
-from .notification import NotificationService
-from .workflow import WorkflowService
-from .file_generator import FileGeneratorService, file_generator_service, FileFormat, TaskStatus
-from .document_templates import (
-    DocumentTemplateService,
-    document_template_service,
-    DocumentConverter,
-    MarkdownParser,
-    HTMLParser,
-    ChineseMedicineReportTemplate,
-    ExperimentDataTemplate,
-    FormulaAnalysisReportTemplate,
-)
-from .synthetic_data_generator import (
-    SyntheticFormulaGenerator,
-    SyntheticDataQualityAssessor,
-    SyntheticDataStorage,
-    Formula,
-    generate_ingredient_perturbations,
-)
+from .answer_formatter import AnswerFormatter
+from .auth import AuthService
 from .constraint_penalty import (
+    Constraint,
     ConstraintPenaltyMechanism,
-    PenaltyFunctionFactory,
-    SoftConstraintScorer,
     ConstraintVisualizer,
     PenaltyForm,
-    Constraint,
+    PenaltyFunctionFactory,
+    SoftConstraintScorer,
     create_penalty_aware_objective,
 )
+from .cost_calculator import (
+    INGREDIENT_COSTS,
+    CostBreakdownItem,
+    CostCalculationResult,
+    CostCalculator,
+    CostEffectivenessResult,
+    CostUnit,
+    OptimizationResult,
+    calculate_cost_effectiveness,
+    calculate_formula_cost,
+    cost_calculator,
+    optimize_cost_constraints,
+)
+from .data_preprocessing import (
+    CATEGORY_ENCODINGS,
+    EFFECT_ENCODINGS,
+    CompatibilityFeatureBuilder,
+    DataPreprocessingPipeline,
+    EffectEncoder,
+    HerbFeatureExtractor,
+    MissingValueHandler,
+    ParameterNormalizer,
+    PreprocessingConfig,
+    data_preprocessing_pipeline,
+)
+from .data_preprocessing_pipeline import (
+    AutoDataCleaner,
+    AutoFeatureEngineer,
+    DataPreprocessingPipeline,
+    DataQualityMonitor,
+    OutlierDetector,
+    PipelineConfig,
+    PipelineManager,
+)
+from .document_templates import (
+    ChineseMedicineReportTemplate,
+    DocumentConverter,
+    DocumentTemplateService,
+    ExperimentDataTemplate,
+    FormulaAnalysisReportTemplate,
+    HTMLParser,
+    MarkdownParser,
+    document_template_service,
+)
+from .experiment_service import ExperimentService
+from .file_generator import FileFormat, FileGeneratorService, TaskStatus, file_generator_service
+from .formula import FormulaService
+from .formula_designer import FormulaDesigner
 from .historical_learning import (
     EnhancedHistoricalLearner,
     EnhancedSimilarityCalculator,
-    KnowledgeGraphEnhancer,
     FeedbackLearningSystem,
     FormulaEmbedding,
+    KnowledgeGraphEnhancer,
 )
-from .data_preprocessing_pipeline import (
-    DataPreprocessingPipeline,
-    AutoDataCleaner,
-    OutlierDetector,
-    AutoFeatureEngineer,
-    DataQualityMonitor,
-    PipelineManager,
-    PipelineConfig,
-)
+from .ingredient import IngredientService
+from .intent_analyzer import IntentAnalyzer
 from .knowledge_base import (
     HERB_KNOWLEDGE_BASE,
-    search_herbs,
-    get_herb,
     get_food_homology_herbs,
+    get_herb,
     get_herbs_by_effect,
+    search_herbs,
 )
-from .intent_analyzer import IntentAnalyzer
 from .knowledge_retriever import KnowledgeRetriever
+from .notification import NotificationService
+from .peptide import PeptideService
 from .reasoner import Reasoner
-from .formula_designer import FormulaDesigner
-from .answer_formatter import AnswerFormatter
+from .synthetic_data_generator import (
+    Formula,
+    SyntheticDataQualityAssessor,
+    SyntheticDataStorage,
+    SyntheticFormulaGenerator,
+    generate_ingredient_perturbations,
+)
 from .thinking_engine import ThinkingEngine, thinking_engine
+from .user import UserService
+from .workflow import WorkflowService
 
 __all__ = [
     "AuthService",

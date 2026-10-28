@@ -2,31 +2,27 @@
 COA Word/PDF 文档生成器
 支持基于模板生成 Word 和 PDF 格式的出厂检验报告
 """
-import logging
 import io
-import tempfile
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
+import logging
 
 logger = logging.getLogger(__name__)
 
 try:
     from docx import Document
-    from docx.shared import Pt, Inches, RGBColor
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Inches, Pt, RGBColor
     HAS_DOCX = True
 except ImportError:
     HAS_DOCX = False
 
 try:
     from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
     HAS_REPORTLAB = True
 except ImportError:
     HAS_REPORTLAB = False

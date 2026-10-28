@@ -7,11 +7,11 @@
 """
 
 from app.core.realtime.notification_center import (
+    NotificationCategory,
+    NotificationChannel,
+    NotificationPriority,
     NotificationService,
     UserNotificationPreference,
-    NotificationChannel,
-    NotificationCategory,
-    NotificationPriority,
 )
 
 __all__ = [

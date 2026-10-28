@@ -10,10 +10,9 @@
 from __future__ import annotations
 
 import logging
-import math
 import random
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +155,6 @@ class AutoregressiveFormulaGenerator:
         self, used_herbs: List[str], signal: List[float]
     ) -> float:
         """计算停止概率（简化实现，实际应使用 LSTM 输出层）"""
-        import math
         # 基于序列长度和目标功效数的启发式
         n_herbs = len(used_herbs)
         base_prob = n_herbs / (self.max_seq_len + 1)

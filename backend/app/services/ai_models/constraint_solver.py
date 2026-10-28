@@ -11,9 +11,9 @@ ConstraintSolver - 多约束条件优化求解器
 import logging
 import math
 import random
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Tuple
-from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 

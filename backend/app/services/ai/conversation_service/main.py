@@ -11,8 +11,8 @@
 
 替代方案: 使用 /api/v1/ai/chat 和 /api/v1/ai/chat/stream 端点
 """
-import warnings
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 warnings.warn(
@@ -23,6 +23,7 @@ warnings.warn(
 
 # 保持接口兼容但标记为废弃
 from fastapi import FastAPI  # noqa: F401
+
 from .chat_processor import ChatProcessor  # noqa: F401
 
 app = FastAPI(

@@ -6,10 +6,10 @@ import logging
 from typing import Optional
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import User, UserRole, AuditLog
+from ..models import AuditLog, User, UserRole
 from ..schemas.user import UserCreate, UserUpdate
 
 logger = logging.getLogger(__name__)

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import socket
 import time
 from dataclasses import dataclass, field
@@ -23,7 +24,7 @@ from urllib.parse import urlparse
 import httpx
 
 from app.core.config import settings
-import os
+
 
 def _get_setting_with_fallback(setting_name: str, default: str = "") -> str:
     """
@@ -34,30 +35,30 @@ def _get_setting_with_fallback(setting_name: str, default: str = "") -> str:
     value = getattr(settings, setting_name, "")
     if value:
         return str(value)
-    
+
     # 尝试从环境变量获取（转换为大写并替换下划线）
     env_name = setting_name.upper()
     value = os.environ.get(env_name, "")
     if value:
         return value
-    
+
     # 尝试从ai_service嵌套配置获取
     ai_service = getattr(settings, "ai_service", None)
     if ai_service:
         nested_value = getattr(ai_service, setting_name.replace("openai_", "").replace("llm_", ""), "")
         if nested_value:
             return str(nested_value)
-    
+
     return default
 
 from app.services.llm_service import (
-    LLMConfig,
-    LLMMessage,
     PROVIDER_CUSTOM,
     PROVIDER_DEEPSEEK,
     PROVIDER_OPENAI,
     PROVIDER_QWEN,
     PROVIDER_ZHIPU,
+    LLMConfig,
+    LLMMessage,
     llm_service,
 )
 
@@ -454,7 +455,7 @@ class ConnectivityChecker:
                         check_id="N-03",
                         name="HTTP 探测",
                         status="pass",
-                        detail=f"GET /models 返回 200 OK（服务可达且认证通过）",
+                        detail="GET /models 返回 200 OK（服务可达且认证通过）",
                         suggestion="无需操作",
                         fixable=False,
                     )
@@ -463,7 +464,7 @@ class ConnectivityChecker:
                         check_id="N-03",
                         name="HTTP 探测",
                         status="warn",
-                        detail=f"GET /models 返回 401 Unauthorized（端点可达但认证失败）",
+                        detail="GET /models 返回 401 Unauthorized（端点可达但认证失败）",
                         suggestion="API Key 可能无效或已过期，请检查密钥配置",
                     )
                 elif status_code == 429:
@@ -471,7 +472,7 @@ class ConnectivityChecker:
                         check_id="N-03",
                         name="HTTP 探测",
                         status="warn",
-                        detail=f"GET /models 返回 429 Too Many Requests（请求频率受限）",
+                        detail="GET /models 返回 429 Too Many Requests（请求频率受限）",
                         suggestion="请求过于频繁，请稍后重试或升级套餐",
                     )
                 elif status_code == 404:
@@ -479,7 +480,7 @@ class ConnectivityChecker:
                         check_id="N-03",
                         name="HTTP 探测",
                         status="warn",
-                        detail=f"GET /models 返回 404 Not Found（端点不支持 /models）",
+                        detail="GET /models 返回 404 Not Found（端点不支持 /models）",
                         suggestion="部分提供商不暴露 /models 端点，这不影响正常使用",
                         fixable=False,
                     )
@@ -675,7 +676,6 @@ class DiagnosticEngine:
 
     async def run_full_diagnosis(self) -> DiagnosticReport:
         """执行完整的三级诊断"""
-        from datetime import datetime, timezone
 
         logger.info("[DiagnosticEngine] 开始全量诊断...")
 

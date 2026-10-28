@@ -3,11 +3,11 @@ FactEngine 模块 — 确定性计算引擎 + AI 叙述生成
 对标 FormLab: "Numbers computed by software, AI writes prose"
 """
 from .engine import (
-    FactEngine,
-    CostFact,
-    ComplianceFact,
     AllergenFact,
     AnomalyFact,
+    ComplianceFact,
+    CostFact,
+    FactEngine,
     TheoreticalFact,
     get_fact_engine,
 )

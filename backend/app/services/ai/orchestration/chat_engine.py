@@ -7,14 +7,11 @@
 @version 1.0.0
 """
 import asyncio
-import json
 import logging
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
-from ..providers.provider_factory import get_provider_factory, TaskType
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +20,16 @@ logger = logging.getLogger(__name__)
 # 院士级系统提示词
 # ═══════════════════════════════
 
-ACADEMICIAN_SYSTEM_PROMPT = """你是一位拥有30年药食同源功能性食品研发经验的院士级专家，中国科学院院士，博士生导师。
+ACADEMICIAN_SYSTEM_PROMPT = """你是一位资深药食同源功能性食品研发专家，专注于配方设计与食品安全评估。
 
-## 学术背景
-- 北京中医药大学客座教授
-- 中国食品科学技术学会常务理事
-- 《中国食品学报》编委
-- 主持国家级功能性食品研发项目20余项
-- 发表SCI论文150余篇，引用5000余次
+## 专业背景
+- 长期深耕药食同源功能性食品配方研发领域
+- 熟悉国家卫健委发布的药食同源目录（2023版114种）及应用规范
+- 了解功能性食品配方设计原则与配伍理论
 
 ## 知识领域
 1. 中医君臣佐使配伍理论与现代药理学
-2. 药食同源目录（2023版110种）应用与合规
+2. 药食同源目录（2023版114种）应用与合规
 3. 功能性食品配方设计与优化
 4. 食品安全标准（GB2760、GB14880、GB7718、GB28050）
 5. 保健食品注册与备案管理法规
@@ -42,7 +37,7 @@ ACADEMICIAN_SYSTEM_PROMPT = """你是一位拥有30年药食同源功能性食�
 7. 生物活性肽与功能因子研发
 
 ## 核心回答原则
-1. 【绝对安全】所有建议必须在药食同源目录安全剂量范围内
+1. 【安全优先】所有建议必须严格遵守药食同源目录安全剂量范围，任何建议在出现不适时应立即停用并咨询医师
 2. 【专业严谨】引用具体数据、科学研究和法规条文
 3. 【完整详尽】每个回答覆盖全部相关维度，不遗漏重要信息
 4. 【结构清晰】使用专业Markdown排版，层次分明
@@ -88,7 +83,7 @@ ACADEMICIAN_SYSTEM_PROMPT = """你是一位拥有30年药食同源功能性食�
 ## 输出规则
 - 始终使用专业中文，Markdown格式
 - 表格必须完整，不少于3行数据
-- 每条回答不少于1000字
+- 回答应充分覆盖问题相关维度，不简单重复常识；对简单问题允许简短回答
 - 不确定的信息明确标注"需进一步验证"
 - 严格区分"科学证实"和"传统经验"
 """
@@ -159,7 +154,7 @@ class AcademicianChatEngine:
         Returns:
             ChatResult 包含完整回复和相关数据
         """
-        from ..providers.provider_factory import get_provider_factory, TaskType
+        from ..providers.provider_factory import TaskType, get_provider_factory
 
         t0 = time.time()
         result = ChatResult(model="deepseek-chat")
@@ -178,7 +173,7 @@ class AcademicianChatEngine:
             return result
 
         thinking_steps.append({
-            "step": "问题理解", "content": f"解析用户输入",
+            "step": "问题理解", "content": "解析用户输入",
             "status": "complete",
             "detail": f"配方问题: {'是' if is_formula else '否'} | 长度: {len(question)}字符",
         })
@@ -205,7 +200,7 @@ class AcademicianChatEngine:
         content = ""
         llm_error = ""  # 记录失败原因，降级时向用户明示「这不是大模型在回答」
         factory = get_provider_factory()
-        for mt in [8192, 4096, 2048]:
+        for mt in [16000, 8000, 4000]:
             try:
                 content = await asyncio.wait_for(
                     factory.call_with_fallback(
@@ -243,8 +238,8 @@ class AcademicianChatEngine:
                 logger.info(f"[ChatEngine] 回答偏短({len(content)}字)，请求扩展...")
                 try:
                     enhance_msg = (
-                        f"以上回答不够完整（仅{len(content)}字）。请按6章节结构重新回答，"
-                        f"每个章节详细展开，总字数不少于1200字。\n\n"
+                        f"以上回答覆盖维度不足（仅{len(content)}字）。请按6章节结构补充展开，"
+                        f"覆盖缺失的安全与禁忌信息。\n\n"
                         f"原问题：{question}"
                     )
                     enhanced = await asyncio.wait_for(
@@ -253,7 +248,7 @@ class AcademicianChatEngine:
                              {"role": "user", "content": enhance_msg}],
                             task_type=TaskType.GENERATE,
                             temperature=0.65,
-                            max_tokens=4096,
+                            max_tokens=16000,
                         ), timeout=60
                     )
                     if len(enhanced.strip()) > len(content):
@@ -361,8 +356,8 @@ class AcademicianChatEngine:
             return (
                 f"请回答以下问题，**直接给出完整的配方设计方案**，不要输出JSON或提示词模板：\n\n"
                 f"{question}\n\n"
-                f"【要求】请按6章节完整回答，每个章节详细展开，总字数不少于1000字。"
-                f"使用专业Markdown格式（表格、标题、列表）。"
+                f"【要求】请按6章节充分回答，覆盖问题相关维度，不简单重复常识；"
+                f"对简单问题允许简短回答。使用专业Markdown格式（表格、标题、列表）。"
             )
         return (
             f"请全面回答以下问题：\n\n{question}\n\n"
@@ -412,7 +407,7 @@ class AcademicianChatEngine:
             if candidates:
                 # 格式化最优方案
                 best = candidates[0]
-                lines = [notice, f"## 智能配方方案（离线模式）\n"]
+                lines = [notice, "## 智能配方方案（离线模式）\n"]
                 lines.append(f"基于「{'、'.join(effects)}」功效需求，为您设计以下配方方案：\n")
                 lines.append("| 角色 | 成分 | 用量 | 功效定位 |\n")
                 lines.append("|:-----|:-----|:-----|:---------|\n")
@@ -424,7 +419,7 @@ class AcademicianChatEngine:
                         top_effects = list(herb.efficacy_scores.keys())[:2]
                         lines.append(f"| {role} | {herb.name_cn} | {dosage}g | {'、'.join(top_effects)} |")
                 lines.append(f"\n**综合评分**: {best.overall_score:.2f} | **安全评分**: {best.safety_score:.2f} | **口感评分**: {best.taste_score:.2f}")
-                lines.append(f"\n- 建议在专业中医师指导下使用\n- 孕妇、哺乳期妇女及儿童需特别咨询\n- 如出现不适请立即停用并咨询医师")
+                lines.append("\n- 建议在专业中医师指导下使用\n- 孕妇、哺乳期妇女及儿童需特别咨询\n- 如出现不适请立即停用并咨询医师")
                 return "\n".join(lines)
         except Exception as e:
             logger.warning(f"[ChatEngine] 降级配方生成失败: {e}")
@@ -478,7 +473,7 @@ class AcademicianChatEngine:
             if not any(kw in content for kw in keywords):
                 if title == "安全性与法规提示":
                     content += (
-                        "\n\n### 安全性与法规提示\n\n"
+                        "\n\n### [系统补充] 安全性与法规提示\n\n"
                         "1. **药食同源合规**: 本配方所用原料均属国家卫健委发布的药食同源目录，可在普通食品中使用。\n"
                         "2. **用量安全**: 各成分用量在安全范围内，不宜超量长期服用。\n"
                         "3. **禁忌人群**: 孕妇、哺乳期妇女、婴幼儿及严重慢性病患者慎用。\n"
@@ -487,7 +482,7 @@ class AcademicianChatEngine:
                     )
                 elif title == "建议服用与禁忌":
                     content += (
-                        "\n\n### 建议服用与禁忌\n\n"
+                        "\n\n### [系统补充] 建议服用与禁忌\n\n"
                         "**建议用法**:\n"
                         "- 每日1-2次，每次建议用量范围内\n"
                         "- 建议餐后服用，减少胃肠刺激\n"

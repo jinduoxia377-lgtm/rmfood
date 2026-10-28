@@ -8,18 +8,18 @@
 - 多版本并行对比
 - 分支支持（实验性功能）
 """
-import logging
 import difflib
+import logging
 import re
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
+from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, and_
 
-from app.models.prompt_version import PromptVersion
 from app.core.middleware.exceptions import NotFoundError as ResourceNotFoundException
+from app.models.prompt_version import PromptVersion
 
 try:
     from app.core.middleware.audit_system import AuditService
@@ -74,39 +74,39 @@ class SemanticVersion:
     major: int
     minor: int
     patch: int
-    
+
     def __str__(self) -> str:
         return f"{self.major}.{self.minor}.{self.patch}"
-    
+
     def increment_major(self) -> 'SemanticVersion':
         return SemanticVersion(self.major + 1, 0, 0)
-    
+
     def increment_minor(self) -> 'SemanticVersion':
         return SemanticVersion(self.major, self.minor + 1, 0)
-    
+
     def increment_patch(self) -> 'SemanticVersion':
         return SemanticVersion(self.major, self.minor, self.patch + 1)
-    
+
     @classmethod
     def parse(cls, version_str: str) -> 'SemanticVersion':
         """解析版本字符串"""
         match = re.match(r'(\d+)\.(\d+)\.(\d+)', str(version_str))
         if match:
             return cls(int(match.group(1)), int(match.group(2)), int(match.group(3)))
-        
+
         parts = str(version_str).split('.')
         if len(parts) == 2:
             return cls(int(parts[0]), int(parts[1]), 0)
         elif len(parts) == 1:
             return cls(int(parts[0]), 0, 0)
-        
+
         return cls(1, 0, 0)
 
 
 class VersioningService:
     """
     版本控制服务
-    
+
     提供Prompt模板的完整版本生命周期管理。
     支持语义化版本、差异对比和回滚操作。
     """
@@ -125,21 +125,21 @@ class VersioningService:
     ) -> PromptVersion:
         """
         创建新版本
-        
+
         自动计算版本号（Semantic Versioning）：
         - MAJOR (major): 结构性重大变更
         - MINOR (minor): 功能新增或重要修改
         - PATCH (patch): 小修复或文字调整
-        
+
         存储完整快照并计算与前版本的diff_summary
-        
+
         Args:
             prompt_id: Prompt模板ID
             user_id: 创建者用户ID
             content: 完整内容快照
             changelog: 可选的变更日志
             change_type: 变更类型 (major/minor/patch)
-            
+
         Returns:
             创建的PromptVersion对象
         """
@@ -213,12 +213,12 @@ class VersioningService:
     ) -> Dict[str, Any]:
         """
         获取版本历史（分页，按版本号降序）
-        
+
         Args:
             prompt_id: Prompt模板ID
             page: 页码
             per_page: 每页条数
-            
+
         Returns:
             分页的版本列表
         """
@@ -273,14 +273,14 @@ class VersioningService:
     ) -> PromptVersion:
         """
         获取特定版本详情
-        
+
         Args:
             prompt_id: Prompt模板ID
             version_id: 版本记录ID
-            
+
         Returns:
             PromptVersion对象
-            
+
         Raises:
             ResourceNotFoundException: 版本不存在
         """
@@ -308,18 +308,18 @@ class VersioningService:
     ) -> DiffResult:
         """
         版本对比Diff
-        
+
         使用difflib进行文本差异分析：
         - 返回结构化的增删改标记
         - 支持行级和字符级粒度
         - 高亮显示便于前端渲染
-        
+
         Args:
             prompt_id: Prompt模板ID
             v1_id: 版本1 ID
             v2_id: 版本2 ID
             context_lines: 上下文行数
-            
+
         Returns:
             DiffResult对象
         """
@@ -431,21 +431,21 @@ class VersioningService:
     ) -> Dict[str, Any]:
         """
         回滚到指定版本
-        
+
         操作流程：
         1. 验证目标版本存在
         2. 基于目标版本创建新分支版本号
         3. 保留原版本历史（不删除）
         4. 记录回滚操作到审计日志
         5. （可选）通知团队成员
-        
+
         Args:
             prompt_id: Prompt模板ID
             version_id: 目标版本ID
             user_id: 执行回滚的用户ID
             reason: 回滚原因
             create_new_version: 是否创建新版本记录
-            
+
         Returns:
             回滚结果信息
         """
@@ -526,14 +526,14 @@ class VersioningService:
     ) -> ComparisonMatrix:
         """
         多版本并行对比矩阵（最多5个版本）
-        
+
         Args:
             prompt_id: Prompt模板ID
             version_ids: 要对比的版本ID列表（最多5个）
-            
+
         Returns:
             ComparisonMatrix对象
-            
+
         Raises:
             ValueError: 超过最大版本数量限制
         """
@@ -597,17 +597,17 @@ class VersioningService:
     ) -> PromptVersion:
         """
         创建实验分支（实验性功能）
-        
+
         从指定版本派生新分支：
         - 不影响主线（main分支）
         - 可后续merge到主线或丢弃
-        
+
         Args:
             prompt_id: Prompt模板ID
             base_version_id: 基础版本ID
             branch_name: 分支名称（如"experiment/new-feature"）
             user_id: 创建者用户ID
-            
+
         Returns:
             新创建的分支版本
         """
@@ -672,13 +672,13 @@ class VersioningService:
     ) -> PromptVersion:
         """
         获取最新版本
-        
+
         Args:
             prompt_id: Prompt模板ID
-            
+
         Returns:
             最新版本对象
-            
+
         Raises:
             ResourceNotFoundException: 无版本记录
         """

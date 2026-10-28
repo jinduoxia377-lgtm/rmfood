@@ -1,7 +1,7 @@
 """适配器数据模型"""
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class AdapterType(str, Enum):
@@ -58,7 +58,7 @@ class ImportStats:
 # Export all models
 __all__ = [
     "AdapterType",
-    "ImportResult", 
+    "ImportResult",
     "FieldMapping",
     "AdapterConfig",
     "ImportStats",

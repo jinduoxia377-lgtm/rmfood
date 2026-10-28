@@ -17,11 +17,10 @@ except ImportError:
 
 from .synergy_models import (
     MechanismType,
-    TasteType,
-    SynergyScore,
     SynergyReport,
+    SynergyScore,
+    TasteType,
 )
-
 
 logger = logging.getLogger(__name__)
 

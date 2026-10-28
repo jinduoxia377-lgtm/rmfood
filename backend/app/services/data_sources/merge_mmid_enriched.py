@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """Merge MMID enriched data into the existing herb database.
 
@@ -6,9 +7,9 @@ logger = logging.getLogger(__name__)
 不再参与运行时数据流，保留仅为数据考古目的。
 """
 import json
+import os
 import re
 import sys
-import os
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -216,7 +217,7 @@ for h in merged_herbs:
     if h.get("botanical_source"):
         has_source += 1
 
-logger.info(f"\nEnrichment stats (MMID-only herbs):")
+logger.info("\nEnrichment stats (MMID-only herbs):")
 logger.info(f"  四氣: {nature_counts}")
 logger.info(f"  功效原文: {has_efficacy}")
 logger.info(f"  產地: {has_origin}")
@@ -224,11 +225,11 @@ logger.info(f"  炮製: {has_processing}")
 logger.info(f"  歸經: {has_meridians}")
 logger.info(f"  植物來源: {has_source}")
 
-logger.info(f"\n五味分佈 (Top 10):")
+logger.info("\n五味分佈 (Top 10):")
 for k, v in sorted(flavor_counts.items(), key=lambda x: -x[1])[:10]:
     logger.info(f"  {k}: {v}")
 
 if toxicity_counts:
-    logger.info(f"\n毒性分佈:")
+    logger.info("\n毒性分佈:")
     for k, v in sorted(toxicity_counts.items(), key=lambda x: -x[1]):
         logger.info(f"  {k}: {v}")

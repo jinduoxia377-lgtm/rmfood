@@ -2,13 +2,11 @@
 
 提供分页查询的辅助函数
 """
-from typing import TypeVar, Generic, Sequence
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Sequence, TypeVar
+
 from pydantic import BaseModel
-
-from app.core.response import PaginatedResponse
-
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar('T')
 

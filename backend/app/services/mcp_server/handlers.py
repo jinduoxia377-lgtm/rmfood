@@ -7,7 +7,7 @@ MCP 工具处理器
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,9 @@ async def handle_tool_call(db, tool_name: str, args: Dict[str, Any]) -> Any:
 
 async def _list_formulas(db, args: Dict) -> List[Dict]:
     """列出配方"""
-    from app.models.formula import Formula
     from sqlalchemy import select
+
+    from app.models.formula import Formula
 
     org_id = args.get("organization_id")
     status = args.get("status")
@@ -82,8 +83,9 @@ async def _list_formulas(db, args: Dict) -> List[Dict]:
 
 async def _get_formula(db, args: Dict) -> Dict:
     """获取配方详情"""
-    from app.models.formula import Formula
     from sqlalchemy import select
+
+    from app.models.formula import Formula
 
     formula_id = args["formula_id"]
     row = db.execute(select(Formula).where(Formula.id == formula_id)).scalar_one_or_none()
@@ -104,8 +106,9 @@ async def _get_formula(db, args: Dict) -> Dict:
 
 async def _search_formulas(db, args: Dict) -> List[Dict]:
     """搜索配方"""
+    from sqlalchemy import or_, select
+
     from app.models.formula import Formula
-    from sqlalchemy import select, or_
 
     query = args.get("query", "")
     limit = args.get("limit", 10)
@@ -130,8 +133,9 @@ async def _search_formulas(db, args: Dict) -> List[Dict]:
 
 async def _search_herbs(db, args: Dict) -> List[Dict]:
     """搜索药材"""
+    from sqlalchemy import or_, select
+
     from app.models.food_material import FoodMaterial
-    from sqlalchemy import select, or_
 
     query = args.get("query", "")
     limit = args.get("limit", 20)
@@ -159,8 +163,9 @@ async def _search_herbs(db, args: Dict) -> List[Dict]:
 
 async def _get_ingredient(db, args: Dict) -> Dict:
     """获取食材详情"""
-    from app.models.food_material import FoodMaterial
     from sqlalchemy import select
+
+    from app.models.food_material import FoodMaterial
 
     ingredient_id = args.get("ingredient_id")
     name = args.get("name")
@@ -188,8 +193,9 @@ async def _get_ingredient(db, args: Dict) -> Dict:
 
 async def _list_ingredients(db, args: Dict) -> List[Dict]:
     """列出食材"""
-    from app.models.food_material import FoodMaterial
     from sqlalchemy import select
+
+    from app.models.food_material import FoodMaterial
 
     property_filter = args.get("property")
     category_filter = args.get("category")
@@ -225,8 +231,9 @@ async def _check_compliance(db, args: Dict) -> Dict:
 
     if formula_id and not ingredients:
         # 从公式获取成分
-        from app.models.formula import Formula
         from sqlalchemy import select
+
+        from app.models.formula import Formula
         formula = db.execute(select(Formula).where(Formula.id == formula_id)).scalar_one_or_none()
         if formula:
             ingredients = formula.ingredients or []
@@ -270,8 +277,9 @@ async def _calculate_cost(db, args: Dict) -> Dict:
         return {"error": "formula_id is required"}
 
     # 获取配方成分
-    from app.models.formula import Formula
     from sqlalchemy import select
+
+    from app.models.formula import Formula
     formula = db.execute(select(Formula).where(Formula.id == formula_id)).scalar_one_or_none()
     if not formula:
         return {"error": f"Formula {formula_id} not found"}
@@ -297,8 +305,9 @@ async def _get_stability_prediction(db, args: Dict) -> Dict:
     if not formula_id:
         return {"error": "formula_id is required"}
 
-    from app.models.formula import Formula
     from sqlalchemy import select
+
+    from app.models.formula import Formula
     formula = db.execute(select(Formula).where(Formula.id == formula_id)).scalar_one_or_none()
     if not formula:
         return {"error": f"Formula {formula_id} not found"}
@@ -318,8 +327,9 @@ async def _get_stability_prediction(db, args: Dict) -> Dict:
 
 async def _get_batch(db, args: Dict) -> Dict:
     """获取批记录"""
-    from app.models.batch_record import Batch
     from sqlalchemy import select
+
+    from app.models.batch_record import Batch
 
     batch_id = args["batch_id"]
     row = db.execute(select(Batch).where(Batch.id == batch_id)).scalar_one_or_none()
@@ -340,9 +350,10 @@ async def _get_batch(db, args: Dict) -> Dict:
 
 async def _trace_batch_ingredients(db, args: Dict) -> List[Dict]:
     """反向追溯：批次的原料"""
+    from sqlalchemy import select
+
     from app.models.batch_record import Batch
     from app.models.ingredient_lot import IngredientLot
-    from sqlalchemy import select, join
 
     batch_id = args["batch_id"]
     batch = db.execute(select(Batch).where(Batch.id == batch_id)).scalar_one_or_none()
@@ -381,8 +392,9 @@ async def _trace_ingredient_forward(db, args: Dict) -> List[Dict]:
 
 async def _list_samples(db, args: Dict) -> List[Dict]:
     """列出样品"""
-    from app.models.sample import Sample
     from sqlalchemy import select
+
+    from app.models.sample import Sample
 
     batch_id = args.get("batch_id")
     stmt = select(Sample)
@@ -404,8 +416,9 @@ async def _list_samples(db, args: Dict) -> List[Dict]:
 
 async def _get_sample_result(db, args: Dict) -> Dict:
     """获取样品测试结果"""
-    from app.models.test_report import TestReport
     from sqlalchemy import select
+
+    from app.models.test_report import TestReport
 
     sample_id = args["sample_id"]
     row = db.execute(select(TestReport).where(TestReport.sample_id == sample_id)).scalar_one_or_none()
@@ -441,8 +454,9 @@ async def _get_doe_model(db, args: Dict) -> Dict:
 
 async def _list_organizations(db, args: Dict) -> List[Dict]:
     """列出组织"""
-    from app.models.organization import Organization
     from sqlalchemy import select
+
+    from app.models.organization import Organization
 
     rows = list(db.execute(select(Organization).limit(50)).scalars().all())
     return [{"id": r.id, "name": r.name, "created_at": r.created_at.isoformat() if r.created_at else None} for r in rows]
@@ -450,8 +464,9 @@ async def _list_organizations(db, args: Dict) -> List[Dict]:
 
 async def _get_organization(db, args: Dict) -> Dict:
     """获取组织详情"""
-    from app.models.organization import Organization
     from sqlalchemy import select
+
+    from app.models.organization import Organization
 
     org_id = args["organization_id"]
     row = db.execute(select(Organization).where(Organization.id == org_id)).scalar_one_or_none()
@@ -466,8 +481,9 @@ async def _get_organization(db, args: Dict) -> Dict:
 
 async def _search_knowledge_graph(db, args: Dict) -> List[Dict]:
     """搜索知识图谱"""
+    from sqlalchemy import or_, select
+
     from app.models.knowledge_graph import KnowledgeGraphNode
-    from sqlalchemy import select, or_
 
     query = args.get("query", "")
     node_type = args.get("node_type")
@@ -498,8 +514,9 @@ async def _search_knowledge_graph(db, args: Dict) -> List[Dict]:
 async def _get_erb_property(db, args: Dict) -> Dict:
     """获取药材性味归经"""
     name = args.get("name", "")
-    from app.models.food_material import FoodMaterial
     from sqlalchemy import select
+
+    from app.models.food_material import FoodMaterial
 
     row = db.execute(select(FoodMaterial).where(FoodMaterial.name == name)).scalar_one_or_none()
     if not row:

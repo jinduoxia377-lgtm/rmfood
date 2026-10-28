@@ -1,19 +1,22 @@
 """
-RAG 知识库文档版本管理 (v1.0)
+RAG 知识库文档版本管理 (v2.0)
 
 为每个文档维护版本历史，支持：
 - 上传同名文档时自动创建新版本
 - 查询时返回最新版本
 - 回滚到历史版本
 - 版本变更审计日志
+- 数据库持久化（内存缓存 + PostgreSQL 双写）
 """
 
 import logging
 import uuid
-import json
-from datetime import datetime, timezone
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Optional
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -146,3 +149,100 @@ class DocumentVersionManager:
     def get_total_versions(self) -> int:
         """总版本数"""
         return sum(len(v) for v in self._versioned_docs.values())
+
+    # ═══════════════════════════════════════════════════
+    # 数据库持久化（异步）
+    # ═══════════════════════════════════════════════════
+
+    async def sync_to_db(self, db: AsyncSession) -> None:
+        """将当前版本数据和审计日志持久化到数据库"""
+        from app.models.document_version import DocumentAuditLog as DBLog
+        from app.models.document_version import DocumentVersion as DBVersion
+
+        # 写入版本记录
+        for filename, versions in self._versioned_docs.items():
+            for v in versions:
+                # 检查是否已存在
+                stmt = select(DBVersion).where(DBVersion.id == v.id)
+                result = await db.execute(stmt)
+                if not result.scalar_one_or_none():
+                    db_version = DBVersion(
+                        id=v.id,
+                        version=v.version,
+                        filename=v.filename,
+                        content_type=v.content_type,
+                        chunk_count=v.chunk_count,
+                        file_size=v.file_size,
+                        checksum=v.checksum,
+                        created_at=v.created_at if isinstance(v.created_at, datetime) else datetime.fromisoformat(v.created_at),
+                        metadata_=v.metadata if isinstance(v.metadata, dict) else {},
+                    )
+                    db.add(db_version)
+
+        # 写入审计日志
+        for log in self._audit_log:
+            log_id = log.get("id") or str(uuid.uuid4())
+            stmt = select(DBLog).where(DBLog.id == log_id)
+            result = await db.execute(stmt)
+            if not result.scalar_one_or_none():
+                db_log = DBLog(
+                    id=log_id,
+                    action=log.get("action", "unknown"),
+                    filename=log.get("filename", ""),
+                    version=log.get("version"),
+                    from_version=log.get("from_version"),
+                    to_version=log.get("to_version"),
+                    archived_version=log.get("archived_version"),
+                    timestamp=datetime.fromisoformat(log["timestamp"]) if isinstance(log.get("timestamp"), str) else log.get("timestamp", datetime.utcnow()),
+                    details={},
+                )
+                db.add(db_log)
+
+        await db.commit()
+        logger.info("版本数据已同步到数据库: %d 个文档, %d 条日志",
+                    self.get_document_count(), len(self._audit_log))
+
+    async def load_from_db(self, db: AsyncSession) -> None:
+        """从数据库加载版本数据到内存"""
+        from app.models.document_version import DocumentAuditLog as DBLog
+        from app.models.document_version import DocumentVersion as DBVersion
+
+        # 加载版本
+        stmt = select(DBVersion).order_by(DBVersion.filename, DBVersion.version)
+        result = await db.execute(stmt)
+        db_versions = result.scalars().all()
+
+        for db_v in db_versions:
+            v = DocumentVersion(
+                id=db_v.id,
+                version=db_v.version,
+                filename=db_v.filename,
+                content_type=db_v.content_type,
+                chunk_count=db_v.chunk_count,
+                file_size=db_v.file_size,
+                checksum=db_v.checksum,
+                created_at=db_v.created_at,
+                metadata=db_v.metadata_ or {},
+            )
+            if v.filename not in self._versioned_docs:
+                self._versioned_docs[v.filename] = []
+            self._versioned_docs[v.filename].append(v)
+
+        # 加载审计日志
+        stmt = select(DBLog).order_by(DBLog.timestamp).limit(500)
+        result = await db.execute(stmt)
+        self._audit_log = []
+        for db_log in result.scalars().all():
+            self._audit_log.append({
+                "id": db_log.id,
+                "action": db_log.action,
+                "filename": db_log.filename,
+                "version": db_log.version,
+                "from_version": db_log.from_version,
+                "to_version": db_log.to_version,
+                "archived_version": db_log.archived_version,
+                "timestamp": db_log.timestamp.isoformat() if db_log.timestamp else None,
+            })
+
+        logger.info("从数据库加载版本数据: %d 个文档, %d 条日志",
+                    self.get_document_count(), len(self._audit_log))

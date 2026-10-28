@@ -6,9 +6,9 @@
      法规版本追踪、合规报告生成。
 """
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timezone
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

@@ -17,10 +17,13 @@
 """
 from __future__ import annotations
 
+import asyncio
 import datetime
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
+
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +61,43 @@ EFFECT_LABEL_TO_TCM_KEYWORD: dict[str, list[str]] = {
     "清热祛湿": ["清热", "祛湿", "利湿", "利尿"],
     # 补血
     "补血养血": ["补血", "养血", "调经", "补气"],
+    "补气养血": ["补气", "补血", "养血", "调经"],   # P1: 复合功效展开为真实索引键
     "补气补血": ["补气", "补血", "养血", "免疫调节"],
+    # 代谢
+    "辅助降血脂": ["降脂", "降血脂"],              # P1: 映射到数据库真实"降脂"键
+    "降血脂": ["降脂"],
     # 呼吸系统
     "润肺止咳": ["润肺", "止咳", "祛痰", "清热解毒"],
     "疏风清热": ["疏散风热", "清热解毒", "明目"],
+    # ── P2：补齐前端 CATEGORY_EFFECTS 其余 19 个 label（generateTabConfig.ts:134-144）
+    #    映射到古籍/药典常用功效词（与既有 26 键风格一致）；无对应者回退 [label]（build_tcm_keywords L78）。
+    # 免疫 / 体力
+    "提高抵抗力": ["补气", "益气固表", "免疫调节", "扶正"],
+    "缓解疲劳": ["抗疲劳", "益气健脾", "补气", "补肾"],
+    "提升精力": ["补气", "补肾", "益精", "抗疲劳"],
+    # 消化
+    "促进消化": ["消食", "健脾", "理气", "助消化"],
+    "调理脾胃": ["健脾", "和胃", "理气", "消化系统"],
+    # 神经 / 睡眠
+    "安神定志": ["安神", "养心安神", "宁心", "定志"],
+    # 美容 / 抗衰
+    "美容养颜": ["美容养颜", "养血", "活血", "润肤"],
+    "护肤保湿": ["养阴生津", "滋阴润燥", "润肤", "美容养颜"],
+    "延缓衰老": ["抗衰老", "抗氧化", "补肾", "益精"],
+    # 心血管 / 循环
+    "保护血管": ["心血管保护", "活血", "化瘀", "降脂"],
+    "促进循环": ["活血", "通络", "温通经脉", "改善微循环"],
+    # 骨关节 / 视力
+    "强健筋骨": ["强筋骨", "补肝肾", "壮骨", "益精"],
+    "补钙健骨": ["补肝肾", "强筋骨", "壮骨", "益精"],
+    "明目护眼": ["明目", "养肝", "清肝", "益精"],
+    "缓解眼疲劳": ["明目", "养肝", "清肝", "滋养肝血"],
+    # 呼吸
+    "清咽利喉": ["利咽", "润喉", "清热解毒", "润肺"],
+    # 代谢
+    "辅助降尿酸": ["利尿", "祛湿", "清热利湿", "降尿酸"],
+    "调节代谢": ["健脾", "利湿", "化痰", "降脂"],
+    "控制体重": ["利湿", "化痰", "消食", "降脂"],
 }
 
 
@@ -209,6 +245,8 @@ def _format_ga_candidates(
             "cost_score": round(cost, 4),
             "efficacy_score": round(efficacy, 4),
             "overall_score": round(overall, 4),
+            "score": round(overall, 4),
+            "safety_passed": safety >= 0.7,
             "effects": target_effects,
             "generated_by": "ga_optimizer",
             "generated_at": datetime.datetime.now().isoformat(),
@@ -224,20 +262,55 @@ def _format_ga_candidates(
     }
 
 
+def _clamp_int(value: Any, default: int, lo: int, hi: int) -> int:
+    """将约束值安全转换为 [lo, hi] 范围内的整数，非法/缺失时返回 default。"""
+    try:
+        v = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, v))
+
+
+def _clamp_float(value: Any, default: float, lo: float, hi: float) -> float:
+    """将约束值安全转换为 [lo, hi] 范围内的浮点数，非法/缺失时返回 default。"""
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, v))
+
+
+# RAG 检索钩子已抽取为独立模块 app/services/ai/rag/formula_rag_hook.py
+# 提供：rag_enhance_formula_generation() / herb_names_to_ids() / normalize_exclude_herbs()
+
+
 async def run_ga_generation(
     target_effects: list[str],
     constraints: Optional[dict[str, Any]] = None,
+    user_id: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     执行真实 GA 配方生成管线（唯一权威实现）。
 
     Args:
         target_effects: 前端功效标签列表（如 ['增强免疫', '抗氧化']）
-        constraints: 约束条件，支持 max_candidates / total_dosage_g /
-                     objective_weights（GA 多目标权重）等键。
+        constraints: 约束条件，支持以下键：
+            - max_candidates: 返回候选数上限（默认 5，最少 3）
+            - total_dosage_g: 配方总剂量（克）
+            - objective_weights: GA 多目标权重 dict
+            - population_size / generations / mutation_rate / crossover_rate /
+              elite_ratio / tournament_size: GA 算法参数（均有默认值兜底）
+            - exclude_herbs: 排除药材 ID/名称列表
+            - allergies: 过敏原列表（与 exclude_herbs 合并硬排除）
+            - age_group / target_group: 特殊人群（adult/pregnant/children/elderly）
+            - max_cost: 成本上限（元），超出成本的候选被过滤
+        user_id: 租户过滤（P0-4）。从请求取当前认证用户 id 传入，透传给 RAG 检索钩子；
+            拿不到时传 None（保持全局检索的兼容行为），但绝不能传他租户的 id。
 
     Returns:
         dict: 与 generation_v2 /generate 完全兼容的响应结构。
+        当 GA 引擎不可用且 HerbKnowledgeService 未初始化时抛出 503；
+        其它 GA 失败显式返回 degraded:true + fallback_reason，不再静默伪造硬编码配方。
     """
     constraints = constraints or {}
     max_candidates = max(int(constraints.get("max_candidates", 5) or 5), 3)
@@ -246,39 +319,170 @@ async def run_ga_generation(
     tcm_keywords = build_tcm_keywords(target_effects)
     logger.info(f"[FormulaGenerationService] 目标功效={target_effects}, TCM关键词={tcm_keywords}")
 
+    # P0-3：HerbKnowledgeService 未初始化时禁止静默回退硬编码随机配方 → 直接 503
+    from .algorithms.herb_knowledge_service import get_global_herb_knowledge
+    if get_global_herb_knowledge() is None:
+        logger.error("[FormulaGenerationService] HerbKnowledgeService 未初始化，拒绝生成（禁止回退硬编码配方）")
+        raise HTTPException(status_code=503, detail="AI 服务未初始化，请稍后重试")
+
     start_ts = time.perf_counter()
     try:
         from .algorithms.genetic_formula_optimizer import GAConfig, GeneticFormulaOptimizer
 
         objective_weights = constraints.get("objective_weights")
         config = GAConfig(
-            population_size=80,
-            generations=30,
-            mutation_rate=0.25,  # 更高变异率保持多样性
-            crossover_rate=0.85,
-            elite_ratio=0.1,
-            tournament_size=5,
+            population_size=_clamp_int(constraints.get("population_size"), 80, 10, 500),
+            generations=_clamp_int(constraints.get("generations"), 30, 5, 200),
+            mutation_rate=_clamp_float(constraints.get("mutation_rate"), 0.25, 0.01, 0.5),
+            crossover_rate=_clamp_float(constraints.get("crossover_rate"), 0.85, 0.1, 1.0),
+            elite_ratio=_clamp_float(constraints.get("elite_ratio"), 0.1, 0.01, 0.5),
+            tournament_size=_clamp_int(constraints.get("tournament_size"), 5, 2, 20),
             target_effects=tcm_keywords,
             early_stop_patience=0,  # 禁用早停，确保充分进化
             early_stop_threshold=0.0,
             objective_weights=dict(objective_weights) if isinstance(objective_weights, dict) else None,
         )
         optimizer = GeneticFormulaOptimizer(config=config)
+
+        # ── RAG 检索钩子：用知识库（296味药材/106种药食同源/国标）增强候选筛选 ──
+        # 命中知识条目的药材进入白名单（include_herbs），禁忌/毒性/超量条目进入黑名单。
+        # 逻辑位于独立模块 app/services/ai/rag/formula_rag_hook.py，任何异常返回 None 不阻断主流程。
+        from app.services.ai.rag.formula_rag_hook import (
+            herb_names_to_ids,
+            normalize_exclude_herbs,
+            rag_enhance_formula_generation,
+        )
+        # P2-1：RAG 钩子超时保护——超过 8s 返回 None 信号，绝不阻断 GA 主流程。
+        try:
+            rag_signals = await asyncio.wait_for(
+                rag_enhance_formula_generation(
+                    target_effects=target_effects,
+                    tcm_keywords=tcm_keywords,
+                    constraints=constraints,
+                    top_k=6,
+                    user_id=user_id,
+                ),
+                timeout=8.0,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("[FormulaGenerationService] RAG 钩子超时（>8s），跳过 RAG 增强继续 GA")
+            rag_signals = None
+        rag_signals = rag_signals or {}
+
+        whitelist_ids: list[str] = []
+        if rag_signals.get("enabled"):
+            whitelist_ids = herb_names_to_ids(rag_signals.get("whitelist", []), optimizer)
+
+        # P1-4：读取个人约束并透传优化器
+        exclude_set: set[str] = set(constraints.get("exclude_herbs") or [])
+        allergies = constraints.get("allergies") or []
+        if allergies:
+            if isinstance(allergies, list):
+                exclude_set.update(str(a) for a in allergies)
+            elif isinstance(allergies, str):
+                exclude_set.update(a.strip() for a in allergies.split(",") if a.strip())
+
+        # 用户硬排除（中文名统一映射为 herb_id）
+        user_exclude_herbs = normalize_exclude_herbs(exclude_set, optimizer) or None
+
+        # RAG 黑名单（herb_id）单独保留——仅作为附加排除，若导致候选池为空则放弃 RAG 硬排除
+        rag_blacklist_ids: list[str] = []
+        if rag_signals.get("enabled"):
+            rag_blacklist_ids = herb_names_to_ids(rag_signals.get("blacklist", []), optimizer)
+            if rag_blacklist_ids:
+                logger.info(f"[FormulaGenerationService] RAG 禁忌药材加入黑名单: {rag_blacklist_ids}")
+        combined_exclude = set(user_exclude_herbs or []) | set(rag_blacklist_ids) or None
+
+        age_group = str(constraints.get("age_group") or constraints.get("target_group") or "adult").lower()
+        if age_group not in {"adult", "pregnant", "children", "elderly"}:
+            age_group = "adult"
+
         candidates, history = optimizer.optimize(
             target_effects=tcm_keywords,
+            exclude_herbs=combined_exclude,
+            include_herbs=whitelist_ids or None,
+            special_population=age_group,
             count=max_candidates,
         )
 
+        # 保护：若 RAG 黑名单导致候选池为空，去掉 RAG 黑名单重试一次，
+        # 确保 RAG 增强不会把配方生成打成规则引擎回退（线上故障防护）。
+        if not candidates and rag_blacklist_ids:
+            logger.warning(
+                f"[FormulaGenerationService] RAG 黑名单导致无候选（{len(rag_blacklist_ids)} 味被排除），"
+                "去掉 RAG 黑名单重试 GA"
+            )
+            candidates, history = optimizer.optimize(
+                target_effects=tcm_keywords,
+                exclude_herbs=user_exclude_herbs,
+                include_herbs=whitelist_ids or None,
+                special_population=age_group,
+                count=max_candidates,
+            )
+            if candidates:
+                rag_signals = dict(rag_signals or {})
+                rag_signals["blacklist_relaxed"] = True
+
+        # 成本上限过滤（保留至少 1 个候选，避免空结果）
+        max_cost = constraints.get("max_cost")
+        if max_cost is not None and candidates:
+            try:
+                max_c = float(max_cost)
+                filtered = []
+                for ind in candidates:
+                    total_cost = sum(
+                        dosage * (optimizer._herbs[hid].cost_per_gram if hid in optimizer._herbs else 0.1)
+                        for hid, dosage in ind.genes.items()
+                    )
+                    if total_cost <= max_c:
+                        filtered.append(ind)
+                if filtered:
+                    candidates = filtered
+                else:
+                    logger.warning(
+                        f"[FormulaGenerationService] max_cost={max_c} 过滤后无候选，保留成本最低的 1 个"
+                    )
+                    candidates = sorted(
+                        candidates,
+                        key=lambda ind: sum(
+                            dosage * (optimizer._herbs[hid].cost_per_gram if hid in optimizer._herbs else 0.1)
+                            for hid, dosage in ind.genes.items()
+                        ),
+                    )[:1]
+            except (TypeError, ValueError):
+                logger.warning(f"[FormulaGenerationService] 非法 max_cost: {max_cost}，忽略成本过滤")
+
         if not candidates:
-            logger.warning("[FormulaGenerationService] GA 引擎未返回候选，回退规则引擎")
-            return _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            logger.error("[FormulaGenerationService] GA 引擎未返回候选，返回显式降级响应")
+            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            fallback["degraded"] = True
+            fallback["fallback_reason"] = "GA 引擎未返回候选"
+            fallback["rag_evidence"] = rag_signals
+            return fallback
 
-        return _format_ga_candidates(candidates, optimizer, target_effects, max_candidates, start_ts)
+        result = _format_ga_candidates(candidates, optimizer, target_effects, max_candidates, start_ts)
+        result["rag_evidence"] = rag_signals
+        return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[FormulaGenerationService] GA 引擎失败: {e}", exc_info=True)
+        # 不再静默返回硬编码随机配方：显式标记 degraded + fallback_reason，供前端展示
         try:
-            return _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            fallback["degraded"] = True
+            fallback["fallback_reason"] = f"GA 引擎失败: {str(e)[:200]}"
+            fallback["rag_evidence"] = {
+                "enabled": False,
+                "query": "",
+                "chunks": [],
+                "whitelist": [],
+                "blacklist": [],
+                "summary": "",
+                "error": str(e)[:200],
+            }
+            return fallback
         except Exception as e2:
             logger.error(f"[FormulaGenerationService] 规则引擎回退失败: {e2}", exc_info=True)
-            raise
+            raise HTTPException(status_code=503, detail="AI 配方生成服务暂不可用，请稍后重试")

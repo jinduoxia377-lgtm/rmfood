@@ -3,14 +3,14 @@
 基于时间戳和SHA-256哈希的高效差异检测器。
 支持嵌套对象深度比较，用于增量同步场景。
 """
+import asyncio
 import hashlib
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
-import asyncio
-import time
 
 from app.core.observability.logging_config import logger
 
@@ -52,13 +52,13 @@ class SyncChange:
 class DiffDetector:
     """
     差异检测器
-    
+
     功能：
     - 基于时间戳快速筛选（> last_sync_timestamp的记录）
     - 基于SHA-256内容哈希精确比对
     - 支持嵌套对象深度比较（递归遍历dict/list）
     - 返回变更类型：CREATE/UPDATE/DELETE
-    
+
     性能目标：
     - 单次差异检测 < 100ms（1000条记录）
     """
@@ -80,16 +80,16 @@ class DiffDetector:
     ) -> List[SyncChange]:
         """
         检测本地与服务器数据的差异
-        
+
         Args:
             local_data: 本地数据字典 {entity_id: data}
             server_data: 服务器数据字典 {entity_id: data}
             last_sync_timestamp: 上次同步时间戳，只检测此之后的变更
             entity_type: 实体类型标识
-            
+
         Returns:
             变更列表，包含CREATE/UPDATE/DELETE类型的变更
-            
+
         Example:
             >>> detector = DiffDetector()
             >>> changes = await detector.detect_changes(
@@ -98,14 +98,14 @@ class DiffDetector:
             ... )
         """
         start_time = time.time()
-        
+
         if not isinstance(local_data, dict):
             raise ValueError(f"local_data 必须是字典类型，实际类型: {type(local_data)}")
         if not isinstance(server_data, dict):
             raise ValueError(f"server_data 必须是字典类型，实际类型: {type(server_data)}")
 
         changes: List[SyncChange] = []
-        
+
         local_ids: Set[str] = set(local_data.keys())
         server_ids: Set[str] = set(server_data.keys())
 
@@ -115,12 +115,12 @@ class DiffDetector:
 
         for entity_id in only_in_local:
             data = local_data[entity_id]
-            
+
             if last_sync_timestamp and self._has_timestamp(data):
                 entity_time = self._parse_timestamp(data.get("updated_at") or data.get("created_at"))
                 if entity_time and entity_time <= last_sync_timestamp:
                     continue
-            
+
             content_hash = self.compute_content_hash(data)
             changes.append(SyncChange(
                 entity_type=entity_type,
@@ -132,12 +132,12 @@ class DiffDetector:
 
         for entity_id in only_in_server:
             data = server_data[entity_id]
-            
+
             if last_sync_timestamp and self._has_timestamp(data):
                 entity_time = self._parse_timestamp(data.get("updated_at") or data.get("deleted_at"))
                 if entity_time and entity_time <= last_sync_timestamp:
                     continue
-            
+
             content_hash = self.compute_content_hash(data)
             changes.append(SyncChange(
                 entity_type=entity_type,
@@ -155,7 +155,7 @@ class DiffDetector:
             if last_sync_timestamp:
                 local_time = self._parse_timestamp(local_entity.get("updated_at"))
                 server_time = self._parse_timestamp(server_entity.get("updated_at"))
-                
+
                 if local_time and server_time:
                     if local_time <= last_sync_timestamp and server_time <= last_sync_timestamp:
                         should_check = False
@@ -168,7 +168,7 @@ class DiffDetector:
 
             if local_hash != server_hash:
                 changed_fields = self._deep_compare(local_entity, server_entity)
-                
+
                 changes.append(SyncChange(
                     entity_type=entity_type,
                     entity_id=str(entity_id),
@@ -181,19 +181,19 @@ class DiffDetector:
 
         elapsed_ms = (time.time() - start_time) * 1000
         self._update_stats(elapsed_ms)
-        
+
         return changes
 
     def compute_content_hash(self, data: Any) -> str:
         """
         计算数据的SHA-256哈希值
-        
+
         Args:
             data: 任意可序列化数据（dict, list, str, int等）
-            
+
         Returns:
             SHA-256十六进制哈希字符串（64字符）
-            
+
         Example:
             >>> detector = DiffDetector()
             >>> hash_val = detector.compute_content_hash({"name": "test", "value": 123})
@@ -201,7 +201,7 @@ class DiffDetector:
             64
         """
         cache_key = self._make_cache_key(data)
-        
+
         if cache_key in self._hash_cache:
             self._stats["cache_hits"] += 1
             return self._hash_cache[cache_key]
@@ -223,20 +223,20 @@ class DiffDetector:
     ) -> List[str]:
         """
         深度比较两个字典，返回不同的字段路径列表
-        
+
         支持递归比较嵌套的dict和list结构。
         """
         changed_fields: List[str] = []
-        
+
         all_keys = set(local.keys()) | set(server.keys())
 
         for key in all_keys:
             field_path = f"{prefix}.{key}" if prefix else key
-            
+
             if key not in server:
                 changed_fields.append(field_path)
                 continue
-                
+
             if key not in local:
                 changed_fields.append(field_path)
                 continue
@@ -271,7 +271,7 @@ class DiffDetector:
     def _normalize_for_hashing(self, data: Any) -> Any:
         """
         规范化数据以便进行一致性哈希计算
-        
+
         处理：
         - 排序字典键
         - 处理特殊类型（datetime转为ISO格式）
@@ -280,28 +280,28 @@ class DiffDetector:
         """
         if data is None:
             return None
-            
+
         if isinstance(data, (str, int, bool)):
             return data
-            
+
         if isinstance(data, float):
             return round(data, 10)
-            
+
         if isinstance(data, datetime):
             return data.isoformat()
-            
+
         if isinstance(data, dict):
             return {
                 k: self._normalize_for_hashing(v)
                 for k, v in sorted(data.items())
             }
-            
+
         if isinstance(data, (list, tuple)):
             return [self._normalize_for_hashing(item) for item in data]
-            
+
         if isinstance(data, set):
             return sorted([self._normalize_for_hashing(item) for item in data])
-            
+
         return str(data)
 
     def _has_timestamp(self, data: Dict[str, Any]) -> bool:
@@ -312,7 +312,7 @@ class DiffDetector:
         """解析时间戳字符串"""
         if not timestamp_str:
             return None
-            
+
         formats = [
             "%Y-%m-%dT%H:%M:%S.%fZ",
             "%Y-%m-%dT%H:%M:%SZ",
@@ -321,13 +321,13 @@ class DiffDetector:
             "%Y-%m-%d %H:%M:%S",
             "%Y-%m-%d",
         ]
-        
+
         for fmt in formats:
             try:
                 return datetime.strptime(timestamp_str, fmt)
             except (ValueError, TypeError):
                 continue
-                
+
         return None
 
     def _make_cache_key(self, data: Any) -> str:
@@ -341,7 +341,7 @@ class DiffDetector:
     def _update_stats(self, elapsed_ms: float):
         """更新性能统计"""
         self._stats["total_detections"] += 1
-        
+
         total = self._stats["total_detections"]
         prev_avg = self._stats["avg_detection_time_ms"]
         self._stats["avg_detection_time_ms"] = (
@@ -369,12 +369,12 @@ async def batch_detect_changes(
 ) -> List[SyncChange]:
     """
     批量执行差异检测（并发优化版本）
-    
+
     Args:
         detector: DiffDetector实例
         data_batches: [(local_data, server_data, entity_type), ...]
         last_sync_timestamp: 上次同步时间戳
-        
+
     Returns:
         所有批次合并后的变更列表
     """
@@ -382,14 +382,14 @@ async def batch_detect_changes(
         detector.detect_changes(local, server, last_sync_timestamp, etype)
         for local, server, etype in data_batches
     ]
-    
+
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     all_changes: List[SyncChange] = []
     for result in results:
         if isinstance(result, Exception):
             logger.warning(f"[DiffDetector] 批量检测异常: {result}")
             continue
         all_changes.extend(result)
-    
+
     return all_changes

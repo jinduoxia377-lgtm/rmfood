@@ -1,6 +1,5 @@
 """Event publisher module for CQRS."""
 
-from typing import List, Callable
 
 class EventPublisher:
     def __init__(self, query_service):

@@ -25,9 +25,6 @@ from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# 引用贝叶斯引擎的药材知识库
-from .bayesian_formula_optimizer import _BUILTIN_HERBS, _EFFICACY_TO_HERBS
-
 # 功效 ID → 中文标签映射（与前端 EFFECT_OPTIONS 保持一致）
 _EFFECT_ID_TO_LABEL: dict[str, str] = {
     "immune_enhancement": "增强免疫",
@@ -63,70 +60,15 @@ _EFFECT_ID_TO_LABEL: dict[str, str] = {
 
 
 def _translate_effect_ids(effect_ids: list[str]) -> list[str]:
-    """将前端发送的功效 ID/标签转换为后端 _EFFICACY_TO_HERBS 索引用到的中文键。
+    """将前端发送的功效 ID/标签转换为后端功效索引键（中文）。
 
-    前端发送的是 EFFECT_OPTIONS 的 label（如 '增强免疫'），
-    后端索引用的是 _BUILTIN_HERBS.efficacy_scores 的 key（如 '免疫调节'），
-    两者不完全一致，需要映射。
+    前端发送的是 EFFECT_OPTIONS 的 label（如 '增强免疫'、'补气养血'），
+    后端索引键来自数据库 TCMHerb 的 efficacy_scores（如 '免疫调节'、'补气'、'补血'、'养血'、'降脂'），
+    两者不完全一致，需要别名归一化。
+    归一化映射统一维护在 herb_knowledge_service.EFFECT_ALIAS_TO_KEYS（真实数据索引键，非伪造）。
     """
-    # 前端 label → 后端索引键 映射（语义等价）
-    _LABEL_TO_BACKEND_KEY: dict[str, str] = {
-        # 免疫类
-        "增强免疫": "免疫调节",
-        "免疫调节": "免疫调节",
-        "提高抵抗力": "免疫调节",
-        # 抗衰老类
-        "抗氧化": "抗氧化",
-        "延缓衰老": "抗衰老",
-        "清除自由基": "抗氧化",
-        # 体力类
-        "抗疲劳": "抗疲劳",
-        "缓解疲劳": "抗疲劳",
-        "提升精力": "抗疲劳",
-        # 滋补类
-        "补气养阴": "补气",
-        "滋阴补肾": "补肾",
-        "健脾益气": "健脾",
-        "补血养血": "补血",
-        # 神经类
-        "改善睡眠": "安神",
-        "安神定志": "安神",
-        "缓解焦虑": "安神",
-        # 消化类
-        "健脾养胃": "健脾养胃",
-        "促进消化": "促进消化",
-        "调理脾胃": "健脾养胃",
-        # 心血管类
-        "降血压": "降血压",
-        "降血脂": "降脂",
-        "保护血管": "心血管保护",
-        "促进循环": "活血",
-        # 代谢类
-        "降血糖": "降血糖",
-        "辅助降尿酸": "降尿酸",
-        "调节代谢": "降血糖",
-        "控制体重": "降脂",
-        # 呼吸类
-        "润肺止咳": "止咳化痰",
-        "清咽利喉": "清热生津",
-        # 视觉类
-        "明目护眼": "明目",
-        "缓解眼疲劳": "明目",
-        # 美容类
-        "美容养颜": "美容养颜",
-        "护肤保湿": "美容养颜",
-        # 骨骼类
-        "强健筋骨": "强筋健骨",
-        "补钙健骨": "强筋健骨",
-        # 其他
-        "解毒": "解毒",
-        "清热解毒": "清热解毒",
-        "止咳化痰": "止咳化痰",
-        "保肝护肝": "护肝",
-        "补肾益精": "补肾",
-        "健脾和胃": "健脾养胃",
-    }
-    return [_LABEL_TO_BACKEND_KEY.get(e, e) for e in effect_ids]
+    from .herb_knowledge_service import normalize_effect_aliases
+    return normalize_effect_aliases(effect_ids)
 
 @dataclass
 class GAConfig:
@@ -196,12 +138,16 @@ class Individual:
 
         Args:
             target_effects: 目标功效列表
-            herb_dict: 药材字典（优先使用）；None 时回退 _BUILTIN_HERBS
+            herb_dict: 数据库药材字典（优化器统一注入 self._herbs）。
 
         院士级修复[P0]: 增加 herb_dict 参数，解耦对全局 _BUILTIN_HERBS 的直接依赖。
+        P1 修复: GA 评分路径一律使用注入的数据库药材字典，不再回退 _BUILTIN_HERBS。
         """
-        # 优先使用注入的字典，没有时回退内置字典
-        herbs = herb_dict if herb_dict is not None else _BUILTIN_HERBS
+        # P1 修复：GA 评分一律使用调用方注入的数据库药材字典（优化器传入 self._herbs），
+        # 不再回退 _BUILTIN_HERBS，确保数据库药材在评分中贡献真实功效/安全数据。
+        if herb_dict is None:
+            logger.warning("[GeneticOptimizer] evaluate 未注入 herb_dict，评分将无药材数据（应传入数据库药材字典）")
+        herbs = herb_dict or {}
 
         if not self.genes:
             self.fitness = 0
@@ -514,8 +460,8 @@ class GeneticFormulaOptimizer:
 
         # 惰性尝试自动注入（解决启动时服务未就绪问题）
         try:
-            from .herb_knowledge_service import get_global_herb_knowledge
             from .bayesian_formula_optimizer import HerbParameter as _HerbParameter
+            from .herb_knowledge_service import get_global_herb_knowledge
             hk = get_global_herb_knowledge()
             if hk is None:
                 raise RuntimeError("[数据完整性] HerbKnowledgeService 未初始化，请先运行 init_ai_services()")
@@ -547,7 +493,7 @@ class GeneticFormulaOptimizer:
             self._herbs = new_herbs
             self._efficacy_index = new_index
             logger.info(f"[GeneticOptimizer] ✅ 数据库加载成功: {len(all_herbs)} 种药材")
-            
+
         except RuntimeError:
             raise
         except Exception as e:
@@ -564,11 +510,32 @@ class GeneticFormulaOptimizer:
 
         Args:
             target_effects: 目标功效列表
-            exclude_herbs: 可选，需要排除的药材集合
+            exclude_herbs: 可选，需要排除的药材集合（支持 herb_id 或中文名）
             count: 返回的去重后 Top-N 候选数量（默认 10）
         """
         # 惰性加载 HerbKnowledgeService（解决注入链断裂问题）
         self._try_load_herb_knowledge()
+
+        # 将中文药名归一化为 herb_id（兼容前端传中文名/ID 两种形式）。
+        # 必须在 _try_load_herb_knowledge 之后执行，否则 self._herbs 为空，
+        # 中文名无法映射到 ID，排除约束会静默失效。
+        # 同名药材可能存在多个 herb_id（如黄芪 hq / 黄芪根 hqg），全部加入排除集合。
+        if exclude_herbs:
+            name_to_ids: Dict[str, List[str]] = {}
+            for hid, h in self._herbs.items():
+                cn = getattr(h, "name_cn", "")
+                if cn:
+                    name_to_ids.setdefault(cn, []).append(hid)
+            normalized_exclude: set = set()
+            for item in exclude_herbs:
+                if item in self._herbs:
+                    normalized_exclude.add(item)
+                elif item in name_to_ids:
+                    normalized_exclude.update(name_to_ids[item])
+                else:
+                    normalized_exclude.add(item)
+            exclude_herbs = normalized_exclude
+
         # 将英文功效ID转换为中文标签（与后端疗效数据库一致）
         target_effects = _translate_effect_ids(target_effects)
         self.config.target_effects = target_effects
@@ -599,13 +566,14 @@ class GeneticFormulaOptimizer:
                     f"候选药材={len(candidates)}种")
 
         # Step 2: 初始化种群
-        population = self._init_population(candidates)
-        # 将特殊人群标记注入 herb_dict，供 evaluate 读取
-        target_group_herb_dict = {}
+        population = self._init_population(candidates, exclude_herbs=population_exclude)
+        # P1 修复：评分统一使用数据库药材字典 self._herbs（含特殊人群标记注入），
+        # 不再回退 _BUILTIN_HERBS，确保数据库药材在评分中贡献真实功效/安全数据。
+        scoring_herbs = dict(self._herbs)
         if special_population and special_population != "adult":
-            target_group_herb_dict["__target_group__"] = special_population
+            scoring_herbs["__target_group__"] = special_population
         for ind in population:
-            ind.evaluate(target_effects, herb_dict=target_group_herb_dict if target_group_herb_dict else None)
+            ind.evaluate(target_effects, herb_dict=scoring_herbs)
 
         # 按适应度排序
         population.sort(key=lambda x: x.fitness, reverse=True)
@@ -640,7 +608,8 @@ class GeneticFormulaOptimizer:
                     "stop_reason": "cancelled",
                 })
                 # 院士级修复[P0]: 返回当前最优种群而非空列表，避免用户取消后数据丢失
-                return self._deduplicate(population[:count]), history
+                # 去重时基于整个种群，确保返回多个差异化候选（修复过度去重问题）
+                return self._deduplicate(population)[:count], history
             new_population = []
 
             # 精英保留
@@ -662,7 +631,7 @@ class GeneticFormulaOptimizer:
                             genes[hid] = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     if len(genes) >= 3:
                         ind = self._new_individual(genes)
-                        ind.evaluate(target_effects)
+                        ind.evaluate(target_effects, herb_dict=scoring_herbs)
                         new_population.append(ind)
 
             # 自适应变异率：根据种群多样性动态调整实际变异概率
@@ -695,8 +664,8 @@ class GeneticFormulaOptimizer:
                 if random.random() < actual_mutation_rate:
                     self._mutate(child2, candidates)
 
-                child1.evaluate(target_effects)
-                child2.evaluate(target_effects)
+                child1.evaluate(target_effects, herb_dict=scoring_herbs)
+                child2.evaluate(target_effects, herb_dict=scoring_herbs)
                 new_population.append(child1)
                 if len(new_population) < self.config.population_size:
                     new_population.append(child2)
@@ -771,7 +740,19 @@ class GeneticFormulaOptimizer:
             history[-1]["stop_reason"] = stop_reason
 
         # 返回 Top-N (去重) 和进化历史
-        return self._deduplicate(population[:count]), history
+        # 修复：去重基于整个种群再截断 Top-N，避免因 top-N 高度相似而只返回 1 个候选。
+        # 保底：若去重后候选数 < count，则按适应度从高到低补充（即使相似），
+        # 确保用户总能拿到足够数量的差异化/可比较候选。
+        deduped = self._deduplicate(population)
+        if len(deduped) < count and population:
+            seen_ids = {id(ind) for ind in deduped}
+            for ind in sorted(population, key=lambda x: x.fitness, reverse=True):
+                if len(deduped) >= count:
+                    break
+                if id(ind) not in seen_ids:
+                    deduped.append(ind)
+                    seen_ids.add(id(ind))
+        return deduped[:count], history
 
     def _compute_diversity(self, population: List[Individual]) -> float:
         """计算种群多样性 — 院士级修复[P0]: 剂量感知欧氏距离
@@ -1012,18 +993,40 @@ class GeneticFormulaOptimizer:
                     ind.genes[hid] = max(herb.dosage_min, dosage)
 
     def _deduplicate(self, individuals: List[Individual]) -> List[Individual]:
-        """Jaccard 去重 — 放宽阈值允许更多多样性"""
+        """Jaccard + 剂量相似度去重 — 确保返回多个差异化候选。
+
+        修复：原 0.85 阈值过高导致 max_candidates=3 只返回 1 个候选。
+        新策略：
+        1. 仅在「药材集合 Jaccard > 0.6 且共有药材剂量分布高度相似」时判重；
+           同药材不同剂量的配方视为差异化候选，保留下来。
+        2. 对整个种群去重后按适应度降序排序，调用方再截断 Top-N。
+        """
+        def _dosage_profile_similar(a: Individual, b: Individual) -> bool:
+            """共有药材的剂量相对差异 ≤30% 视为剂量分布相似。"""
+            common = set(a.genes.keys()) & set(b.genes.keys())
+            if not common:
+                return False
+            diffs = []
+            for hid in common:
+                da = a.genes.get(hid, 0.0)
+                db = b.genes.get(hid, 0.0)
+                denom = max(da, db, 1.0)
+                diffs.append(abs(da - db) / denom)
+            return sum(diffs) / len(diffs) <= 0.30
+
         unique = []
         for ind in individuals:
             dup = False
             for existing in unique:
                 its = set(ind.genes.keys()) & set(existing.genes.keys())
                 uni = set(ind.genes.keys()) | set(existing.genes.keys())
-                if uni and len(its) / len(uni) > 0.85:  # 从0.7放宽到0.85，避免过度去重
+                if uni and len(its) / len(uni) > 0.6 and _dosage_profile_similar(ind, existing):
                     dup = True
                     break
             if not dup:
                 unique.append(ind)
+        # 按适应度降序排序，确保返回的是 Top-N 最优差异化候选
+        unique.sort(key=lambda x: x.fitness, reverse=True)
         return unique
 
     # ═════════════════════════════════════════
@@ -1196,7 +1199,9 @@ def bridge_to_multi_objective(target_effects: List[str], constraints: Dict = Non
         GAResult: 兼容旧格式的优化结果
     """
     from .multi_objective_optimizer import (
-        get_nsga2_optimizer, OptimizationConfig, OptimizationObjective
+        OptimizationConfig,
+        OptimizationObjective,
+        get_nsga2_optimizer,
     )
 
     optimizer = get_nsga2_optimizer()
@@ -1235,7 +1240,7 @@ def bridge_to_multi_objective(target_effects: List[str], constraints: Dict = Non
 
 
 # 延迟导入避免循环依赖
-from .multi_objective_optimizer import NSGAIIOptimizer, MOGAResult
+from .multi_objective_optimizer import NSGAIIOptimizer
 
 
 class NSGAIIMoBridgeOptimizer(NSGAIIOptimizer):

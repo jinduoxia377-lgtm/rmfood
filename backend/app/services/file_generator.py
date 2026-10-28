@@ -3,37 +3,36 @@
 支持 PDF、DOCX、XLSX 等主流文档格式的动态生成
 包含异步任务队列、临时文件管理、中文字体支持
 """
-import os
-import uuid
-import logging
 import asyncio
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Optional, Any
-from pathlib import Path
-from io import BytesIO
+import logging
+import os
 import threading
 import time
+import uuid
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Optional
 
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from reportlab.lib.pagesizes import A4, letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch, mm
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, Image, ListFlowable, ListItem
-)
+from docx.shared import Inches, Pt, RGBColor
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
-from openpyxl.utils import get_column_letter
-from fastapi import UploadFile
-
-from ..core.config import settings
+from reportlab.platypus import (
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -507,20 +506,20 @@ class FileGeneratorService:
                 run.font.name = font_name_bold
                 run.font.size = Pt(28)
                 run.font.color.rgb = RGBColor(0, 51, 102)
-            
+
             subtitle = doc.add_paragraph(cover.get("subtitle", ""))
             subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run in subtitle.runs:
                 run.font.name = font_name
                 run.font.size = Pt(16)
                 run.font.color.rgb = RGBColor(0, 82, 155)
-            
+
             date = doc.add_paragraph(cover.get("date", ""))
             date.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run in date.runs:
                 run.font.name = font_name
                 run.font.size = Pt(12)
-            
+
             doc.add_page_break()
 
         # 处理目录
@@ -532,7 +531,7 @@ class FileGeneratorService:
                 run.font.name = font_name_bold
                 run.font.size = Pt(18)
                 run.font.color.rgb = RGBColor(0, 51, 102)
-            
+
             for item in toc:
                 level = item.get("level", 1)
                 indent = (level - 1) * 0.5
@@ -541,7 +540,7 @@ class FileGeneratorService:
                 for run in p.runs:
                     run.font.name = font_name
                     run.font.size = Pt(11)
-            
+
             doc.add_page_break()
 
         # 处理传统内容结构
@@ -573,7 +572,7 @@ class FileGeneratorService:
                         run.font.name = font_name_bold
                         run.font.size = Pt(14)
                         run.font.color.rgb = RGBColor(0, 82, 155)
-                    
+
                     for item in section_items:
                         if isinstance(item, dict):
                             if "heading" in item:
@@ -735,14 +734,14 @@ class FileGeneratorService:
             title_cell.alignment = Alignment(horizontal='center', vertical='center')
             ws.row_dimensions[current_row].height = 30
             current_row += 1
-            
+
             if cover.get("subtitle"):
                 ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
                 subtitle_cell = ws.cell(row=current_row, column=1, value=cover.get("subtitle"))
                 subtitle_cell.font = Font(name='Microsoft YaHei', size=12)
                 subtitle_cell.alignment = Alignment(horizontal='center', vertical='center')
                 current_row += 1
-            
+
             if cover.get("date"):
                 ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
                 date_cell = ws.cell(row=current_row, column=1, value=cover.get("date"))
@@ -784,7 +783,7 @@ class FileGeneratorService:
                     heading_cell.alignment = Alignment(horizontal='left', vertical='center')
                     ws.row_dimensions[current_row].height = 22
                     current_row += 1
-                    
+
                     for item in section_items:
                         if isinstance(item, dict):
                             if "heading" in item:

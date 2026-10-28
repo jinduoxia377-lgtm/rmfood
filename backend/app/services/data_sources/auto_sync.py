@@ -13,10 +13,8 @@
 2. 通过 system cron / systemd timer 调用独立脚本
 """
 import logging
-from datetime import datetime, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import select, func
 
 logger = logging.getLogger("rmfood.auto_sync")
 
@@ -33,8 +31,8 @@ async def _sync_tcmsp_herbs():
     """同步 TCMSP 中药材数据"""
     logger.info("[auto_sync] 开始 TCMSP 中药材同步...")
     try:
-        from app.services.data_sources.tcmsp_client import tcmsp_service
         from app.core.database.session import async_session_factory
+        from app.services.data_sources.tcmsp_client import tcmsp_service
 
         async with async_session_factory() as db:
             result = await tcmsp_service.sync_herbs(db, force=False)
@@ -47,8 +45,8 @@ async def _sync_dfbp_peptides():
     """同步 DFBP 肽链数据"""
     logger.info("[auto_sync] 开始 DFBP 肽链同步...")
     try:
-        from app.services.data_sources.dfbp_client import dfbp_service
         from app.core.database.session import async_session_factory
+        from app.services.data_sources.dfbp_client import dfbp_service
 
         async with async_session_factory() as db:
             result = await dfbp_service.sync_peptides(db, force=False)
@@ -63,9 +61,9 @@ def start_auto_sync(app_state: dict | None = None):
     if _scheduler is not None:
         logger.warning("[auto_sync] 调度器已运行，跳过重复启动")
         return
-    
+
     _scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
-    
+
     # TCMSP 每 6 小时
     _scheduler.add_job(
         _sync_tcmsp_herbs,
@@ -76,7 +74,7 @@ def start_auto_sync(app_state: dict | None = None):
         max_instances=1,
         replace_existing=True,
     )
-    
+
     # DFBP 每天凌晨 2:00
     _scheduler.add_job(
         _sync_dfbp_peptides,
@@ -88,7 +86,7 @@ def start_auto_sync(app_state: dict | None = None):
         max_instances=1,
         replace_existing=True,
     )
-    
+
     _scheduler.start()
     logger.info("[auto_sync] 调度器已启动")
 
@@ -106,19 +104,19 @@ def stop_auto_sync():
 # 此入口用于 cron/systemd 独立进程调用，非 FastAPI 事件循环内，asyncio.run() 安全。
 if __name__ == "__main__":
     import asyncio
-    
+
     async def one_shot_sync():
         """一次性同步所有数据源（用于 cron/systemd 调用）"""
         from app.core.database.session import async_session_factory
-        
+
         async with async_session_factory() as db:
-            from app.services.data_sources.tcmsp_client import tcmsp_service
             from app.services.data_sources.dfbp_client import dfbp_service
-            
+            from app.services.data_sources.tcmsp_client import tcmsp_service
+
             h_result = await tcmsp_service.sync_herbs(db, force=False)
             logger.info(f"TCMSP sync: {h_result}")
-            
+
             p_result = await dfbp_service.sync_peptides(db, force=False)
             logger.info(f"DFBP sync: {p_result}")
-    
+
     asyncio.run(one_shot_sync())

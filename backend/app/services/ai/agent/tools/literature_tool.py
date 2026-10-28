@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
 
 from app.services.ai.rag.rag_service import rag_service
 
@@ -58,8 +57,12 @@ class LiteratureSearchTool(BaseAgentTool):
         try:
             query: str = params["query"]
             top_k: int = params.get("top_k", 5)
+            # P0-4：user.id 为 int，向量库 metadata["user_id"] 存储为 str，
+            # 需转 str 才能正确匹配租户（否则 only 种子可见）。
+            _raw_uid = context.get("user_id")
+            user_id: str = str(_raw_uid) if _raw_uid else None
 
-            result = await rag_service.augment_query(query, top_k=top_k)
+            result = await rag_service.augment_query(query, top_k=top_k, user_id=user_id)
 
             items = [
                 {

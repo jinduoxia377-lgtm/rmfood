@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
@@ -58,13 +57,13 @@ class SevenStepFormulaEngine:
 
     def __init__(self):
         # 七步引擎
-        from .framework_engine import FrameworkEngine
         from .color_engine import ColorEngine
-        from .fragrance_engine import FragranceEngine
         from .flavor_engine import FlavorEngine
-        from .quality_engine import QualityEngine
-        from .preservation_engine import PreservationEngine
+        from .fragrance_engine import FragranceEngine
+        from .framework_engine import FrameworkEngine
         from .functional_engine import FunctionalEngine
+        from .preservation_engine import PreservationEngine
+        from .quality_engine import QualityEngine
 
         self.framework_engine = FrameworkEngine()
         self.color_engine = ColorEngine()
@@ -75,9 +74,9 @@ class SevenStepFormulaEngine:
         self.functional_engine = FunctionalEngine()
 
         # 验证层（继承现有）
-        from ..formula.synergy_engine import SynergyEngine
         from ..formula.compatibility_checker import CompatibilityChecker
         from ..formula.safety_alert_system import SafetyAlertSystem
+        from ..formula.synergy_engine import SynergyEngine
 
         self.synergy = SynergyEngine()
         self.compatibility = CompatibilityChecker()
@@ -225,16 +224,18 @@ class SevenStepFormulaEngine:
         safety_result = {}
         if herbs:
             try:
+                # 真实签名: check_formula_safety(ingredients=[{"name","amount_mg"}],
+                #                               daily_dosage_g=..., target_group=...,
+                #                               usage_scenario=...)
+                # 不接收 formula_data 关键字；剂量字段必须为 amount_mg（克 → 毫克 ×1000）。
                 result = self.safety.check_formula_safety(
-                    formula_data={
-                        "ingredients": [
-                            {"name": h.get("name", ""), "amount_g": h.get("dosage", 5)}
-                            for h in herbs[:6]
-                        ],
-                        "daily_dosage_g": output.framework.get("total_dosage_g", 10),
-                        "usage_scenario": "supplement",
-                    },
+                    ingredients=[
+                        {"name": h.get("name", ""), "amount_mg": float(h.get("dosage", 5) or 0) * 1000}
+                        for h in herbs[:6]
+                    ],
+                    daily_dosage_g=output.framework.get("total_dosage_g", 10),
                     target_group=output.framework.get("target_group", "adult"),
+                    usage_scenario="supplement",
                 )
                 safety_result = {
                     "is_safe": result.is_safe,
@@ -242,7 +243,8 @@ class SevenStepFormulaEngine:
                     "alert_count": len(result.alerts),
                 }
             except Exception as e:
-                logger.warning(f"[SevenStep] 安全检查失败: {e}")
+                # 不再静默吞掉：安全检查异常必须告警，便于定位 API 契约/数据问题
+                logger.error(f"[SevenStep] 安全检查失败: {e}", exc_info=True)
 
         return {
             "synergy": synergy_result,

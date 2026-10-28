@@ -15,7 +15,7 @@ R = α·PredictorScore + β·(1 - DiscriminatorProb) + γ·TemplateBonus - δ·S
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)

@@ -5,18 +5,17 @@
 """
 import logging
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from celery import Celery
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings, CeleryConfig
+from app.api.db_modules.import_db import complete_task, get_import_task, update_task_progress
+from app.core.config import CeleryConfig, get_settings
 from app.core.database.session import get_session_factory
-from app.services.import_engine.engine import ImportEngine, ImportStatus
+from app.services.import_engine.adapters.base import FieldMapper
 from app.services.import_engine.adapters.csv_adapter import CsvAdapter
 from app.services.import_engine.adapters.json_adapter import JsonAdapter
-from app.services.import_engine.adapters.base import FieldMapper
-from app.api.db_modules.import_db import get_import_task, update_task_progress, complete_task
+from app.services.import_engine.engine import ImportEngine
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

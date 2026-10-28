@@ -5,13 +5,15 @@
 import asyncio
 import json
 import sys
+
 sys.path.insert(0, "D:\\RMFOODFP\\backend")
 
 from pathlib import Path
 
+
 async def generate_analysis_report():
     """生成完整的模块分析报告"""
-    
+
     report = {
         "module": "配方生成",
         "version": "v2.5",
@@ -29,7 +31,7 @@ async def generate_analysis_report():
         "data_layer": {},
         "improvement_plan": {}
     }
-    
+
     # 1. 后端API端点分析
     api_files = list(Path("D:/RMFOODFP/backend/app/api/ai_modules").glob("*.py"))
     endpoints = []
@@ -49,12 +51,12 @@ async def generate_analysis_report():
                         "file": f.name
                     })
     report["backend"]["endpoints"] = endpoints
-    
+
     # 2. 前端组件分析
     frontend_files = list(Path("D:/RMFOODFP/frontend/src/components/ai/features/GenerateTab").rglob("*.tsx"))
     frontend_files += list(Path("D:/RMFOODFP/frontend/src/components/ai/features/GenerateTab").rglob("*.ts"))
     report["frontend"]["components"] = [str(f.relative_to("D:/RMFOODFP/frontend/src")) for f in frontend_files]
-    
+
     # 3. 算法模块分析
     algo_dir = Path("D:/RMFOODFP/backend/app/services/ai/algorithms")
     algo_files = list(algo_dir.glob("*.py"))
@@ -68,12 +70,12 @@ async def generate_analysis_report():
             "line_count": len(content.split("\n"))
         })
     report["backend"]["algorithms"] = algorithms
-    
+
     # 4. 数据层分析
     db_dir = Path("D:/RMFOODFP/backend/app/models")
     models = list(db_dir.glob("*.py"))
     report["data_layer"]["models"] = [m.name for m in models]
-    
+
     # 5. 问题清单
     issues = {
         "critical": [],
@@ -81,7 +83,7 @@ async def generate_analysis_report():
         "medium": [],
         "low": []
     }
-    
+
     # 检查关键问题
     # 问题1: API端点不一致
     report["issues"] = {
@@ -110,7 +112,7 @@ async def generate_analysis_report():
             }
         }
     }
-    
+
     return report
 
 

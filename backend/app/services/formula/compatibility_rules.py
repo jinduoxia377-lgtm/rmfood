@@ -3,10 +3,10 @@
 覆盖 50+ 条规则，包括化学层、药理学层、营养学层、法规层
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
-from enum import Enum
 import logging
+from dataclasses import dataclass
+from enum import Enum
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class CheckCategory(Enum):
 class CompatibilityRule:
     """兼容性规则"""
     rule_id: str
-    rule_type: str  # "precipitation", "enzyme_interaction", "receptor_competition", 
+    rule_type: str  # "precipitation", "enzyme_interaction", "receptor_competition",
                     # "antioxidant", "nutrient_interaction", "regulatory", "allergenic"
     ingredient_a: str
     ingredient_b: str
@@ -37,7 +37,7 @@ class CompatibilityRule:
     scientific_basis: str
     suggestion: str
     reference: str = ""
-    
+
     def to_dict(self) -> Dict:
         return {
             "rule_id": self.rule_id,
@@ -221,7 +221,7 @@ COMPATIBILITY_RULES: List[CompatibilityRule] = [
         suggestion="避免与强酸性食物长期同服",
         reference="《 carbohydrate chemistry》"
     ),
-    
+
     # === Layer 2: 药理学层 - 酶互作 (10条) ===
     CompatibilityRule(
         rule_id="PHARM-001",
@@ -333,7 +333,7 @@ COMPATIBILITY_RULES: List[CompatibilityRule] = [
         suggestion="丹参与华法林等药物需监测",
         reference="Drug Metabolism and Disposition"
     ),
-    
+
     # === Layer 2: 药理学层 - 受体竞争 (8条) ===
     CompatibilityRule(
         rule_id="PHARM-R01",
@@ -423,7 +423,7 @@ COMPATIBILITY_RULES: List[CompatibilityRule] = [
         suggestion="与抗TNF药物联用需监测",
         reference="Journal of Ethnopharmacology"
     ),
-    
+
     # === Layer 3: 营养学层 - 抗营养因子 (8条) ===
     CompatibilityRule(
         rule_id="NUTRI-001",
@@ -513,7 +513,7 @@ COMPATIBILITY_RULES: List[CompatibilityRule] = [
         suggestion="大剂量VC与铜剂间隔服用",
         reference="Journal of Trace Elements"
     ),
-    
+
     # === Layer 4: 法规层 - GB标准 (10条) ===
     CompatibilityRule(
         rule_id="REG-001",
@@ -663,7 +663,7 @@ def get_rule_count() -> Dict[str, int]:
 
 if __name__ == "__main__":
     stats = get_rule_count()
-    print(f"兼容性规则库统计:")
+    print("兼容性规则库统计:")
     print(f"  总规则数: {stats['total']}")
     for rule_type, count in stats['by_type'].items():
         print(f"  {rule_type}: {count}条")

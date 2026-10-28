@@ -13,8 +13,6 @@ Agent 工作流编排引擎 (v1.0)
 """
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
 import time
 from dataclasses import dataclass, field
@@ -22,13 +20,12 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-from app.services.ai.rag.rag_service import rag_service
-from app.services.ai.agent.orchestrator import get_orchestrator, AgentExecution
+from app.services.ai.agent.orchestrator import get_orchestrator
 from app.services.ai.agent.tools import get_tool_registry
-from app.services.ai.safety import check_prompt, check_output, ThreatLevel
-from app.services.ai.safety.instruction_hierarchy import InstructionHierarchy
+from app.services.ai.rag.rag_service import rag_service
+from app.services.ai.safety import check_output, check_prompt
+from app.services.ai.shared.event_bus import Event, EventType, get_event_bus
 from app.services.compliance.preset_constraints import get_constraint_engine
-from app.services.ai.shared.event_bus import get_event_bus, Event, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -367,7 +364,19 @@ class WorkflowEngine:
     ) -> Dict[str, Any]:
         """RAG 检索阶段"""
         try:
-            result = await rag_service.augment_query(query, top_k=5)
+            # P0-4：从执行上下文取 user_id 传给 augment_query。
+            # 执行上下文由 agent_router._execution_context 注入（user_id/tenant_id/db）。
+            # user.id 为 int，需转 str 以匹配向量库 metadata["user_id"]（存储为 str）。
+            ctx_user_id = context.get("user_id")
+            if ctx_user_id:
+                user_id = str(ctx_user_id)
+            else:
+                # 无用户上下文时兜底为 system（只检索公共种子库），绝不泄露跨租户数据
+                user_id = "system"
+                logger.warning(
+                    "[WorkflowEngine] 执行上下文缺少 user_id，RAG 检索兜底为 system（仅公共种子库）"
+                )
+            result = await rag_service.augment_query(query, top_k=5, user_id=user_id)
             context["rag_results"] = [
                 {
                     "content": c.chunk.content,
@@ -571,7 +580,8 @@ class WorkflowEngine:
         """报告生成阶段 — 整合配方+合规数据，生成完整五段式报告"""
         try:
             from app.services.ai.agent.orchestrator import (
-                AgentOrchestrator, AgentStep, AgentStepStatus
+                AgentStep,
+                AgentStepStatus,
             )
             from app.services.ai.agent.tools import ToolResult
 
@@ -597,6 +607,37 @@ class WorkflowEngine:
                     step_id="step-comp", tool_name="compliance_check",
                     params={}, status=AgentStepStatus.SUCCESS, result=tr2,
                 ))
+
+            # ── 知识图谱协同效应推理（kg_reason 工具）───────────────────
+            # 历史缺陷：orchestrator 误读不存在的 kg_infer 工具，KG 推理永远为空。
+            # 此处显式调用已注册的 kg_reason 工具并注入 mock_steps，
+            # 使 _build_response 渲染真实的图谱协同效应（无图谱数据时优雅降级）。
+            try:
+                herb_names = []
+                for h in (formula_data or {}).get("data", []) or []:
+                    if isinstance(h, dict) and h.get("name"):
+                        herb_names.append(h["name"])
+                if len(herb_names) >= 2:
+                    kg_tool = self._registry.get("kg_reason")
+                    if kg_tool is not None:
+                        kg_res = await kg_tool.execute(
+                            {"reasoning_type": "synergy", "herbs": herb_names},
+                            context,
+                        )
+                        if kg_res.success and kg_res.data:
+                            mock_steps.append(AgentStep(
+                                step_id="step-kg", tool_name="kg_reason",
+                                params={"reasoning_type": "synergy"},
+                                status=AgentStepStatus.SUCCESS,
+                                result=kg_res,
+                            ))
+                            logger.info(
+                                "KG 协同推理注入报告: herbs=%d synergies=%d",
+                                len(herb_names),
+                                len((kg_res.data or {}).get("synergies", [])),
+                            )
+            except Exception as kg_err:
+                logger.warning(f"[WorkflowEngine] KG 协同推理失败（忽略）: {kg_err}")
 
             # 生成完整五段式报告（含方解机理、合规建议）
             context["formula_result"] = orch._build_response(query, mock_steps)
@@ -655,7 +696,7 @@ class WorkflowEngine:
 
         if "compliance_result" in ctx:
             cr = ctx["compliance_result"]
-            parts.append(f"### 合规检查结果\n")
+            parts.append("### 合规检查结果\n")
             parts.append(f"评分: {cr['score']} | 状态: {cr['status']}\n")
 
         return "\n".join(parts)

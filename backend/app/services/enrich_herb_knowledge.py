@@ -14,7 +14,7 @@ import asyncio
 import json
 import logging
 import re
-from typing import Dict, List, Optional
+from typing import Dict
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession

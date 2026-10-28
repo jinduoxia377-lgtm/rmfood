@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
 
 from app.core.workflow.executor_protocol import (
     ExecutionContext,
@@ -40,7 +39,7 @@ class LLMExecutor(WorkflowExecutor):
         return "调用 LLM 进行文本生成、分析或转换"
 
     async def execute(self, context: ExecutionContext) -> ExecutionResult:
-        from app.services.ai.providers.provider_factory import get_provider_factory, TaskType
+        from app.services.ai.providers.provider_factory import TaskType, get_provider_factory
 
         prompt = context.input_data.get("prompt", "")
         system_prompt = context.input_data.get("system_prompt", "")

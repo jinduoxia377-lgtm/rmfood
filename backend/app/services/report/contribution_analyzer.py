@@ -10,7 +10,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from app.services.report.explainability_report import (
-    ContributionLevel,
     ExplainabilityService,
 )
 

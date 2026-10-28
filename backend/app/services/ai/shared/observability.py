@@ -8,12 +8,11 @@ AI 服务可观测性 (v1.0)
 - 错误率监控
 """
 
-import time
-import logging
 import asyncio
-from dataclasses import dataclass, field
-from typing import Any
+import logging
 from collections import defaultdict
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

@@ -22,7 +22,6 @@
 import hashlib
 import logging
 import math
-import random
 import threading
 import time
 from dataclasses import dataclass, field
@@ -463,10 +462,10 @@ class UnifiedFormulaOptimizer:
         start = time.perf_counter()
 
         try:
-            import asyncio
 
             from app.services.ai.algorithms.genetic_formula_optimizer import (
-                get_genetic_optimizer, GAConfig,
+                GAConfig,
+                get_genetic_optimizer,
             )
             optimizer = get_genetic_optimizer()
             config = GAConfig(
@@ -537,23 +536,25 @@ class UnifiedFormulaOptimizer:
         start = time.perf_counter()
 
         try:
-            import asyncio
 
-            from app.services.ai.algorithms.genetic_formula_optimizer import (
-                get_genetic_optimizer, GAConfig, Individual,
+            from app.services.formula.lp_solver import (
+                HerbNutritionData,
+                MILPSolver,
             )
             from app.services.formula.lp_solver import (
-                MILPSolver, HerbNutritionData, NutritionConstraint as LPConstraint,
+                NutritionConstraint as LPConstraint,
             )
 
             # 构建MILP求解器
             milp_solver = None
             try:
                 # 优先从 HerbKnowledgeService 获取药材数据
-                from app.services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+                from app.services.ai.algorithms.herb_knowledge_service import (
+                    get_global_herb_knowledge,
+                )
                 herb_service = get_global_herb_knowledge()
                 herbs = herb_service._herbs if herb_service and hasattr(herb_service, '_herbs') else None
-                
+
                 if herbs and len(herbs) >= 20:
                     herb_data = {}
                     for hid, hp in herbs.items():
@@ -586,7 +587,10 @@ class UnifiedFormulaOptimizer:
                 logger.warning(f"[UnifiedOptimizer] MILP求解器初始化回退: {e}")
 
             # 使用BinaryGA+MILP
-            from app.services.ai.algorithms.binary_ga_optimizer import BinaryGAOptimizer, BinaryGAConfig
+            from app.services.ai.algorithms.binary_ga_optimizer import (
+                BinaryGAConfig,
+                BinaryGAOptimizer,
+            )
             binary_ga = BinaryGAOptimizer(BinaryGAConfig(
                 population_size=request.population_size,
                 generations=request.generations,
@@ -601,8 +605,8 @@ class UnifiedFormulaOptimizer:
             ))
 
             # 获取候选药材（翻译前端标签 → 后端键）
-            from app.services.ai.algorithms.genetic_formula_optimizer import _translate_effect_ids
             from app.services.ai.algorithms.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
+            from app.services.ai.algorithms.genetic_formula_optimizer import _translate_effect_ids
             candidate_herbs = []
             translated_effects = _translate_effect_ids(request.target_effects)
             for effect in translated_effects:
@@ -697,7 +701,9 @@ class UnifiedFormulaOptimizer:
 
         try:
             from app.services.ai.algorithms.multi_objective_optimizer import (
-                get_nsga2_optimizer, OptimizationConfig, OptimizationObjective,
+                OptimizationConfig,
+                OptimizationObjective,
+                get_nsga2_optimizer,
             )
 
             objectives = request.custom_objectives or [

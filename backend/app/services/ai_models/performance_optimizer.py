@@ -15,9 +15,9 @@ import json
 import logging
 import time
 from collections import OrderedDict
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from dataclasses import dataclass
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -369,59 +369,59 @@ class ExportService:
     ) -> str:
         """生成 Markdown 格式的分析报告"""
         lines = [
-            f"# 肽序列深度分析报告",
-            f"",
-            f"## 基本信息",
+            "# 肽序列深度分析报告",
+            "",
+            "## 基本信息",
             f"- **序列**: `{sequence}`",
             f"- **分析时间**: {analysis_result.get('generated_at', 'N/A')}",
-            f"",
+            "",
         ]
 
         if "overall_scores" in analysis_result:
             scores = analysis_result["overall_scores"]
             lines.extend([
-                f"## 综合评分",
-                f"| 指标 | 得分 |",
-                f"|------|------|",
+                "## 综合评分",
+                "| 指标 | 得分 |",
+                "|------|------|",
                 f"| 综合得分 | {(scores.get('composite', 0) * 100):.1f}% |",
                 f"| 稳定性 | {(scores.get('stability', 0) * 100):.1f}% |",
                 f"| 类药性 | {(scores.get('druglikeness', 0) * 100):.1f}% |",
                 f"| 生物活性 | {(scores.get('bioactivity', 0) * 100):.1f}% |",
                 f"| 安全性 | {(scores.get('safety', 0) * 100):.1f}% |",
-                f"",
+                "",
             ])
 
         if "basic_properties" in analysis_result:
             props = analysis_result["basic_properties"]
             lines.extend([
-                f"## 理化性质",
-                f"| 属性 | 值 |",
-                f"|------|-----|",
+                "## 理化性质",
+                "| 属性 | 值 |",
+                "|------|-----|",
                 f"| 分子量 | {props.get('molecular_weight', 'N/A')} Da |",
                 f"| LogP | {props.get('logp', 'N/A')} |",
                 f"| TPSA | {props.get('tpsa', 'N/A')} Å² |",
                 f"| GRAVY | {props.get('gravy', 'N/A')} |",
                 f"| 等电点(pI) | {props.get('isoelectric_point', 'N/A')} |",
-                f"",
+                "",
             ])
 
         if "secondary_structure" in analysis_result:
             ss = analysis_result["secondary_structure"]
             pct = ss.get("percentages", {})
             lines.extend([
-                f"## 二级结构预测",
+                "## 二级结构预测",
                 f"- **α-Helix**: {pct.get('alpha_helix', 0):.1f}%",
                 f"- **β-Sheet**: {pct.get('beta_sheet', 0):.1f}%",
                 f"- **Random Coil**: {pct.get('random_coil', 0):.1f}%",
-                f"",
+                "",
             ])
 
         if "bioactivity_predictions" in analysis_result:
             bioact = analysis_result["bioactivity_predictions"]
             lines.extend([
-                f"## 生物活性预测",
-                f"| 目标活性 | 得分 | 等级 |",
-                f"|----------|------|------|",
+                "## 生物活性预测",
+                "| 目标活性 | 得分 | 等级 |",
+                "|----------|------|------|",
             ])
             for activity, data in bioact.items():
                 score = data.get("score", 0) if isinstance(data, dict) else data
@@ -432,17 +432,17 @@ class ExportService:
         if "safety_assessment" in analysis_result:
             safety = analysis_result["safety_assessment"]
             lines.extend([
-                f"## 安全性评估",
+                "## 安全性评估",
                 f"- **安全等级**: {safety.get('risk_level', 'N/A').upper()}",
                 f"- **安全得分**: {(safety.get('safety_score', 0) * 100):.1f}%",
                 f"- **免疫原性风险**: {(safety.get('immunogenicity_risk', 0) * 100):.1f}%",
                 f"- **推荐储存**: {safety.get('recommended_storage_conditions', 'N/A')}",
-                f"",
+                "",
             ])
 
         lines.extend([
-            f"---",
-            f"*报告由 RMFOOD PepINVERT 高级分析引擎自动生成*",
+            "---",
+            "*报告由 RMFOOD PepINVERT 高级分析引擎自动生成*",
         ])
 
         return "\n".join(lines)

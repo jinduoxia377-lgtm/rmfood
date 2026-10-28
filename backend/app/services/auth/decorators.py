@@ -7,20 +7,14 @@
 """
 import functools
 import logging
-from typing import Optional, Callable, Any, List, Dict
+from typing import Callable, Dict, Optional
 
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
-from app.services.auth.permissions import (
-    TeamResource,
-    TeamAction,
-    check_role_permission,
-    PermissionCheck,
-    PermissionResult,
-)
 from app.models.enums import TeamRole
-from app.core.middleware.exceptions import PermissionDeniedException
+from app.services.auth.permissions import (
+    check_role_permission,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,30 +25,29 @@ def require_permission(
 ):
     """
     权限校验装饰器工厂
-    
+
     用法:
         @require_permission("prompt_template", "edit")
         async def update_prompt(...): ...
-    
+
     实现逻辑：
     1. 从路径参数/请求体提取resource_id
     2. 查询当前用户在该资源上的角色
     3. 检查角色是否拥有该action权限
     4. 缓存权限结果（如果可用Redis，TTL=5分钟）
     5. 无权限时抛出PermissionDeniedError
-    
+
     Args:
         resource: 资源类型 (team/category/prompt_template/version)
         action: 操作 (view/create/edit/delete/manage等)
-        
+
     Returns:
         装饰器函数
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
-            from app.api.deps import CurrentUser, DbSession
-            
+
             current_user = kwargs.get('current_user')
             db = kwargs.get('db')
 
@@ -65,7 +58,7 @@ def require_permission(
                 )
 
             team_id = kwargs.get('team_id')
-            
+
             if not team_id:
                 for key, value in kwargs.items():
                     if key.endswith('_id') and isinstance(value, int) and value > 0:
@@ -73,7 +66,7 @@ def require_permission(
                         break
                 else:
                     potential_team_id = None
-                
+
                 if potential_team_id:
                     team_id = potential_team_id
 
@@ -90,10 +83,10 @@ def require_permission(
             try:
                 from app.services.team.team_impl import TeamService
                 team_service = TeamService(db)
-                
+
                 team_detail = await team_service.get_team(team_id, current_user.id)
                 user_role = team_detail.get('current_user_role', 'guest')
-                
+
             except Exception as e:
                 logger.error(f"获取用户角色失败: {e}")
                 user_role = 'guest'
@@ -108,7 +101,7 @@ def require_permission(
                     f"   角色: {user_role}\n"
                     f"   所需权限: {resource}:{action}"
                 )
-                
+
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={
@@ -135,15 +128,15 @@ def require_permission(
 def require_team_role(*allowed_roles: TeamRole):
     """
     团队角色验证依赖（FastAPI Depends）
-    
+
     用于限制特定团队角色才能访问的端点
-    
+
     Args:
         *allowed_roles: 允许的角色列表
-        
+
     Returns:
         依赖注入函数
-        
+
     示例:
         @router.get("/admin")
         async def admin_route(
@@ -160,15 +153,15 @@ def require_team_role(*allowed_roles: TeamRole):
         try:
             from app.services.team.team_impl import TeamService
             team_service = TeamService(db)
-            
+
             team_detail = await team_service.get_team(team_id, current_user.id)
             user_role_str = team_detail.get('current_user_role', 'guest')
-            
+
             try:
                 user_role = TeamRole(user_role_str)
             except ValueError:
                 user_role = TeamRole.GUEST
-            
+
             if user_role not in allowed_roles and TeamRole.OWNER not in allowed_roles:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -207,22 +200,22 @@ class PermissionCache:
     def get(self, user_id: int, resource: str, resource_id: int, action: str) -> Optional[bool]:
         """从缓存获取权限结果"""
         key = self._make_key(user_id, resource, resource_id, action)
-        
+
         if key in self.cache:
             result, timestamp = self.cache[key]
-            
+
             import time
             if time.time() - timestamp < self.ttl:
                 return result
             else:
                 del self.cache[key]
-        
+
         return None
 
     def set(self, user_id: int, resource: str, resource_id: int, action: str, result: bool):
         """设置缓存"""
         key = self._make_key(user_id, resource, resource_id, action)
-        
+
         import time
         self.cache[key] = (result, time.time())
 

@@ -17,24 +17,29 @@ RMFOOD 企业级审计与权限表迁移脚本
 """
 
 import asyncio
-import logging
 import re
 from datetime import datetime, timezone
-
-from sqlalchemy import (
-    Column, String, Integer, BigInteger, DateTime, Text, Boolean,
-    ForeignKey, Index, UniqueConstraint, CheckConstraint,
-    JSON, Enum as SAEnum, text,
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base
 from typing import Any, Dict
 
-from ..observability.logging_config import logger
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # 使用项目主 Base 替代独立 declarative_base
 from app.core.database import Base
+
+from ..observability.logging_config import logger
 
 # ──────────────────────────────────────────────
 # 表结构定义

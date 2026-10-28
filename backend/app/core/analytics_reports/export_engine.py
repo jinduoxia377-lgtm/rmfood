@@ -35,12 +35,10 @@ from __future__ import annotations
 
 import csv
 import io
-import io
 import logging
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +89,7 @@ class ExcelExporter:
     def __init__(self):
         try:
             from openpyxl import Workbook
-            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
             from openpyxl.utils import get_column_letter
             self._Workbook = Workbook
             self._Font = Font
@@ -114,7 +112,7 @@ class ExcelExporter:
         rows: Sequence[Dict[str, Any]],
         columns: Optional[List[ExportColumn]] = None,
         title: Optional[str] = None,
-        sheet_index: bool = False,
+        include_index: bool = False,
     ) -> bool:
         """添加新的工作表
 
@@ -183,7 +181,7 @@ class ExcelExporter:
                 cell.font = header_font_color
                 cell.fill = header_fill
                 cell.alignment = center_align
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = self._Alignment(horizontal="center", vertical="center")
 
             # 写入数据
             for idx, row_data in enumerate(rows, start=1):
@@ -199,11 +197,11 @@ class ExcelExporter:
                 if len(rows) >= idx and idx % 2 == 0:
                     for col_idx in range(1, len(data_row) + 1):
                         cell = ws.cell(row=ws.max_row, column=col_idx)
-                        cell.fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+                        cell.fill = self._PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
 
             # 自动列宽
             for col_idx, key in enumerate(col_keys, start=1):
-                col_letter = get_column_letter(col_idx + (1 if include_index else 0))
+                col_letter = self._get_column_letter(col_idx + (1 if include_index else 0))
                 max_length = len(str(col_names[col_idx - 1])) if col_idx - 1 < len(col_names) else 10
                 for row_data in rows[:10]:
                     val = str(row_data.get(key, ""))
@@ -290,16 +288,21 @@ class PDFExporter:
 
     def __init__(self):
         try:
-            from reportlab.lib.pagesizes import A4
             from reportlab.lib import colors
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-            from reportlab.lib.units import inch, cm
-            from reportlab.platypus import (
-                SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
-            )
-            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+            from reportlab.lib.units import cm, inch
             from reportlab.pdfbase import pdfmetrics
             from reportlab.pdfbase.ttfonts import TTFont
+            from reportlab.pdfgen import canvas
+            from reportlab.platypus import (
+                PageBreak,
+                Paragraph,
+                SimpleDocTemplate,
+                Spacer,
+                Table,
+                TableStyle,
+            )
 
             self._SimpleDocTemplate = SimpleDocTemplate
             self._Paragraph = Paragraph
@@ -499,9 +502,9 @@ class DocxExporter:
     def __init__(self):
         try:
             from docx import Document
-            from docx.shared import Pt, Inches, RGBColor
             from docx.enum.text import WD_ALIGN_PARAGRAPH
             from docx.oxml.ns import qn
+            from docx.shared import Inches, Pt, RGBColor
             self._Document = Document
             self._Pt = Pt
             self._Inches = Inches
@@ -669,7 +672,6 @@ def create_file_response(
 
 # 方便导入 json（被 flatten 中使用
 import json
-
 
 # ════════════════════════════════════════════
 # 🔒 P4-4: 导出操作记录（审计

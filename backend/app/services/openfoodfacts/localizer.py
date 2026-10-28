@@ -6,7 +6,7 @@ OFF 数据中文本地化
 import json
 import logging
 import os
-from typing import Dict, Any, Optional, List
+from typing import Dict, List, Optional
 
 from .config import OFFConfig
 

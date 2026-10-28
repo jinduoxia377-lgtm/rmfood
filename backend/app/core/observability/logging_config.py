@@ -50,11 +50,9 @@ import sys
 import time
 import uuid
 from contextvars import ContextVar
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional
 
 # ═════════════════════════════════════════════
 # 🟡 P3-3: 全局上下文（用于链路追踪）

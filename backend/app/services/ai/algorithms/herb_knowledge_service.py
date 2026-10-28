@@ -20,13 +20,101 @@ from .bayesian_formula_optimizer import HerbParameter
 logger = logging.getLogger(__name__)
 
 
+# ═══════════════════════════════════════════════════════════════
+# 功效别名归一化（前端标签 → 数据库功效索引键）
+# ═══════════════════════════════════════════════════════════════
+# 数据库功效索引键来自真实 TCMHerb 数据的 efficacy_scores（如 补气/补血/养血/降脂/免疫调节）。
+# 前端标签（如"补气养血"）是复合语义，这里展开为若干真实索引键，
+# 使 GA / seven-step 能基于真实数据库药材返回候选，不伪造任何药材/功效数据。
+EFFECT_ALIAS_TO_KEYS: dict[str, list[str]] = {
+    # 免疫类
+    "增强免疫": ["免疫调节"],
+    "免疫调节": ["免疫调节"],
+    "提高抵抗力": ["免疫调节"],
+    # 抗衰老类
+    "抗氧化": ["抗氧化"],
+    "延缓衰老": ["抗衰老"],
+    "清除自由基": ["抗氧化"],
+    # 体力类
+    "抗疲劳": ["抗疲劳"],
+    "缓解疲劳": ["抗疲劳"],
+    "提升精力": ["抗疲劳"],
+    # 滋补类
+    "补气养阴": ["补气"],
+    "滋阴补肾": ["补肾"],
+    "健脾益气": ["健脾"],
+    "补血养血": ["补血", "养血"],
+    "补气养血": ["补气", "补血", "养血"],   # 复合功效 → 展开为真实索引键
+    "补气补血": ["补气", "补血", "养血"],
+    # 神经类
+    "改善睡眠": ["安神"],
+    "安神定志": ["安神"],
+    "缓解焦虑": ["安神"],
+    # 消化类
+    "健脾养胃": ["健脾养胃", "健脾"],
+    "促进消化": ["促进消化"],
+    "调理脾胃": ["健脾养胃"],
+    # 心血管类
+    "降血压": ["降血压"],
+    "降血脂": ["降脂"],
+    "辅助降血脂": ["降脂"],                  # "降血脂"在索引中不存在，映射到真实键"降脂"
+    "保护血管": ["心血管保护"],
+    "促进循环": ["活血"],
+    # 代谢类
+    "降血糖": ["降血糖"],
+    "辅助降尿酸": ["降尿酸"],
+    "调节代谢": ["降血糖"],
+    "控制体重": ["降脂"],
+    # 呼吸类
+    "润肺止咳": ["止咳化痰"],
+    "清咽利喉": ["清热生津"],
+    # 视觉类
+    "明目护眼": ["明目"],
+    "缓解眼疲劳": ["明目"],
+    # 美容类
+    "美容养颜": ["美容养颜"],
+    "护肤保湿": ["美容养颜"],
+    # 骨骼类
+    "强健筋骨": ["强筋健骨"],
+    "补钙健骨": ["强筋健骨"],
+    # 其他
+    "解毒": ["解毒"],
+    "清热解毒": ["清热解毒"],
+    "止咳化痰": ["止咳化痰"],
+    "保肝护肝": ["护肝"],
+    "补肾益精": ["补肾"],
+    "健脾和胃": ["健脾养胃"],
+}
+
+
+def normalize_effect_aliases(effect_ids: list[str]) -> list[str]:
+    """将前端功效标签归一化为数据库功效索引键（去重保序）。
+
+    例如：
+      ["补气养血"]      -> ["补气", "补血", "养血"]
+      ["辅助降血脂"]    -> ["降脂"]
+      ["增强免疫"]      -> ["免疫调节"]
+    未命中别名的标签原样保留（交由索引/评分自然过滤）。
+    """
+    result: list[str] = []
+    for e in effect_ids:
+        result.extend(EFFECT_ALIAS_TO_KEYS.get(e, [e]))
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for k in result:
+        if k not in seen:
+            seen.add(k)
+            deduped.append(k)
+    return deduped
+
+
 class HerbKnowledgeService:
     """中药知识服务 - 通过端口接口提供药材数据"""
 
     def __init__(self, herb_knowledge: HerbKnowledgePort):
         """
         初始化服务，注入 HerbKnowledgePort
-        
+
         Args:
             herb_knowledge: 药材知识端口实现（可由适配器工厂提供）
         """
@@ -38,10 +126,10 @@ class HerbKnowledgeService:
     async def load_herbs(self, force_reload: bool = False) -> Dict[str, HerbParameter]:
         """
         通过端口加载中药数据
-        
+
         Args:
             force_reload: 是否强制重新加载
-            
+
         Returns:
             药材参数字典 {药材ID: HerbParameter}
         """
@@ -50,7 +138,7 @@ class HerbKnowledgeService:
 
         try:
             all_herbs = await self._herb_knowledge.get_all_herbs()
-            
+
             logger.info("[HerbKnowledge] 从端口加载到 %d 种药材", len(all_herbs))
 
             for herb in all_herbs:
@@ -83,10 +171,10 @@ class HerbKnowledgeService:
     def _convert_to_herb_parameter(self, herb) -> Optional[HerbParameter]:
         """
         将 HerbProfile 对象转换为 HerbParameter
-        
+
         Args:
             herb: 来自端口的药材数据对象
-            
+
         Returns:
             HerbParameter 对象，转换失败返回 None
         """
@@ -217,12 +305,12 @@ def set_global_herb_knowledge(service: HerbKnowledgeService) -> None:
 async def init_herb_knowledge(herb_knowledge_port: HerbKnowledgePort) -> HerbKnowledgeService:
     """
     初始化中药知识服务
-    
+
     注意：现在需要传入 HerbKnowledgePort 而不是数据库会话
-    
+
     Args:
         herb_knowledge_port: 来自适配器工厂的 HerbKnowledgePort 实现
-        
+
     Returns:
         已初始化的 HerbKnowledgeService 实例
     """

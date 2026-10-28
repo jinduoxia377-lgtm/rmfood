@@ -23,12 +23,13 @@ _RERANKER_CACHE: dict[str, object] = {}
 _reranker_lock = threading.Lock()
 
 
-def _default_model() -> str:
+def _default_model() -> Optional[str]:
     """模型默认解析顺序：
     1. 环境变量 RAG_RERANKER_MODEL（显式覆盖）
     2. 本地已下载模型目录 backend/data/models/bge-reranker-base（存在则优先，规避
        huggingface_hub 在部分 Windows 环境下写缓存元数据的权限异常）
-    3. HF 官方模型名 BAAI/bge-reranker-base（联网首拉）
+    3. 无本地模型且未显式指定 → 返回 None（禁用 reranker，避免在请求路径上联网
+       下载 278MB 模型导致首呼延迟；此时 RAG 自动降级为纯 embedding/BM25 排序）。
     """
     env = os.getenv("RAG_RERANKER_MODEL")
     if env:
@@ -36,7 +37,7 @@ def _default_model() -> str:
     local = Path(__file__).resolve().parents[4] / "data" / "models" / "bge-reranker-base"
     if local.is_dir():
         return str(local)
-    return "BAAI/bge-reranker-base"
+    return None
 
 
 class Reranker:
@@ -62,6 +63,12 @@ class Reranker:
             if self._model is not None:
                 return self._model
 
+            # 未配置模型（无本地模型且未设置 RAG_RERANKER_MODEL）：
+            # 直接走「无 reranker → 纯 embedding/BM25 排序」的干净降级路径，
+            # 不在请求路径上尝试联网下载。具体提示由 rerank() 统一输出。
+            if not self.model_name:
+                return None
+
             try:
                 from rerankers import Reranker as _Reranker
 
@@ -76,14 +83,15 @@ class Reranker:
                 )
                 return self._get_transformers_model()
             except Exception as e:
-                logger.error("Reranker 模型加载失败: %s", e, exc_info=True)
+                # 仅记录一行明确告警，不输出堆栈噪音（模型缺失/损坏属可预期降级）。
+                logger.warning("Reranker 模型加载失败: %s（降级为原始排序）", e)
                 return None
 
     def _get_transformers_model(self):
         """降级方案：使用 transformers 直接加载"""
         try:
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer
             import torch
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
             logger.info("使用 transformers 降级加载: %s", self.model_name)
             tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -116,7 +124,7 @@ class Reranker:
             logger.info("Transformers Reranker 加载成功")
             return self._model
         except Exception as e:
-            logger.error("Transformers Reranker 加载失败: %s", e, exc_info=True)
+            logger.warning("Transformers Reranker 加载失败: %s（降级为原始排序）", e)
             return None
 
     def rerank(
@@ -140,8 +148,8 @@ class Reranker:
 
         model = self._get_model()
         if model is None:
-            # 降级：返回原始顺序
-            logger.warning("Reranker 不可用，返回原始排序")
+            # 降级：返回原始顺序（无 reranker → 纯 embedding/BM25 排序）
+            logger.warning("Reranker 不可用，使用原始排序")
             return [(i, 0.0) for i in range(min(top_n, len(documents)))]
 
         try:
@@ -157,7 +165,7 @@ class Reranker:
             indexed.sort(key=lambda x: x[1], reverse=True)
             return indexed[:top_n]
         except Exception as e:
-            logger.error("Reranker 推理失败: %s", e, exc_info=True)
+            logger.warning("Reranker 推理失败: %s（降级为原始排序）", e)
             return [(i, 0.0) for i in range(min(top_n, len(documents)))]
 
 

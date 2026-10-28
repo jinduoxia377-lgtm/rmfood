@@ -20,24 +20,24 @@
 - 健康面板: /health/detailed
 """
 import logging
+import platform
 import sys
 import time
-import psutil
-import platform
-
-from app.utils.error_sanitize import sanitize_error
 from datetime import datetime, timezone
-from typing import Annotated, Any, Dict, List, Optional, Tuple
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from typing import Annotated, Any, Dict, List
 
+import psutil
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import User, get_current_active_user
+from app.services.ai.shared.inference_queue import inference_queue
+from app.utils.error_sanitize import sanitize_error
 
 from ..config import settings
 from ..database.session import get_db
-from app.api.deps import get_current_active_user, CurrentUser, User
-from app.services.ai.shared.inference_queue import inference_queue
 
 logger = logging.getLogger(__name__)
 

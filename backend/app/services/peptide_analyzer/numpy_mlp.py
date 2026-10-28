@@ -8,6 +8,7 @@ numpy for the full forward/backward pass and trains every layer with Adam.
 No fabricated data: all weights are learned from the DFBP records.
 """
 import math
+
 import numpy as np
 
 

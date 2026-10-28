@@ -38,19 +38,16 @@
 """
 
 from __future__ import annotations
+
 import asyncio
 import json
 import logging
 import os
-import sys
 import time
-import traceback
 import uuid
-from collections import defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
+from typing import Any, Dict, List, Optional
 
 import redis.asyncio as redis
 from pydantic import BaseModel, Field, validator
@@ -1078,7 +1075,6 @@ async def example_usage():
         logger.info("已提交任务: %s", task_id)
 
         # 监控任务状态
-        import time
         while True:
             task_status = await ray_manager.get_task_status(task_id)
             if task_status:

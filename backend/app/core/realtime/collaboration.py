@@ -10,13 +10,12 @@
 完整实现在后续 Sprint 中逐步推进。
 """
 
-from datetime import datetime, timezone
-from typing import List, Dict, Optional, Any
-from dataclasses import dataclass, field
-from enum import Enum
-import re
-import json
 import logging
+import re
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class Comment:
     is_deleted: bool = False
     is_resolved: bool = False
     reactions: Dict[str, List[int]] = field(default_factory=dict)  # {emoji: [user_ids]}
-    
+
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
@@ -71,7 +70,7 @@ class Comment:
         }
 
 
-@dataclass 
+@dataclass
 class CollaborationSession:
     """实时协作会话"""
     session_id: str
@@ -87,42 +86,42 @@ class CollaborationSession:
 
 class MentionParser:
     """解析文本中的@提及"""
-    
+
     MENTION_PATTERN = re.compile(r'@(\w[\w.-]{2,49})')
     TEAM_PATTERN = re.compile(r'@(team|团队|组)\s*([\w\u4e00-\u9fff]+)')
-    
+
     @classmethod
     def parse(cls, text: str) -> List[str]:
         """提取所有@提及"""
         if not text:
             return []
-        
+
         mentions = set()
-        
+
         # 匹配 @username
         for match in cls.MENTION_PATTERN.finditer(text):
             mentions.add(match.group(0))
-        
+
         # 匹配 @team name
         for match in cls.TEAM_PATTERN.finditer(text):
             mentions.add(match.group(0))
-        
+
         return list(mentions)
-    
+
     @classmethod
     def render_mentions(cls, text: str, mention_map: Dict[str, Dict]) -> str:
         """将@提及渲染为可点击的链接/Mention组件"""
         def replace_mention(match):
             mention_str = match.group(0)
             info = mention_map.get(mention_str)
-            
+
             if info:
                 user_id = info.get('user_id')
                 name = info.get('display_name', mention_str[1:])
                 return f'<span class="mention" data-user-id="{user_id}" data-name="@{name}">{mention_str}</span>'
-            
+
             return match.group(0)
-        
+
         return cls.MENTION_PATTERN.sub(replace_mention, text)
 
 
@@ -130,10 +129,10 @@ class MentionParser:
 
 class CommentService:
     """评论与协作业务逻辑"""
-    
+
     def __init__(self, db):
         self.db = db
-    
+
     async def add_comment(
         self,
         resource_type: str,
@@ -189,7 +188,7 @@ class CommentService:
         """发送@提及通知"""
         logger.warning("⚠️ 协作系统未实现 — 通知未持久化或未推送")
         pass
-    
+
     async def get_comments(
         self,
         resource_type: str,
@@ -229,7 +228,7 @@ class CommentService:
 
 class FileSharingService:
     """文件共享与版本管理"""
-    
+
     async def upload_shared_file(
         self,
         uploader_id: int,
@@ -260,7 +259,7 @@ class FileSharingService:
             "version": 1,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-    
+
     async def list_shared_files(
         self,
         resource_type: str,
@@ -270,7 +269,7 @@ class FileSharingService:
         """列出用户有权限查看的共享文件"""
         logger.warning("⚠️ 协作系统未实现 — list_shared_files 返回空列表")
         return []
-    
+
     async def create_file_version(
         self,
         file_id: int,
@@ -288,7 +287,7 @@ class FileSharingService:
             "change_description": change_description,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-    
+
     async def get_file_versions(self, file_id: int) -> List[Dict]:
         """获取文件的版本历史"""
         logger.warning("⚠️ 协作系统未实现 — get_file_versions 返回空列表")
@@ -303,7 +302,7 @@ class RealtimeCollaborationService:
     def __init__(self):
         from ..realtime.websocket_manager import get_ws_manager
         self.ws_manager = get_ws_manager()
-    
+
     async def join_session(
         self,
         session_id: str,
@@ -321,9 +320,9 @@ class RealtimeCollaborationService:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
-        
+
         logger.info(f"🤝 用户 {user_id} 加入协作会话 {session_id}")
-    
+
     async def leave_session(self, session_id: str, user_id: int):
         """离开协作会话"""
         await self.ws_manager.broadcast_to_session(
@@ -334,7 +333,7 @@ class RealtimeCollaborationService:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
-    
+
     async def broadcast_cursor_position(
         self,
         session_id: str,
@@ -352,7 +351,7 @@ class RealtimeCollaborationService:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
-    
+
     async def broadcast_edit(
         self,
         session_id: str,
@@ -372,7 +371,7 @@ class RealtimeCollaborationService:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
-    
+
     async def get_active_sessions(self, resource_type: str, resource_id: int) -> List[Dict]:
         """获取资源的活跃协作会话"""
         logger.warning("⚠️ 协作系统未实现 — 未查询Redis/DB")

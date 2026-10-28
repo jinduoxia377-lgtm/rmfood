@@ -7,49 +7,83 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from app.services.constraint_penalty import (
-    Constraint,
     ConstraintPenaltyMechanism,
-    PenaltyForm,
 )
 
 from . import BaseAgentTool, ToolResult, register_tool
 
 logger = logging.getLogger(__name__)
 
-# 药食同源目录（2023版）关键限制
-FOOD_HERB_LIMITS: Dict[str, Dict[str, Any]] = {
-    "人参": {"max_dosage_mg_per_day": 3000, "category": "root", "forbidden_children": True},
-    "黄芪": {"max_dosage_mg_per_day": 9000, "category": "root", "forbidden_children": False},
-    "当归": {"max_dosage_mg_per_day": 6000, "category": "root", "forbidden_children": False},
-    "枸杞": {"max_dosage_mg_per_day": 12000, "category": "fruit", "forbidden_children": False},
-    "甘草": {"max_dosage_mg_per_day": 6000, "category": "root", "forbidden_children": False},
-    "茯苓": {"max_dosage_mg_per_day": 12000, "category": "fungus", "forbidden_children": False},
-    "山药": {"max_dosage_mg_per_day": 12000, "category": "tuber", "forbidden_children": False},
-    "红枣": {"max_dosage_mg_per_day": 10000, "category": "fruit", "forbidden_children": False},
-    "薄荷": {"max_dosage_mg_per_day": 3000, "category": "leaf", "forbidden_children": False},
-    "菊花": {"max_dosage_mg_per_day": 5000, "category": "flower", "forbidden_children": False},
-    "金银花": {"max_dosage_mg_per_day": 6000, "category": "flower", "forbidden_children": False},
-    "陈皮": {"max_dosage_mg_per_day": 3000, "category": "peel", "forbidden_children": False},
-    "山楂": {"max_dosage_mg_per_day": 10000, "category": "fruit", "forbidden_children": False},
-    "莲子": {"max_dosage_mg_per_day": 10000, "category": "seed", "forbidden_children": False},
-    "薏苡仁": {"max_dosage_mg_per_day": 10000, "category": "seed", "forbidden_children": False},
-}
+# 药食同源目录（2023/2025版）关键限制
+# 覆盖全部 106 种官方药食同源物质：由 formula_compliance.FOOD_HERB_MAX_DOSAGE（法规限量表）导入生成。
+# 单位：max_dosage_mg_per_day = 毫克/天（法规表原始单位为克/日，已 ×1000）。
+try:
+    from app.services.compliance.formula_compliance import (
+        FOOD_HERB_MAX_DOSAGE as _REGULATORY_LIMITS_MG,
+    )
+except Exception as _e:  # pragma: no cover - 法规表缺失时的兜底
+    logger.warning("无法导入 FOOD_HERB_MAX_DOSAGE，FOOD_HERB_LIMITS 使用内置兜底: %s", _e)
+    _REGULATORY_LIMITS_MG = {}
 
-# 禁止搭配组合（十八反、十九畏简化版）
+
+def _build_food_herb_limits() -> Dict[str, Dict[str, Any]]:
+    """从法规限量表构建覆盖全部 106 种药食同源的限制表。
+
+    保留既有硬编码特殊项（人参儿童禁忌、枸杞/红枣别名）作为增强。
+    """
+    limits: Dict[str, Dict[str, Any]] = {}
+    for name, max_mg in (_REGULATORY_LIMITS_MG or {}).items():
+        try:
+            max_mg = float(max_mg)
+        except (TypeError, ValueError):
+            max_mg = 0.0
+        limits[name] = {
+            "max_dosage_mg_per_day": max_mg,
+            "category": "herb",
+            "forbidden_children": name in {"人参", "灵芝"},
+        }
+    # 别名/既有硬编码补充
+    alias_limits = {
+        "红枣": ("枣", 10000, "fruit"),
+        "枸杞": ("枸杞子", 12000, "fruit"),
+        "桂圆": ("龙眼肉", 10000, "fruit"),
+        "陈皮": ("橘皮", 3000, "peel"),
+        "桑葚": ("桑椹", 10000, "fruit"),
+    }
+    for alias, (canonical, default_mg, category) in alias_limits.items():
+        if alias not in limits:
+            base_mg = limits.get(canonical, {}).get("max_dosage_mg_per_day", default_mg)
+            limits[alias] = {
+                "max_dosage_mg_per_day": float(base_mg),
+                "category": category,
+                "forbidden_children": alias in {"人参"},
+            }
+    # 人参儿童禁忌
+    for key in ("人参",):
+        if key in limits:
+            limits[key]["forbidden_children"] = True
+    return limits
+
+
+FOOD_HERB_LIMITS: Dict[str, Dict[str, Any]] = _build_food_herb_limits()
+
+# 禁止搭配组合（十八反 + 十九畏 = 官方 28 对）
+# 依据：《中国药典》2020 版（藜芦组含党参）+ 十九畏歌诀（川乌/草乌、赤石脂/白石脂分别计数）
 PROHIBITED_COMBINATIONS: List[List[str]] = [
-    ["人参", "藜芦"],
-    ["甘草", "甘遂"],
-    ["甘草", "大戟"],
-    ["甘草", "芫花"],
-    ["海藻", "甘草"],
-    ["乌头", "贝母"],
-    ["乌头", "瓜蒌"],
-    ["乌头", "半夏"],
-    ["乌头", "白蔹"],
-    ["乌头", "白及"],
+    # ── 十八反（17 对）──
+    ["甘草", "甘遂"], ["甘草", "大戟"], ["甘草", "海藻"], ["甘草", "芫花"],
+    ["乌头", "半夏"], ["乌头", "瓜蒌"], ["乌头", "贝母"], ["乌头", "白蔹"], ["乌头", "白及"],
+    ["藜芦", "人参"], ["藜芦", "党参"], ["藜芦", "沙参"], ["藜芦", "丹参"],
+    ["藜芦", "玄参"], ["藜芦", "苦参"], ["藜芦", "细辛"], ["藜芦", "芍药"],
+    # ── 十九畏（11 对）──
+    ["硫黄", "朴硝"], ["水银", "砒霜"], ["狼毒", "密陀僧"],
+    ["巴豆", "牵牛子"], ["丁香", "郁金"],
+    ["川乌", "犀角"], ["草乌", "犀角"],
+    ["牙硝", "三棱"], ["官桂", "赤石脂"], ["官桂", "白石脂"],
+    ["人参", "五灵脂"],
 ]
 
 
@@ -118,6 +152,7 @@ class ComplianceCheckTool(BaseAgentTool):
                     if db is not None:
                         try:
                             from sqlalchemy import select
+
                             from .....models.external_data import TCMHerb
 
                             result = await db.execute(select(TCMHerb).where(TCMHerb.name_cn == name))

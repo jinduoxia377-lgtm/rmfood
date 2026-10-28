@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from .collection_pipeline import CollectionPipeline, CollectionStats
 from .validators import (
+    BatchValidationResult,
     DataQualityValidator,
     ValidationResult,
-    BatchValidationResult,
 )
 
 __all__ = [

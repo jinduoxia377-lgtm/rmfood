@@ -5,7 +5,8 @@
 支持中药材别名归一、食品科学术语分词、同义词扩展。
 """
 import logging
-from typing import List, Optional, Dict, Set
+from typing import Dict, List, Optional
+
 import jieba
 
 logger = logging.getLogger(__name__)

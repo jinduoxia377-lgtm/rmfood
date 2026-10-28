@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any, Optional, Sequence
+from typing import Any, Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -181,14 +181,22 @@ class GroupChatService:
 
     def _get_group_lock(self, group_id: int):
         """返回群聊级互斥锁：Redis 启用时用分布式锁，否则用进程内锁。"""
-        from ....core.distributed.redis_client import RedisLock, is_redis_enabled, make_group_lock_key
+        from ....core.distributed.redis_client import (
+            RedisLock,
+            is_redis_enabled,
+            make_group_lock_key,
+        )
         if is_redis_enabled():
             return RedisLock(make_group_lock_key(group_id))
         return _GROUP_LOCKS.setdefault(group_id, asyncio.Lock())
 
     async def _check_rate_limit(self, user_id: int) -> bool:
         """同用户频率限制：Redis 启用时用 SET NX；否则用进程内存表。"""
-        from ....core.distributed.redis_client import is_redis_enabled, redis_set_nx, make_rate_limit_key
+        from ....core.distributed.redis_client import (
+            is_redis_enabled,
+            make_rate_limit_key,
+            redis_set_nx,
+        )
         if is_redis_enabled():
             return await redis_set_nx(
                 make_rate_limit_key("dispatch_rate", user_id),
@@ -242,8 +250,9 @@ class GroupChatService:
         plan = None
         if task_id is not None:
             try:
-                from ....models.task_group import TaskGroup
                 from sqlalchemy import select
+
+                from ....models.task_group import TaskGroup
                 task_row = (await self._db.execute(
                     select(TaskGroup).where(TaskGroup.id == task_id)
                 )).scalar_one_or_none()
@@ -272,7 +281,9 @@ class GroupChatService:
         roles = plan.get("roles", []) or []
 
         # 2. 写【任务分配】计划消息（可观测）：含派单批次号 + 每个子任务的角色与描述（阶段 C）
-        from sqlalchemy import select, func as safunc
+        from sqlalchemy import func as safunc
+        from sqlalchemy import select
+
         from ....models.bot import BotGroupMessage as GroupMessageModel
         existing_plan_count = (await self._db.execute(
             select(safunc.count()).select_from(GroupMessageModel).where(
@@ -357,8 +368,8 @@ class GroupChatService:
         - 优先使用任务群已有成员（member_bots），避免与建群配人结果不一致；
         - 若动态创建了新专家（L2/L2.5/L3），自动加入群成员，保证前端可见。
         """
-        from .github_supply_service import recruit_expert_from_github
         from .bot_manager import _extract_capability_keywords
+        from .github_supply_service import recruit_expert_from_github
 
         bot = None
         # L0：优先使用任务群已有成员（按能力关键词匹配）
@@ -495,8 +506,9 @@ class GroupChatService:
     async def _update_task_status(self, task_id: int, status: str, error_message: str | None = None) -> None:
         """更新 ai_task_groups 状态（任务状态机 v3.3）。"""
         try:
-            from ....models.task_group import TaskGroup
             from sqlalchemy import update
+
+            from ....models.task_group import TaskGroup
             values: dict[str, Any] = {"status": status}
             if error_message:
                 values["error_message"] = error_message

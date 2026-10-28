@@ -16,19 +16,21 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from app.services.ai.providers.provider_factory import cleanup_provider_factory, get_provider_factory, TaskType
+from app.services.ai.dialectics_service import analyze_dialectics
+from app.services.ai.providers.provider_factory import (
+    TaskType,
+    get_provider_factory,
+)
 from app.services.ai.safety import (
     PromptGuardResult,
-    ThreatLevel,
-    check_prompt,
     check_output,
+    check_prompt,
 )
 from app.services.ai.safety.instruction_hierarchy import InstructionHierarchy
 
-from .tools import BaseAgentTool, ToolResult, get_tool_registry
-from app.services.ai.dialectics_service import analyze_dialectics
+from .tools import ToolResult, get_tool_registry
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +304,10 @@ class AgentOrchestrator:
             if sig == last_tool_sig:
                 logger.warning("[Orchestrator] 检测到重复 tool_calls，终止循环避免重复派单")
                 if not execution.final_response:
-                    execution.final_response = await self._build_response(query, execution.steps)
+                    execution.final_response = await self._build_response(
+                query, execution.steps,
+                user_id=str(context.get("user_id")) if context.get("user_id") else None,
+            )
                 execution.status = "completed"
                 break
             last_tool_sig = sig
@@ -382,7 +387,10 @@ class AgentOrchestrator:
         execution.total_latency_ms = (time.time() - total_start) * 1000
 
         if not execution.final_response:
-            execution.final_response = await self._build_response(query, execution.steps)
+            execution.final_response = await self._build_response(
+                query, execution.steps,
+                user_id=str(context.get("user_id")) if context.get("user_id") else None,
+            )
 
         # 🔒 最终输出安全检查
         final_output_check = check_output(execution.final_response)
@@ -495,8 +503,15 @@ class AgentOrchestrator:
         self,
         query: str,
         steps: List[AgentStep],
+        user_id: Optional[str] = None,
     ) -> str:
-        """根据工具执行结果构建五段式配方报告"""
+        """根据工具执行结果构建五段式配方报告
+
+        Args:
+            query: 用户问题
+            steps: Agent 执行步骤
+            user_id: 租户过滤（P0-4），从执行上下文取当前认证用户 id。
+        """
         tool_outputs: dict = {}
         herbs: list = []
 
@@ -520,7 +535,7 @@ class AgentOrchestrator:
         # ── 辨证与目标（真实辨证引擎：LLM+RAG，规则降级） ──
         parts = ["### 一、辨证与目标\n"]
         try:
-            dialectics = await analyze_dialectics(query)
+            dialectics = await analyze_dialectics(query, user_id=user_id)
             if dialectics.get("urgent"):
                 parts.append(f"**⚠️ 就医提醒**：{dialectics.get('referral_message', '')}\n")
             else:
@@ -577,9 +592,12 @@ class AgentOrchestrator:
             parts.append("暂无配方数据。\n")
         parts.append("\n")
 
-        # ── 方解与机理 ──────────────────────────────────────
+        # ── 方解与机理 ──────────────────────────────────────────────────
         parts.append("### 三、方解与机理\n")
-        kg_data = tool_outputs.get("kg_infer", {})
+        # kg_reason 是实际注册的知识图谱推理工具（见 services/kg/inference_agent.py
+        # KGReasonTool）。此处读取其 synergy 推理结果渲染协同效应；
+        # 历史版本误读不存在的 kg_infer 工具，导致 KG 推理永远为空、永远走降级。
+        kg_data = tool_outputs.get("kg_reason", {})
         if isinstance(kg_data, dict) and kg_data.get("synergies"):
             for syn in kg_data["synergies"][:3]:
                 if isinstance(syn, dict):
@@ -588,7 +606,14 @@ class AgentOrchestrator:
                         f"{syn.get('reasoning', syn.get('type', ''))}（置信度：{syn.get('confidence', '?')}）\n"
                     )
         else:
-            parts.append(_generate_mechanism_explanation(herbs, query, product_type))
+            # 图谱无可用协同数据时降级为规则/文献机理说明，绝不因图谱异常让整份报告失败
+            try:
+                parts.append(_generate_mechanism_explanation(herbs, query, product_type))
+            except Exception as mech_err:
+                logger.warning(
+                    "[AgentOrchestrator] 机理说明生成失败，使用通用说明: %s", mech_err
+                )
+                parts.append("基于现代药理学研究，本方各成分具有多靶点协同调节作用。\n")
         parts.append("\n> \u26a0\ufe0f 本建议为辅助调理，不能替代医师诊断与治疗。\n")
         parts.append("\n")
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 from app.core.observability.logging_config import logger
 
@@ -35,7 +35,7 @@ class SyntaxIssue:
 class PromptSyntaxChecker:
     """
     提示词语法检查器
-    
+
     检测规则库（可扩展）：
     - 变量引用格式错误
     - 特殊字符转义问题
@@ -132,29 +132,29 @@ class PromptSyntaxChecker:
     def check(self, prompt_text: str) -> List[SyntaxIssue]:
         """
         执行语法检查
-        
+
         Args:
             prompt_text: 待检查的提示词文本
-            
+
         Returns:
             发现的问题列表
         """
         issues = []
         lines = prompt_text.split('\n')
-        
+
         for rule in self._compiled_rules:
             pattern = rule["compiled_pattern"]
-            
+
             for match in pattern.finditer(prompt_text):
                 # 计算行列号
                 line_num = prompt_text[:match.start()].count('\n') + 1
                 col_num = match.start() - prompt_text.rfind('\n', 0, match.start())
-                
+
                 # 获取匹配片段（最多50字符）
                 start = max(0, match.start() - 20)
                 end = min(len(prompt_text), match.end() + 20)
                 snippet = prompt_text[start:end]
-                
+
                 issue = SyntaxIssue(
                     severity=rule["severity"],
                     rule_id=rule["id"],
@@ -164,19 +164,19 @@ class PromptSyntaxChecker:
                     snippet=snippet.replace('\n', ' '),
                     suggestion=rule["suggestion"],
                 )
-                
+
                 issues.append(issue)
-        
+
         # 额外检查：括号配对
         brace_issues = self._check_brace_balance(prompt_text)
         issues.extend(brace_issues)
-        
+
         return issues
 
     def _check_brace_balance(self, text: str) -> List[SyntaxIssue]:
         """检查括号配对"""
         issues = []
-        
+
         stack = []
         for i, char in enumerate(text):
             if char == '{':
@@ -195,7 +195,7 @@ class PromptSyntaxChecker:
                         snippet=text[max(0,i-10):i+10],
                         suggestion="删除多余的反花括号或添加对应的开括号",
                     ))
-        
+
         if stack:
             for _, pos in stack:
                 line_num = text[:pos].count('\n') + 1
@@ -208,7 +208,7 @@ class PromptSyntaxChecker:
                     snippet=text[max(0,pos-10):pos+10],
                     suggestion="添加对应的闭合花括号",
                 ))
-        
+
         return issues
 
     def get_statistics(self, issues: List[SyntaxIssue]) -> Dict[str, int]:
@@ -224,9 +224,9 @@ class PromptSyntaxChecker:
     def get_quick_fixes(self, issues: List[SyntaxIssue], original_text: str) -> str:
         """应用自动修复（仅对简单规则有效）"""
         fixed_text = original_text
-        
+
         for issue in issues:
             if issue.rule_id == "DOUBLE_BRACES":
                 fixed_text = re.sub(r'\{\{([^}]+)\}\}', r'{\1}', fixed_text)
-        
+
         return fixed_text

@@ -17,8 +17,8 @@ import json
 import logging
 from typing import AsyncGenerator
 
-from ...llm_service import llm_service, LLMMessage
-from ...safety import check_prompt, check_output, ThreatLevel
+from ...llm_service import LLMMessage, llm_service
+from ...safety import ThreatLevel, check_output, check_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +135,7 @@ async def react_chain(
         messages.append(LLMMessage(role="assistant", content=response))
 
         # 模拟 Observation（实际项目中应调用真实工具）
-        observation = f"[工具执行结果: 在知识库中检索到相关配方信息]"
+        observation = "[工具执行结果: 在知识库中检索到相关配方信息]"
         messages.append(LLMMessage(role="user", content=f"Observation: {observation}"))
 
         # 流式输出思考过程

@@ -37,12 +37,12 @@ import json
 import logging
 import re
 import time
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
-from fastapi import Request, Response, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
@@ -379,8 +379,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     }
 
     async def dispatch(self, request: Request, call_next):
-        from ..observability.request_context import generate_request_id, set_request_id, clear_context
         from ..observability.metrics import metrics
+        from ..observability.request_context import (
+            generate_request_id,
+            set_request_id,
+        )
 
         start_time = time.time()
         client_ip = request.client.host if request.client else "unknown"
@@ -860,6 +863,11 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             # 为 GET 请求设置 CSRF cookie
             if request.method == "GET":
+                # `/api/v1/agent/csrf-token` 端点自身会设置 csrf_token cookie，
+                # 以保证响应体 token 与 cookie 值一致（供外部调用方双提交使用），
+                # 中间件在此不再覆盖其 cookie。
+                if request.url.path == "/api/v1/agent/csrf-token":
+                    return response
                 token = secrets.token_hex(32)
                 response.set_cookie(
                     key=self.CSRF_COOKIE_NAME,

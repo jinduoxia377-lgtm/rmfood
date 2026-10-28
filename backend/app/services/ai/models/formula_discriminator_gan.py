@@ -15,12 +15,15 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any  # A-27
-from typing import Dict, List, Optional, Tuple
+from typing import (
+    Any,  # A-27
+    Dict,
+    List,
+    Optional,
+)
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 

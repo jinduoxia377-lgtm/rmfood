@@ -20,16 +20,16 @@
     from .core.observability.metrics_extended import setup_enhanced_metrics
 """
 
-import logging
-import time
-import threading
 import json
-from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Union
+import logging
+import threading
+import time
 from collections import defaultdict, deque
+from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List
 
 from fastapi import FastAPI, Request, status
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 logger = logging.getLogger(__name__)
 
@@ -631,7 +631,7 @@ class EnhancedMetricsCollector:
                 logger.error(f"[Metrics] 指标暴露失败: {metric.name}: {e}")
 
         # 添加元信息
-        output.append(f'# HELP rmfood_info RMFOOD 应用信息\n# TYPE rmfood_info gauge\nrmfood_info{{version="1.0.0"}} 1\n')
+        output.append('# HELP rmfood_info RMFOOD 应用信息\n# TYPE rmfood_info gauge\nrmfood_info{version="1.0.0"} 1\n')
 
         return '\n'.join(output)
 

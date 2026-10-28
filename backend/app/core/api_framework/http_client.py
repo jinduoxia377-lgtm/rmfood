@@ -44,15 +44,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 import random
 import threading
+import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
-from urllib.parse import urlparse
 
 import httpx
 

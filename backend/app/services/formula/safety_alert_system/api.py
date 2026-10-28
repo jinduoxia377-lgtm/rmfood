@@ -9,12 +9,11 @@ SafetyAlertSystem - API 接口
 """
 
 import logging
-from ....utils.error_sanitize import sanitize_error  # A-27
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
+from ....utils.error_sanitize import sanitize_error  # A-27
 from .core import SafetyAlertSystem
-
 
 logger = logging.getLogger(__name__)
 
@@ -90,10 +89,11 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
     """
     try:
         from fastapi import APIRouter, Depends, HTTPException, Query, status
+
         from ..api.deps import get_current_user
-        from ..models.user_model import User
         from ..core.rbac.rbac import require_role
         from ..models.enums import UserRole
+        from ..models.user_model import User
     except ImportError:
         logger.error("无法导入 FastAPI 依赖，API 路由将不可用")
         return None

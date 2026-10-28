@@ -121,16 +121,16 @@ def register_tool(tool_cls):
 
 # ── 自动注册所有工具 ─────────────────────────────────────────────
 
-from .rag_tool import RAGRetrievalTool, RAGStatsTool  # noqa: F401
-from .compliance_tool import ComplianceCheckTool  # noqa: F401
-from .formula_tool import FormulaGenerationTool, IngredientInfoTool  # noqa: F401
-from .experiment_tool import ExperimentPlanTool  # noqa: F401
-from .qa_tool import QAAnswerTool  # noqa: F401
-from .safety_tool import SafetyAssessTool  # noqa: F401
-from .cost_tool import CostEstimateTool  # noqa: F401
-from .literature_tool import LiteratureSearchTool  # noqa: F401
+from .bot_admin_tools import CreateBotTool, DeleteBotTool, ListBotsTool, UpdateBotTool  # noqa: F401
 from .compare_tool import FormulaCompareTool  # noqa: F401
+from .compliance_tool import ComplianceCheckTool  # noqa: F401
+from .cost_tool import CostEstimateTool  # noqa: F401
+from .delegate_tool import DelegateTool  # noqa: F401
+from .experiment_tool import ExperimentPlanTool  # noqa: F401
+from .formula_tool import FormulaGenerationTool, IngredientInfoTool  # noqa: F401
+from .literature_tool import LiteratureSearchTool  # noqa: F401
+from .qa_tool import QAAnswerTool  # noqa: F401
+from .rag_tool import RAGRetrievalTool, RAGStatsTool  # noqa: F401
+from .safety_tool import SafetyAssessTool  # noqa: F401
 from .stability_tool import StabilityPredictTool  # noqa: F401
 from .taste_tool import TastePredictTool  # noqa: F401
-from .bot_admin_tools import CreateBotTool, UpdateBotTool, DeleteBotTool, ListBotsTool  # noqa: F401
-from .delegate_tool import DelegateTool  # noqa: F401

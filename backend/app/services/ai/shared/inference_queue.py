@@ -33,7 +33,6 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
 from typing import Any, Callable, Dict, Optional
 
 logger = logging.getLogger("rmfood.ai.queue")
@@ -57,9 +56,13 @@ INSTANCE_HEARTBEAT_INTERVAL: int = 30  # 心跳间隔（秒）
 # ── 数据模型（从 inference_store 导入，保持单一定义）────────────────────
 
 # 说明：InferenceTaskStatus 和 InferenceResult 的 authoritative 定义在 inference_store.py
+from .inference_store import (
+    InferenceResult,
+    InferenceResultStore,
+    MemoryResultStore,
+    RedisResultStore,
+)
 from .inference_store import InferenceTaskStatus as TaskStatus
-from .inference_store import InferenceResult, InferenceResultStore
-from .inference_store import MemoryResultStore, RedisResultStore, create_result_store
 
 
 @dataclass
@@ -782,7 +785,8 @@ def _exec_bayesian_generate(payload: dict) -> dict:
         max_iterations: int
     """
     import asyncio as _asyncio
-    from .bayesian_formula_optimizer import BayesianFormulaOptimizer, BayesianConfig
+
+    from .bayesian_formula_optimizer import BayesianConfig, BayesianFormulaOptimizer
 
     target_effects = payload.get("target_effects", ["抗氧化"])
     constraints = payload.get("constraints", {})
@@ -820,7 +824,8 @@ def _exec_genetic_optimize(payload: dict) -> dict:
         generations: int
     """
     import asyncio as _asyncio
-    from .genetic_formula_optimizer import GeneticFormulaOptimizer, GAConfig
+
+    from .genetic_formula_optimizer import GAConfig, GeneticFormulaOptimizer
 
     target_effects = payload.get("target_effects", ["抗氧化"])
     exclude_herbs = set(payload.get("exclude_herbs", []))

@@ -1,9 +1,9 @@
 """RMFOOD 审计日志服务"""
 import logging
-from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
+from typing import Any, Dict
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 

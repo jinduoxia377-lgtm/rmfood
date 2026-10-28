@@ -3,15 +3,15 @@
 从配方自动生成可称重批记录
 """
 import logging
-import sqlalchemy  # A-27
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
+import sqlalchemy  # A-27
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models import Batch, Formula, Ingredient, FormulaVersion, IngredientLot, BatchStatus
+from app.models import Batch, Formula, IngredientLot
 from app.models.enums import BatchStatus as BatchStatusEnum
 
 logger = logging.getLogger(__name__)

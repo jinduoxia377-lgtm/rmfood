@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,9 @@ async def _async_load_herb_cache() -> Dict[str, Dict[str, Any]]:
     """从数据库异步加载药食同源药材缓存"""
     try:
         from sqlalchemy import select
-        from app.models.models import TCMHerb
+
         from app.core.database.session import get_session_factory
+        from app.models.models import TCMHerb
 
         cache: Dict[str, Dict[str, Any]] = {}
         factory = get_session_factory()

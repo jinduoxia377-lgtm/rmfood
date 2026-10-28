@@ -13,7 +13,6 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class OutputRiskLevel(str, Enum):
 @dataclass
 class OutputFinding:
     """输出检测结果"""
-    finding_type: str   # "pii" | "api_key" | "sensitive_keyword" | "long_output" | "code_leak"
+    finding_type: str   # "pii" | "api_key" | "sensitive_keyword" | "long_output" | "code_leak" | "hallucination" | "medical_safety"
     severity: str       # "low" | "medium" | "high" | "critical"
     matched_text: str
     description: str
@@ -58,6 +57,14 @@ _SENSITIVE_PATTERNS: list[tuple[str, str, str, float]] = [
     (r"(?i)[\w.+-]+@[\w-]+\.[\w.-]+", "email", "email_address", 0.6),  # 邮箱
     (r"\d{17}[\dXx]", "id_card", "id_number", 0.8),             # 身份证号
     (r"[一-鿿]{2,4}身份证", "id_card", "id_card_mention", 0.7),
+    # ── 医疗幻觉检测（P0-1：防止 LLM 编造文献/DOI/临床数据）──
+    (r"(?i)DOI:\s*\d+\.\d{4,}/[^\s]{3,}", "hallucinated_doi", "hallucination", 0.85),
+    (r"(?i)《中国药典》\s*\d{4}年版.*?(显示|证实|表明|有效率为?)", "hallucinated_ref", "hallucination", 0.75),
+    (r"(?i)(研究表明|临床证实|研究结果|数据显示|临床研究|实验证明).*?(有效率|治愈率|显著)", "hallucinated_stat", "hallucination", 0.7),
+    # ── 医疗越界声明检测（P0-1：防止 LLM 替代处方药/治疗建议）──
+    (r"(?i)(替代|代替|取代|停用).{0,5}(降压药|降糖药|处方药|抗生素|化疗|手术)", "medical_overreach", "medical_safety", 0.95),
+    (r"(?i)(可治愈|根治|康复|痊愈).{0,5}(高血压|糖尿病|癌症|肿瘤|精神病)", "medical_overreach", "medical_safety", 0.95),
+    (r"(?i)(无需|不必|不用).{0,5}(就医|看医生|去医院|治疗)", "medical_overreach", "medical_safety", 0.9),
 ]
 
 # 高敏关键词
@@ -70,7 +77,7 @@ _SENSITIVE_KEYWORDS: list[tuple[str, str]] = [
 ]
 
 # 超长输出限制（超过此长度触发警告）
-MAX_OUTPUT_LENGTH: int = 4096
+MAX_OUTPUT_LENGTH: int = 16000
 # 代码块限制
 MAX_CODE_BLOCK_LINES: int = 100
 MAX_CODE_BLOCK_CHARS: int = 8000

@@ -4,11 +4,11 @@
 """
 
 import logging
-import asyncio
-import aiohttp
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class DatabasePeptide:
     is_synthetic: bool = False          # 诚实标记：程序合成（非真实 DFBP 文献记录）
     provenance: str = "unknown"         # core_dfbp_literature / hand_expanded / synthetic_programmatic
     created_at: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> dict:
         return {
             "sequence": self.sequence,
@@ -59,16 +59,16 @@ class DatabasePeptide:
 class DFBPDatabase:
     """
     DFBP (Database of Food-derived Bioactive Peptides) 适配器
-    
+
     提供在线API查询和本地数据缓存
     """
-    
+
     def __init__(self):
         self.base_url = "https://db.baderlab.org/DFBP/api"
         self._local_cache: Dict[str, List[DatabasePeptide]] = {}
         self._build_local_index()
         logger.info("DFBP 数据库适配器初始化")
-    
+
     def _build_local_index(self):
         """从 DFBP 主数据源构建本地索引（避免重复定义）"""
         try:
@@ -102,7 +102,7 @@ class DFBPDatabase:
             logger.info(f"DFBP 数据库适配器初始化完成，加载 {len(self._local_cache)} 条肽记录")
         except ImportError:
             logger.warning("无法导入 DFBP_PEPTIDE_DATABASE，使用空索引")
-    
+
     async def search_by_sequence(
         self,
         sequence: str,
@@ -112,27 +112,27 @@ class DFBPDatabase:
         """搜索序列"""
         results = []
         seq_upper = sequence.upper()
-        
+
         # 先查本地缓存
         if seq_upper in self._local_cache:
             results.extend(self._local_cache[seq_upper])
-        
+
         # 模糊匹配
         if not results:
             results = self._fuzzy_match(seq_upper)
-        
+
         # 尝试在线查询
         if use_online and not results:
             online_results = await self._search_online(seq_upper)
             results.extend(online_results)
-        
+
         # 活性类型过滤
         if activity_type:
-            results = [r for r in results if r.activity_type and 
+            results = [r for r in results if r.activity_type and
                       activity_type.lower() in r.activity_type.lower()]
-        
+
         return results
-    
+
     async def _search_online(self, sequence: str) -> List[DatabasePeptide]:
         """在线搜索DFBP API"""
         results = []
@@ -141,7 +141,7 @@ class DFBPDatabase:
                 # DFBP API端点
                 url = f"{self.base_url}/peptides/search"
                 params = {"sequence": sequence}
-                
+
                 async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                     if resp.status == 200:
                         data = await resp.json()
@@ -160,9 +160,9 @@ class DFBPDatabase:
                         logger.warning(f"DFBP API返回错误状态: {resp.status}")
         except Exception as e:
             logger.warning(f"DFBP在线查询失败: {e}")
-        
+
         return results
-    
+
     def _fuzzy_match(self, sequence: str) -> List[DatabasePeptide]:
         """模糊匹配"""
         results = []
@@ -170,7 +170,7 @@ class DFBPDatabase:
             if sequence in seq or seq in sequence:
                 results.extend(peptides)
         return results
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """获取统计信息"""
         activities = {}
@@ -182,7 +182,7 @@ class DFBPDatabase:
                     activities[p.activity_type] = activities.get(p.activity_type, 0) + 1
                 if p.food_source:
                     food_sources[p.food_source] = food_sources.get(p.food_source, 0) + 1
-        
+
         return {
             "total_peptides": len(self._local_cache),
             "activities": activities,
@@ -205,15 +205,15 @@ class DFBPDatabase:
 class BioPeptideDB:
     """
     BioPeptideDB 适配器
-    
+
     提供生物活性肽数据库的查询接口
     """
-    
+
     def __init__(self):
         self.base_url = "https://bps-db.cs.duke.edu/api"
         self._local_cache: Dict[str, List[DatabasePeptide]] = {}
         logger.info("BioPeptideDB 适配器初始化")
-    
+
     async def search_by_sequence(
         self,
         sequence: str,
@@ -221,14 +221,14 @@ class BioPeptideDB:
     ) -> List[DatabasePeptide]:
         """搜索序列"""
         results = []
-        
+
         # 尝试在线查询
         if use_online:
             online_results = await self._search_online(sequence)
             results.extend(online_results)
-        
+
         return results
-    
+
     async def _search_online(self, sequence: str) -> List[DatabasePeptide]:
         """在线搜索BioPeptideDB API"""
         results = []
@@ -236,7 +236,7 @@ class BioPeptideDB:
             async with aiohttp.ClientSession() as session:
                 url = f"{self.base_url}/peptides"
                 params = {"sequence": sequence}
-                
+
                 async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                     if resp.status == 200:
                         data = await resp.json()
@@ -252,7 +252,7 @@ class BioPeptideDB:
                         logger.warning(f"BioPeptideDB API返回错误状态: {resp.status}")
         except Exception as e:
             logger.warning(f"BioPeptideDB在线查询失败: {e}")
-        
+
         return results
 
 
@@ -262,12 +262,12 @@ class BioPeptideDB:
 
 class FoodPeptideDatabaseManager:
     """食品肽数据库管理器"""
-    
+
     def __init__(self):
         self.dfbp = DFBPDatabase()
         self.bio_peptide_db = BioPeptideDB()
         logger.info("食品肽数据库管理器初始化")
-    
+
     async def search(
         self,
         sequence: Optional[str] = None,
@@ -313,9 +313,9 @@ class FoodPeptideDatabaseManager:
                     if food_source.lower() not in p.food_source.lower():
                         continue
                 results.append(p)
-        
+
         return results
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """获取统计信息"""
         return self.dfbp.get_statistics()

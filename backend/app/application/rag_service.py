@@ -1,16 +1,25 @@
 """
+⚠️ DEPRECATED - 请使用 app/services/ai/rag/rag_service.py（线上版）
+
+这是 M2.1 hex 架构时期遗留的 RAG 服务副本，与线上版并存。
+- 线上版：app/services/ai/rag/rag_service.py（ChromaDB + 真实 Embedding + BM25/RRF 混合检索）
+- 本文件当前仅被单元测试引用：backend/tests/unit/infrastructure/test_rag.py
+- 新增功能请勿基于本文件实现；建议后续将相关测试迁移到线上版后删除本文件。
+
 RAG 检索增强生成服务（M2.1）
 
 编排完整的 RAG 流程：文档索引 → 嵌入 → 检索 → 上下文组装
 """
 from __future__ import annotations
+
 import logging
-from typing import Optional
 
 from ..domain.rag import (
-    DocumentChunk, RetrievalQuery, RAGContext, RetrievalResult, KnowledgeBase,
+    DocumentChunk,
+    RAGContext,
+    RetrievalQuery,
 )
-from ..domain.rag_ports import VectorStore, EmbeddingService, DocumentProcessor
+from ..domain.rag_ports import DocumentProcessor, EmbeddingService, VectorStore
 
 logger = logging.getLogger(__name__)
 

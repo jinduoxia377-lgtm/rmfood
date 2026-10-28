@@ -3,16 +3,17 @@ SafetyChecker - 安全合规检查服务
 Random Forest + 规则引擎，药食同源目录校验、毒性/过敏原/重金属筛查
 这是最核心的 AI 服务，当前已包含完整规则实现
 """
+import json
 import logging
-from typing import Any
+from typing import Any, Dict, Iterable, List, Set
 
 logger = logging.getLogger(__name__)
 
-# 药食同源目录（109种）- 完整目录
-# 依据：国家卫生健康委员会关于当归等6种新增按照传统既是食品又是中药材物质公告
-# 包含87种基础品种 + 22种后续新增/修订品种
-_FOOD_HOMOLOGY_CATALOG = {
-    # 87种基础药食同源物品
+# ⚠️ DEPRECATED：以下硬编码目录仅作为数据库不可用时的兜底。
+# 正式运行时 _FOOD_HOMOLOGY_CATALOG 会从 hf_enriched_herbs 表加载官方 106 种药食同源。
+# 本兜底已移除明确不在目录中的品种（罂粟壳/海藻等），但可能滞后于最新公告。
+_FOOD_HOMOLOGY_CATALOG_FALLBACK: Set[str] = {
+    # 87种基础药食同源物品（2014 目录）
     "丁香", "八角茴香", "刀豆", "小茴香", "小蓟", "山药", "山楂", "马齿苋",
     "乌梢蛇", "乌梅", "木瓜", "火麻仁", "代代花", "玉竹", "甘草", "白芷",
     "白果", "白扁豆", "白扁豆花", "龙眼肉", "决明子", "百合", "肉桂",
@@ -23,35 +24,44 @@ _FOOD_HOMOLOGY_CATALOG = {
     "山银花", "葛根", "黑芝麻", "蒲公英", "蜂蜜", "榧子", "酸枣仁", "鲜白茅根",
     "鲜芦根", "蝮蛇", "橘红", "薄荷", "薏苡仁", "薤白", "覆盆子", "藿香",
     "牡蛎", "蛤蚧", "龟甲", "鳖甲",
-    # 后续新增品种（约22种）
+    # 后续新增品种
     "槐米", "槐花", "西红花", "积雪草", "杜仲叶", "地榆", "铁皮石斛",
     "山柰", "荜茇", "升麻", "北沙参", "明党参", "红参", "太子参",
     "红芪", "竹茹", "郁李仁", "苦杏仁", "甜杏仁", "桃仁",
-    "川贝母", "浙贝母", "瓜蒌", "罗汉果", "金荞麦", "红曲米",
+    "罗汉果", "金荞麦", "红曲米",
     "橘皮", "化橘红", "玫瑰花", "绿萼梅", "九里香", "迷迭香", "甘松",
     "草豆蔻", "肉豆蔻", "青皮", "陈皮", "枳壳", "枳实",
     "黄芪", "党参", "人参", "西洋参", "白术", "大枣", "枸杞子", "芡实",
     "麦芽", "谷芽", "神曲", "金银花", "夏枯草", "鱼腥草",
-    "青梅", "白梅", "罂粟壳", "石榴皮", "五倍子", "山茱萸", "金樱子",
-    "海藻", "昆布",
+    "山茱萸", "金樱子", "天麻", "灵芝", "肉苁蓉", "姜黄", "草果", "当归",
 }
 
-# 十九畏（配伍禁忌）
-_NINETEEN_ANTAGONISMS = {
-    ("人参", "藜芦"), ("党参", "藜芦"), ("丹参", "藜芦"),
-    ("玄参", "藜芦"), ("苦参", "藜芦"), ("沙参", "藜芦"),
-    ("甘草", "甘遂"), ("甘草", "大戟"), ("甘草", "芫花"),
-    ("甘草", "海藻"), ("丁香", "郁金"), ("牙硝", "三棱"),
-    ("官桂", "石脂"), ("人参", "五灵脂"),
+# 运行时从 hf_enriched_herbs 表加载的官方药食同源目录（懒加载 + 缓存）
+_FOOD_HOMOLOGY_CATALOG: Set[str] = set()
+_FOOD_HOMOLOGY_CATALOG_LOADED = False
+_FOOD_HOMOLOGY_CATALOG_FROM_DB = False
+
+# 十八反（依据《中国药典》2020 版，含现代增补的党参）— 17 对
+_EIGHTEEN_CONTRAINDICATIONS: Set[tuple[str, str]] = {
+    ("甘草", "甘遂"), ("甘草", "大戟"), ("甘草", "海藻"), ("甘草", "芫花"),
+    ("乌头", "半夏"), ("乌头", "瓜蒌"), ("乌头", "贝母"), ("乌头", "白蔹"), ("乌头", "白及"),
+    ("藜芦", "人参"), ("藜芦", "党参"), ("藜芦", "沙参"), ("藜芦", "丹参"),
+    ("藜芦", "玄参"), ("藜芦", "苦参"), ("藜芦", "细辛"), ("藜芦", "芍药"),
 }
 
-# 十八反
-_EIGHTEEN_CONTRAINDICATIONS = {
-    ("甘草", "甘遂"), ("甘草", "大戟"), ("甘草", "芫花"), ("甘草", "海藻"),
-    ("乌头", "贝母"), ("乌头", "瓜蒌"), ("乌头", "半夏"), ("乌头", "白蔹"),
-    ("乌头", "白及"), ("藜芦", "人参"), ("藜芦", "丹参"),
-    ("藜芦", "玄参"), ("藜芦", "沙参"), ("藜芦", "苦参"),
+# 十九畏 — 11 对（川乌/草乌、赤石脂/白石脂分别计数，共 28 对）
+_NINETEEN_ANTAGONISMS: Set[tuple[str, str]] = {
+    ("硫黄", "朴硝"), ("水银", "砒霜"), ("狼毒", "密陀僧"),
+    ("巴豆", "牵牛子"), ("丁香", "郁金"),
+    ("川乌", "犀角"), ("草乌", "犀角"),
+    ("牙硝", "三棱"), ("官桂", "赤石脂"), ("官桂", "白石脂"),
+    ("人参", "五灵脂"),
 }
+
+# 官方二十八反畏（十八反 17 对 + 十九畏 11 对 = 28 对）
+_CONTRAINDICATION_PAIRS: Set[tuple[str, str]] = (
+    _EIGHTEEN_CONTRAINDICATIONS | _NINETEEN_ANTAGONISMS
+)
 
 # 常见过敏原
 _COMMON_ALLERGENS = {
@@ -88,6 +98,46 @@ _ALLERGENIC_PEPTIDE_MARKERS = {
 
 # 肽段安全长度范围
 _PEPTIDE_SAFE_LENGTH = (2, 50)  # 2-50个氨基酸为安全范围
+
+# 人群禁忌关键词（用于 extra_knowledge.contraindication 文本匹配）
+_SPECIAL_POPULATION_KEYWORDS = ("孕妇", "妊娠", "哺乳期", "儿童", "小儿", "婴幼儿")
+
+
+async def load_food_homology_catalog_from_db(force_reload: bool = False) -> Set[str]:
+    """从 hf_enriched_herbs 表加载官方药食同源目录（106 种）。
+
+    失败或表为空时回退到硬编码 _FOOD_HOMOLOGY_CATALOG_FALLBACK（deprecated）。
+    """
+    global _FOOD_HOMOLOGY_CATALOG, _FOOD_HOMOLOGY_CATALOG_LOADED, _FOOD_HOMOLOGY_CATALOG_FROM_DB
+    if _FOOD_HOMOLOGY_CATALOG_LOADED and not force_reload:
+        return _FOOD_HOMOLOGY_CATALOG
+
+    db_catalog: Set[str] = set()
+    try:
+        from sqlalchemy import select
+
+        from app.core.database.session import async_session_factory
+        from app.models.external_data import HFEHerb
+
+        async with async_session_factory() as session:
+            stmt = select(HFEHerb.name_cn)
+            result = await session.execute(stmt)
+            db_catalog = {name for name in result.scalars().all() if name}
+        if db_catalog:
+            _FOOD_HOMOLOGY_CATALOG = db_catalog
+            _FOOD_HOMOLOGY_CATALOG_LOADED = True
+            _FOOD_HOMOLOGY_CATALOG_FROM_DB = True
+            logger.info(f"[SafetyChecker] 从 hf_enriched_herbs 加载官方药食同源目录: {len(db_catalog)} 种")
+            return _FOOD_HOMOLOGY_CATALOG
+        logger.warning("[SafetyChecker] hf_enriched_herbs 表为空，回退到硬编码兜底目录")
+    except Exception as e:
+        logger.warning(f"[SafetyChecker] 加载药食同源目录失败，回退到硬编码兜底目录: {e}")
+
+    # 回退：deprecated 硬编码目录
+    _FOOD_HOMOLOGY_CATALOG = set(_FOOD_HOMOLOGY_CATALOG_FALLBACK)
+    _FOOD_HOMOLOGY_CATALOG_LOADED = True
+    _FOOD_HOMOLOGY_CATALOG_FROM_DB = False
+    return _FOOD_HOMOLOGY_CATALOG
 
 
 def _check_single_peptide(peptide: str) -> dict[str, Any]:
@@ -135,12 +185,19 @@ class SafetyCheckerService:
 
     async def check(
         self,
-        ingredients: list[str],
+        ingredients: list[str] | list[dict],
         peptides: list[str] | None = None,
         scenarios: list[str] | None = None,
+        dosages_mg: dict[str, float] | None = None,
     ) -> dict[str, Any]:
         """
         执行全面的安全合规检查
+
+        Args:
+            ingredients: 成分名称列表，或 [{"name": str, "amount_mg": float}] 结构
+            peptides: 肽序列列表
+            scenarios: 使用场景
+            dosages_mg: {成分名: 用量mg}，与 dict 型 ingredients 二选一
 
         Returns:
             {
@@ -159,29 +216,51 @@ class SafetyCheckerService:
         checks = {}
         warnings = []
         errors = []
-        ingredient_set = set(ingredients)
 
-        # 1. 药食同源目录校验
-        non_homology = ingredient_set - _FOOD_HOMOLOGY_CATALOG
+        # ── 归一化成分输入（支持 list[str] 与 list[dict]）──
+        ingredient_set: Set[str] = set()
+        dosage_map: Dict[str, float] = dict(dosages_mg or {})
+        for item in ingredients:
+            if isinstance(item, dict):
+                name = str(item.get("name", "") or "")
+                if name:
+                    ingredient_set.add(name)
+                    amt = item.get("amount_mg")
+                    if amt is not None:
+                        try:
+                            dosage_map[name] = float(amt)
+                        except (TypeError, ValueError):
+                            pass
+            else:
+                name = str(item or "")
+                if name:
+                    ingredient_set.add(name)
+
+        # 1. 药食同源目录校验（官方 106 种，DB 加载）
+        catalog = await load_food_homology_catalog_from_db()
+        non_homology = ingredient_set - catalog
         checks["food_homology"] = {
             "passed": len(non_homology) == 0,
             "non_homology_ingredients": sorted(non_homology),
-            "homology_count": len(ingredient_set & _FOOD_HOMOLOGY_CATALOG),
+            "homology_count": len(ingredient_set & catalog),
             "total_count": len(ingredient_set),
+            "catalog_source": "hf_enriched_herbs(db)" if _FOOD_HOMOLOGY_CATALOG_FROM_DB else "deprecated_hardcoded_fallback",
         }
         if non_homology:
             warnings.append(f"以下成分不在药食同源目录中: {', '.join(sorted(non_homology))}")
 
-        # 2. 配伍禁忌检查（十九畏 + 十八反）
+        # 2. 配伍禁忌检查（官方二十八反畏 = 十八反 17 对 + 十九畏 11 对）
         forbidden_pairs = []
-        for pair in _NINETEEN_ANTAGONISMS | _EIGHTEEN_CONTRAINDICATIONS:
+        for pair in _CONTRAINDICATION_PAIRS:
             # 双向检查：pair[0]-pair[1] 和 pair[1]-pair[0] 都要检查
             if (pair[0] in ingredient_set and pair[1] in ingredient_set) or \
                (pair[1] in ingredient_set and pair[0] in ingredient_set):
-                forbidden_pairs.append({"a": pair[0], "b": pair[1], "rule": "十九畏/十八反"})
+                rule = "十八反" if pair in _EIGHTEEN_CONTRAINDICATIONS else "十九畏"
+                forbidden_pairs.append({"a": pair[0], "b": pair[1], "rule": rule})
         checks["contraindications"] = {
             "passed": len(forbidden_pairs) == 0,
             "forbidden_pairs": forbidden_pairs,
+            "total_rules": len(_CONTRAINDICATION_PAIRS),
         }
         for fp in forbidden_pairs:
             errors.append(f"配伍禁忌: {fp['a']} + {fp['b']} ({fp['rule']})")
@@ -204,12 +283,45 @@ class SafetyCheckerService:
         if pregnancy_caution:
             warnings.append(f"以下成分孕妇慎用: {', '.join(sorted(pregnancy_caution))}")
 
-        # 5. 毒性检查（基于用量的启发式）
+        # 5. 毒性检查（接入 DB 药材 dosage_min/max 与 extra_knowledge.contraindication）
+        toxicity_errors: List[str] = []
+        toxicity_warnings: List[str] = []
+        overdose_ingredients: List[Dict[str, Any]] = []
+        dose_info = await self._load_herb_dosage_info(list(ingredient_set))
+        for name, amount_mg in dosage_map.items():
+            info = dose_info.get(name)
+            if not info:
+                continue
+            max_mg = info.get("dosage_max", 0) * 1000
+            if max_mg > 0 and amount_mg and amount_mg > max_mg:
+                toxicity_errors.append(
+                    f"{name} 用量 {amount_mg:g}mg 超过安全上限 {max_mg:g}mg"
+                    f"（DB dosage_max={info.get('dosage_max', 0):g}g/日）"
+                )
+                overdose_ingredients.append({
+                    "name": name,
+                    "actual_mg": amount_mg,
+                    "max_mg": max_mg,
+                    "message": f"超过安全上限 {max_mg:g}mg/日",
+                })
+            contraindication = info.get("contraindication", "")
+            if contraindication and any(kw in contraindication for kw in _SPECIAL_POPULATION_KEYWORDS):
+                toxicity_warnings.append(f"{name} 存在人群禁忌提示: {contraindication}")
+        if not toxicity_errors:
+            toxicity_level = "低"
+            toxicity_details = "所有成分均在 DB 安全用量范围内"
+        else:
+            toxicity_level = "高"
+            toxicity_details = "；".join(toxicity_errors)
+            errors.extend(toxicity_errors)
         checks["toxicity"] = {
-            "passed": True,
-            "toxicity_level": "低",
-            "details": "所有成分均在安全用量范围内（基于规则引擎初步评估）",
+            "passed": len(toxicity_errors) == 0,
+            "toxicity_level": toxicity_level,
+            "details": toxicity_details,
+            "overdose_ingredients": overdose_ingredients,
+            "dosage_checked_count": len([n for n in dosage_map if n in dose_info]),
         }
+        warnings.extend(toxicity_warnings)
 
         # 6. 肽序列安全检查
         peptide_results = []
@@ -238,6 +350,7 @@ class SafetyCheckerService:
         # 总体判断
         passed = (checks["food_homology"]["passed"]
                   and checks["contraindications"]["passed"]
+                  and checks["toxicity"]["passed"]
                   and len(errors) == 0)
 
         return {
@@ -247,3 +360,42 @@ class SafetyCheckerService:
             "errors": errors,
             "summary": "配方通过安全合规检查" if passed else f"配方存在 {len(errors)} 项严重问题",
         }
+
+    @staticmethod
+    async def _load_herb_dosage_info(names: Iterable[str]) -> Dict[str, Dict[str, Any]]:
+        """从 tcm_herbs 表加载药材剂量范围与禁忌信息。
+
+        剂量来自 DB 字段 dosage_min/dosage_max，优先取 extra_knowledge JSON 中的
+        dosage_min/max 与 contraindication（enrich_herb_knowledge 写入的结构化数据）。
+        """
+        info: Dict[str, Dict[str, Any]] = {}
+        name_list = [n for n in names if n]
+        if not name_list:
+            return info
+        try:
+            from sqlalchemy import select
+
+            from app.core.database.session import async_session_factory
+            from app.models.external_data import TCMHerb
+
+            async with async_session_factory() as session:
+                stmt = select(TCMHerb).where(TCMHerb.name_cn.in_(name_list))
+                result = await session.execute(stmt)
+                for orm in result.scalars().all():
+                    extra: Dict[str, Any] = {}
+                    raw_extra = getattr(orm, "extra_knowledge", None)
+                    if raw_extra:
+                        try:
+                            extra = json.loads(raw_extra) if isinstance(raw_extra, str) else dict(raw_extra)
+                        except (TypeError, ValueError):
+                            extra = {}
+                    dosage_min = float(extra.get("dosage_min", getattr(orm, "dosage_min", 3) or 3))
+                    dosage_max = float(extra.get("dosage_max", getattr(orm, "dosage_max", 15) or 15))
+                    info[orm.name_cn] = {
+                        "dosage_min": dosage_min,
+                        "dosage_max": dosage_max,
+                        "contraindication": str(extra.get("contraindication", "") or ""),
+                    }
+        except Exception as e:
+            logger.warning(f"[SafetyChecker] 加载药材剂量信息失败: {e}")
+        return info

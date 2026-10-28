@@ -9,12 +9,10 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ....services.llm_service import LLMMessage, llm_service
-from ....domain.bots import MemoryType
 from .bot_manager import BotManager
 
 logger = logging.getLogger(__name__)

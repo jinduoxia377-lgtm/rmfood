@@ -2,13 +2,12 @@
 数据预处理流水线模块
 实现专利权利要求 I2、I3：数据标准化处理
 """
-from typing import List, Dict, Optional, Callable, Any, Tuple
-from dataclasses import dataclass
-import pandas as pd
-import numpy as np
-from collections import defaultdict
 import json
-import os
+from dataclasses import dataclass
+from typing import Callable, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
 
 
 @dataclass

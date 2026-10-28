@@ -12,9 +12,9 @@ class SearchService:
     """跨数据源统一搜索服务"""
 
     def __init__(self):
-        from .tcmsp_client import tcmsp_service
         from .dfbp_client import dfbp_service
         from .graph_service import graph_service
+        from .tcmsp_client import tcmsp_service
         self.tcmsp = tcmsp_service
         self.dfbp = dfbp_service
         self.graph = graph_service
@@ -64,7 +64,8 @@ class SearchService:
 
     async def _search_herbs(self, keyword: str, limit: int) -> list[dict]:
         """从本地数据库搜索药材（供 unified_search 调用）"""
-        from sqlalchemy import select, or_
+        from sqlalchemy import or_, select
+
         from app.core.database.session import async_session_factory
         from app.models.models import TCMHerb
 
@@ -98,7 +99,8 @@ class SearchService:
 
     async def _search_peptides(self, keyword: str, limit: int) -> list[dict]:
         """从本地数据库搜索肽序列"""
-        from sqlalchemy import select, or_
+        from sqlalchemy import or_, select
+
         from app.core.database.session import async_session_factory
         from app.models.models import BioactivePeptide
 

@@ -45,12 +45,11 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 logger = logging.getLogger(__name__)
 
@@ -240,6 +239,16 @@ class WebSocketManager:
         Returns:
             connection_id
         """
+        # P0 租户隔离：拒绝匿名/缺省租户 key（应为 org:{org_id} 形态），
+        # 防止客户端可控 tenant_id 与默认值 "default" 造成跨租户广播泄漏。
+        if not tenant_id or tenant_id == "default" or str(tenant_id).strip() == "":
+            await websocket.close(code=4002, reason="非法租户上下文")
+            raise HTTPException(status_code=403, detail="非法租户上下文")
+        if not str(tenant_id).startswith("org:"):
+            logger.warning("WebSocket 连接拒绝：非 org: 前缀的租户 key %r", tenant_id)
+            await websocket.close(code=4002, reason="非法租户上下文")
+            raise HTTPException(status_code=403, detail="非法租户上下文")
+
         await websocket.accept()
 
         # 检查连接数限制
@@ -549,6 +558,7 @@ class WebSocketManager:
         if not hasattr(self, '_redis'):
             try:
                 import redis.asyncio as redis
+
                 from ..config import settings
                 url = getattr(settings, 'redis_url', 'redis://localhost:6379')
                 self._redis = redis.from_url(url, encoding='utf-8', decode_responses=False)
@@ -785,7 +795,19 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close(code=4002, reason="认证失败")
             return
         user_id = str(payload.get("sub", "anonymous"))
-        tenant_id = payload.get("tenant_id", "default")
+        # P0 租户隔离：租户 key 一律由已认证的 JWT org_id 生成（org:{org_id}），
+        # 禁止匿名 default 兜底与客户端可控 tenant_id。无 org_id → 拒绝连接。
+        raw_org_id = payload.get("org_id")
+        if raw_org_id is None:
+            logger.warning("WebSocket 认证拒绝：token 缺少 org_id，禁止匿名租户连接")
+            await websocket.close(code=4002, reason="缺少组织租户上下文")
+            return
+        try:
+            tenant_id = f"org:{int(raw_org_id)}"
+        except (TypeError, ValueError):
+            logger.warning("WebSocket 认证拒绝：org_id 非法 %r", raw_org_id)
+            await websocket.close(code=4002, reason="组织上下文非法")
+            return
         if not payload.get("type") == "access":
             await websocket.close(code=4002, reason="无效的Token类型")
             return

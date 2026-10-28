@@ -1,15 +1,23 @@
 """专业术语服务 (Async版本)
 提供术语验证、纠错、标准化等核心功能
 """
-from typing import Optional, List, Dict, Tuple, Any
-from collections import defaultdict
-import re
 import difflib
 import logging
-from sqlalchemy import select, delete, func, or_, and_
+import re
+from collections import defaultdict
+from typing import Dict, List, Optional, Tuple
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.terminology import Term, TermCategory, TermVariant, TermValidation, TermNormalizationRule
-from app.schemas.terminology import TermOut, TermCategoryOut, TermValidationResponse
+
+from app.models.terminology import (
+    Term,
+    TermCategory,
+    TermNormalizationRule,
+    TermValidation,
+    TermVariant,
+)
+from app.schemas.terminology import TermCategoryOut, TermOut, TermValidationResponse
 
 logger = logging.getLogger(__name__)
 

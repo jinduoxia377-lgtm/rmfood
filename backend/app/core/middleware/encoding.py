@@ -3,9 +3,9 @@ UTF-8 编码规范化中间件
 确保所有 HTTP 响应和请求使用 UTF-8 编码
 """
 import logging
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 

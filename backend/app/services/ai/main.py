@@ -11,8 +11,8 @@
 
 替代方案: 使用 /api/v1/ai/chat 和 /api/v1/ai/chat/stream 端点
 """
-import warnings
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 warnings.warn(
@@ -21,9 +21,10 @@ warnings.warn(
     stacklevel=2,
 )
 
+from typing import List  # noqa: F401
+
 from fastapi import FastAPI, HTTPException  # noqa: F401
 from pydantic import BaseModel  # noqa: F401
-from typing import List  # noqa: F401
 
 app = FastAPI(
     title="AI Conversation Service (DEPRECATED)",

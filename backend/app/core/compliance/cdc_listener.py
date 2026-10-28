@@ -20,10 +20,10 @@
 import logging
 import threading
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Set
+from typing import Any, Optional, Set
 
 from sqlalchemy import event, inspect
-from sqlalchemy.orm import Session, Mapper
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -256,8 +256,6 @@ class CDCListener:
             return
 
         try:
-            from ..models.change_event import ChangeEvent, ChangeAction
-            from ..core.database.session import async_session_factory
             import asyncio
 
             # 如果在异步上下文中，使用异步写入
@@ -276,8 +274,8 @@ class CDCListener:
     async def _async_persist_events(self, events: list):
         """异步持久化 CDC 事件并通过事件总线发布"""
         try:
-            from ..models.change_event import ChangeEvent, ChangeAction
             from ..core.database.session import async_session_factory
+            from ..models.change_event import ChangeAction, ChangeEvent
 
             async with async_session_factory() as session:
                 for event_data in events:

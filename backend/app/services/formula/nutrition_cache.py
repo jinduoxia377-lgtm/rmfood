@@ -19,8 +19,8 @@ import logging
 import threading
 import time
 from collections import OrderedDict
-from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, Iterable, List, Optional
 
 logger = logging.getLogger(__name__)
 

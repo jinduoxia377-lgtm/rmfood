@@ -19,18 +19,16 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 from .pepinvent_adapter import (
+    _EFFECT_MAPPING,
     PepinventAdapter,
-    PeptideResult,
-    OptimizationResult,
     ServiceUnavailableError,
     get_pepinvent_adapter,
-    _EFFECT_MAPPING,
 )
 
 
@@ -159,7 +157,7 @@ class PepinventService:
         cache_key = self._generate_cache_key("generate", target_effects, constraints, max_candidates)
         cached = self._get_from_cache(cache_key)
         if cached:
-            logger.info(f"命中缓存，返回缓存结果")
+            logger.info("命中缓存，返回缓存结果")
             return cached
 
         if not await self._adapter.initialize():

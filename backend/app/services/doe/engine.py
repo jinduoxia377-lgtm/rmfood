@@ -16,7 +16,7 @@ import logging
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -98,12 +98,12 @@ class InverseSearchResult:
 class CCDGenerator:
     """
     中心复合设计 (Central Composite Design)
-    
+
     结构：
     - 2^k 因子点（角点）
     - 2k 轴点（star points，距离中心 α）
     - n_c 中心点
-    
+
     α 值选择：
     - 可旋转设计：α = (n_f)^{1/4}
     - 均匀旋转性：α = 2^{k/4}
@@ -203,7 +203,7 @@ class CCDGenerator:
 class BBDDGenerator:
     """
     Box-Behnken 设计
-    
+
     特点：
     - 不包含角点（所有因子同时取极值的情况不在设计内）
     - 运行时数少于 CCD
@@ -319,7 +319,7 @@ class BBDDGenerator:
 class MixtureDesignGenerator:
     """
     混料设计 (Mixture Design)
-    
+
     适用于各组分比例之和为 1 的场景（如配方设计）
     """
 
@@ -441,7 +441,7 @@ class MixtureDesignGenerator:
 class ResponseSurfaceFitter:
     """
     响应面模型拟合
-    
+
     使用最小二乘法拟合二次多项式：
     Y = b0 + Σbi*Xi + Σbij*Xi*Xj + Σbii*Xi²
     """
@@ -458,12 +458,12 @@ class ResponseSurfaceFitter:
     ) -> List[ResponseSurfaceModel]:
         """
         拟合响应面模型
-        
+
         返回每个响应变量的模型
         """
         n_factors = len(runs[0].coded_levels) if runs else 0
         factors = list(runs[0].coded_levels.keys()) if runs else []
-        
+
         models = []
         for resp in response_names:
             model = self._fit_single_response(
@@ -474,7 +474,7 @@ class ResponseSurfaceFitter:
                 include_quadratic=include_quadratic,
             )
             models.append(model)
-        
+
         return models
 
     def _fit_single_response(
@@ -572,11 +572,11 @@ class ResponseSurfaceFitter:
         # 计算拟合值和统计量
         y_pred = self._matrix_vector_multiply(X, beta)
         y_mean = sum(y) / len(y) if y else 0.0
-        
+
         ss_tot = sum((yi - y_mean) ** 2 for yi in y)
         ss_res = sum((yi - yi_pred) ** 2 for yi, yi_pred in zip(y, y_pred))
         ss_reg = ss_tot - ss_res
-        
+
         r_squared = 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
         n_params = len(beta)
         # Adj R²: 自由度 = n - p - 1，其中 p = n_params - 1（排除截距）
@@ -658,7 +658,7 @@ class ResponseSurfaceFitter:
         n = len(A)
         # 增广矩阵 [A|I]
         aug = [row[:] + [1.0 if i == j else 0.0 for j in range(n)] for i, row in enumerate(A)]
-        
+
         for col in range(n):
             # 选主元
             max_row = col
@@ -666,20 +666,20 @@ class ResponseSurfaceFitter:
                 if abs(aug[row][col]) > abs(aug[max_row][col]):
                     max_row = row
             aug[col], aug[max_row] = aug[max_row], aug[col]
-            
+
             pivot = aug[col][col]
             if abs(pivot) < 1e-12:
                 raise ValueError("Singular matrix")
-            
+
             for j in range(2 * n):
                 aug[col][j] /= pivot
-            
+
             for row in range(n):
                 if row != col:
                     factor = aug[row][col]
                     for j in range(2 * n):
                         aug[row][j] -= factor * aug[col][j]
-        
+
         return [row[n:] for row in aug]
 
 
@@ -690,7 +690,7 @@ class ResponseSurfaceFitter:
 class InverseSearchEngine:
     """
     逆向搜索引擎
-    
+
     给定目标响应值，反推最优因子组合
     使用梯度下降 + 约束优化
     """
@@ -865,24 +865,24 @@ class InverseSearchEngine:
         """数值梯度"""
         gradient = {f: 0.0 for f in factor_names}
         h = 1e-5
-        
+
         for f in factor_names:
             # 正向扰动
             f_plus = factors.copy()
             f_plus[f] += h
             pred_plus = self._predict(model, f_plus, factor_names)
-            
+
             # 负向扰动
             f_minus = factors.copy()
             f_minus[f] -= h
             pred_minus = self._predict(model, f_minus, factor_names)
-            
+
             # 梯度
             for resp, target in targets.items():
                 err_plus = (pred_plus.get(resp, 0) - target) ** 2
                 err_minus = (pred_minus.get(resp, 0) - target) ** 2
                 gradient[f] += (err_plus - err_minus) / (2 * h)
-        
+
         return gradient
 
     def _apply_bounds(self, values: Dict[str, float], bounds: Dict[str, Tuple[float, float]]) -> Dict[str, float]:
@@ -944,7 +944,7 @@ class DOEResponseBuilder:
 class DOEEngine:
     """
     DOE 实验设计引擎
-    
+
     核心能力：
     1. 实验设计生成 (CCD/BBD/Mixture)
     2. 响应面拟合

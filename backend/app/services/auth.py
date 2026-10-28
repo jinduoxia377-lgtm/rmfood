@@ -16,30 +16,35 @@ P0 安全修复:
 """
 import logging
 import os
-from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.config import settings
-from ..core.database.session import get_db
 from app.core.security.account_lockout import AccountLockout
+
+from ..core.config import settings
 from ..models import User, UserRole
 from ..schemas.user import Token, TokenPayload
 
 # ── 统一使用 utils/auth.py 的实现 ──
 from ..utils.auth import (
-    get_password_hash,
-    verify_password,
-    create_access_token as _create_access_token,
-    create_refresh_token as _create_refresh_token,
-    decode_token as _decode_token_raw,
-    check_refresh_token_reuse,
-    mark_refresh_token_used,
     check_refresh_token_ratelimit,
+    check_refresh_token_reuse,
+    get_password_hash,
+    mark_refresh_token_used,
+    verify_password,
+)
+from ..utils.auth import (
+    create_access_token as _create_access_token,
+)
+from ..utils.auth import (
+    create_refresh_token as _create_refresh_token,
+)
+from ..utils.auth import (
+    decode_token as _decode_token_raw,
 )
 
 logger = logging.getLogger(__name__)
@@ -439,8 +444,8 @@ class AuthService:
         )
 
         # Step 4: 发送邮件
-        from ..utils.email_service import send_password_reset_email
         from ..core.config import settings
+        from ..utils.email_service import send_password_reset_email
 
         # 从环境变量获取 SMTP 配置
         smtp_host = os.getenv("SMTP_HOST", "")
@@ -483,7 +488,7 @@ class AuthService:
         )
 
         if _check_reset_token_reused(token):
-            logger.warning(f"⚠️ Reset token 重用检测: token已被使用过")
+            logger.warning("⚠️ Reset token 重用检测: token已被使用过")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="重置令牌已使用，请重新申请",
@@ -539,7 +544,7 @@ class AuthService:
 
         # Step 5: 🔒 标记 token 为已使用
         if not _mark_reset_token_used(token):
-            logger.warning(f"⚠️ Reset token 标记失败: 可能被并发使用")
+            logger.warning("⚠️ Reset token 标记失败: 可能被并发使用")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="重置令牌正在被使用，请稍后再试",

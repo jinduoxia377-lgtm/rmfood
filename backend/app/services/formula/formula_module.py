@@ -7,17 +7,25 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, func, or_
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import (
-    User, Formula, FormulaVersion, Ingredient, Peptide,
-    UserRole, FormulaStatus, AuditLog, NotificationType,
-    formula_ingredients, formula_peptides,
-    Category, Tag,
+    AuditLog,
+    Category,
+    Formula,
+    FormulaStatus,
+    FormulaVersion,
+    Ingredient,
+    NotificationType,
+    Tag,
+    User,
+    UserRole,
+    formula_ingredients,
+    formula_peptides,
 )
-from app.schemas.formula import FormulaCreate, FormulaUpdate, FormulaReviewRequest
+from app.schemas.formula import FormulaCreate, FormulaReviewRequest, FormulaUpdate
 
 logger = logging.getLogger(__name__)
 

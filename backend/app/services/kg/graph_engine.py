@@ -25,11 +25,11 @@ import random
 from collections import defaultdict, deque
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from sqlalchemy import select, func, text, update
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...models.knowledge_graph import KGNode, KGEdge
-from ..data_sources.tcmsp_client import tcmsp_service
+from ...models.knowledge_graph import KGEdge, KGNode
+
 # A-27：下面 3 个方法引用的 KnowledgeGraphService 定义在这里；原先根本没导入，
 #       一调用就是 NameError（/api/v1/knowledge-base 的搜索/邻居/子图接口全挂）。
 from ..data_sources.graph_service import KnowledgeGraphService

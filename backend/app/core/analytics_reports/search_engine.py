@@ -13,12 +13,12 @@ RMFOOD 全文搜索引擎
 
 使用方法:
     from app.core.search import SearchEngine
-    
+
     engine = SearchEngine(db)
-    
+
     # 全文搜索
     results = await engine.search("降血糖配方", model=Formula)
-    
+
     # 高级筛选
     results = await engine.advanced_search(
         Formula,
@@ -33,18 +33,15 @@ RMFOOD 全文搜索引擎
 日期: 2026-05-02 (SSS Upgrade)
 """
 
-import re
-import json
 import logging
-import hashlib
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+import re
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from enum import Enum
+from typing import Any, Dict, List, Optional, TypeVar
 
-from sqlalchemy import select, func, or_, and_, desc, asc, text
+from sqlalchemy import and_, asc, desc, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +121,7 @@ class PaginatedSearchResult:
     query_time_ms: float
     suggestions: List[str] = field(default_factory=list)
     facets: Dict[str, Dict[Any, int]] = field(default_factory=dict)  # 聚合统计
-    
+
     def to_dict(self) -> Dict:
         return {
             "items": [self._item_to_dict(item) for item in self.items],
@@ -136,7 +133,7 @@ class PaginatedSearchResult:
             "suggestions": self.suggestions,
             "facets": self.facets,
         }
-    
+
     def _item_to_dict(self, item: SearchResult) -> Dict:
         return {
             "id": item.id,
@@ -156,20 +153,20 @@ class PaginatedSearchResult:
 class SearchEngine:
     """
     全文搜索引擎
-    
+
     支持基于SQL的全文搜索（开发阶段），可无缝迁移至Elasticsearch。
-    
+
     Attributes:
         db: 数据库会话
         config: 各实体的搜索字段配置
     """
-    
+
     # 默认实体字段配置
     DEFAULT_FIELD_CONFIGS: Dict[str, List[FieldConfig]] = {
         "formula": [
             FieldConfig("name", "配方名称", SearchFieldType.TEXT, weight=3.0),
             FieldConfig("description", "描述", SearchFieldType.TEXT, weight=1.5),
-            FieldConfig("status", "状态", SearchFieldType.ENUM, 
+            FieldConfig("status", "状态", SearchFieldType.ENUM,
                        options=[{"value": "draft", "label": "草稿"}, {"value": "published", "label": "已发布"}]),
             FieldConfig("category", "分类", SearchFieldType.TAGS),
             FieldConfig("creator_id", "创建者", SearchFieldType.NUMBER),
@@ -195,19 +192,19 @@ class SearchEngine:
             FieldConfig("status", "状态", SearchFieldType.ENUM),
         ],
     }
-    
+
     def __init__(self, db: AsyncSession):
         """
         初始化搜索引擎
-        
+
         Args:
             db: 异步数据库会话
         """
         self.db = db
         self.field_configs = dict(self.DEFAULT_FIELD_CONFIGS)
-        
+
         logger.info("✅ 全文搜索引擎已初始化")
-    
+
     async def search(
         self,
         keyword: str,
@@ -220,7 +217,7 @@ class SearchEngine:
     ) -> PaginatedSearchResult:
         """
         执行全文搜索
-        
+
         Args:
             keyword: 搜索关键词
             model_type: 实体类型 (formula/experiment/ingredient/workflow)
@@ -228,19 +225,19 @@ class SearchEngine:
             page: 页码
             page_size: 每页数量
             highlight: 是否返回高亮
-            
+
         Returns:
             PaginatedSearchResult: 分页搜索结果
         """
         import time
         start_time = time.perf_counter()
-        
+
         if not keyword or not keyword.strip():
             return PaginatedSearchResult(
                 items=[], total=0, page=page, page_size=page_size,
                 total_pages=0, query_time_ms=0
             )
-        
+
         # 获取模型类
         model_class = self._get_model_class(model_type)
         if not model_class:
@@ -249,14 +246,14 @@ class SearchEngine:
                 items=[], total=0, page=page, page_size=page_size,
                 total_pages=0, query_time_ms=0
             )
-        
+
         # 获取可搜索字段配置
         config = self.field_configs.get(model_type, [])
         searchable_fields = [f for f in config if f.searchable and f.type == SearchFieldType.TEXT]
-        
+
         if fields:
             searchable_fields = [f for f in searchable_fields if f.name in fields]
-        
+
         # 构建查询条件
         conditions = []
         for field_config in searchable_fields:
@@ -265,21 +262,21 @@ class SearchEngine:
                 # 使用LIKE进行模糊匹配（中文友好）
                 condition = column.ilike(f"%{keyword}%")
                 conditions.append(condition)
-        
+
         if not conditions:
             return PaginatedSearchResult(
                 items=[], total=0, page=page, page_size=page_size,
                 total_pages=0, query_time_ms=0
             )
-        
+
         # 组合条件（OR关系）
         where_clause = or_(*conditions)
-        
+
         # 执行计数查询
         count_stmt = select(func.count()).select_from(model_class).where(where_clause)
         total_result = await self.db.execute(count_stmt)
         total = total_result.scalar() or 0
-        
+
         # 执行数据查询
         offset = (page - 1) * page_size
         data_stmt = (
@@ -289,10 +286,10 @@ class SearchEngine:
             .offset(offset)
             .limit(page_size)
         )
-        
+
         result = await self.db.execute(data_stmt)
         items = result.scalars().all()
-        
+
         # 转换为 SearchResult 对象
         search_results = []
         for item in items:
@@ -305,7 +302,7 @@ class SearchEngine:
                         highlighted = self._highlight_text(str(value), keyword)
                         if highlighted != str(value):
                             highlights[fc.label] = highlighted
-            
+
             search_results.append(SearchResult(
                 id=item.id,
                 type=model_type,
@@ -317,11 +314,11 @@ class SearchEngine:
                 metadata={"status": getattr(item, 'status', None)},
                 created_at=getattr(item, 'created_at', None),
             ))
-        
+
         elapsed = (time.perf_counter() - start_time) * 1000
-        
+
         logger.info(f"🔍 搜索完成: '{keyword}' in {model_type}, {total}条结果 ({elapsed:.2f}ms)")
-        
+
         return PaginatedSearchResult(
             items=search_results,
             total=total,
@@ -331,7 +328,7 @@ class SearchEngine:
             query_time_ms=elapsed,
             suggestions=self._generate_suggestions(keyword),
         )
-    
+
     async def advanced_search(
         self,
         model_type: str,
@@ -342,51 +339,51 @@ class SearchEngine:
         """
         import time
         start_time = time.perf_counter()
-        
+
         model_class = self._get_model_class(model_type)
         if not model_class:
             return PaginatedSearchResult(
                 items=[], total=0, page=query.page, page_size=query.page_size,
                 total_pages=0, query_time_ms=0
             )
-        
+
         # 构建基础查询
         stmt = select(model_class)
         count_conditions = []
-        
+
         # 关键词搜索
         if query.keyword and query.keyword.strip():
             config = self.field_configs.get(model_type, [])
             text_fields = [f for f in config if f.type == SearchFieldType.TEXT]
-            
+
             kw_conditions = []
             for fc in text_fields:
                 column = getattr(model_class, fc.name, None)
                 if column:
                     kw_conditions.append(column.ilike(f"%{query.keyword}%"))
-            
+
             if kw_conditions:
                 count_conditions.append(or_(*kw_conditions))
-        
+
         # 应用筛选条件
         for f in query.filters:
             column = getattr(model_class, f.field, None)
             if column is None:
                 continue
-            
+
             condition = self._build_filter_condition(column, f.operator, f.value)
             if condition is not None:
                 count_conditions.append(condition)
-        
+
         # 应用WHERE条件
         if count_conditions:
             stmt = stmt.where(and_(*count_conditions))
-        
+
         # 计数
         count_stmt = select(func.count()).select_from(stmt.subquery())
         total_result = await self.db.execute(count_stmt)
         total = total_result.scalar() or 0
-        
+
         # 排序
         if query.sort_by:
             sort_column = getattr(model_class, query.sort_by, None)
@@ -399,15 +396,15 @@ class SearchEngine:
             # 默认按更新时间降序
             if hasattr(model_class, 'updated_at'):
                 stmt = stmt.order_by(desc(model_class.updated_at))
-        
+
         # 分页
         offset = (query.page - 1) * query.page_size
         stmt = stmt.offset(offset).limit(query.page_size)
-        
+
         # 执行
         result = await self.db.execute(stmt)
         items = result.scalars().all()
-        
+
         # 转换结果
         search_results = [
             SearchResult(
@@ -422,7 +419,7 @@ class SearchEngine:
             )
             for item in items
         ]
-        
+
         # 聚合统计（facets）
         facets = {}
         if query.facets:
@@ -434,9 +431,9 @@ class SearchEngine:
                     facets[facet_field] = {
                         row[0]: row[1] for row in facet_result.all()
                     }
-        
+
         elapsed = (time.perf_counter() - start_time) * 1000
-        
+
         return PaginatedSearchResult(
             items=search_results,
             total=total,
@@ -446,38 +443,38 @@ class SearchEngine:
             query_time_ms=elapsed,
             facets=facets,
         )
-    
+
     async def get_suggestions(self, prefix: str, model_type: str, limit: int = 10) -> List[str]:
         """
         获取搜索建议（自动补全）
-        
+
         Args:
             prefix: 输入前缀
             model_type: 实体类型
             limit: 返回数量上限
-            
+
         Returns:
             List[str]: 建议列表
         """
         if not prefix or len(prefix) < 2:
             return []
-        
+
         model_class = self._get_model_class(model_type)
         if not model_class or not hasattr(model_class, 'name'):
             return []
-        
+
         stmt = (
             select(model_class.name)
             .where(getattr(model_class, 'name').ilike(f"{prefix}%"))
             .distinct()
             .limit(limit)
         )
-        
+
         result = await self.db.execute(stmt)
         suggestions = [row[0] for row in result.all()]
-        
+
         return suggestions
-    
+
     async def get_recent_searches(self, user_id: int, limit: int = 10) -> List[Dict]:
         """从数据库查询最近搜索历史"""
         try:
@@ -628,7 +625,7 @@ class SearchEngine:
             return []
 
     # ── 内部方法 ──
-    
+
     def _get_model_class(self, model_type: str) -> Optional[type]:
         """根据类型字符串获取ORM模型类"""
         model_map = {
@@ -638,7 +635,7 @@ class SearchEngine:
             "workflow": None,
             "user": None,
         }
-        
+
         try:
             # 模型都在 app.models 下。本文件位于 app.core.analytics_reports，
             # 所以正确深度是三个点（...models）。
@@ -666,9 +663,9 @@ class SearchEngine:
         except ImportError as e:
             # 不能静默吞掉：否则路由正常返回 200 + 空结果，问题被完全掩盖
             logger.error(f"无法导入模型 {model_type}: {e}")
-        
+
         return None
-    
+
     def _build_filter_condition(self, column, operator: str, value: Any):
         """构建筛选条件"""
         if operator == "eq":
@@ -700,12 +697,12 @@ class SearchEngine:
         else:
             logger.warning(f"未知操作符: {operator}")
             return None
-    
+
     def _calculate_score(self, item, keyword: str, fields: List[FieldConfig]) -> float:
         """计算相关性评分"""
         score = 0.0
         keyword_lower = keyword.lower()
-        
+
         for fc in fields:
             value = str(getattr(item, fc.name, "") or "").lower()
             if keyword_lower in value:
@@ -716,11 +713,11 @@ class SearchEngine:
                     score += fc.weight * 1.5
                 else:
                     score += fc.weight
-        
+
         # 归一化到 0-1 范围
         max_possible = sum(fc.weight * 2.0 for fc in fields)
         return min(score / max_possible, 1.0) if max_possible > 0 else 0.0
-    
+
     def _highlight_text(self, text: str, keyword: str, tag: str = "mark") -> str:
         """高亮匹配文本"""
         pattern = re.compile(re.escape(keyword), re.IGNORECASE)
@@ -729,31 +726,31 @@ class SearchEngine:
         # 导致搜索一旦真正命中结果就抛异常、被 global_search 的 try/except 吞掉
         # 而返回空结果。
         return pattern.sub(lambda m: f"<{tag}>{m.group(0)}</{tag}>", text)
-    
+
     def _generate_suggestions(self, keyword: str, limit: int = 5) -> List[str]:
         """生成搜索建议"""
         suggestions = set()
-        
+
         # 简单的同义词扩展
         synonyms = {
             "降糖": ["降血糖", "调节血糖", "抗糖尿病"],
             "抗氧化": ["清除自由基", "抗衰老"],
             "免疫": ["增强免疫力", "提高抵抗力"],
         }
-        
+
         for key, syns in synonyms.items():
             if key in keyword:
                 suggestions.update(syns)
-        
+
         # 拼音首字母提示（简化版）
         pinyin_map = {
             "jgs": ["降血糖配方"],
             "kxy": ["科学营养配方"],
         }
-        
+
         if keyword.lower() in pinyin_map:
             suggestions.update(pinyin_map[keyword.lower()])
-        
+
         return list(suggestions)[:limit]
 
 
@@ -773,15 +770,15 @@ async def global_search(
 ) -> Dict[str, Any]:
     """
     全局跨类型搜索
-    
+
     在多种资源类型中同时搜索关键词。
     """
     engine = SearchEngine(db)
     search_types = types or ["formula", "experiment", "ingredient"]
-    
+
     results = {}
     total = 0
-    
+
     for type_name in search_types:
         try:
             result = await engine.search(
@@ -795,7 +792,7 @@ async def global_search(
         except Exception as e:
             logger.error(f"搜索 {type_name} 失败: {e}")
             results[type_name] = {"items": [], "total": 0}
-    
+
     return {
         "keyword": keyword,
         "types": results,

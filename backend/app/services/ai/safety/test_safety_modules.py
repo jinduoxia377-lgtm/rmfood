@@ -1,9 +1,12 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """Prompt 注入检测器测试"""
 import sys
+
 sys.path.insert(0, 'd:/RMFOODFP/backend')
 import importlib.util
+
 
 def _load(name, path):
     spec = importlib.util.spec_from_file_location(name, path, submodule_search_locations=['d:/RMFOODFP/backend/app/services/ai/safety'])

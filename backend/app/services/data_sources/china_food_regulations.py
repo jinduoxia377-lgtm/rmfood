@@ -4,8 +4,8 @@
 提供法规查询、合规检查、标准比对等功能
 """
 import logging
-from typing import Any, List, Dict, Optional
 from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -417,7 +417,7 @@ class ChinaFoodRegulationService:
         """
         if not category:
             return FOOD_SAFETY_STANDARDS
-        
+
         return [
             std for std in FOOD_SAFETY_STANDARDS
             if category.lower() in std["category"].lower()
@@ -441,7 +441,7 @@ class ChinaFoodRegulationService:
         """
         if not name:
             return FOOD_HOMOLOGY_MATERIALS
-        
+
         return [
             mat for mat in FOOD_HOMOLOGY_MATERIALS
             if name.lower() in mat["name"].lower()
@@ -453,7 +453,7 @@ class ChinaFoodRegulationService:
         """
         if not name:
             return NEW_FOOD_MATERIALS
-        
+
         return [
             mat for mat in NEW_FOOD_MATERIALS
             if name.lower() in mat["name"].lower() or
@@ -465,7 +465,7 @@ class ChinaFoodRegulationService:
         搜索食品添加剂
         """
         results = FOOD_ADDITIVES
-        
+
         if keyword:
             keyword_lower = keyword.lower()
             results = [
@@ -474,14 +474,14 @@ class ChinaFoodRegulationService:
                    keyword_lower in add["english_name"].lower() or
                    keyword_lower in add["code"].lower()
             ]
-        
+
         if function:
             function_lower = function.lower()
             results = [
                 add for add in results
                 if function_lower in add["function"].lower()
             ]
-        
+
         return results
 
     async def check_additive_usage(self, additive_name: str, food_category: str) -> Dict[str, Any]:
@@ -493,15 +493,15 @@ class ChinaFoodRegulationService:
              if additive_name.lower() in add["name"].lower()),
             None
         )
-        
+
         if not additive:
             return {
                 "found": False,
                 "message": f"未找到添加剂: {additive_name}",
             }
-        
+
         is_allowed = food_category in additive["allowed_foods"]
-        
+
         return {
             "found": True,
             "additive": additive,
@@ -520,14 +520,14 @@ class ChinaFoodRegulationService:
              if herb_name.lower() in mat["name"].lower()),
             None
         )
-        
+
         if not material:
             return {
                 "is_homology": False,
                 "message": f"{herb_name} 未列入药食同源目录",
                 "suggestion": "如需使用，请申请新食品原料审查",
             }
-        
+
         return {
             "is_homology": True,
             "material": material,
@@ -559,7 +559,7 @@ class ChinaFoodRegulationService:
         results = []
         warnings = []
         errors = []
-        
+
         for ingredient in ingredients:
             # 检查是否为药食同源物质
             homology_check = await self.check_homology_approval(ingredient)
@@ -591,7 +591,7 @@ class ChinaFoodRegulationService:
                         },
                     })
                     warnings.append(f"成分 {ingredient} 未在已知法规目录中找到")
-        
+
         return {
             "valid": len(errors) == 0,
             "results": results,

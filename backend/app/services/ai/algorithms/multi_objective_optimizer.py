@@ -11,15 +11,15 @@ NSGA-II 多目标遗传算法配方优化引擎 (入口模块)
 """
 from __future__ import annotations
 
-from .models import (
-    OptimizationObjective,
-    OptimizationConfig,
-    MultiObjectiveIndividual,
-    MOGAResult,
-)
-from .evaluator import FormulaEvaluator
 from .algorithm import NSGAIIOptimizer
-from .presets import get_preset_scenario, PRESET_SCENARIOS
+from .evaluator import FormulaEvaluator
+from .models import (
+    MOGAResult,
+    MultiObjectiveIndividual,
+    OptimizationConfig,
+    OptimizationObjective,
+)
+from .presets import PRESET_SCENARIOS, get_preset_scenario
 
 # 模块级单例
 _nsga2_optimizer: NSGAIIOptimizer | None = None

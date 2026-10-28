@@ -10,15 +10,16 @@ TCMSP 药材数据库同步服务
 - 增量同步避免重复导入
 """
 from __future__ import annotations
-import logging
+
 import asyncio
+import logging
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
-from dataclasses import dataclass
 
 import httpx
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, insert
 
 logger = logging.getLogger(__name__)
 

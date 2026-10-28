@@ -1,8 +1,9 @@
 """RAG 数据模型"""
 
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class DocumentChunk(BaseModel):

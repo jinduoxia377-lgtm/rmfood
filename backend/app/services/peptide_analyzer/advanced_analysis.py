@@ -7,9 +7,8 @@ import json
 import logging
 import os
 import re
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ class HydrolysisProduct:
     enzyme: str
     bond_type: str
     cleavage_site: str
-    
+
     def to_dict(self) -> dict:
         return {
             "sequence": self.sequence,
@@ -40,10 +39,10 @@ class HydrolysisProduct:
 class HydrolysisSimulator:
     """
     蛋白质水解模拟
-    
+
     模拟消化道酶（胃蛋白酶、胰蛋白酶、胰凝乳蛋白酶）的水解过程
     """
-    
+
     # 酶切位点规则
     ENZYME_RULES = {
         "Pepsin": {
@@ -77,7 +76,7 @@ class HydrolysisSimulator:
             "description": "中性蛋白酶，偏好切割疏水氨基酸"
         },
     }
-    
+
     def simulate(
         self,
         sequence: str,
@@ -86,39 +85,39 @@ class HydrolysisSimulator:
     ) -> List[HydrolysisProduct]:
         """
         模拟水解过程
-        
+
         Args:
             sequence: 肽序列
             enzymes: 酶列表（可选，默认所有酶）
             max_products: 最大产物数量
-            
+
         Returns:
             水解产物列表
         """
         if enzymes is None:
             enzymes = list(self.ENZYME_RULES.keys())
-        
+
         products = []
         seq = sequence.upper()
-        
+
         for enzyme_name in enzymes:
             if enzyme_name not in self.ENZYME_RULES:
                 continue
-            
+
             enzyme_info = self.ENZYME_RULES[enzyme_name]
             cleavage_pattern = enzyme_info['cleavage']
-            
+
             # 查找所有切割位点
             matches = list(re.finditer(cleavage_pattern, seq))
-            
+
             for match in matches:
                 pos = match.start() + 1  # 1-based position
-                
+
                 # 生成片段
                 if pos < len(seq):
                     n_term_fragment = seq[:pos]
                     c_term_fragment = seq[pos:]
-                    
+
                     products.append(HydrolysisProduct(
                         sequence=seq,
                         position=pos,
@@ -126,7 +125,7 @@ class HydrolysisSimulator:
                         bond_type=f"{n_term_fragment[-1]}-{c_term_fragment[0]}",
                         cleavage_site=f"{pos}:{n_term_fragment[-1]}|{c_term_fragment[0]}"
                     ))
-        
+
         # 去重并按位置排序
         seen = set()
         unique_products = []
@@ -137,21 +136,21 @@ class HydrolysisSimulator:
                 unique_products.append(p)
                 if len(unique_products) >= max_products:
                     break
-        
+
         return unique_products
-    
+
     def get_summary(self, products: List[HydrolysisProduct]) -> Dict[str, Any]:
         """获取水解摘要"""
         enzyme_counts = {}
         position_distribution = {}
-        
+
         for p in products:
             enzyme_counts[p.enzyme] = enzyme_counts.get(p.enzyme, 0) + 1
-            
+
             # 位置分布（1-10, 11-20, 21-30, 31-40, 41-50）
             pos_bin = ((p.position - 1) // 10) * 10 + 1
             position_distribution[f"{pos_bin}-{pos_bin+9}"] = position_distribution.get(f"{pos_bin}-{pos_bin+9}", 0) + 1
-        
+
         return {
             "total_cleavage_sites": len(products),
             "enzyme_distribution": enzyme_counts,
@@ -175,7 +174,7 @@ class SequenceAlignment:
     alignment_score: float
     start_pos: int
     end_pos: int
-    
+
     def to_dict(self) -> dict:
         return {
             "query_sequence": self.query_sequence,
@@ -192,10 +191,10 @@ class SequenceAlignment:
 class EvolutionAnalyzer:
     """
     肽序列进化分析
-    
+
     支持序列比对、保守区域分析、进化距离计算
     """
-    
+
     # 氨基酸替换矩阵（简化版BLOSUM62）
     SUBSTITUTION_MATRIX = {
         'A': {'A': 4, 'R': -1, 'N': -1, 'D': -2, 'C': 0, 'Q': -1, 'E': -2, 'G': 0, 'H': -2, 'I': 1, 'L': 0, 'K': -1, 'M': 0, 'F': -1, 'P': -1, 'S': 1, 'T': 0, 'W': -3, 'Y': -2, 'V': 1},
@@ -219,28 +218,28 @@ class EvolutionAnalyzer:
         'Y': {'A': -2, 'R': -2, 'N': -3, 'D': -3, 'C': -2, 'Q': -2, 'E': -3, 'G': -3, 'H': 0, 'I': -1, 'L': -1, 'K': -2, 'M': -1, 'F': 1, 'P': -3, 'S': -2, 'T': -2, 'W': 1, 'Y': 7, 'V': -2},
         'V': {'A': 1, 'R': -2, 'N': -3, 'D': -3, 'C': -1, 'Q': -3, 'E': -3, 'G': -3, 'H': -3, 'I': 2, 'L': 2, 'K': -2, 'M': 1, 'F': 0, 'P': -3, 'S': -2, 'T': 0, 'W': -3, 'Y': -2, 'V': 4},
     }
-    
+
     GAP_PENALTY = -1
-    
+
     def align_sequences(self, seq1: str, seq2: str) -> Dict[str, Any]:
         """
         序列比对（Needleman-Wunsch算法）
-        
+
         Args:
             seq1: 查询序列
             seq2: 对比序列
-            
+
         Returns:
             比对结果
         """
         seq1 = seq1.upper()
         seq2 = seq2.upper()
-        
+
         # 初始化矩阵
         m, n = len(seq1), len(seq2)
         score_matrix = [[0] * (n + 1) for _ in range(m + 1)]
         traceback = [[None] * (n + 1) for _ in range(m + 1)]
-        
+
         # 初始化第一行和第一列
         for i in range(1, m + 1):
             score_matrix[i][0] = i * self.GAP_PENALTY
@@ -248,33 +247,33 @@ class EvolutionAnalyzer:
         for j in range(1, n + 1):
             score_matrix[0][j] = j * self.GAP_PENALTY
             traceback[0][j] = 'left'
-        
+
         # 填充矩阵
         for i in range(1, m + 1):
             for j in range(1, n + 1):
                 # 匹配/错配得分
                 match_score = self.SUBSTITUTION_MATRIX.get(seq1[i-1], {}).get(seq2[j-1], -1)
-                
+
                 # 三种可能的来源
                 diagonal = score_matrix[i-1][j-1] + match_score
                 up = score_matrix[i-1][j] + self.GAP_PENALTY
                 left = score_matrix[i][j-1] + self.GAP_PENALTY
-                
+
                 max_score = max(diagonal, up, left)
                 score_matrix[i][j] = max_score
-                
+
                 if max_score == diagonal:
                     traceback[i][j] = 'diagonal'
                 elif max_score == up:
                     traceback[i][j] = 'up'
                 else:
                     traceback[i][j] = 'left'
-        
+
         # 回溯生成比对
         aligned_seq1, aligned_seq2 = [], []
         i, j = m, n
         gaps = 0
-        
+
         while i > 0 or j > 0:
             if i > 0 and j > 0 and traceback[i][j] == 'diagonal':
                 aligned_seq1.append(seq1[i-1])
@@ -291,10 +290,10 @@ class EvolutionAnalyzer:
                 aligned_seq2.append(seq2[j-1])
                 j -= 1
                 gaps += 1
-        
+
         aligned_seq1.reverse()
         aligned_seq2.reverse()
-        
+
         # 计算比对统计
         alignment = "".join(aligned_seq1)
         match_line = ""
@@ -305,18 +304,18 @@ class EvolutionAnalyzer:
                 match_line += "."
             else:
                 match_line += " "
-        
+
         # 计算一致性
         matches = sum(1 for a, b in zip(aligned_seq1, aligned_seq2) if a == b)
         identity = matches / len(aligned_seq1) if len(aligned_seq1) > 0 else 0
-        
+
         # 计算相似性（保守替换）
         similar = matches
         for a, b in zip(aligned_seq1, aligned_seq2):
             if a != b and self.SUBSTITUTION_MATRIX.get(a, {}).get(b, 0) > 0:
                 similar += 1
         similarity = similar / len(aligned_seq1) if len(aligned_seq1) > 0 else 0
-        
+
         return {
             "query_sequence": seq1,
             "subject_sequence": seq2,
@@ -329,29 +328,29 @@ class EvolutionAnalyzer:
             "start_pos": 1,
             "end_pos": len(seq1),
         }
-    
+
     def find_conserved_regions(self, sequences: List[str], min_length: int = 3) -> List[Dict]:
         """
         查找保守区域
-        
+
         Args:
             sequences: 序列列表
             min_length: 最小保守区域长度
-            
+
         Returns:
             保守区域列表
         """
         if len(sequences) < 2:
             return []
-        
+
         seq_len = len(sequences[0])
         conserved_regions = []
-        
+
         # 检查每个位置
         for pos in range(seq_len):
             if pos + min_length > seq_len:
                 break
-            
+
             # 检查连续位置的保守性
             region_start = pos
             while pos < seq_len:
@@ -360,7 +359,7 @@ class EvolutionAnalyzer:
                     pos += 1
                 else:
                     break
-            
+
             region_length = pos - region_start
             if region_length >= min_length:
                 conserved_regions.append({
@@ -370,9 +369,9 @@ class EvolutionAnalyzer:
                     "consensus": sequences[0][region_start:pos],
                     "conservation_score": self._calculate_conservation(sequences, region_start, pos),
                 })
-        
+
         return conserved_regions
-    
+
     def _is_conservative(self, amino_acids: set) -> bool:
         """检查氨基酸集合是否保守"""
         # 疏水性氨基酸
@@ -383,21 +382,21 @@ class EvolutionAnalyzer:
         basic = {'K', 'R', 'H'}
         # 酸性氨基酸
         acidic = {'D', 'E'}
-        
+
         for group in [hydrophobic, polar, basic, acidic]:
             if amino_acids.issubset(group):
                 return True
         return False
-    
+
     def _calculate_conservation(self, sequences: List[str], start: int, end: int) -> float:
         """计算保守性得分"""
         if not sequences:
             return 0
-        
+
         positions = list(range(start, min(end, len(sequences[0]))))
         if not positions:
             return 0
-        
+
         total_conservation = 0
         for pos in positions:
             aa_at_pos = [seq[pos] for seq in sequences if pos < len(seq)]
@@ -408,7 +407,7 @@ class EvolutionAnalyzer:
                 # 部分一致，计算相似度
                 most_common = max(set(aa_at_pos), key=aa_at_pos.count)
                 total_conservation += aa_at_pos.count(most_common) / len(aa_at_pos)
-        
+
         return total_conservation / len(positions)
 
 
@@ -456,7 +455,7 @@ class QuantitativePredictor:
             return payload
         except Exception:
             return None
-    
+
     # 抗氧化参数（保留：DFBP 真实库的抗氧化定量值量纲混杂，暂无法可靠回归）
     ANTIOXIDANT_PARAMS = {
         'Intercept': 0.1,
@@ -524,54 +523,54 @@ class QuantitativePredictor:
             "method": "QSAR-rule-fallback",
             "honest_note": "真实回归系数文件缺失，回退到规则估计（精度低）。",
         }
-    
+
     def predict_antioxidant_activity(self, sequence: str) -> Dict[str, Any]:
         """
         预测抗氧化活性（DPPH清除率）
-        
+
         Returns:
             预测的DPPH清除率百分比
         """
         features = self._extract_features(sequence)
-        
+
         # 预测DPPH清除率
         activity = sum(v * features.get(k, 0) for k, v in self.ANTIOXIDANT_PARAMS.items())
         activity = min(max(activity * 100, 0), 100)  # 限制在0-100%
-        
+
         return {
             "sequence": sequence,
             "predicted_activity": round(activity, 2),
             "activity_unit": "%DPPH@0.5mg/mL",
             "method": "QSAR",
         }
-    
+
     def _extract_features(self, sequence: str) -> Dict[str, float]:
         """提取QSAR特征"""
         seq = sequence.upper()
         seq_len = len(seq)
-        
+
         # C端疏水性
         c_term = seq[-1] if seq else ''
         c_term_hydrophobic = 1 if c_term in ['F', 'W', 'Y', 'L', 'I', 'M', 'P'] else 0
-        
+
         # Pro含量
         pro_content = seq.count('P') / seq_len if seq_len > 0 else 0
-        
+
         # 芳香族C端
         aromatic_c_term = 1 if c_term in ['F', 'W', 'Y'] else 0
-        
+
         # 电荷因子
         positive = sum(1 for aa in seq if aa in ['K', 'R', 'H'])
         negative = sum(1 for aa in seq if aa in ['D', 'E'])
         charge_factor = (positive - negative) / seq_len if seq_len > 0 else 0
-        
+
         # 抗氧化氨基酸比例
         antiox_aa = sum(1 for aa in seq if aa in ['H', 'Y', 'W', 'C', 'M'])
         antiox_aa_ratio = antiox_aa / seq_len if seq_len > 0 else 0
-        
+
         # 芳香族比例
         aromatic_ratio = sum(1 for aa in seq if aa in ['F', 'W', 'Y']) / seq_len if seq_len > 0 else 0
-        
+
         return {
             'c_term_hydrophobic': c_term_hydrophobic,
             'pro_content': pro_content,
@@ -589,13 +588,13 @@ class QuantitativePredictor:
 
 class AdvancedAnalysisManager:
     """高级分析功能管理器"""
-    
+
     def __init__(self):
         self.hydrolysis = HydrolysisSimulator()
         self.evolution = EvolutionAnalyzer()
         self.quantitative = QuantitativePredictor()
         logger.info("高级分析管理器初始化完成")
-    
+
     def simulate_hydrolysis(self, sequence: str, enzymes: Optional[List[str]] = None) -> Dict[str, Any]:
         """模拟水解"""
         products = self.hydrolysis.simulate(sequence, enzymes)
@@ -605,19 +604,19 @@ class AdvancedAnalysisManager:
             "products": summary["products"],
             "summary": summary,
         }
-    
+
     def align_sequences(self, seq1: str, seq2: str) -> Dict[str, Any]:
         """序列比对"""
         return self.evolution.align_sequences(seq1, seq2)
-    
+
     def find_conserved_regions(self, sequences: List[str]) -> List[Dict]:
         """查找保守区域"""
         return self.evolution.find_conserved_regions(sequences)
-    
+
     def predict_ace_ic50(self, sequence: str) -> Dict[str, Any]:
         """预测ACE抑制IC50"""
         return self.quantitative.predict_ace_ic50(sequence)
-    
+
     def predict_antioxidant(self, sequence: str) -> Dict[str, Any]:
         """预测抗氧化活性"""
         return self.quantitative.predict_antioxidant_activity(sequence)

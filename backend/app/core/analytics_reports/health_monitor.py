@@ -89,9 +89,10 @@ class SystemHealthMonitor:
 
         # 缓存命中率（Redis，可选）
         try:
-            import redis  # type: ignore
             # 优先从环境变量读取 Redis URL，避免硬编码
             import os as _os  # noqa: PLC0415
+
+            import redis  # type: ignore
             redis_url = _os.environ.get(
                 "REDIS_URL",
                 "redis://localhost:6379/0",

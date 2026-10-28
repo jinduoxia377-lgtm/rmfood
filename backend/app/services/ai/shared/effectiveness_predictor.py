@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import re
-import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple
 
@@ -25,7 +24,7 @@ class EffectivenessPrediction:
 class EffectivenessPredictor:
     """
     效果预测模型（基于特征工程）
-    
+
     考虑因素：
     - 长度（optimal range: 200-800字符）
     - Few-shot examples数量（>=2个好，>5个冗余）
@@ -33,7 +32,7 @@ class EffectivenessPredictor:
     - 角色具体性（是否包含职位/行业/技能）
     - 输出格式化程度
     - 语言清晰度
-    
+
     基于经验和启发式规则的评分模型，
     生产环境应替换为ML模型或A/B测试数据。
     """
@@ -60,16 +59,16 @@ class EffectivenessPredictor:
     def predict(self, prompt_text: str) -> EffectivenessPrediction:
         """
         预测提示词效果
-        
+
         Args:
             prompt_text: 待预测的提示词
-            
+
         Returns:
             EffectivenessPrediction 包含分数和详细分析
         """
         # 提取特征
         features = self._extract_features(prompt_text)
-        
+
         # 计算各项特征得分
         feature_scores = {}
         for feature_name, extractor in [
@@ -83,14 +82,14 @@ class EffectivenessPredictor:
         ]:
             score = extractor(features)
             feature_scores[feature_name] = score
-        
+
         # 加权计算总分
         total_score = sum(
             score * self.FEATURE_WEIGHTS.get(name, 10) / 100.0
             for name, score in feature_scores.items()
         )
         total_score = max(0.0, min(100.0, total_score))
-        
+
         # 计算置信区间（基于特征覆盖度）
         coverage = sum(1 for s in feature_scores.values() if s > 0.5) / len(feature_scores)
         margin = 10.0 * (1 - coverage)  # 覆盖度越低，置信区间越宽
@@ -98,13 +97,13 @@ class EffectivenessPredictor:
             max(0, total_score - margin),
             min(100, total_score + margin),
         )
-        
+
         # 识别优势和劣势
         strengths, weaknesses = self._analyze_strengths_weaknesses(feature_scores)
-        
+
         # 计算提升潜力
         improvement_potential = 100 - total_score
-        
+
         return EffectivenessPrediction(
             score=round(total_score, 1),
             confidence_interval=(
@@ -133,7 +132,7 @@ class EffectivenessPredictor:
         """评分：长度适中"""
         length = features["length"]
         optimal_min, optimal_max = self.OPTIMAL_RANGES["length"]
-        
+
         if optimal_min <= length <= optimal_max:
             return 1.0
         elif length < optimal_min:
@@ -145,79 +144,79 @@ class EffectivenessPredictor:
     def _score_role_specificity(self, features: Dict[str, Any]) -> float:
         """评分：角色具体性"""
         text = features["text"].lower()
-        
+
         score = 0.0
-        
+
         # 检测职位关键词
-        job_titles = ['专家', '工程师', '顾问', '分析师', '设计师', '经理', 
+        job_titles = ['专家', '工程师', '顾问', '分析师', '设计师', '经理',
                      '博士', '硕士', '教授', '研究员', 'expert', 'engineer']
         found_jobs = sum(1 for j in job_titles if j in text)
         score += min(found_jobs / 2.0, 0.4)
-        
+
         # 检测年限关键词
         year_patterns = [r'\d+\s*年', r'\d+\s*years?', r'senior', 'junior']
         has_experience = any(re.search(p, text) for p in year_patterns)
         if has_experience:
             score += 0.3
-        
+
         # 检测行业/领域关键词
         industry_patterns = ['医疗', '金融', '教育', '科技', '互联网', '制造',
                            'medical', 'finance', 'education', 'tech']
         found_industries = sum(1 for i in industry_patterns if i in text)
         score += min(found_industries / 3.0, 0.3)
-        
+
         return min(score, 1.0)
 
     def _score_task_clarity(self, features: Dict[str, Any]) -> float:
         """评分：任务清晰度"""
         text = features["text"]
-        
+
         score = 0.0
-        
+
         # 检测动作动词
         action_verbs = ['生成', '创建', '分析', '设计', '优化', '撰写', '提取',
                        'generate', 'create', 'analyze', 'design', 'optimize']
         found_actions = sum(1 for v in action_verbs if v in text)
         score += min(found_actions / 3.0, 0.35)
-        
+
         # 检测量化指标
-        quantifiable = [r'\d+\s*(?:个|条|项|种|items?)', 
+        quantifiable = [r'\d+\s*(?:个|条|项|种|items?)',
                        r'(?:至少|最多|不超过|between)',
                        r'(?:\d+%|\d+\s*percent)']
         has_quantifiers = any(re.search(p, text) for p in quantifiable)
         if has_quantifiers:
             score += 0.35
-        
+
         # 检测步骤编号
         steps = len(re.findall(r'(?:步骤|step|\d+[.)])\s*\d*', text))
         score += min(steps / 5.0, 0.30)
-        
+
         return min(score, 1.0)
 
     def _score_examples(self, features: Dict[str, Any]) -> float:
         """评分：Few-shot示例质量"""
         text = features["text"]
-        
+
         # 检测示例关键词
-        example_markers = ['示例', '例子', '例如', '比如', '案例', 
+        example_markers = ['示例', '例子', '例如', '比如', '案例',
                           'example', 'instance', 'sample', 'for example']
         has_example_keyword = any(m in text.lower() for m in example_markers)
-        
+
         if not has_example_keyword:
             return 0.0
-        
+
         # 检测Input/Output模式
         input_output_pairs = len(re.findall(
-            r'(?:输入|input)[:：]\s*.*?(?:输出|output)[:：]', 
-            text, 
+            r'(?:输入|input)[:：]\s*.*?(?:输出|output)[:：]',
+            text,
             re.IGNORECASE | re.DOTALL
         ))
-        
+
         # 检测示例数量（粗略估计）
         example_count = input_output_pairs or 1
-        
+
         optimal_min, optimal_max = self.OPTIMAL_RANGES["examples_count"]
-        
+
         if optimal_min <= example_count <= optimal_max:
             return 1.0
         elif example_count < optimal_min:
@@ -228,19 +227,19 @@ class EffectivenessPredictor:
     def _score_constraints(self, features: Dict[str, Any]) -> float:
         """评分：约束可衡量性"""
         text = features["text"]
-        
+
         score = 0.0
-        
+
         # 检测约束关键词
         constraint_markers = ['约束', '限制', '要求', '必须', '不得', '注意',
                             'constraint', 'requirement', 'must', 'should not']
         has_constraint_marker = any(m in text.lower() for m in constraint_markers)
-        
+
         if not has_constraint_marker:
             return 0.1
-        
+
         score += 0.3
-        
+
         # 检测可量化约束
         measurable_patterns = [
             r'\d+\s*(?:字符|字|词|tokens?|words?)',
@@ -249,71 +248,71 @@ class EffectivenessPredictor:
         ]
         measurable_count = sum(1 for p in measurable_patterns if re.search(p, text, re.I))
         score += min(measurable_count / 3.0, 0.4)
-        
+
         # 检测安全/合规相关约束
         safety_patterns = ['安全', '合规', '隐私', '保密', 'GDPR', 'PII',
                          'security', 'privacy', 'compliance']
         has_safety = any(p in text.lower() for p in safety_patterns)
         if has_safety:
             score += 0.3
-        
+
         return min(score, 1.0)
 
     def _score_output_format(self, features: Dict[str, Any]) -> float:
         """评分：输出结构化程度"""
         text = features["text"]
-        
+
         score = 0.0
-        
+
         # JSON格式
         if features["has_json_format"]:
             score += 0.4
             # 检查是否有schema定义
             if re.search(r'json\s*(?:schema|格式|结构)', text, re.I):
                 score += 0.2
-        
+
         # Markdown格式
         if features["has_markdown"]:
             md_elements = sum(1 for m in ['#', '**', '`', '-', '>'] if m in text)
             score += min(md_elements / 5.0, 0.3)
-        
+
         # 表格提及
         if '表格' in text or 'table' in text.lower():
             score += 0.1
-        
+
         return min(score, 1.0)
 
     def _score_language_clarity(self, features: Dict[str, Any]) -> float:
         """评分：语言清晰度"""
         text = features["text"]
-        
+
         score = 0.5  # 基础分
-        
+
         # 惩罚模糊词汇
-        vague_words = ['一些', '某些', '适当', '合理', '可能', '大概', 
+        vague_words = ['一些', '某些', '适当', '合理', '可能', '大概',
                       'some', 'several', 'appropriate', 'maybe']
         vague_count = sum(1 for w in vague_words if w in text)
         score -= min(vague_count * 0.05, 0.2)
-        
+
         # 奖励明确词汇
         clear_words = ['必须', '应该', '确保', '验证', '确认', '具体',
                       'must', 'should', 'ensure', 'verify', 'specifically']
         clear_count = sum(1 for w in clear_words if w in text)
         score += min(clear_count * 0.03, 0.3)
-        
+
         # 惩罚过长句子
         sentences = re.split(r'[。！？.!?\n]', text)
         long_sentences = sum(1 for s in sentences if len(s.strip()) > 100)
         if long_sentences > 0:
             score -= min(long_sentences * 0.02, 0.2)
-        
+
         # 检查逻辑连接词
         logical_words = ['首先', '其次', '然后', '最后', '因此', '此外',
                         'first', 'second', 'then', 'finally', 'therefore']
         has_logic = any(w in text for w in logical_words)
         if has_logic:
             score += 0.1
-        
+
         return max(0.0, min(1.0, score))
 
     def _analyze_strengths_weaknesses(
@@ -323,25 +322,25 @@ class EffectivenessPredictor:
         """识别优势和劣势"""
         strengths = []
         weaknesses = []
-        
+
         sorted_features = sorted(
-            feature_scores.items(), 
-            key=lambda x: x[1], 
+            feature_scores.items(),
+            key=lambda x: x[1],
             reverse=True
         )
-        
+
         # Top 3优势
         for name, score in sorted_features[:3]:
             if score >= 0.7:
                 label = self._get_feature_label(name)
                 strengths.append(f"{label}: {score:.0%}")
-        
+
         # Bottom 3劣势
         for name, score in sorted_features[-3:]:
             if score < 0.5:
                 label = self._get_feature_label(name)
                 weaknesses.append(f"{label}: {score:.0%}")
-        
+
         return strengths, weaknesses
 
     def _get_feature_label(self, feature_name: str) -> str:

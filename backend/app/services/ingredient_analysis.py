@@ -3,10 +3,8 @@ Ingredient Analysis Service - 六维分析引擎
 Nutri-Score / NOVA分组 / E编码添加剂 / 过敏原 / 药食同源 / GB28050营养表
 """
 
-import re
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-
+from typing import Any, Dict, List, Optional
 
 # ========== 常量定义 ==========
 

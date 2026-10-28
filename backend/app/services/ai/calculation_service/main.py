@@ -1,6 +1,7 @@
 """Formula Calculation Service - Entry point for optimization calculations."""
 
 from fastapi import FastAPI
+
 from .optimizer import Optimizer
 
 app = FastAPI()

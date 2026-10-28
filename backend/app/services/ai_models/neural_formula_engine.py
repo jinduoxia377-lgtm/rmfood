@@ -10,11 +10,9 @@ import logging
 import random
 from typing import Any
 
-import numpy as np
-
-from .encoder import FormulaEncoder
 from .decoder import FormulaDecoder
-from .scorer import MultiObjectiveScorer, DiversityScorer
+from .encoder import FormulaEncoder
+from .scorer import DiversityScorer, MultiObjectiveScorer
 
 logger = logging.getLogger(__name__)
 

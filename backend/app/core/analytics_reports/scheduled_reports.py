@@ -16,18 +16,12 @@ ScheduledReportService — 定时报表调度服务
 from __future__ import annotations
 
 import asyncio
-import io
-import json
 import logging
-import re
 import smtplib
 from datetime import datetime, timedelta, timezone
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional
-from pathlib import Path
-
-from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -190,8 +184,8 @@ class ScheduledReportService:
 
     async def sync_job_to_db(self, job: Dict[str, Any]) -> None:
         """将内存任务同步到数据库，供管理页面读取。"""
-        from app.models.analytics_scheduler import upsert_job  # noqa: PLC0415
         from app.core.database.session import AsyncSessionLocal  # noqa: PLC0415
+        from app.models.analytics_scheduler import upsert_job  # noqa: PLC0415
 
         async with AsyncSessionLocal() as db:
             await upsert_job(
@@ -205,16 +199,16 @@ class ScheduledReportService:
 
     async def sync_job_remove_to_db(self, template_id: str) -> None:
         """从数据库删除对应任务。"""
-        from app.models.analytics_scheduler import remove_job  # noqa: PLC0415
         from app.core.database.session import AsyncSessionLocal  # noqa: PLC0415
+        from app.models.analytics_scheduler import remove_job  # noqa: PLC0415
 
         async with AsyncSessionLocal() as db:
             await remove_job(db, template_id)
 
     async def load_jobs_from_db(self) -> List[Dict[str, Any]]:
         """从数据库加载所有任务，重新注册到内存。"""
-        from app.models.analytics_scheduler import load_all_jobs  # noqa: PLC0415
         from app.core.database.session import AsyncSessionLocal  # noqa: PLC0415
+        from app.models.analytics_scheduler import load_all_jobs  # noqa: PLC0415
 
         async with AsyncSessionLocal() as db:
             db_jobs = await load_all_jobs(db)
@@ -262,7 +256,9 @@ class ScheduledReportService:
             # 尝试生成 Excel 附件
             attachment: Optional[MIMEBase] = None
             try:
-                from app.core.analytics_reports.export_engine import export_to_excel  # noqa: PLC0415
+                from app.core.analytics_reports.export_engine import (
+                    export_to_excel,  # noqa: PLC0415
+                )
                 sample_data: List[Dict[str, Any]] = [
                     {"指标": "配方总数", "数值": cfg.get("formula_count", "—")},
                     {"指标": "实验总数", "数值": cfg.get("experiment_count", "—")},

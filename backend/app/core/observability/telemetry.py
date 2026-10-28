@@ -12,12 +12,10 @@ RMFOOD 可观测性 — OpenTelemetry 兼容三柱体系 (Trace + Metric + Log)
 """
 from __future__ import annotations
 
-import asyncio
 import contextvars
 import logging
 import time
 import uuid
-from contextlib import contextmanager, asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 

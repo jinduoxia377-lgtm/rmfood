@@ -26,12 +26,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 import random
-import hashlib
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
-from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -65,15 +62,15 @@ except ImportError:
 try:
     from app.config.pepinvent_config import (
         PepinventConfig,
-        get_pepinvent_config,
         check_dependencies,
+        get_pepinvent_config,
     )
 except ImportError:
     try:
         from ..pepinvent_config import (
             PepinventConfig,
-            get_pepinvent_config,
             check_dependencies,
+            get_pepinvent_config,
         )
     except ImportError:
         PepinventConfig = None
@@ -218,14 +215,14 @@ class PepinventAdapter:
                 self._config = None
         else:
             self._config = None
-            
+
         self._initialized: bool = False
         self._initializing: bool = False
         self._lock = asyncio.Lock()
         self._generative_model: Any = None
         self._predictor_model: Any = None
         self._device: str = "cpu"
-        
+
         if check_dependencies is not None and callable(check_dependencies):
             try:
                 deps = check_dependencies()
@@ -238,7 +235,7 @@ class PepinventAdapter:
         else:
             self._available = False
             missing_deps = ["依赖检查函数不可用"]
-            
+
         self._simulation_mode: bool = not self._available
 
         if self._available:

@@ -3,11 +3,10 @@
 对标 FormLab 的 "Custom fields & calculated parameters"
 """
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.enums import CustomFieldType, CustomFieldEntity
 
 logger = logging.getLogger(__name__)
 

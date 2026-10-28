@@ -20,13 +20,12 @@ RMFOOD 审计中间件 (Audit Middleware)
 import hashlib
 import json
 import logging
-import time
 import time as _time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Callable
+from typing import Any, Callable, Dict, List, Optional, Set
 
 try:
     from starlette.middleware.base import BaseHTTPMiddleware
@@ -41,8 +40,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-from app.core.database.data_masking import mask_response, MaskLevel
-
+from app.core.database.data_masking import MaskLevel, mask_response
 
 # ============================================================
 # 操作严重性
@@ -117,7 +115,7 @@ class AuditRecord:
     checksum_chain: str = ""
     error: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -149,7 +147,7 @@ class AuditRecord:
 class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
     """
     HTTP 请求审计中间件
-    
+
     功能:
     1. 记录每个请求的关键信息（请求ID、用户信息、IP、UA、时长、状态码等）
     2. 对请求体和响应体进行脱敏
@@ -157,7 +155,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
     4. 根据路径严重程度分级（low/medium/high/critical）
     5. 对可疑行为即时告警
     """
-    
+
     def __init__(self, app: Any,
                  include_paths: Optional[List[str]] = None,
                  exclude_paths: Optional[List[str]] = None,
@@ -167,7 +165,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
                  retention_days: int = AUDIT_LOG_RETENTION_DAYS):
         """
         初始化审计中间件
-        
+
         Args:
             app: FastAPI/Starlette 应用实例
             include_paths: 仅记录的路径前缀列表（None 表示全部）
@@ -189,22 +187,22 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
         self._records: List[AuditRecord] = []  # 内存缓冲（生产环境请持久化到数据库）
         self._counter = 0
         self._alert_handlers: List[Callable[[AuditRecord], None]] = []
-        
+
         logger.info(
             "🛡️ 审计中间件已就绪 "
             f"(sampling={self._sampling_rate}, body={self._record_body}, "
             f"retention={self._retention_days}d)"
         )
-    
+
     def add_alert_handler(self, handler: Callable[[AuditRecord], None]) -> None:
         """添加告警处理器"""
         self._alert_handlers.append(handler)
-    
+
     async def dispatch(self, request, call_next):
         """主处理流程"""
         start_time = _time.time()
         request_id = str(uuid.uuid4())
-        
+
         # 将 request_id 写入 request.state 以便下游使用
         try:
             request.state.request_id = request_id
@@ -213,7 +211,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
         path = request.url.path
         method = request.method
         should_audit = self._should_audit(path, method)
-        
+
         try:
             # 执行下一个中间件/路由
             response = await call_next(request)
@@ -235,88 +233,88 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
                     request=request, request_id=request_id, duration_ms=duration_ms,
                     status_code=response.status_code, error=None, response=response,
                 )
-    
+
     # ─── 内部: 路径筛选 ───
-    
+
     def _should_audit(self, path: str, method: str) -> bool:
         """判断是否需要记录审计"""
         # 排除路径
         for exclude in self._exclude_paths:
             if path.startswith(exclude):
                 return False
-        
+
         # 包含路径优先
         if self._include_paths:
             for include in self._include_paths:
                 if path.startswith(include):
                     return True
-        
+
         # 默认：敏感方法始终记录
         if method in AUDIT_METHODS:
             return True
-        
+
         # 敏感路径
         for pattern in SENSITIVE_PATH_PATTERNS:
             if pattern in path.lower():
                 return True
-        
+
         # 采样
         import random
         return random.random() < self._sampling_rate
-    
+
     def _detect_severity(self, path: str, method: str, status_code: int, duration_ms: float) -> str:
         """判断严重等级"""
         path_lower = path.lower()
-        
+
         # 高优路径
         for pattern in HIGH_PRIORITY_PATHS:
             if pattern in path_lower:
                 if method == "DELETE" or status_code >= 400:
                     return "critical" if status_code >= 400 else "high"
-        
+
         # 删除操作
         if method == "DELETE":
             return "high"
-        
+
         # 状态码异常
         if status_code >= 500:
             return "high"
         if status_code >= 400:
             return "medium"
-        
+
         # 慢请求
         if duration_ms > self._alert_threshold_ms:
             return "medium"
-        
+
         return "low"
-    
+
     # ─── 内部: 记录审计 ───
-    
+
     async def _record_audit(self, request, request_id: str, duration_ms: float,
                            status_code: int, error: Optional[str], response) -> None:
         """记录审计"""
         try:
             now = datetime.now(timezone.utc)
-            
+
             # 用户信息（从 request.state 或 headers 获取）
             user_id = getattr(request.state, "user_id", None) if hasattr(request, "state") else None
             username = getattr(request.state, "username", None) if hasattr(request, "state") else None
             user_role = getattr(request.state, "user_role", None) if hasattr(request, "state") else None
-            
+
             # 客户端信息
             client_ip = request.client.host if getattr(request, "client", None) else None
             user_agent = request.headers.get("user-agent", None)
-            
+
             # 请求参数（脱敏）
             query_params = dict(request.query_params) if hasattr(request, "query_params") else {}
             masked_query = mask_response(query_params, MaskLevel.PARTIAL)
-            
+
             # 严重等级
             severity = self._detect_severity(request.url.path, request.method, status_code, duration_ms)
-            
+
             # 动作描述
             action = f"{request.method} {request.url.path}"
-            
+
             # 构造记录
             record = AuditRecord(
                 id=str(uuid.uuid4()),
@@ -337,26 +335,26 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
                 error=error,
                 checksum_chain=self._compute_chain(request_id, now, user_id, status_code),
             )
-            
+
             # 保存
             self._records.append(record)
             self._counter += 1
-            
+
             # 限制内存缓冲区大小（保留最近 10000 条）
             if len(self._records) > 10000:
                 self._records = self._records[-5000:]
-            
+
             # 根据严重等级选择日志级别输出
             self._emit_log(record)
-            
+
             # 高优告警
             if severity in ("high", "critical"):
                 await self._trigger_alert(record)
-            
+
         except Exception as exc:
             # 审计失败不影响主流程，但要记录下来
             logger.error(f"🛡️ 审计记录失败: {exc}", exc_info=True)
-    
+
     def _compute_chain(self, request_id: str, timestamp: datetime,
                        user_id: Optional[int], status_code: int) -> str:
         """计算 checksum chain（前链 + 当前）"""
@@ -364,7 +362,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
         new_checksum = hashlib.sha256(content.encode("utf-8")).hexdigest()
         self._last_checksum = new_checksum
         return new_checksum
-    
+
     def _emit_log(self, record: AuditRecord) -> None:
         """根据严重等级写入主日志"""
         log_msg = (
@@ -375,7 +373,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
             f"status={record.status_code} duration={record.duration_ms:.0f}ms "
             f"severity={record.severity} ip={record.client_ip or '-'}"
         )
-        
+
         if record.severity == "critical":
             logger.critical(log_msg)
         elif record.severity == "high":
@@ -384,7 +382,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
             logger.warning(log_msg)
         else:
             logger.info(log_msg)
-    
+
     async def _trigger_alert(self, record: AuditRecord) -> None:
         """触发告警（高优操作）"""
         for handler in self._alert_handlers:
@@ -395,9 +393,9 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
                     handler(record)
             except Exception as exc:
                 logger.error(f"🛡️ 告警处理器失败: {exc}")
-    
+
     # ─── 公共 API ───
-    
+
     def get_recent_records(self, limit: int = 100,
                            severity: Optional[str] = None) -> List[AuditRecord]:
         """获取最近的审计记录"""
@@ -409,7 +407,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
             if len(result) >= limit:
                 break
         return result
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """获取审计统计"""
         stats = {
@@ -423,7 +421,7 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
             stats["by_severity"][record.severity] = stats["by_severity"].get(record.severity, 0) + 1
             stats["by_method"][record.method] = stats["by_method"].get(record.method, 0) + 1
         return stats
-    
+
     def verify_integrity(self) -> bool:
         """校验内存中审计日志链的完整性"""
         # 简化：最后一条的 checksum 应等于当前的 last_checksum
@@ -451,7 +449,7 @@ def log_sensitive_operation(user_id: int, username: str, action: str,
     """直接记录敏感操作（非请求场景下使用）"""
     now = datetime.now(timezone.utc)
     masked_details = mask_response(details or {}, MaskLevel.PARTIAL) if details else None
-    
+
     msg = (
         f"[AUDIT-SENSITIVE] "
         f"user={username}(id={user_id}) "
@@ -460,7 +458,7 @@ def log_sensitive_operation(user_id: int, username: str, action: str,
         f"severity={severity} "
         f"details={json.dumps(masked_details, ensure_ascii=False, default=str)}"
     )
-    
+
     if severity == "critical":
         logger.critical(msg)
     elif severity == "high":

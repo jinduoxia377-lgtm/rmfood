@@ -15,8 +15,9 @@ tcm_compounds），不再使用代码内硬编码占位值。DB 缺失的字段�
   稳定性    → tcm_compounds.logp（成分脂溶性，稳定性真实判据）
 """
 from typing import Any, Dict, List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import text as sql_text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # mmid flavor 中文/英文 → 风味五维映射（sweet/bitter/sour/astringent/umami）
 # 这是"把 DB 枚举值翻译成数值维"的固定映射（flavor 本身是 DB 真实枚举，

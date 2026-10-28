@@ -49,6 +49,84 @@ def _is_negative_evidence(content: str, herb_name: str) -> bool:
     return any(kw in window for kw in _RAG_CONTRAINDICATION_KEYWORDS)
 
 
+# ── 结构化禁忌缓存（按药材名 → 禁忌列表）────────────────────────────
+# P2：黑名单优先用结构化禁忌（extra_knowledge.contraindication 的策展源），
+# 而非仅依赖 ±120 字符共现启发式。进程内构建一次并缓存（幂等）。
+_STRUCTURED_CONTRA_CACHE: Optional[Dict[str, List[str]]] = None
+_STRUCTURED_CONTRA_LOADED = False
+
+
+async def _load_structured_contraindications() -> Dict[str, List[str]]:
+    """加载结构化禁忌映射：{name_cn: [禁忌...]}。
+
+    数据来源（真实、非合成），按权威性合并：
+      1. HERB_KNOWLEDGE_BASE.contraindication（app/services/knowledge_base.py，52 味药食同源，
+         国家卫健委目录+中医药典籍；enrich_herb_knowledge 将其写入
+         tcm_herbs.extra_knowledge.contraindication——即本钩子所指的结构化禁忌源）。
+      2. food_materials.contraindications（DB，55/142，含卫健委目录禁忌如 甘草→孕妇/高血压慎用）。
+      3. herb_food_herbs.restrictions（卫健委药食同源目录表，如 甘草→高血压患者慎用/孕妇慎用）。
+      4. tcm_herbs.contraindications（DB，11 行）。
+
+    任何一步失败都不抛出——返回已成功部分；全失败返回 {}（调用方降级为共现启发式，
+    不阻断主流程）。结果进程内缓存。
+    """
+    global _STRUCTURED_CONTRA_CACHE, _STRUCTURED_CONTRA_LOADED
+    if _STRUCTURED_CONTRA_LOADED:
+        return _STRUCTURED_CONTRA_CACHE or {}
+
+    result: Dict[str, List[str]] = {}
+    # 1) HERB_KNOWLEDGE_BASE（= extra_knowledge.contraindication 的策展源）
+    try:
+        from app.services.knowledge_base import HERB_KNOWLEDGE_BASE
+        for name, info in HERB_KNOWLEDGE_BASE.items():
+            c = info.get("contraindication")
+            if c:
+                result.setdefault(name, []).append(str(c))
+    except Exception as e:
+        logger.debug("[FormulaRagHook] 加载 HERB_KNOWLEDGE_BASE 禁忌失败: %s", e)
+    # 2) DB：food_materials.contraindications + herb_food_herbs.restrictions（卫健委目录，数组列）
+    try:
+        from sqlalchemy import text
+
+        from app.core.database.session import async_sessionmaker, get_engine
+        async_session = async_sessionmaker(get_engine(), expire_on_commit=False)
+        async with async_session() as db:
+            rows = await db.execute(
+                text("SELECT name_cn, contraindications FROM food_materials "
+                     "WHERE array_length(contraindications, 1) > 0"))
+            for r in rows:
+                result.setdefault(r.name_cn, []).extend(
+                    [str(x) for x in (r.contraindications or []) if str(x).strip()])
+            rows = await db.execute(
+                text("SELECT name_cn, restrictions FROM herb_food_herbs "
+                     "WHERE array_length(restrictions, 1) > 0"))
+            for r in rows:
+                result.setdefault(r.name_cn, []).extend(
+                    [str(x) for x in (r.restrictions or []) if str(x).strip()])
+    except Exception as e:
+        logger.debug("[FormulaRagHook] 加载 food_materials/herb_food_herbs 结构化禁忌失败: %s", e)
+    # 3) DB：tcm_herbs.contraindications（文本列）
+    try:
+        from sqlalchemy import text
+
+        from app.core.database.session import async_sessionmaker, get_engine
+        async_session = async_sessionmaker(get_engine(), expire_on_commit=False)
+        async with async_session() as db:
+            rows = await db.execute(
+                text("SELECT name_cn, contraindications FROM tcm_herbs "
+                     "WHERE contraindications IS NOT NULL AND btrim(contraindications) <> ''"))
+            for r in rows:
+                result.setdefault(r.name_cn, []).append(str(r.contraindications))
+    except Exception as e:
+        logger.debug("[FormulaRagHook] 加载 tcm_herbs 结构化禁忌失败: %s", e)
+
+    # 去重（保持顺序）
+    result = {k: list(dict.fromkeys(v)) for k, v in result.items() if v}
+    _STRUCTURED_CONTRA_CACHE = result
+    _STRUCTURED_CONTRA_LOADED = True
+    return result
+
+
 def _load_known_herb_names() -> Set[str]:
     """收集已知药材中文名集合（用于从 RAG 检索块中匹配药材名）。
 
@@ -146,6 +224,10 @@ async def rag_enhance_formula_generation(
             "error": None,
         }
         known_names = _load_known_herb_names()
+        # P2：结构化禁忌映射（name_cn → 禁忌列表），黑名单优先使用；失败时为空 → 降级共现启发式
+        structured_contra = await _load_structured_contraindications()
+        if structured_contra:
+            logger.debug("[FormulaRagHook] 结构化禁忌源加载 %d 味药材", len(structured_contra))
         for cr in chunks:
             chunk = getattr(cr, "chunk", None)
             if chunk is None:
@@ -161,9 +243,12 @@ async def rag_enhance_formula_generation(
             matched = [n for n in known_names if n and n in content]
             if not matched:
                 continue
-            # 命中禁忌/毒性/用量限制关键词（同窗口共现）的药材进入黑名单
+            # 黑名单判定（P2）：优先结构化禁忌（按药材名命中，强证据）；
+            # 无结构化数据时回退 ±120 字符共现启发式（避免召回丢失）。
             for n in matched:
-                if _is_negative_evidence(content, n):
+                if structured_contra.get(n):
+                    signals["blacklist"].append(n)
+                elif _is_negative_evidence(content, n):
                     signals["blacklist"].append(n)
                 else:
                     signals["whitelist"].append(n)

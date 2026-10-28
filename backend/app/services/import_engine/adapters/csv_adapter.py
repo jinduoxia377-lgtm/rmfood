@@ -11,10 +11,9 @@ from __future__ import annotations
 
 import asyncio
 import csv
-import io
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, AsyncIterator
+from typing import Any, AsyncIterator, Dict, List
 
 from .base import BaseAdapter
 

@@ -16,15 +16,16 @@ import base64
 import json
 import logging
 import time
-from typing import Any, Optional
+from typing import Optional
 
 import httpx
 from sqlalchemy import select
 
-from .tools import BaseAgentTool, ToolResult, get_tool_registry
-from ....models.mcp_server import McpServerConfig
-from app.utils.encryption import EncryptionUtils
 from app.services.llm_service import _get_encryption_key
+from app.utils.encryption import EncryptionUtils
+
+from ....models.mcp_server import McpServerConfig
+from .tools import BaseAgentTool, ToolResult, get_tool_registry
 
 logger = logging.getLogger(__name__)
 
@@ -204,6 +205,7 @@ class McpBridge:
         import os as _os
         try:
             from pathlib import Path
+
             from dotenv import load_dotenv
             # backend/app/services/ai/agent -> parents[4] = backend
             env_path = Path(__file__).resolve().parents[4] / ".env"

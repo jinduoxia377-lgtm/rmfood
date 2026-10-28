@@ -2,11 +2,11 @@
 历史配方学习增强模块
 实现专利权利要求 G2、G3：历史配方学习增强
 """
-from typing import List, Dict, Optional, Tuple, Set
-from dataclasses import dataclass, field
-from collections import defaultdict
 import math
 import random
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Dict, List, Set
 
 
 @dataclass

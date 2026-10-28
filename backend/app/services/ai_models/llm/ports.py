@@ -6,7 +6,7 @@ implement this interface for specific providers.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import Dict, List
 
 
 class Message:
@@ -27,21 +27,21 @@ class ChatResponse:
 class LLMPort(ABC):
     """
     Language Model Provider Port.
-    
+
     All concrete LLM client adapters must implement this interface.
     This ensures dependency inversion and testability.
     """
-    
+
     @abstractmethod
     def chat(self, messages: List[Message], **kwargs) -> ChatResponse:
         """Send a chat request to the model and return response."""
         pass
-    
+
     @abstractmethod
     def get_supported_models(self) -> List[str]:
         """Return list of supported model names."""
         pass
-    
+
     @abstractmethod
     def get_default_model(self) -> str:
         """Return the default model name."""
@@ -53,7 +53,7 @@ class CompletionPort(ABC):
     Text completion port (for non-chat style completions).
     Some models support this pattern differently.
     """
-    
+
     @abstractmethod
     def complete(self, prompt: str, **kwargs) -> str:
         """Generate text completion based on prompt."""

@@ -1,9 +1,9 @@
 """爬取 HKBU MMID 药用植物图像数据库的全部药材数据 (420条)"""
-import re
 import json
 import os
-import urllib.request
 import time
+import urllib.request
+
 from bs4 import BeautifulSoup
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -104,14 +104,14 @@ def main():
         new_herbs = mmid_names - existing
         overlap = mmid_names & existing
 
-        print(f"\n对比现有数据:")
+        print("\n对比现有数据:")
         print(f"  MMID数据库: {len(mmid_names)} 种")
         print(f"  现有数据:   {len(existing)} 种")
         print(f"  重叠:       {len(overlap)} 种")
         print(f"  新增:       {len(new_herbs)} 种")
 
         if new_herbs:
-            print(f"\n新增药材名称:")
+            print("\n新增药材名称:")
             for name in sorted(new_herbs):
                 print(f"  {name}")
 

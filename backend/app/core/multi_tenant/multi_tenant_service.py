@@ -5,12 +5,12 @@ Multi-tenant organization management service (minimal fix)
 import json
 import logging
 import re
-import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from sqlalchemy import text
 from typing import Any, Dict, List, Optional
+
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -396,7 +396,7 @@ class OrganizationService:
         """Archive organization (soft delete, recoverable)."""
         if not await self._check_permission(organization_id, actor_id, [OrganizationRole.OWNER]):
             raise PermissionError("Only organization owner can archive")
-        
+
         await self.db.execute(
             text("UPDATE organizations SET is_active = FALSE WHERE id = :id"),
             {"id": organization_id},
@@ -408,7 +408,7 @@ class OrganizationService:
         """Restore archived organization."""
         if not await self._check_permission(organization_id, actor_id, [OrganizationRole.OWNER]):
             raise PermissionError("Only organization owner can restore")
-        
+
         await self.db.execute(
             text("UPDATE organizations SET is_active = TRUE WHERE id = :id"),
             {"id": organization_id},
@@ -486,7 +486,7 @@ class OrganizationService:
         """Suspend member (keep record but disable access)."""
         if not await self._check_member_manage(organization_id, actor_id):
             raise PermissionError("Permission denied")
-        
+
         await self.db.execute(
             text("UPDATE organization_members SET is_active = FALSE WHERE organization_id = :org_id AND user_id = :user_id"),
             {"org_id": organization_id, "user_id": user_id},
@@ -498,7 +498,7 @@ class OrganizationService:
         """Resume suspended member."""
         if not await self._check_member_manage(organization_id, actor_id):
             raise PermissionError("Permission denied")
-        
+
         await self.db.execute(
             text("UPDATE organization_members SET is_active = TRUE WHERE organization_id = :org_id AND user_id = :user_id"),
             {"org_id": organization_id, "user_id": user_id},
@@ -771,7 +771,8 @@ class OrganizationService:
         }
 
         if format_type == "csv":
-            import csv, io
+            import csv
+            import io
             buf = io.StringIO()
             writer = csv.DictWriter(buf, fieldnames=["user_id", "username", "email", "role", "joined_at", "is_active"])
             writer.writeheader()

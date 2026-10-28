@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
 
 from app.services.ai.rag.rag_service import rag_service
 
@@ -59,8 +58,12 @@ class RAGRetrievalTool(BaseAgentTool):
         try:
             query: str = params["query"]
             top_k: int = params.get("top_k", 5)
+            # P0-4：user.id 为 int，向量库 metadata["user_id"] 存储为 str，
+            # 需转 str 才能正确匹配租户（否则 only 种子可见）。
+            _raw_uid = context.get("user_id")
+            user_id: str = str(_raw_uid) if _raw_uid else None
 
-            result = await rag_service.augment_query(query, top_k=top_k)
+            result = await rag_service.augment_query(query, top_k=top_k, user_id=user_id)
 
             chunks = [
                 {
@@ -116,7 +119,10 @@ class RAGStatsTool(BaseAgentTool):
 
     async def execute(self, params: dict, context: dict) -> ToolResult:
         try:
-            stats = rag_service.get_stats()
+            # P0-4：按当前租户统计（自己的 + system 种子），避免泄露其他租户文档名。
+            _raw_uid = context.get("user_id")
+            user_id = str(_raw_uid) if _raw_uid else None
+            stats = rag_service.get_stats(user_id=user_id)
             return ToolResult(
                 tool_name=self.name,
                 success=True,

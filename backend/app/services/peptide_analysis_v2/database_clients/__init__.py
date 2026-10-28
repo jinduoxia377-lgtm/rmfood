@@ -13,8 +13,8 @@ RMFOOD Peptide Analysis System v2.0 - 数据库客户端模块
 ✅ 请求日志记录与可追溯性
 """
 
-from .uniprot_client import UniProtClient
 from .pdb_client import PDBClient
 from .swissprot_client import SwissProtClient
+from .uniprot_client import UniProtClient
 
 __all__ = ['UniProtClient', 'PDBClient', 'SwissProtClient']

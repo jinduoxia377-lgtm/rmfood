@@ -14,10 +14,9 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Optional
 
-from . import BaseAgentTool, ToolResult, register_tool
 from .....infrastructure.bots_impl import SQLAlchemyGroupChatRepository
+from . import BaseAgentTool, ToolResult, register_tool
 
 logger = logging.getLogger(__name__)
 

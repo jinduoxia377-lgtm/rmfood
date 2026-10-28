@@ -12,9 +12,9 @@ import asyncio
 import json
 import logging
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-from sqlalchemy import select, update, func
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.insert(0, ".")
@@ -77,7 +77,7 @@ def extract_efficacy_from_effects(effects_text: str) -> Dict[str, float]:
     """从 effects 文本中提取功效评分"""
     if not effects_text:
         return {}
-    
+
     try:
         # 尝试解析 JSON 数组
         effects = json.loads(effects_text)
@@ -85,17 +85,17 @@ def extract_efficacy_from_effects(effects_text: str) -> Dict[str, float]:
             return {eff: _EFFICACY_BASE_SCORE.get(eff, 0.60) for eff in effects if _EFFICACY_BASE_SCORE.get(eff, 0) > 0}
     except (json.JSONDecodeError, TypeError):
         pass
-    
+
     # 从文本中提取关键词
     result = {}
     effects_lower = effects_text.lower()
-    
+
     for keyword, efficacy_list in _EFFICACY_KEYWORDS.items():
         if keyword in effects_text or keyword.lower() in effects_lower:
             for eff in efficacy_list:
                 if eff not in result:
                     result[eff] = _EFFICACY_BASE_SCORE.get(eff, 0.60)
-    
+
     return result
 
 
@@ -153,24 +153,24 @@ def get_safety_index(name: str, is_food_homology: bool) -> float:
 async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
     """
     为 TCMHerb 表填充结构化知识数据
-    
+
     Returns:
         统计信息 {updated: int, skipped: int, no_effects: int}
     """
     stats = {"updated": 0, "skipped": 0, "no_effects": 0}
-    
+
     # 获取所有药材
     result = await db.execute(select(TCMHerb))
     herbs = result.scalars().all()
-    
+
     logger.info(f"找到 {len(herbs)} 条药材记录，开始填充知识数据...")
-    
+
     updated_with_efficacy = 0
-    
+
     for herb in herbs:
         if not herb.name_cn:
             continue
-        
+
         # 检查是否已有完整的 extra_knowledge
         has_valid_knowledge = False
         if herb.extra_knowledge:
@@ -180,28 +180,28 @@ async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
                     has_valid_knowledge = True
             except (json.JSONDecodeError, TypeError):
                 pass
-        
+
         if has_valid_knowledge:
             stats["skipped"] += 1
             continue
-        
+
         # 从 effects 字段提取功效
         efficacy_scores = extract_efficacy_from_effects(herb.effects)
-        
+
         if not efficacy_scores:
             stats["no_effects"] += 1
             # 仍然填充基本数据
             efficacy_scores = {"综合调理": 0.50}
-        
+
         # 构建 herb_id
         herb_id = get_herb_id_from_name(herb.name_cn)
-        
+
         # 获取剂量范围
         dosage_min, dosage_max = get_default_dosage(herb.name_cn)
-        
+
         # 获取安全性指数
         safety_index = get_safety_index(herb.name_cn, herb.is_food_homology)
-        
+
         # 构建 extra_knowledge
         extra_knowledge = {
             "herb_id": herb_id,
@@ -216,21 +216,21 @@ async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
             "source": "recipe_generation_data_completer_v2",
             "extracted_from": "effects_field",
         }
-        
+
         # 更新记录
         await db.execute(
             update(TCMHerb)
             .where(TCMHerb.id == herb.id)
             .values(extra_knowledge=json.dumps(extra_knowledge, ensure_ascii=False))
         )
-        
+
         if len(efficacy_scores) > 0:
             updated_with_efficacy += 1
             stats["updated"] += 1
             logger.debug(f"Updated: {herb.name_cn} -> {len(efficacy_scores)} efficacy scores")
         else:
             stats["no_effects"] += 1
-    
+
     await db.commit()
     logger.info(f"填充完成: 更新 {stats['updated']} 条, 跳过 {stats['skipped']} 条, 无功效数据 {stats['no_effects']} 条")
     logger.info(f"有效功效数据: {updated_with_efficacy}/{stats['updated']} 条")
@@ -242,10 +242,10 @@ async def verify_enrichment(db: AsyncSession) -> dict[str, Any]:
     # 统计有功效数据的数量
     result = await db.execute(select(TCMHerb))
     herbs = result.scalars().all()
-    
+
     with_efficacy = 0
     total_efficacy_scores = 0
-    
+
     for herb in herbs:
         if herb.extra_knowledge:
             try:
@@ -255,7 +255,7 @@ async def verify_enrichment(db: AsyncSession) -> dict[str, Any]:
                     total_efficacy_scores += len(data["efficacy_scores"])
             except (json.JSONDecodeError, TypeError):
                 pass
-    
+
     return {
         "total_herbs": len(herbs),
         "with_efficacy": with_efficacy,
@@ -271,33 +271,33 @@ async def main():
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    
+
     logger.info("=" * 60)
     logger.info("配方生成数据完整性补全（增强版）")
     logger.info("=" * 60)
-    
+
     async with async_session_factory() as db:
         # 1. 验证当前状态
         logger.info("\n[1] 验证当前数据状态...")
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
         total_result = await db.execute(select(func.count()).select_from(TCMHerb))
         total = total_result.scalar() or 0
         logger.info(f"  总药材数: {total}")
-        
+
         # 2. 填充数据
         logger.info("\n[2] 开始填充知识数据...")
         enrich_stats = await enrich_herb_knowledge(db)
-        
+
         # 3. 验证结果
         logger.info("\n[3] 验证填充结果...")
         verification = await verify_enrichment(db)
-        
-        logger.info(f"\n验证结果:")
+
+        logger.info("\n验证结果:")
         logger.info(f"  总药材数: {verification['total_herbs']}")
         logger.info(f"  有功效数据: {verification['with_efficacy']}")
         logger.info(f"  覆盖率: {verification['coverage_rate']}")
         logger.info(f"  平均每药材功效数: {verification['avg_scores_per_herb']}")
-        
+
         # 4. 显示样本
         logger.info("\n[4] 样本药材（前5种）:")
         result = await db.execute(
@@ -306,7 +306,7 @@ async def main():
             .limit(5)
         )
         sample_herbs = result.scalars().all()
-        
+
         for herb in sample_herbs:
             try:
                 data = json.loads(herb.extra_knowledge)
@@ -314,11 +314,11 @@ async def main():
                 logger.info(f"  - {herb.name_cn}: {efficacy_count} 项功效, herb_id={data.get('herb_id')}, 安全指数={data.get('safety_index')}")
             except Exception as e:
                 logger.error(f"  - {herb.name_cn}: 解析失败 - {e}")
-    
+
     logger.info("\n" + "=" * 60)
     logger.info("数据补全完成!")
     logger.info("=" * 60)
-    
+
     # 返回退出码
     return 0 if verification['with_efficacy'] >= 50 else 1
 

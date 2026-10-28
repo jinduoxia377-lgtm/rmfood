@@ -6,13 +6,15 @@ LLM 服务层 - 统一接入多家大语言模型提供商
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-import os
-import httpx
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, AsyncIterator
-from dataclasses import dataclass, field
+
+import httpx
 
 from ..core.config import settings
 
@@ -34,9 +36,10 @@ def _user_key_config_key(user_id: int) -> str:
 async def save_user_config_to_db(config: "LLMConfig", user_id: int) -> bool:
     """将用户级 LLM 配置持久化到 SystemConfig（键 llm_user_key_<user_id>，API Key 加密存储）"""
     try:
+        from sqlalchemy import select
+
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
-        from sqlalchemy import select
 
         config_key = _user_key_config_key(user_id)
         async with async_session_factory() as db:
@@ -66,9 +69,10 @@ async def save_user_config_to_db(config: "LLMConfig", user_id: int) -> bool:
 async def delete_user_config(user_id: int) -> bool:
     """删除用户级 LLM 配置（用户清除自己的密钥）"""
     try:
+        from sqlalchemy import delete
+
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
-        from sqlalchemy import delete
 
         config_key = _user_key_config_key(user_id)
         async with async_session_factory() as db:
@@ -92,6 +96,7 @@ def _get_encryption_key() -> bytes:
     import hashlib
     import os
     from pathlib import Path
+
     from ..core.config import settings
 
     def _read_env_file(key: str) -> str:
@@ -148,8 +153,9 @@ def _decrypt_api_key(encrypted_value) -> str:
         return ""
     if isinstance(encrypted_value, dict) and encrypted_value.get("__encrypted__"):
         try:
-            from ..utils.encryption import EncryptionUtils
             import base64
+
+            from ..utils.encryption import EncryptionUtils
             key = _get_encryption_key()
             ciphertext = base64.b64decode(encrypted_value["v"])
             nonce = base64.b64decode(encrypted_value["n"])
@@ -164,10 +170,12 @@ def _decrypt_api_key(encrypted_value) -> str:
 def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
     """将 LLM 配置持久化到数据库（API Key 加密存储）"""
     try:
+        import asyncio
+
+        from sqlalchemy import select
+
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
-        from sqlalchemy import select
-        import asyncio
 
         async def _do_save():
             async with async_session_factory() as db:
@@ -213,9 +221,10 @@ def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
 async def load_config_from_db() -> "LLMConfig | None":
     """从数据库加载 LLM 运行时配置"""
     try:
+        from sqlalchemy import select
+
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
-        from sqlalchemy import select
 
         async with async_session_factory() as db:
             result = await db.execute(
@@ -239,7 +248,7 @@ async def load_config_from_db() -> "LLMConfig | None":
                     api_key=_decrypt_api_key(v.get("api_key", "")) if isinstance(v, dict) else "",
                     base_url=v.get("base_url", "") if isinstance(v, dict) else "",
                     model=v.get("model", "") if isinstance(v, dict) else "",
-                    max_tokens=v.get("max_tokens", 4096) if isinstance(v, dict) else 4096,
+                    max_tokens=v.get("max_tokens", 16000) if isinstance(v, dict) else 16000,
                     temperature=v.get("temperature", 0.7) if isinstance(v, dict) else 0.7,
                     key_from_db=True,  # 数据库持久化来源
                 )
@@ -279,6 +288,13 @@ PROVIDER_DEFAULTS: dict[str, dict[str, str]] = {
 }
 
 
+# ── 网络超时配置（秒）──
+# 连接/连接池超时保持较短，快速失败；读超时（两次数据之间的最大间隔）较长，
+# 容忍慢速流式上游（如第三方网关排队）；流式总时长由调用方 asyncio.timeout 控制。
+LLM_CONNECT_TIMEOUT = 15.0
+LLM_POOL_TIMEOUT = 15.0
+
+
 @dataclass
 class LLMMessage:
     """对话消息"""
@@ -293,10 +309,12 @@ class LLMConfig:
     api_key: str = ""
     base_url: str = ""
     model: str = ""
-    max_tokens: int = 4096
+    max_tokens: int = 16000
     temperature: float = 0.7
     top_p: float = 1.0
-    timeout: float = 60.0
+    # 读超时（秒）：两次数据读取之间的最大间隔，容忍慢速流式上游；
+    # 单次请求总时长由上层 asyncio.timeout 控制（见 chat.py 的 LLM_STREAM_TOTAL_TIMEOUT）
+    timeout: float = 120.0
     # 运行时标记：密钥是否来自数据库持久化（load_config_from_db 载入或 update_config 写入）
     key_from_db: bool = False
     # 用户级密钥隔离：该实例属于哪个用户（None = 全局实例）
@@ -352,16 +370,16 @@ class LLMService:
             asyncio.create_task(self._client.aclose())
         # 立即创建新客户端，减少首次调用的延迟
         try:
-            timeout = getattr(self.config, 'timeout', 60.0)
-            self._client = httpx.AsyncClient(timeout=timeout)
+            self._client = self._build_client()
         except Exception as e:
             logger.error(f"创建HTTP客户端失败: {e}")
             self._client = None
 
         # 重置 Provider 工厂单例，确保下次调用使用最新配置
         try:
-            from app.services.ai.providers.provider_factory import cleanup_provider_factory
             import asyncio
+
+            from app.services.ai.providers.provider_factory import cleanup_provider_factory
             asyncio.create_task(cleanup_provider_factory())
         except Exception as e:
             logger.debug("Provider factory 清理失败（非致命）: %s", e)
@@ -391,21 +409,21 @@ class LLMService:
 
         # 从嵌套配置读取
         ai_service = getattr(settings, "ai_service", None)
-        
+
         # 获取 provider（支持多种配置方式）
         provider = os.environ.get("LLM_PROVIDER", "") or \
                    env_file_values.get("LLM_PROVIDER", "") or \
                    getattr(settings, "llm_provider", "") or \
                    getattr(ai_service, "provider", "") or \
                    PROVIDER_OPENAI
-        
+
         # 获取 api_key（支持多种配置方式）
         api_key = os.environ.get("OPENAI_API_KEY", "") or \
                   os.environ.get("AI_API_KEY", "") or \
                   env_file_values.get("OPENAI_API_KEY", "") or \
                   (ai_service.api_key if ai_service else "") or \
                   getattr(settings, "openai_api_key", "")
-        
+
         # 获取 base_url（支持多种配置方式）
         base_url = os.environ.get("OPENAI_BASE_URL", "") or \
                    os.environ.get("AI_BASE_URL", "") or \
@@ -464,17 +482,31 @@ class LLMService:
         if not model:
             model = "gpt-4o-mini"
 
-        # 获取 max_tokens（支持多种配置方式）
+        # 获取 max_tokens（支持多种配置方式；专业配方设计卡输出较长，默认 16000 避免截断）
+        # P1-3 修复（2026-10-26）：原 getattr(settings, "ai_max_tokens", 0) 是死分支 ——
+        # Settings 没有 ai_max_tokens 字段，真实字段路径是 settings.ai_service.max_tokens
+        # （见 app/core/config.py 的 AIServiceConfig.max_tokens 与 Settings.ai_service），
+        # 因此原写法永远返回 0，该层形同虚设。改为显式解引用嵌套配置，
+        # 并用双层 getattr 兜底，避免 settings.ai_service 缺失时抛 AttributeError。
+        ai_service_cfg = getattr(settings, "ai_service", None)
         max_tokens = int(os.environ.get("AI_MAX_TOKENS", "0")) or \
-                     getattr(settings, "ai_max_tokens", 0) or \
+                     getattr(ai_service_cfg, "max_tokens", 0) or \
                      (ai_service.max_tokens if ai_service else 0) or \
-                     4096
-        
+                     16000
+
         # 获取 temperature（支持多种配置方式）
+        # P1-3 修复（2026-10-26）：原 getattr(settings, "ai_temperature", 0.0) 同款死分支，
+        # 真实字段为 settings.ai_service.temperature。
         temperature = float(os.environ.get("AI_TEMPERATURE", "0")) or \
-                      getattr(settings, "ai_temperature", 0.0) or \
+                      getattr(ai_service_cfg, "temperature", 0.0) or \
                       (ai_service.temperature if ai_service else 0.0) or \
                       0.7
+
+        # 读超时（两次数据之间的最大间隔）：优先显式配置，默认 120s
+        # （与 chat.py 的流式总超时 120s 对齐，见 LLM_STREAM_TOTAL_TIMEOUT）
+        request_timeout = float(os.environ.get("AI_REQUEST_TIMEOUT", "0")) or \
+                          getattr(ai_service_cfg, "request_timeout", 0) or \
+                          120.0
 
         return LLMConfig(
             provider=provider,
@@ -483,6 +515,7 @@ class LLMService:
             model=model,
             max_tokens=max_tokens,
             temperature=temperature,
+            timeout=request_timeout,
         )
 
     @property
@@ -497,8 +530,19 @@ class LLMService:
     @property
     def client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
-            self._client = httpx.AsyncClient(timeout=self.config.timeout)
+            self._client = self._build_client()
         return self._client
+
+    def _build_client(self) -> httpx.AsyncClient:
+        """构建 HTTP 客户端：连接/连接池超时短（快速失败），读超时长（容忍慢速流式）。"""
+        return httpx.AsyncClient(
+            timeout=httpx.Timeout(
+                connect=LLM_CONNECT_TIMEOUT,
+                read=self.config.timeout,
+                write=self.config.timeout,
+                pool=LLM_POOL_TIMEOUT,
+            )
+        )
 
     async def close(self):
         if self._client and not self._client.is_closed:
@@ -521,10 +565,12 @@ class LLMService:
         if svc is not None:
             return svc
         try:
+            import json as _json
+
+            from sqlalchemy import select
+
             from ..core.database.session import async_session_factory
             from ..models.system import SystemConfig
-            from sqlalchemy import select
-            import json as _json
 
             config_key = _user_key_config_key(user_id)
             async with async_session_factory() as db:
@@ -548,7 +594,7 @@ class LLMService:
                 api_key=_decrypt_api_key(v.get("api_key", "")),
                 base_url=v.get("base_url", "") or getattr(_fb, "base_url", ""),
                 model=v.get("model", "") or getattr(_fb, "model", ""),
-                max_tokens=v.get("max_tokens", 4096),
+                max_tokens=v.get("max_tokens", 16000),
                 temperature=v.get("temperature", 0.7),
                 key_from_db=True,
                 user_id=user_id,
@@ -592,10 +638,12 @@ class LLMService:
         if svc is not None:
             return svc
         try:
+            import json as _json
+
+            from sqlalchemy import select
+
             from ..core.database.session import async_session_factory
             from ..models.system import SystemConfig
-            from sqlalchemy import select
-            import json as _json
 
             config_key = _user_key_config_key(user_id)
             async with async_session_factory() as db:
@@ -617,7 +665,7 @@ class LLMService:
                 api_key=_decrypt_api_key(v.get("api_key", "")),
                 base_url=v.get("base_url", "") or getattr(_fb, "base_url", ""),
                 model=v.get("model", "") or getattr(_fb, "model", ""),
-                max_tokens=v.get("max_tokens", 4096),
+                max_tokens=v.get("max_tokens", 16000),
                 temperature=v.get("temperature", 0.7),
                 key_from_db=True,
                 user_id=user_id,
@@ -707,6 +755,7 @@ class LLMService:
             messages, stream=False, tools=tools, response_format=response_format,
             model=model, temperature=temperature,
         )
+        started = time.monotonic()
 
         try:
             resp = await self.client.post(url, headers=headers, json=payload)
@@ -752,7 +801,8 @@ class LLMService:
                 logger.warning(f"⏳ API 请求频率限制 (429): {error_detail}")
                 raise RuntimeError(f"API 调用频率过高 (429): {error_detail}. 请稍后重试") from e
             else:
-                logger.error(f"❌ LLM API 调用失败 ({status_code}): {error_detail}")
+                elapsed = time.monotonic() - started
+                logger.error(f"❌ LLM API 调用失败 ({status_code}, elapsed={elapsed:.1f}s): {error_detail}")
                 raise RuntimeError(f"LLM API 调用失败 (HTTP {status_code}): {error_detail}") from e
 
         data = resp.json()
@@ -760,6 +810,10 @@ class LLMService:
         choice = data["choices"][0]
         message = choice.get("message", {})
         usage = data.get("usage", {})
+        logger.info(
+            f"[chat] 非流式调用成功: elapsed={time.monotonic() - started:.1f}s, "
+            f"model={data.get('model', self.config.model)}, url={url}"
+        )
 
         return LLMResponse(
             content=message.get("content", ""),
@@ -805,56 +859,104 @@ class LLMService:
         logger.info(f"[chat_stream] 开始流式请求: URL={url}, model={payload.get('model')}, msg_count={len(payload.get('messages', []))}, stream={payload.get('stream')}")
         logger.debug(f"[chat_stream] 请求 payload keys: {list(payload.keys())}, headers keys: {list(headers.keys())}")
 
-        try:
-            async with self.client.stream("POST", url, headers=headers, json=payload) as resp:
-                logger.info(f"[chat_stream] 收到响应: status={resp.status_code}")
-                try:
-                    resp.raise_for_status()
-                except httpx.HTTPStatusError as e:
-                    status_code = e.response.status_code
-                    error_detail = ""
+        # 诊断计时：首包耗时 / 总耗时（用于定位上游慢/挂起）
+        stream_started = time.monotonic()
+        first_chunk_logged = False
 
+        # 单次自动重试：仅在「连接/建立响应」阶段失败（尚未读取任何数据）时重试 1 次；
+        # 读流中途的超时/断连会转成 RuntimeError，不重试，避免已产出内容被重复输出。
+        last_exc: Exception | None = None
+        for attempt in range(2):
+            try:
+                async with self.client.stream("POST", url, headers=headers, json=payload) as resp:
+                    logger.info(f"[chat_stream] 收到响应: status={resp.status_code}")
                     try:
-                        error_body = e.response.json()
-                        error_detail = error_body.get("error", {}).get("message", str(error_body))
-                    except Exception as e:
-                        logger.debug("错误响应体解析失败: %s", e)
-                        error_detail = "LLM服务响应异常"
+                        resp.raise_for_status()
+                    except httpx.HTTPStatusError as e:
+                        status_code = e.response.status_code
+                        error_detail = ""
 
-                    logger.error(f"[chat_stream] HTTP 状态错误: status={status_code}, detail={error_detail}")
+                        try:
+                            error_body = e.response.json()
+                            error_detail = error_body.get("error", {}).get("message", str(error_body))
+                        except Exception as parse_exc:  # 注意：不要用 e，避免覆盖外层 httpx 异常变量导致后续 from e 抛 UnboundLocalError
+                            logger.debug("错误响应体解析失败: %s", parse_exc)
+                            error_detail = "LLM服务响应异常"
 
-                    if status_code == 401:
-                        raise RuntimeError(f"API 认证失败 (401): {error_detail}") from e
-                    elif status_code == 429:
-                        raise RuntimeError(f"API 频率限制 (429): {error_detail}") from e
-                    else:
-                        raise RuntimeError(f"流式API调用失败 ({status_code}): {error_detail}") from e
+                        logger.error(f"[chat_stream] HTTP 状态错误: status={status_code}, detail={error_detail}")
 
-                line_count = 0
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    data_str = line[6:].strip()
-                    if data_str == "[DONE]":
-                        logger.info(f"[chat_stream] 流式响应完成, 共 {line_count} 行")
-                        break
+                        if status_code == 401:
+                            raise RuntimeError(f"API 认证失败 (401): {error_detail}") from e
+                        elif status_code == 429:
+                            # 流式被限流（部分 Provider 对 stream 接口单独限流）：
+                            # 降级为非流式调用，再把结果切分成块以流式输出，避免前端 502。
+                            logger.warning(f"[chat_stream] 流式触发限流(429)，降级为非流式: {error_detail}")
+                            try:
+                                non_stream = await self.chat(messages, model=model, temperature=temperature)
+                                content = non_stream.content or ""
+                                for segment in _split_text_into_chunks(content):
+                                    yield segment
+                                return
+                            except Exception as fallback_exc:
+                                logger.error(f"[chat_stream] 非流式降级也失败: {fallback_exc}")
+                                raise RuntimeError(
+                                    f"API 频率限制 (429): {error_detail}；非流式降级失败: {fallback_exc}"
+                                ) from e
+                        else:
+                            raise RuntimeError(f"流式API调用失败 ({status_code}): {error_detail}") from e
+
+                    # 读流阶段：中途超时/断连转 RuntimeError（不触发外层重试，避免重复内容）
                     try:
-                        chunk = json.loads(data_str)
-                        delta = chunk["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            line_count += 1
-                            yield content
-                    except (json.JSONDecodeError, KeyError, IndexError) as parse_err:
-                        logger.warning(f"[chat_stream] 流式响应解析失败: {data_str[:100]}, error={parse_err}")
-                        continue
-
-        except httpx.TimeoutException as e:
-            logger.error(f"[chat_stream] 流式对话超时: {e}")
-            raise RuntimeError(f"AI 服务响应超时，请简化问题或稍后重试") from e
-        except httpx.ConnectError as e:
-            logger.error(f"[chat_stream] 无法连接到 AI 服务: {e}")
-            raise RuntimeError(f"无法连接到 AI 服务 ({self.config.base_url})，请检查网络配置") from e
+                        line_count = 0
+                        async for line in resp.aiter_lines():
+                            if not line.startswith("data: "):
+                                continue
+                            data_str = line[6:].strip()
+                            if data_str == "[DONE]":
+                                logger.info(
+                                    f"[chat_stream] 流式响应完成: 共 {line_count} 行, "
+                                    f"总耗时={time.monotonic() - stream_started:.1f}s, model={payload.get('model')}"
+                                )
+                                break
+                            try:
+                                chunk = json.loads(data_str)
+                                delta = chunk["choices"][0].get("delta", {})
+                                content = delta.get("content", "")
+                                if content:
+                                    if not first_chunk_logged:
+                                        first_chunk_logged = True
+                                        logger.info(
+                                            f"[chat_stream] 收到首个内容分片: "
+                                            f"首包耗时={time.monotonic() - stream_started:.1f}s, "
+                                            f"model={payload.get('model')}, url={url}"
+                                        )
+                                    line_count += 1
+                                    yield content
+                            except (json.JSONDecodeError, KeyError, IndexError) as parse_err:
+                                logger.warning(f"[chat_stream] 流式响应解析失败: {data_str[:100]}, error={parse_err}")
+                                continue
+                    except (httpx.TimeoutException, httpx.ConnectError) as read_exc:
+                        elapsed = time.monotonic() - stream_started
+                        logger.error(
+                            f"[chat_stream] 流式读取中断: elapsed={elapsed:.1f}s, "
+                            f"url={url}, model={payload.get('model')}, error={read_exc}"
+                        )
+                        raise RuntimeError(f"AI 服务响应中断（流式传输断开）: {read_exc}") from read_exc
+                return
+            except (httpx.TimeoutException, httpx.ConnectError) as exc:
+                elapsed = time.monotonic() - stream_started
+                if attempt == 0:
+                    logger.warning(
+                        f"[chat_stream] 连接/建立响应阶段失败（elapsed={elapsed:.1f}s），500ms 后自动重试: {exc}"
+                    )
+                    await asyncio.sleep(0.5)
+                    last_exc = exc
+                    continue
+                logger.error(
+                    f"[chat_stream] 流式对话连接失败（已自动重试仍失败）: elapsed={elapsed:.1f}s, "
+                    f"url={url}, model={payload.get('model')}, error={exc}"
+                )
+                raise RuntimeError("AI 服务响应超时或无法连接，请稍后重试") from exc
 
     async def chat_with_json(
         self,
@@ -875,6 +977,12 @@ class LLMService:
             text = text.split("```", 1)[1].split("```", 1)[0].strip()
 
         return json.loads(text)
+
+
+def _split_text_into_chunks(text: str, size: int = 24) -> list[str]:
+    """将文本切分成小块，用于流式降级输出（模拟 SSE 分片）。"""
+    text = text or ""
+    return [text[i:i + size] for i in range(0, len(text), size)] or [""]
 
 
 # ── 全局 LLM 实例 ──
@@ -1047,11 +1155,11 @@ def get_mock_response(question: str) -> str:
     获取模拟响应（用于演示或离线模式）
     """
     question_lower = question.lower().strip()
-    
+
     # 药食同源相关问题
     if any(keyword in question_lower for keyword in ["药食同源", "药食两用", "中药材", "草药"]):
         return """根据国家卫生健康委员会公布的药食同源目录，常见的药食同源食材包括：
-        
+
 **补气类：**
 - 黄芪：补气升阳，固表止汗
 - 党参：补中益气，健脾益肺
@@ -1072,7 +1180,7 @@ def get_mock_response(question: str) -> str:
 3. 遵循适量原则，避免过量食用
 
 如需了解特定药材的详细信息，请告诉我具体名称。"""
-    
+
     # 配方相关问题
     elif any(keyword in question_lower for keyword in ["配方", "搭配", "组合", "比例"]):
         return """配方设计需要综合考虑以下因素：
@@ -1087,7 +1195,7 @@ def get_mock_response(question: str) -> str:
 
 **免疫增强配方：**
 - 黄芪 10g（君）- 补气固表
-- 党参 8g（臣）- 补中益气  
+- 党参 8g（臣）- 补中益气
 - 枸杞子 5g（佐）- 滋补肝肾
 - 红枣 3枚（使）- 调和诸药
 
@@ -1097,7 +1205,7 @@ def get_mock_response(question: str) -> str:
 - 维生素C 500mg
 
 如需针对特定功效设计配方，请告诉我您的目标功效。"""
-    
+
     # 活性肽相关问题
     elif any(keyword in question_lower for keyword in ["肽", "活性肽", "肽序列", "氨基酸"]):
         return """生物活性肽是具有特定生理功能的小分子肽段：
@@ -1120,7 +1228,7 @@ def get_mock_response(question: str) -> str:
 3. 需进行安全性评价
 
 如需分析特定肽序列，请提供序列信息。"""
-    
+
     # 安全法规相关问题
     elif any(keyword in question_lower for keyword in ["安全", "法规", "合规", "标准", "GB"]):
         return """食品配方设计需遵守相关法规标准：
@@ -1132,7 +1240,7 @@ def get_mock_response(question: str) -> str:
 - 《保健食品注册与备案管理办法》
 
 **药食同源目录管理：**
-- 2023版目录包含110种药材
+- 2023版目录包含114种药材
 - 仅限目录内药材用于食品
 - 严格遵守用量规定
 
@@ -1142,10 +1250,10 @@ def get_mock_response(question: str) -> str:
 - 关注标签标识规范
 
 如需特定产品的合规建议，请提供产品信息。"""
-    
+
     # 综合问题或问候
     else:
-        return f"""您好！我是 RMFOOD AI 配方顾问，专注于药食同源功能性食品研发领域。
+        return """您好！我是 RMFOOD AI 配方顾问，专注于药食同源功能性食品研发领域。
 
 **我可以帮助您：**
 - 解答药食同源知识
