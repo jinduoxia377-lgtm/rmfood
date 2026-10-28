@@ -65,7 +65,7 @@ async def generate_formula(
     start_ts = time.perf_counter()
 
     try:
-        result = await run_ga_generation(req.target_effects, req.constraints)
+        result = await run_ga_generation(req.target_effects, req.constraints, user_id=str(current_user.id))
         elapsed_ms = (time.perf_counter() - start_ts) * 1000
         result["execution_time_ms"] = round(elapsed_ms, 2)
         logger.info(
