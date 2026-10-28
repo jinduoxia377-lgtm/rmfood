@@ -14,7 +14,7 @@ from sqlalchemy import select, func, delete
 from datetime import datetime, timezone  # A-27: 113 行 datetime.now(timezone.utc) 用到，原漏导入
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_db_session, get_current_active_user
 from app.models.models import Workflow, WorkflowTask, User, WorkflowStatus, TaskStatus
 
 from app.core.workflow import (
@@ -38,7 +38,7 @@ _active_executions: dict = {}
 async def execute_workflow(
     workflow_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     执行指定工作流。
@@ -46,13 +46,16 @@ async def execute_workflow(
     从数据库加载工作流定义，构建 DAG，异步执行。
     返回 execution_id 用于查询进度。
     """
-    # 加载工作流
+    # 加载工作流（A-27: 强制认证 + 属主校验，防止未认证/越权执行他人工作流）
     workflow = (await db.execute(
         select(Workflow).where(Workflow.id == workflow_id)
     )).scalar_one_or_none()
 
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
 
     if workflow.status in (WorkflowStatus.COMPLETED, WorkflowStatus.CANCELLED, WorkflowStatus.IN_PROGRESS):
         raise HTTPException(400, detail="该工作流已完成、已取消或正在执行中")
@@ -96,13 +99,48 @@ async def execute_workflow(
         dag.add_edge(edge)
 
     # 异步执行
-    execution_id = f"wf-exec-{workflow_id}-{int(asyncio.get_event_loop().time() * 1000)}"
+    execution_id = f"wf-exec-{workflow_id}-{int(asyncio.get_running_loop().time() * 1000)}"
 
     async def _run():
+        # A-27: 后台任务必须使用独立 DB 会话，不能复用请求级 `db`
+        #（请求结束后 `get_db_session` 会 close 该会话，复用将抛 Session is closed）。
+        from app.core.database.session import AsyncSessionLocal
+        try:
+            async with AsyncSessionLocal() as bg_db:
+                await _execute_with_session(bg_db)
+        except Exception as e:
+            logger.error("Workflow execution failed: %s", e, exc_info=True)
+            # 失败标记 + 推送需独立会话（会话可能已失败，兜底重试一次）
+            try:
+                async with AsyncSessionLocal() as fail_db:
+                    fail_wf = await fail_db.get(Workflow, workflow_id)
+                    if fail_wf:
+                        fail_wf.status = WorkflowStatus.FAILED
+                        fail_wf.error_message = str(e)
+                        await fail_db.commit()
+            except Exception as e2:
+                logger.error("标记工作流失败时异常: %s", e2)
+            try:
+                ws_manager = get_ws_manager()
+                await ws_manager.broadcast_to_channel(
+                    f"workflow:{workflow_id}",
+                    WSMessage(type=MessageType.AI_TASK_FAILED.value, data={
+                        "workflow_id": workflow_id,
+                        "error": str(e),
+                    }),
+                )
+            except Exception as e3:
+                logger.warning("推送失败消息异常: %s", e3)
+
+    async def _execute_with_session(bg_db: AsyncSession):
+        """在独立会话中执行 DAG 并持久化结果。"""
         try:
             # 更新工作流状态
-            workflow.status = WorkflowStatus.IN_PROGRESS
-            await db.commit()
+            wf = await bg_db.get(Workflow, workflow_id)
+            if not wf:
+                raise HTTPException(404, detail="工作流不存在")
+            wf.status = WorkflowStatus.IN_PROGRESS
+            await bg_db.commit()
 
             # A-27：原先这里调用的 _push_progress 在本模块根本没有定义（NameError），
             #       只要 DAG 回调一次进度，整个 _run() 就会崩进 except 并把工作流标记为
@@ -129,13 +167,14 @@ async def execute_workflow(
                 await _push_progress(workflow_id, task_id, status, result)
                 # 同步到数据库
                 if status == "running":
-                    await db.execute(
+                    await bg_db.execute(
                         select(WorkflowTask).where(WorkflowTask.id == task_id).update(
                             {"status": TaskStatus.IN_PROGRESS, "started_at": datetime.now(timezone.utc)}
                         )
                     )
+                    await bg_db.commit()
                 elif status == "success" and result:
-                    await db.execute(
+                    await bg_db.execute(
                         select(WorkflowTask).where(WorkflowTask.id == task_id).update(
                             {
                                 "status": TaskStatus.COMPLETED,
@@ -145,13 +184,15 @@ async def execute_workflow(
                             }
                         )
                     )
+                    await bg_db.commit()
 
             result = await execute_workflow_dag(dag, on_progress=on_progress)
 
             # 更新工作流结果
-            workflow.status = WorkflowStatus.COMPLETED if result["failed"] == 0 else WorkflowStatus.FAILED
-            workflow.result = result
-            await db.commit()
+            wf = await bg_db.get(Workflow, workflow_id)
+            wf.status = WorkflowStatus.COMPLETED if result["failed"] == 0 else WorkflowStatus.FAILED
+            wf.result = result
+            await bg_db.commit()
 
             # 推送完成消息
             ws_manager = get_ws_manager()
@@ -164,21 +205,11 @@ async def execute_workflow(
                 }),
             )
 
+        except HTTPException as e:
+            raise
         except Exception as e:
             logger.error("Workflow execution failed: %s", e, exc_info=True)
-            workflow.status = WorkflowStatus.FAILED
-            workflow.error_message = str(e)
-            await db.commit()
-
-            # 推送错误消息
-            ws_manager = get_ws_manager()
-            await ws_manager.broadcast_to_channel(
-                f"workflow:{workflow_id}",
-                WSMessage(type=MessageType.AI_TASK_FAILED.value, data={
-                    "workflow_id": workflow_id,
-                    "error": str(e),
-                }),
-            )
+            raise
 
     # 启动异步执行
     asyncio.create_task(_run())
@@ -199,7 +230,7 @@ async def execute_workflow(
 async def get_workflow_status(
     workflow_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """查询工作流当前状态和任务执行进度"""
     workflow = (await db.execute(
@@ -208,6 +239,10 @@ async def get_workflow_status(
 
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    # A-27: 属主校验，防止越权读取他人工作流状态
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
 
     tasks_result = await db.execute(
         select(WorkflowTask)
@@ -249,6 +284,10 @@ async def workflow_ws(
     """
     WebSocket 端点：实时推送工作流执行进度。
 
+    A-27: 增加鉴权——WebSocket 无法携带 Authorization header，故通过
+    query 参数 ``?token=...`` 传入 JWT。鉴权失败则关闭连接，防止
+    任意客户端订阅 ``workflow:{id}`` 通道接收进度/结果（信息泄露）。
+
     消息格式:
     - {"type": "progress", "task_id": int, "status": str, "result": dict}
     - {"type": "stage_done", "stage": str, "success": bool, "latency_ms": float}
@@ -258,12 +297,34 @@ async def workflow_ws(
     前端订阅方式:
     ws.send(JSON.stringify({type: "subscribe", channel: "workflow:{id}"}))
     """
+    # ── A-27: WebSocket 鉴权（query token）──
+    try:
+        from app.utils.auth import decode_token  # 与 deps.py 同一解码器
+        token = websocket.query_params.get("token")
+        if not token:
+            await websocket.close(code=4401, reason="未提供认证令牌")
+            return
+        payload = decode_token(token)
+        if not payload or payload.get("type") != "access":
+            await websocket.close(code=4401, reason="认证令牌无效")
+            return
+        ws_user_id = int(payload.get("sub"))
+    except Exception as _e:
+        logger.warning("WebSocket 鉴权失败: %s", _e)
+        await websocket.close(code=4401, reason="认证失败")
+        return
+
     # 验证工作流存在
     workflow = (await db.execute(
         select(Workflow).where(Workflow.id == workflow_id)
     )).scalar_one_or_none()
     if not workflow:
         await websocket.close(code=4004, reason="工作流不存在")
+        return
+
+    # A-27: 属主校验，防止越权订阅
+    if workflow.creator_id != ws_user_id:
+        await websocket.close(code=4403, reason="无权订阅此工作流")
         return
 
     await websocket.accept()
@@ -292,17 +353,3 @@ async def workflow_ws(
         logger.info("Workflow WS disconnected: workflow_id=%d", workflow_id)
     finally:
         await ws_manager.unsubscribe(connection_id, f"workflow:{workflow_id}")
-
-
-@router.get("/executors", summary="列出可用执行器")
-async def list_executors():
-    """返回当前注册的所有工作流执行器"""
-    from app.core.workflow import get_executor_registry
-    registry = get_executor_registry()
-    return {
-        "success": True,
-        "executors": [
-            {"task_type": t, "description": registry.get(t).description}
-            for t in registry.list_types()
-        ],
-    }

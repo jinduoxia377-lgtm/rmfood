@@ -2,7 +2,7 @@
  * 工作流管理页面
  * 参照 Dashboard 布局设计：全宽背景 + 欢迎横幅 + 统计卡片 + 卡片列表
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -10,7 +10,7 @@ import {
   CircleDot, AlertTriangle, ChevronRight, RotateCcw, Ban, Plus, Sparkles,
   RefreshCw, FileSearch, Search,
 } from 'lucide-react'
-import { workflowApi, type Workflow, type WorkflowDetail } from '@/api/workflow'
+import { workflowApi, type Workflow, type WorkflowDetail, type WorkflowTask } from '@/api/workflow'
 import {
   EmptyState, Skeleton, Pagination, Card, CardHeader, CardTitle, CardContent,
   Button, Modal, StatCard, StatusBadge,
@@ -63,6 +63,34 @@ const QUICK_CREATE_CARDS = [
   { type: 'analysis', labelKey: 'pages.workflow.cardBatchAnalysis', descKey: 'pages.workflow.cardBatchAnalysisDesc', icon: FileSearch, gradient: 'from-warning-500 to-warning-500', templateId: 'batch-analysis' },
 ] as const
 
+/**
+ * A-27: 实时进度 —— 后端执行时仅更新 WorkflowTask 状态，不回写 workflow.config
+ * 节点状态。这里把轮询到的任务状态（按 task_type 匹配）合并到编辑器节点的
+ * data.status，使流程图节点在只读视图中随执行实时变色。
+ * 若无任何变化则返回原对象，避免无谓重渲染/编辑器重初始化。
+ */
+function mergeLiveTaskStatus(wf: WorkflowDetail, status: string, tasks: WorkflowTask[]): WorkflowDetail {
+  const statusByType = new Map<string, string>()
+  for (const t of tasks) {
+    if (t.task_type) statusByType.set(t.task_type, t.status)
+  }
+  const config = (wf.config ?? {}) as Record<string, unknown>
+  const rawNodes = Array.isArray(config.nodes) ? (config.nodes as Array<Record<string, unknown>>) : []
+  let changed = wf.status !== status
+  const nodes = rawNodes.map((n) => {
+    const nodeData = (n?.data ?? {}) as Record<string, unknown>
+    const tt = nodeData.taskType as string | undefined
+    const st = tt ? statusByType.get(tt) : undefined
+    if (st && st !== nodeData.status) {
+      changed = true
+      return { ...n, data: { ...nodeData, status: st } }
+    }
+    return n
+  })
+  if (!changed) return wf
+  return { ...wf, status, config: { ...config, nodes } }
+}
+
 // ─── 主页面 ────────────────────────────────────────────────────────────────────
 export default function WorkflowPage() {
   const { t } = useTranslation()
@@ -75,6 +103,22 @@ export default function WorkflowPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [preselectedTemplateId, setPreselectedTemplateId] = useState<string | null>(null)
   const [editorWorkflow, setEditorWorkflow] = useState<WorkflowDetail | null>(null)
+  // A-27: 编辑模式——编辑器弹窗是否允许编辑（readOnly=false 时显示保存）
+  const [editorEditMode, setEditorEditMode] = useState(false)
+
+  // A-27: 保存编辑器配置（接通 updateConfig，此前为死代码）
+  const saveConfigMut = useMutation({
+    mutationFn: (cfg: Record<string, unknown>) =>
+      editorWorkflow ? workflowApi.updateConfig(editorWorkflow.id, cfg) : Promise.reject(new Error('无编辑器工作流')),
+    onSuccess: () => {
+      // A-27 P3-1: 不在 onSuccess 重复 toast —— 编辑器 handleSave 已提示
+      //           「工作流保存成功」，避免同一操作弹两个提示。
+      setEditorEditMode(false)
+      qc.invalidateQueries({ queryKey: ['workflows'] })
+      qc.invalidateQueries({ queryKey: ['workflow-statistics'] })
+    },
+    onError: () => addToast({ type: 'error', message: '保存失败，请重试' }),
+  })
 
   const { data, isLoading } = useQuery({
     queryKey: ['workflows', page, statusFilter, searchQuery],
@@ -85,6 +129,34 @@ export default function WorkflowPage() {
     queryFn: workflowApi.statistics,
     staleTime: 5 * 60_000,
   })
+
+  // A-27: 实时进度 —— 流程图弹窗打开且工作流执行中时，每 2s 轮询最新任务状态，
+  //       并合并到编辑器节点（readOnly 视图）实现执行进度实时显示。
+  //       WebSocket 方案不可行：后端 WS 端点（workflow_exec_router.py workflow_ws）
+  //       要求 ?token= 查询参数，而前端 access token 存于 HttpOnly Cookie
+  //       （client.ts P0 修复），JS 无法读取，无法拼接到 WS URL。故采用轮询
+  //       GET /workflows/{id}（复用 get，返回 tasks[].status + workflow.status）。
+  const { data: liveDetail } = useQuery({
+    queryKey: ['workflow-live', editorWorkflow?.id],
+    queryFn: () => editorWorkflow ? workflowApi.get(editorWorkflow.id) : Promise.resolve(null),
+    enabled: !!editorWorkflow && editorWorkflow.status === 'in_progress' && !editorEditMode,
+    refetchInterval: 2000,
+  })
+
+  useEffect(() => {
+    if (!liveDetail) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 轮询结果同步到编辑器状态（项目既有约定）
+    setEditorWorkflow(prev =>
+      prev && prev.id === liveDetail.id
+        ? mergeLiveTaskStatus(prev, liveDetail.status, liveDetail.tasks)
+        : prev,
+    )
+    // 到达终态后停止轮询，并刷新列表让卡片状态同步
+    if (['completed', 'failed', 'cancelled'].includes(liveDetail.status)) {
+      qc.invalidateQueries({ queryKey: ['workflows'] })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅随轮询结果触发
+  }, [liveDetail])
 
   const workflows: Workflow[] = data?.items ?? []
   const total = data?.total ?? 0
@@ -349,7 +421,7 @@ export default function WorkflowPage() {
         {editorWorkflow && (
           <Modal
             open={!!editorWorkflow}
-            onClose={() => setEditorWorkflow(null)}
+            onClose={() => { setEditorWorkflow(null); setEditorEditMode(false) }}
             maxWidth="85vw"
             maxHeight="85vh"
             title={editorWorkflow.name || t('pages.workflow.flowChart')}
@@ -360,9 +432,53 @@ export default function WorkflowPage() {
                 {editorWorkflow.created_at && format(new Date(editorWorkflow.created_at), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
                 {editorWorkflow.task_count != null && ` · ${t('pages.workflow.tasks', { count: editorWorkflow.task_count })}`}
               </span>
+              {editorWorkflow.status === 'in_progress' && (
+                <span className="inline-flex items-center gap-1 text-xs text-[var(--color-secondary-text)]">
+                  <Loader2 size={12} className="animate-spin" />
+                  实时刷新中
+                </span>
+              )}
+              <div className="flex-1" />
+              {/* A-27: 编辑入口——编辑器此前恒 readOnly 且无 onSave，无法编辑/保存。
+                  进入编辑模式后，编辑器自带工具栏的「保存」按钮会调用 onSave。 */}
+              {!editorEditMode ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  icon={<Play className="w-3.5 h-3.5" />}
+                  disabled={editorWorkflow.status === 'in_progress'}
+                  onClick={() => setEditorEditMode(true)}
+                >
+                  {t('pages.workflow.edit')}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setEditorEditMode(false)}
+                >
+                  {t('pages.workflow.cancelEdit')}
+                </Button>
+              )}
             </div>
             <div className="h-[calc(85vh-12rem)] min-h-[400px]">
-              <WorkflowVisualEditor workflow={editorWorkflow} readOnly={true} />
+              <WorkflowVisualEditor
+                workflow={editorWorkflow}
+                readOnly={!editorEditMode}
+                onSave={async (cfg) => {
+                  await saveConfigMut.mutateAsync({
+                    nodes: cfg.nodes,
+                    edges: cfg.edges,
+                    ...(cfg.metadata?.name ? { name: cfg.metadata.name } : {}),
+                  })
+                  // A-27 P3-2: 保存成功后回写 editorWorkflow.config，使弹窗停留
+                  //           期间持有的 detail 为最新（否则仅 invalidate，弹窗内
+                  //           仍是旧 config 引用；重开时经 onViewDetail→get 才刷新）。
+                  setEditorWorkflow(prev =>
+                    prev ? { ...prev, config: { nodes: cfg.nodes, edges: cfg.edges, ...(prev.config || {}) } } : prev
+                  )
+                }}
+              />
             </div>
           </Modal>
         )}
@@ -461,7 +577,7 @@ function WorkflowCard({
                   </span>
                   <StatusBadge status={workflow.status} size="sm" />
                 </div>
-                <p className="text-xs text-[var(--text-muted)] truncate">
+                <p className="text-xs text-[var(--text-muted)] line-clamp-2">
                   {workflow.description || t('pages.workflow.noDescription')}
                   {typeof workflow.task_count === 'number' && (
                     <span className="ml-1.5 text-[var(--text-muted)]">
