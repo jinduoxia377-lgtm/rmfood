@@ -208,14 +208,23 @@ class WorkflowScheduler:
             )
 
             if on_progress:
-                on_progress(node_id, "running", None)
+                # A-27: on_progress 是 async（workflow_exec_router 传入的协程），
+                # 原代码未 await 导致进度推送与任务状态持久化静默失效。
+                # 这里统一 await，并吞掉推送异常避免影响执行主流程。
+                try:
+                    await on_progress(node_id, "running", None)
+                except Exception as _pe:
+                    logger.warning("on_progress(running) 回调失败: %s", _pe)
 
             result = await executor.execute_with_timing(context, timeout=node.timeout)
             state.result = result
 
             if result.success:
                 if on_progress:
-                    on_progress(node_id, "success", result)
+                    try:
+                        await on_progress(node_id, "success", result)
+                    except Exception as _pe:
+                        logger.warning("on_progress(success) 回调失败: %s", _pe)
                 return result
 
             # 重试
@@ -343,7 +352,19 @@ class WorkflowScheduler:
 async def execute_workflow_dag(
     dag: WorkflowDAG,
     max_concurrent: int = 4,
+    on_progress: Optional[Callable] = None,
 ) -> Dict[str, Any]:
-    """执行工作流 DAG（便捷入口）"""
+    """执行工作流 DAG（便捷入口）
+
+    Args:
+        dag: 工作流图
+        max_concurrent: 最大并发节点数
+        on_progress: 进度回调 (task_id, status, result)，可为 async 协程。
+
+    Note:
+        A-27: 原签名缺少 on_progress，导致调用方
+        ``execute_workflow_dag(dag, on_progress=...)`` 直接抛 TypeError，
+        使任何工作流执行必然崩溃。这里补齐参数并透传给 scheduler。
+    """
     scheduler = WorkflowScheduler(max_concurrent=max_concurrent)
-    return await scheduler.execute(dag)
+    return await scheduler.execute(dag, on_progress=on_progress)

@@ -34,7 +34,7 @@ export interface WorkflowExecution {
 }
 
 export interface WorkflowTemplate {
-  id: string;
+  id: string; // AI 智能体模块将其作为逻辑模板 ID（如 'formula_design'），与 workflowType 比较；勿改为 number
   template_id: string;
   name: string;
   label?: string;
@@ -273,28 +273,28 @@ export const workflowApi = {
 export const kgInferenceApi = {
   /** 执行图谱推理 */
   infer: (body: KGInferenceRequest) =>
-    request<KGInferenceResponse>('/api/v1/kg/infer', {
+    request<KGInferenceResponse>('/kg/infer', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
   /** 路径推理 */
   inferPath: (source: string, target: string) =>
-    request<KGInferenceResponse>('/api/v1/kg/infer/path', {
+    request<KGInferenceResponse>('/kg/infer/path', {
       method: 'POST',
       body: JSON.stringify({ source_herb: source, target_disease: target }),
     }),
 
   /** 协同效应推理 */
   inferSynergy: (herbs: string[]) =>
-    request<KGInferenceResponse>('/api/v1/kg/infer/synergy', {
+    request<KGInferenceResponse>('/kg/infer/synergy', {
       method: 'POST',
       body: JSON.stringify({ herbs, reasoning_type: 'synergy' }),
     }),
 
   /** 配伍冲突检测 */
   inferConflicts: (herbs: string[], population: string = 'adults') =>
-    request<KGInferenceResponse>('/api/v1/kg/infer/conflict', {
+    request<KGInferenceResponse>('/kg/infer/conflict', {
       method: 'POST',
       body: JSON.stringify({ herbs, reasoning_type: 'conflict', population }),
     }),
@@ -307,32 +307,32 @@ export const tenantApi = {
   /** 获取租户隔离级别 */
   getIsolationLevel: (orgId: number) =>
     request<{ success: boolean; level: number; policy: MultiTenantPolicy }>(
-      `/api/v1/teams/${orgId}/isolation-level`
+      `/teams/${orgId}/isolation-level`
     ),
 
   /** 设置租户隔离级别 */
   setIsolationLevel: (orgId: number, level: number) =>
     request<{ success: boolean }>(
-      `/api/v1/teams/${orgId}/isolation-level`,
+      `/teams/${orgId}/isolation-level`,
       { method: 'PUT', body: JSON.stringify({ level }) }
     ),
 
   /** 获取租户 AI 配置 */
   getAIConfig: (orgId: number) =>
     request<{ success: boolean; data: TenantAIConfig }>(
-      `/api/v1/teams/${orgId}/ai-config`
+      `/teams/${orgId}/ai-config`
     ),
 
   /** 更新租户 AI 配置 */
   updateAIConfig: (orgId: number, config: Partial<TenantAIConfig>) =>
     request<{ success: boolean }>(
-      `/api/v1/teams/${orgId}/ai-config`,
+      `/teams/${orgId}/ai-config`,
       { method: 'PUT', body: JSON.stringify(config) }
     ),
 
   /** 列出所有隔离策略 */
   listPolicies: () =>
-    request<{ success: boolean; policies: MultiTenantPolicy[] }>('/api/v1/tenant/policies'),
+    request<{ success: boolean; policies: MultiTenantPolicy[] }>('/tenant/policies'),
 };
 
 /**
@@ -342,21 +342,21 @@ export const reportApi = {
   /** 生成产品方案报告 */
   generate: (formulaData: Record<string, unknown>) =>
     request<{ success: boolean; data: Record<string, unknown> }>(
-      '/api/v1/reports/product-plan',
+      '/reports/product-plan',
       { method: 'POST', body: JSON.stringify(formulaData) }
     ),
 
   /** 导出报告为 PDF */
   exportPDF: (executionId: string) =>
     request<{ success: boolean; url: string }>(
-      `/api/v1/reports/${executionId}/pdf`,
+      `/reports/${executionId}/pdf`,
       { method: 'POST' }
     ),
 
   /** 导出报告为 Markdown */
   exportMarkdown: (executionId: string) =>
     request<{ success: boolean; content: string }>(
-      `/api/v1/reports/${executionId}/markdown`,
+      `/reports/${executionId}/markdown`,
       { method: 'POST' }
     ),
 };

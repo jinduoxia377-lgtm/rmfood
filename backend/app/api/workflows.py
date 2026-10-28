@@ -13,6 +13,19 @@ from ..models.models import Workflow, WorkflowTask, WorkflowTemplate, User, Work
 router = APIRouter(prefix="/workflows", tags=["工作流"])
 
 
+# 控制节点类型：不作为任务持久化/执行，仅用于可视化编排（开始/结束/条件分支）。
+# create_workflow_from_editor 与 update_workflow_config 必须使用同一谓词，
+# 否则同一份节点配置在「创建」与「更新」时会生成不一致的任务集合（原 create
+# 跳过 start/end/condition，update 却只认 type=="task"，且 task_count 也只统计
+# type=="task"，三者谓词互不相同）。
+_CONTROL_NODE_TYPES = ("start", "end", "condition")
+
+
+def _is_workflow_control_node(node: dict) -> bool:
+    """判断节点是否为控制节点（start/end/condition），是则不作为任务创建。"""
+    return node.get("type") in _CONTROL_NODE_TYPES
+
+
 @router.get("/templates", summary="获取工作流模板列表")
 async def list_workflow_templates(
     category: str | None = Query(None, description="模板分类"),
@@ -132,6 +145,68 @@ async def delete_workflow(
     return {"message": "工作流已删除"}
 
 
+@router.get("/executors", summary="列出可用执行器")
+async def list_executors():
+    """
+    返回当前注册的所有工作流执行器。
+
+    A-27 修复: 原定义在 workflow_exec_router.py，但该 router 在 api_router
+    （含 GET /workflows/{workflow_id}，int 路径参数）之后注册，导致
+    GET /workflows/executors 被 /{workflow_id} 抢占并返回 422（'executors'
+    无法转为 int）。此处定义在 /{workflow_id} 之前，确保先匹配。
+    """
+    from app.core.workflow import get_executor_registry
+    registry = get_executor_registry()
+    return {
+        "success": True,
+        "executors": [
+            {"task_type": t, "description": registry.get(t).description}
+            for t in registry.list_types()
+        ],
+    }
+
+
+@router.get("/statistics/summary", summary="工作流统计")
+async def workflow_statistics(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    工作流统计摘要。
+
+    A-27 修复: ① 原定义在 GET /{workflow_id} 之后，被 int 路径参数抢占
+    导致 422；移到 /{workflow_id} 之前。② 统计按 creator_id 过滤，
+    避免泄漏全局工作流聚合数（原泄漏所有用户数据）。
+    """
+    _owner_filter = Workflow.creator_id == current_user.id
+    total = (await db.execute(
+        select(func.count(Workflow.id)).where(_owner_filter)
+    )).scalar() or 0
+
+    status_result = await db.execute(
+        select(Workflow.status, func.count(Workflow.id))
+        .where(_owner_filter)
+        .group_by(Workflow.status)
+    )
+    by_status = {}
+    for status_val, count in status_result.all():
+        key = status_val.value if hasattr(status_val, "value") else str(status_val)
+        by_status[key] = count
+
+    type_result = await db.execute(
+        select(Workflow.workflow_type, func.count(Workflow.id))
+        .where(_owner_filter)
+        .group_by(Workflow.workflow_type)
+    )
+    by_type = dict(type_result.all())
+
+    return {
+        "total": total,
+        "by_status": by_status,
+        "by_type": by_type,
+    }
+
+
 @router.get("/{workflow_id}", summary="工作流详情")
 async def get_workflow(
     workflow_id: int,
@@ -145,6 +220,10 @@ async def get_workflow(
 
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    # A-27: 属主校验，防止越权读取他人工作流
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
 
     # 获取任务节点
     tasks_result = await db.execute(
@@ -184,34 +263,6 @@ async def get_workflow(
     }
 
 
-@router.get("/statistics/summary", summary="工作流统计")
-async def workflow_statistics(
-    db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_active_user),
-):
-    """工作流统计摘要"""
-    total = (await db.execute(select(func.count(Workflow.id)))).scalar() or 0
-
-    status_result = await db.execute(
-        select(Workflow.status, func.count(Workflow.id)).group_by(Workflow.status)
-    )
-    by_status = {}
-    for status_val, count in status_result.all():
-        key = status_val.value if hasattr(status_val, "value") else str(status_val)
-        by_status[key] = count
-
-    type_result = await db.execute(
-        select(Workflow.workflow_type, func.count(Workflow.id)).group_by(Workflow.workflow_type)
-    )
-    by_type = dict(type_result.all())
-
-    return {
-        "total": total,
-        "by_status": by_status,
-        "by_type": by_type,
-    }
-
-
 @router.post("/{workflow_id}/cancel", summary="取消工作流")
 async def cancel_workflow(
     workflow_id: int,
@@ -225,6 +276,10 @@ async def cancel_workflow(
 
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    # A-27: 属主校验
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
 
     if workflow.status in (WorkflowStatus.COMPLETED, WorkflowStatus.CANCELLED):
         raise HTTPException(400, detail="该工作流已完成或已取消")
@@ -250,6 +305,10 @@ async def retry_workflow(
 
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    # A-27: 属主校验
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
 
     if workflow.status != WorkflowStatus.FAILED:
         raise HTTPException(400, detail="只能重试失败的工作流")
@@ -359,7 +418,7 @@ async def create_workflow_from_editor(
     # 从节点配置创建任务
     nodes = config.get("nodes", [])
     for idx, node in enumerate(nodes):
-        if node.get("type") in ("start", "end", "condition"):
+        if _is_workflow_control_node(node):
             continue
 
         task = WorkflowTask(
@@ -375,7 +434,7 @@ async def create_workflow_from_editor(
     await db.commit()
     await db.refresh(workflow)
 
-    task_count = len([n for n in nodes if n.get("type") == "task"])
+    task_count = len([n for n in nodes if not _is_workflow_control_node(n)])
     return {
         "id": workflow.id,
         "message": "工作流创建成功" + (f"（从模板「{tpl.name}」导入 {task_count} 个任务）" if template_id and tpl else ""),
@@ -398,6 +457,10 @@ async def update_workflow_config(
     
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
+
+    # A-27: 属主校验
+    if workflow.creator_id != current_user.id:
+        raise HTTPException(403, detail="无权操作此工作流")
     
     if workflow.status not in (WorkflowStatus.PENDING, WorkflowStatus.CANCELLED):
         raise HTTPException(400, detail="只能修改等待中或已取消的工作流")
@@ -414,15 +477,16 @@ async def update_workflow_config(
 
     # 创建新任务
     for idx, node in enumerate(nodes):
-        if node["type"] not in ("task",):
+        if _is_workflow_control_node(node):
             continue
-            
+
         task = WorkflowTask(
             workflow_id=workflow.id,
             step_order=idx,
-            name=node["data"]["label"],
-            task_type=node["data"].get("taskType", "custom"),
+            name=node.get("data", {}).get("label", f"任务{idx + 1}"),
+            task_type=node.get("data", {}).get("taskType", "custom"),
             status=TaskStatus.PENDING,
+            input_data=node.get("data", {}).get("config"),
         )
         db.add(task)
     

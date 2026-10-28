@@ -102,25 +102,37 @@ class FormulaGPTExecutor(WorkflowExecutor):
         return "AI 驱动的配方生成（基于目标功效自动生成药食同源配方）"
 
     async def execute(self, context: ExecutionContext) -> ExecutionResult:
-        from app.services.ai.orchestration.formula_service import ai_service
+        from app.services.ai.formula_generation_service import run_ga_generation
 
         effects = context.input_data.get("target_effects", ["免疫调节"])
-        product_type = context.input_data.get("product_type", "饮品")
         population = context.input_data.get("target_population", "adults")
+        constraints = dict(context.input_data.get("constraints", {}) or {})
+        constraints.setdefault("max_candidates", int(context.input_data.get("max_candidates", 3) or 3))
+        constraints.setdefault("target_group", population)
 
         try:
-            result = await ai_service.generate_formula(
-                effects=effects,
-                product_type=product_type,
-                target_population=population,
+            # 替换 MockFormulaGPTService（random.sample 假数据）：
+            # 直接调用与 /generate、/generate/advanced 同源的真实 GA 引擎。
+            # P0-4：优先从共享状态取 user_id 透传（int 转 str），拿不到则 None。
+            ctx_user_id = context.shared_state.get("user_id") or context.input_data.get("user_id")
+            result = await run_ga_generation(
+                target_effects=effects,
+                constraints=constraints,
+                user_id=str(ctx_user_id) if ctx_user_id else None,
             )
+            candidates = result.get("candidates", [])
+            formula = candidates[0] if candidates else {}
+            safety_passed = all(c.get("safety_passed", False) for c in candidates) if candidates else False
 
             return ExecutionResult(
                 task_id=context.task_id,
                 success=True,
                 output_data={
-                    "formula": result.formula if hasattr(result, "formula") else result,
-                    "safety_check": result.safety_check if hasattr(result, "safety_check") else None,
+                    "formula": formula,
+                    "candidates": candidates,
+                    "safety_check": {"passed": safety_passed},
+                    "generator": result.get("generator", "ga_optimizer"),
+                    "rag_evidence": result.get("rag_evidence"),
                 },
             )
         except Exception as e:
@@ -289,6 +301,41 @@ class DataAnalysisExecutor(WorkflowExecutor):
                 success=False,
                 error=f"数据分析失败: {e}",
             )
+
+
+# ════════════════════════════════════════════
+# 6. UserInput 执行器（需求/批量输入占位）
+# ════════════════════════════════════════════
+
+
+@register_executor
+class UserInputExecutor(WorkflowExecutor):
+    """透传用户输入节点。
+
+    user_input 节点不执行真实逻辑，仅将 input_data 透传到 output_data，
+    供后续节点（agent_smart / formula_gpt 等）消费。此前该 task_type
+    未注册执行器，导致 ai-formula-gen / batch-analysis 模板首节点必然
+    FAILED（scheduler 返回"未注册的执行器"）。
+    """
+
+    @property
+    def task_type(self) -> str:
+        return "user_input"
+
+    @property
+    def description(self) -> str:
+        return "用户需求/批量输入节点：透传输入数据，不做实际处理"
+
+    async def execute(self, context: ExecutionContext) -> ExecutionResult:
+        # 透传 input_data；若显式传入 query 亦写入输出，便于后续节点读取
+        output = dict(context.input_data or {})
+        if not output.get("query") and context.shared_state.get("user_query"):
+            output["query"] = context.shared_state["user_query"]
+        return ExecutionResult(
+            task_id=context.task_id,
+            success=True,
+            output_data=output,
+        )
 
 
 logger.info("Workflow executors initialized")

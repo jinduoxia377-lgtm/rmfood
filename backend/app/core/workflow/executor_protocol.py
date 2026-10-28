@@ -110,6 +110,11 @@ class WorkflowExecutor(ABC):
             else:
                 result = await self.execute(context)
 
+            # A-27 修复: 原代码把 start 赋给了 context.started_at（无该字段的
+            # 动态属性），却在下方读取 result.started_at（ExecutionResult 默认
+            # None）计算耗时，导致 datetime - None 的 TypeError，使任何节点执行
+            # 必然失败。必须把 start 赋给 result.started_at。
+            result.started_at = start
             result.completed_at = datetime.now(timezone.utc)
             result.latency_ms = (
                 (result.completed_at - result.started_at).total_seconds() * 1000

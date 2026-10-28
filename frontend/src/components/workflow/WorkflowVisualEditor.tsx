@@ -63,106 +63,6 @@ interface WorkflowEdge {
   condition?: string
 }
 
-interface WorkflowTemplate {
-  id: string
-  name: string
-  description: string
-  category: 'ai_generation' | 'review' | 'data_sync' | 'analysis' | 'custom'
-  nodes: WorkflowNode[]
-  edges: WorkflowEdge[]
-  icon: string
-}
-
-// ── 预设工作流模板 ──
-// 预设模板暂未接入 UI（模板弹窗使用 API 模板），保留作为离线兜底参考。
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
-  {
-    id: 'ai-formula-gen',
-    name: 'AI 配方生成流水线',
-    description: '从需求分析到配方生成的完整AI驱动流程',
-    category: 'ai_generation',
-    icon: '',
-    nodes: [
-      { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '开始' } },
-      { id: 'input', type: 'task', position: { x: 350, y: 100 }, data: { label: '需求输入', taskType: 'user_input', status: 'pending' } },
-      { id: 'analyze', type: 'task', position: { x: 350, y: 200 }, data: { label: '需求分析', taskType: 'llm_analysis', status: 'pending' } },
-      { id: 'generate', type: 'task', position: { x: 350, y: 300 }, data: { label: 'AI 生成候选', taskType: 'neural_generate', status: 'pending' } },
-      { id: 'optimize', type: 'task', position: { x: 350, y: 400 }, data: { label: '多目标优化', taskType: 'multi_optimize', status: 'pending' } },
-      { id: 'safety', type: 'task', position: { x: 350, y: 500 }, data: { label: '安全性检查', taskType: 'safety_check', status: 'pending' } },
-      { id: 'condition', type: 'condition', position: { x: 350, y: 600 }, data: { label: '通过?', config: {} } },
-      { id: 'output', type: 'task', position: { x: 200, y: 720 }, data: { label: '输出结果', taskType: 'save_result', status: 'pending' } },
-      { id: 'regenerate', type: 'task', position: { x: 500, y: 720 }, data: { label: '重新生成', taskType: 'regenerate', status: 'pending' } },
-      { id: 'end', type: 'end', position: { x: 400, y: 840 }, data: { label: '结束' } },
-    ],
-    edges: [
-      { id: 'e1', source: 'start', target: 'input' },
-      { id: 'e2', source: 'input', target: 'analyze' },
-      { id: 'e3', source: 'analyze', target: 'generate' },
-      { id: 'e4', source: 'generate', target: 'optimize' },
-      { id: 'e5', source: 'optimize', target: 'safety' },
-      { id: 'e6', source: 'safety', target: 'condition' },
-      { id: 'e7', source: 'condition', target: 'output', label: '是' },
-      { id: 'e8', source: 'condition', target: 'regenerate', label: '否' },
-      { id: 'e9', source: 'output', target: 'end' },
-      { id: 'e10', source: 'regenerate', target: 'generate' },
-    ],
-  },
-  {
-    id: 'review-process',
-    name: '配方审核流程',
-    description: '标准化的配方审核与批准流程',
-    category: 'review',
-    icon: '',
-    nodes: [
-      { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '提交' } },
-      { id: 'pre-check', type: 'task', position: { x: 350, y: 120 }, data: { label: '格式预检', taskType: 'auto_validate', status: 'pending' } },
-      { id: 'expert-review', type: 'task', position: { x: 350, y: 240 }, data: { label: '专家审核', taskType: 'expert_review', status: 'pending' } },
-      { id: 'decision', type: 'condition', position: { x: 350, y: 360 }, data: { label: '审核结果' } },
-      { id: 'approve', type: 'task', position: { x: 200, y: 480 }, data: { label: '批准发布', taskType: 'approve', status: 'pending' } },
-      { id: 'revise', type: 'task', position: { x: 500, y: 480 }, data: { label: '退回修改', taskType: 'request_revision', status: 'pending' } },
-      { id: 'notify', type: 'task', position: { x: 350, y: 600 }, data: { label: '通知相关人员', taskType: 'notify', status: 'pending' } },
-      { id: 'end', type: 'end', position: { x: 400, y: 720 }, data: { label: '完成' } },
-    ],
-    edges: [
-      { id: 'r1', source: 'start', target: 'pre-check' },
-      { id: 'r2', source: 'pre-check', target: 'expert-review' },
-      { id: 'r3', source: 'expert-review', target: 'decision' },
-      { id: 'r4', source: 'decision', target: 'approve', label: '通过' },
-      { id: 'r5', source: 'decision', target: 'revise', label: '退回' },
-      { id: 'r6', source: 'approve', target: 'notify' },
-      { id: 'r7', source: 'revise', target: 'notify' },
-      { id: 'r8', source: 'notify', target: 'end' },
-    ],
-  },
-  {
-    id: 'data-sync',
-    name: '数据同步流水线',
-    description: '外部数据库同步与知识图谱更新',
-    category: 'data_sync',
-    icon: '',
-    nodes: [
-      { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '触发' } },
-      { id: 'fetch-tcmsp', type: 'task', position: { x: 250, y: 120 }, data: { label: 'TCMSP同步', taskType: 'tcmsp_sync', status: 'pending' } },
-      { id: 'fetch-dfbp', type: 'task', position: { x: 550, y: 120 }, data: { label: 'DFBP同步', taskType: 'dfbp_sync', status: 'pending' } },
-      { id: 'merge', type: 'task', position: { x: 400, y: 240 }, data: { label: '数据合并去重', taskType: 'merge_data', status: 'pending' } },
-      { id: 'validate', type: 'task', position: { x: 400, y: 360 }, data: { label: '质量验证', taskType: 'validate', status: 'pending' } },
-      { id: 'update-graph', type: 'task', position: { x: 400, y: 480 }, data: { label: '更新知识图谱', taskType: 'update_graph', status: 'pending' } },
-      { id: 'end', type: 'end', position: { x: 400, y: 600 }, data: { label: '完成' } },
-    ],
-    edges: [
-      { id: 'd1', source: 'start', target: 'fetch-tcmsp' },
-      { id: 'd2', source: 'start', target: 'fetch-dfbp' },
-      { id: 'd3', source: 'fetch-tcmsp', target: 'merge' },
-      { id: 'd4', source: 'fetch-dfbp', target: 'merge' },
-      { id: 'd5', source: 'merge', target: 'validate' },
-      { id: 'd6', source: 'validate', target: 'update-graph' },
-      { id: 'd7', source: 'update-graph', target: 'end' },
-    ],
-  },
-]
-/* eslint-enable @typescript-eslint/no-unused-vars */
-
 // ── 节点样式配置 ──
 
 const NODE_STYLES = {
@@ -281,13 +181,34 @@ export function WorkflowVisualEditor({
   }, [])
 
   // 应用模板
-  const applyTemplate = useCallback((template: WorkflowTemplate) => {
-    setNodes(template.nodes)
-    setEdges(template.edges)
-    setWorkflowName(template.name)
-    setWorkflowDesc(template.description)
+  // A-27: 列表项 nodes/edges 为可选字段，必须通过 getTemplate(template_id)
+  //       拉取完整节点/边详情后再应用，否则画布可能为空或形状不符。
+  const applyTemplate = useCallback(async (template: APITemplate) => {
+    const templateId = template.template_id || String(template.id)
     setShowTemplateModal(false)
-    addToast({ type: 'success', message: `已应用模板: ${template.name}` })
+    addToast({ type: 'info', message: `正在加载模板: ${template.name}...` })
+    try {
+      const detail = await workflowApi.getTemplate(templateId)
+      const nodes = (detail?.nodes as unknown as WorkflowNode[]) || []
+      const edges = (detail?.edges as unknown as WorkflowEdge[]) || []
+      if (nodes.length === 0) {
+        addToast({ type: 'warning', message: `模板「${template.name}」没有可用的节点定义` })
+      }
+      setNodes(nodes)
+      setEdges(edges)
+      setWorkflowName(detail?.name || template.name)
+      setWorkflowDesc(detail?.description || template.description || '')
+      addToast({ type: 'success', message: `已应用模板: ${detail?.name || template.name}` })
+    } catch {
+      // 回退：使用列表项自带的 nodes/edges（若存在）
+      const nodes = (template.nodes as unknown as WorkflowNode[]) || []
+      const edges = (template.edges as unknown as WorkflowEdge[]) || []
+      setNodes(nodes)
+      setEdges(edges)
+      setWorkflowName(template.name)
+      setWorkflowDesc(template.description || '')
+      addToast({ type: 'warning', message: '加载模板详情失败，已使用列表项基础数据' })
+    }
   }, [addToast])
 
   // 添加节点
@@ -683,14 +604,17 @@ export function WorkflowVisualEditor({
               <div className="text-center space-y-4">
                 <GitBranch size={64} className="mx-auto text-neutral-300 dark:text-neutral-400" />
                 <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
-                  开始构建工作流
+                  {readOnly ? '工作流暂无节点' : '开始构建工作流'}
                 </h3>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
-                  选择一个预设模板或从头开始创建自定义工作流
+                  {readOnly ? '此工作流尚未配置任何节点' : '选择一个预设模板或从头开始创建自定义工作流'}
                 </p>
-                <Button onClick={() => setShowTemplateModal(true)}>
-                  <Plus size={16} className="mr-2" /> 选择模板
-                </Button>
+                {/* A-27: readOnly 下不显示「选择模板」按钮，避免只读态误触编辑 */}
+                {!readOnly && (
+                  <Button onClick={() => setShowTemplateModal(true)}>
+                    <Plus size={16} className="mr-2" /> 选择模板
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -804,7 +728,7 @@ export function WorkflowVisualEditor({
                   key={template.template_id || template.id}
                   hoverable
                   className="p-4 cursor-pointer"
-                  onClick={() => applyTemplate(template as unknown as WorkflowTemplate)}
+                  onClick={() => applyTemplate(template)}
                 >
                   <div className="flex items-start gap-3">
                     {(() => {
