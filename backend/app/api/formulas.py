@@ -147,29 +147,13 @@ async def _resolve_effective_org_id(
     current_user: Optional["User"],
     db: AsyncSession,
 ) -> Optional[int]:
-    """解析当前请求的有效组织 ID（租户隔离核心）。
+    """解析当前请求的有效组织 ID（委托共享解析器，跨模块 DRY）。
 
-    优先级：
-    1. tenant_org_id —— TenantMiddleware 从 JWT（Bearer 或 Cookie）解析出的 org_id
-       （组织绑定用户，JWT 携带 org_id 声明）。
-    2. current_user.organization_id —— 用户默认组织（users.organization_id）。
-    3. organization_members 首个 active 组织 —— 本地库用户的真实组织关系
-       （当前库中 9 个用户 organization_id 均为 NULL，真实关系在此表）。
-
-    返回 None 表示匿名或无有效组织，调用方应拒绝访问（维持 P0 隔离）。
+    优先级：tenant_org_id → current_user.organization_id →
+    organization_members 首个 active 组织。返回 None 表示匿名或无有效组织。
     """
-    if tenant_org_id is not None:
-        return tenant_org_id
-    if current_user is None:
-        return None
-    if current_user.organization_id:
-        return current_user.organization_id
-    from sqlalchemy import text as _text
-    row = (await db.execute(
-        _text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
-        {"uid": current_user.id},
-    )).fetchone()
-    return row.organization_id if row else None
+    from ..core.multi_tenant.org_resolver import resolve_effective_org_id
+    return await resolve_effective_org_id(tenant_org_id, current_user, db)
 
 
 async def _require_formula_access(
